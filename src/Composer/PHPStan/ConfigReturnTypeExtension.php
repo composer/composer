@@ -123,19 +123,23 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
                         if (isset($def['properties'])) {
                             $keyNames = [];
                             $valTypes = [];
+                            $optionalKeys = [];
+                            $propIndex = 0;
                             foreach ($def['properties'] as $propName => $propdef) {
                                 $keyNames[] = new ConstantStringType($propName);
                                 $valType = $this->parseType($propdef, $path.'.'.$propName);
                                 if (!isset($def['required']) || !in_array($propName, $def['required'], true)) {
                                     $valType = TypeCombinator::addNull($valType);
+                                    $optionalKeys[] = $propIndex;
                                 }
                                 $valTypes[] = $valType;
+                                $propIndex++;
                             }
 
                             if ($addlPropType !== null) {
                                 $types[] = new ArrayType(TypeCombinator::union(new StringType(), ...$keyNames), TypeCombinator::union($addlPropType, ...$valTypes));
                             } else {
-                                $types[] = new ConstantArrayType($keyNames, $valTypes);
+                                $types[] = new ConstantArrayType($keyNames, $valTypes, [0], $optionalKeys);
                             }
                         } else {
                             $types[] = new ArrayType(new StringType(), $addlPropType ?? new MixedType());
