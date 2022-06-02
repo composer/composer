@@ -15,4 +15,5 @@
 .travis.yml export-ignore
 appveyor.yml export-ignore
 phpunit.xml.dist export-ignore
-/phpstan/ export-ignore
+/phpstan/* export-ignore
+/phpstan/rules.neon -export-ignore
