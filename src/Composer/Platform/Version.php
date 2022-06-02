@@ -32,11 +32,16 @@ class Version
             return null;
         }
 
+        // OpenSSL 1 used 1.2.3a style versioning, 3+ uses semver
+        $patch = '';
+        if (version_compare($matches['version'], '3.0.0', '<')) {
+            $patch = '.'.self::convertAlphaVersionToIntVersion($matches['patch']);
+        }
+
         $isFips = strpos($matches['suffix'], 'fips') !== false;
         $suffix = strtr('-'.ltrim($matches['suffix'], '-'), array('-fips' => '', '-pre' => '-alpha'));
-        $patch = self::convertAlphaVersionToIntVersion($matches['patch']);
 
-        return rtrim($matches['version'].'.'.$patch.$suffix, '-');
+        return rtrim($matches['version'].$patch.$suffix, '-');
     }
 
     /**

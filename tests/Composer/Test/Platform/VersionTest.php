@@ -69,6 +69,9 @@ class VersionTest extends TestCase
             array('1.2.3za', '1.2.3.27'),
             array('1.2.3zy', '1.2.3.51'),
             array('1.2.3zz', '1.2.3.52'),
+            // 3.x
+            array('3.0.0', '3.0.0', false, '3.0.0.0'),
+            array('3.2.4-dev', '3.2.4-dev', false, '3.2.4.0-dev'),
         );
     }
 
