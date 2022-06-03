@@ -114,12 +114,12 @@ abstract class BaseIO implements IOInterface
      */
     public function loadConfiguration(Config $config)
     {
-        $bitbucketOauth = $config->get('bitbucket-oauth') ?: array();
-        $githubOauth = $config->get('github-oauth') ?: array();
-        $gitlabOauth = $config->get('gitlab-oauth') ?: array();
-        $gitlabToken = $config->get('gitlab-token') ?: array();
-        $httpBasic = $config->get('http-basic') ?: array();
-        $bearerToken = $config->get('bearer') ?: array();
+        $bitbucketOauth = $config->get('bitbucket-oauth');
+        $githubOauth = $config->get('github-oauth');
+        $gitlabOauth = $config->get('gitlab-oauth');
+        $gitlabToken = $config->get('gitlab-token');
+        $httpBasic = $config->get('http-basic');
+        $bearerToken = $config->get('bearer');
 
         // reload oauth tokens from config if available
 
