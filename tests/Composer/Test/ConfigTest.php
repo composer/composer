@@ -390,4 +390,22 @@ class ConfigTest extends TestCase
 
         $this->assertEquals('COMPOSER_HTACCESS_PROTECT', $result);
     }
+
+    public function testGetDefaultsToAnEmptyArray(): void
+    {
+        $config = new Config;
+        $keys = [
+            'bitbucket-oauth',
+            'github-oauth',
+            'gitlab-oauth',
+            'gitlab-token',
+            'http-basic',
+            'bearer',
+        ];
+        foreach ($keys as $key) {
+            $value = $config->get($key);
+            $this->assertIsArray($value);
+            $this->assertCount(0, $value);
+        }
+    }
 }
