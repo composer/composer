@@ -297,6 +297,13 @@ if (PHP_VERSION_ID < 80000) {
             private \$position;
             private \$realpath;
 
+            public function __construct()
+            {
+                if (function_exists('stream_get_wrappers') && in_array('phpvfscomposer', stream_get_wrappers()) && function_exists('stream_wrapper_unregister')) {
+                    stream_wrapper_unregister('phpvfscomposer');
+                }
+            }
+
             public function stream_open(\$path, \$mode, \$options, &\$opened_path)
             {
                 // get rid of phpvfscomposer:// prefix for __FILE__ & __DIR__ resolution
