@@ -166,8 +166,7 @@ Example usage:
 
 ```sh
 docker pull composer/composer
-docker run --rm -it -v "$(pwd):/app" composer/composer -V
-Composer version 2.0.13 2021-04-27 13:11:08
+docker run --rm -it -v "$(pwd):/app" composer/composer install
 ```
 
 To add Composer to an existing **Dockerfile**:
