@@ -28,7 +28,7 @@ class UpdateCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'update', '--dry-run' => true], $command));
 
-        $this->assertSame(strtr(trim($expected), "\r", ''), strtr(trim($appTester->getDisplay()), "\r", ''));
+        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
     public function provideUpdates(): \Generator
