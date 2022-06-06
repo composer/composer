@@ -1,3 +1,13 @@
+### [2.3.7] 2022-06-06
+
+  * Fixed a few PHPStan ConfigReturnTypeExtension bugs
+  * Fixed Config default for auth configs to be empty arrays instead of null, fixes issues with diagnose command (#10814)
+  * Fixed handling of broken symlinks when checking whether a package is still installed (#6708)
+  * Fixed bin proxies to allow a proxy to include another one safely (#10823)
+  * Fixed openssl 3.x version parsing as it is now semver compliant
+  * Fixed type error when a json file cannot be read (#10818)
+  * Fixed parsing of multi-line arrays in funding.yml (#10784)
+
 ### [2.3.6] 2022-06-01
 
   * Added `Composer\PHPStan\ConfigReturnTypeExtension` to improve return types of `Config::get()` which you can also use in plugins CI (#10635)
@@ -83,6 +93,16 @@
   * Added support for psr/log 3.x (#10454)
   * Fixed symlink creation in linux VM guest filesystems to be recognized by Windows (#10592)
   * Performance improvement in pool optimization step (#10585)
+
+### [2.2.14] 2022-06-06
+
+  * Fixed handling of broken symlinks when checking whether a package is still installed (#6708)
+  * Fixed name validation regex in schema causing issues with JS IDEs like VS Code (#10811)
+  * Fixed bin proxies to allow a proxy to include another one safely (#10823)
+  * Fixed gitlab-token JSON schema definition (#10800)
+  * Fixed openssl 3.x version parsing as it is now semver compliant
+  * Fixed type error when a json file cannot be read (#10818)
+  * Fixed parsing of multi-line arrays in funding.yml (#10784)
 
 ### [2.2.13] 2022-05-25
 
@@ -1522,6 +1542,7 @@
 
   * Initial release
 
+[2.3.7]: https://github.com/composer/composer/compare/2.3.6...2.3.7
 [2.3.6]: https://github.com/composer/composer/compare/2.3.5...2.3.6
 [2.3.5]: https://github.com/composer/composer/compare/2.3.4...2.3.5
 [2.3.4]: https://github.com/composer/composer/compare/2.3.3...2.3.4
@@ -1531,6 +1552,7 @@
 [2.3.0]: https://github.com/composer/composer/compare/2.3.0-RC2...2.3.0
 [2.3.0-RC2]: https://github.com/composer/composer/compare/2.3.0-RC1...2.3.0-RC2
 [2.3.0-RC1]: https://github.com/composer/composer/compare/2.2.9...2.3.0-RC1
+[2.2.14]: https://github.com/composer/composer/compare/2.2.13...2.2.14
 [2.2.13]: https://github.com/composer/composer/compare/2.2.12...2.2.13
 [2.2.12]: https://github.com/composer/composer/compare/2.2.11...2.2.12
 [2.2.11]: https://github.com/composer/composer/compare/2.2.10...2.2.11

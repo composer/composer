@@ -2971,11 +2971,6 @@ parameters:
 			path: ../src/Composer/Json/JsonFile.php
 
 		-
-			message: "#^Parameter \\#1 \\$json of static method Composer\\\\Json\\\\JsonFile\\:\\:parseJson\\(\\) expects string\\|null, string\\|false\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Json/JsonFile.php
-
-		-
 			message: "#^Parameter \\#1 \\$json of static method Composer\\\\Json\\\\JsonFile\\:\\:validateSyntax\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Json/JsonFile.php
