@@ -76,13 +76,12 @@ class Config
         'use-github-api' => true,
         'lock' => true,
         'platform-check' => 'php-only',
-        // valid keys without defaults (auth config stuff):
-        // bitbucket-oauth
-        // github-oauth
-        // gitlab-oauth
-        // gitlab-token
-        // http-basic
-        // bearer
+        'bitbucket-oauth' => array(),
+        'github-oauth' => array(),
+        'gitlab-oauth' => array(),
+        'gitlab-token' => array(),
+        'http-basic' => array(),
+        'bearer' => array(),
     );
 
     /** @var array<string, mixed> */
