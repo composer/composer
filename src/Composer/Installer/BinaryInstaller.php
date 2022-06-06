@@ -379,12 +379,10 @@ if (PHP_VERSION_ID < 80000) {
         }
     }
 
-    if (function_exists('stream_get_wrappers') && in_array('phpvfscomposer', stream_get_wrappers())) {
-        include("phpvfscomposer://" . $binPathExported);
-        exit(0);
-    }
-
-    if (function_exists('stream_wrapper_register') && stream_wrapper_register('phpvfscomposer', 'Composer\BinProxyWrapper')) {
+    if (
+        (function_exists('stream_get_wrappers') && in_array('phpvfscomposer', stream_get_wrappers(), true))
+        || (function_exists('stream_wrapper_register') && stream_wrapper_register('phpvfscomposer', 'Composer\BinProxyWrapper'))
+    ) {
         include("phpvfscomposer://" . $binPathExported);
         exit(0);
     }
