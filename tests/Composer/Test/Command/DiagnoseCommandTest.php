@@ -32,8 +32,7 @@ class DiagnoseCommandTest extends TestCase
         $this->assertStringContainsString('Checking git settings: OK
 Checking http connectivity to packagist: OK
 Checking https connectivity to packagist: OK
-Checking github.com rate limit: OK
-Checking disk free space: ', $output);
+Checking github.com rate limit: ', $output);
     }
 
     public function testCmdSuccess(): void
@@ -51,7 +50,6 @@ Checking disk free space: ', $output);
         $this->assertStringContainsString('Checking git settings: OK
 Checking http connectivity to packagist: OK
 Checking https connectivity to packagist: OK
-Checking github.com rate limit: OK
-Checking disk free space: ', $output);
+Checking github.com rate limit: ', $output);
     }
 }
