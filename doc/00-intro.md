@@ -160,7 +160,9 @@ Composer version 2.0.12 2021-04-01 10:14:59
 
 ## Docker Image
 
-Composer has a **community supported** image available on [docker hub](https://hub.docker.com/r/composer/composer).
+Composer is published as Docker container in a few places, see the list in the [composer/docker README](https://github.com/composer/docker).
+
+Example usage:
 
 ```sh
 docker pull composer/composer
@@ -174,11 +176,11 @@ To add Composer to an existing **Dockerfile**:
 COPY --from=composer/composer /usr/bin/composer /usr/bin/composer
 ```
 
-Read the docker [description](https://hub.docker.com/_/composer?tab=description) for further information.
+Read the [image description](https://hub.docker.com/r/composer/composer) for further usage information.
 
-**Note:** The Docker image isn't officially supported by Composer. Issues should be filed [on its own repository](https://github.com/composer/docker/issues).
+**Note:** Docker specific issues should be filed [on the composer/docker repository](https://github.com/composer/docker/issues).
 
-**Note:** You may also use `composer` instead of `composer/composer` as image name. This is shorter and is a Docker official image but is not published directly by us and thus usually receives new releases with a delay of a few days.
+**Note:** You may also use `composer` instead of `composer/composer` as image name above. It is shorter and is a Docker official image but is not published directly by us and thus usually receives new releases with a delay of a few days.
 
 ## Using Composer
 
