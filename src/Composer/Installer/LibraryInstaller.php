@@ -91,7 +91,19 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
             return true;
         }
 
-        return (Platform::isWindows() && $this->filesystem->isJunction($installPath)) || is_link($installPath);
+        if (Platform::isWindows() && $this->filesystem->isJunction($installPath)) {
+            return true;
+        }
+
+        if (is_link($installPath)) {
+            if (realpath($installPath) === false) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -114,6 +114,10 @@ class JsonFile
             throw new \RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
         }
 
+        if ($json === false) {
+            throw new \RuntimeException('Could not read '.$this->path);
+        }
+
         return static::parseJson($json, $this->path);
     }
 
