@@ -339,6 +339,25 @@ class Cache
         return false;
     }
 
+    public function gcVcsCache(int $ttl): bool
+    {
+        if ($this->isEnabled()) {
+            $expire = new \DateTime();
+            $expire->modify('-'.$ttl.' seconds');
+
+            $finder = Finder::create()->in($this->root)->directories()->depth(0)->date('until '.$expire->format('Y-m-d H:i:s'));
+            foreach ($finder as $file) {
+                $this->filesystem->removeDirectory($file->getPathname());
+            }
+
+            self::$cacheCollected = true;
+
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * @param string $file
      *

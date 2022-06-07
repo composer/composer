@@ -902,6 +902,10 @@ performance.
 
 Deletes all content from Composer's cache directories.
 
+### Options
+
+* **--gc:** Only run garbage collection, not a full cache clear
+
 ## licenses
 
 Lists the name, version and license of every package installed. Use
