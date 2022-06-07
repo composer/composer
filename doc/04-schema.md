@@ -646,6 +646,17 @@ Example:
 }
 ```
 
+Files autoload rules are included whenever `vendor/autoload.php` is included, right after
+the autoloader is registered. The order of inclusion depends on package dependencies so that
+if package A depends on B, files in package B will be included first to ensure package B is fully
+initialized and ready to be used when files from package A are included.
+
+If two packages have the same amount of dependents or no dependencies, the order is alphabetical.
+
+Files from the root package are always loaded last, and you cannot use files autoloading
+yourself to override functions from your dependencies. If you want to achieve that we recommend
+you include your own functions *before* including Composer's `vendor/autoload.php`.
+
 #### Exclude files from classmaps
 
 If you want to exclude some files or folders from the classmap you can use the `exclude-from-classmap` property.
@@ -942,7 +953,7 @@ It can be boolean or a package name/URL pointing to a recommended alternative.
 Examples:
 
 Use `"abandoned": true` to indicate this package is abandoned.
-Use `"abandoned": "monolog/monolog"` to indicate this package is abandoned, and that 
+Use `"abandoned": "monolog/monolog"` to indicate this package is abandoned, and that
 the recommended alternative is `monolog/monolog`.
 
 Defaults to false.
