@@ -43,7 +43,7 @@ EOT
         $httpDownloader = $composer->getLoop()->getHttpDownloader();
 
         if (count($packages) === 0) {
-            $this->io->writeError('No packages - skipping audit.');
+            $this->getIO()->writeError('No packages - skipping audit.');
             return 0;
         }
 
