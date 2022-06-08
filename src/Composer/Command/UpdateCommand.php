@@ -60,7 +60,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('lock', null, InputOption::VALUE_NONE, 'Overwrites the lock file hash to suppress warning about the lock file being out of date without updating package versions. Package metadata like mirrors and URLs are updated if they changed.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Skip the install step after updating the composer.lock file.'),
                 new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Skip the audit step after updating the composer.lock file.'),
-                new InputOption('audit-format', null, InputOption::VALUE_OPTIONAL, 'Audit output format. Must be "table" or "plain".', Auditor::FORMAT_TABLE),
+                new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table" or "plain".', Auditor::FORMAT_TABLE, Auditor::FORMATS),
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),

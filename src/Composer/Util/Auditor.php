@@ -16,6 +16,11 @@ class Auditor
 
     public const FORMAT_PLAIN = 'plain';
 
+    public const FORMATS = [
+        self::FORMAT_TABLE,
+        self::FORMAT_PLAIN,
+    ];
+
     private $httpDownloader;
 
     private $format;
