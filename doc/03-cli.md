@@ -970,7 +970,7 @@ php composer.phar archive vendor/package 2.0.21 --format=zip
 This command is used to audit the packages in your composer.lock
 for possible security issues. Currently this only checks for and
 lists security vulnerability advisories according to the
-[packagist api](https://packagist.org/apidoc#list-security-advisories).
+[Packagist.org api](https://packagist.org/apidoc#list-security-advisories).
 
 ```sh
 php composer.phar audit
