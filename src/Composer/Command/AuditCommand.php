@@ -4,12 +4,10 @@ namespace Composer\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\Factory;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\Auditor;
-use Composer\Util\Filesystem;
 use Symfony\Component\Console\Input\InputOption;
 
 class AuditCommand extends BaseCommand
