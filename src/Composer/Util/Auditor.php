@@ -206,12 +206,12 @@ class Auditor
                 $io->getTable()
                     ->setHorizontal()
                     ->setHeaders([
-                        '<fg=red>Package</>',
-                        '<fg=red>CVE</>',
-                        '<fg=red>Title</>',
-                        '<fg=red>URL</>',
-                        '<fg=red>Affected versions</>',
-                        '<fg=red>Reported at</>',
+                        'Package',
+                        'CVE',
+                        'Title',
+                        'URL',
+                        'Affected versions',
+                        'Reported at',
                     ])
                     ->addRow([
                         $package,
@@ -243,12 +243,12 @@ class Auditor
                     $error[] = '--------';
                 }
                 $cve = $advisory['cve'] ?: 'NO CVE';
-                $error[] = "<fg=red>Package:</> $package";
-                $error[] = "<fg=red>CVE:</> $cve";
-                $error[] = "<fg=red>Title:</> {$advisory['title']}";
-                $error[] = "<fg=red>URL:</> {$advisory['link']}";
-                $error[] = "<fg=red>Affected versions:</> {$advisory['affectedVersions']}";
-                $error[] = "<fg=red>Reported at:</> {$advisory['reportedAt']}";
+                $error[] = "Package: $package";
+                $error[] = "CVE: $cve";
+                $error[] = "Title: {$advisory['title']}";
+                $error[] = "URL: {$advisory['link']}";
+                $error[] = "Affected versions: {$advisory['affectedVersions']}";
+                $error[] = "Reported at: {$advisory['reportedAt']}";
                 $firstAdvisory = false;
             }
         }
