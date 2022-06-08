@@ -43,7 +43,7 @@ EOT
         $composer = $this->requireComposer($input->getOption('no-plugins'), $input->getOption('no-scripts'));
         $locker = $composer->getLocker();
         $packages = $locker->getLockedRepository(!$input->getOption('no-dev'))->getPackages();
-        $httpDownloader = Factory::createHttpDownloader($this->getIO(), $composer->getConfig());
+        $httpDownloader = $composer->getLoop()->getHttpDownloader();
 
         if (count($packages) === 0) {
             $this->io->writeError('No packages - skipping audit.');
