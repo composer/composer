@@ -24,13 +24,15 @@ class Auditor
         self::FORMAT_SUMMARY,
     ];
 
+    /** @var HttpDownloader */
     private $httpDownloader;
 
+    /** @var self::FORMAT_* */
     private $format;
 
     /**
      * @param HttpDownloader $httpDownloader
-     * @param string $format The format that will be used to output audit results.
+     * @param self::FORMAT_* $format The format that will be used to output audit results.
      */
     public function __construct(HttpDownloader $httpDownloader, string $format = self::FORMAT_TABLE)
     {
@@ -41,7 +43,7 @@ class Auditor
     /**
      * Get the format that will be used to output audit results.
      *
-     * @return string
+     * @return self::FORMAT_*
      */
     public function getFormat(): string
     {
@@ -51,7 +53,7 @@ class Auditor
     /**
      * Set the format that will be used to output audit results.
      *
-     * @param string $format
+     * @param self::FORMAT_* $format
      * @return self
      */
     public function setFormat(string $format): self
