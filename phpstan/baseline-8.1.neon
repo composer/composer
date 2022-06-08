@@ -246,11 +246,6 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$string of function strtolower expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Parameter \\#2 \\$handle of function curl_multi_remove_handle expects CurlHandle, resource given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
