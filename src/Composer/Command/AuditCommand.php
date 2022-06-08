@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 
 class AuditCommand extends BaseCommand
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('audit')
