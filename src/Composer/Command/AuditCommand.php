@@ -5,6 +5,9 @@ namespace Composer\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Factory;
+use Composer\Package\PackageInterface;
+use Composer\Repository\InstalledRepository;
+use Composer\Repository\RepositoryInterface;
 use Composer\Util\Auditor;
 use Composer\Util\Filesystem;
 use Symfony\Component\Console\Input\InputOption;
@@ -15,14 +18,15 @@ class AuditCommand extends BaseCommand
     {
         $this
             ->setName('audit')
-            ->setDescription('Checks for security vulnerability advisories for packages in your composer.lock.')
+            ->setDescription('Checks for security vulnerability advisories for installed packages.')
             ->setDefinition(array(
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables auditing of require-dev packages.'),
                 new InputOption('format', 'f', InputOption::VALUE_OPTIONAL, 'Output format. Must be "table", "plain", or "summary".', Auditor::FORMAT_TABLE),
+                new InputOption('locked', null, InputOption::VALUE_NONE, 'Audit based on the lock file instead of the installed packages.'),
             ))
             ->setHelp(
                 <<<EOT
-The <info>audit</info> command checks for security vulnerability advisories for packages in your composer.lock.
+The <info>audit</info> command checks for security vulnerability advisories for installed packages.
 
 If you do not want to include dev dependencies in the audit you can omit them with --no-dev
 
@@ -34,15 +38,8 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $lockFile = Factory::getLockFile(Factory::getComposerFile());
-        if (!Filesystem::isReadable($lockFile)) {
-            $this->getIO()->writeError('<error>' . $lockFile . ' is not readable.</error>');
-            return 1;
-        }
-
         $composer = $this->requireComposer($input->getOption('no-plugins'), $input->getOption('no-scripts'));
-        $locker = $composer->getLocker();
-        $packages = $locker->getLockedRepository(!$input->getOption('no-dev'))->getPackages();
+        $packages = $this->getPackages($input);
         $httpDownloader = $composer->getLoop()->getHttpDownloader();
 
         if (count($packages) === 0) {
@@ -52,5 +49,56 @@ EOT
 
         $auditor = new Auditor($httpDownloader, $input->getOption('format'));
         return $auditor->audit($this->getIO(), $packages, false);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @return BasePackage[]
+     */
+    private function getPackages(InputInterface $input): array
+    {
+        $composer = $this->requireComposer($input->getOption('no-plugins'), $input->getOption('no-scripts'));
+        if ($input->getOption('locked')) {
+            if (!$composer->getLocker()->isLocked()) {
+                throw new \UnexpectedValueException('Valid composer.json and composer.lock files is required to run this command with --locked');
+            }
+            $locker = $composer->getLocker();
+            return $locker->getLockedRepository(!$input->getOption('no-dev'))->getPackages();
+        }
+
+        $rootPkg = $composer->getPackage();
+        $installedRepo = new InstalledRepository(array($composer->getRepositoryManager()->getLocalRepository()));
+
+        if ($input->getOption('no-dev')) {
+            return $this->filterRequiredPackages($installedRepo, $rootPkg);
+        }
+
+        return $installedRepo->getPackages();
+    }
+
+    /**
+     * Find package requires and child requires.
+     * Effectively filters out dev dependencies.
+     *
+     * @param PackageInterface[] $bucket
+     * @return PackageInterface[]
+     */
+    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = array()): array
+    {
+        $requires = $package->getRequires();
+
+        foreach ($repo->getPackages() as $candidate) {
+            foreach ($candidate->getNames() as $name) {
+                if (isset($requires[$name])) {
+                    if (!in_array($candidate, $bucket, true)) {
+                        $bucket[] = $candidate;
+                        $bucket = $this->filterRequiredPackages($repo, $candidate, $bucket);
+                    }
+                    break;
+                }
+            }
+        }
+
+        return $bucket;
     }
 }

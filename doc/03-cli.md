@@ -967,7 +967,7 @@ php composer.phar archive vendor/package 2.0.21 --format=zip
 
 ## audit
 
-This command is used to audit the packages in your composer.lock
+This command is used to audit the packages you have installed
 for possible security issues. Currently this only checks for and
 lists security vulnerability advisories according to the
 [Packagist.org api](https://packagist.org/apidoc#list-security-advisories).
@@ -980,6 +980,7 @@ php composer.phar audit
 
 * **--no-dev:** Disables auditing of require-dev packages.
 * **--format (-f):** Audit output format. Must be "table" (default), "plain", or "summary".
+* **--locked:** Audit packages from the lock file, regardless of what is currently in vendor dir.
 
 ## help
 
