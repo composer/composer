@@ -388,7 +388,7 @@ class Installer
         }
 
         if ($this->audit) {
-            $packages = $this->locker->getLockedRepository($this->devMode)->getPackages();
+            $packages = $localRepo->getCanonicalPackages();
             if (count($packages) > 0) {
                 try {
                     $auditor = new Auditor(Factory::createHttpDownloader($this->io, $this->config), $this->auditFormat);
