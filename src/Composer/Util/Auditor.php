@@ -16,9 +16,12 @@ class Auditor
 
     public const FORMAT_PLAIN = 'plain';
 
+    public const FORMAT_SUMMARY = 'summary';
+
     public const FORMATS = [
         self::FORMAT_TABLE,
         self::FORMAT_PLAIN,
+        self::FORMAT_SUMMARY,
     ];
 
     private $httpDownloader;
@@ -53,7 +56,7 @@ class Auditor
      */
     public function setFormat(string $format): self
     {
-        if (!in_array($format, [self::FORMAT_TABLE, self::FORMAT_PLAIN])) {
+        if (!in_array($format, self::FORMATS, true)) {
             throw new InvalidArgumentException('Invalid format.');
         }
         $this->format = $format;
@@ -184,13 +187,19 @@ class Auditor
      */
     private function outputAdvisories(IOInterface $io, array $advisories): void
     {
-        if ($this->format === self::FORMAT_TABLE) {
-            if (!($io instanceof ConsoleIO)) {
-                throw new InvalidArgumentException('Cannot use table format with ' . get_class($io));
-            }
-            $this->outputAvisoriesTable($io, $advisories);
-        } else {
-            $this->outputAdvisoriesPlain($io, $advisories);
+        switch ($this->format) {
+            case self::FORMAT_TABLE:
+                if (!($io instanceof ConsoleIO)) {
+                    throw new InvalidArgumentException('Cannot use table format with ' . get_class($io));
+                }
+                $this->outputAvisoriesTable($io, $advisories);
+                return;
+            case self::FORMAT_PLAIN:
+                $this->outputAdvisoriesPlain($io, $advisories);
+                return;
+            case self::FORMAT_SUMMARY:
+                // We've already output the number of advisories in audit()
+                $io->writeError('Run composer audit for a full list of advisories.');
         }
     }
 

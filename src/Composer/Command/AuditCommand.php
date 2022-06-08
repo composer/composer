@@ -18,7 +18,7 @@ class AuditCommand extends BaseCommand
             ->setDescription('Checks for security vulnerability advisories for packages in your composer.lock.')
             ->setDefinition(array(
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables auditing of require-dev packages.'),
-                new InputOption('format', 'f', InputOption::VALUE_OPTIONAL, 'Output format. Must be "table" or "plain".', Auditor::FORMAT_TABLE),
+                new InputOption('format', 'f', InputOption::VALUE_OPTIONAL, 'Output format. Must be "table", "plain", or "summary".', Auditor::FORMAT_TABLE),
             ))
             ->setHelp(
                 <<<EOT
