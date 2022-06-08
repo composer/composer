@@ -204,9 +204,9 @@ class AuditorTest extends TestCase
             ->getMock();
 
         $callback = function(string $url, array $options) {
-            parse_str(parse_url($url, PHP_URL_QUERY), $query);
+            parse_str(parse_url($url, PHP_URL_QUERY) ?? '', $query);
             $updatedSince = null;
-            if (!empty($query)) {
+            if (isset($query['updatedSince'])) {
                 $updatedSince = $query['updatedSince'];
             }
 
