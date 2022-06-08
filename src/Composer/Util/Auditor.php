@@ -4,7 +4,7 @@ namespace Composer\Util;
 
 use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
-use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Semver\Semver;
 use InvalidArgumentException;
 
@@ -67,7 +67,7 @@ class Auditor
 
     /**
      * @param IOInterface $io
-     * @param BasePackage[] $packages
+     * @param PackageInterface[] $packages
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
      * @return int
      * @throws InvalidArgumentException If no packages are passed in
@@ -90,7 +90,7 @@ class Auditor
     /**
      * Get advisories from packagist.org
      *
-     * @param BasePackage[] $packages
+     * @param PackageInterface[] $packages
      * @param ?int $updatedSince Timestamp
      * @param bool $filterByVersion Filter by the package versions if true
      * @return string[][][]
@@ -126,7 +126,7 @@ class Auditor
     }
 
     /**
-     * @param BasePackage[] $packages
+     * @param PackageInterface[] $packages
      * @return string[]
      * @phpstan-return array<string, array<string, array<int, string>|int|string>>
      */
@@ -151,7 +151,7 @@ class Auditor
 
     /**
      * @param string[][][] $advisories
-     * @param BasePackage[] $packages
+     * @param PackageInterface[] $packages
      * @return string[][][]
      */
     private function filterAdvisories(array $advisories, array $packages): array

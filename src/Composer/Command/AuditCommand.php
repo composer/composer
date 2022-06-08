@@ -53,7 +53,7 @@ EOT
 
     /**
      * @param InputInterface $input
-     * @return BasePackage[]
+     * @return PackageInterface[]
      */
     private function getPackages(InputInterface $input): array
     {
