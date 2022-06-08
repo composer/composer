@@ -27,6 +27,7 @@ use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\Downloader\DownloadManager;
+use Composer\Downloader\TransportException;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
@@ -389,8 +390,15 @@ class Installer
         if ($this->audit) {
             $packages = $this->locker->getLockedRepository($this->devMode)->getPackages();
             if (count($packages) > 0) {
-                $auditor = new Auditor(Factory::createHttpDownloader($this->io, $this->config), $this->auditFormat);
-                $auditor->audit($this->io, $packages);
+                try {
+                    $auditor = new Auditor(Factory::createHttpDownloader($this->io, $this->config), $this->auditFormat);
+                    $auditor->audit($this->io, $packages);
+                } catch (TransportException $e) {
+                    $this->io->error('Error occurred while auditing locked packages.');
+                    if ($this->io->isVerbose()) {
+                        $this->io->error($e->getMessage());
+                    }
+                }
             } else {
                 $this->io->writeError('No packages - skipping audit.');
             }
