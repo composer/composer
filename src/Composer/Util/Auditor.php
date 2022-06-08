@@ -118,7 +118,7 @@ class Auditor
         $response = $this->httpDownloader->get($url, $this->createPostOptions($packages));
         $advisories = $response->decodeJson()['advisories'];
 
-        if (count($packages) > 0 && $filterByVersion) {
+        if (count($advisories) > 0 && $filterByVersion) {
             return $this->filterAdvisories($advisories, $packages);
         }
 
