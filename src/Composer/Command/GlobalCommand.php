@@ -91,7 +91,8 @@ EOT
      */
     public function run(InputInterface $input, OutputInterface $output): int
     {
-        if (!method_exists($input, '__toString')) {
+        // TODO remove for Symfony 6+ as it is then in the interface
+        if (!method_exists($input, '__toString')) { // @phpstan-ignore-line
             throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
         }
 
@@ -119,7 +120,8 @@ EOT
 
     private function prepareSubcommandInput(InputInterface $input, bool $quiet = false): StringInput
     {
-        if (!method_exists($input, '__toString')) {
+        // TODO remove for Symfony 6+ as it is then in the interface
+        if (!method_exists($input, '__toString')) { // @phpstan-ignore-line
             throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
         }
 
