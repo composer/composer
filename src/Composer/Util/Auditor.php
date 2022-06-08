@@ -136,7 +136,7 @@ class Auditor
             'http' => [
                 'method' => 'POST',
                 'header' => ['Content-type: application/x-www-form-urlencoded'],
-                'timeout' => 3,
+                'timeout' => 10,
             ],
         ];
         if (count($packages) > 0) {
