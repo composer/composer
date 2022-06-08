@@ -116,13 +116,6 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
-            pcntl_async_signals(true);
-            pcntl_signal(SIGINT, function () { $this->revertComposerFile(); });
-            pcntl_signal(SIGTERM, function () { $this->revertComposerFile(); });
-            pcntl_signal(SIGHUP, function () { $this->revertComposerFile(); });
-        }
-
         $this->file = Factory::getComposerFile();
         $io = $this->getIO();
 
@@ -151,9 +144,16 @@ EOT
         $this->composerBackup = file_get_contents($this->json->getPath());
         $this->lockBackup = file_exists($this->lock) ? file_get_contents($this->lock) : null;
 
+        if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
+            pcntl_async_signals(true);
+            pcntl_signal(SIGINT, function () { $this->revertComposerFile(); });
+            pcntl_signal(SIGTERM, function () { $this->revertComposerFile(); });
+            pcntl_signal(SIGHUP, function () { $this->revertComposerFile(); });
+        }
+
         // check for writability by writing to the file as is_writable can not be trusted on network-mounts
         // see https://github.com/composer/composer/issues/8231 and https://bugs.php.net/bug.php?id=68926
-        if (!is_writable($this->file) && !Silencer::call('file_put_contents', $this->file, $this->composerBackup)) {
+        if (!is_writable($this->file) && false === Silencer::call('file_put_contents', $this->file, $this->composerBackup)) {
             $io->writeError('<error>'.$this->file.' is not writable.</error>');
 
             return 1;
@@ -168,10 +168,10 @@ EOT
              * @see https://github.com/composer/composer/pull/8313#issuecomment-532637955
              */
             if ($packageType !== 'project') {
-                $io->writeError('<error>"--fixed" option is allowed for "project" package types only to prevent possible misuses.</error>');
+                $io->writeError('<error>The "--fixed" option is only allowed for packages with a "project" type to prevent possible misuses.</error>');
 
-                if (empty($config['type'])) {
-                    $io->writeError('<error>If your package is not library, you should explicitly specify "type" parameter in composer.json.</error>');
+                if (!isset($config['type'])) {
+                    $io->writeError('<error>If your package is not a library, you can explicitly specify the "type" by using "composer config type project".</error>');
                 }
 
                 return 1;

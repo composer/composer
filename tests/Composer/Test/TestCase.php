@@ -16,10 +16,13 @@ use Composer\Config;
 use Composer\Console\Application;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Package\Locker;
 use Composer\Pcre\Preg;
+use Composer\Repository\InstalledFilesystemRepository;
 use Composer\Semver\VersionParser;
 use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Test\Mock\FactoryMock;
 use Composer\Test\Mock\HttpDownloaderMock;
 use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Util\Filesystem;
@@ -109,6 +112,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      *
      * The directory will be cleaned up on tearDown automatically.
      *
+     * @see createInstalledJson
+     * @see createComposerLock
+     * @see getApplicationTester
      * @param mixed[] $composerJson
      * @param mixed[] $authJson
      * @return string the newly created temp dir
@@ -136,6 +142,44 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         file_put_contents($dir.'/auth.json', JsonFile::encode($authJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         return $dir;
+    }
+
+    /**
+     * Creates a vendor/composer/installed.json in CWD with the given packages
+     *
+     * @param PackageInterface[] $packages
+     * @param PackageInterface[] $devPackages
+     */
+    protected function createInstalledJson(array $packages = [], array $devPackages = [], bool $devMode = true): void
+    {
+        mkdir('vendor/composer', 0777, true);
+        $repo = new InstalledFilesystemRepository(new JsonFile('vendor/composer/installed.json'));
+        $repo->setDevPackageNames(array_map(function (PackageInterface $pkg) { return $pkg->getPrettyName(); }, $devPackages));
+        foreach ($packages as $pkg) {
+            $repo->addPackage($pkg);
+            mkdir('vendor/'.$pkg->getName(), 0777, true);
+        }
+        foreach ($devPackages as $pkg) {
+            $repo->addPackage($pkg);
+            mkdir('vendor/'.$pkg->getName(), 0777, true);
+        }
+
+        $factory = new FactoryMock();
+        $repo->write($devMode, $factory->createInstallationManager());
+    }
+
+    /**
+     * Creates a composer.lock in CWD with the given packages
+     *
+     * @param PackageInterface[] $packages
+     * @param PackageInterface[] $devPackages
+     */
+    protected function createComposerLock(array $packages = [], array $devPackages = []): void
+    {
+        $factory = new FactoryMock();
+
+        $locker = new Locker($this->getMockBuilder(IOInterface::class)->getMock(), new JsonFile('./composer.lock'), $factory->createInstallationManager(), (string) file_get_contents('./composer.json'));
+        $locker->setLockData($packages, $devPackages, [], [], [], 'dev', [], false, false, []);
     }
 
     public function getApplicationTester(): ApplicationTester
