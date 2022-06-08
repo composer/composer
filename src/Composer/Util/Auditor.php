@@ -27,60 +27,31 @@ class Auditor
     /** @var HttpDownloader */
     private $httpDownloader;
 
-    /** @var self::FORMAT_* */
-    private $format;
-
     /**
      * @param HttpDownloader $httpDownloader
-     * @param self::FORMAT_* $format The format that will be used to output audit results.
      */
-    public function __construct(HttpDownloader $httpDownloader, string $format = self::FORMAT_TABLE)
+    public function __construct(HttpDownloader $httpDownloader)
     {
         $this->httpDownloader = $httpDownloader;
-        $this->setFormat($format);
-    }
-
-    /**
-     * Get the format that will be used to output audit results.
-     *
-     * @return self::FORMAT_*
-     */
-    public function getFormat(): string
-    {
-        return $this->format;
-    }
-
-    /**
-     * Set the format that will be used to output audit results.
-     *
-     * @param self::FORMAT_* $format
-     * @return self
-     */
-    public function setFormat(string $format): self
-    {
-        if (!in_array($format, self::FORMATS, true)) {
-            throw new InvalidArgumentException('Invalid format.');
-        }
-        $this->format = $format;
-        return $this;
     }
 
     /**
      * @param IOInterface $io
      * @param PackageInterface[] $packages
+     * @param self::FORMAT_* $format The format that will be used to output audit results.
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
      * @return int
      * @throws InvalidArgumentException If no packages are passed in
      */
-    public function audit(IOInterface $io, array $packages, bool $warningOnly = true): int
+    public function audit(IOInterface $io, array $packages, string $format, bool $warningOnly = true): int
     {
         $advisories = $this->getAdvisories($packages);
-        $format = $warningOnly ? 'warning' : 'error';
+        $errorOrWarn = $warningOnly ? 'warning' : 'error';
         if (count($advisories) > 0) {
             $numAdvisories = $this->countAdvisories($advisories);
             $plurality = $numAdvisories === 1 ? 'y' : 'ies';
-            $io->writeError("<$format>Found $numAdvisories security vulnerability advisor$plurality:</$format>");
-            $this->outputAdvisories($io, $advisories);
+            $io->writeError("<$errorOrWarn>Found $numAdvisories security vulnerability advisor$plurality:</$errorOrWarn>");
+            $this->outputAdvisories($io, $advisories, $format);
             return 1;
         }
         $io->writeError('<info>No security vulnerability advisories found</info>');
@@ -185,11 +156,12 @@ class Auditor
     /**
      * @param IOInterface $io
      * @param string[][][] $advisories
+     * @param self::FORMAT_* $format The format that will be used to output audit results.
      * @return void
      */
-    private function outputAdvisories(IOInterface $io, array $advisories): void
+    private function outputAdvisories(IOInterface $io, array $advisories, string $format): void
     {
-        switch ($this->format) {
+        switch ($format) {
             case self::FORMAT_TABLE:
                 if (!($io instanceof ConsoleIO)) {
                     throw new InvalidArgumentException('Cannot use table format with ' . get_class($io));
@@ -202,6 +174,8 @@ class Auditor
             case self::FORMAT_SUMMARY:
                 // We've already output the number of advisories in audit()
                 $io->writeError('Run composer audit for a full list of advisories.');
+            default:
+                throw new InvalidArgumentException('Invalid format.');
         }
     }
 

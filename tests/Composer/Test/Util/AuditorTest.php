@@ -74,8 +74,8 @@ class AuditorTest extends TestCase
         if (count($data['packages']) === 0) {
             $this->expectException(InvalidArgumentException::class);
         }
-        $auditor = new Auditor($this->getHttpDownloader(), Auditor::FORMAT_PLAIN);
-        $result = $auditor->audit($this->io, $data['packages'], $data['warningOnly']);
+        $auditor = new Auditor($this->getHttpDownloader());
+        $result = $auditor->audit($this->io, $data['packages'], Auditor::FORMAT_PLAIN, $data['warningOnly']);
         $this->assertSame($expected, $result, $message);
     }
 

@@ -391,8 +391,8 @@ class Installer
             $packages = $localRepo->getCanonicalPackages();
             if (count($packages) > 0) {
                 try {
-                    $auditor = new Auditor(Factory::createHttpDownloader($this->io, $this->config), $this->auditFormat);
-                    $auditor->audit($this->io, $packages);
+                    $auditor = new Auditor(Factory::createHttpDownloader($this->io, $this->config));
+                    $auditor->audit($this->io, $packages, $this->auditFormat);
                 } catch (TransportException $e) {
                     $this->io->error('Error occurred while auditing locked packages.');
                     if ($this->io->isVerbose()) {

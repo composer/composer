@@ -45,8 +45,8 @@ EOT
             return 0;
         }
 
-        $auditor = new Auditor($httpDownloader, $input->getOption('format'));
-        return $auditor->audit($this->getIO(), $packages, false);
+        $auditor = new Auditor($httpDownloader);
+        return $auditor->audit($this->getIO(), $packages, $input->getOption('format'), false);
     }
 
     /**
