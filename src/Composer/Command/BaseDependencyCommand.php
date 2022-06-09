@@ -58,12 +58,26 @@ abstract class BaseDependencyCommand extends BaseCommand
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, $this->getName(), $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
+        $repos = [];
+
+        $repos[] = new RootPackageRepository($composer->getPackage());
+
+        if ($input->getOption('locked')) {
+            $locker = $composer->getLocker();
+
+            if (!$locker->isLocked()) {
+                throw new \UnexpectedValueException('A valid composer.lock file is required to run this command with --locked');
+            }
+
+            $repos[] = $locker->getLockedRepository(true);
+        }
+
+        $repos[] = $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+
         $platformOverrides = $composer->getConfig()->get('platform') ?: array();
-        $installedRepo = new InstalledRepository(array(
-            new RootPackageRepository($composer->getPackage()),
-            $composer->getRepositoryManager()->getLocalRepository(),
-            new PlatformRepository(array(), $platformOverrides),
-        ));
+        $repos[] = new PlatformRepository([], $platformOverrides);
+
+        $installedRepo = new InstalledRepository($repos);
 
         // Parse package name and constraint
         list($needle, $textConstraint) = array_pad(
@@ -71,6 +85,12 @@ abstract class BaseDependencyCommand extends BaseCommand
             2,
             $input->hasArgument(self::ARGUMENT_CONSTRAINT) ? $input->getArgument(self::ARGUMENT_CONSTRAINT) : '*'
         );
+
+        $rootPkg = $composer->getPackage();
+        if (!$input->getOption('locked') && count($localRepo->getPackages()) === 0 && (count($rootPkg->getRequires()) > 0 || count($rootPkg->getDevRequires()) > 0)) {
+            $output->writeln('<warning>No dependencies installed. Try running composer install or update, or use --locked.</warning>');
+            return 1;
+        }
 
         // Find packages that are or provide the requested package first
         $packages = $installedRepo->findPackagesWithReplacersAndProviders($needle);
