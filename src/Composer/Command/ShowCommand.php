@@ -91,8 +91,9 @@ class ShowCommand extends BaseCommand
                 new InputOption('latest', 'l', InputOption::VALUE_NONE, 'Show the latest version'),
                 new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show the latest version but only for packages that are outdated'),
                 new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it with the --outdated option if you don\'t want to be informed about new versions of some packages.', null, $this->suggestInstalledPackage()),
-                new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.'),
-                new InputOption('patch-only', null, InputOption::VALUE_NONE, 'Show only packages that have patch SemVer-compatible updates. Use with the --outdated option.'),
+                new InputOption('major-only', 'M', InputOption::VALUE_NONE, 'Show only packages that have major SemVer-compatible updates. Use with the --latest or --outdated option.'),
+                new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --latest or --outdated option.'),
+                new InputOption('patch-only', null, InputOption::VALUE_NONE, 'Show only packages that have patch SemVer-compatible updates. Use with the --latest or --outdated option.'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
@@ -158,8 +159,8 @@ EOT
             return 1;
         }
 
-        if ($input->getOption('patch-only') && $input->getOption('minor-only')) {
-            $io->writeError('The --patch-only option is not usable in combination with --minor-only');
+        if (count(array_filter([$input->getOption('patch-only'), $input->getOption('minor-only'), $input->getOption('major-only')])) > 1) {
+            $io->writeError('Only one of --major-only, --minor-only or --patch-only can be used at once');
 
             return 1;
         }
@@ -314,7 +315,7 @@ EOT
 
             $latestPackage = null;
             if ($input->getOption('latest')) {
-                $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $input->getOption('minor-only'), $input->getOption('patch-only'), $platformReqFilter);
+                $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $input->getOption('major-only'), $input->getOption('minor-only'), $input->getOption('patch-only'), $platformReqFilter);
             }
             if (
                 $input->getOption('outdated')
@@ -422,6 +423,7 @@ EOT
 
         $showAllTypes = $input->getOption('all');
         $showLatest = $input->getOption('latest');
+        $showMajorOnly = $input->getOption('major-only');
         $showMinorOnly = $input->getOption('minor-only');
         $showPatchOnly = $input->getOption('patch-only');
         $ignoredPackages = array_map('strtolower', $input->getOption('ignore'));
@@ -440,7 +442,7 @@ EOT
                 if ($showLatest && $showVersion) {
                     foreach ($packages[$type] as $package) {
                         if (is_object($package)) {
-                            $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMinorOnly, $showPatchOnly, $platformReqFilter);
+                            $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter);
                             if ($latestPackage === null) {
                                 continue;
                             }
@@ -468,6 +470,8 @@ EOT
 
                         // Determine if Composer is checking outdated dependencies and if current package should trigger non-default exit code
                         $packageIsUpToDate = $latestPackage && $latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && (!$latestPackage instanceof CompletePackageInterface || !$latestPackage->isAbandoned());
+                        // When using --major-only, and no bigger version than current major is found then it is considered up to date
+                        $packageIsUpToDate = $packageIsUpToDate || ($latestPackage === null && $showMajorOnly);
                         $packageIsIgnored = \in_array($package->getPrettyName(), $ignoredPackages, true);
                         if ($input->getOption('outdated') && ($packageIsUpToDate || $packageIsIgnored)) {
                             continue;
@@ -1354,7 +1358,7 @@ EOT
     /**
      * Given a package, this finds the latest package matching it
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter): ?PackageInterface
+    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $majorOnly, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter): ?PackageInterface
     {
         // find the latest version allowed in this repo set
         $name = $package->getName();
@@ -1373,19 +1377,30 @@ EOT
         $targetVersion = null;
         if (0 === strpos($package->getVersion(), 'dev-')) {
             $targetVersion = $package->getVersion();
-        }
 
-        if ($targetVersion === null && $minorOnly) {
-            $targetVersion = '^' . $package->getVersion();
-        }
-
-        if ($targetVersion === null && $patchOnly) {
-            $trimmedVersion = Preg::replace('{(\.0)+$}D', '', $package->getVersion());
-            $partsNeeded = substr($trimmedVersion, 0, 1) === '0' ? 4 : 3;
-            while (substr_count($trimmedVersion, '.') + 1 < $partsNeeded) {
-                $trimmedVersion .= '.0';
+            // dev-x branches are considered to be on the latest major version always, do not look up for a new commit as that is deemed a minor upgrade (albeit risky)
+            if ($majorOnly) {
+                return null;
             }
-            $targetVersion = '~' . $trimmedVersion;
+        }
+
+        if ($targetVersion === null) {
+            if ($majorOnly && Preg::isMatch('{^(\d+)\.}', $package->getVersion(), $match)) {
+                $targetVersion = '>='.($match[1] + 1).',<9999999-dev';
+            }
+
+            if ($minorOnly) {
+                $targetVersion = '^'.$package->getVersion();
+            }
+
+            if ($patchOnly) {
+                $trimmedVersion = Preg::replace('{(\.0)+$}D', '', $package->getVersion());
+                $partsNeeded = substr($trimmedVersion, 0, 1) === '0' ? 4 : 3;
+                while (substr_count($trimmedVersion, '.') + 1 < $partsNeeded) {
+                    $trimmedVersion .= '.0';
+                }
+                $targetVersion = '~'.$trimmedVersion;
+            }
         }
 
         $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability, $platformReqFilter);

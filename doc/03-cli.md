@@ -497,7 +497,7 @@ php composer.phar show monolog/monolog 1.0.2
 
 ### Options
 
-* **--all :** List all packages available in all your repositories.
+* **--all:** List all packages available in all your repositories.
 * **--installed (-i):** List the packages that are installed (this is enabled by default, and deprecated).
 * **--locked:** List the locked packages from composer.lock.
 * **--platform (-p):** List only platform packages (php & extensions).
@@ -508,8 +508,11 @@ php composer.phar show monolog/monolog 1.0.2
 * **--tree (-t):** List your dependencies as a tree. If you pass a package name it will show the dependency tree for that package.
 * **--latest (-l):** List all installed packages including their latest version.
 * **--outdated (-o):** Implies --latest, but this lists *only* packages that have a newer version available.
+* **--ignore:** Ignore specified package(s). Use it with the --outdated option if you don't want to be informed about new versions of some packages
 * **--no-dev:** Filters dev dependencies from the package list.
-* **--minor-only (-m):** Use with --latest. Only shows packages that have minor SemVer-compatible updates.
+* **--major-only (-M):** Use with --latest or --outdated. Only shows packages that have major SemVer-compatible updates.
+* **--minor-only (-m):** Use with --latest or --outdated. Only shows packages that have minor SemVer-compatible updates.
+* **--patch-only (-p):** Use with --latest or --outdated. Only shows packages that have patch-level SemVer-compatible updates.
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 * **--strict:** Return a non-zero exit code when there are outdated packages.
 * **--format (-f):** Lets you pick between text (default) or json output format.
@@ -536,10 +539,13 @@ The color coding is as such:
 
 ### Options
 
-* **--all (-a):** Show all packages, not just outdated (alias for `composer show -l`).
+* **--all (-a):** Show all packages, not just outdated (alias for `composer show --latest`).
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 * **--strict:** Returns non-zero exit code if any package is outdated.
+* **--ignore:** Ignore specified package(s). Use it if you don't want to be informed about new versions of some packages
+* **--major-only (-M):** Only shows packages that have major SemVer-compatible updates.
 * **--minor-only (-m):** Only shows packages that have minor SemVer-compatible updates.
+* **--patch-only (-p):** Only shows packages that have patch-level SemVer-compatible updates.
 * **--format (-f):** Lets you pick between text (default) or json output format.
 * **--no-dev:** Do not show outdated dev dependencies.
 * **--locked:** Shows updates for packages from the lock file, regardless of what is currently in vendor dir.
