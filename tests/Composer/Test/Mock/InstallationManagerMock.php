@@ -57,7 +57,7 @@ class InstallationManagerMock extends InstallationManager
 
     public function getInstallPath(PackageInterface $package): string
     {
-        return '';
+        return 'vendor/'.$package->getName();
     }
 
     public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package): bool

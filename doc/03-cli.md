@@ -322,6 +322,24 @@ uninstalled.
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu-autoloader`.
 
+## bump
+
+The `bump` command increases the lower limit of your composer.json requirements
+to the currently installed versions. This helps to ensure your dependencies do not
+accidentally get downgraded due to some other conflict, and can slightly improve
+dependency resolution performance as it limits the amount of package versions
+Composer has to look at.
+
+Running this blindly on libraries is **NOT** recommended as it will narrow down
+your allowed dependencies, which may cause dependency hell for your users.
+Running it with `--dev-only` on libraries may be fine however as dev requirements
+are local to the library and do not affect consumers of the package.
+
+### Options
+
+* **--dev-only:** Only bump requirements in "require-dev".
+* **--no-dev-only:** Only bump requirements in "require".
+
 ## reinstall
 
 The `reinstall` command looks up installed packages by name,

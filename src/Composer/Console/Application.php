@@ -547,6 +547,7 @@ class Application extends BaseApplication
             new Command\CheckPlatformReqsCommand(),
             new Command\FundCommand(),
             new Command\ReinstallCommand(),
+            new Command\BumpCommand(),
         ));
 
         if (strpos(__FILE__, 'phar:') === 0 || '1' === Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING')) {

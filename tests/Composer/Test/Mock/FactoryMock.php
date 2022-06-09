@@ -53,7 +53,7 @@ class FactoryMock extends Factory
         $rm->setLocalRepository(new InstalledArrayRepository);
     }
 
-    public function createInstallationManager(Loop $loop, IOInterface $io, EventDispatcher $dispatcher = null): InstallationManager
+    public function createInstallationManager(Loop $loop = null, IOInterface $io = null, EventDispatcher $dispatcher = null): InstallationManager
     {
         return new InstallationManagerMock();
     }

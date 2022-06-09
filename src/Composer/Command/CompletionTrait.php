@@ -46,6 +46,18 @@ trait CompletionTrait
     }
 
     /**
+     * Suggest package names from root requirements.
+     */
+    private function suggestRootRequirement(): \Closure
+    {
+        return function (CompletionInput $input): array {
+            $composer = $this->requireComposer();
+
+            return array_merge(array_keys($composer->getPackage()->getRequires()), array_keys($composer->getPackage()->getDevRequires()));
+        };
+    }
+
+    /**
      * Suggest package names from installed.
      */
     private function suggestInstalledPackage(bool $includePlatformPackages = false): \Closure
