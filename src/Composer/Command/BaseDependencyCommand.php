@@ -71,7 +71,15 @@ abstract class BaseDependencyCommand extends BaseCommand
 
             $repos[] = $locker->getLockedRepository(true);
         } else {
-            $repos[] = $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+            $localRepo = $composer->getRepositoryManager()->getLocalRepository();
+            $rootPkg = $composer->getPackage();
+
+            if (count($localRepo->getPackages()) === 0 && (count($rootPkg->getRequires()) > 0 || count($rootPkg->getDevRequires()) > 0)) {
+                $output->writeln('<warning>No dependencies installed. Try running composer install or update, or use --locked.</warning>');
+                return 1;
+            }
+
+            $repos[] = $localRepo;
 
             $platformOverrides = $composer->getConfig()->get('platform') ?: array();
             $repos[] = new PlatformRepository([], $platformOverrides);
@@ -85,12 +93,6 @@ abstract class BaseDependencyCommand extends BaseCommand
             2,
             $input->hasArgument(self::ARGUMENT_CONSTRAINT) ? $input->getArgument(self::ARGUMENT_CONSTRAINT) : '*'
         );
-
-        $rootPkg = $composer->getPackage();
-        if (!$input->getOption('locked') && count($localRepo->getPackages()) === 0 && (count($rootPkg->getRequires()) > 0 || count($rootPkg->getDevRequires()) > 0)) {
-            $output->writeln('<warning>No dependencies installed. Try running composer install or update, or use --locked.</warning>');
-            return 1;
-        }
 
         // Find packages that are or provide the requested package first
         $packages = $installedRepo->findPackagesWithReplacersAndProviders($needle);
