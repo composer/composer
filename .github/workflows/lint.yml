@@ -8,6 +8,9 @@ on:
     paths-ignore:
       - 'doc/**'
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: "Lint"
