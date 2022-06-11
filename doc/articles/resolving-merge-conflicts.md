@@ -47,6 +47,12 @@ php composer.phar validate
 php composer.phar install [--dry-run]
 ```
 
+## Automating merge conflict resolving with git
+
+Some improvement _could_ be made to git's conflict resolving by using a custom git merge driver.
+
+An example of this can be found at [balbuf's composer git merge driver](https://github.com/balbuf/composer-git-merge-driver).
+
 ## Important considerations
 
 Keep in mind that whenever merge conflicts occur on the lock file, the information, about the exact version
