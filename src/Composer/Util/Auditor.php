@@ -8,9 +8,12 @@ use Composer\Package\PackageInterface;
 use Composer\Semver\Semver;
 use InvalidArgumentException;
 
+/**
+ * @internal
+ */
 class Auditor
 {
-    public const API_URL = 'https://packagist.org/api/security-advisories/';
+    private const API_URL = 'https://packagist.org/api/security-advisories/';
 
     public const FORMAT_TABLE = 'table';
 
