@@ -37,7 +37,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->requireComposer($input->getOption('no-plugins'), $input->getOption('no-scripts'));
+        $composer = $this->requireComposer();
         $packages = $this->getPackages($composer, $input);
         $httpDownloader = $composer->getLoop()->getHttpDownloader();
 
