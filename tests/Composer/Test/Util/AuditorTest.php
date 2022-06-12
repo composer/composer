@@ -223,7 +223,7 @@ class AuditorTest extends TestCase
                 }
             }
 
-            return new Response(['url' => Auditor::API_URL], 200, [], json_encode(['advisories' => $advisories]));
+            return new Response(['url' => 'https://packagist.org/api/security-advisories/'], 200, [], json_encode(['advisories' => $advisories]));
         };
 
         $httpDownloader
