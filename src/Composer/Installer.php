@@ -394,7 +394,7 @@ class Installer
                     $auditor = new Auditor(Factory::createHttpDownloader($this->io, $this->config));
                     $auditor->audit($this->io, $packages, $this->auditFormat);
                 } catch (TransportException $e) {
-                    $this->io->error('Error occurred while auditing locked packages.');
+                    $this->io->error('Failed to audit installed packages.');
                     if ($this->io->isVerbose()) {
                         $this->io->error($e->getMessage());
                     }

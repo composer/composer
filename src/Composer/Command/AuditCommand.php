@@ -58,7 +58,7 @@ EOT
     {
         if ($input->getOption('locked')) {
             if (!$composer->getLocker()->isLocked()) {
-                throw new \UnexpectedValueException('Valid composer.json and composer.lock files is required to run this command with --locked');
+                throw new \UnexpectedValueException('Valid composer.json and composer.lock files are required to run this command with --locked');
             }
             $locker = $composer->getLocker();
             return $locker->getLockedRepository(!$input->getOption('no-dev'))->getPackages();
