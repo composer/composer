@@ -2,6 +2,7 @@
 
 namespace Composer\Command;
 
+use Composer\Composer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Package\PackageInterface;
@@ -37,7 +38,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->requireComposer($input->getOption('no-plugins'), $input->getOption('no-scripts'));
-        $packages = $this->getPackages($input);
+        $packages = $this->getPackages($composer, $input);
         $httpDownloader = $composer->getLoop()->getHttpDownloader();
 
         if (count($packages) === 0) {
@@ -53,9 +54,8 @@ EOT
      * @param InputInterface $input
      * @return PackageInterface[]
      */
-    private function getPackages(InputInterface $input): array
+    private function getPackages(Composer $composer, InputInterface $input): array
     {
-        $composer = $this->requireComposer($input->getOption('no-plugins'), $input->getOption('no-scripts'));
         if ($input->getOption('locked')) {
             if (!$composer->getLocker()->isLocked()) {
                 throw new \UnexpectedValueException('Valid composer.json and composer.lock files is required to run this command with --locked');
