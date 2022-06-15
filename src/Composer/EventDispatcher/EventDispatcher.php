@@ -272,11 +272,11 @@ class EventDispatcher
                         }
                     }
 
-                    if (strpos($exec, '@putenv ') === 0) {
-                        if (false === strpos($exec, '=')) {
-                            Platform::clearEnv(substr($exec, 8));
+                    if (strpos($callable, '@putenv ') === 0) {
+                        if (false === strpos($callable, '=')) {
+                            Platform::clearEnv(substr($callable, 8));
                         } else {
-                            list($var, $value) = explode('=', substr($exec, 8), 2);
+                            list($var, $value) = explode('=', substr($callable, 8), 2);
                             Platform::putEnv($var, $value);
                         }
 
