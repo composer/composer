@@ -243,7 +243,14 @@ class EventDispatcher
                     }
                 } else {
                     $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
-                    $exec = $callable . ($args === '' ? '' : ' '.$args);
+
+                    // @putenv does not receive arguments
+                    if (strpos($callable, '@putenv ') === 0) {
+                        $exec = $callable;
+                    } else {
+                        $exec = $callable . ($args === '' ? '' : ' '.$args);
+                    }
+
                     if ($this->io->isVerbose()) {
                         $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
                     } elseif ($event->getName() !== '__exec_command') {
