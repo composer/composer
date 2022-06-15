@@ -225,8 +225,19 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                     $package['version'] = 'dev-main';
                 }
             }
-
-            $this->addPackage($this->loader->load($package));
+            
+            try {
+                $loadedPackage = $this->loader->load($package);
+            } catch (\UnexpectedValueException $exception) {
+                $reflectedObject = new \ReflectionClass(get_class($exception));
+                $property = $reflectedObject->getProperty('message');
+                $message = $property->getValue() . "\n  in: " . $composerFilePath;
+                $property->setAccessible(true);
+                $property->setValue($exception, $message);
+                $property->setAccessible(false);
+                throw $exception;
+            }
+            $this->addPackage($loadedPackage);
         }
     }
 
