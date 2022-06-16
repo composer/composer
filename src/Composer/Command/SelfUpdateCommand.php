@@ -46,9 +46,9 @@ class SelfUpdateCommand extends BaseCommand
     {
         $this
             ->setName('self-update')
-            ->setAliases(array('selfupdate'))
+            ->setAliases(['selfupdate'])
             ->setDescription('Updates composer.phar to the latest version.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('rollback', 'r', InputOption::VALUE_NONE, 'Revert to an older installation of composer'),
                 new InputOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'The version to update to'),
@@ -61,7 +61,7 @@ class SelfUpdateCommand extends BaseCommand
                 new InputOption('2', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 2.x versions'),
                 new InputOption('2.2', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 2.2.x LTS versions'),
                 new InputOption('set-channel-only', null, InputOption::VALUE_NONE, 'Only store the channel as the default one and then exit'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer

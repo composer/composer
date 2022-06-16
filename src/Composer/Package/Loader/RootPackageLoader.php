@@ -100,16 +100,16 @@ class RootPackageLoader extends ArrayLoader
             }
 
             if ($commit) {
-                $config['source'] = array(
+                $config['source'] = [
                     'type' => '',
                     'url' => '',
                     'reference' => $commit,
-                );
-                $config['dist'] = array(
+                ];
+                $config['dist'] = [
                     'type' => '',
                     'url' => '',
                     'reference' => $commit,
-                );
+                ];
             }
         }
 
@@ -133,14 +133,14 @@ class RootPackageLoader extends ArrayLoader
             $realPackage->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
         }
 
-        $aliases = array();
-        $stabilityFlags = array();
-        $references = array();
-        foreach (array('require', 'require-dev') as $linkType) {
+        $aliases = [];
+        $stabilityFlags = [];
+        $references = [];
+        foreach (['require', 'require-dev'] as $linkType) {
             if (isset($config[$linkType])) {
                 $linkInfo = BasePackage::$supportedLinkTypes[$linkType];
                 $method = 'get'.ucfirst($linkInfo['method']);
-                $links = array();
+                $links = [];
                 foreach ($realPackage->$method() as $link) {
                     $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
                 }
@@ -196,12 +196,12 @@ class RootPackageLoader extends ArrayLoader
     {
         foreach ($requires as $reqName => $reqVersion) {
             if (Preg::isMatch('{^([^,\s#]+)(?:#[^ ]+)? +as +([^,\s]+)$}', $reqVersion, $match)) {
-                $aliases[] = array(
+                $aliases[] = [
                     'package' => strtolower($reqName),
                     'version' => $this->versionParser->normalize($match[1], $reqVersion),
                     'alias' => $match[2],
                     'alias_normalized' => $this->versionParser->normalize($match[2], $reqVersion),
-                );
+                ];
             } elseif (strpos($reqVersion, ' as ') !== false) {
                 throw new \UnexpectedValueException('Invalid alias definition in "'.$reqName.'": "'.$reqVersion.'". Aliases should be in the form "exact-version as other-exact-version".');
             }
@@ -228,7 +228,7 @@ class RootPackageLoader extends ArrayLoader
         /** @var int $minimumStability */
         $minimumStability = $stabilities[$minimumStability];
         foreach ($requires as $reqName => $reqVersion) {
-            $constraints = array();
+            $constraints = [];
 
             // extract all sub-constraints in case it is an OR/AND multi-constraint
             $orSplit = Preg::split('{\s*\|\|?\s*}', trim($reqVersion));

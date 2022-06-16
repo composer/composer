@@ -30,10 +30,10 @@ class CheckPlatformReqsCommand extends BaseCommand
     {
         $this->setName('check-platform-reqs')
             ->setDescription('Check that platform requirements are satisfied.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables checking of require-dev packages requirements.'),
                 new InputOption('lock', null, InputOption::VALUE_NONE, 'Checks requirements only from the lock file, not from installed packages.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 Checks that your PHP and extensions versions match the platform requirements of the installed packages.
@@ -50,8 +50,8 @@ EOT
     {
         $composer = $this->requireComposer();
 
-        $requires = array();
-        $removePackages = array();
+        $requires = [];
+        $removePackages = [];
         if ($input->getOption('lock')) {
             $this->getIO()->writeError('<info>Checking '.($input->getOption('no-dev') ? 'non-dev ' : '').'platform requirements using the lock file</info>');
             $installedRepo = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'));
@@ -74,10 +74,10 @@ EOT
         }
 
         foreach ($requires as $require => $link) {
-            $requires[$require] = array($link);
+            $requires[$require] = [$link];
         }
 
-        $installedRepo = new InstalledRepository(array($installedRepo, new RootPackageRepository($composer->getPackage())));
+        $installedRepo = new InstalledRepository([$installedRepo, new RootPackageRepository($composer->getPackage())]);
         foreach ($installedRepo->getPackages() as $package) {
             if (in_array($package->getName(), $removePackages, true)) {
                 continue;
@@ -89,9 +89,9 @@ EOT
 
         ksort($requires);
 
-        $installedRepo->addRepository(new PlatformRepository(array(), array()));
+        $installedRepo->addRepository(new PlatformRepository([], []));
 
-        $results = array();
+        $results = [];
         $exitCode = 0;
 
         /**
@@ -101,7 +101,7 @@ EOT
             if (PlatformRepository::isPlatformPackage($require)) {
                 $candidates = $installedRepo->findPackagesWithReplacersAndProviders($require);
                 if ($candidates) {
-                    $reqResults = array();
+                    $reqResults = [];
                     foreach ($candidates as $candidate) {
                         $candidateConstraint = null;
                         if ($candidate->getName() === $require) {
@@ -123,24 +123,24 @@ EOT
 
                         foreach ($links as $link) {
                             if (!$link->getConstraint()->matches($candidateConstraint)) {
-                                $reqResults[] = array(
+                                $reqResults[] = [
                                     $candidate->getName() === $require ? $candidate->getPrettyName() : $require,
                                     $candidateConstraint->getPrettyString(),
                                     $link,
                                     '<error>failed</error>'.($candidate->getName() === $require ? '' : ' <comment>provided by '.$candidate->getPrettyName().'</comment>'),
-                                );
+                                ];
 
                                 // skip to next candidate
                                 continue 2;
                             }
                         }
 
-                        $results[] = array(
+                        $results[] = [
                             $candidate->getName() === $require ? $candidate->getPrettyName() : $require,
                             $candidateConstraint->getPrettyString(),
                             null,
                             '<info>success</info>'.($candidate->getName() === $require ? '' : ' <comment>provided by '.$candidate->getPrettyName().'</comment>'),
-                        );
+                        ];
 
                         // candidate matched, skip to next requirement
                         continue 2;
@@ -153,12 +153,12 @@ EOT
                     continue;
                 }
 
-                $results[] = array(
+                $results[] = [
                     $require,
                     'n/a',
                     $links[0],
                     '<error>missing</error>',
-                );
+                ];
 
                 $exitCode = max($exitCode, 2);
             }
@@ -176,18 +176,18 @@ EOT
      */
     protected function printTable(OutputInterface $output, array $results): void
     {
-        $rows = array();
+        $rows = [];
         foreach ($results as $result) {
             /**
              * @var Link|null $link
              */
             list($platformPackage, $version, $link, $status) = $result;
-            $rows[] = array(
+            $rows[] = [
                 $platformPackage,
                 $version,
                 $link ? sprintf('%s %s %s (%s)', $link->getSource(), $link->getDescription(), $link->getTarget(), $link->getPrettyConstraint()) : '',
                 $status,
-            );
+            ];
         }
 
         $this->renderTable($rows, $output);

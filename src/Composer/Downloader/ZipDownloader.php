@@ -43,25 +43,25 @@ class ZipDownloader extends ArchiveDownloader
     public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
     {
         if (null === self::$unzipCommands) {
-            self::$unzipCommands = array();
+            self::$unzipCommands = [];
             $finder = new ExecutableFinder;
-            if (Platform::isWindows() && ($cmd = $finder->find('7z', null, array('C:\Program Files\7-Zip')))) {
-                self::$unzipCommands[] = array('7z', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s');
+            if (Platform::isWindows() && ($cmd = $finder->find('7z', null, ['C:\Program Files\7-Zip']))) {
+                self::$unzipCommands[] = ['7z', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s'];
             }
             if ($cmd = $finder->find('unzip')) {
-                self::$unzipCommands[] = array('unzip', ProcessExecutor::escape($cmd).' -qq %s -d %s');
+                self::$unzipCommands[] = ['unzip', ProcessExecutor::escape($cmd).' -qq %s -d %s'];
             }
             if (!Platform::isWindows() && ($cmd = $finder->find('7z'))) { // 7z linux/macOS support is only used if unzip is not present
-                self::$unzipCommands[] = array('7z', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s');
+                self::$unzipCommands[] = ['7z', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s'];
             }
             if (!Platform::isWindows() && ($cmd = $finder->find('7zz'))) { // 7zz linux/macOS support is only used if unzip is not present
-                self::$unzipCommands[] = array('7zz', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s');
+                self::$unzipCommands[] = ['7zz', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s'];
             }
         }
 
         $procOpenMissing = false;
         if (!function_exists('proc_open')) {
-            self::$unzipCommands = array();
+            self::$unzipCommands = [];
             $procOpenMissing = true;
         }
 
@@ -129,7 +129,7 @@ class ZipDownloader extends ArchiveDownloader
         }
 
         $executable = $commandSpec[0];
-        if (!$warned7ZipLinux && !Platform::isWindows() && in_array($executable, array('7z', '7zz'), true)) {
+        if (!$warned7ZipLinux && !Platform::isWindows() && in_array($executable, ['7z', '7zz'], true)) {
             $warned7ZipLinux = true;
             if (0 === $this->process->execute($executable, $output)) {
                 if (Preg::isMatch('{^\s*7-Zip(?: \[64\])? ([0-9.]+)}', $output, $match) && version_compare($match[1], '21.01', '<')) {

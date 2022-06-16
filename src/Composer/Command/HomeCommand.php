@@ -39,13 +39,13 @@ class HomeCommand extends BaseCommand
     {
         $this
             ->setName('browse')
-            ->setAliases(array('home'))
+            ->setAliases(['home'])
             ->setDescription('Opens the package\'s repository URL or homepage in your browser.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument('packages', InputArgument::IS_ARRAY, 'Package(s) to browse to.', null, $this->suggestInstalledPackage()),
                 new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL.'),
                 new InputOption('show', 's', InputOption::VALUE_NONE, 'Only show the homepage or repository URL.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The home command opens or shows a package's repository URL or
@@ -68,7 +68,7 @@ EOT
         $packages = $input->getArgument('packages');
         if (count($packages) === 0) {
             $io->writeError('No package specified, opening homepage for the root package');
-            $packages = array($this->requireComposer()->getPackage()->getName());
+            $packages = [$this->requireComposer()->getPackage()->getName()];
         }
 
         foreach ($packages as $packageName) {
@@ -166,8 +166,8 @@ EOT
 
         if ($composer) {
             return array_merge(
-                array(new RootPackageRepository($composer->getPackage())), // root package
-                array($composer->getRepositoryManager()->getLocalRepository()), // installed packages
+                [new RootPackageRepository($composer->getPackage())], // root package
+                [$composer->getRepositoryManager()->getLocalRepository()], // installed packages
                 $composer->getRepositoryManager()->getRepositories() // remotes
             );
         }

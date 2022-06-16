@@ -188,8 +188,8 @@ class AliasPackage extends BasePackage
             $prettyVersion = $this->aliasOf->getPrettyVersion();
         }
 
-        if (\in_array($linkType, array(Link::TYPE_CONFLICT, Link::TYPE_PROVIDE, Link::TYPE_REPLACE), true)) {
-            $newLinks = array();
+        if (\in_array($linkType, [Link::TYPE_CONFLICT, Link::TYPE_PROVIDE, Link::TYPE_REPLACE], true)) {
+            $newLinks = [];
             foreach ($links as $link) {
                 // link is self.version, but must be replacing also the replaced version
                 if ('self.version' === $link->getPrettyConstraint()) {

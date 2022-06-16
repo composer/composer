@@ -244,7 +244,7 @@ abstract class Rule
                 if ($reasonData = $this->getReasonData()) {
                     // swap literals if they are not in the right order with package2 being the conflicter
                     if ($reasonData->getSource() === $package1->getName()) {
-                        list($package2, $package1) = array($package1, $package2);
+                        list($package2, $package1) = [$package1, $package2];
                     }
                 }
 
@@ -267,7 +267,7 @@ abstract class Rule
      * @param array<Rule[]> $learnedPool
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = [], array $learnedPool = []): string
     {
         $literals = $this->getLiterals();
 
@@ -312,7 +312,7 @@ abstract class Rule
 
                     // swap literals if they are not in the right order with package2 being the conflicter
                     if ($reasonData->getSource() === $package1->getName()) {
-                        list($package2, $package1) = array($package1, $package2);
+                        list($package2, $package1) = [$package1, $package2];
                         $conflictTarget = $package1->getPrettyName().' '.$reasonData->getPrettyConstraint();
                     }
 
@@ -349,7 +349,7 @@ abstract class Rule
                 /** @var Link */
                 $reasonData = $this->reasonData;
 
-                $requires = array();
+                $requires = [];
                 foreach ($literals as $literal) {
                     $requires[] = $pool->literalToPackage($literal);
                 }
@@ -368,7 +368,7 @@ abstract class Rule
                 return $text;
 
             case self::RULE_PACKAGE_SAME_NAME:
-                $packageNames = array();
+                $packageNames = [];
                 foreach ($literals as $literal) {
                     $package = $pool->literalToPackage($literal);
                     $packageNames[$package->getName()] = true;
@@ -394,8 +394,8 @@ abstract class Rule
                         $reason .= $replacedName.' and thus cannot coexist with it.';
                     }
 
-                    $installedPackages = array();
-                    $removablePackages = array();
+                    $installedPackages = [];
+                    $removablePackages = [];
                     foreach ($literals as $literal) {
                         if (isset($installedMap[abs($literal)])) {
                             $installedPackages[] = $pool->literalToPackage($literal);
@@ -425,7 +425,7 @@ abstract class Rule
                 if (count($literals) === 1) {
                     $ruleText = $pool->literalToPrettyString($literals[0], $installedMap);
                 } else {
-                    $groups = array();
+                    $groups = [];
                     foreach ($literals as $literal) {
                         $package = $pool->literalToPackage($literal);
                         if (isset($installedMap[$package->id])) {
@@ -436,7 +436,7 @@ abstract class Rule
 
                         $groups[$group][] = $this->deduplicateDefaultBranchAlias($package);
                     }
-                    $ruleTexts = array();
+                    $ruleTexts = [];
                     foreach ($groups as $group => $packages) {
                         $ruleTexts[] = $group . (count($packages) > 1 ? ' one of' : '').' ' . $this->formatPackagesUnique($pool, $packages, $isVerbose);
                     }

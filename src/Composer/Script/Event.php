@@ -54,7 +54,7 @@ class Event extends BaseEvent
      * @param array<string|int|float|bool|null> $args Arguments passed by the user
      * @param mixed[] $flags Optional flags to pass data not as argument
      */
-    public function __construct(string $name, Composer $composer, IOInterface $io, bool $devMode = false, array $args = array(), array $flags = array())
+    public function __construct(string $name, Composer $composer, IOInterface $io, bool $devMode = false, array $args = [], array $flags = [])
     {
         parent::__construct($name, $args, $flags);
         $this->composer = $composer;

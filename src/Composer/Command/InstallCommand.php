@@ -38,9 +38,9 @@ class InstallCommand extends BaseCommand
     {
         $this
             ->setName('install')
-            ->setAliases(array('i'))
+            ->setAliases(['i'])
             ->setDescription('Installs the project dependencies from the composer.lock file if present, or falls back on the composer.json.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),
                 new InputOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).', null, $this->suggestPreferInstall()),
@@ -59,7 +59,7 @@ class InstallCommand extends BaseCommand
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Should not be provided, use composer require instead to add a given package to composer.json.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>install</info> command reads the composer.lock file from

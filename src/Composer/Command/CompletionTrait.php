@@ -76,9 +76,9 @@ trait CompletionTrait
             $platformHint = [];
             if ($includePlatformPackages) {
                 if ($locker->isLocked()) {
-                    $platformRepo = new PlatformRepository(array(), $locker->getPlatformOverrides());
+                    $platformRepo = new PlatformRepository([], $locker->getPlatformOverrides());
                 } else {
-                    $platformRepo = new PlatformRepository(array(), $composer->getConfig()->get('platform'));
+                    $platformRepo = new PlatformRepository([], $composer->getConfig()->get('platform'));
                 }
                 if ($input->getCompletionValue() === '') {
                     // to reduce noise, when no text is yet entered we list only two entries for ext- and lib- prefixes

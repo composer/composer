@@ -50,13 +50,13 @@ class Compiler
             unlink($pharFile);
         }
 
-        $process = new Process(array('git', 'log', '--pretty=%H', '-n1', 'HEAD'), __DIR__);
+        $process = new Process(['git', 'log', '--pretty=%H', '-n1', 'HEAD'], __DIR__);
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($process->getOutput());
 
-        $process = new Process(array('git', 'log', '-n1', '--pretty=%ci', 'HEAD'), __DIR__);
+        $process = new Process(['git', 'log', '-n1', '--pretty=%ci', 'HEAD'], __DIR__);
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
@@ -64,7 +64,7 @@ class Compiler
         $this->versionDate = new \DateTime(trim($process->getOutput()));
         $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
-        $process = new Process(array('git', 'describe', '--tags', '--exact-match', 'HEAD'), __DIR__);
+        $process = new Process(['git', 'describe', '--tags', '--exact-match', 'HEAD'], __DIR__);
         if ($process->run() == 0) {
             $this->version = trim($process->getOutput());
         } else {
@@ -132,19 +132,19 @@ class Compiler
         ;
 
         $extraFiles = [];
-        foreach (array(
+        foreach ([
             __DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-exceptions.json',
             __DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-licenses.json',
             CaBundle::getBundledCaBundlePath(),
             __DIR__ . '/../../vendor/symfony/console/Resources/bin/hiddeninput.exe',
             __DIR__ . '/../../vendor/symfony/console/Resources/completion.bash',
-        ) as $file) {
+        ] as $file) {
             $extraFiles[$file] = realpath($file);
             if (!file_exists($file)) {
                 throw new \RuntimeException('Extra file listed is missing from the filesystem: '.$file);
             }
         }
-        $unexpectedFiles = array();
+        $unexpectedFiles = [];
 
         foreach ($finder as $file) {
             if (false !== ($index = array_search($file->getRealPath(), $extraFiles, true))) {
@@ -230,11 +230,11 @@ class Compiler
         if ($path === 'src/Composer/Composer.php') {
             $content = strtr(
                 $content,
-                array(
+                [
                     '@package_version@' => $this->version,
                     '@package_branch_alias_version@' => $this->branchAliasVersion,
                     '@release_date@' => $this->versionDate->format('Y-m-d H:i:s'),
-                )
+                ]
             );
             $content = Preg::replace('{SOURCE_VERSION = \'[^\']+\';}', 'SOURCE_VERSION = \'\';', $content);
         }
@@ -268,7 +268,7 @@ class Compiler
         foreach (token_get_all($source) as $token) {
             if (is_string($token)) {
                 $output .= $token;
-            } elseif (in_array($token[0], array(T_COMMENT, T_DOC_COMMENT))) {
+            } elseif (in_array($token[0], [T_COMMENT, T_DOC_COMMENT])) {
                 $output .= str_repeat("\n", substr_count($token[1], "\n"));
             } elseif (T_WHITESPACE === $token[0]) {
                 // reduce wide spaces

@@ -208,7 +208,7 @@ class Platform
 
         // detect msysgit/mingw and assume this is a tty because detection
         // does not work correctly, see https://github.com/composer/composer/issues/9690
-        if (in_array(strtoupper(self::getEnv('MSYSTEM') ?: ''), array('MINGW32', 'MINGW64'), true)) {
+        if (in_array(strtoupper(self::getEnv('MSYSTEM') ?: ''), ['MINGW32', 'MINGW64'], true)) {
             return true;
         }
 

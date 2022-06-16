@@ -37,13 +37,13 @@ final class StreamContextFactory
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
      * @return resource          Default context
      */
-    public static function getContext(string $url, array $defaultOptions = array(), array $defaultParams = array())
+    public static function getContext(string $url, array $defaultOptions = [], array $defaultParams = [])
     {
-        $options = array('http' => array(
+        $options = ['http' => [
             // specify defaults again to try and work better with curlwrappers enabled
             'follow_location' => 1,
             'max_redirects' => 20,
-        ));
+        ]];
 
         $options = array_replace_recursive($options, self::initOptions($url, $defaultOptions));
         unset($defaultOptions['http']['header']);
@@ -67,7 +67,7 @@ final class StreamContextFactory
     {
         // Make sure the headers are in an array form
         if (!isset($options['http']['header'])) {
-            $options['http']['header'] = array();
+            $options['http']['header'] = [];
         }
         if (is_string($options['http']['header'])) {
             $options['http']['header'] = explode("\r\n", $options['http']['header']);
@@ -136,7 +136,7 @@ final class StreamContextFactory
      */
     public static function getTlsDefaults(array $options, LoggerInterface $logger = null): array
     {
-        $ciphers = implode(':', array(
+        $ciphers = implode(':', [
             'ECDHE-RSA-AES128-GCM-SHA256',
             'ECDHE-ECDSA-AES128-GCM-SHA256',
             'ECDHE-RSA-AES256-GCM-SHA384',
@@ -178,7 +178,7 @@ final class StreamContextFactory
             '!EDH-DSS-DES-CBC3-SHA',
             '!EDH-RSA-DES-CBC3-SHA',
             '!KRB5-DES-CBC3-SHA',
-        ));
+        ]);
 
         /**
          * CN_match and SNI_server_name are only known once a URL is passed.
@@ -186,15 +186,15 @@ final class StreamContextFactory
          *
          * cafile or capath can be overridden by passing in those options to constructor.
          */
-        $defaults = array(
-            'ssl' => array(
+        $defaults = [
+            'ssl' => [
                 'ciphers' => $ciphers,
                 'verify_peer' => true,
                 'verify_depth' => 7,
                 'SNI_enabled' => true,
                 'capture_peer_cert' => true,
-            ),
-        );
+            ],
+        ];
 
         if (isset($options['ssl'])) {
             $defaults['ssl'] = array_replace_recursive($defaults['ssl'], $options['ssl']);

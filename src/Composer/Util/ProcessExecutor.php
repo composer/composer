@@ -44,7 +44,7 @@ class ProcessExecutor
     /**
      * @phpstan-var array<int, array<string, mixed>>
      */
-    private $jobs = array();
+    private $jobs = [];
     /** @var int */
     private $runningJobs = 0;
     /** @var int */
@@ -149,12 +149,12 @@ class ProcessExecutor
             throw new \LogicException('You must use the ProcessExecutor instance which is part of a Composer\Loop instance to be able to run async processes');
         }
 
-        $job = array(
+        $job = [
             'id' => $this->idGen++,
             'status' => self::STATUS_QUEUED,
             'command' => $command,
             'cwd' => $cwd,
-        );
+        ];
 
         $resolver = function ($resolve, $reject) use (&$job): void {
             $job['status'] = ProcessExecutor::STATUS_QUEUED;
@@ -360,7 +360,7 @@ class ProcessExecutor
     {
         $output = trim((string) $output);
 
-        return $output === '' ? array() : Preg::split('{\r?\n}', $output);
+        return $output === '' ? [] : Preg::split('{\r?\n}', $output);
     }
 
     /**

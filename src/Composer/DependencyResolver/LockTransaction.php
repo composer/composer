@@ -64,7 +64,7 @@ class LockTransaction extends Transaction
      */
     public function setResultPackages(Pool $pool, Decisions $decisions): void
     {
-        $this->resultPackages = array('all' => array(), 'non-dev' => array(), 'dev' => array());
+        $this->resultPackages = ['all' => [], 'non-dev' => [], 'dev' => []];
         foreach ($decisions as $i => $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
 
@@ -87,7 +87,7 @@ class LockTransaction extends Transaction
         $packages = $extractionResult->getNewLockPackages(false);
 
         $this->resultPackages['dev'] = $this->resultPackages['non-dev'];
-        $this->resultPackages['non-dev'] = array();
+        $this->resultPackages['non-dev'] = [];
 
         foreach ($packages as $package) {
             foreach ($this->resultPackages['dev'] as $i => $resultPackage) {
@@ -108,7 +108,7 @@ class LockTransaction extends Transaction
      */
     public function getNewLockPackages(bool $devMode, bool $updateMirrors = false): array
     {
-        $packages = array();
+        $packages = [];
         foreach ($this->resultPackages[$devMode ? 'dev' : 'non-dev'] as $package) {
             if (!$package instanceof AliasPackage) {
                 // if we're just updating mirrors we need to reset references to the same as currently "present" packages' references to keep the lock file as-is
@@ -139,7 +139,7 @@ class LockTransaction extends Transaction
      */
     public function getAliases(array $aliases): array
     {
-        $usedAliases = array();
+        $usedAliases = [];
 
         foreach ($this->resultPackages['all'] as $package) {
             if ($package instanceof AliasPackage) {

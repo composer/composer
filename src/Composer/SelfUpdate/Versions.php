@@ -57,7 +57,7 @@ class Versions
         $channelFile = $this->config->get('home').'/update-channel';
         if (file_exists($channelFile)) {
             $channel = trim(file_get_contents($channelFile));
-            if (in_array($channel, array('stable', 'preview', 'snapshot', '2.2'), true)) {
+            if (in_array($channel, ['stable', 'preview', 'snapshot', '2.2'], true)) {
                 return $this->channel = $channel;
             }
         }

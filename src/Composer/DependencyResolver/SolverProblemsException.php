@@ -49,10 +49,10 @@ class SolverProblemsException extends \RuntimeException
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, bool $isDevExtraction = false): string
     {
         $installedMap = $request->getPresentMap(true);
-        $missingExtensions = array();
+        $missingExtensions = [];
         $isCausedByLock = false;
 
-        $problems = array();
+        $problems = [];
         foreach ($this->problems as $problem) {
             $problems[] = $problem->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $this->learnedPool)."\n";
 
@@ -67,7 +67,7 @@ class SolverProblemsException extends \RuntimeException
             $text .= "  Problem ".($i++).$problem;
         }
 
-        $hints = array();
+        $hints = [];
         if (!$isDevExtraction && (strpos($text, 'could not be found') || strpos($text, 'no matching package found'))) {
             $hints[] = "Potential causes:\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n - It's a private package and you forgot to add a custom repository to find it\n\nRead <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
         }
@@ -135,7 +135,7 @@ class SolverProblemsException extends \RuntimeException
      */
     private function getExtensionProblems(array $reasonSets): array
     {
-        $missingExtensions = array();
+        $missingExtensions = [];
         foreach ($reasonSets as $reasonSet) {
             foreach ($reasonSet as $rule) {
                 $required = $rule->getRequiredPackage();

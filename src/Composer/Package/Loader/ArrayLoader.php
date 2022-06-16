@@ -83,8 +83,8 @@ class ArrayLoader implements LoaderInterface
      */
     public function loadPackages(array $versions): array
     {
-        $packages = array();
-        $linkCache = array();
+        $packages = [];
+        $linkCache = [];
 
         foreach ($versions as $version) {
             $package = $this->createObject($version, 'Composer\Package\CompletePackage');
@@ -159,7 +159,7 @@ class ArrayLoader implements LoaderInterface
 
         if (isset($config['bin'])) {
             if (!\is_array($config['bin'])) {
-                $config['bin'] = array($config['bin']);
+                $config['bin'] = [$config['bin']];
             }
             foreach ($config['bin'] as $key => $bin) {
                 $config['bin'][$key] = ltrim($bin, '/');
@@ -256,7 +256,7 @@ class ArrayLoader implements LoaderInterface
                 foreach ($config['scripts'] as $event => $listeners) {
                     $config['scripts'][$event] = (array) $listeners;
                 }
-                foreach (array('composer', 'php', 'putenv') as $reserved) {
+                foreach (['composer', 'php', 'putenv'] as $reserved) {
                     if (isset($config['scripts'][$reserved])) {
                         trigger_error('The `'.$reserved.'` script name is reserved for internal use, please avoid defining it', E_USER_DEPRECATED);
                     }
@@ -277,7 +277,7 @@ class ArrayLoader implements LoaderInterface
             }
 
             if (!empty($config['license'])) {
-                $package->setLicense(\is_array($config['license']) ? $config['license'] : array($config['license']));
+                $package->setLicense(\is_array($config['license']) ? $config['license'] : [$config['license']]);
             }
 
             if (!empty($config['authors']) && \is_array($config['authors'])) {
@@ -330,7 +330,7 @@ class ArrayLoader implements LoaderInterface
             if (isset($config[$type])) {
                 $method = 'set'.ucfirst($opts['method']);
 
-                $links = array();
+                $links = [];
                 foreach ($config[$type] as $prettyTarget => $constraint) {
                     $target = strtolower($prettyTarget);
 
@@ -343,7 +343,7 @@ class ArrayLoader implements LoaderInterface
                         $links[$target] = $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint);
                     } else {
                         if (!isset($linkCache[$name][$type][$target][$constraint])) {
-                            $linkCache[$name][$type][$target][$constraint] = array($target, $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint));
+                            $linkCache[$name][$type][$target][$constraint] = [$target, $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint)];
                         }
 
                         list($target, $link) = $linkCache[$name][$type][$target][$constraint];
@@ -368,7 +368,7 @@ class ArrayLoader implements LoaderInterface
      */
     public function parseLinks(string $source, string $sourceVersion, string $description, array $links): array
     {
-        $res = array();
+        $res = [];
         foreach ($links as $target => $constraint) {
             $target = strtolower((string) $target);
             $res[$target] = $this->createLink($source, $sourceVersion, $description, $target, $constraint);

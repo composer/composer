@@ -30,12 +30,12 @@ class Decisions implements \Iterator, \Countable
     /**
      * @var array<array{0: int, 1: Rule}>
      */
-    protected $decisionQueue = array();
+    protected $decisionQueue = [];
 
     public function __construct(Pool $pool)
     {
         $this->pool = $pool;
-        $this->decisionMap = array();
+        $this->decisionMap = [];
     }
 
     /**
@@ -46,10 +46,10 @@ class Decisions implements \Iterator, \Countable
     public function decide(int $literal, int $level, Rule $why): void
     {
         $this->addDecision($literal, $level);
-        $this->decisionQueue[] = array(
+        $this->decisionQueue[] = [
             self::DECISION_LITERAL => $literal,
             self::DECISION_REASON => $why,
-        );
+        ];
     }
 
     /**
@@ -258,7 +258,7 @@ class Decisions implements \Iterator, \Countable
 
         $previousDecision = $this->decisionMap[$packageId] ?? null;
         if ($previousDecision != 0) {
-            $literalString = $this->pool->literalToPrettyString($literal, array());
+            $literalString = $this->pool->literalToPrettyString($literal, []);
             $package = $this->pool->literalToPackage($literal);
             throw new SolverBugException(
                 "Trying to decide $literalString on level $level, even though $package was previously decided as ".(int) $previousDecision."."

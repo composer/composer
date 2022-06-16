@@ -25,7 +25,7 @@ namespace Composer\DependencyResolver;
 class RuleWatchGraph
 {
     /** @var array<int, RuleWatchChain> */
-    protected $watchChains = array();
+    protected $watchChains = [];
 
     /**
      * Inserts a rule node into the appropriate chains within the graph
@@ -47,7 +47,7 @@ class RuleWatchGraph
         }
 
         if (!$node->getRule() instanceof MultiConflictRule) {
-            foreach (array($node->watch1, $node->watch2) as $literal) {
+            foreach ([$node->watch1, $node->watch2] as $literal) {
                 if (!isset($this->watchChains[$literal])) {
                     $this->watchChains[$literal] = new RuleWatchChain;
                 }

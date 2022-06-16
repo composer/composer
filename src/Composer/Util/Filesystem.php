@@ -569,7 +569,7 @@ class Filesystem
      */
     public function normalizePath(string $path)
     {
-        $parts = array();
+        $parts = [];
         $path = strtr($path, '\\', '/');
         $prefix = '';
         $absolute = '';

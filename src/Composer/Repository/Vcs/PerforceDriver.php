@@ -123,12 +123,12 @@ class PerforceDriver extends VcsDriver
      */
     public function getSource(string $identifier): array
     {
-        return array(
+        return [
             'type' => 'perforce',
             'url' => $this->repoConfig['url'],
             'reference' => $identifier,
             'p4user' => $this->perforce->getUser(),
-        );
+        ];
     }
 
     /**

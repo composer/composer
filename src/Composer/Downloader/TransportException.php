@@ -24,7 +24,7 @@ class TransportException extends \RuntimeException
     /** @var ?int */
     protected $statusCode;
     /** @var array<mixed> */
-    protected $responseInfo = array();
+    protected $responseInfo = [];
 
     /**
      * @param array<string> $headers

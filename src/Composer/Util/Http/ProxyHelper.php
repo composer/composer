@@ -34,27 +34,27 @@ class ProxyHelper
 
         // Handle http_proxy/HTTP_PROXY on CLI only for security reasons
         if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
-            if ($env = self::getProxyEnv(array('http_proxy', 'HTTP_PROXY'), $name)) {
+            if ($env = self::getProxyEnv(['http_proxy', 'HTTP_PROXY'], $name)) {
                 $httpProxy = self::checkProxy($env, $name);
             }
         }
 
         // Prefer CGI_HTTP_PROXY if available
-        if ($env = self::getProxyEnv(array('CGI_HTTP_PROXY'), $name)) {
+        if ($env = self::getProxyEnv(['CGI_HTTP_PROXY'], $name)) {
             $httpProxy = self::checkProxy($env, $name);
         }
 
         // Handle https_proxy/HTTPS_PROXY
-        if ($env = self::getProxyEnv(array('https_proxy', 'HTTPS_PROXY'), $name)) {
+        if ($env = self::getProxyEnv(['https_proxy', 'HTTPS_PROXY'], $name)) {
             $httpsProxy = self::checkProxy($env, $name);
         } else {
             $httpsProxy = $httpProxy;
         }
 
         // Handle no_proxy
-        $noProxy = self::getProxyEnv(array('no_proxy', 'NO_PROXY'), $name);
+        $noProxy = self::getProxyEnv(['no_proxy', 'NO_PROXY'], $name);
 
-        return array($httpProxy, $httpsProxy, $noProxy);
+        return [$httpProxy, $httpsProxy, $noProxy];
     }
 
     /**
@@ -70,7 +70,7 @@ class ProxyHelper
 
         // Remove any authorization
         $proxyUrl = self::formatParsedUrl($proxy, false);
-        $proxyUrl = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $proxyUrl);
+        $proxyUrl = str_replace(['http://', 'https://'], ['tcp://', 'ssl://'], $proxyUrl);
 
         $options['http']['proxy'] = $proxyUrl;
 

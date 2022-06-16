@@ -38,7 +38,7 @@ class PackageRepository extends ArrayRepository
 
         // make sure we have an array of package definitions
         if (!is_numeric(key($this->config))) {
-            $this->config = array($this->config);
+            $this->config = [$this->config];
         }
     }
 

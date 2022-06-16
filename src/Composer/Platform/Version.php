@@ -39,7 +39,7 @@ class Version
         }
 
         $isFips = strpos($matches['suffix'], 'fips') !== false;
-        $suffix = strtr('-'.ltrim($matches['suffix'], '-'), array('-fips' => '', '-pre' => '-alpha'));
+        $suffix = strtr('-'.ltrim($matches['suffix'], '-'), ['-fips' => '', '-pre' => '-alpha']);
 
         return rtrim($matches['version'].$patch.$suffix, '-');
     }

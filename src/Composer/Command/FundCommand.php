@@ -37,9 +37,9 @@ class FundCommand extends BaseCommand
     {
         $this->setName('fund')
             ->setDescription('Discover how to help fund the maintenance of your dependencies.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['text', 'json']),
-            ))
+            ])
         ;
     }
 
@@ -49,9 +49,9 @@ class FundCommand extends BaseCommand
 
         $repo = $composer->getRepositoryManager()->getLocalRepository();
         $remoteRepos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
-        $fundings = array();
+        $fundings = [];
 
-        $packagesToLoad = array();
+        $packagesToLoad = [];
         foreach ($repo->getPackages() as $package) {
             if ($package instanceof AliasPackage) {
                 continue;
@@ -60,7 +60,7 @@ class FundCommand extends BaseCommand
         }
 
         // load all packages dev versions in parallel
-        $result = $remoteRepos->loadPackages($packagesToLoad, array('dev' => BasePackage::STABILITY_DEV), array());
+        $result = $remoteRepos->loadPackages($packagesToLoad, ['dev' => BasePackage::STABILITY_DEV], []);
 
         // collect funding data from default branches
         foreach ($result['packages'] as $package) {
@@ -92,7 +92,7 @@ class FundCommand extends BaseCommand
         $io = $this->getIO();
 
         $format = $input->getOption('format');
-        if (!in_array($format, array('text', 'json'))) {
+        if (!in_array($format, ['text', 'json'])) {
             $io->writeError(sprintf('Unsupported format "%s". See help for supported formats.', $format));
 
             return 1;

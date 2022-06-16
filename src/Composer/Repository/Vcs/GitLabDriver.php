@@ -48,7 +48,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @var array<string|int, mixed[]> Keeps commits returned by GitLab API as commit id => info
      */
-    private $commits = array();
+    private $commits = [];
 
     /** @var array<int|string, string> Map of tag name to identifier */
     private $tags;
@@ -113,7 +113,7 @@ class GitLabDriver extends VcsDriver
 
         if (is_string($protocol = $this->config->get('gitlab-protocol'))) {
             // https treated as a synonym for http.
-            if (!in_array($protocol, array('git', 'http', 'https'))) {
+            if (!in_array($protocol, ['git', 'http', 'https'])) {
                 throw new \RuntimeException('gitlab-protocol must be one of git, http.');
             }
             $this->protocol = $protocol === 'git' ? 'ssh' : 'http';
@@ -264,7 +264,7 @@ class GitLabDriver extends VcsDriver
     {
         $url = $this->getApiUrl().'/repository/archive.zip?sha='.$identifier;
 
-        return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
+        return ['type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => ''];
     }
 
     /**
@@ -276,7 +276,7 @@ class GitLabDriver extends VcsDriver
             return $this->gitDriver->getSource($identifier);
         }
 
-        return array('type' => 'git', 'url' => $this->getRepositoryUrl(), 'reference' => $identifier);
+        return ['type' => 'git', 'url' => $this->getRepositoryUrl(), 'reference' => $identifier];
     }
 
     /**
@@ -342,7 +342,7 @@ class GitLabDriver extends VcsDriver
         $encoded = '';
         for ($i = 0; isset($string[$i]); $i++) {
             $character = $string[$i];
-            if (!ctype_alnum($character) && !in_array($character, array('-', '_'), true)) {
+            if (!ctype_alnum($character) && !in_array($character, ['-', '_'], true)) {
                 $character = '%' . sprintf('%02X', ord($character));
             }
             $encoded .= $character;
@@ -361,7 +361,7 @@ class GitLabDriver extends VcsDriver
         $perPage = 100;
         $resource = $this->getApiUrl().'/repository/'.$type.'?per_page='.$perPage;
 
-        $references = array();
+        $references = [];
         do {
             $response = $this->getContents($resource);
             $data = $response->decodeJson();
@@ -459,7 +459,7 @@ class GitLabDriver extends VcsDriver
     protected function setupGitDriver(string $url): void
     {
         $this->gitDriver = new GitDriver(
-            array('url' => $url),
+            ['url' => $url],
             $this->io,
             $this->config,
             $this->httpDownloader,
@@ -502,7 +502,7 @@ class GitLabDriver extends VcsDriver
 
                         $this->attemptCloneFallback();
 
-                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
+                        return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
                 }
 
@@ -540,7 +540,7 @@ class GitLabDriver extends VcsDriver
                     if (!$this->io->isInteractive()) {
                         $this->attemptCloneFallback();
 
-                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
+                        return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
                     $this->io->writeError('<warning>Failed to download ' . $this->namespace . '/' . $this->repository . ':' . $e->getMessage() . '</warning>');
                     $gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, 'Your credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
@@ -555,7 +555,7 @@ class GitLabDriver extends VcsDriver
                     if (!$this->io->isInteractive() && $fetchingRepoData) {
                         $this->attemptCloneFallback();
 
-                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
+                        return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
 
                     throw $e;

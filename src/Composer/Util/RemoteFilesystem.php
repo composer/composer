@@ -49,7 +49,7 @@ class RemoteFilesystem
     /** @var ?int */
     private $lastProgress;
     /** @var mixed[] */
-    private $options = array();
+    private $options = [];
     /** @var bool */
     private $disableTls = false;
     /** @var string[] */
@@ -76,7 +76,7 @@ class RemoteFilesystem
      * @param bool        $disableTls
      * @param AuthHelper  $authHelper
      */
-    public function __construct(IOInterface $io, Config $config, array $options = array(), bool $disableTls = false, AuthHelper $authHelper = null)
+    public function __construct(IOInterface $io, Config $config, array $options = [], bool $disableTls = false, AuthHelper $authHelper = null)
     {
         $this->io = $io;
 
@@ -106,7 +106,7 @@ class RemoteFilesystem
      *
      * @return bool true
      */
-    public function copy(string $originUrl, string $fileUrl, string $fileName, bool $progress = true, array $options = array())
+    public function copy(string $originUrl, string $fileUrl, string $fileName, bool $progress = true, array $options = [])
     {
         return $this->get($originUrl, $fileUrl, $options, $fileName, $progress);
     }
@@ -121,7 +121,7 @@ class RemoteFilesystem
      *
      * @return bool|string The content
      */
-    public function getContents(string $originUrl, string $fileUrl, bool $progress = true, array $options = array())
+    public function getContents(string $originUrl, string $fileUrl, bool $progress = true, array $options = [])
     {
         return $this->get($originUrl, $fileUrl, $options, null, $progress);
     }
@@ -217,7 +217,7 @@ class RemoteFilesystem
      *
      * @return bool|string
      */
-    protected function get(string $originUrl, string $fileUrl, array $additionalOptions = array(), string $fileName = null, bool $progress = true)
+    protected function get(string $originUrl, string $fileUrl, array $additionalOptions = [], string $fileName = null, bool $progress = true)
     {
         $this->scheme = parse_url(strtr($fileUrl, '\\', '/'), PHP_URL_SCHEME);
         $this->bytesMax = 0;
@@ -227,7 +227,7 @@ class RemoteFilesystem
         $this->progress = $progress;
         $this->lastProgress = null;
         $retryAuthFailure = true;
-        $this->lastHeaders = array();
+        $this->lastHeaders = [];
         $this->redirects = 1; // The first request counts.
 
         $tempAdditionalOptions = $additionalOptions;
@@ -271,7 +271,7 @@ class RemoteFilesystem
             unset($options['max_file_size']);
         }
 
-        $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
+        $ctx = StreamContextFactory::getContext($fileUrl, $options, ['notification' => [$this, 'callbackGet']]);
 
         $proxy = $this->proxyManager->getProxyForRequest($fileUrl);
         $usingProxy = $proxy->getFormattedUrl(' using proxy (%s)');
@@ -298,7 +298,7 @@ class RemoteFilesystem
 
             return true;
         });
-        $http_response_header = array();
+        $http_response_header = [];
         try {
             $result = $this->getRemoteContents($originUrl, $fileUrl, $ctx, $http_response_header, $maxFileSize);
 
@@ -308,7 +308,7 @@ class RemoteFilesystem
                     HttpDownloader::outputWarnings($this->io, $originUrl, json_decode($result, true));
                 }
 
-                if (in_array($statusCode, array(401, 403)) && $retryAuthFailure) {
+                if (in_array($statusCode, [401, 403]) && $retryAuthFailure) {
                     $this->promptAuthAndRetry($statusCode, $this->findStatusMessage($http_response_header), $http_response_header);
                 }
             }
@@ -347,10 +347,10 @@ class RemoteFilesystem
             if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
                 $this->degradedMode = true;
                 $this->io->writeError('');
-                $this->io->writeError(array(
+                $this->io->writeError([
                     '<error>'.$e->getMessage().'</error>',
                     '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
-                ));
+                ]);
 
                 return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
             }
@@ -428,11 +428,11 @@ class RemoteFilesystem
                 }
 
                 $this->degradedMode = true;
-                $this->io->writeError(array(
+                $this->io->writeError([
                     '',
                     '<error>Failed to decode response: '.$e->getMessage().'</error>',
                     '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
-                ));
+                ]);
 
                 return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
             }
@@ -482,10 +482,10 @@ class RemoteFilesystem
             if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
                 $this->degradedMode = true;
                 $this->io->writeError('');
-                $this->io->writeError(array(
+                $this->io->writeError([
                     '<error>'.$e->getMessage().'</error>',
                     '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
-                ));
+                ]);
 
                 return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
             }
@@ -531,7 +531,7 @@ class RemoteFilesystem
         }
 
         // https://www.php.net/manual/en/reserved.variables.httpresponseheader.php
-        $responseHeaders = $http_response_header ?? array();
+        $responseHeaders = $http_response_header ?? [];
 
         if (null !== $e) {
             throw $e;
@@ -592,7 +592,7 @@ class RemoteFilesystem
      *
      * @return void
      */
-    protected function promptAuthAndRetry($httpStatus, ?string $reason = null, array $headers = array())
+    protected function promptAuthAndRetry($httpStatus, ?string $reason = null, array $headers = [])
     {
         $result = $this->authHelper->promptAuthIfNeeded($this->fileUrl, $this->originUrl, $httpStatus, $reason, $headers, 1 /** always pass 1 as RemoteFilesystem is single threaded there is no race condition possible */);
 
@@ -612,8 +612,8 @@ class RemoteFilesystem
      */
     protected function getOptionsForUrl(string $originUrl, array $additionalOptions)
     {
-        $tlsOptions = array();
-        $headers = array();
+        $tlsOptions = [];
+        $headers = [];
 
         if (extension_loaded('zlib')) {
             $headers[] = 'Accept-Encoding: gzip';

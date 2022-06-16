@@ -29,7 +29,7 @@ class RunScriptCommand extends BaseCommand
     /**
      * @var string[] Array with command events
      */
-    protected $scriptEvents = array(
+    protected $scriptEvents = [
         ScriptEvents::PRE_INSTALL_CMD,
         ScriptEvents::POST_INSTALL_CMD,
         ScriptEvents::PRE_UPDATE_CMD,
@@ -42,7 +42,7 @@ class RunScriptCommand extends BaseCommand
         ScriptEvents::POST_ARCHIVE_CMD,
         ScriptEvents::PRE_AUTOLOAD_DUMP,
         ScriptEvents::POST_AUTOLOAD_DUMP,
-    );
+    ];
 
     /**
      * @return void
@@ -51,9 +51,9 @@ class RunScriptCommand extends BaseCommand
     {
         $this
             ->setName('run-script')
-            ->setAliases(array('run'))
+            ->setAliases(['run'])
             ->setDescription('Runs the scripts defined in composer.json.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run.', null, function () {
                     return array_keys($this->requireComposer()->getPackage()->getScripts());
                 }),
@@ -62,7 +62,7 @@ class RunScriptCommand extends BaseCommand
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List scripts.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>run-script</info> command runs scripts defined in composer.json:
@@ -128,7 +128,7 @@ EOT
 
         $io = $this->getIO();
         $io->writeError('<info>scripts:</info>');
-        $table = array();
+        $table = [];
         foreach ($scripts as $name => $script) {
             $description = '';
             try {
@@ -139,7 +139,7 @@ EOT
             } catch (\Symfony\Component\Console\Exception\CommandNotFoundException $e) {
                 // ignore scripts that have no command associated, like native Composer script listeners
             }
-            $table[] = array('  '.$name, $description);
+            $table[] = ['  '.$name, $description];
         }
 
         $this->renderTable($table, $output);

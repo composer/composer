@@ -72,7 +72,7 @@ class Factory
         }
 
         $userDir = self::getUserDir();
-        $dirs = array();
+        $dirs = [];
 
         if (self::useXdg()) {
             // XDG Base Directory Specifications
@@ -171,13 +171,13 @@ class Factory
 
         // determine and add main dirs to the config
         $home = self::getHomeDir();
-        $config->merge(array(
-            'config' => array(
+        $config->merge([
+            'config' => [
                 'home' => $home,
                 'cache-dir' => self::getCacheDir($home),
                 'data-dir' => self::getDataDir($home),
-            )
-        ), Config::SOURCE_DEFAULT);
+            ]
+        ], Config::SOURCE_DEFAULT);
 
         // load global config
         $file = new JsonFile($config->get('home').'/config.json');
@@ -195,7 +195,7 @@ class Factory
             // Protect directory against web access. Since HOME could be
             // the www-data's user home and be web-accessible it is a
             // potential security risk
-            $dirs = array($config->get('home'), $config->get('cache-dir'), $config->get('data-dir'));
+            $dirs = [$config->get('home'), $config->get('cache-dir'), $config->get('data-dir')];
             foreach ($dirs as $dir) {
                 if (!file_exists($dir . '/.htaccess')) {
                     if (!is_dir($dir)) {
@@ -213,7 +213,7 @@ class Factory
                 $io->writeError('Loading config file ' . $file->getPath(), true, IOInterface::DEBUG);
             }
             self::validateJsonSchema($io, $file, JsonFile::AUTH_SCHEMA);
-            $config->merge(array('config' => $file->read()), $file->getPath());
+            $config->merge(['config' => $file->read()], $file->getPath());
         }
         $config->setAuthConfigSource(new JsonConfigSource($file, true));
 
@@ -231,7 +231,7 @@ class Factory
                 self::validateJsonSchema($io, $authData, JsonFile::AUTH_SCHEMA, 'COMPOSER_AUTH');
                 $authData = json_decode($composerAuthEnv, true);
                 if (null !== $authData) {
-                    $config->merge(array('config' => $authData), 'COMPOSER_AUTH');
+                    $config->merge(['config' => $authData], 'COMPOSER_AUTH');
                 }
             }
         }
@@ -256,10 +256,10 @@ class Factory
      */
     public static function createAdditionalStyles(): array
     {
-        return array(
+        return [
             'highlight' => new OutputFormatterStyle('red'),
             'warning' => new OutputFormatterStyle('black', 'yellow'),
-        );
+        ];
     }
 
     public static function createOutput(): ConsoleOutput
@@ -334,7 +334,7 @@ class Factory
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 self::validateJsonSchema($io, $localAuthFile, JsonFile::AUTH_SCHEMA);
-                $config->merge(array('config' => $localAuthFile->read()), $localAuthFile->getPath());
+                $config->merge(['config' => $localAuthFile->read()], $localAuthFile->getPath());
                 $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
         }
@@ -628,7 +628,7 @@ class Factory
      * @param  mixed[]        $options Array of options passed directly to HttpDownloader constructor
      * @return HttpDownloader
      */
-    public static function createHttpDownloader(IOInterface $io, Config $config, array $options = array()): HttpDownloader
+    public static function createHttpDownloader(IOInterface $io, Config $config, array $options = []): HttpDownloader
     {
         static $warned = false;
         $disableTls = false;
@@ -646,7 +646,7 @@ class Factory
             throw new Exception\NoSslException('The openssl extension is required for SSL/TLS protection but is not available. '
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
         }
-        $httpDownloaderOptions = array();
+        $httpDownloaderOptions = [];
         if ($disableTls === false) {
             if ('' !== $config->get('cafile')) {
                 $httpDownloaderOptions['ssl']['cafile'] = $config->get('cafile');

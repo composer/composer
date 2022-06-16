@@ -43,9 +43,9 @@ class HttpDownloader
     /** @var Config */
     private $config;
     /** @var array<Job> */
-    private $jobs = array();
+    private $jobs = [];
     /** @var mixed[] */
-    private $options = array();
+    private $options = [];
     /** @var int */
     private $runningJobs = 0;
     /** @var int */
@@ -67,7 +67,7 @@ class HttpDownloader
      * @param mixed[]     $options    The options
      * @param bool        $disableTls
      */
-    public function __construct(IOInterface $io, Config $config, array $options = array(), bool $disableTls = false)
+    public function __construct(IOInterface $io, Config $config, array $options = [], bool $disableTls = false)
     {
         $this->io = $io;
 
@@ -103,9 +103,9 @@ class HttpDownloader
      * @throws TransportException
      * @return Response
      */
-    public function get(string $url, array $options = array())
+    public function get(string $url, array $options = [])
     {
-        list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null), true);
+        list($job) = $this->addJob(['url' => $url, 'options' => $options, 'copyTo' => null], true);
         $this->wait($job['id']);
 
         $response = $this->getResponse($job['id']);
@@ -122,9 +122,9 @@ class HttpDownloader
      * @throws TransportException
      * @return PromiseInterface
      */
-    public function add(string $url, array $options = array())
+    public function add(string $url, array $options = [])
     {
-        list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null));
+        list(, $promise) = $this->addJob(['url' => $url, 'options' => $options, 'copyTo' => null]);
 
         return $promise;
     }
@@ -139,9 +139,9 @@ class HttpDownloader
      * @throws TransportException
      * @return Response
      */
-    public function copy(string $url, string $to, array $options = array())
+    public function copy(string $url, string $to, array $options = [])
     {
-        list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to), true);
+        list($job) = $this->addJob(['url' => $url, 'options' => $options, 'copyTo' => $to], true);
         $this->wait($job['id']);
 
         return $this->getResponse($job['id']);
@@ -157,9 +157,9 @@ class HttpDownloader
      * @throws TransportException
      * @return PromiseInterface
      */
-    public function addCopy(string $url, string $to, array $options = array())
+    public function addCopy(string $url, string $to, array $options = [])
     {
-        list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to));
+        list(, $promise) = $this->addJob(['url' => $url, 'options' => $options, 'copyTo' => $to]);
 
         return $promise;
     }
@@ -194,13 +194,13 @@ class HttpDownloader
         $request['options'] = array_replace_recursive($this->options, $request['options']);
 
         /** @var Job */
-        $job = array(
+        $job = [
             'id' => $this->idGen++,
             'status' => self::STATUS_QUEUED,
             'request' => $request,
             'sync' => $sync,
             'origin' => Url::getOrigin($this->config, $request['url']),
-        );
+        ];
 
         if (!$sync && !$this->allowAsync) {
             throw new \LogicException('You must use the HttpDownloader instance which is part of a Composer\Loop instance to be able to run async http requests');
@@ -282,7 +282,7 @@ class HttpDownloader
             $this->startJob($job['id']);
         }
 
-        return array($job, $promise);
+        return [$job, $promise];
     }
 
     /**
@@ -308,7 +308,7 @@ class HttpDownloader
 
         if ($this->disabled) {
             if (isset($job['request']['options']['http']['header']) && false !== stripos(implode('', $job['request']['options']['http']['header']), 'if-modified-since')) {
-                $resolve(new Response(array('url' => $url), 304, array(), ''));
+                $resolve(new Response(['url' => $url], 304, [], ''));
             } else {
                 $e = new TransportException('Network disabled, request canceled: '.Url::sanitize($url), 499);
                 $e->setStatusCode(499);
@@ -437,7 +437,7 @@ class HttpDownloader
         };
 
         // legacy warning/info keys
-        foreach (array('warning', 'info') as $type) {
+        foreach (['warning', 'info'] as $type) {
             if (empty($data[$type])) {
                 continue;
             }
@@ -455,7 +455,7 @@ class HttpDownloader
         }
 
         // modern Composer 2.2+ format with support for multiple warning/info messages
-        foreach (array('warnings', 'infos') as $key) {
+        foreach (['warnings', 'infos'] as $key) {
             if (empty($data[$key])) {
                 continue;
             }
@@ -490,20 +490,20 @@ class HttpDownloader
             || false !== strpos($e->getMessage(), 'Could not resolve host')
         ) {
             Silencer::suppress();
-            $testConnectivity = file_get_contents('https://8.8.8.8', false, stream_context_create(array(
-                'ssl' => array('verify_peer' => false),
-                'http' => array('follow_location' => false, 'ignore_errors' => true),
-            )));
+            $testConnectivity = file_get_contents('https://8.8.8.8', false, stream_context_create([
+                'ssl' => ['verify_peer' => false],
+                'http' => ['follow_location' => false, 'ignore_errors' => true],
+            ]));
             Silencer::restore();
             if (false !== $testConnectivity) {
-                return array(
+                return [
                     '<error>The following exception probably indicates you have misconfigured DNS resolver(s)</error>',
-                );
+                ];
             }
 
-            return array(
+            return [
                 '<error>The following exception probably indicates you are offline or have misconfigured DNS resolver(s)</error>',
-            );
+            ];
         }
 
         return null;

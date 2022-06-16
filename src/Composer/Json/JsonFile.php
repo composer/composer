@@ -231,23 +231,23 @@ class JsonFile
             $schemaFile = 'file://' . $schemaFile;
         }
 
-        $schemaData = (object) array('$ref' => $schemaFile);
+        $schemaData = (object) ['$ref' => $schemaFile];
 
         if ($schema === self::LAX_SCHEMA) {
             $schemaData->additionalProperties = true;
-            $schemaData->required = array();
+            $schemaData->required = [];
         } elseif ($schema === self::STRICT_SCHEMA && $isComposerSchemaFile) {
             $schemaData->additionalProperties = false;
-            $schemaData->required = array('name', 'description');
+            $schemaData->required = ['name', 'description'];
         } elseif ($schema === self::AUTH_SCHEMA && $isComposerSchemaFile) {
-            $schemaData = (object) array('$ref' => $schemaFile.'#/properties/config', '$schema'=> "https://json-schema.org/draft-04/schema#");
+            $schemaData = (object) ['$ref' => $schemaFile.'#/properties/config', '$schema'=> "https://json-schema.org/draft-04/schema#"];
         }
 
         $validator = new Validator();
         $validator->check($data, $schemaData);
 
         if (!$validator->isValid()) {
-            $errors = array();
+            $errors = [];
             foreach ((array) $validator->getErrors() as $error) {
                 $errors[] = ($error['property'] ? $error['property'].' : ' : '').$error['message'];
             }

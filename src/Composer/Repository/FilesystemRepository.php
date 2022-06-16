@@ -120,7 +120,7 @@ class FilesystemRepository extends WritableArrayRepository
      */
     public function write(bool $devMode, InstallationManager $installationManager)
     {
-        $data = array('packages' => array(), 'dev' => $devMode, 'dev-package-names' => array());
+        $data = ['packages' => [], 'dev' => $devMode, 'dev-package-names' => []];
         $dumper = new ArrayDumper();
 
         // make sure the directory is created so we can realpath it
@@ -130,7 +130,7 @@ class FilesystemRepository extends WritableArrayRepository
         $this->filesystem->ensureDirectoryExists($repoDir);
 
         $repoDir = $this->filesystem->normalizePath(realpath($repoDir));
-        $installPaths = array();
+        $installPaths = [];
 
         foreach ($this->getCanonicalPackages() as $package) {
             $pkgArray = $dumper->dump($package);
@@ -176,7 +176,7 @@ class FilesystemRepository extends WritableArrayRepository
      *
      * @return string
      */
-    private function dumpToPhpCode(array $array = array(), int $level = 0): string
+    private function dumpToPhpCode(array $array = [], int $level = 0): string
     {
         $lines = "array(\n";
         $level++;
@@ -325,7 +325,7 @@ class FilesystemRepository extends WritableArrayRepository
             'reference' => $reference,
             'type' => $package->getType(),
             'install_path' => $installPath,
-            'aliases' => array(),
+            'aliases' => [],
             'dev_requirement' => isset($devPackages[$package->getName()]),
         ];
 

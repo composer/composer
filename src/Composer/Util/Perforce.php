@@ -189,7 +189,7 @@ class Perforce
     public function getClient(): string
     {
         if (!isset($this->p4Client)) {
-            $cleanStreamName = str_replace(array('//', '/', '@'), array('', '_', ''), $this->getStream());
+            $cleanStreamName = str_replace(['//', '/', '@'], ['', '_', ''], $this->getStream());
             $this->p4Client = 'composer_perforce_' . $this->uniquePerforceClientName . '_' . $cleanStreamName;
         }
 
@@ -616,7 +616,7 @@ class Perforce
      */
     public function getBranches(): array
     {
-        $possibleBranches = array();
+        $possibleBranches = [];
         if (!$this->isStream()) {
             $possibleBranches[$this->p4Branch] = $this->getStream();
         } else {
@@ -640,7 +640,7 @@ class Perforce
         $lastCommitArr = explode(' ', $lastCommit);
         $lastCommitNum = $lastCommitArr[1];
 
-        return array('master' => $possibleBranches[$this->p4Branch] . '@'. $lastCommitNum);
+        return ['master' => $possibleBranches[$this->p4Branch] . '@'. $lastCommitNum];
     }
 
     /**
@@ -652,7 +652,7 @@ class Perforce
         $this->executeCommand($command);
         $result = $this->commandResult;
         $resArray = explode(PHP_EOL, $result);
-        $tags = array();
+        $tags = [];
         foreach ($resArray as $line) {
             if (strpos($line, 'Label') !== false) {
                 $fields = explode(' ', $line);

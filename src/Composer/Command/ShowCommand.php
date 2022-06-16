@@ -74,9 +74,9 @@ class ShowCommand extends BaseCommand
     {
         $this
             ->setName('show')
-            ->setAliases(array('info'))
+            ->setAliases(['info'])
             ->setDescription('Shows information about packages.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.', null, $this->suggestPackageBasedOnMode()),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),
                 new InputOption('all', null, InputOption::VALUE_NONE, 'List all packages'),
@@ -100,7 +100,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages). Use with the --outdated option'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages). Use with the --outdated option'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The show command displays detailed information about a package, or
@@ -178,7 +178,7 @@ EOT
         }
 
         $format = $input->getOption('format');
-        if (!in_array($format, array('text', 'json'))) {
+        if (!in_array($format, ['text', 'json'])) {
             $io->writeError(sprintf('Unsupported format "%s". See help for supported formats.', $format));
 
             return 1;
@@ -187,11 +187,11 @@ EOT
         $platformReqFilter = $this->getPlatformRequirementFilter($input);
 
         // init repos
-        $platformOverrides = array();
+        $platformOverrides = [];
         if ($composer) {
             $platformOverrides = $composer->getConfig()->get('platform');
         }
-        $platformRepo = new PlatformRepository(array(), $platformOverrides);
+        $platformRepo = new PlatformRepository([], $platformOverrides);
         $lockedRepo = null;
 
         if ($input->getOption('self')) {
@@ -204,11 +204,11 @@ EOT
             if ($input->getArgument('package')) {
                 throw new \InvalidArgumentException('You cannot use --self together with a package name');
             }
-            $repos = $installedRepo = new InstalledRepository(array(new RootPackageRepository($package)));
+            $repos = $installedRepo = new InstalledRepository([new RootPackageRepository($package)]);
         } elseif ($input->getOption('platform')) {
-            $repos = $installedRepo = new InstalledRepository(array($platformRepo));
+            $repos = $installedRepo = new InstalledRepository([$platformRepo]);
         } elseif ($input->getOption('available')) {
-            $installedRepo = new InstalledRepository(array($platformRepo));
+            $installedRepo = new InstalledRepository([$platformRepo]);
             if ($composer) {
                 $repos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
                 $installedRepo->addRepository($composer->getRepositoryManager()->getLocalRepository());
@@ -222,36 +222,36 @@ EOT
             $locker = $composer->getLocker();
             if ($locker->isLocked()) {
                 $lockedRepo = $locker->getLockedRepository(true);
-                $installedRepo = new InstalledRepository(array($lockedRepo, $localRepo, $platformRepo));
+                $installedRepo = new InstalledRepository([$lockedRepo, $localRepo, $platformRepo]);
             } else {
-                $installedRepo = new InstalledRepository(array($localRepo, $platformRepo));
+                $installedRepo = new InstalledRepository([$localRepo, $platformRepo]);
             }
-            $repos = new CompositeRepository(array_merge(array(new FilterRepository($installedRepo, array('canonical' => false))), $composer->getRepositoryManager()->getRepositories()));
+            $repos = new CompositeRepository(array_merge([new FilterRepository($installedRepo, ['canonical' => false])], $composer->getRepositoryManager()->getRepositories()));
         } elseif ($input->getOption('all')) {
             $defaultRepos = RepositoryFactory::defaultReposWithDefaultManager($io);
             $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
-            $installedRepo = new InstalledRepository(array($platformRepo));
-            $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
+            $installedRepo = new InstalledRepository([$platformRepo]);
+            $repos = new CompositeRepository(array_merge([$installedRepo], $defaultRepos));
         } elseif ($input->getOption('locked')) {
             if (!$composer || !$composer->getLocker()->isLocked()) {
                 throw new \UnexpectedValueException('A valid composer.json and composer.lock files is required to run this command with --locked');
             }
             $locker = $composer->getLocker();
             $lockedRepo = $locker->getLockedRepository(!$input->getOption('no-dev'));
-            $repos = $installedRepo = new InstalledRepository(array($lockedRepo));
+            $repos = $installedRepo = new InstalledRepository([$lockedRepo]);
         } else {
             // --installed / default case
             if (!$composer) {
                 $composer = $this->requireComposer();
             }
             $rootPkg = $composer->getPackage();
-            $repos = $installedRepo = new InstalledRepository(array($composer->getRepositoryManager()->getLocalRepository()));
+            $repos = $installedRepo = new InstalledRepository([$composer->getRepositoryManager()->getLocalRepository()]);
 
             if ($input->getOption('no-dev')) {
                 $packages = $this->filterRequiredPackages($installedRepo, $rootPkg);
-                $repos = $installedRepo = new InstalledRepository(array(new InstalledArrayRepository(array_map(function ($pkg): PackageInterface {
+                $repos = $installedRepo = new InstalledRepository([new InstalledArrayRepository(array_map(function ($pkg): PackageInterface {
                     return clone $pkg;
-                }, $packages))));
+                }, $packages))]);
             }
 
             if (!$installedRepo->getPackages() && ($rootPkg->getRequires() || $rootPkg->getDevRequires())) {
@@ -273,7 +273,7 @@ EOT
 
         // show single package or single version
         if (isset($package)) {
-            $versions = array($package->getPrettyVersion() => $package->getVersion());
+            $versions = [$package->getPrettyVersion() => $package->getVersion()];
         } elseif (null !== $packageFilter && !str_contains($packageFilter, '*')) {
             list($package, $versions) = $this->getPackage($installedRepo, $repos, $packageFilter, $input->getArgument('version'));
 
@@ -305,9 +305,9 @@ EOT
                 $arrayTree = $this->generatePackageTree($package, $installedRepo, $repos);
 
                 if ('json' === $format) {
-                    $io->write(JsonFile::encode(array('installed' => array($arrayTree))));
+                    $io->write(JsonFile::encode(['installed' => [$arrayTree]]));
                 } else {
-                    $this->displayPackageTree(array($arrayTree));
+                    $this->displayPackageTree([$arrayTree]);
                 }
 
                 return $exitCode;
@@ -349,7 +349,7 @@ EOT
             usort($packages, function (BasePackage $a, BasePackage $b): int {
                 return strcmp((string) $a, (string) $b);
             });
-            $arrayTree = array();
+            $arrayTree = [];
             foreach ($packages as $package) {
                 if (in_array($package->getName(), $rootRequires, true)) {
                     $arrayTree[] = $this->generatePackageTree($package, $installedRepo, $repos);
@@ -357,7 +357,7 @@ EOT
             }
 
             if ('json' === $format) {
-                $io->write(JsonFile::encode(array('installed' => $arrayTree)));
+                $io->write(JsonFile::encode(['installed' => $arrayTree]));
             } else {
                 $this->displayPackageTree($arrayTree);
             }
@@ -367,13 +367,13 @@ EOT
 
         // list packages
         /** @var array<string, array<string, string|CompletePackageInterface>> $packages */
-        $packages = array();
+        $packages = [];
         $packageFilterRegex = null;
         if (null !== $packageFilter) {
             $packageFilterRegex = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
         }
 
-        $packageListFilter = array();
+        $packageListFilter = [];
         if ($input->getOption('direct')) {
             $packageListFilter = $this->getRootRequires();
         }
@@ -429,11 +429,11 @@ EOT
         $ignoredPackages = array_map('strtolower', $input->getOption('ignore'));
         $indent = $showAllTypes ? '  ' : '';
         /** @var PackageInterface[] $latestPackages */
-        $latestPackages = array();
+        $latestPackages = [];
         $exitCode = 0;
-        $viewData = array();
-        $viewMetaData = array();
-        foreach (array('platform' => true, 'locked' => true, 'available' => false, 'installed' => true) as $type => $showVersion) {
+        $viewData = [];
+        $viewMetaData = [];
+        foreach (['platform' => true, 'locked' => true, 'available' => false, 'installed' => true] as $type => $showVersion) {
             if (isset($packages[$type])) {
                 ksort($packages[$type]);
 
@@ -459,9 +459,9 @@ EOT
 
                 $hasOutdatedPackages = false;
 
-                $viewData[$type] = array();
+                $viewData[$type] = [];
                 foreach ($packages[$type] as $package) {
-                    $packageViewData = array();
+                    $packageViewData = [];
                     if (is_object($package)) {
                         $latestPackage = null;
                         if ($showLatest && isset($latestPackages[$package->getPrettyName()])) {
@@ -530,11 +530,11 @@ EOT
                     }
                     $viewData[$type][] = $packageViewData;
                 }
-                $viewMetaData[$type] = array(
+                $viewMetaData[$type] = [
                     'nameLength' => $nameLength,
                     'versionLength' => $versionLength,
                     'latestLength' => $latestLength,
-                );
+                ];
                 if ($input->getOption('strict') && $hasOutdatedPackages) {
                     $exitCode = 1;
                     break;
@@ -644,7 +644,7 @@ EOT
                 $updateStatus = $package['latest-status'];
                 $style = $this->updateStatusToVersionStyle($updateStatus);
                 if (!$io->isDecorated()) {
-                    $latestVersion = str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('=', '!', '~'), $updateStatus) . ' ' . $latestVersion;
+                    $latestVersion = str_replace(['up-to-date', 'semver-safe-update', 'update-possible'], ['=', '!', '~'], $updateStatus) . ' ' . $latestVersion;
                 }
                 $io->write(' <' . $style . '>' . str_pad($latestVersion, $latestLength, ' ') . '</' . $style . '>', false);
             }
@@ -709,7 +709,7 @@ EOT
         $repositorySet->addRepository($repos);
 
         $matchedPackage = null;
-        $versions = array();
+        $versions = [];
         if (PlatformRepository::isPlatformPackage($name)) {
             $pool = $repositorySet->createPoolWithAllPackages();
         } else {
@@ -736,7 +736,7 @@ EOT
             $matchedPackage = $pool->literalToPackage($preferred[0]);
         }
 
-        return array($matchedPackage, $versions);
+        return [$matchedPackage, $versions];
     }
 
     /**
@@ -780,7 +780,7 @@ EOT
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
         $io->write('<info>descrip.</info> : ' . $package->getDescription());
-        $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: array()));
+        $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: []));
         $this->printVersions($package, $versions, $installedRepo);
         if ($latestPackage) {
             $style = $this->getVersionStyle($latestPackage, $package);
@@ -924,14 +924,14 @@ EOT
      */
     protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null): void
     {
-        $json = array(
+        $json = [
             'name' => $package->getPrettyName(),
             'description' => $package->getDescription(),
-            'keywords' => $package->getKeywords() ?: array(),
+            'keywords' => $package->getKeywords() ?: [],
             'type' => $package->getType(),
             'homepage' => $package->getHomepage(),
             'names' => $package->getNames(),
-        );
+        ];
 
         $json = $this->appendVersions($json, $versions);
         $json = $this->appendLicenses($json, $package);
@@ -943,19 +943,19 @@ EOT
         }
 
         if (null !== $package->getSourceType()) {
-            $json['source'] = array(
+            $json['source'] = [
                 'type' => $package->getSourceType(),
                 'url' => $package->getSourceUrl(),
                 'reference' => $package->getSourceReference(),
-            );
+            ];
         }
 
         if (null !== $package->getDistType()) {
-            $json['dist'] = array(
+            $json['dist'] = [
                 'type' => $package->getDistType(),
                 'url' => $package->getDistUrl(),
                 'reference' => $package->getDistReference(),
-            );
+            ];
         }
 
         if ($installedRepo->hasPackage($package)) {
@@ -1018,11 +1018,11 @@ EOT
                     return $licenseId;
                 }
 
-                return array(
+                return [
                     'name' => $license[0],
                     'osi' => $licenseId,
                     'url' => $license[2],
-                );
+                ];
             }, $licenses);
         }
 
@@ -1036,11 +1036,11 @@ EOT
     private function appendAutoload(array $json, CompletePackageInterface $package): array
     {
         if ($package->getAutoload()) {
-            $autoload = array();
+            $autoload = [];
 
             foreach ($package->getAutoload() as $type => $autoloads) {
                 if ($type === 'psr-0' || $type === 'psr-4') {
-                    $psr = array();
+                    $psr = [];
 
                     foreach ($autoloads as $name => $path) {
                         if (!$path) {
@@ -1085,7 +1085,7 @@ EOT
         $links = $package->{'get' . ucfirst($linkType)}();
 
         if ($links) {
-            $json[$linkType] = array();
+            $json[$linkType] = [];
 
             foreach ($links as $link) {
                 $json[$linkType][$link->getTarget()] = $link->getPrettyConstraint();
@@ -1102,13 +1102,13 @@ EOT
      */
     protected function initStyles(OutputInterface $output): void
     {
-        $this->colors = array(
+        $this->colors = [
             'green',
             'yellow',
             'cyan',
             'magenta',
             'blue',
-        );
+        ];
 
         foreach ($this->colors as $color) {
             $style = new OutputFormatterStyle($color);
@@ -1154,7 +1154,7 @@ EOT
                     $this->writeTreeLine($info);
 
                     $treeBar = str_replace('└', ' ', $treeBar);
-                    $packagesInTree = array($package['name'], $requireName);
+                    $packagesInTree = [$package['name'], $requireName];
 
                     $this->displayTree($require, $packagesInTree, $treeBar, $level + 1);
                 }
@@ -1174,14 +1174,14 @@ EOT
     ): array {
         $requires = $package->getRequires();
         ksort($requires);
-        $children = array();
+        $children = [];
         foreach ($requires as $requireName => $require) {
-            $packagesInTree = array($package->getName(), $requireName);
+            $packagesInTree = [$package->getName(), $requireName];
 
-            $treeChildDesc = array(
+            $treeChildDesc = [
                 'name' => $requireName,
                 'version' => $require->getPrettyConstraint(),
-            );
+            ];
 
             $deepChildren = $this->addTree($requireName, $require, $installedRepo, $remoteRepos, $packagesInTree);
 
@@ -1191,11 +1191,11 @@ EOT
 
             $children[] = $treeChildDesc;
         }
-        $tree = array(
+        $tree = [
             'name' => $package->getPrettyName(),
             'version' => $package->getPrettyVersion(),
             'description' => $package instanceof CompletePackageInterface ? $package->getDescription() : '',
-        );
+        ];
 
         if ($children) {
             $tree['requires'] = $children;
@@ -1273,7 +1273,7 @@ EOT
         RepositoryInterface $remoteRepos,
         array $packagesInTree
     ): array {
-        $children = array();
+        $children = [];
         list($package) = $this->getPackage(
             $installedRepo,
             $remoteRepos,
@@ -1286,10 +1286,10 @@ EOT
             foreach ($requires as $requireName => $require) {
                 $currentTree = $packagesInTree;
 
-                $treeChildDesc = array(
+                $treeChildDesc = [
                     'name' => $requireName,
                     'version' => $require->getPrettyConstraint(),
-                );
+                ];
 
                 if (!in_array($requireName, $currentTree, true)) {
                     $currentTree[] = $requireName;
@@ -1315,7 +1315,7 @@ EOT
         // 'up-to-date' is printed green
         // 'semver-safe-update' is printed red
         // 'update-possible' is printed yellow
-        return str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('info', 'highlight', 'comment'), $updateStatus);
+        return str_replace(['up-to-date', 'semver-safe-update', 'update-possible'], ['info', 'highlight', 'comment'], $updateStatus);
     }
 
     /**
@@ -1349,7 +1349,7 @@ EOT
     {
         $io = $this->getIO();
         if (!$io->isDecorated()) {
-            $line = str_replace(array('└', '├', '──', '│'), array('`-', '|-', '-', '|'), $line);
+            $line = str_replace(['└', '├', '──', '│'], ['`-', '|-', '-', '|'], $line);
         }
 
         $io->write($line);
@@ -1430,7 +1430,7 @@ EOT
      * @param  array<PackageInterface> $bucket
      * @return array<PackageInterface>
      */
-    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = array()): array
+    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = []): array
     {
         $requires = $package->getRequires();
 

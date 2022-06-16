@@ -82,7 +82,7 @@ class Comparer
             return '';
         }
 
-        $strings = array();
+        $strings = [];
         foreach ($changed as $sectionKey => $itemSection) {
             foreach ($itemSection as $itemKey => $item) {
                 $strings[] = $item."\r\n";
@@ -97,9 +97,9 @@ class Comparer
      */
     public function doCompare(): void
     {
-        $source = array();
-        $destination = array();
-        $this->changed = array();
+        $source = [];
+        $destination = [];
+        $this->changed = [];
         $currentDirectory = Platform::getCwd();
         chdir($this->source);
         $source = $this->doTree('.', $source);

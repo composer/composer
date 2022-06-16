@@ -156,7 +156,7 @@ class Svn
         }
 
         $errorOutput = $this->process->getErrorOutput();
-        $fullOutput = trim(implode("\n", array($output, $errorOutput)));
+        $fullOutput = trim(implode("\n", [$output, $errorOutput]));
 
         // the error is not auth-related
         if (false === stripos($fullOutput, 'Could not authenticate to server:')
@@ -208,10 +208,10 @@ class Svn
         $this->io->writeError("The Subversion server ({$this->url}) requested credentials:");
 
         $this->hasAuth = true;
-        $this->credentials = array(
+        $this->credentials = [
             'username' => (string) $this->io->ask("Username: ", ''),
             'password' => (string) $this->io->askAndHideAnswer("Password: "),
-        );
+        ];
 
         $this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ");
 
@@ -338,10 +338,10 @@ class Svn
 
         $host = parse_url($this->url, PHP_URL_HOST);
         if (isset($authConfig[$host])) {
-            $this->credentials = array(
+            $this->credentials = [
                 'username' => $authConfig[$host]['username'],
                 'password' => $authConfig[$host]['password'],
-            );
+            ];
 
             return $this->hasAuth = true;
         }
@@ -361,10 +361,10 @@ class Svn
             return $this->hasAuth = false;
         }
 
-        $this->credentials = array(
+        $this->credentials = [
             'username' => $uri['user'],
             'password' => !empty($uri['pass']) ? $uri['pass'] : '',
-        );
+        ];
 
         return $this->hasAuth = true;
     }

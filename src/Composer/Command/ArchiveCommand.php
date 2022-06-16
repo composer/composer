@@ -51,7 +51,7 @@ class ArchiveCommand extends BaseCommand
         $this
             ->setName('archive')
             ->setDescription('Creates an archive of this composer package.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project', null, $this->suggestAvailablePackage()),
                 new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar, tar.gz, tar.bz2 or zip (default tar)', null, self::FORMATS),
@@ -59,7 +59,7 @@ class ArchiveCommand extends BaseCommand
                 new InputOption('file', null, InputOption::VALUE_REQUIRED, 'Write the archive with the given file name.'
                     .' Note that the format will be appended.'),
                 new InputOption('ignore-filters', null, InputOption::VALUE_NONE, 'Ignore filters when saving package'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>archive</info> command creates an archive of the specified format
@@ -161,7 +161,7 @@ EOT
 
         if ($composer = $this->tryComposer()) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-            $repo = new CompositeRepository(array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
+            $repo = new CompositeRepository(array_merge([$localRepo], $composer->getRepositoryManager()->getRepositories()));
         } else {
             $defaultRepos = RepositoryFactory::defaultReposWithDefaultManager($io);
             $io->writeError('No composer.json found in the current directory, searching packages from ' . implode(', ', array_keys($defaultRepos)));

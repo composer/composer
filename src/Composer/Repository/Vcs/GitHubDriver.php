@@ -143,7 +143,7 @@ class GitHubDriver extends VcsDriver
             $url = $this->getUrl();
         }
 
-        return array('type' => 'git', 'url' => $url, 'reference' => $identifier);
+        return ['type' => 'git', 'url' => $url, 'reference' => $identifier];
     }
 
     /**
@@ -153,7 +153,7 @@ class GitHubDriver extends VcsDriver
     {
         $url = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/zipball/'.$identifier;
 
-        return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
+        return ['type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => ''];
     }
 
     /**
@@ -212,11 +212,11 @@ class GitHubDriver extends VcsDriver
             return $this->fundingInfo = false;
         }
 
-        foreach (array($this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/.github/FUNDING.yml', $this->getApiUrl() . '/repos/'.$this->owner.'/.github/contents/FUNDING.yml') as $file) {
+        foreach ([$this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/.github/FUNDING.yml', $this->getApiUrl() . '/repos/'.$this->owner.'/.github/contents/FUNDING.yml'] as $file) {
             try {
-                $response = $this->httpDownloader->get($file, array(
+                $response = $this->httpDownloader->get($file, [
                     'retry-auth-failure' => false,
-                ))->decodeJson();
+                ])->decodeJson();
             } catch (TransportException $e) {
                 continue;
             }
@@ -229,7 +229,7 @@ class GitHubDriver extends VcsDriver
             return $this->fundingInfo = false;
         }
 
-        $result = array();
+        $result = [];
         $key = null;
         foreach (Preg::split('{\r?\n}', $funding) as $line) {
             $line = trim($line);
@@ -240,10 +240,10 @@ class GitHubDriver extends VcsDriver
                 }
                 if (Preg::isMatch('{^\[(.*)\](?:\s*#.*)?$}', $match[2], $match2)) {
                     foreach (array_map('trim', Preg::split('{[\'"]?\s*,\s*[\'"]?}', $match2[1])) as $item) {
-                        $result[] = array('type' => $match[1], 'url' => trim($item, '"\' '));
+                        $result[] = ['type' => $match[1], 'url' => trim($item, '"\' ')];
                     }
                 } elseif (Preg::isMatch('{^([^#].*?)(\s+#.*)?$}', $match[2], $match2)) {
-                    $result[] = array('type' => $match[1], 'url' => trim($match2[1], '"\' '));
+                    $result[] = ['type' => $match[1], 'url' => trim($match2[1], '"\' ')];
                 }
                 $key = null;
             } elseif (Preg::isMatch('{^(\w+)\s*:\s*#\s*$}', $line, $match)) {
@@ -252,7 +252,7 @@ class GitHubDriver extends VcsDriver
                 Preg::isMatch('{^-\s*(.+)(\s+#.*)?$}', $line, $match)
                 || Preg::isMatch('{^(.+),(\s*#.*)?$}', $line, $match)
             )) {
-                $result[] = array('type' => $key, 'url' => trim($match[1], '"\' '));
+                $result[] = ['type' => $key, 'url' => trim($match[1], '"\' ')];
             } elseif ($key && $line === ']') {
                 $key = null;
             }
@@ -342,7 +342,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getTags();
         }
         if (null === $this->tags) {
-            $tags = array();
+            $tags = [];
             $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/tags?per_page=100';
 
             do {
@@ -370,7 +370,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getBranches();
         }
         if (null === $this->branches) {
-            $branches = array();
+            $branches = [];
             $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads?per_page=100';
 
             do {
@@ -468,11 +468,11 @@ class GitHubDriver extends VcsDriver
                     if (!$this->io->isInteractive()) {
                         $this->attemptCloneFallback();
 
-                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
+                        return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
 
-                    $scopesIssued = array();
-                    $scopesNeeded = array();
+                    $scopesIssued = [];
+                    $scopesNeeded = [];
                     if ($headers = $e->getHeaders()) {
                         if ($scopes = Response::findHeaderValue($headers, 'X-OAuth-Scopes')) {
                             $scopesIssued = explode(' ', $scopes);
@@ -498,7 +498,7 @@ class GitHubDriver extends VcsDriver
                     if (!$this->io->isInteractive() && $fetchingRepoData) {
                         $this->attemptCloneFallback();
 
-                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
+                        return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
 
                     $rateLimited = $gitHubUtil->isRateLimited((array) $e->getHeaders());
@@ -607,7 +607,7 @@ class GitHubDriver extends VcsDriver
     protected function setupGitDriver(string $url): void
     {
         $this->gitDriver = new GitDriver(
-            array('url' => $url),
+            ['url' => $url],
             $this->io,
             $this->config,
             $this->httpDownloader,

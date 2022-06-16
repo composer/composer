@@ -63,14 +63,14 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @private
      * @internal
      */
-    public static $downloadMetadata = array();
+    public static $downloadMetadata = [];
 
     /**
      * @var array<string, string> Map of package name to cache key
      */
-    private $lastCacheWrites = array();
+    private $lastCacheWrites = [];
     /** @var array<string, string[]> Map of package name to list of paths */
-    private $additionalCleanupPaths = array();
+    private $additionalCleanupPaths = [];
 
     /**
      * Constructor.
@@ -126,10 +126,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $retries = 3;
         $distUrls = $package->getDistUrls();
         /** @var array<array{base: string, processed: string, cacheKey: string}> $urls */
-        $urls = array();
+        $urls = [];
         foreach ($distUrls as $index => $url) {
             $processedUrl = $this->processUrl($package, $url);
-            $urls[$index] = array(
+            $urls[$index] = [
                 'base' => $url,
                 'processed' => $processedUrl,
                 // we use the complete download url here to avoid conflicting entries
@@ -137,7 +137,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 // in a third party repo to pre-populate the cache for the same package in
                 // packagist for example.
                 'cacheKey' => $cacheKeyGenerator($package, $processedUrl),
-            );
+            ];
         }
 
         $fileName = $this->getFileName($package, $path);
@@ -252,7 +252,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
             if ($e instanceof TransportException) {
                 // if we got an http response with a proper code, then requesting again will probably not help, abort
-                if ((0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
+                if ((0 !== $e->getCode() && !in_array($e->getCode(), [500, 502, 503, 504])) || !$retries) {
                     $retries = 0;
                 }
             }
@@ -260,7 +260,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             // special error code returned when network is being artificially disabled
             if ($e instanceof TransportException && $e->getStatusCode() === 499) {
                 $retries = 0;
-                $urls = array();
+                $urls = [];
             }
 
             if ($retries) {
@@ -309,11 +309,11 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $this->filesystem->unlink($fileName);
         }
 
-        $dirsToCleanUp = array(
+        $dirsToCleanUp = [
             $this->config->get('vendor-dir').'/composer/',
             $this->config->get('vendor-dir'),
             $path,
-        );
+        ];
 
         if (isset($this->additionalCleanupPaths[$package->getName()])) {
             foreach ($this->additionalCleanupPaths[$package->getName()] as $path) {

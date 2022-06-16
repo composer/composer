@@ -64,7 +64,7 @@ class SyncHelper
     public static function await(Loop $loop, PromiseInterface $promise = null): void
     {
         if ($promise) {
-            $loop->wait(array($promise));
+            $loop->wait([$promise]);
         }
     }
 }

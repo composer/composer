@@ -76,7 +76,7 @@ class JsonManipulator
 
         // no link of that type yet
         if (!isset($decoded[$type])) {
-            return $this->addMainKey($type, array($package => $constraint));
+            return $this->addMainKey($type, [$package => $constraint]);
         }
 
         $regex = '{'.self::$DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?)'.
@@ -133,25 +133,25 @@ class JsonManipulator
      * @param array<string> $packages
      * @return void
      */
-    private function sortPackages(array &$packages = array()): void
+    private function sortPackages(array &$packages = []): void
     {
         $prefix = function ($requirement): string {
             if (PlatformRepository::isPlatformPackage($requirement)) {
                 return Preg::replace(
-                    array(
+                    [
                         '/^php/',
                         '/^hhvm/',
                         '/^ext/',
                         '/^lib/',
                         '/^\D/',
-                    ),
-                    array(
+                    ],
+                    [
                         '0-$0',
                         '1-$0',
                         '2-$0',
                         '3-$0',
                         '4-$0',
-                    ),
+                    ],
                     $requirement
                 );
             }
@@ -258,16 +258,16 @@ class JsonManipulator
         $decoded = JsonFile::parseJson($this->contents);
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
+        if (in_array($mainNode, ['config', 'extra', 'scripts']) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
         // no main node yet
         if (!isset($decoded[$mainNode])) {
             if ($subName !== null) {
-                $this->addMainKey($mainNode, array($name => array($subName => $value)));
+                $this->addMainKey($mainNode, [$name => [$subName => $value]]);
             } else {
-                $this->addMainKey($mainNode, array($name => $value));
+                $this->addMainKey($mainNode, [$name => $value]);
             }
 
             return true;
@@ -301,7 +301,7 @@ class JsonManipulator
                 if ($subName !== null) {
                     $curVal = json_decode($matches['content'], true);
                     if (!is_array($curVal)) {
-                        $curVal = array();
+                        $curVal = [];
                     }
                     $curVal[$subName] = $value;
                     $value = $curVal;
@@ -319,7 +319,7 @@ class JsonManipulator
 
             if (!empty($match['content'])) {
                 if ($subName !== null) {
-                    $value = array($subName => $value);
+                    $value = [$subName => $value];
                 }
 
                 // child missing but non empty children
@@ -343,7 +343,7 @@ class JsonManipulator
                 }
             } else {
                 if ($subName !== null) {
-                    $value = array($subName => $value);
+                    $value = [$subName => $value];
                 }
 
                 // children present but empty
@@ -394,7 +394,7 @@ class JsonManipulator
         }
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
+        if (in_array($mainNode, ['config', 'extra', 'scripts']) && false !== strpos($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
@@ -584,7 +584,7 @@ class JsonManipulator
             }
 
             $out = '{' . $this->newline;
-            $elems = array();
+            $elems = [];
             foreach ($data as $key => $val) {
                 $elems[] = str_repeat($this->indent, $depth + 2) . JsonFile::encode($key). ': '.$this->format($val, $depth + 1);
             }

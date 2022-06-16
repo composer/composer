@@ -95,7 +95,7 @@ class GitLab
 
             // Composer expects the GitLab token to be stored as username and 'private-token' or 'gitlab-ci-token' to be stored as password
             // Detect cases where this is reversed and resolve automatically resolve it
-            if (in_array($username, array('private-token', 'gitlab-ci-token',  'oauth2'), true)) {
+            if (in_array($username, ['private-token', 'gitlab-ci-token',  'oauth2'], true)) {
                 $this->io->setAuthentication($originUrl, $password, $username);
             } else {
                 $this->io->setAuthentication($originUrl, $username, $password);
@@ -136,7 +136,7 @@ class GitLab
             } catch (TransportException $e) {
                 // 401 is bad credentials,
                 // 403 is max login attempts exceeded
-                if (in_array($e->getCode(), array(403, 401))) {
+                if (in_array($e->getCode(), [403, 401])) {
                     if (401 === $e->getCode()) {
                         $response = json_decode($e->getResponse(), true);
                         if (isset($response['error']) && $response['error'] === 'invalid_grant') {
@@ -181,22 +181,22 @@ class GitLab
         $username = $this->io->ask('Username: ');
         $password = $this->io->askAndHideAnswer('Password: ');
 
-        $headers = array('Content-Type: application/x-www-form-urlencoded');
+        $headers = ['Content-Type: application/x-www-form-urlencoded'];
 
         $apiUrl = $originUrl;
-        $data = http_build_query(array(
+        $data = http_build_query([
             'username' => $username,
             'password' => $password,
             'grant_type' => 'password',
-        ), '', '&');
-        $options = array(
+        ], '', '&');
+        $options = [
             'retry-auth-failure' => false,
-            'http' => array(
+            'http' => [
                 'method' => 'POST',
                 'header' => $headers,
                 'content' => $data,
-            ),
-        );
+            ],
+        ];
 
         $token = $this->httpDownloader->get($scheme.'://'.$apiUrl.'/oauth/token', $options)->decodeJson();
 

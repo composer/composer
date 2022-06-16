@@ -30,11 +30,11 @@ class ClearCacheCommand extends BaseCommand
     {
         $this
             ->setName('clear-cache')
-            ->setAliases(array('clearcache', 'cc'))
+            ->setAliases(['clearcache', 'cc'])
             ->setDescription('Clears composer\'s internal package cache.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('gc', null, InputOption::VALUE_NONE, 'Only run garbage collection, not a full cache clear'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>clear-cache</info> deletes all cached packages from composer's
@@ -51,12 +51,12 @@ EOT
         $config = Factory::createConfig();
         $io = $this->getIO();
 
-        $cachePaths = array(
+        $cachePaths = [
             'cache-vcs-dir' => $config->get('cache-vcs-dir'),
             'cache-repo-dir' => $config->get('cache-repo-dir'),
             'cache-files-dir' => $config->get('cache-files-dir'),
             'cache-dir' => $config->get('cache-dir'),
-        );
+        ];
 
         foreach ($cachePaths as $key => $cachePath) {
             // only individual dirs get garbage collected

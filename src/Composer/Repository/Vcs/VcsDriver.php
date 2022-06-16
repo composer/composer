@@ -45,7 +45,7 @@ abstract class VcsDriver implements VcsDriverInterface
     /** @var HttpDownloader */
     protected $httpDownloader;
     /** @var array<int|string, mixed> */
-    protected $infoCache = array();
+    protected $infoCache = [];
     /** @var ?Cache */
     protected $cache;
 
@@ -171,7 +171,7 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     protected function getContents(string $url): Response
     {
-        $options = $this->repoConfig['options'] ?? array();
+        $options = $this->repoConfig['options'] ?? [];
 
         return $this->httpDownloader->get($url, $options);
     }

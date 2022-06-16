@@ -54,7 +54,7 @@ class EventDispatcher
     /** @var ProcessExecutor */
     protected $process;
     /** @var array<string, array<int, array<callable|string>>> */
-    protected $listeners = array();
+    protected $listeners = [];
     /** @var bool */
     protected $runScripts = true;
     /** @var list<string> */
@@ -72,7 +72,7 @@ class EventDispatcher
         $this->composer = $composer;
         $this->io = $io;
         $this->process = $process ?? new ProcessExecutor($io);
-        $this->eventStack = array();
+        $this->eventStack = [];
     }
 
     /**
@@ -118,7 +118,7 @@ class EventDispatcher
      * @return int                                  return code of the executed script if any, for php scripts a false return
      *                                              value is changed to 1, anything else to 0
      */
-    public function dispatchScript(string $eventName, bool $devMode = false, array $additionalArgs = array(), array $flags = array()): int
+    public function dispatchScript(string $eventName, bool $devMode = false, array $additionalArgs = [], array $flags = []): int
     {
         assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
 
@@ -252,7 +252,7 @@ class EventDispatcher
                         throw $e;
                     }
                 } else {
-                    $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
+                    $args = implode(' ', array_map(['Composer\Util\ProcessExecutor', 'escape'], $event->getArguments()));
                     $exec = $callable . ($args === '' ? '' : ' '.$args);
                     if ($this->io->isVerbose()) {
                         $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
@@ -436,12 +436,12 @@ class EventDispatcher
     {
         foreach ($subscriber->getSubscribedEvents() as $eventName => $params) {
             if (is_string($params)) {
-                $this->addListener($eventName, array($subscriber, $params));
+                $this->addListener($eventName, [$subscriber, $params]);
             } elseif (is_string($params[0])) {
-                $this->addListener($eventName, array($subscriber, $params[0]), $params[1] ?? 0);
+                $this->addListener($eventName, [$subscriber, $params[0]], $params[1] ?? 0);
             } else {
                 foreach ($params as $listener) {
-                    $this->addListener($eventName, array($subscriber, $listener[0]), $listener[1] ?? 0);
+                    $this->addListener($eventName, [$subscriber, $listener[0]], $listener[1] ?? 0);
                 }
             }
         }
@@ -455,10 +455,10 @@ class EventDispatcher
      */
     protected function getListeners(Event $event): array
     {
-        $scriptListeners = $this->runScripts ? $this->getScriptListeners($event) : array();
+        $scriptListeners = $this->runScripts ? $this->getScriptListeners($event) : [];
 
         if (!isset($this->listeners[$event->getName()][0])) {
-            $this->listeners[$event->getName()][0] = array();
+            $this->listeners[$event->getName()][0] = [];
         }
         krsort($this->listeners[$event->getName()]);
 
@@ -493,7 +493,7 @@ class EventDispatcher
         $scripts = $package->getScripts();
 
         if (empty($scripts[$event->getName()])) {
-            return array();
+            return [];
         }
 
         assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));

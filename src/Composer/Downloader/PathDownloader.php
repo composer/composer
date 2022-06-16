@@ -90,7 +90,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         }
 
         // Get the transport options with default values
-        $transportOptions = $package->getTransportOptions() + array('relative' => true);
+        $transportOptions = $package->getTransportOptions() + ['relative' => true];
 
         list($currentStrategy, $allowedStrategies) = $this->computeAllowedStrategies($transportOptions);
 
@@ -147,7 +147,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             if ($output) {
                 $this->io->writeError(sprintf('%sMirroring from %s', $isFallback ? '    ' : '', $url), false);
             }
-            $iterator = new ArchivableFilesFinder($realUrl, array());
+            $iterator = new ArchivableFilesFinder($realUrl, []);
             $symfonyFilesystem->mirror($realUrl, $path, $iterator);
         }
 
@@ -254,7 +254,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     {
         // When symlink transport option is null, both symlink and mirror are allowed
         $currentStrategy = self::STRATEGY_SYMLINK;
-        $allowedStrategies = array(self::STRATEGY_SYMLINK, self::STRATEGY_MIRROR);
+        $allowedStrategies = [self::STRATEGY_SYMLINK, self::STRATEGY_MIRROR];
 
         $mirrorPathRepos = Platform::getEnv('COMPOSER_MIRROR_PATH_REPOS');
         if ($mirrorPathRepos) {
@@ -265,10 +265,10 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         if (true === $symlinkOption) {
             $currentStrategy = self::STRATEGY_SYMLINK;
-            $allowedStrategies = array(self::STRATEGY_SYMLINK);
+            $allowedStrategies = [self::STRATEGY_SYMLINK];
         } elseif (false === $symlinkOption) {
             $currentStrategy = self::STRATEGY_MIRROR;
-            $allowedStrategies = array(self::STRATEGY_MIRROR);
+            $allowedStrategies = [self::STRATEGY_MIRROR];
         }
 
         // Check we can use junctions safely if we are on Windows
@@ -277,7 +277,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 throw new \RuntimeException('You are on an old Windows / old PHP combo which does not allow Composer to use junctions/symlinks and this path repository has symlink:true in its options so copying is not allowed');
             }
             $currentStrategy = self::STRATEGY_MIRROR;
-            $allowedStrategies = array(self::STRATEGY_MIRROR);
+            $allowedStrategies = [self::STRATEGY_MIRROR];
         }
 
         // Check we can use symlink() otherwise
@@ -286,10 +286,10 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 throw new \RuntimeException('Your PHP has the symlink() function disabled which does not allow Composer to use symlinks and this path repository has symlink:true in its options so copying is not allowed');
             }
             $currentStrategy = self::STRATEGY_MIRROR;
-            $allowedStrategies = array(self::STRATEGY_MIRROR);
+            $allowedStrategies = [self::STRATEGY_MIRROR];
         }
 
-        return array($currentStrategy, $allowedStrategies);
+        return [$currentStrategy, $allowedStrategies];
     }
 
     /**

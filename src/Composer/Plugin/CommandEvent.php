@@ -48,7 +48,7 @@ class CommandEvent extends Event
      * @param mixed[]         $args        Arguments passed by the user
      * @param mixed[]         $flags       Optional flags to pass data not as argument
      */
-    public function __construct(string $name, string $commandName, InputInterface $input, OutputInterface $output, array $args = array(), array $flags = array())
+    public function __construct(string $name, string $commandName, InputInterface $input, OutputInterface $output, array $args = [], array $flags = [])
     {
         parent::__construct($name, $args, $flags);
         $this->commandName = $commandName;

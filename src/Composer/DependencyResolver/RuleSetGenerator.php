@@ -31,9 +31,9 @@ class RuleSetGenerator
     /** @var RuleSet */
     protected $rules;
     /** @var array<int, BasePackage> */
-    protected $addedMap = array();
+    protected $addedMap = [];
     /** @var array<string, BasePackage[]> */
-    protected $addedPackagesByNames = array();
+    protected $addedPackagesByNames = [];
 
     public function __construct(PolicyInterface $policy, Pool $pool)
     {
@@ -58,7 +58,7 @@ class RuleSetGenerator
      */
     protected function createRequireRule(BasePackage $package, array $providers, $reason, $reasonData = null): ?Rule
     {
-        $literals = array(-$package->id);
+        $literals = [-$package->id];
 
         foreach ($providers as $provider) {
             // self fulfilling rule?
@@ -87,7 +87,7 @@ class RuleSetGenerator
      */
     protected function createInstallOneOfRule(array $packages, $reason, $reasonData): Rule
     {
-        $literals = array();
+        $literals = [];
         foreach ($packages as $package) {
             $literals[] = $package->id;
         }
@@ -129,7 +129,7 @@ class RuleSetGenerator
      */
     protected function createMultiConflictRule(array $packages, $reason, $reasonData): Rule
     {
-        $literals = array();
+        $literals = [];
         foreach ($packages as $package) {
             $literals[] = -$package->id;
         }
@@ -184,10 +184,10 @@ class RuleSetGenerator
                 }
             } else {
                 $workQueue->enqueue($package->getAliasOf());
-                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($package->getAliasOf()), Rule::RULE_PACKAGE_ALIAS, $package));
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, [$package->getAliasOf()], Rule::RULE_PACKAGE_ALIAS, $package));
 
                 // aliases must be installed with their main package, so create a rule the other way around as well
-                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), array($package), Rule::RULE_PACKAGE_INVERSE_ALIAS, $package->getAliasOf()));
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), [$package], Rule::RULE_PACKAGE_INVERSE_ALIAS, $package->getAliasOf()));
 
                 // if alias package has no self.version requires, its requirements do not
                 // need to be added as the aliased package processing will take care of it
@@ -274,9 +274,9 @@ class RuleSetGenerator
 
             $this->addRulesForPackage($package, $platformRequirementFilter);
 
-            $rule = $this->createInstallOneOfRule(array($package), Rule::RULE_FIXED, array(
+            $rule = $this->createInstallOneOfRule([$package], Rule::RULE_FIXED, [
                 'package' => $package,
-            ));
+            ]);
             $this->addRule(RuleSet::TYPE_REQUEST, $rule);
         }
 
@@ -293,10 +293,10 @@ class RuleSetGenerator
                     $this->addRulesForPackage($package, $platformRequirementFilter);
                 }
 
-                $rule = $this->createInstallOneOfRule($packages, Rule::RULE_ROOT_REQUIRE, array(
+                $rule = $this->createInstallOneOfRule($packages, Rule::RULE_ROOT_REQUIRE, [
                     'packageName' => $packageName,
                     'constraint' => $constraint,
-                ));
+                ]);
                 $this->addRule(RuleSet::TYPE_REQUEST, $rule);
             }
         }
@@ -334,7 +334,7 @@ class RuleSetGenerator
         $this->addConflictRules($platformRequirementFilter);
 
         // Remove references to packages
-        $this->addedMap = $this->addedPackagesByNames = array();
+        $this->addedMap = $this->addedPackagesByNames = [];
 
         $rules = $this->rules;
 

@@ -47,9 +47,9 @@ class UpdateCommand extends BaseCommand
     {
         $this
             ->setName('update')
-            ->setAliases(array('u', 'upgrade'))
+            ->setAliases(['u', 'upgrade'])
             ->setDescription('Updates your dependencies to the latest version according to composer.json, and updates the composer.lock file.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that should be updated, if not provided all packages are.', null, $this->suggestInstalledPackage()),
                 new InputOption('with', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Temporary version constraint to add, e.g. foo/bar:1.0.0 or foo/bar=1.0.0'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
@@ -76,7 +76,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>update</info> command reads the composer.json file from the
@@ -177,7 +177,7 @@ EOT
         // the arguments lock/nothing/mirrors are not package names but trigger a mirror update instead
         // they are further mutually exclusive with listing actual package names
         $filteredPackages = array_filter($packages, function ($package): bool {
-            return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
+            return !in_array($package, ['lock', 'nothing', 'mirrors'], true);
         });
         $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
         $packages = $filteredPackages;
@@ -252,7 +252,7 @@ EOT
             $composer->getPackage()->getRequires(),
             $composer->getPackage()->getDevRequires()
         );
-        $autocompleterValues = array();
+        $autocompleterValues = [];
         foreach ($requires as $require) {
             $target = $require->getTarget();
             $autocompleterValues[strtolower($target)] = $target;
@@ -289,9 +289,9 @@ EOT
         }
 
         $table = new Table($output);
-        $table->setHeaders(array('Selected packages'));
+        $table->setHeaders(['Selected packages']);
         foreach ($packages as $package) {
-            $table->addRow(array($package));
+            $table->addRow([$package]);
         }
         $table->render();
 

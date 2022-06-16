@@ -50,7 +50,7 @@ class PreFileDownloadEvent extends Event
     /**
      * @var mixed[]
      */
-    private $transportOptions = array();
+    private $transportOptions = [];
 
     /**
      * Constructor.

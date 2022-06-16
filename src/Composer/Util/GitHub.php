@@ -115,11 +115,11 @@ class GitHub
         try {
             $apiUrl = ('github.com' === $originUrl) ? 'api.github.com/' : $originUrl . '/api/v3/';
 
-            $this->httpDownloader->get('https://'. $apiUrl, array(
+            $this->httpDownloader->get('https://'. $apiUrl, [
                 'retry-auth-failure' => false,
-            ));
+            ]);
         } catch (TransportException $e) {
-            if (in_array($e->getCode(), array(403, 401))) {
+            if (in_array($e->getCode(), [403, 401])) {
                 $this->io->writeError('<error>Invalid token provided.</error>');
                 $this->io->writeError('You can also add it manually later by using "composer config --global --auth github-oauth.github.com <token>"');
 
@@ -147,10 +147,10 @@ class GitHub
      */
     public function getRateLimit(array $headers): array
     {
-        $rateLimit = array(
+        $rateLimit = [
             'limit' => '?',
             'reset' => '?',
-        );
+        ];
 
         foreach ($headers as $header) {
             $header = trim($header);

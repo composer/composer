@@ -39,11 +39,11 @@ use React\Promise\PromiseInterface;
 class InstallationManager
 {
     /** @var array<InstallerInterface> */
-    private $installers = array();
+    private $installers = [];
     /** @var array<string, InstallerInterface> */
-    private $cache = array();
+    private $cache = [];
     /** @var array<string, array<PackageInterface>> */
-    private $notifiablePackages = array();
+    private $notifiablePackages = [];
     /** @var Loop */
     private $loop;
     /** @var IOInterface */
@@ -65,8 +65,8 @@ class InstallationManager
      */
     public function reset(): void
     {
-        $this->notifiablePackages = array();
-        FileDownloader::$downloadMetadata = array();
+        $this->notifiablePackages = [];
+        FileDownloader::$downloadMetadata = [];
     }
 
     /**
@@ -79,7 +79,7 @@ class InstallationManager
     public function addInstaller(InstallerInterface $installer): void
     {
         array_unshift($this->installers, $installer);
-        $this->cache = array();
+        $this->cache = [];
     }
 
     /**
@@ -93,7 +93,7 @@ class InstallationManager
     {
         if (false !== ($key = array_search($installer, $this->installers, true))) {
             array_splice($this->installers, $key, 1);
-            $this->cache = array();
+            $this->cache = [];
         }
     }
 
@@ -195,12 +195,12 @@ class InstallationManager
     public function execute(InstalledRepositoryInterface $repo, array $operations, bool $devMode = true, bool $runScripts = true): void
     {
         /** @var PromiseInterface[] */
-        $cleanupPromises = array();
+        $cleanupPromises = [];
 
         $loop = $this->loop;
         $io = $this->io;
         $runCleanup = function () use (&$cleanupPromises, $loop): void {
-            $promises = array();
+            $promises = [];
 
             $loop->abortJobs();
 
@@ -233,7 +233,7 @@ class InstallationManager
                 $io->writeError('Received SIGINT, aborting', true, IOInterface::DEBUG);
                 $runCleanup();
 
-                if (!in_array($prevHandler, array(SIG_DFL, SIG_IGN), true)) {
+                if (!in_array($prevHandler, [SIG_DFL, SIG_IGN], true)) {
                     call_user_func($prevHandler, $sig);
                 }
 
@@ -256,8 +256,8 @@ class InstallationManager
         try {
             // execute operations in batches to make sure download-modifying-plugins are installed
             // before the other packages get downloaded
-            $batches = array();
-            $batch = array();
+            $batches = [];
+            $batch = [];
             foreach ($operations as $index => $operation) {
                 if ($operation instanceof UpdateOperation || $operation instanceof InstallOperation) {
                     $package = $operation instanceof UpdateOperation ? $operation->getTargetPackage() : $operation->getPackage();
@@ -265,8 +265,8 @@ class InstallationManager
                         if ($batch) {
                             $batches[] = $batch;
                         }
-                        $batches[] = array($index => $operation);
-                        $batch = array();
+                        $batches[] = [$index => $operation];
+                        $batch = [];
 
                         continue;
                     }
@@ -318,13 +318,13 @@ class InstallationManager
      */
     private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, bool $devMode, bool $runScripts, array $allOperations): void
     {
-        $promises = array();
+        $promises = [];
 
         foreach ($operations as $index => $operation) {
             $opType = $operation->getOperationType();
 
             // ignoring alias ops as they don't need to execute anything at this stage
-            if (!in_array($opType, array('update', 'install', 'uninstall'))) {
+            if (!in_array($opType, ['update', 'install', 'uninstall'])) {
                 continue;
             }
 
@@ -364,8 +364,8 @@ class InstallationManager
 
         // execute operations in batches to make sure every plugin is installed in the
         // right order and activated before the packages depending on it are installed
-        $batches = array();
-        $batch = array();
+        $batches = [];
+        $batch = [];
         foreach ($operations as $index => $operation) {
             if ($operation instanceof InstallOperation || $operation instanceof UpdateOperation) {
                 $package = $operation instanceof UpdateOperation ? $operation->getTargetPackage() : $operation->getPackage();
@@ -373,8 +373,8 @@ class InstallationManager
                     if ($batch) {
                         $batches[] = $batch;
                     }
-                    $batches[] = array($index => $operation);
-                    $batch = array();
+                    $batches[] = [$index => $operation];
+                    $batch = [];
 
                     continue;
                 }
@@ -402,14 +402,14 @@ class InstallationManager
      */
     private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, bool $devMode, bool $runScripts, array $allOperations): void
     {
-        $promises = array();
-        $postExecCallbacks = array();
+        $promises = [];
+        $postExecCallbacks = [];
 
         foreach ($operations as $index => $operation) {
             $opType = $operation->getOperationType();
 
             // ignoring alias ops as they don't need to execute anything
-            if (!in_array($opType, array('update', 'install', 'uninstall'))) {
+            if (!in_array($opType, ['update', 'install', 'uninstall'])) {
                 // output alias ops in debug verbosity as they have no output otherwise
                 if ($this->io->isDebug()) {
                     $this->io->writeError('  - ' . $operation->show(false));
@@ -647,7 +647,7 @@ class InstallationManager
      */
     public function notifyInstalls(IOInterface $io): void
     {
-        $promises = array();
+        $promises = [];
 
         try {
             foreach ($this->notifiablePackages as $repoUrl => $packages) {
@@ -656,19 +656,19 @@ class InstallationManager
                     foreach ($packages as $package) {
                         $url = str_replace('%package%', $package->getPrettyName(), $repoUrl);
 
-                        $params = array(
+                        $params = [
                             'version' => $package->getPrettyVersion(),
                             'version_normalized' => $package->getVersion(),
-                        );
-                        $opts = array(
+                        ];
+                        $opts = [
                             'retry-auth-failure' => false,
-                            'http' => array(
+                            'http' => [
                                 'method' => 'POST',
-                                'header' => array('Content-type: application/x-www-form-urlencoded'),
+                                'header' => ['Content-type: application/x-www-form-urlencoded'],
                                 'content' => http_build_query($params, '', '&'),
                                 'timeout' => 3,
-                            ),
-                        );
+                            ],
+                        ];
 
                         $promises[] = $this->loop->getHttpDownloader()->add($url, $opts);
                     }
@@ -676,12 +676,12 @@ class InstallationManager
                     continue;
                 }
 
-                $postData = array('downloads' => array());
+                $postData = ['downloads' => []];
                 foreach ($packages as $package) {
-                    $packageNotification = array(
+                    $packageNotification = [
                         'name' => $package->getPrettyName(),
                         'version' => $package->getVersion(),
-                    );
+                    ];
                     if (strpos($repoUrl, 'packagist.org/') !== false) {
                         if (isset(FileDownloader::$downloadMetadata[$package->getName()])) {
                             $packageNotification['downloaded'] = FileDownloader::$downloadMetadata[$package->getName()];
@@ -692,15 +692,15 @@ class InstallationManager
                     $postData['downloads'][] = $packageNotification;
                 }
 
-                $opts = array(
+                $opts = [
                     'retry-auth-failure' => false,
-                    'http' => array(
+                    'http' => [
                         'method' => 'POST',
-                        'header' => array('Content-Type: application/json'),
+                        'header' => ['Content-Type: application/json'],
                         'content' => json_encode($postData),
                         'timeout' => 6,
-                    ),
-                );
+                    ],
+                ];
 
                 $promises[] = $this->loop->getHttpDownloader()->add($repoUrl, $opts);
             }

@@ -190,9 +190,9 @@ class AutoloadGenerator
                 Platform::putEnv('COMPOSER_DEV_MODE', $this->devMode ? '1' : '0');
             }
 
-            $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode, array(), array(
+            $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode, [], [
                 'optimize' => $scanPsrPackages,
-            ));
+            ]);
         }
 
         $filesystem = new Filesystem();
@@ -251,7 +251,7 @@ EOF;
 
         // Process the 'psr-0' base directories.
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
-            $exportedPaths = array();
+            $exportedPaths = [];
             foreach ($paths as $path) {
                 $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
             }
@@ -263,7 +263,7 @@ EOF;
 
         // Process the 'psr-4' base directories.
         foreach ($autoloads['psr-4'] as $namespace => $paths) {
-            $exportedPaths = array();
+            $exportedPaths = [];
             foreach ($paths as $path) {
                 $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
             }
@@ -323,20 +323,20 @@ EOF;
             $excluded = $autoloads['exclude-from-classmap'];
         }
 
-        $classMap = array();
-        $ambiguousClasses = array();
-        $scannedFiles = array();
+        $classMap = [];
+        $ambiguousClasses = [];
+        $scannedFiles = [];
         foreach ($autoloads['classmap'] as $dir) {
             $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $excluded, null, null, $classMap, $ambiguousClasses, $scannedFiles);
         }
 
         if ($scanPsrPackages) {
-            $namespacesToScan = array();
+            $namespacesToScan = [];
 
             // Scan the PSR-0/4 directories for class files, and add them to the class map
-            foreach (array('psr-4', 'psr-0') as $psrType) {
+            foreach (['psr-4', 'psr-0'] as $psrType) {
                 foreach ($autoloads[$psrType] as $namespace => $paths) {
-                    $namespacesToScan[$namespace][] = array('paths' => $paths, 'type' => $psrType);
+                    $namespacesToScan[$namespace][] = ['paths' => $paths, 'type' => $psrType];
                 }
             }
 
@@ -357,7 +357,7 @@ EOF;
         }
 
         foreach ($ambiguousClasses as $className => $ambiguousPaths) {
-            $cleanPath = str_replace(array('$vendorDir . \'', '$baseDir . \'', "',\n"), array($vendorPath, $basePath, ''), $classMap[$className]);
+            $cleanPath = str_replace(['$vendorDir . \'', '$baseDir . \'', "',\n"], [$vendorPath, $basePath, ''], $classMap[$className]);
 
             $this->io->writeError(
                 '<warning>Warning: Ambiguous class resolution, "'.$className.'"'.
@@ -428,9 +428,9 @@ EOF;
         $filesystem->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
 
         if ($this->runScripts) {
-            $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
+            $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, [], [
                 'optimize' => $scanPsrPackages,
-            ));
+            ]);
         }
 
         return count($classMap);
@@ -504,7 +504,7 @@ EOF;
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $rootPackage, array $packages)
     {
         // build package => install path map
-        $packageMap = array(array($rootPackage, ''));
+        $packageMap = [[$rootPackage, '']];
 
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
@@ -512,10 +512,10 @@ EOF;
             }
             $this->validatePackage($package);
 
-            $packageMap[] = array(
+            $packageMap[] = [
                 $package,
                 $installationManager->getInstallPath($package),
-            );
+            ];
         }
 
         return $packageMap;
@@ -580,13 +580,13 @@ EOF;
         krsort($psr0);
         krsort($psr4);
 
-        return array(
+        return [
             'psr-0' => $psr0,
             'psr-4' => $psr4,
             'classmap' => $classmap,
             'files' => $files,
             'exclude-from-classmap' => $exclude,
-        );
+        ];
     }
 
     /**
@@ -618,7 +618,7 @@ EOF;
                 $excluded = $autoloads['exclude-from-classmap'];
             }
 
-            $scannedFiles = array();
+            $scannedFiles = [];
             foreach ($autoloads['classmap'] as $dir) {
                 try {
                     $loader->addClassMap($this->generateClassMap($dir, $excluded, null, null, false, $scannedFiles));
@@ -641,7 +641,7 @@ EOF;
      */
     protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, string $basePath, string $vendorPath, string $vendorPathCode, string $appBaseDirCode)
     {
-        $includePaths = array();
+        $includePaths = [];
 
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
@@ -754,8 +754,8 @@ EOF;
     protected function getPlatformCheck(array $packageMap, $checkPlatform, array $devPackageNames)
     {
         $lowestPhpVersion = Bound::zero();
-        $requiredExtensions = array();
-        $extensionProviders = array();
+        $requiredExtensions = [];
+        $extensionProviders = [];
 
         foreach ($packageMap as $item) {
             $package = $item[0];
@@ -1148,9 +1148,9 @@ HEADER;
         $prefix = "\0Composer\Autoload\ClassLoader\0";
         $prefixLen = strlen($prefix);
         if (file_exists($targetDir . '/autoload_files.php')) {
-            $maps = array('files' => require $targetDir . '/autoload_files.php');
+            $maps = ['files' => require $targetDir . '/autoload_files.php'];
         } else {
-            $maps = array();
+            $maps = [];
         }
 
         foreach ((array) $loader as $prop => $value) {
@@ -1162,12 +1162,12 @@ HEADER;
         foreach ($maps as $prop => $value) {
             $value = strtr(
                 var_export($value, true),
-                array(
+                [
                     $absoluteVendorPathCode => $vendorPathCode,
                     $absoluteVendorPharPathCode => $vendorPharPathCode,
                     $absoluteAppBaseDirCode => $appBaseDirCode,
                     $absoluteAppBaseDirPharCode => $appBaseDirPharCode,
-                )
+                ]
             );
             $value = ltrim(Preg::replace('/^ */m', '    $0$0', $value));
 
@@ -1196,7 +1196,7 @@ INITIALIZER;
      */
     protected function parseAutoloadsType(array $packageMap, string $type, RootPackageInterface $rootPackage)
     {
-        $autoloads = array();
+        $autoloads = [];
 
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
@@ -1219,7 +1219,7 @@ INITIALIZER;
                     if (($type === 'files' || $type === 'classmap' || $type === 'exclude-from-classmap') && $package->getTargetDir() && !Filesystem::isReadable($installPath.'/'.$path)) {
                         // remove target-dir from file paths of the root package
                         if ($package === $rootPackage) {
-                            $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
+                            $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(['/', '\\'], '<dirsep>', $package->getTargetDir())));
                             $path = ltrim(Preg::replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
                         } else {
                             // add target-dir from file paths that don't have it
@@ -1232,7 +1232,7 @@ INITIALIZER;
                         $path = Preg::replace('{/+}', '/', preg_quote(trim(strtr($path, '\\', '/'), '/')));
 
                         // add support for wildcards * and **
-                        $path = strtr($path, array('\\*\\*' => '.+?', '\\*' => '[^/]+?'));
+                        $path = strtr($path, ['\\*\\*' => '.+?', '\\*' => '[^/]+?']);
 
                         // add support for up-level relative paths
                         $updir = null;
@@ -1299,9 +1299,9 @@ INITIALIZER;
      */
     protected function filterPackageMap(array $packageMap, RootPackageInterface $rootPackage)
     {
-        $packages = array();
-        $include = array();
-        $replacedBy = array();
+        $packages = [];
+        $include = [];
+        $replacedBy = [];
 
         foreach ($packageMap as $item) {
             $package = $item[0];
@@ -1353,8 +1353,8 @@ INITIALIZER;
      */
     protected function sortPackageMap(array $packageMap)
     {
-        $packages = array();
-        $paths = array();
+        $packages = [];
+        $paths = [];
 
         foreach ($packageMap as $item) {
             list($package, $path) = $item;
@@ -1365,11 +1365,11 @@ INITIALIZER;
 
         $sortedPackages = PackageSorter::sortPackages($packages);
 
-        $sortedPackageMap = array();
+        $sortedPackageMap = [];
 
         foreach ($sortedPackages as $package) {
             $name = $package->getName();
-            $sortedPackageMap[] = array($packages[$name], $paths[$name]);
+            $sortedPackageMap[] = [$packages[$name], $paths[$name]];
         }
 
         return $sortedPackageMap;

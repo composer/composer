@@ -31,9 +31,9 @@ class RepositoryManager
     /** @var InstalledRepositoryInterface */
     private $localRepository;
     /** @var list<RepositoryInterface> */
-    private $repositories = array();
+    private $repositories = [];
     /** @var array<string, class-string<RepositoryInterface>> */
-    private $repositoryClasses = array();
+    private $repositoryClasses = [];
     /** @var IOInterface */
     private $io;
     /** @var Config */
@@ -84,7 +84,7 @@ class RepositoryManager
      */
     public function findPackages(string $name, $constraint): array
     {
-        $packages = array();
+        $packages = [];
 
         foreach ($this->getRepositories() as $repository) {
             $packages = array_merge($packages, $repository->findPackages($name, $constraint));

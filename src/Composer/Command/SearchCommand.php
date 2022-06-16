@@ -38,13 +38,13 @@ class SearchCommand extends BaseCommand
         $this
             ->setName('search')
             ->setDescription('Searches for packages.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in package names'),
                 new InputOption('only-vendor', 'O', InputOption::VALUE_NONE, 'Search only for vendor / organization names, returns only "vendor" as result'),
                 new InputOption('type', 't', InputOption::VALUE_REQUIRED, 'Search for a specific package type'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
                 new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The search command searches for packages by its name
@@ -63,18 +63,18 @@ EOT
         $io = $this->getIO();
 
         $format = $input->getOption('format');
-        if (!in_array($format, array('text', 'json'))) {
+        if (!in_array($format, ['text', 'json'])) {
             $io->writeError(sprintf('Unsupported format "%s". See help for supported formats.', $format));
 
             return 1;
         }
 
         if (!($composer = $this->tryComposer())) {
-            $composer = Factory::create($this->getIO(), array(), $input->hasParameterOption('--no-plugins'));
+            $composer = Factory::create($this->getIO(), [], $input->hasParameterOption('--no-plugins'));
         }
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-        $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
-        $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
+        $installedRepo = new CompositeRepository([$localRepo, $platformRepo]);
+        $repos = new CompositeRepository(array_merge([$installedRepo], $composer->getRepositoryManager()->getRepositories()));
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'search', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);

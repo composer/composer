@@ -46,7 +46,7 @@ trait PackageDiscoveryTrait
     {
         if (null === $this->repos) {
             $this->repos = new CompositeRepository(array_merge(
-                array(new PlatformRepository),
+                [new PlatformRepository],
                 RepositoryFactory::defaultReposWithDefaultManager($this->getIO())
             ));
         }
@@ -89,11 +89,11 @@ trait PackageDiscoveryTrait
      * @return array<string>
      * @throws \Exception
      */
-    final protected function determineRequirements(InputInterface $input, OutputInterface $output, array $requires = array(), ?PlatformRepository $platformRepo = null, string $preferredStability = 'stable', bool $checkProvidedVersions = true, bool $fixed = false): array
+    final protected function determineRequirements(InputInterface $input, OutputInterface $output, array $requires = [], ?PlatformRepository $platformRepo = null, string $preferredStability = 'stable', bool $checkProvidedVersions = true, bool $fixed = false): array
     {
         if (count($requires) > 0) {
             $requires = $this->normalizeRequirements($requires);
-            $result = array();
+            $result = [];
             $io = $this->getIO();
 
             foreach ($requires as $requirement) {
@@ -126,7 +126,7 @@ trait PackageDiscoveryTrait
         if (null !== $composer) {
             $installedRepo = $composer->getRepositoryManager()->getLocalRepository();
         }
-        $existingPackages = array();
+        $existingPackages = [];
         if (null !== $installedRepo) {
             foreach ($installedRepo->getPackages() as $package) {
                 $existingPackages[] = $package->getName();
@@ -159,10 +159,10 @@ trait PackageDiscoveryTrait
                 if (!$exactMatch) {
                     $providers = $this->getRepos()->getProviders($package);
                     if (count($providers) > 0) {
-                        array_unshift($matches, array('name' => $package, 'description' => ''));
+                        array_unshift($matches, ['name' => $package, 'description' => '']);
                     }
 
-                    $choices = array();
+                    $choices = [];
                     foreach ($matches as $position => $foundPackage) {
                         $abandoned = '';
                         if (isset($foundPackage['abandoned'])) {
@@ -177,11 +177,11 @@ trait PackageDiscoveryTrait
                         $choices[] = sprintf(' <info>%5s</info> %s %s', "[$position]", $foundPackage['name'], $abandoned);
                     }
 
-                    $io->writeError(array(
+                    $io->writeError([
                         '',
                         sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
                         '',
-                    ));
+                    ]);
 
                     $io->writeError($choices);
                     $io->writeError('');
@@ -288,7 +288,7 @@ trait PackageDiscoveryTrait
             // platform packages can not be found in the pool in versions other than the local platform's has
             // so if platform reqs are ignored we just take the user's word for it
             if ($platformRequirementFilter->isIgnored($name)) {
-                return array($name, '*');
+                return [$name, '*'];
             }
 
             // Check if it is a virtual package provided by others
@@ -304,7 +304,7 @@ trait PackageDiscoveryTrait
                     }, 3, '*');
                 }
 
-                return array($name, $constraint);
+                return [$name, $constraint];
             }
 
             // Check whether the package requirements were the problem
@@ -367,10 +367,10 @@ trait PackageDiscoveryTrait
             ));
         }
 
-        return array(
+        return [
             $package->getPrettyName(),
             $fixed ? $package->getPrettyVersion() : $versionSelector->findRecommendedRequireVersion($package),
-        );
+        ];
     }
 
     /**
@@ -389,9 +389,9 @@ trait PackageDiscoveryTrait
             }
 
             // ignore search errors
-            return array();
+            return [];
         }
-        $similarPackages = array();
+        $similarPackages = [];
 
         $installedRepo = $this->requireComposer()->getRepositoryManager()->getLocalRepository();
 
@@ -409,7 +409,7 @@ trait PackageDiscoveryTrait
 
     private function getPlatformExceptionDetails(PackageInterface $candidate, ?PlatformRepository $platformRepo = null): string
     {
-        $details = array();
+        $details = [];
         if (null === $platformRepo) {
             return '';
         }

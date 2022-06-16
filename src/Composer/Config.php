@@ -31,14 +31,14 @@ class Config
     public const RELATIVE_PATHS = 1;
 
     /** @var array<string, mixed> */
-    public static $defaultConfig = array(
+    public static $defaultConfig = [
         'process-timeout' => 300,
         'use-include-path' => false,
         'allow-plugins' => null, // null for BC for now, will become array() after July 2022
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
         'notify-on-install' => true,
-        'github-protocols' => array('https', 'ssh', 'git'),
+        'github-protocols' => ['https', 'ssh', 'git'],
         'gitlab-protocol' => null,
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
@@ -59,38 +59,38 @@ class Config
         'classmap-authoritative' => false,
         'apcu-autoloader' => false,
         'prepend-autoloader' => true,
-        'github-domains' => array('github.com'),
+        'github-domains' => ['github.com'],
         'bitbucket-expose-hostname' => true,
         'disable-tls' => false,
         'secure-http' => true,
-        'secure-svn-domains' => array(),
+        'secure-svn-domains' => [],
         'cafile' => null,
         'capath' => null,
         'github-expose-hostname' => true,
-        'gitlab-domains' => array('gitlab.com'),
+        'gitlab-domains' => ['gitlab.com'],
         'store-auths' => 'prompt',
-        'platform' => array(),
+        'platform' => [],
         'archive-format' => 'tar',
         'archive-dir' => '.',
         'htaccess-protect' => true,
         'use-github-api' => true,
         'lock' => true,
         'platform-check' => 'php-only',
-        'bitbucket-oauth' => array(),
-        'github-oauth' => array(),
-        'gitlab-oauth' => array(),
-        'gitlab-token' => array(),
-        'http-basic' => array(),
-        'bearer' => array(),
-    );
+        'bitbucket-oauth' => [],
+        'github-oauth' => [],
+        'gitlab-oauth' => [],
+        'gitlab-token' => [],
+        'http-basic' => [],
+        'bearer' => [],
+    ];
 
     /** @var array<string, mixed> */
-    public static $defaultRepositories = array(
-        'packagist.org' => array(
+    public static $defaultRepositories = [
+        'packagist.org' => [
             'type' => 'composer',
             'url' => 'https://repo.packagist.org',
-        ),
-    );
+        ],
+    ];
 
     /** @var array<string, mixed> */
     private $config;
@@ -105,11 +105,11 @@ class Config
     /** @var bool */
     private $useEnvironment;
     /** @var array<string, true> */
-    private $warnedHosts = array();
+    private $warnedHosts = [];
     /** @var array<string, true> */
-    private $sslVerifyWarnedHosts = array();
+    private $sslVerifyWarnedHosts = [];
     /** @var array<string, string> */
-    private $sourceOfConfigValue = array();
+    private $sourceOfConfigValue = [];
 
     /**
      * @param bool    $useEnvironment Use COMPOSER_ environment variables to replace config settings
@@ -122,7 +122,7 @@ class Config
 
         // TODO after July 2022 remove this and update the default value above in self::$defaultConfig + remove note from 06-config.md
         if (strtotime('2022-07-01') < time()) {
-            $this->config['allow-plugins'] = array();
+            $this->config['allow-plugins'] = [];
         }
 
         $this->repositories = static::$defaultRepositories;
@@ -183,24 +183,24 @@ class Config
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer'), true) && isset($this->config[$key])) {
+                if (in_array($key, ['bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer'], true) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
                     $this->setSourceOfConfigValue($val, $key, $source);
-                } elseif (in_array($key, array('allow-plugins'), true) && isset($this->config[$key]) && is_array($this->config[$key])) {
+                } elseif (in_array($key, ['allow-plugins'], true) && isset($this->config[$key]) && is_array($this->config[$key])) {
                     // merging $val first to get the local config on top of the global one, then appending the global config,
                     // then merging local one again to make sure the values from local win over global ones for keys present in both
                     $this->config[$key] = array_merge($val, $this->config[$key], $val);
                     $this->setSourceOfConfigValue($val, $key, $source);
-                } elseif (in_array($key, array('gitlab-domains', 'github-domains'), true) && isset($this->config[$key])) {
+                } elseif (in_array($key, ['gitlab-domains', 'github-domains'], true) && isset($this->config[$key])) {
                     $this->config[$key] = array_unique(array_merge($this->config[$key], $val));
                     $this->setSourceOfConfigValue($val, $key, $source);
                 } elseif ('preferred-install' === $key && isset($this->config[$key])) {
                     if (is_array($val) || is_array($this->config[$key])) {
                         if (is_string($val)) {
-                            $val = array('*' => $val);
+                            $val = ['*' => $val];
                         }
                         if (is_string($this->config[$key])) {
-                            $this->config[$key] = array('*' => $this->config[$key]);
+                            $this->config[$key] = ['*' => $this->config[$key]];
                             $this->sourceOfConfigValue[$key . '*'] = $source;
                         }
                         $this->config[$key] = array_merge($this->config[$key], $val);
@@ -384,7 +384,7 @@ class Config
             case 'bin-compat':
                 $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
 
-                if (!in_array($value, array('auto', 'full', 'proxy', 'symlink'))) {
+                if (!in_array($value, ['auto', 'full', 'proxy', 'symlink'])) {
                     throw new \RuntimeException(
                         "Invalid value for 'bin-compat': {$value}. Expected auto, full or proxy"
                     );
@@ -398,7 +398,7 @@ class Config
 
             case 'discard-changes':
                 if ($env = $this->getComposerEnv('COMPOSER_DISCARD_CHANGES')) {
-                    if (!in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
+                    if (!in_array($env, ['stash', 'true', 'false', '1', '0'], true)) {
                         throw new \RuntimeException(
                             "Invalid value for COMPOSER_DISCARD_CHANGES: {$env}. Expected 1, 0, true, false or stash"
                         );
@@ -411,7 +411,7 @@ class Config
                     return $env !== 'false' && (bool) $env;
                 }
 
-                if (!in_array($this->config[$key], array(true, false, 'stash'), true)) {
+                if (!in_array($this->config[$key], [true, false, 'stash'], true)) {
                     throw new \RuntimeException(
                         "Invalid value for 'discard-changes': {$this->config[$key]}. Expected true, false or stash"
                     );
@@ -453,9 +453,9 @@ class Config
      */
     public function all(int $flags = 0): array
     {
-        $all = array(
+        $all = [
             'repositories' => $this->getRepositories(),
-        );
+        ];
         foreach (array_keys($this->config) as $key) {
             $all['config'][$key] = $this->get($key, $flags);
         }
@@ -497,10 +497,10 @@ class Config
      */
     public function raw(): array
     {
-        return array(
+        return [
             'repositories' => $this->getRepositories(),
             'config' => $this->config,
-        );
+        ];
     }
 
     /**
@@ -601,7 +601,7 @@ class Config
         // Extract scheme and throw exception on known insecure protocols
         $scheme = parse_url($url, PHP_URL_SCHEME);
         $hostname = parse_url($url, PHP_URL_HOST);
-        if (in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
+        if (in_array($scheme, ['http', 'git', 'ftp', 'svn'])) {
             if ($this->get('secure-http')) {
                 if ($scheme === 'svn') {
                     if (in_array($hostname, $this->get('secure-svn-domains'), true)) {

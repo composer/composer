@@ -33,13 +33,13 @@ class DependsCommand extends BaseDependencyCommand
     {
         $this
             ->setName('depends')
-            ->setAliases(array('why'))
+            ->setAliases(['why'])
             ->setDescription('Shows which packages cause the given package to be installed.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument(self::ARGUMENT_PACKAGE, InputArgument::REQUIRED, 'Package to inspect', null, $this->suggestInstalledPackage(true)),
                 new InputOption(self::OPTION_RECURSIVE, 'r', InputOption::VALUE_NONE, 'Recursively resolves up to the root package'),
                 new InputOption(self::OPTION_TREE, 't', InputOption::VALUE_NONE, 'Prints the results as a nested tree'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 Displays detailed information about where a package is referenced.

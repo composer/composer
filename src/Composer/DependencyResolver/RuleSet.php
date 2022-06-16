@@ -30,14 +30,14 @@ class RuleSet implements \IteratorAggregate, \Countable
      *
      * @var array<int, Rule>
      */
-    public $ruleById = array();
+    public $ruleById = [];
 
     /** @var array<0|1|4, string> */
-    protected static $types = array(
+    protected static $types = [
         self::TYPE_PACKAGE => 'PACKAGE',
         self::TYPE_REQUEST => 'REQUEST',
         self::TYPE_LEARNED => 'LEARNED',
-    );
+    ];
 
     /** @var array<self::TYPE_*, Rule[]> */
     protected $rules;
@@ -46,12 +46,12 @@ class RuleSet implements \IteratorAggregate, \Countable
     protected $nextRuleId = 0;
 
     /** @var array<int|string, Rule|Rule[]> */
-    protected $rulesByHash = array();
+    protected $rulesByHash = [];
 
     public function __construct()
     {
         foreach ($this->getTypes() as $type) {
-            $this->rules[$type] = array();
+            $this->rules[$type] = [];
         }
     }
 
@@ -84,7 +84,7 @@ class RuleSet implements \IteratorAggregate, \Countable
         }
 
         if (!isset($this->rules[$type])) {
-            $this->rules[$type] = array();
+            $this->rules[$type] = [];
         }
 
         $this->rules[$type][] = $rule;
@@ -99,7 +99,7 @@ class RuleSet implements \IteratorAggregate, \Countable
             $this->rulesByHash[$hash][] = $rule;
         } else {
             $originalRule = $this->rulesByHash[$hash];
-            $this->rulesByHash[$hash] = array($originalRule, $rule);
+            $this->rulesByHash[$hash] = [$originalRule, $rule];
         }
     }
 
@@ -135,13 +135,13 @@ class RuleSet implements \IteratorAggregate, \Countable
     public function getIteratorFor($types): RuleSetIterator
     {
         if (!\is_array($types)) {
-            $types = array($types);
+            $types = [$types];
         }
 
         $allRules = $this->getRules();
 
         /** @var array<self::TYPE_*, Rule[]> $rules */
-        $rules = array();
+        $rules = [];
 
         foreach ($types as $type) {
             $rules[$type] = $allRules[$type];
@@ -157,7 +157,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     public function getIteratorWithout($types): RuleSetIterator
     {
         if (!\is_array($types)) {
-            $types = array($types);
+            $types = [$types];
         }
 
         $rules = $this->getRules();

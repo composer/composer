@@ -39,10 +39,10 @@ class LicensesCommand extends BaseCommand
         $this
             ->setName('licenses')
             ->setDescription('Shows information about licenses of dependencies.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text, json or summary', 'text', ['text', 'json', 'summary']),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The license command displays detailed information about the licenses of
@@ -67,7 +67,7 @@ EOT
         if ($input->getOption('no-dev')) {
             $packages = $this->filterRequiredPackages($repo, $root);
         } else {
-            $packages = $this->appendPackages($repo->getPackages(), array());
+            $packages = $this->appendPackages($repo->getPackages(), []);
         }
 
         ksort($packages);
@@ -83,7 +83,7 @@ EOT
 
                 $table = new Table($output);
                 $table->setStyle('compact');
-                $table->setHeaders(array('Name', 'Version', 'Licenses'));
+                $table->setHeaders(['Name', 'Version', 'Licenses']);
                 foreach ($packages as $package) {
                     $link = PackageInfo::getViewSourceOrHomepageUrl($package);
                     if ($link !== null) {
@@ -92,36 +92,36 @@ EOT
                         $name = $package->getPrettyName();
                     }
 
-                    $table->addRow(array(
+                    $table->addRow([
                         $name,
                         $package->getFullPrettyVersion(),
-                        implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : array()) ?: 'none',
-                    ));
+                        implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : []) ?: 'none',
+                    ]);
                 }
                 $table->render();
                 break;
 
             case 'json':
-                $dependencies = array();
+                $dependencies = [];
                 foreach ($packages as $package) {
-                    $dependencies[$package->getPrettyName()] = array(
+                    $dependencies[$package->getPrettyName()] = [
                         'version' => $package->getFullPrettyVersion(),
-                        'license' => $package instanceof CompletePackageInterface ? $package->getLicense() : array(),
-                    );
+                        'license' => $package instanceof CompletePackageInterface ? $package->getLicense() : [],
+                    ];
                 }
 
-                $io->write(JsonFile::encode(array(
+                $io->write(JsonFile::encode([
                     'name' => $root->getPrettyName(),
                     'version' => $root->getFullPrettyVersion(),
                     'license' => $root->getLicense(),
                     'dependencies' => $dependencies,
-                )));
+                ]));
                 break;
 
             case 'summary':
-                $usedLicenses = array();
+                $usedLicenses = [];
                 foreach ($packages as $package) {
-                    $licenses = $package instanceof CompletePackageInterface ? $package->getLicense() : array();
+                    $licenses = $package instanceof CompletePackageInterface ? $package->getLicense() : [];
                     if (count($licenses) === 0) {
                         $licenses[] = 'none';
                     }
@@ -136,14 +136,14 @@ EOT
                 // Sort licenses so that the most used license will appear first
                 arsort($usedLicenses, SORT_NUMERIC);
 
-                $rows = array();
+                $rows = [];
                 foreach ($usedLicenses as $usedLicense => $numberOfDependencies) {
-                    $rows[] = array($usedLicense, $numberOfDependencies);
+                    $rows[] = [$usedLicense, $numberOfDependencies];
                 }
 
                 $symfonyIo = new SymfonyStyle($input, $output);
                 $symfonyIo->table(
-                    array('License', 'Number of dependencies'),
+                    ['License', 'Number of dependencies'],
                     $rows
                 );
                 break;
@@ -160,7 +160,7 @@ EOT
      * @param  array<string, PackageInterface> $bucket
      * @return array<string, PackageInterface>
      */
-    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = array()): array
+    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = []): array
     {
         $requires = array_keys($package->getRequires());
 

@@ -76,7 +76,7 @@ class Git
         $protocols = $this->config->get('github-protocols');
         // public github, autoswitch protocols
         if (Preg::isMatch('{^(?:https?|git)://' . self::getGitHubDomainsRegex($this->config) . '/(.*)}', $url, $match)) {
-            $messages = array();
+            $messages = [];
             foreach ($protocols as $protocol) {
                 if ('ssh' === $protocol) {
                     $protoUrl = "git@" . $match[1] . ":" . $match[2];
@@ -106,7 +106,7 @@ class Git
         $command = call_user_func($commandCallable, $url);
 
         $auth = null;
-        $credentials = array();
+        $credentials = [];
         if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $commandOutput, $cwd)) {
             $errorMsg = $this->process->getErrorOutput();
             // private github repository without ssh key access, try https with auth
@@ -130,7 +130,7 @@ class Git
                         return;
                     }
 
-                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
+                    $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
                     $errorMsg = $this->process->getErrorOutput();
                 }
             } elseif (Preg::isMatch('{^https://(bitbucket\.org)/(.*?)(?:\.git)?$}i', $url, $match)) { //bitbucket oauth
@@ -165,7 +165,7 @@ class Git
                         return;
                     }
 
-                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
+                    $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
                     $errorMsg = $this->process->getErrorOutput();
                 } else { // Falling back to ssh
                     $sshUrl = 'git@bitbucket.org:' . $match[2] . '.git';
@@ -207,7 +207,7 @@ class Git
                         return;
                     }
 
-                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
+                    $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
                     $errorMsg = $this->process->getErrorOutput();
                 }
             } elseif ($this->isAuthenticationFailure($url, $match)) { // private non-github/gitlab/bitbucket repo that failed to authenticate
@@ -229,10 +229,10 @@ class Git
                     }
 
                     $this->io->writeError('    Authentication required (<info>' . $match[2] . '</info>):');
-                    $auth = array(
+                    $auth = [
                         'username' => $this->io->ask('      Username: ', $defaultUsername),
                         'password' => $this->io->askAndHideAnswer('      Password: '),
-                    );
+                    ];
                     $storeAuth = $this->config->get('store-auths');
                 }
 
@@ -248,7 +248,7 @@ class Git
                         return;
                     }
 
-                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
+                    $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
                     $errorMsg = $this->process->getErrorOutput();
                 }
             }
@@ -373,13 +373,13 @@ class Git
             return false;
         }
 
-        $authFailures = array(
+        $authFailures = [
             'fatal: Authentication failed',
             'remote error: Invalid username or password.',
             'error: 401 Unauthorized',
             'fatal: unable to access',
             'fatal: could not read Username',
-        );
+        ];
 
         $errorOutput = $this->process->getErrorOutput();
         foreach ($authFailures as $authFailure) {
@@ -509,10 +509,10 @@ class Git
      */
     private function maskCredentials(string $error, array $credentials): string
     {
-        $maskedCredentials = array();
+        $maskedCredentials = [];
 
         foreach ($credentials as $credential) {
-            if (in_array($credential, array('private-token', 'x-token-auth', 'oauth2', 'gitlab-ci-token', 'x-oauth-basic'))) {
+            if (in_array($credential, ['private-token', 'x-token-auth', 'oauth2', 'gitlab-ci-token', 'x-oauth-basic'])) {
                 $maskedCredentials[] = $credential;
             } elseif (strlen($credential) > 6) {
                 $maskedCredentials[] = substr($credential, 0, 3) . '...' . substr($credential, -3);

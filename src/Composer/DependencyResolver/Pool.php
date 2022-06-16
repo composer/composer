@@ -27,19 +27,19 @@ use Composer\Semver\Constraint\Constraint;
 class Pool implements \Countable
 {
     /** @var BasePackage[] */
-    protected $packages = array();
+    protected $packages = [];
     /** @var array<string, BasePackage[]> */
-    protected $packageByName = array();
+    protected $packageByName = [];
     /** @var VersionParser */
     protected $versionParser;
     /** @var array<string, array<string, BasePackage[]>> */
-    protected $providerCache = array();
+    protected $providerCache = [];
     /** @var BasePackage[] */
     protected $unacceptableFixedOrLockedPackages;
     /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
-    protected $removedVersions = array();
+    protected $removedVersions = [];
     /** @var array<string, array<string, string>> Map of package object hash => removed normalized versions => removed pretty version */
-    protected $removedVersionsByPackage = array();
+    protected $removedVersionsByPackage = [];
 
     /**
      * @param BasePackage[] $packages
@@ -47,7 +47,7 @@ class Pool implements \Countable
      * @param array<string, array<string, string>> $removedVersions
      * @param array<string, array<string, string>> $removedVersionsByPackage
      */
-    public function __construct(array $packages = array(), array $unacceptableFixedOrLockedPackages = array(), array $removedVersions = array(), array $removedVersionsByPackage = array())
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
@@ -63,10 +63,10 @@ class Pool implements \Countable
     public function getRemovedVersions(string $name, ConstraintInterface $constraint): array
     {
         if (!isset($this->removedVersions[$name])) {
-            return array();
+            return [];
         }
 
-        $result = array();
+        $result = [];
         foreach ($this->removedVersions[$name] as $version => $prettyVersion) {
             if ($constraint->matches(new Constraint('==', $version))) {
                 $result[$version] = $prettyVersion;
@@ -83,7 +83,7 @@ class Pool implements \Countable
     public function getRemovedVersionsByPackage(string $objectHash): array
     {
         if (!isset($this->removedVersionsByPackage[$objectHash])) {
-            return array();
+            return [];
         }
 
         return $this->removedVersionsByPackage[$objectHash];
@@ -162,10 +162,10 @@ class Pool implements \Countable
     private function computeWhatProvides(string $name, ConstraintInterface $constraint = null): array
     {
         if (!isset($this->packageByName[$name])) {
-            return array();
+            return [];
         }
 
-        $matches = array();
+        $matches = [];
 
         foreach ($this->packageByName[$name] as $candidate) {
             if ($this->match($candidate, $name, $constraint)) {

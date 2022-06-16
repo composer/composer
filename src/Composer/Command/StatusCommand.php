@@ -45,9 +45,9 @@ class StatusCommand extends BaseCommand
         $this
             ->setName('status')
             ->setDescription('Shows a list of locally modified packages.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The status command displays a list of dependencies that have
@@ -90,10 +90,10 @@ EOT
         $dm = $composer->getDownloadManager();
         $im = $composer->getInstallationManager();
 
-        $errors = array();
+        $errors = [];
         $io = $this->getIO();
-        $unpushedChanges = array();
-        $vcsVersionChanges = array();
+        $unpushedChanges = [];
+        $vcsVersionChanges = [];
 
         $parser = new VersionParser;
         $guesser = new VersionGuesser($composer->getConfig(), $composer->getLoop()->getProcessExecutor() ?? new ProcessExecutor($io), $parser);
@@ -130,16 +130,16 @@ EOT
                     $currentVersion = $guesser->guessVersion($dumper->dump($package), $targetDir);
 
                     if ($previousRef && $currentVersion && $currentVersion['commit'] !== $previousRef) {
-                        $vcsVersionChanges[$targetDir] = array(
-                            'previous' => array(
+                        $vcsVersionChanges[$targetDir] = [
+                            'previous' => [
                                 'version' => $package->getPrettyVersion(),
                                 'ref' => $previousRef,
-                            ),
-                            'current' => array(
+                            ],
+                            'current' => [
                                 'version' => $currentVersion['pretty_version'],
                                 'ref' => $currentVersion['commit'],
-                            ),
-                        );
+                            ],
+                        ];
                     }
                 }
             }

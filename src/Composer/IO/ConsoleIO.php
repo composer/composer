@@ -57,13 +57,13 @@ class ConsoleIO extends BaseIO
         $this->input = $input;
         $this->output = $output;
         $this->helperSet = $helperSet;
-        $this->verbosityMap = array(
+        $this->verbosityMap = [
             self::QUIET => OutputInterface::VERBOSITY_QUIET,
             self::NORMAL => OutputInterface::VERBOSITY_NORMAL,
             self::VERBOSE => OutputInterface::VERBOSITY_VERBOSE,
             self::VERY_VERBOSE => OutputInterface::VERBOSITY_VERY_VERBOSE,
             self::DEBUG => OutputInterface::VERBOSITY_DEBUG,
-        );
+        ];
     }
 
     /**
@@ -332,7 +332,7 @@ class ConsoleIO extends BaseIO
             return (string) array_search($result, $choices, true);
         }
 
-        $results = array();
+        $results = [];
         foreach ($choices as $index => $choice) {
             if (in_array($choice, $result, true)) {
                 $results[] = (string) $index;

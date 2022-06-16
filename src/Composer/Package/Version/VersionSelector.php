@@ -39,7 +39,7 @@ class VersionSelector
     private $repositorySet;
 
     /** @var array<string, ConstraintInterface[]> */
-    private $platformConstraints = array();
+    private $platformConstraints = [];
 
     /** @var VersionParser */
     private $parser;

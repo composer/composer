@@ -95,13 +95,13 @@ class Bitbucket
     private function requestAccessToken(): bool
     {
         try {
-            $response = $this->httpDownloader->get(self::OAUTH2_ACCESS_TOKEN_URL, array(
+            $response = $this->httpDownloader->get(self::OAUTH2_ACCESS_TOKEN_URL, [
                 'retry-auth-failure' => false,
-                'http' => array(
+                'http' => [
                     'method' => 'POST',
                     'content' => 'grant_type=client_credentials',
-                ),
-            ));
+                ],
+            ]);
 
             $token = $response->decodeJson();
             if (!isset($token['expires_in']) || !isset($token['access_token'])) {
@@ -119,7 +119,7 @@ class Bitbucket
 
                 return false;
             }
-            if (in_array($e->getCode(), array(403, 401))) {
+            if (in_array($e->getCode(), [403, 401])) {
                 $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
                 $this->io->writeError('You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
 
@@ -233,12 +233,12 @@ class Bitbucket
         }
 
         $time = null === $this->time ? time() : $this->time;
-        $consumer = array(
+        $consumer = [
             "consumer-key" => $consumerKey,
             "consumer-secret" => $consumerSecret,
             "access-token" => $this->token['access_token'],
             "access-token-expiration" => $time + $this->token['expires_in'],
-        );
+        ];
 
         $this->config->getAuthConfigSource()->addConfigSetting('bitbucket-oauth.'.$originUrl, $consumer);
     }
@@ -258,9 +258,9 @@ class Bitbucket
             return false;
         }
 
-        $this->token = array(
+        $this->token = [
             'access_token' => $authConfig[$originUrl]['access-token'],
-        );
+        ];
 
         return true;
     }

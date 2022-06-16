@@ -44,13 +44,13 @@ class Solver
     /** @var int */
     protected $propagateIndex;
     /** @var mixed[] */
-    protected $branches = array();
+    protected $branches = [];
     /** @var Problem[] */
-    protected $problems = array();
+    protected $problems = [];
     /** @var array<Rule[]> */
-    protected $learnedPool = array();
+    protected $learnedPool = [];
     /** @var array<string, int> */
-    protected $learnedWhy = array();
+    protected $learnedWhy = [];
 
     /** @var bool */
     public $testFlagLearnedPositiveLiteral = false;
@@ -161,7 +161,7 @@ class Solver
      */
     protected function setupFixedMap(Request $request): void
     {
-        $this->fixedMap = array();
+        $this->fixedMap = [];
         foreach ($request->getFixedPackages() as $package) {
             $this->fixedMap[$package->id] = $package;
         }
@@ -181,7 +181,7 @@ class Solver
 
             if (!$this->pool->whatProvides($packageName, $constraint)) {
                 $problem = new Problem();
-                $problem->addRule(new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => $packageName, 'constraint' => $constraint)));
+                $problem->addRule(new GenericRule([], Rule::RULE_ROOT_REQUIRE, ['packageName' => $packageName, 'constraint' => $constraint]));
                 $this->problems[] = $problem;
             }
         }
@@ -360,7 +360,7 @@ class Solver
 
         // if there are multiple candidates, then branch
         if (\count($literals)) {
-            $this->branches[] = array($literals, $level);
+            $this->branches[] = [$literals, $level];
         }
 
         return $this->setPropagateLearn($level, $selectedLiteral, $rule);
@@ -376,12 +376,12 @@ class Solver
         $ruleLevel = 1;
         $num = 0;
         $l1num = 0;
-        $seen = array();
-        $learnedLiterals = array(null);
+        $seen = [];
+        $learnedLiterals = [null];
 
         $decisionId = \count($this->decisions);
 
-        $this->learnedPool[] = array();
+        $this->learnedPool[] = [];
 
         while (true) {
             $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
@@ -511,7 +511,7 @@ class Solver
 
         $newRule = new GenericRule($learnedLiterals, Rule::RULE_LEARNED, $why);
 
-        return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
+        return [$learnedLiterals[0], $ruleLevel, $newRule, $why];
     }
 
     /**
@@ -553,13 +553,13 @@ class Solver
         $problem = new Problem();
         $problem->addRule($conflictRule);
 
-        $ruleSeen = array();
+        $ruleSeen = [];
 
         $this->analyzeUnsolvableRule($problem, $conflictRule, $ruleSeen);
 
         $this->problems[] = $problem;
 
-        $seen = array();
+        $seen = [];
         $literals = $conflictRule->getLiterals();
 
         foreach ($literals as $literal) {
@@ -665,7 +665,7 @@ class Solver
                 $iterator = $this->rules->getIteratorFor(RuleSet::TYPE_REQUEST);
                 foreach ($iterator as $rule) {
                     if ($rule->isEnabled()) {
-                        $decisionQueue = array();
+                        $decisionQueue = [];
                         $noneSatisfied = true;
 
                         foreach ($rule->getLiterals() as $literal) {
@@ -680,7 +680,7 @@ class Solver
 
                         if ($noneSatisfied && \count($decisionQueue)) {
                             // if any of the options in the decision queue are fixed, only use those
-                            $prunedQueue = array();
+                            $prunedQueue = [];
                             foreach ($decisionQueue as $literal) {
                                 if (isset($this->fixedMap[abs($literal)])) {
                                     $prunedQueue[] = $literal;
@@ -741,7 +741,7 @@ class Solver
                     continue;
                 }
 
-                $decisionQueue = array();
+                $decisionQueue = [];
 
                 // make sure that
                 // * all negative literals are installed

@@ -111,7 +111,7 @@ class SvnDriver extends VcsDriver
      */
     public function getSource(string $identifier): array
     {
-        return array('type' => 'svn', 'url' => $this->baseUrl, 'reference' => $identifier);
+        return ['type' => 'svn', 'url' => $this->baseUrl, 'reference' => $identifier];
     }
 
     /**
@@ -235,7 +235,7 @@ class SvnDriver extends VcsDriver
     public function getTags(): array
     {
         if (null === $this->tags) {
-            $tags = array();
+            $tags = [];
 
             if ($this->tagsPath !== false) {
                 $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->tagsPath);
@@ -266,7 +266,7 @@ class SvnDriver extends VcsDriver
     public function getBranches(): array
     {
         if (null === $this->branches) {
-            $branches = array();
+            $branches = [];
 
             if (false === $this->trunkPath) {
                 $trunkParent = $this->baseUrl . '/';

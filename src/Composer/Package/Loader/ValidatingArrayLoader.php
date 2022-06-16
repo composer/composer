@@ -61,8 +61,8 @@ class ValidatingArrayLoader implements LoaderInterface
      */
     public function load(array $config, string $class = 'Composer\Package\CompletePackage'): BasePackage
     {
-        $this->errors = array();
-        $this->warnings = array();
+        $this->errors = [];
+        $this->warnings = [];
         $this->config = $config;
 
         $this->validateString('name', true);
@@ -168,7 +168,7 @@ class ValidatingArrayLoader implements LoaderInterface
                     unset($this->config['authors'][$key]);
                     continue;
                 }
-                foreach (array('homepage', 'email', 'name', 'role') as $authorData) {
+                foreach (['homepage', 'email', 'name', 'role'] as $authorData) {
                     if (isset($author[$authorData]) && !is_string($author[$authorData])) {
                         $this->errors[] = 'authors.'.$key.'.'.$authorData.' : invalid value, must be a string';
                         unset($this->config['authors'][$key][$authorData]);
@@ -192,7 +192,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if ($this->validateArray('support') && !empty($this->config['support'])) {
-            foreach (array('issues', 'forum', 'wiki', 'source', 'email', 'irc', 'docs', 'rss', 'chat') as $key) {
+            foreach (['issues', 'forum', 'wiki', 'source', 'email', 'irc', 'docs', 'rss', 'chat'] as $key) {
                 if (isset($this->config['support'][$key]) && !is_string($this->config['support'][$key])) {
                     $this->errors[] = 'support.'.$key.' : invalid value, must be a string';
                     unset($this->config['support'][$key]);
@@ -204,12 +204,12 @@ class ValidatingArrayLoader implements LoaderInterface
                 unset($this->config['support']['email']);
             }
 
-            if (isset($this->config['support']['irc']) && !$this->filterUrl($this->config['support']['irc'], array('irc', 'ircs'))) {
+            if (isset($this->config['support']['irc']) && !$this->filterUrl($this->config['support']['irc'], ['irc', 'ircs'])) {
                 $this->warnings[] = 'support.irc : invalid value ('.$this->config['support']['irc'].'), must be a irc://<server>/<channel> or ircs:// URL';
                 unset($this->config['support']['irc']);
             }
 
-            foreach (array('issues', 'forum', 'wiki', 'source', 'docs', 'chat') as $key) {
+            foreach (['issues', 'forum', 'wiki', 'source', 'docs', 'chat'] as $key) {
                 if (isset($this->config['support'][$key]) && !$this->filterUrl($this->config['support'][$key])) {
                     $this->warnings[] = 'support.'.$key.' : invalid value ('.$this->config['support'][$key].'), must be an http/https URL';
                     unset($this->config['support'][$key]);
@@ -227,7 +227,7 @@ class ValidatingArrayLoader implements LoaderInterface
                     unset($this->config['funding'][$key]);
                     continue;
                 }
-                foreach (array('type', 'url') as $fundingData) {
+                foreach (['type', 'url'] as $fundingData) {
                     if (isset($fundingOption[$fundingData]) && !is_string($fundingOption[$fundingData])) {
                         $this->errors[] = 'funding.'.$key.'.'.$fundingData.' : invalid value, must be a string';
                         unset($this->config['funding'][$key][$fundingData]);
@@ -318,7 +318,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if ($this->validateArray('autoload') && !empty($this->config['autoload'])) {
-            $types = array('psr-0', 'psr-4', 'classmap', 'files', 'exclude-from-classmap');
+            $types = ['psr-0', 'psr-4', 'classmap', 'files', 'exclude-from-classmap'];
             foreach ($this->config['autoload'] as $type => $typeConfig) {
                 if (!in_array($type, $types)) {
                     $this->errors[] = 'autoload : invalid value ('.$type.'), must be one of '.implode(', ', $types);
@@ -341,7 +341,7 @@ class ValidatingArrayLoader implements LoaderInterface
             unset($this->config['autoload']['psr-4']);
         }
 
-        foreach (array('source', 'dist') as $srcType) {
+        foreach (['source', 'dist'] as $srcType) {
             if ($this->validateArray($srcType) && !empty($this->config[$srcType])) {
                 if (!isset($this->config[$srcType]['type'])) {
                     $this->errors[] = $srcType . '.type : must be present';
@@ -423,7 +423,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         $package = $this->loader->load($this->config, $class);
-        $this->config = array();
+        $this->config = [];
 
         return $package;
     }
@@ -460,7 +460,7 @@ class ValidatingArrayLoader implements LoaderInterface
             return $name.' is invalid, it should have a vendor name, a forward slash, and a package name. The vendor and package name can be words separated by -, . or _. The complete name should match "^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$".';
         }
 
-        $reservedNames = array('nul', 'con', 'prn', 'aux', 'com1', 'com2', 'com3', 'com4', 'com5', 'com6', 'com7', 'com8', 'com9', 'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9');
+        $reservedNames = ['nul', 'con', 'prn', 'aux', 'com1', 'com2', 'com3', 'com4', 'com5', 'com6', 'com7', 'com8', 'com9', 'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9'];
         $bits = explode('/', strtolower($name));
         if (in_array($bits[0], $reservedNames, true) || in_array($bits[1], $reservedNames, true)) {
             return $name.' is reserved, package and vendor names can not match any of: '.implode(', ', $reservedNames).'.';
@@ -639,7 +639,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @return bool
      */
-    private function filterUrl($value, array $schemes = array('http', 'https')): bool
+    private function filterUrl($value, array $schemes = ['http', 'https']): bool
     {
         if ($value === '') {
             return true;

@@ -26,7 +26,7 @@ class Loop
     /** @var ProcessExecutor|null */
     private $processExecutor;
     /** @var PromiseInterface[][] */
-    private $currentPromises = array();
+    private $currentPromises = [];
     /** @var int */
     private $waitIndex = 0;
 

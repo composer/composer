@@ -52,7 +52,7 @@ class Runtime
      *
      * @return mixed
      */
-    public function invoke(callable $callable, array $arguments = array())
+    public function invoke(callable $callable, array $arguments = [])
     {
         return call_user_func_array($callable, $arguments);
     }
@@ -74,7 +74,7 @@ class Runtime
      * @return object
      * @throws \ReflectionException
      */
-    public function construct(string $class, array $arguments = array()): object
+    public function construct(string $class, array $arguments = []): object
     {
         if (empty($arguments)) {
             return new $class;

@@ -58,12 +58,12 @@ abstract class BaseDependencyCommand extends BaseCommand
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, $this->getName(), $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
-        $platformOverrides = $composer->getConfig()->get('platform') ?: array();
-        $installedRepo = new InstalledRepository(array(
+        $platformOverrides = $composer->getConfig()->get('platform') ?: [];
+        $installedRepo = new InstalledRepository([
             new RootPackageRepository($composer->getPackage()),
             $composer->getRepositoryManager()->getLocalRepository(),
-            new PlatformRepository(array(), $platformOverrides),
-        ));
+            new PlatformRepository([], $platformOverrides),
+        ]);
 
         // Parse package name and constraint
         list($needle, $textConstraint) = array_pad(
@@ -83,12 +83,12 @@ abstract class BaseDependencyCommand extends BaseCommand
         if (!$installedRepo->findPackage($needle, $textConstraint)) {
             $defaultRepos = new CompositeRepository(RepositoryFactory::defaultRepos($this->getIO(), $composer->getConfig(), $composer->getRepositoryManager()));
             if ($match = $defaultRepos->findPackage($needle, $textConstraint)) {
-                $installedRepo->addRepository(new InstalledArrayRepository(array(clone $match)));
+                $installedRepo->addRepository(new InstalledArrayRepository([clone $match]));
             }
         }
 
         // Include replaced packages for inverted lookups as they are then the actual starting point to consider
-        $needles = array($needle);
+        $needles = [$needle];
         if ($inverted) {
             foreach ($packages as $package) {
                 $needles = array_merge($needles, array_map(function (Link $link): string {
@@ -139,11 +139,11 @@ abstract class BaseDependencyCommand extends BaseCommand
      */
     protected function printTable(OutputInterface $output, $results): void
     {
-        $table = array();
-        $doubles = array();
+        $table = [];
+        $doubles = [];
         do {
-            $queue = array();
-            $rows = array();
+            $queue = [];
+            $rows = [];
             foreach ($results as $result) {
                 /**
                  * @var PackageInterface $package
@@ -156,7 +156,7 @@ abstract class BaseDependencyCommand extends BaseCommand
                 }
                 $doubles[$unique] = true;
                 $version = $package->getPrettyVersion() === RootPackage::DEFAULT_PRETTY_VERSION ? '-' : $package->getPrettyVersion();
-                $rows[] = array($package->getPrettyName(), $version, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint()));
+                $rows[] = [$package->getPrettyName(), $version, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint())];
                 if ($children) {
                     $queue = array_merge($queue, $children);
                 }
@@ -175,13 +175,13 @@ abstract class BaseDependencyCommand extends BaseCommand
      */
     protected function initStyles(OutputInterface $output): void
     {
-        $this->colors = array(
+        $this->colors = [
             'green',
             'yellow',
             'cyan',
             'magenta',
             'blue',
-        );
+        ];
 
         foreach ($this->colors as $color) {
             $style = new OutputFormatterStyle($color);
@@ -228,7 +228,7 @@ abstract class BaseDependencyCommand extends BaseCommand
     {
         $io = $this->getIO();
         if (!$io->isDecorated()) {
-            $line = str_replace(array('└', '├', '──', '│'), array('`-', '|-', '-', '|'), $line);
+            $line = str_replace(['└', '├', '──', '│'], ['`-', '|-', '-', '|'], $line);
         }
 
         $io->write($line);

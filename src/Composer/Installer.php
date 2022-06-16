@@ -299,11 +299,11 @@ class Installer
         }
 
         if ($this->update) {
-            $installedRepo = new InstalledRepository(array(
+            $installedRepo = new InstalledRepository([
                 $this->locker->getLockedRepository($this->devMode),
                 $this->createPlatformRepo(false),
                 new RootPackageRepository(clone $this->package),
-            ));
+            ]);
             if ($isFreshInstall) {
                 $this->suggestedPackagesReporter->addSuggestionsFromPackage($this->package);
             }
@@ -359,7 +359,7 @@ class Installer
             }
         }
         if ($fundingCount > 0) {
-            $this->io->writeError(array(
+            $this->io->writeError([
                 sprintf(
                     "<info>%d package%s you are using %s looking for funding.</info>",
                     $fundingCount,
@@ -367,7 +367,7 @@ class Installer
                     1 === $fundingCount ? 'is' : 'are'
                 ),
                 '<info>Use the `composer fund` command to find out more!</info>',
-            ));
+            ]);
         }
 
         if ($this->runScripts) {
@@ -486,9 +486,9 @@ class Installer
         $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
         $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
 
-        $installsUpdates = $uninstalls = array();
+        $installsUpdates = $uninstalls = [];
         if ($lockTransaction->getOperations()) {
-            $installNames = $updateNames = $uninstallNames = array();
+            $installNames = $updateNames = $uninstallNames = [];
             foreach ($lockTransaction->getOperations() as $operation) {
                 if ($operation instanceof InstallOperation) {
                     $installsUpdates[] = $operation;
@@ -572,7 +572,7 @@ class Installer
             $this->package->getStabilityFlags(),
             $this->preferStable || $this->package->getPreferStable(),
             $this->preferLowest,
-            $this->config->get('platform') ?: array(),
+            $this->config->get('platform') ?: [],
             $this->writeLock && $this->executeOperations
         );
         if ($updatedLock && $this->writeLock && $this->executeOperations) {
@@ -614,7 +614,7 @@ class Installer
             return 0;
         }
 
-        $resultRepo = new ArrayRepository(array());
+        $resultRepo = new ArrayRepository([]);
         $loader = new ArrayLoader(null, true);
         $dumper = new ArrayDumper();
         foreach ($lockTransaction->getNewLockPackages(false) as $pkg) {
@@ -676,7 +676,7 @@ class Installer
             // creating repository set
             $policy = $this->createPolicy(false);
             // use aliases from lock file only, so empty root aliases here
-            $repositorySet = $this->createRepositorySet(false, $platformRepo, array(), $lockedRepository);
+            $repositorySet = $this->createRepositorySet(false, $platformRepo, [], $lockedRepository);
             $repositorySet->addRepository($lockedRepository);
 
             // creating requirements request
@@ -731,7 +731,7 @@ class Installer
         }
 
         if ($localRepoTransaction->getOperations()) {
-            $installs = $updates = $uninstalls = array();
+            $installs = $updates = $uninstalls = [];
             foreach ($localRepoTransaction->getOperations() as $operation) {
                 if ($operation instanceof InstallOperation) {
                     $installs[] = $operation->getPackage()->getPrettyName().':'.$operation->getPackage()->getFullPrettyVersion();
@@ -785,12 +785,12 @@ class Installer
     protected function createPlatformRepo(bool $forUpdate): PlatformRepository
     {
         if ($forUpdate) {
-            $platformOverrides = $this->config->get('platform') ?: array();
+            $platformOverrides = $this->config->get('platform') ?: [];
         } else {
             $platformOverrides = $this->locker->getPlatformOverrides();
         }
 
-        return new PlatformRepository(array(), $platformOverrides);
+        return new PlatformRepository([], $platformOverrides);
     }
 
     /**
@@ -802,7 +802,7 @@ class Installer
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $rootAliases
      */
-    private function createRepositorySet(bool $forUpdate, PlatformRepository $platformRepo, array $rootAliases = array(), ?RepositoryInterface $lockedRepository = null): RepositorySet
+    private function createRepositorySet(bool $forUpdate, PlatformRepository $platformRepo, array $rootAliases = [], ?RepositoryInterface $lockedRepository = null): RepositorySet
     {
         if ($forUpdate) {
             $minimumStability = $this->package->getMinimumStability();
@@ -813,7 +813,7 @@ class Installer
             $minimumStability = $this->locker->getMinimumStability();
             $stabilityFlags = $this->locker->getStabilityFlags();
 
-            $requires = array();
+            $requires = [];
             foreach ($lockedRepository->getPackages() as $package) {
                 $constraint = new Constraint('=', $package->getVersion());
                 $constraint->setPrettyString($package->getPrettyVersion());
@@ -821,7 +821,7 @@ class Installer
             }
         }
 
-        $rootRequires = array();
+        $rootRequires = [];
         foreach ($requires as $req => $constraint) {
             if ($constraint instanceof Link) {
                 $constraint = $constraint->getConstraint();
@@ -836,8 +836,8 @@ class Installer
         }
 
         $this->fixedRootPackage = clone $this->package;
-        $this->fixedRootPackage->setRequires(array());
-        $this->fixedRootPackage->setDevRequires(array());
+        $this->fixedRootPackage->setRequires([]);
+        $this->fixedRootPackage->setDevRequires([]);
 
         $stabilityFlags[$this->package->getName()] = BasePackage::$stabilities[VersionParser::parseStability($this->package->getVersion())];
 
@@ -851,7 +851,7 @@ class Installer
             if ($additionalFixedRepositories instanceof CompositeRepository) {
                 $additionalFixedRepositories = $additionalFixedRepositories->getRepositories();
             } else {
-                $additionalFixedRepositories = array($additionalFixedRepositories);
+                $additionalFixedRepositories = [$additionalFixedRepositories];
             }
             foreach ($additionalFixedRepositories as $additionalFixedRepository) {
                 if ($additionalFixedRepository instanceof InstalledRepository || $additionalFixedRepository instanceof InstalledRepositoryInterface) {
@@ -936,7 +936,7 @@ class Installer
     {
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
         if ($this->updateMirrors) {
-            $excludedPackages = array();
+            $excludedPackages = [];
             if (!$includeDevRequires) {
                 $excludedPackages = array_flip($this->locker->getDevPackageNames());
             }
@@ -984,7 +984,7 @@ class Installer
      */
     private function extractPlatformRequirements(array $links): array
     {
-        $platformReqs = array();
+        $platformReqs = [];
         foreach ($links as $link) {
             if (PlatformRepository::isPlatformPackage($link->getTarget())) {
                 $platformReqs[$link->getTarget()] = $link->getPrettyConstraint();
@@ -1003,7 +1003,7 @@ class Installer
      */
     private function mockLocalRepositories(RepositoryManager $rm): void
     {
-        $packages = array();
+        $packages = [];
         foreach ($rm->getLocalRepository()->getPackages() as $package) {
             $packages[(string) $package] = clone $package;
         }
@@ -1353,7 +1353,7 @@ class Installer
      */
     public function setUpdateAllowTransitiveDependencies(int $updateAllowTransitiveDependencies): self
     {
-        if (!in_array($updateAllowTransitiveDependencies, array(Request::UPDATE_ONLY_LISTED, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS), true)) {
+        if (!in_array($updateAllowTransitiveDependencies, [Request::UPDATE_ONLY_LISTED, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS], true)) {
             throw new \RuntimeException("Invalid value for updateAllowTransitiveDependencies supplied");
         }
 

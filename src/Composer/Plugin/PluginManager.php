@@ -51,9 +51,9 @@ class PluginManager
     protected $disablePlugins = false;
 
     /** @var array<PluginInterface> */
-    protected $plugins = array();
+    protected $plugins = [];
     /** @var array<string, PluginInterface|InstallerInterface> */
-    protected $registeredPlugins = array();
+    protected $registeredPlugins = [];
 
     /**
      * @var array<non-empty-string, bool>|null
@@ -202,7 +202,7 @@ class PluginManager
         if (empty($extra['class'])) {
             throw new \UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
         }
-        $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
+        $classes = is_array($extra['class']) ? $extra['class'] : [$extra['class']];
 
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer !== null ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
@@ -212,31 +212,31 @@ class PluginManager
         // clear files autoload rules from the root package as the root dependencies are not
         // necessarily all present yet when booting this runtime autoloader
         $rootPackageAutoloads = $rootPackage->getAutoload();
-        $rootPackageAutoloads['files'] = array();
+        $rootPackageAutoloads['files'] = [];
         $rootPackage->setAutoload($rootPackageAutoloads);
         $rootPackageAutoloads = $rootPackage->getDevAutoload();
-        $rootPackageAutoloads['files'] = array();
+        $rootPackageAutoloads['files'] = [];
         $rootPackage->setDevAutoload($rootPackageAutoloads);
         unset($rootPackageAutoloads);
 
         $rootPackageRepo = new RootPackageRepository($rootPackage);
-        $installedRepo = new InstalledRepository(array($localRepo, $rootPackageRepo));
+        $installedRepo = new InstalledRepository([$localRepo, $rootPackageRepo]);
         if ($globalRepo) {
             $installedRepo->addRepository($globalRepo);
         }
 
-        $autoloadPackages = array($package->getName() => $package);
+        $autoloadPackages = [$package->getName() => $package];
         $autoloadPackages = $this->collectDependencies($installedRepo, $autoloadPackages, $package);
 
         $generator = $this->composer->getAutoloadGenerator();
-        $autoloads = array(array($rootPackage, ''));
+        $autoloads = [[$rootPackage, '']];
         foreach ($autoloadPackages as $autoloadPackage) {
             if ($autoloadPackage === $rootPackage) {
                 continue;
             }
 
             $downloadPath = $this->getInstallPath($autoloadPackage, $globalRepo && $globalRepo->hasPackage($autoloadPackage));
-            $autoloads[] = array($autoloadPackage, $downloadPath);
+            $autoloads[] = [$autoloadPackage, $downloadPath];
         }
 
         $map = $generator->parseAutoloads($autoloads, $rootPackage);
@@ -264,11 +264,11 @@ class PluginManager
                     $className = substr($class, $separatorPos + 1);
                 }
                 $code = Preg::replace('{^((?:final\s+)?(?:\s*))class\s+('.preg_quote($className).')}mi', '$1class $2_composer_tmp'.self::$classCounter, $code, 1);
-                $code = strtr($code, array(
+                $code = strtr($code, [
                     '__FILE__' => var_export($path, true),
                     '__DIR__' => var_export(dirname($path), true),
                     '__CLASS__' => var_export($class, true),
-                ));
+                ]);
                 $code = Preg::replace('/^\s*<\?(php)?/i', '', $code, 1);
                 eval($code);
                 $class .= '_composer_tmp'.self::$classCounter;
@@ -392,7 +392,7 @@ class PluginManager
             return;
         }
 
-        $details = array();
+        $details = [];
         if ($sourcePackage) {
             $details[] = 'from '.$sourcePackage->getName();
         }
@@ -470,7 +470,7 @@ class PluginManager
     {
         $packages = $repo->getPackages();
 
-        $weights = array();
+        $weights = [];
         foreach ($packages as $package) {
             if ($package->getType() === 'composer-plugin') {
                 $extra = $package->getExtra();
@@ -603,7 +603,7 @@ class PluginManager
      * @phpstan-param class-string<CapabilityClass> $capabilityClassName
      * @phpstan-return null|CapabilityClass
      */
-    public function getPluginCapability(PluginInterface $plugin, $capabilityClassName, array $ctorArgs = array()): ?Capability
+    public function getPluginCapability(PluginInterface $plugin, $capabilityClassName, array $ctorArgs = []): ?Capability
     {
         if ($capabilityClass = $this->getCapabilityImplementationClassName($plugin, $capabilityClassName)) {
             if (!class_exists($capabilityClass)) {
@@ -634,9 +634,9 @@ class PluginManager
      *                                                            Keeping it an array will allow future values to be passed w\o changing the signature.
      * @return CapabilityClass[]
      */
-    public function getPluginCapabilities($capabilityClassName, array $ctorArgs = array()): array
+    public function getPluginCapabilities($capabilityClassName, array $ctorArgs = []): array
     {
-        $capabilities = array();
+        $capabilities = [];
         foreach ($this->getPlugins() as $plugin) {
             if ($capability = $this->getPluginCapability($plugin, $capabilityClassName, $ctorArgs)) {
                 $capabilities[] = $capability;
@@ -657,14 +657,14 @@ class PluginManager
         }
 
         if (true === $allowPluginsConfig) {
-            return array('{}' => true);
+            return ['{}' => true];
         }
 
         if (false === $allowPluginsConfig) {
-            return array('{}' => false);
+            return ['{}' => false];
         }
 
-        $rules = array();
+        $rules = [];
         foreach ($allowPluginsConfig as $pattern => $allow) {
             $rules[BasePackage::packageNameToRegexp($pattern)] = $allow;
         }
@@ -679,7 +679,7 @@ class PluginManager
      */
     private function isPluginAllowed(string $package, bool $isGlobalPlugin): bool
     {
-        static $warned = array();
+        static $warned = [];
         $rules = $isGlobalPlugin ? $this->allowGlobalPluginRules : $this->allowPluginRules;
 
         if ($rules === null) {
@@ -695,7 +695,7 @@ class PluginManager
             }
 
             // keep going and prompt the user
-            $rules = array();
+            $rules = [];
         }
 
         foreach ($rules as $pattern => $allow) {
@@ -745,12 +745,12 @@ class PluginManager
                         case '?':
                         default:
                             $attempts++;
-                            $this->io->writeError(array(
+                            $this->io->writeError([
                                 'y - add package to allow-plugins in composer.json and let it run immediately',
                                 'n - add package (as disallowed) to allow-plugins in composer.json to suppress further prompts',
                                 'd - discard this, do not change composer.json and do not allow the plugin to run',
                                 '? - print help',
-                            ));
+                            ]);
                             break;
                     }
                 }

@@ -72,7 +72,7 @@ class Zip
             return $index;
         }
 
-        $topLevelPaths = array();
+        $topLevelPaths = [];
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = $zip->getNameIndex($i);
             $dirname = dirname($name);

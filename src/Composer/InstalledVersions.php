@@ -41,7 +41,7 @@ class InstalledVersions
      * @var array[]
      * @psalm-var array<string, array{root: array{name: string, pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev: bool}, versions: array<string, array{pretty_version?: string, version?: string, reference?: string|null, type?: string, install_path?: string, aliases?: string[], dev_requirement: bool, replaced?: string[], provided?: string[]}>}>
      */
-    private static $installedByVendor = array();
+    private static $installedByVendor = [];
 
     /**
      * Returns a list of all package names which are present, either by being installed, replaced or provided
@@ -51,7 +51,7 @@ class InstalledVersions
      */
     public static function getInstalledPackages()
     {
-        $packages = array();
+        $packages = [];
         foreach (self::getInstalled() as $installed) {
             $packages[] = array_keys($installed['versions']);
         }
@@ -72,7 +72,7 @@ class InstalledVersions
      */
     public static function getInstalledPackagesByType($type)
     {
-        $packagesByType = array();
+        $packagesByType = [];
 
         foreach (self::getInstalled() as $installed) {
             foreach ($installed['versions'] as $name => $package) {
@@ -141,7 +141,7 @@ class InstalledVersions
                 continue;
             }
 
-            $ranges = array();
+            $ranges = [];
             if (isset($installed['versions'][$packageName]['pretty_version'])) {
                 $ranges[] = $installed['versions'][$packageName]['pretty_version'];
             }
@@ -269,7 +269,7 @@ class InstalledVersions
             if (substr(__DIR__, -8, 1) !== 'C') {
                 self::$installed = include __DIR__ . '/installed.php';
             } else {
-                self::$installed = array();
+                self::$installed = [];
             }
         }
 
@@ -308,7 +308,7 @@ class InstalledVersions
     public static function reload($data)
     {
         self::$installed = $data;
-        self::$installedByVendor = array();
+        self::$installedByVendor = [];
     }
 
     /**
@@ -321,7 +321,7 @@ class InstalledVersions
             self::$canGetVendors = method_exists('Composer\Autoload\ClassLoader', 'getRegisteredLoaders');
         }
 
-        $installed = array();
+        $installed = [];
 
         if (self::$canGetVendors) {
             foreach (ClassLoader::getRegisteredLoaders() as $vendorDir => $loader) {
@@ -342,7 +342,7 @@ class InstalledVersions
             if (substr(__DIR__, -8, 1) !== 'C') {
                 self::$installed = require __DIR__ . '/installed.php';
             } else {
-                self::$installed = array();
+                self::$installed = [];
             }
         }
         $installed[] = self::$installed;
