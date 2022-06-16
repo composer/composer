@@ -288,7 +288,7 @@ class NoProxyPattern
         }
 
         if ($remainder = $prefix % 8) {
-            $mask .= chr(0xff ^ (0xff >> $remainder));
+            $mask .= chr(0xFF ^ (0xFF >> $remainder));
         }
 
         $mask = str_pad($mask, $size, chr(0));

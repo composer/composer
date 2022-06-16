@@ -561,7 +561,7 @@ EOT
             $errors['openssl'] = true;
         }
 
-        if (extension_loaded('openssl') && OPENSSL_VERSION_NUMBER < 0x1000100f) {
+        if (extension_loaded('openssl') && OPENSSL_VERSION_NUMBER < 0x1000100F) {
             $warnings['openssl_version'] = true;
         }
 
