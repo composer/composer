@@ -89,7 +89,7 @@ class HgDriver extends VcsDriver
     public function getRootIdentifier(): string
     {
         if (null === $this->rootIdentifier) {
-            $this->process->execute(sprintf('hg tip --template "{node}"'), $output, $this->repoDir);
+            $this->process->execute('hg tip --template "{node}"', $output, $this->repoDir);
             $output = $this->process->splitLines($output);
             $this->rootIdentifier = $output[0];
         }
