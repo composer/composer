@@ -639,7 +639,7 @@ EOT
             if (isset($package['version']) && $writeVersion) {
                 $io->write(' ' . str_pad($package['version'], $versionLength, ' '), false);
             }
-            if (isset($package['latest']) && isset($package['latest-status']) && $writeLatest) {
+            if (isset($package['latest'], $package['latest-status'])   && $writeLatest) {
                 $latestVersion = $package['latest'];
                 $updateStatus = $package['latest-status'];
                 $style = $this->updateStatusToVersionStyle($updateStatus);
