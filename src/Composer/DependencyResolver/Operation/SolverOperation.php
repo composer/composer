@@ -29,7 +29,7 @@ abstract class SolverOperation implements OperationInterface
      *
      * @return string
      */
-    public function getOperationType(): string
+    final public function getOperationType(): string
     {
         return static::TYPE;
     }

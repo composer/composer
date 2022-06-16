@@ -25,7 +25,7 @@ abstract class BaseIO implements IOInterface
     /**
      * @inheritDoc
      */
-    public function getAuthentications()
+    final public function getAuthentications()
     {
         return $this->authentications;
     }
@@ -33,7 +33,7 @@ abstract class BaseIO implements IOInterface
     /**
      * @return void
      */
-    public function resetAuthentications()
+    final public function resetAuthentications()
     {
         $this->authentications = array();
     }
@@ -41,7 +41,7 @@ abstract class BaseIO implements IOInterface
     /**
      * @inheritDoc
      */
-    public function hasAuthentication($repositoryName)
+    final public function hasAuthentication($repositoryName)
     {
         return isset($this->authentications[$repositoryName]);
     }
@@ -49,7 +49,7 @@ abstract class BaseIO implements IOInterface
     /**
      * @inheritDoc
      */
-    public function getAuthentication($repositoryName)
+    final public function getAuthentication($repositoryName)
     {
         if (isset($this->authentications[$repositoryName])) {
             return $this->authentications[$repositoryName];
@@ -61,7 +61,7 @@ abstract class BaseIO implements IOInterface
     /**
      * @inheritDoc
      */
-    public function setAuthentication($repositoryName, $username, $password = null)
+    final public function setAuthentication($repositoryName, $username, $password = null)
     {
         $this->authentications[$repositoryName] = array('username' => $username, 'password' => $password);
     }
@@ -69,7 +69,7 @@ abstract class BaseIO implements IOInterface
     /**
      * @inheritDoc
      */
-    public function writeRaw($messages, bool $newline = true, int $verbosity = self::NORMAL)
+    final public function writeRaw($messages, bool $newline = true, int $verbosity = self::NORMAL)
     {
         $this->write($messages, $newline, $verbosity);
     }
@@ -77,7 +77,7 @@ abstract class BaseIO implements IOInterface
     /**
      * @inheritDoc
      */
-    public function writeErrorRaw($messages, bool $newline = true, int $verbosity = self::NORMAL)
+    final public function writeErrorRaw($messages, bool $newline = true, int $verbosity = self::NORMAL)
     {
         $this->writeError($messages, $newline, $verbosity);
     }
@@ -112,7 +112,7 @@ abstract class BaseIO implements IOInterface
     /**
      * @inheritDoc
      */
-    public function loadConfiguration(Config $config)
+    final public function loadConfiguration(Config $config)
     {
         $bitbucketOauth = $config->get('bitbucket-oauth');
         $githubOauth = $config->get('github-oauth');
@@ -159,47 +159,47 @@ abstract class BaseIO implements IOInterface
         ProcessExecutor::setTimeout($config->get('process-timeout'));
     }
 
-    public function emergency($message, array $context = array()): void
+    final public function emergency($message, array $context = array()): void
     {
         $this->log(LogLevel::EMERGENCY, $message, $context);
     }
 
-    public function alert($message, array $context = array()): void
+    final public function alert($message, array $context = array()): void
     {
         $this->log(LogLevel::ALERT, $message, $context);
     }
 
-    public function critical($message, array $context = array()): void
+    final public function critical($message, array $context = array()): void
     {
         $this->log(LogLevel::CRITICAL, $message, $context);
     }
 
-    public function error($message, array $context = array()): void
+    final public function error($message, array $context = array()): void
     {
         $this->log(LogLevel::ERROR, $message, $context);
     }
 
-    public function warning($message, array $context = array()): void
+    final public function warning($message, array $context = array()): void
     {
         $this->log(LogLevel::WARNING, $message, $context);
     }
 
-    public function notice($message, array $context = array()): void
+    final public function notice($message, array $context = array()): void
     {
         $this->log(LogLevel::NOTICE, $message, $context);
     }
 
-    public function info($message, array $context = array()): void
+    final public function info($message, array $context = array()): void
     {
         $this->log(LogLevel::INFO, $message, $context);
     }
 
-    public function debug($message, array $context = array()): void
+    final public function debug($message, array $context = array()): void
     {
         $this->log(LogLevel::DEBUG, $message, $context);
     }
 
-    public function log($level, $message, array $context = array()): void
+    final public function log($level, $message, array $context = array()): void
     {
         $message = (string) $message;
 

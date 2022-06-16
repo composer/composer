@@ -89,7 +89,7 @@ abstract class Rule
     /**
      * @return int
      */
-    public function getReason(): int
+    final public function getReason(): int
     {
         return ($this->bitfield & (255 << self::BITFIELD_REASON)) >> self::BITFIELD_REASON;
     }
@@ -97,7 +97,7 @@ abstract class Rule
     /**
      * @phpstan-return ReasonData
      */
-    public function getReasonData()
+    final public function getReasonData()
     {
         return $this->reasonData;
     }
@@ -105,7 +105,7 @@ abstract class Rule
     /**
      * @return string|null
      */
-    public function getRequiredPackage(): ?string
+    final public function getRequiredPackage(): ?string
     {
         $reason = $this->getReason();
 
@@ -128,7 +128,7 @@ abstract class Rule
      * @param RuleSet::TYPE_* $type
      * @return void
      */
-    public function setType($type): void
+    final public function setType($type): void
     {
         $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_TYPE)) | ((255 & $type) << self::BITFIELD_TYPE);
     }
@@ -136,7 +136,7 @@ abstract class Rule
     /**
      * @return int
      */
-    public function getType(): int
+    final public function getType(): int
     {
         return ($this->bitfield & (255 << self::BITFIELD_TYPE)) >> self::BITFIELD_TYPE;
     }
@@ -144,7 +144,7 @@ abstract class Rule
     /**
      * @return void
      */
-    public function disable(): void
+    final public function disable(): void
     {
         $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_DISABLED)) | (1 << self::BITFIELD_DISABLED);
     }
@@ -152,7 +152,7 @@ abstract class Rule
     /**
      * @return void
      */
-    public function enable(): void
+    final public function enable(): void
     {
         $this->bitfield &= ~(255 << self::BITFIELD_DISABLED);
     }
@@ -160,7 +160,7 @@ abstract class Rule
     /**
      * @return bool
      */
-    public function isDisabled(): bool
+    final public function isDisabled(): bool
     {
         return (bool) (($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
@@ -168,7 +168,7 @@ abstract class Rule
     /**
      * @return bool
      */
-    public function isEnabled(): bool
+    final public function isEnabled(): bool
     {
         return !(($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
@@ -181,7 +181,7 @@ abstract class Rule
     /**
      * @return bool
      */
-    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool): bool
+    final public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool): bool
     {
         if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
             if (PlatformRepository::isPlatformPackage($this->reasonData->getTarget())) {
@@ -232,7 +232,7 @@ abstract class Rule
      * @internal
      * @return BasePackage
      */
-    public function getSourcePackage(Pool $pool): BasePackage
+    final public function getSourcePackage(Pool $pool): BasePackage
     {
         $literals = $this->getLiterals();
 
@@ -267,7 +267,7 @@ abstract class Rule
      * @param array<Rule[]> $learnedPool
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
+    final public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
     {
         $literals = $this->getLiterals();
 

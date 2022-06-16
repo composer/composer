@@ -52,7 +52,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * @inheritDoc
      */
-    public function getInstallationSource(): string
+    final public function getInstallationSource(): string
     {
         return 'source';
     }
@@ -60,7 +60,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    final public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
     {
         if (!$package->getSourceReference()) {
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
@@ -93,7 +93,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * @inheritDoc
      */
-    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    final public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
     {
         if ($type === 'update') {
             $this->cleanChanges($prevPackage, $path, true);
@@ -110,7 +110,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * @inheritDoc
      */
-    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    final public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
     {
         if ($type === 'update' && isset($this->hasCleanedChanges[$prevPackage->getUniqueName()])) {
             $this->reapplyChanges($path);
@@ -123,7 +123,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * @inheritDoc
      */
-    public function install(PackageInterface $package, string $path): PromiseInterface
+    final public function install(PackageInterface $package, string $path): PromiseInterface
     {
         if (!$package->getSourceReference()) {
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
@@ -158,7 +158,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * @inheritDoc
      */
-    public function update(PackageInterface $initial, PackageInterface $target, string $path): PromiseInterface
+    final public function update(PackageInterface $initial, PackageInterface $target, string $path): PromiseInterface
     {
         if (!$target->getSourceReference()) {
             throw new \InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');
@@ -222,7 +222,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * @inheritDoc
      */
-    public function remove(PackageInterface $package, string $path): PromiseInterface
+    final public function remove(PackageInterface $package, string $path): PromiseInterface
     {
         $this->io->writeError("  - " . UninstallOperation::format($package));
 
@@ -238,7 +238,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * @inheritDoc
      */
-    public function getVcsReference(PackageInterface $package, string $path): ?string
+    final public function getVcsReference(PackageInterface $package, string $path): ?string
     {
         $parser = new VersionParser;
         $guesser = new VersionGuesser($this->config, $this->process, $parser);

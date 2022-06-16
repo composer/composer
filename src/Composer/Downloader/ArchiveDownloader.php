@@ -35,7 +35,7 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * @return PromiseInterface
      */
-    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    final public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
     {
         unset($this->cleanupExecuted[$package->getName()]);
 
@@ -45,7 +45,7 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * @return PromiseInterface
      */
-    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    final public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
     {
         $this->cleanupExecuted[$package->getName()] = true;
 
@@ -62,7 +62,7 @@ abstract class ArchiveDownloader extends FileDownloader
      * @throws \RuntimeException
      * @throws \UnexpectedValueException
      */
-    public function install(PackageInterface $package, string $path, bool $output = true): PromiseInterface
+    final public function install(PackageInterface $package, string $path, bool $output = true): PromiseInterface
     {
         if ($output) {
             $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));

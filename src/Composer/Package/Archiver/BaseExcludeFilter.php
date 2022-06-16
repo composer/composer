@@ -49,7 +49,7 @@ abstract class BaseExcludeFilter
      *
      * @return bool Whether the file should be excluded
      */
-    public function filter(string $relativePath, bool $exclude): bool
+    final public function filter(string $relativePath, bool $exclude): bool
     {
         foreach ($this->excludePatterns as $patternData) {
             list($pattern, $negate, $stripLeadingSlash) = $patternData;

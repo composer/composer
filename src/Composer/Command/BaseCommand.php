@@ -56,7 +56,7 @@ abstract class BaseCommand extends Command
     /**
      * Gets the application instance for this command.
      */
-    public function getApplication(): Application
+    final public function getApplication(): Application
     {
         $application = parent::getApplication();
         if (!$application instanceof Application) {
@@ -74,7 +74,7 @@ abstract class BaseCommand extends Command
      * @return Composer|null
      * @deprecated since Composer 2.3.0 use requireComposer or tryComposer depending on whether you have $required set to true or false
      */
-    public function getComposer(bool $required = true, ?bool $disablePlugins = null, ?bool $disableScripts = null)
+    final public function getComposer(bool $required = true, ?bool $disablePlugins = null, ?bool $disableScripts = null)
     {
         if ($required) {
             return $this->requireComposer($disablePlugins, $disableScripts);
@@ -92,7 +92,7 @@ abstract class BaseCommand extends Command
      * @param bool|null $disableScripts If null, reads --no-scripts as default
      * @throws \RuntimeException
      */
-    public function requireComposer(bool $disablePlugins = null, bool $disableScripts = null): Composer
+    final public function requireComposer(bool $disablePlugins = null, bool $disableScripts = null): Composer
     {
         if (null === $this->composer) {
             $application = parent::getApplication();
@@ -118,7 +118,7 @@ abstract class BaseCommand extends Command
      * @param bool|null $disablePlugins If null, reads --no-plugins as default
      * @param bool|null $disableScripts If null, reads --no-scripts as default
      */
-    public function tryComposer(bool $disablePlugins = null, bool $disableScripts = null): ?Composer
+    final public function tryComposer(bool $disablePlugins = null, bool $disableScripts = null): ?Composer
     {
         if (null === $this->composer) {
             $application = parent::getApplication();
@@ -133,7 +133,7 @@ abstract class BaseCommand extends Command
     /**
      * @return void
      */
-    public function setComposer(Composer $composer)
+    final public function setComposer(Composer $composer)
     {
         $this->composer = $composer;
     }
@@ -143,7 +143,7 @@ abstract class BaseCommand extends Command
      *
      * @return void
      */
-    public function resetComposer()
+    final public function resetComposer()
     {
         $this->composer = null;
         $this->getApplication()->resetComposer();
@@ -156,7 +156,7 @@ abstract class BaseCommand extends Command
      *
      * @return bool
      */
-    public function isProxyCommand()
+    final public function isProxyCommand()
     {
         return false;
     }
@@ -164,7 +164,7 @@ abstract class BaseCommand extends Command
     /**
      * @return IOInterface
      */
-    public function getIO()
+    final public function getIO()
     {
         if (null === $this->io) {
             $application = parent::getApplication();
@@ -181,7 +181,7 @@ abstract class BaseCommand extends Command
     /**
      * @return void
      */
-    public function setIO(IOInterface $io)
+    final public function setIO(IOInterface $io)
     {
         $this->io = $io;
     }
@@ -193,7 +193,7 @@ abstract class BaseCommand extends Command
      *
      * TODO drop when PHP 8.1 / symfony 6.1+ can be required
      */
-    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    final public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
     {
         $definition = $this->getDefinition();
         $name = (string) $input->getCompletionName();

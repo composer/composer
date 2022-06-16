@@ -87,7 +87,7 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * @inheritDoc
      */
-    public function getComposerInformation(string $identifier): ?array
+    final public function getComposerInformation(string $identifier): ?array
     {
         if (!isset($this->infoCache[$identifier])) {
             if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
@@ -135,7 +135,7 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * @inheritDoc
      */
-    public function hasComposerFile(string $identifier): bool
+    final public function hasComposerFile(string $identifier): bool
     {
         try {
             return null !== $this->getComposerInformation($identifier);
@@ -179,7 +179,7 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * @inheritDoc
      */
-    public function cleanup(): void
+    final public function cleanup(): void
     {
         return;
     }
