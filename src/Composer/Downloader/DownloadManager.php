@@ -230,9 +230,7 @@ class DownloadManager
                 return $handleError($e);
             }
 
-            $res = $result->then(function ($res) {
-                return $res;
-            }, $handleError);
+            $res = $result->then(fn ($res) => $res, $handleError);
 
             return $res;
         };
@@ -328,9 +326,7 @@ class DownloadManager
         // we wipe the dir and do a new install instead of updating it
         $promise = $initialDownloader->remove($initial, $targetDir);
 
-        return $promise->then(function ($res) use ($target, $targetDir): PromiseInterface {
-            return $this->install($target, $targetDir);
-        });
+        return $promise->then(fn ($res): PromiseInterface => $this->install($target, $targetDir));
     }
 
     /**
@@ -426,9 +422,7 @@ class DownloadManager
             && !(!$prevPackage->isDev() && $prevPackage->getInstallationSource() === 'dist' && $package->isDev())
         ) {
             $prevSource = $prevPackage->getInstallationSource();
-            usort($sources, function ($a, $b) use ($prevSource): int {
-                return $a === $prevSource ? -1 : 1;
-            });
+            usort($sources, fn ($a, $b): int => $a === $prevSource ? -1 : 1);
 
             return $sources;
         }

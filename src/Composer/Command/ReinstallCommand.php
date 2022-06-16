@@ -125,9 +125,7 @@ EOT
                 $installOrder[$op->getPackage()->getName()] = $index;
             }
         }
-        usort($uninstallOperations, function ($a, $b) use ($installOrder): int {
-            return $installOrder[$b->getPackage()->getName()] - $installOrder[$a->getPackage()->getName()];
-        });
+        usort($uninstallOperations, fn ($a, $b): int => $installOrder[$b->getPackage()->getName()] - $installOrder[$a->getPackage()->getName()]);
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'reinstall', $input, $output);
         $eventDispatcher = $composer->getEventDispatcher();

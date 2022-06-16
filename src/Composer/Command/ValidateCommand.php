@@ -196,15 +196,11 @@ EOT
         }
 
         if ($errors) {
-            $errors = array_map(function ($err): string {
-                return '- ' . $err;
-            }, $errors);
+            $errors = array_map(fn ($err): string => '- ' . $err, $errors);
             array_unshift($errors, '# General errors');
         }
         if ($warnings) {
-            $warnings = array_map(function ($err): string {
-                return '- ' . $err;
-            }, $warnings);
+            $warnings = array_map(fn ($err): string => '- ' . $err, $warnings);
             array_unshift($warnings, '# General warnings');
         }
 
@@ -213,9 +209,7 @@ EOT
 
         // If checking publish errors, display them as errors, otherwise just show them as warnings
         if ($publishErrors) {
-            $publishErrors = array_map(function ($err): string {
-                return '- ' . $err;
-            }, $publishErrors);
+            $publishErrors = array_map(fn ($err): string => '- ' . $err, $publishErrors);
 
             if ($checkPublish) {
                 array_unshift($publishErrors, '# Publish errors');

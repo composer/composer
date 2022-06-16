@@ -32,9 +32,7 @@ class ExecCommand extends BaseCommand
             ->setDescription('Executes a vendored binary/script.')
             ->setDefinition(array(
                 new InputOption('list', 'l', InputOption::VALUE_NONE),
-                new InputArgument('binary', InputArgument::OPTIONAL, 'The binary to run, e.g. phpunit', null, function () {
-                    return $this->getBinaries(false);
-                }),
+                new InputArgument('binary', InputArgument::OPTIONAL, 'The binary to run, e.g. phpunit', null, fn () => $this->getBinaries(false)),
                 new InputArgument(
                     'args',
                     InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
@@ -109,9 +107,7 @@ EOT
         $bins = glob($binDir . '/*');
         $localBins = $composer->getPackage()->getBinaries();
         if ($forDisplay) {
-            $localBins = array_map(function ($e) {
-                return "$e (local)";
-            }, $localBins);
+            $localBins = array_map(fn ($e) => "$e (local)", $localBins);
         }
 
         $binaries = [];

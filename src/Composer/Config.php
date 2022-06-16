@@ -528,9 +528,7 @@ class Config
             return $value;
         }
 
-        return Preg::replaceCallback('#\{\$(.+)\}#', function ($match) use ($flags) {
-            return $this->get($match[1], $flags);
-        }, $value);
+        return Preg::replaceCallback('#\{\$(.+)\}#', fn ($match) => $this->get($match[1], $flags), $value);
     }
 
     /**

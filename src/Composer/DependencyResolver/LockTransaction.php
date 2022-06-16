@@ -152,9 +152,7 @@ class LockTransaction extends Transaction
             }
         }
 
-        usort($usedAliases, function ($a, $b): int {
-            return strcmp($a['package'], $b['package']);
-        });
+        usort($usedAliases, fn ($a, $b): int => strcmp($a['package'], $b['package']));
 
         return $usedAliases;
     }

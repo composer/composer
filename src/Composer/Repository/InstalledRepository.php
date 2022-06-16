@@ -251,9 +251,7 @@ class InstalledRepository extends CompositeRepository
 
     public function getRepoName(): string
     {
-        return 'installed repo ('.implode(', ', array_map(function ($repo): string {
-            return $repo->getRepoName();
-        }, $this->getRepositories())).')';
+        return 'installed repo ('.implode(', ', array_map(fn ($repo): string => $repo->getRepoName(), $this->getRepositories())).')';
     }
 
     /**

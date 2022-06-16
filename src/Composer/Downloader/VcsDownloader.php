@@ -200,9 +200,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             }
 
             if ('' !== trim($logs)) {
-                $logs = implode("\n", array_map(function ($line): string {
-                    return '      ' . $line;
-                }, explode("\n", $logs)));
+                $logs = implode("\n", array_map(fn ($line): string => '      ' . $line, explode("\n", $logs)));
 
                 // escape angle brackets for proper output in the console
                 $logs = str_replace('<', '\<', $logs);

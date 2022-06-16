@@ -249,9 +249,7 @@ EOT
 
             if ($input->getOption('no-dev')) {
                 $packages = $this->filterRequiredPackages($installedRepo, $rootPkg);
-                $repos = $installedRepo = new InstalledRepository(array(new InstalledArrayRepository(array_map(function ($pkg): PackageInterface {
-                    return clone $pkg;
-                }, $packages))));
+                $repos = $installedRepo = new InstalledRepository(array(new InstalledArrayRepository(array_map(fn ($pkg): PackageInterface => clone $pkg, $packages))));
             }
 
             if (!$installedRepo->getPackages() && ($rootPkg->getRequires() || $rootPkg->getDevRequires())) {
@@ -346,9 +344,7 @@ EOT
         if ($input->getOption('tree')) {
             $rootRequires = $this->getRootRequires();
             $packages = $installedRepo->getPackages();
-            usort($packages, function (BasePackage $a, BasePackage $b): int {
-                return strcmp((string) $a, (string) $b);
-            });
+            usort($packages, fn (BasePackage $a, BasePackage $b): int => strcmp((string) $a, (string) $b));
             $arrayTree = array();
             foreach ($packages as $package) {
                 if (in_array($package->getName(), $rootRequires, true)) {

@@ -356,9 +356,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
              * @param list<string> $results
              * @return list<string>
              */
-            function (array $results): array {
-                return $results;
-            }
+            fn (array $results): array => $results
         ;
         if (null !== $packageFilter && '' !== $packageFilter) {
             $packageFilterRegex = BasePackage::packageNameToRegexp($packageFilter);
@@ -1104,9 +1102,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             // Disables lazy-provider behavior as with available-packages, but may allow much more compact expression of packages covered by this repository.
             // Over-specifying covered packages is safe, but may result in increased traffic to your repository.
             if (!empty($data['available-package-patterns'])) {
-                $this->availablePackagePatterns = array_map(function ($pattern): string {
-                    return BasePackage::packageNameToRegexp($pattern);
-                }, $data['available-package-patterns']);
+                $this->availablePackagePatterns = array_map(fn ($pattern): string => BasePackage::packageNameToRegexp($pattern), $data['available-package-patterns']);
                 $this->hasAvailablePackageList = true;
             }
 

@@ -360,9 +360,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             return parent::cleanChanges($package, $path, $update);
         }
 
-        $changes = array_map(function ($elem): string {
-            return '    '.$elem;
-        }, Preg::split('{\s*\r?\n\s*}', $changes));
+        $changes = array_map(fn ($elem): string => '    '.$elem, Preg::split('{\s*\r?\n\s*}', $changes));
         $this->io->writeError('    <error>'.$package->getPrettyName().' has modified files:</error>');
         $this->io->writeError(array_slice($changes, 0, 10));
         if (count($changes) > 10) {

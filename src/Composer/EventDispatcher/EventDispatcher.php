@@ -285,9 +285,7 @@ class EventDispatcher
                     if (strpos($exec, '@php ') === 0) {
                         $pathAndArgs = substr($exec, 5);
                         if (Platform::isWindows()) {
-                            $pathAndArgs = Preg::replaceCallback('{^\S+}', function ($path) {
-                                return str_replace('/', '\\', $path[0]);
-                            }, $pathAndArgs);
+                            $pathAndArgs = Preg::replaceCallback('{^\S+}', fn ($path) => str_replace('/', '\\', $path[0]), $pathAndArgs);
                         }
                         // match somename (not in quote, and not a qualified path) and if it is not a valid path from CWD then try to find it
                         // in $PATH. This allows support for `@php foo` where foo is a binary name found in PATH but not an actual relative path
@@ -307,9 +305,7 @@ class EventDispatcher
                         }
 
                         if (Platform::isWindows()) {
-                            $exec = Preg::replaceCallback('{^\S+}', function ($path) {
-                                return str_replace('/', '\\', $path[0]);
-                            }, $exec);
+                            $exec = Preg::replaceCallback('{^\S+}', fn ($path) => str_replace('/', '\\', $path[0]), $exec);
                         }
                     }
 

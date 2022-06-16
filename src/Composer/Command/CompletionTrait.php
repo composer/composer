@@ -105,9 +105,7 @@ trait CompletionTrait
             $installedRepo = new InstalledRepository($installedRepos);
 
             return array_merge(
-                array_map(function (PackageInterface $package) {
-                    return $package->getName();
-                }, $installedRepo->getPackages()),
+                array_map(fn (PackageInterface $package) => $package->getName(), $installedRepo->getPackages()),
                 $platformHint
             );
         };
@@ -142,9 +140,7 @@ trait CompletionTrait
             $results = array_column($results, 'name');
 
             if ($showVendors) {
-                $results = array_map(function (string $name): string {
-                    return $name.'/';
-                }, $results);
+                $results = array_map(fn (string $name): string => $name.'/', $results);
 
                 // sort shorter results first to avoid auto-expanding the completion to a longer string than needed
                 usort($results, function (string $a, string $b) {
@@ -199,11 +195,7 @@ trait CompletionTrait
             $repos = new PlatformRepository([], $this->requireComposer()->getConfig()->get('platform'));
 
             $pattern = BasePackage::packageNameToRegexp($input->getCompletionValue().'*');
-            return array_filter(array_map(function (PackageInterface $package) {
-                return $package->getName();
-            }, $repos->getPackages()), function (string $name) use ($pattern): bool {
-                return Preg::isMatch($pattern, $name);
-            });
+            return array_filter(array_map(fn (PackageInterface $package) => $package->getName(), $repos->getPackages()), fn (string $name): bool => Preg::isMatch($pattern, $name));
         };
     }
 }

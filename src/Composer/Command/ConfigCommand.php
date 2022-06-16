@@ -320,12 +320,8 @@ EOT
 
         $values = $input->getArgument('setting-value'); // what the user is trying to add/change
 
-        $booleanValidator = function ($val): bool {
-            return in_array($val, array('true', 'false', '1', '0'), true);
-        };
-        $booleanNormalizer = function ($val): bool {
-            return $val !== 'false' && (bool) $val;
-        };
+        $booleanValidator = fn ($val): bool => in_array($val, array('true', 'false', '1', '0'), true);
+        $booleanNormalizer = fn ($val): bool => $val !== 'false' && (bool) $val;
 
         // handle config values
         $uniqueConfigValues = array(
@@ -333,25 +329,15 @@ EOT
             'use-include-path' => array($booleanValidator, $booleanNormalizer),
             'use-github-api' => array($booleanValidator, $booleanNormalizer),
             'preferred-install' => array(
-                function ($val): bool {
-                    return in_array($val, array('auto', 'source', 'dist'), true);
-                },
-                function ($val) {
-                    return $val;
-                },
+                fn ($val): bool => in_array($val, array('auto', 'source', 'dist'), true),
+                fn ($val) => $val,
             ),
             'gitlab-protocol' => array(
-                function ($val): bool {
-                    return in_array($val, array('git', 'http', 'https'), true);
-                },
-                function ($val) {
-                    return $val;
-                },
+                fn ($val): bool => in_array($val, array('git', 'http', 'https'), true),
+                fn ($val) => $val,
             ),
             'store-auths' => array(
-                function ($val): bool {
-                    return in_array($val, array('true', 'false', 'prompt'), true);
-                },
+                fn ($val): bool => in_array($val, array('true', 'false', 'prompt'), true),
                 function ($val) {
                     if ('prompt' === $val) {
                         return 'prompt';
@@ -361,55 +347,27 @@ EOT
                 },
             ),
             'notify-on-install' => array($booleanValidator, $booleanNormalizer),
-            'vendor-dir' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'bin-dir' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'archive-dir' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'archive-format' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'data-dir' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'cache-dir' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'cache-files-dir' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'cache-repo-dir' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'cache-vcs-dir' => array('is_string', function ($val) {
-                return $val;
-            }),
+            'vendor-dir' => array('is_string', fn ($val) => $val),
+            'bin-dir' => array('is_string', fn ($val) => $val),
+            'archive-dir' => array('is_string', fn ($val) => $val),
+            'archive-format' => array('is_string', fn ($val) => $val),
+            'data-dir' => array('is_string', fn ($val) => $val),
+            'cache-dir' => array('is_string', fn ($val) => $val),
+            'cache-files-dir' => array('is_string', fn ($val) => $val),
+            'cache-repo-dir' => array('is_string', fn ($val) => $val),
+            'cache-vcs-dir' => array('is_string', fn ($val) => $val),
             'cache-ttl' => array('is_numeric', 'intval'),
             'cache-files-ttl' => array('is_numeric', 'intval'),
             'cache-files-maxsize' => array(
-                function ($val): bool {
-                    return Preg::isMatch('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val);
-                },
-                function ($val) {
-                    return $val;
-                },
+                fn ($val): bool => Preg::isMatch('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val),
+                fn ($val) => $val,
             ),
             'bin-compat' => array(
-                function ($val): bool {
-                    return in_array($val, array('auto', 'full', 'symlink'));
-                },
-                function ($val) {
-                    return $val;
-                },
+                fn ($val): bool => in_array($val, array('auto', 'full', 'symlink')),
+                fn ($val) => $val,
             ),
             'discard-changes' => array(
-                function ($val): bool {
-                    return in_array($val, array('stash', 'true', 'false', '1', '0'), true);
-                },
+                fn ($val): bool => in_array($val, array('stash', 'true', 'false', '1', '0'), true),
                 function ($val) {
                     if ('stash' === $val) {
                         return 'stash';
@@ -418,9 +376,7 @@ EOT
                     return $val !== 'false' && (bool) $val;
                 },
             ),
-            'autoloader-suffix' => array('is_string', function ($val) {
-                return $val === 'null' ? null : $val;
-            }),
+            'autoloader-suffix' => array('is_string', fn ($val) => $val === 'null' ? null : $val),
             'sort-packages' => array($booleanValidator, $booleanNormalizer),
             'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
             'classmap-authoritative' => array($booleanValidator, $booleanNormalizer),
@@ -429,29 +385,19 @@ EOT
             'disable-tls' => array($booleanValidator, $booleanNormalizer),
             'secure-http' => array($booleanValidator, $booleanNormalizer),
             'cafile' => array(
-                function ($val): bool {
-                    return file_exists($val) && Filesystem::isReadable($val);
-                },
-                function ($val) {
-                    return $val === 'null' ? null : $val;
-                },
+                fn ($val): bool => file_exists($val) && Filesystem::isReadable($val),
+                fn ($val) => $val === 'null' ? null : $val,
             ),
             'capath' => array(
-                function ($val): bool {
-                    return is_dir($val) && Filesystem::isReadable($val);
-                },
-                function ($val) {
-                    return $val === 'null' ? null : $val;
-                },
+                fn ($val): bool => is_dir($val) && Filesystem::isReadable($val),
+                fn ($val) => $val === 'null' ? null : $val,
             ),
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
             'htaccess-protect' => array($booleanValidator, $booleanNormalizer),
             'lock' => array($booleanValidator, $booleanNormalizer),
             'allow-plugins' => array($booleanValidator, $booleanNormalizer),
             'platform-check' => array(
-                function ($val): bool {
-                    return in_array($val, array('php-only', 'true', 'false', '1', '0'), true);
-                },
+                fn ($val): bool => in_array($val, array('php-only', 'true', 'false', '1', '0'), true),
                 function ($val) {
                     if ('php-only' === $val) {
                         return 'php-only';
@@ -461,9 +407,7 @@ EOT
                 },
             ),
             'use-parent-dir' => array(
-                function ($val): bool {
-                    return in_array($val, array('true', 'false', 'prompt'), true);
-                },
+                fn ($val): bool => in_array($val, array('true', 'false', 'prompt'), true),
                 function ($val) {
                     if ('prompt' === $val) {
                         return 'prompt';
@@ -488,9 +432,7 @@ EOT
 
                     return true;
                 },
-                function ($vals) {
-                    return $vals;
-                },
+                fn ($vals) => $vals,
             ),
             'github-domains' => array(
                 function ($vals) {
@@ -500,9 +442,7 @@ EOT
 
                     return true;
                 },
-                function ($vals) {
-                    return $vals;
-                },
+                fn ($vals) => $vals,
             ),
             'gitlab-domains' => array(
                 function ($vals) {
@@ -512,9 +452,7 @@ EOT
 
                     return true;
                 },
-                function ($vals) {
-                    return $vals;
-                },
+                fn ($vals) => $vals,
             ),
         );
 
@@ -579,28 +517,14 @@ EOT
 
         // handle properties
         $uniqueProps = array(
-            'name' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'type' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'description' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'homepage' => array('is_string', function ($val) {
-                return $val;
-            }),
-            'version' => array('is_string', function ($val) {
-                return $val;
-            }),
+            'name' => array('is_string', fn ($val) => $val),
+            'type' => array('is_string', fn ($val) => $val),
+            'description' => array('is_string', fn ($val) => $val),
+            'homepage' => array('is_string', fn ($val) => $val),
+            'version' => array('is_string', fn ($val) => $val),
             'minimum-stability' => array(
-                function ($val): bool {
-                    return isset(BasePackage::$stabilities[VersionParser::normalizeStability($val)]);
-                },
-                function ($val): string {
-                    return VersionParser::normalizeStability($val);
-                },
+                fn ($val): bool => isset(BasePackage::$stabilities[VersionParser::normalizeStability($val)]),
+                fn ($val): string => VersionParser::normalizeStability($val),
             ),
             'prefer-stable' => array($booleanValidator, $booleanNormalizer),
         );
@@ -613,9 +537,7 @@ EOT
 
                     return true;
                 },
-                function ($vals) {
-                    return $vals;
-                },
+                fn ($vals) => $vals,
             ),
             'license' => array(
                 function ($vals) {
@@ -625,9 +547,7 @@ EOT
 
                     return true;
                 },
-                function ($vals) {
-                    return $vals;
-                },
+                fn ($vals) => $vals,
             ),
         );
 
@@ -897,9 +817,7 @@ EOT
             }
 
             if (is_array($value)) {
-                $value = array_map(function ($val) {
-                    return is_array($val) ? json_encode($val) : $val;
-                }, $value);
+                $value = array_map(fn ($val) => is_array($val) ? json_encode($val) : $val, $value);
 
                 $value = '['.implode(', ', $value).']';
             }

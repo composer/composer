@@ -289,9 +289,7 @@ class Transaction
             // is this a downloads modifying plugin or a dependency of one?
             if ($isDownloadsModifyingPlugin || count(array_intersect($package->getNames(), $dlModifyingPluginRequires))) {
                 // get the package's requires, but filter out any platform requirements
-                $requires = array_filter(array_keys($package->getRequires()), function ($req): bool {
-                    return !PlatformRepository::isPlatformPackage($req);
-                });
+                $requires = array_filter(array_keys($package->getRequires()), fn ($req): bool => !PlatformRepository::isPlatformPackage($req));
 
                 // is this a plugin with no meaningful dependencies?
                 if ($isDownloadsModifyingPlugin && !count($requires)) {
@@ -314,9 +312,7 @@ class Transaction
             // is this a plugin or a dependency of a plugin?
             if ($isPlugin || count(array_intersect($package->getNames(), $pluginRequires))) {
                 // get the package's requires, but filter out any platform requirements
-                $requires = array_filter(array_keys($package->getRequires()), function ($req): bool {
-                    return !PlatformRepository::isPlatformPackage($req);
-                });
+                $requires = array_filter(array_keys($package->getRequires()), fn ($req): bool => !PlatformRepository::isPlatformPackage($req));
 
                 // is this a plugin with no meaningful dependencies?
                 if ($isPlugin && !count($requires)) {

@@ -403,9 +403,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $promise = $this->remove($initial, $path, false);
 
-        return $promise->then(function () use ($target, $path): PromiseInterface {
-            return $this->install($target, $path, false);
-        });
+        return $promise->then(fn (): PromiseInterface => $this->install($target, $path, false));
     }
 
     /**

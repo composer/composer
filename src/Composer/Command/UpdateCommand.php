@@ -132,9 +132,7 @@ EOT
 
         // extract --with shorthands from the allowlist
         if (count($packages) > 0) {
-            $allowlistPackagesWithRequirements = array_filter($packages, function ($pkg): bool {
-                return Preg::isMatch('{\S+[ =:]\S+}', $pkg);
-            });
+            $allowlistPackagesWithRequirements = array_filter($packages, fn ($pkg): bool => Preg::isMatch('{\S+[ =:]\S+}', $pkg));
             foreach ($this->formatRequirements($allowlistPackagesWithRequirements) as $package => $constraint) {
                 $reqs[$package] = $constraint;
             }
@@ -176,9 +174,7 @@ EOT
 
         // the arguments lock/nothing/mirrors are not package names but trigger a mirror update instead
         // they are further mutually exclusive with listing actual package names
-        $filteredPackages = array_filter($packages, function ($package): bool {
-            return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
-        });
+        $filteredPackages = array_filter($packages, fn ($package): bool => !in_array($package, array('lock', 'nothing', 'mirrors'), true));
         $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
         $packages = $filteredPackages;
 

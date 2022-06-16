@@ -448,9 +448,7 @@ class InstallationManager
                 $promise = \React\Promise\resolve(null);
             }
 
-            $promise = $promise->then(function () use ($opType, $repo, $operation) {
-                return $this->$opType($repo, $operation);
-            })->then($cleanupPromises[$index])
+            $promise = $promise->then(fn () => $this->$opType($repo, $operation))->then($cleanupPromises[$index])
             ->then(function () use ($devMode, $repo): void {
                 $repo->write($devMode, $this);
             }, function ($e) use ($opType, $package, $io): void {

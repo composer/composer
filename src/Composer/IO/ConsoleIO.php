@@ -175,9 +175,7 @@ class ConsoleIO extends BaseIO
         if (null !== $this->startTime) {
             $memoryUsage = memory_get_usage() / 1024 / 1024;
             $timeSpent = microtime(true) - $this->startTime;
-            $messages = array_map(function ($message) use ($memoryUsage, $timeSpent): string {
-                return sprintf('[%.1fMiB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
-            }, (array) $messages);
+            $messages = array_map(fn ($message): string => sprintf('[%.1fMiB/%.2fs] %s', $memoryUsage, $timeSpent, $message), (array) $messages);
         }
 
         if (true === $stderr && $this->output instanceof ConsoleOutputInterface) {

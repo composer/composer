@@ -273,9 +273,7 @@ abstract class BasePackage implements PackageInterface
     public static function packageNamesToRegexp(array $packageNames, string $wrap = '{^(?:%s)$}iD'): string
     {
         $packageNames = array_map(
-            function ($packageName): string {
-                return BasePackage::packageNameToRegexp($packageName, '%s');
-            },
+            fn ($packageName): string => BasePackage::packageNameToRegexp($packageName, '%s'),
             $packageNames
         );
 

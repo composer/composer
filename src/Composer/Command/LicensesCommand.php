@@ -167,9 +167,7 @@ EOT
         $packageListNames = array_keys($bucket);
         $packages = array_filter(
             $repo->getPackages(),
-            function ($package) use ($requires, $packageListNames): bool {
-                return in_array($package->getName(), $requires) && !in_array($package->getName(), $packageListNames);
-            }
+            fn ($package): bool => in_array($package->getName(), $requires) && !in_array($package->getName(), $packageListNames)
         );
 
         $bucket = $this->appendPackages($packages, $bucket);

@@ -300,9 +300,7 @@ class Git
         // clean up directory and do a fresh clone into it
         $this->filesystem->removeDirectory($dir);
 
-        $commandCallable = function ($url) use ($dir): string {
-            return sprintf('git clone --mirror -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
-        };
+        $commandCallable = fn ($url): string => sprintf('git clone --mirror -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
 
         $this->runCommand($commandCallable, $url, $dir, true);
 

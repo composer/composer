@@ -144,9 +144,7 @@ class SvnDownloader extends VcsDownloader
             return parent::cleanChanges($package, $path, $update);
         }
 
-        $changes = array_map(function ($elem): string {
-            return '    '.$elem;
-        }, Preg::split('{\s*\r?\n\s*}', $changes));
+        $changes = array_map(fn ($elem): string => '    '.$elem, Preg::split('{\s*\r?\n\s*}', $changes));
         $countChanges = count($changes);
         $this->io->writeError(sprintf('    <error>'.$package->getPrettyName().' has modified file%s:</error>', $countChanges === 1 ? '' : 's'));
         $this->io->writeError(array_slice($changes, 0, 10));

@@ -290,9 +290,7 @@ EOF;
         $mainAutoload = $rootPackage->getAutoload();
         if ($rootPackage->getTargetDir() && !empty($mainAutoload['psr-0'])) {
             $levels = substr_count($filesystem->normalizePath($rootPackage->getTargetDir()), '/') + 1;
-            $prefixes = implode(', ', array_map(function ($prefix): string {
-                return var_export($prefix, true);
-            }, array_keys($mainAutoload['psr-0'])));
+            $prefixes = implode(', ', array_map(fn ($prefix): string => var_export($prefix, true), array_keys($mainAutoload['psr-0'])));
             $baseDirFromTargetDirCode = $filesystem->findShortestPathCode($targetDir, $basePath, true);
 
             $targetDirLoader = <<<EOF
@@ -561,9 +559,7 @@ EOF;
     {
         $rootPackageMap = array_shift($packageMap);
         if (is_array($filteredDevPackages)) {
-            $packageMap = array_filter($packageMap, function ($item) use ($filteredDevPackages): bool {
-                return !in_array($item[0]->getName(), $filteredDevPackages, true);
-            });
+            $packageMap = array_filter($packageMap, fn ($item): bool => !in_array($item[0]->getName(), $filteredDevPackages, true));
         } elseif ($filteredDevPackages) {
             $packageMap = $this->filterPackageMap($packageMap, $rootPackage);
         }

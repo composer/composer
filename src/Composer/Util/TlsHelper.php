@@ -179,9 +179,7 @@ final class TlsHelper
 
         if (0 === $wildcards) {
             // Literal match.
-            return function ($hostname) use ($certName): bool {
-                return $hostname === $certName;
-            };
+            return fn ($hostname): bool => $hostname === $certName;
         }
 
         if (1 === $wildcards) {
@@ -203,9 +201,7 @@ final class TlsHelper
             $wildcardRegex = str_replace('\\*', '[a-z0-9-]+', $wildcardRegex);
             $wildcardRegex = "{^{$wildcardRegex}$}";
 
-            return function ($hostname) use ($wildcardRegex): bool {
-                return Preg::isMatch($wildcardRegex, $hostname);
-            };
+            return fn ($hostname): bool => Preg::isMatch($wildcardRegex, $hostname);
         }
 
         return null;

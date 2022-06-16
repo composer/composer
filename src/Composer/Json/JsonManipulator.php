@@ -94,9 +94,7 @@ class JsonManipulator
             // update existing link
             $existingPackage = $packageMatches['package'];
             $packageRegex = str_replace('/', '\\\\?/', preg_quote($existingPackage));
-            $links = Preg::replaceCallback('{'.self::$DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', function ($m) use ($existingPackage, $constraint): string {
-                return JsonFile::encode(str_replace('\\/', '/', $existingPackage)) . $m['separator'] . '"' . $constraint . '"';
-            }, $links);
+            $links = Preg::replaceCallback('{'.self::$DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', fn ($m): string => JsonFile::encode(str_replace('\\/', '/', $existingPackage)) . $m['separator'] . '"' . $constraint . '"', $links);
         } else {
             if (Preg::isMatch('#^\s*\{\s*\S+.*?(\s*\}\s*)$#s', $links, $match)) {
                 // link missing but non empty links
@@ -159,9 +157,7 @@ class JsonManipulator
             return '5-'.$requirement;
         };
 
-        uksort($packages, function ($a, $b) use ($prefix): int {
-            return strnatcmp($prefix($a), $prefix($b));
-        });
+        uksort($packages, fn ($a, $b): int => strnatcmp($prefix($a), $prefix($b)));
     }
 
     /**
@@ -351,9 +347,7 @@ class JsonManipulator
             }
         }
 
-        $this->contents = Preg::replaceCallback($nodeRegex, function ($m) use ($children): string {
-            return $m['start'] . $children . $m['end'];
-        }, $this->contents);
+        $this->contents = Preg::replaceCallback($nodeRegex, fn ($m): string => $m['start'] . $children . $m['end'], $this->contents);
 
         return true;
     }
@@ -437,9 +431,7 @@ class JsonManipulator
             $newline = $this->newline;
             $indent = $this->indent;
 
-            $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($indent, $newline): string {
-                return $matches['start'] . '{' . $newline . $indent . '}' . $matches['end'];
-            }, $this->contents);
+            $this->contents = Preg::replaceCallback($nodeRegex, fn ($matches): string => $matches['start'] . '{' . $newline . $indent . '}' . $matches['end'], $this->contents);
 
             // we have a subname, so we restore the rest of $name
             if ($subName !== null) {

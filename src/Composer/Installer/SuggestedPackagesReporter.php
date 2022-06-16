@@ -198,9 +198,7 @@ class SuggestedPackagesReporter
 
         $sourceFilter = array();
         if ($onlyDependentsOf) {
-            $sourceFilter = array_map(function ($link): string {
-                return $link->getTarget();
-            }, array_merge($onlyDependentsOf->getRequires(), $onlyDependentsOf->getDevRequires()));
+            $sourceFilter = array_map(fn ($link): string => $link->getTarget(), array_merge($onlyDependentsOf->getRequires(), $onlyDependentsOf->getDevRequires()));
             $sourceFilter[] = $onlyDependentsOf->getName();
         }
 

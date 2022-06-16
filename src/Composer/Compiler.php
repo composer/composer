@@ -82,9 +82,7 @@ class Compiler
 
         $phar->startBuffering();
 
-        $finderSort = function ($a, $b): int {
-            return strcmp(strtr($a->getRealPath(), '\\', '/'), strtr($b->getRealPath(), '\\', '/'));
-        };
+        $finderSort = fn ($a, $b): int => strcmp(strtr($a->getRealPath(), '\\', '/'), strtr($b->getRealPath(), '\\', '/'));
 
         // Add Composer sources
         $finder = new Finder();
