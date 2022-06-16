@@ -829,7 +829,8 @@ class Installer
             // skip platform requirements from the root package to avoid filtering out existing platform packages
             if ($this->platformRequirementFilter->isIgnored($req)) {
                 continue;
-            } elseif ($this->platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+            }
+            if ($this->platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
                 $constraint = $this->platformRequirementFilter->filterConstraint($req, $constraint);
             }
             $rootRequires[$req] = $constraint;

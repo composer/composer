@@ -100,7 +100,8 @@ class VersionSelector
                             }
 
                             return false;
-                        } elseif (PlatformRepository::isPlatformPackage($name)) {
+                        }
+                        if (PlatformRepository::isPlatformPackage($name)) {
                             // Package requires a platform package that is unknown on current platform.
                             // It means that current platform cannot validate this constraint and so package is not installable.
                             return false;

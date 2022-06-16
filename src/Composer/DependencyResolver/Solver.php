@@ -175,7 +175,8 @@ class Solver
         foreach ($request->getRequires() as $packageName => $constraint) {
             if ($platformRequirementFilter->isIgnored($packageName)) {
                 continue;
-            } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+            }
+            if ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
                 $constraint = $platformRequirementFilter->filterConstraint($packageName, $constraint);
             }
 

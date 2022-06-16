@@ -200,7 +200,8 @@ class RuleSetGenerator
                 $constraint = $link->getConstraint();
                 if ($platformRequirementFilter->isIgnored($link->getTarget())) {
                     continue;
-                } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+                }
+                if ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
                     $constraint = $platformRequirementFilter->filterConstraint($link->getTarget(), $constraint);
                 }
 
@@ -231,7 +232,8 @@ class RuleSetGenerator
                 $constraint = $link->getConstraint();
                 if ($platformRequirementFilter->isIgnored($link->getTarget())) {
                     continue;
-                } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+                }
+                if ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
                     $constraint = $platformRequirementFilter->filterConstraint($link->getTarget(), $constraint);
                 }
 
@@ -283,7 +285,8 @@ class RuleSetGenerator
         foreach ($request->getRequires() as $packageName => $constraint) {
             if ($platformRequirementFilter->isIgnored($packageName)) {
                 continue;
-            } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+            }
+            if ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
                 $constraint = $platformRequirementFilter->filterConstraint($packageName, $constraint);
             }
 
