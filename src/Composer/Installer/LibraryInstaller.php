@@ -96,11 +96,11 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         }
 
         if (is_link($installPath)) {
-            if (realpath($installPath) === false) {
-                return false;
-            }
+            return ! (realpath($installPath) === false) 
+                 
+            
 
-            return true;
+             ;
         }
 
         return false;

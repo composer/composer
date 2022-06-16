@@ -523,11 +523,11 @@ class HttpDownloader
             return false;
         }
 
-        if (!empty($job['request']['options']['ssl']['allow_self_signed'])) {
-            return false;
-        }
+        return ! (!empty($job['request']['options']['ssl']['allow_self_signed'])) 
+             
+        
 
-        return true;
+         ;
     }
 
     /**

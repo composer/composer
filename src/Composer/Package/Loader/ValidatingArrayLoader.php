@@ -650,10 +650,10 @@ class ValidatingArrayLoader implements LoaderInterface
             return false;
         }
 
-        if (!in_array($bits['scheme'], $schemes, true)) {
-            return false;
-        }
+        return ! (!in_array($bits['scheme'], $schemes, true)) 
+             
+        
 
-        return true;
+         ;
     }
 }

@@ -678,11 +678,11 @@ class Factory
             }
         }
 
-        if (Silencer::call('is_dir', '/etc/xdg')) {
-            return true;
-        }
+        return (bool) (Silencer::call('is_dir', '/etc/xdg')) 
+             
+        
 
-        return false;
+         ;
     }
 
     /**

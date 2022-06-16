@@ -349,13 +349,13 @@ class SvnDriver extends VcsDriver
         }
 
         // Subversion client 1.8 and newer
-        if (false !== stripos($process->getErrorOutput(), 'Authentication failed')) {
+        return (bool) (false !== stripos($process->getErrorOutput(), 'Authentication failed')) 
             // This is likely a remote Subversion or newer repository that requires
             // authentication. We will handle actual authentication later.
-            return true;
-        }
+             
+        
 
-        return false;
+         ;
     }
 
     /**

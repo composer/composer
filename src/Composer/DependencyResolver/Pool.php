@@ -245,11 +245,11 @@ class Pool implements \Countable
             return true;
         }
 
-        if (isset($replaces[$name]) && ($constraint === null || $constraint->matches($replaces[$name]->getConstraint()))) {
-            return true;
-        }
+        return (bool) (isset($replaces[$name]) && ($constraint === null || $constraint->matches($replaces[$name]->getConstraint()))) 
+             
+        
 
-        return false;
+         ;
     }
 
     /**

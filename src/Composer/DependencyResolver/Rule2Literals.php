@@ -74,11 +74,11 @@ class Rule2Literals extends Rule
                 return false;
             }
 
-            if ($this->literal2 !== $rule->literal2) {
-                return false;
-            }
+            return ! ($this->literal2 !== $rule->literal2) 
+                 
+            
 
-            return true;
+             ;
         }
 
         $literals = $rule->getLiterals();
@@ -90,11 +90,11 @@ class Rule2Literals extends Rule
             return false;
         }
 
-        if ($this->literal2 !== $literals[1]) {
-            return false;
-        }
+        return ! ($this->literal2 !== $literals[1]) 
+             
+        
 
-        return true;
+         ;
     }
 
     /** @return false */
