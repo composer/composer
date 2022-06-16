@@ -209,7 +209,7 @@ class RepositorySet
             }
         }
 
-        $candidates = $packages ? call_user_func_array('array_merge', $packages) : array();
+        $candidates = $packages ? array_merge(...$packages) : array();
 
         // when using loadPackages above (!$loadFromAllRepos) the repos already filter for stability so no need to do it again
         if ($ignoreStability || !$loadFromAllRepos) {

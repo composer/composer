@@ -84,7 +84,7 @@ class Git
                     $protoUrl = $protocol . "://" . $match[1] . "/" . $match[2];
                 }
 
-                if (0 === $this->process->execute(call_user_func($commandCallable, $protoUrl), $commandOutput, $cwd)) {
+                if (0 === $this->process->execute($commandCallable($protoUrl), $commandOutput, $cwd)) {
                     return;
                 }
                 $messages[] = '- ' . $protoUrl . "\n" . Preg::replace('#^#m', '  ', $this->process->getErrorOutput());
@@ -103,7 +103,7 @@ class Git
         // if we have a private github url and the ssh protocol is disabled then we skip it and directly fallback to https
         $bypassSshForGitHub = Preg::isMatch('{^git@' . self::getGitHubDomainsRegex($this->config) . ':(.+?)\.git$}i', $url) && !in_array('ssh', $protocols, true);
 
-        $command = call_user_func($commandCallable, $url);
+        $command = $commandCallable($url);
 
         $auth = null;
         $credentials = array();
@@ -125,7 +125,7 @@ class Git
                 if ($this->io->hasAuthentication($match[1])) {
                     $auth = $this->io->getAuthentication($match[1]);
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
-                    $command = call_user_func($commandCallable, $authUrl);
+                    $command = $commandCallable($authUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
@@ -160,7 +160,7 @@ class Git
                     $auth = $this->io->getAuthentication($match[1]);
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
 
-                    $command = call_user_func($commandCallable, $authUrl);
+                    $command = $commandCallable($authUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
@@ -170,7 +170,7 @@ class Git
                 } else { // Falling back to ssh
                     $sshUrl = 'git@bitbucket.org:' . $match[2] . '.git';
                     $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
-                    $command = call_user_func($commandCallable, $sshUrl);
+                    $command = $commandCallable($sshUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
@@ -202,7 +202,7 @@ class Git
                         $authUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . '/' . $match[3];
                     }
 
-                    $command = call_user_func($commandCallable, $authUrl);
+                    $command = $commandCallable($authUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
@@ -239,7 +239,7 @@ class Git
                 if (null !== $auth) {
                     $authUrl = $match[1] . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . $match[3];
 
-                    $command = call_user_func($commandCallable, $authUrl);
+                    $command = $commandCallable($authUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
                         $authHelper = new AuthHelper($this->io, $this->config);

@@ -91,7 +91,7 @@ abstract class BaseExcludeFilter
                         return null;
                     }
 
-                    return call_user_func($lineParser, $line);
+                    return $lineParser($line);
                 },
                 $lines
             ),

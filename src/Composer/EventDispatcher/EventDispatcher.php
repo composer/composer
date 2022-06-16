@@ -199,7 +199,7 @@ class EventDispatcher
                     if (is_array($callable) && (is_string($callable[0]) || is_object($callable[0])) && is_string($callable[1])) {
                         $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1]), true, IOInterface::VERBOSE);
                     }
-                    $return = false === call_user_func($callable, $event) ? 1 : 0;
+                    $return = false === $callable($event) ? 1 : 0;
                 } elseif ($this->isComposerScript($callable)) {
                     $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable), true, IOInterface::VERBOSE);
 
@@ -465,7 +465,7 @@ class EventDispatcher
         $listeners = $this->listeners;
         $listeners[$event->getName()][0] = array_merge($listeners[$event->getName()][0], $scriptListeners);
 
-        return call_user_func_array('array_merge', $listeners[$event->getName()]);
+        return array_merge(...$listeners[$event->getName()]);
     }
 
     /**

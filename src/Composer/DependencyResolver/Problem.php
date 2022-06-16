@@ -80,7 +80,7 @@ class Problem
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
     {
         // TODO doesn't this entirely defeat the purpose of the problem sections? what's the point of sections?
-        $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
+        $reasons = array_merge(...array_reverse($this->reasons));
 
         if (count($reasons) === 1) {
             reset($reasons);

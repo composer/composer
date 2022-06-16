@@ -454,9 +454,9 @@ class CurlDownloader
                 // resolve promise
                 if (null !== $job['filename']) {
                     rename($job['filename'].'~', $job['filename']);
-                    call_user_func($job['resolve'], $response);
+                    $job['resolve']($response);
                 } else {
-                    call_user_func($job['resolve'], $response);
+                    $job['resolve']($response);
                 }
             } catch (\Exception $e) {
                 if ($e instanceof TransportException) {
@@ -660,7 +660,7 @@ class CurlDownloader
         if (null !== $job['filename']) {
             @unlink($job['filename'].'~');
         }
-        call_user_func($job['reject'], $e);
+        $job['reject']($e);
     }
 
     /**

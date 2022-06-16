@@ -94,7 +94,7 @@ class DefaultPolicy implements PolicyInterface
             $sortedLiterals = $this->pruneRemoteAliases($pool, $sortedLiterals);
         }
 
-        $selected = \call_user_func_array('array_merge', array_values($packages));
+        $selected = array_merge(...array_values($packages));
 
         // now sort the result across all packages to respect replaces across packages
         usort($selected, function ($a, $b) use ($pool, $requiredPackage, $poolId): int {

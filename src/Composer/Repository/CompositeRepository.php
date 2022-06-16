@@ -99,7 +99,7 @@ class CompositeRepository implements RepositoryInterface
             $packages[] = $repository->findPackages($name, $constraint);
         }
 
-        return $packages ? call_user_func_array('array_merge', $packages) : array();
+        return $packages ? array_merge(...$packages) : array();
     }
 
     /**
@@ -117,8 +117,8 @@ class CompositeRepository implements RepositoryInterface
         }
 
         return array(
-            'packages' => $packages ? call_user_func_array('array_merge', $packages) : array(),
-            'namesFound' => $namesFound ? array_unique(call_user_func_array('array_merge', $namesFound)) : array(),
+            'packages' => $packages ? array_merge(...$packages) : array(),
+            'namesFound' => $namesFound ? array_unique(array_merge(...$namesFound)) : array(),
         );
     }
 
@@ -133,7 +133,7 @@ class CompositeRepository implements RepositoryInterface
             $matches[] = $repository->search($query, $mode, $type);
         }
 
-        return $matches ? call_user_func_array('array_merge', $matches) : array();
+        return $matches ? array_merge(...$matches) : array();
     }
 
     /**
@@ -147,7 +147,7 @@ class CompositeRepository implements RepositoryInterface
             $packages[] = $repository->getPackages();
         }
 
-        return $packages ? call_user_func_array('array_merge', $packages) : array();
+        return $packages ? array_merge(...$packages) : array();
     }
 
     /**
@@ -161,7 +161,7 @@ class CompositeRepository implements RepositoryInterface
             $results[] = $repository->getProviders($packageName);
         }
 
-        return $results ? call_user_func_array('array_merge', $results) : array();
+        return $results ? array_merge(...$results) : array();
     }
 
     /**

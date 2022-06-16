@@ -54,7 +54,7 @@ class Runtime
      */
     public function invoke(callable $callable, array $arguments = array())
     {
-        return call_user_func_array($callable, $arguments);
+        return $callable(...$arguments);
     }
 
     /**

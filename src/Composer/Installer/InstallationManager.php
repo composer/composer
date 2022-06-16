@@ -234,7 +234,7 @@ class InstallationManager
                 $runCleanup();
 
                 if (!in_array($prevHandler, array(SIG_DFL, SIG_IGN), true)) {
-                    call_user_func($prevHandler, $sig);
+                    $prevHandler($sig);
                 }
 
                 exit(130);

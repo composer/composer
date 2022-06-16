@@ -60,7 +60,7 @@ class InstalledVersions
             return $packages[0];
         }
 
-        return array_keys(array_flip(\call_user_func_array('array_merge', $packages)));
+        return array_keys(array_flip(array_merge(...$packages)));
     }
 
     /**

@@ -254,7 +254,7 @@ class JsonConfigSource implements ConfigSourceInterface
             // on failed clean update, call the fallback and rewrite the whole file
             $config = $this->file->read();
             $this->arrayUnshiftRef($args, $config);
-            call_user_func_array($fallback, $args);
+            $fallback(...$args);
             // avoid ending up with arrays for keys that should be objects
             foreach (array('require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'support') as $prop) {
                 if (isset($config[$prop]) && $config[$prop] === array()) {
