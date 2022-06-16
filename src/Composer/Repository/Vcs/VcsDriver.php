@@ -181,6 +181,6 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     public function cleanup(): void
     {
-        return;
+        
     }
 }
