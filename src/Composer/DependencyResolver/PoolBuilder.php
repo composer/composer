@@ -682,12 +682,12 @@ class PoolBuilder
     {
         $repoIndex = array_search($package->getRepository(), $repositories, true);
 
-        unset($this->loadedPerRepo[$repoIndex][$package->getName()][$package->getVersion()]);
-        unset($this->packages[$index]);
+        unset($this->loadedPerRepo[$repoIndex][$package->getName()][$package->getVersion()], $this->packages[$index]);
+        
         if (isset($this->aliasMap[spl_object_hash($package)])) {
             foreach ($this->aliasMap[spl_object_hash($package)] as $aliasIndex => $aliasPackage) {
-                unset($this->loadedPerRepo[$repoIndex][$aliasPackage->getName()][$aliasPackage->getVersion()]);
-                unset($this->packages[$aliasIndex]);
+                unset($this->loadedPerRepo[$repoIndex][$aliasPackage->getName()][$aliasPackage->getVersion()], $this->packages[$aliasIndex]);
+                
             }
             unset($this->aliasMap[spl_object_hash($package)]);
         }
