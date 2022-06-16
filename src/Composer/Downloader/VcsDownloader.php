@@ -28,7 +28,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterface, VcsCapableDownloaderInterface
+abstract class VcsDownloader implements ChangeReportInterface, DownloaderInterface, VcsCapableDownloaderInterface
 {
     /** @var IOInterface */
     protected $io;

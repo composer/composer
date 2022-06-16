@@ -30,7 +30,7 @@ use Composer\Downloader\DownloadManager;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
+class LibraryInstaller implements BinaryPresenceInterface, InstallerInterface
 {
     /** @var PartialComposer */
     protected $composer;

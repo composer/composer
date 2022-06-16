@@ -42,7 +42,7 @@ use React\Promise\PromiseInterface;
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Nils Adermann <naderman@naderman.de>
  */
-class FileDownloader implements DownloaderInterface, ChangeReportInterface
+class FileDownloader implements ChangeReportInterface, DownloaderInterface
 {
     /** @var IOInterface */
     protected $io;

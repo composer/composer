@@ -18,7 +18,7 @@ namespace Composer\DependencyResolver;
  * @author Nils Adermann <naderman@naderman.de>
  * @implements \Iterator<array{0: int, 1: Rule}>
  */
-class Decisions implements \Iterator, \Countable
+class Decisions implements \Countable, \Iterator
 {
     public const DECISION_LITERAL = 0;
     public const DECISION_REASON = 1;

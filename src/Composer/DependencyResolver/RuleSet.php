@@ -18,7 +18,7 @@ use Composer\Repository\RepositorySet;
  * @author Nils Adermann <naderman@naderman.de>
  * @implements \IteratorAggregate<Rule>
  */
-class RuleSet implements \IteratorAggregate, \Countable
+class RuleSet implements \Countable, \IteratorAggregate
 {
     // highest priority => lowest number
     public const TYPE_PACKAGE = 0;
