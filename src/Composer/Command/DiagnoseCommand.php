@@ -348,7 +348,7 @@ EOT
      * @throws TransportException
      * @return mixed|string
      */
-    private function getGithubRateLimit(string $domain, string $token = null)
+    private function getGithubRateLimit(string $domain, ?string $token = null)
     {
         $result = $this->checkConnectivity();
         if ($result !== true) {

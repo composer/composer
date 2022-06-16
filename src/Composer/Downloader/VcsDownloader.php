@@ -41,7 +41,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /** @var array<string, true> */
     protected $hasCleanedChanges = array();
 
-    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
+    public function __construct(IOInterface $io, Config $config, ?ProcessExecutor $process = null, ?Filesystem $fs = null)
     {
         $this->io = $io;
         $this->config = $config;
@@ -60,7 +60,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    public function download(PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         if (!$package->getSourceReference()) {
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
@@ -93,7 +93,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * @inheritDoc
      */
-    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    public function prepare(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         if ($type === 'update') {
             $this->cleanChanges($prevPackage, $path, true);
@@ -110,7 +110,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * @inheritDoc
      */
-    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    public function cleanup(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         if ($type === 'update' && isset($this->hasCleanedChanges[$prevPackage->getUniqueName()])) {
             $this->reapplyChanges($path);
@@ -297,7 +297,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      *
      * @return PromiseInterface
      */
-    abstract protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface;
+    abstract protected function doDownload(PackageInterface $package, string $path, string $url, ?PackageInterface $prevPackage = null): PromiseInterface;
 
     /**
      * Downloads specific package into specific folder.

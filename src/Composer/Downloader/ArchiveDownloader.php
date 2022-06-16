@@ -35,7 +35,7 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * @return PromiseInterface
      */
-    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    public function prepare(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         unset($this->cleanupExecuted[$package->getName()]);
 
@@ -45,7 +45,7 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * @return PromiseInterface
      */
-    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    public function cleanup(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         $this->cleanupExecuted[$package->getName()] = true;
 

@@ -275,7 +275,7 @@ class Decisions implements \Iterator, \Countable
     /**
      * @return string
      */
-    public function toString(Pool $pool = null): string
+    public function toString(?Pool $pool = null): string
     {
         $decisionMap = $this->decisionMap;
         ksort($decisionMap);

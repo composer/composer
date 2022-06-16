@@ -25,7 +25,7 @@ class HhvmDetector
     /** @var ?ProcessExecutor */
     private $processExecutor;
 
-    public function __construct(ExecutableFinder $executableFinder = null, ProcessExecutor $processExecutor = null)
+    public function __construct(?ExecutableFinder $executableFinder = null, ?ProcessExecutor $processExecutor = null)
     {
         $this->executableFinder = $executableFinder;
         $this->processExecutor = $processExecutor;

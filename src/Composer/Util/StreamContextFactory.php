@@ -134,7 +134,7 @@ final class StreamContextFactory
      *
      * @return mixed[]
      */
-    public static function getTlsDefaults(array $options, LoggerInterface $logger = null): array
+    public static function getTlsDefaults(array $options, ?LoggerInterface $logger = null): array
     {
         $ciphers = implode(':', array(
             'ECDHE-RSA-AES128-GCM-SHA256',

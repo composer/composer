@@ -40,7 +40,7 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
+    public function download(PackageInterface $package, string $path, ?PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
     {
         if (null === self::$unzipCommands) {
             self::$unzipCommands = array();

@@ -591,7 +591,7 @@ class Config
      *
      * @return void
      */
-    public function prohibitUrlByConfig(string $url, IOInterface $io = null, array $repoOptions = []): void
+    public function prohibitUrlByConfig(string $url, ?IOInterface $io = null, array $repoOptions = []): void
     {
         // Return right away if the URL is malformed or custom (see issue #5173)
         if (false === filter_var($url, FILTER_VALIDATE_URL)) {

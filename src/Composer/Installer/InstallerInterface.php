@@ -50,7 +50,7 @@ interface InstallerInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
      */
-    public function download(PackageInterface $package, PackageInterface $prevPackage = null);
+    public function download(PackageInterface $package, ?PackageInterface $prevPackage = null);
 
     /**
      * Do anything that needs to be done between all downloads have been completed and the actual operation is executed
@@ -65,7 +65,7 @@ interface InstallerInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
      */
-    public function prepare(string $type, PackageInterface $package, PackageInterface $prevPackage = null);
+    public function prepare(string $type, PackageInterface $package, ?PackageInterface $prevPackage = null);
 
     /**
      * Installs specific package.
@@ -108,7 +108,7 @@ interface InstallerInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
      */
-    public function cleanup(string $type, PackageInterface $package, PackageInterface $prevPackage = null);
+    public function cleanup(string $type, PackageInterface $package, ?PackageInterface $prevPackage = null);
 
     /**
      * Returns the absolute installation path of a package.

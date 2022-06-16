@@ -49,7 +49,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      */
     private $cachedPackages = array();
 
-    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
+    public function __construct(IOInterface $io, Config $config, ?ProcessExecutor $process = null, ?Filesystem $fs = null)
     {
         parent::__construct($io, $config, $process, $fs);
         $this->gitUtil = new GitUtil($this->io, $this->config, $this->process, $this->filesystem);
@@ -58,7 +58,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
+    protected function doDownload(PackageInterface $package, string $path, string $url, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         GitUtil::cleanEnv();
 

@@ -143,7 +143,7 @@ class Pool implements \Countable
      *                                         packages must match or null to return all
      * @return BasePackage[] A set of packages
      */
-    public function whatProvides(string $name, ConstraintInterface $constraint = null): array
+    public function whatProvides(string $name, ?ConstraintInterface $constraint = null): array
     {
         $key = (string) $constraint;
         if (isset($this->providerCache[$name][$key])) {
@@ -159,7 +159,7 @@ class Pool implements \Countable
      *                                          packages must match or null to return all
      * @return BasePackage[]
      */
-    private function computeWhatProvides(string $name, ConstraintInterface $constraint = null): array
+    private function computeWhatProvides(string $name, ?ConstraintInterface $constraint = null): array
     {
         if (!isset($this->packageByName[$name])) {
             return array();
@@ -212,7 +212,7 @@ class Pool implements \Countable
      * @param  string              $name       Name of the package to be matched
      * @return bool
      */
-    public function match(BasePackage $candidate, string $name, ConstraintInterface $constraint = null): bool
+    public function match(BasePackage $candidate, string $name, ?ConstraintInterface $constraint = null): bool
     {
         $candidateName = $candidate->getName();
         $candidateVersion = $candidate->getVersion();

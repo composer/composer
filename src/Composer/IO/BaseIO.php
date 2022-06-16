@@ -91,7 +91,7 @@ abstract class BaseIO implements IOInterface
      *
      * @return void
      */
-    protected function checkAndSetAuthentication(string $repositoryName, string $username, string $password = null)
+    protected function checkAndSetAuthentication(string $repositoryName, string $username, ?string $password = null)
     {
         if ($this->hasAuthentication($repositoryName)) {
             $auth = $this->getAuthentication($repositoryName);

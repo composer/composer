@@ -270,7 +270,7 @@ class PhpFileCleaner
      * @param null|array<int, string> $match
      * @return bool
      */
-    private function match($regex, array &$match = null): bool
+    private function match($regex, ?array &$match = null): bool
     {
         return Preg::isMatch($regex, $this->contents, $match, 0, $this->index);
     }

@@ -747,7 +747,7 @@ EOT
      *
      * @return void
      */
-    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null): void
+    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null): void
     {
         $io = $this->getIO();
 
@@ -775,7 +775,7 @@ EOT
      *
      * @return void
      */
-    protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null): void
+    protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null): void
     {
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
@@ -872,7 +872,7 @@ EOT
      *
      * @return void
      */
-    protected function printLinks(CompletePackageInterface $package, string $linkType, string $title = null): void
+    protected function printLinks(CompletePackageInterface $package, string $linkType, ?string $title = null): void
     {
         $title = $title ?: $linkType;
         $io = $this->getIO();
@@ -922,7 +922,7 @@ EOT
      *
      * @return void
      */
-    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null): void
+    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null): void
     {
         $json = array(
             'name' => $package->getPrettyName(),

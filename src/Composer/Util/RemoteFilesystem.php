@@ -76,7 +76,7 @@ class RemoteFilesystem
      * @param bool        $disableTls
      * @param AuthHelper  $authHelper
      */
-    public function __construct(IOInterface $io, Config $config, array $options = array(), bool $disableTls = false, AuthHelper $authHelper = null)
+    public function __construct(IOInterface $io, Config $config, array $options = array(), bool $disableTls = false, ?AuthHelper $authHelper = null)
     {
         $this->io = $io;
 
@@ -217,7 +217,7 @@ class RemoteFilesystem
      *
      * @return bool|string
      */
-    protected function get(string $originUrl, string $fileUrl, array $additionalOptions = array(), string $fileName = null, bool $progress = true)
+    protected function get(string $originUrl, string $fileUrl, array $additionalOptions = array(), ?string $fileName = null, bool $progress = true)
     {
         $this->scheme = parse_url(strtr($fileUrl, '\\', '/'), PHP_URL_SCHEME);
         $this->bytesMax = 0;
@@ -511,7 +511,7 @@ class RemoteFilesystem
      *
      * @return string|false The response contents or false on failure
      */
-    protected function getRemoteContents(string $originUrl, string $fileUrl, $context, array &$responseHeaders = null, int $maxFileSize = null)
+    protected function getRemoteContents(string $originUrl, string $fileUrl, $context, ?array &$responseHeaders = null, ?int $maxFileSize = null)
     {
         $result = false;
 

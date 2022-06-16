@@ -87,7 +87,7 @@ class InstalledRepository extends CompositeRepository
      * @return array[] An associative array of arrays as described above.
      * @phpstan-return array<array{0: PackageInterface, 1: Link, 2: mixed[]|bool}>
      */
-    public function getDependents($needle, ?ConstraintInterface $constraint = null, bool $invert = false, bool $recurse = true, array $packagesFound = null): array
+    public function getDependents($needle, ?ConstraintInterface $constraint = null, bool $invert = false, bool $recurse = true, ?array $packagesFound = null): array
     {
         $needles = array_map('strtolower', (array) $needle);
         $results = array();

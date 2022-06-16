@@ -67,7 +67,7 @@ class EventDispatcher
      * @param IOInterface     $io       The IOInterface instance
      * @param ProcessExecutor $process
      */
-    public function __construct(PartialComposer $composer, IOInterface $io, ProcessExecutor $process = null)
+    public function __construct(PartialComposer $composer, IOInterface $io, ?ProcessExecutor $process = null)
     {
         $this->composer = $composer;
         $this->io = $io;
@@ -96,7 +96,7 @@ class EventDispatcher
      * @return int         return code of the executed script if any, for php scripts a false return
      *                          value is changed to 1, anything else to 0
      */
-    public function dispatch(?string $eventName, Event $event = null): int
+    public function dispatch(?string $eventName, ?Event $event = null): int
     {
         if (null === $event) {
             if (null === $eventName) {

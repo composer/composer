@@ -82,7 +82,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @param Cache           $cache           Cache instance
      * @param Filesystem      $filesystem      The filesystem
      */
-    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, Filesystem $filesystem = null, ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, ?EventDispatcher $eventDispatcher = null, ?Cache $cache = null, ?Filesystem $filesystem = null, ?ProcessExecutor $process = null)
     {
         $this->io = $io;
         $this->config = $config;
@@ -111,7 +111,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @param bool $output
      */
-    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
+    public function download(PackageInterface $package, string $path, ?PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
     {
         if (!$package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
@@ -294,7 +294,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @inheritDoc
      */
-    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    public function prepare(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         return \React\Promise\resolve(null);
     }
@@ -302,7 +302,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @inheritDoc
      */
-    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    public function cleanup(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         $fileName = $this->getFileName($package, $path);
         if (file_exists($fileName)) {

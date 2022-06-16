@@ -30,7 +30,7 @@ class Loop
     /** @var int */
     private $waitIndex = 0;
 
-    public function __construct(HttpDownloader $httpDownloader, ProcessExecutor $processExecutor = null)
+    public function __construct(HttpDownloader $httpDownloader, ?ProcessExecutor $processExecutor = null)
     {
         $this->httpDownloader = $httpDownloader;
         $this->httpDownloader->enableAsync();
@@ -62,7 +62,7 @@ class Loop
      * @param  ?ProgressBar       $progress
      * @return void
      */
-    public function wait(array $promises, ProgressBar $progress = null): void
+    public function wait(array $promises, ?ProgressBar $progress = null): void
     {
         /** @var \Exception|null */
         $uncaught = null;

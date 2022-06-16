@@ -53,7 +53,7 @@ class InstallationManager
     /** @var bool */
     private $outputProgress;
 
-    public function __construct(Loop $loop, IOInterface $io, EventDispatcher $eventDispatcher = null)
+    public function __construct(Loop $loop, IOInterface $io, ?EventDispatcher $eventDispatcher = null)
     {
         $this->loop = $loop;
         $this->io = $io;

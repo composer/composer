@@ -75,7 +75,7 @@ class Svn
      * @param Config                   $config
      * @param ProcessExecutor          $process
      */
-    public function __construct(string $url, IOInterface $io, Config $config, ProcessExecutor $process = null)
+    public function __construct(string $url, IOInterface $io, Config $config, ?ProcessExecutor $process = null)
     {
         $this->url = $url;
         $this->io = $io;
@@ -125,7 +125,7 @@ class Svn
      * @throws \RuntimeException
      * @return string
      */
-    public function executeLocal(string $command, string $path, string $cwd = null, bool $verbose = false): string
+    public function executeLocal(string $command, string $path, ?string $cwd = null, bool $verbose = false): string
     {
         // A local command has no remote url
         return $this->executeWithAuthRetry($command, $cwd, '', $path, $verbose);

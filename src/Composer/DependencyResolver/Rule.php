@@ -485,7 +485,7 @@ abstract class Rule
      * @param bool $useRemovedVersionGroup
      * @return string
      */
-    protected function formatPackagesUnique(Pool $pool, array $packages, bool $isVerbose, ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
+    protected function formatPackagesUnique(Pool $pool, array $packages, bool $isVerbose, ?ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
     {
         foreach ($packages as $index => $package) {
             if (!\is_object($package)) {

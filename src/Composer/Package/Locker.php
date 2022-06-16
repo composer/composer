@@ -60,7 +60,7 @@ class Locker
      * @param InstallationManager $installationManager  installation manager instance
      * @param string              $composerFileContents The contents of the composer file
      */
-    public function __construct(IOInterface $io, JsonFile $lockFile, InstallationManager $installationManager, string $composerFileContents, ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, JsonFile $lockFile, InstallationManager $installationManager, string $composerFileContents, ?ProcessExecutor $process = null)
     {
         $this->lockFile = $lockFile;
         $this->installationManager = $installationManager;

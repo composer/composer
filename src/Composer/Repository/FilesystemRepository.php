@@ -49,7 +49,7 @@ class FilesystemRepository extends WritableArrayRepository
      * @param bool                  $dumpVersions
      * @param ?RootPackageInterface $rootPackage    Must be provided if $dumpVersions is true
      */
-    public function __construct(JsonFile $repositoryFile, bool $dumpVersions = false, RootPackageInterface $rootPackage = null, Filesystem $filesystem = null)
+    public function __construct(JsonFile $repositoryFile, bool $dumpVersions = false, ?RootPackageInterface $rootPackage = null, ?Filesystem $filesystem = null)
     {
         parent::__construct();
         $this->file = $repositoryFile;

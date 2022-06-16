@@ -111,7 +111,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      * @param IOInterface $io
      * @param Config      $config
      */
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader = null, EventDispatcher $dispatcher = null, ProcessExecutor $process = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, ?HttpDownloader $httpDownloader = null, ?EventDispatcher $dispatcher = null, ?ProcessExecutor $process = null)
     {
         if (!isset($repoConfig['url'])) {
             throw new \RuntimeException('You must specify the `url` configuration for the path repository');

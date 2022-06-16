@@ -54,7 +54,7 @@ class ProcessExecutor
     /** @var bool */
     private $allowAsync = false;
 
-    public function __construct(IOInterface $io = null)
+    public function __construct(?IOInterface $io = null)
     {
         $this->io = $io;
     }

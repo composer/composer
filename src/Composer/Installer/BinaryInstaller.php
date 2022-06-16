@@ -47,7 +47,7 @@ class BinaryInstaller
      * @param Filesystem  $filesystem
      * @param string|null $vendorDir
      */
-    public function __construct(IOInterface $io, string $binDir, string $binCompat, Filesystem $filesystem = null, ?string $vendorDir = null)
+    public function __construct(IOInterface $io, string $binDir, string $binCompat, ?Filesystem $filesystem = null, ?string $vendorDir = null)
     {
         $this->binDir = $binDir;
         $this->binCompat = $binCompat;

@@ -65,7 +65,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  string $requiredPackage
      * @return int[]
      */
-    public function selectPreferredPackages(Pool $pool, array $literals, string $requiredPackage = null): array
+    public function selectPreferredPackages(Pool $pool, array $literals, ?string $requiredPackage = null): array
     {
         sort($literals);
         $resultCacheKey = implode(',', $literals).$requiredPackage;

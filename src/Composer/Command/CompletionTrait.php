@@ -33,7 +33,7 @@ trait CompletionTrait
     /**
      * @see BaseCommand::requireComposer()
      */
-    abstract public function requireComposer(bool $disablePlugins = null, bool $disableScripts = null): Composer;
+    abstract public function requireComposer(?bool $disablePlugins = null, ?bool $disableScripts = null): Composer;
 
     /**
      * Suggestion values for "prefer-install" option

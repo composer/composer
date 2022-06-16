@@ -45,7 +45,7 @@ class ValidatingArrayLoader implements LoaderInterface
      * @param true $strictName
      * @param int  $flags
      */
-    public function __construct(LoaderInterface $loader, bool $strictName = true, VersionParser $parser = null, int $flags = 0)
+    public function __construct(LoaderInterface $loader, bool $strictName = true, ?VersionParser $parser = null, int $flags = 0)
     {
         $this->loader = $loader;
         $this->versionParser = $parser ?: new VersionParser();

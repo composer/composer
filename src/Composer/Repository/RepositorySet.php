@@ -185,7 +185,7 @@ class RepositorySet
      * @param  int                      $flags      any of the ALLOW_* constants from this class to tweak what is returned
      * @return BasePackage[]
      */
-    public function findPackages(string $name, ConstraintInterface $constraint = null, int $flags = 0): array
+    public function findPackages(string $name, ?ConstraintInterface $constraint = null, int $flags = 0): array
     {
         $ignoreStability = ($flags & self::ALLOW_UNACCEPTABLE_STABILITIES) !== 0;
         $loadFromAllRepos = ($flags & self::ALLOW_SHADOWED_REPOSITORIES) !== 0;
@@ -261,7 +261,7 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPool(Request $request, IOInterface $io, EventDispatcher $eventDispatcher = null, PoolOptimizer $poolOptimizer = null): Pool
+    public function createPool(Request $request, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null): Pool
     {
         $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer, $this->temporaryConstraints);
 
@@ -320,7 +320,7 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPoolForPackage(string $packageName, LockArrayRepository $lockedRepo = null): Pool
+    public function createPoolForPackage(string $packageName, ?LockArrayRepository $lockedRepo = null): Pool
     {
         // TODO unify this with above in some simpler version without "request"?
         return $this->createPoolForPackages(array($packageName), $lockedRepo);
@@ -331,7 +331,7 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPoolForPackages(array $packageNames, LockArrayRepository $lockedRepo = null): Pool
+    public function createPoolForPackages(array $packageNames, ?LockArrayRepository $lockedRepo = null): Pool
     {
         $request = new Request($lockedRepo);
 

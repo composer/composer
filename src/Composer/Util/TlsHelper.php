@@ -30,7 +30,7 @@ final class TlsHelper
      *
      * @return bool
      */
-    public static function checkCertificateHost($certificate, string $hostname, string &$cn = null): bool
+    public static function checkCertificateHost($certificate, string $hostname, ?string &$cn = null): bool
     {
         $names = self::getCertificateNames($certificate);
 

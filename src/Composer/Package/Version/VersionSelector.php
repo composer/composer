@@ -47,7 +47,7 @@ class VersionSelector
     /**
      * @param PlatformRepository $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
      */
-    public function __construct(RepositorySet $repositorySet, PlatformRepository $platformRepo = null)
+    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null)
     {
         $this->repositorySet = $repositorySet;
         if ($platformRepo) {
@@ -68,7 +68,7 @@ class VersionSelector
      * @param int                                              $repoSetFlags*
      * @return PackageInterface|false
      */
-    public function findBestCandidate(string $packageName, string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0)
+    public function findBestCandidate(string $packageName, ?string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0)
     {
         if (!isset(BasePackage::$stabilities[$preferredStability])) {
             // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version

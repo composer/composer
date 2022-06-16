@@ -62,7 +62,7 @@ class ClassMapGenerator
      * @return array<class-string, string> A class map array
      * @throws \RuntimeException When the path is neither an existing file nor directory
      */
-    public static function createMap($path, string $excluded = null, IOInterface $io = null, ?string $namespace = null, ?string $autoloadType = null, array &$scannedFiles = array()): array
+    public static function createMap($path, ?string $excluded = null, ?IOInterface $io = null, ?string $namespace = null, ?string $autoloadType = null, array &$scannedFiles = array()): array
     {
         $basePath = $path;
         if (is_string($path)) {

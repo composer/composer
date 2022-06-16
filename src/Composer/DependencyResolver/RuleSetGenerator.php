@@ -152,7 +152,7 @@ class RuleSetGenerator
      *
      * @return void
      */
-    private function addRule($type, Rule $newRule = null): void
+    private function addRule($type, ?Rule $newRule = null): void
     {
         if (!$newRule) {
             return;
@@ -323,7 +323,7 @@ class RuleSetGenerator
     /**
      * @return RuleSet
      */
-    public function getRulesFor(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null): RuleSet
+    public function getRulesFor(Request $request, ?PlatformRequirementFilterInterface $platformRequirementFilter = null): RuleSet
     {
         $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
 

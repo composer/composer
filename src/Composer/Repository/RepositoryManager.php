@@ -45,7 +45,7 @@ class RepositoryManager
     /** @var ProcessExecutor */
     private $process;
 
-    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, ?EventDispatcher $eventDispatcher = null, ?ProcessExecutor $process = null)
     {
         $this->io = $io;
         $this->config = $config;
@@ -128,7 +128,7 @@ class RepositoryManager
      * @throws \InvalidArgumentException if repository for provided type is not registered
      * @return RepositoryInterface
      */
-    public function createRepository(string $type, array $config, string $name = null): RepositoryInterface
+    public function createRepository(string $type, array $config, ?string $name = null): RepositoryInterface
     {
         if (!isset($this->repositoryClasses[$type])) {
             throw new \InvalidArgumentException('Repository type is not registered: '.$type);

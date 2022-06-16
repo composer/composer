@@ -31,7 +31,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
+    protected function doDownload(PackageInterface $package, string $path, string $url, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         SvnUtil::cleanEnv();
         $util = new SvnUtil($url, $this->io, $this->config, $this->process);
@@ -114,7 +114,7 @@ class SvnDownloader extends VcsDownloader
      * @throws \RuntimeException
      * @return string
      */
-    protected function execute(PackageInterface $package, string $baseUrl, string $command, string $url, string $cwd = null, string $path = null): string
+    protected function execute(PackageInterface $package, string $baseUrl, string $command, string $url, ?string $cwd = null, ?string $path = null): string
     {
         $util = new SvnUtil($baseUrl, $this->io, $this->config, $this->process);
         $util->setCacheCredentials($this->cacheCredentials);

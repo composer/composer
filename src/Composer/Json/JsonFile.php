@@ -56,7 +56,7 @@ class JsonFile
      * @param  ?IOInterface              $io
      * @throws \InvalidArgumentException
      */
-    public function __construct(string $path, HttpDownloader $httpDownloader = null, IOInterface $io = null)
+    public function __construct(string $path, ?HttpDownloader $httpDownloader = null, ?IOInterface $io = null)
     {
         $this->path = $path;
 
@@ -312,7 +312,7 @@ class JsonFile
      * @throws ParsingException
      * @return mixed
      */
-    public static function parseJson(?string $json, string $file = null)
+    public static function parseJson(?string $json, ?string $file = null)
     {
         if (null === $json) {
             return null;
@@ -334,7 +334,7 @@ class JsonFile
      * @throws ParsingException
      * @return bool                      true on success
      */
-    protected static function validateSyntax(string $json, string $file = null): bool
+    protected static function validateSyntax(string $json, ?string $file = null): bool
     {
         $parser = new JsonParser();
         $result = $parser->lint($json);

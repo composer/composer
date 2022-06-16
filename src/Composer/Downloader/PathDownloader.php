@@ -39,7 +39,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
+    public function download(PackageInterface $package, string $path, ?PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();

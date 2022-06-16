@@ -449,7 +449,7 @@ TAGSPUBKEY
      * @throws FilesystemException If the file cannot be moved
      * @return bool                Whether the phar is valid and has been moved
      */
-    protected function setLocalPhar(string $localFilename, string $newFilename, string $backupTarget = null): bool
+    protected function setLocalPhar(string $localFilename, string $newFilename, ?string $backupTarget = null): bool
     {
         $io = $this->getIO();
         $perms = @fileperms($localFilename);

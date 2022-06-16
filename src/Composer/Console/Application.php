@@ -121,7 +121,7 @@ class Application extends BaseApplication
         parent::__construct('Composer', Composer::getVersion());
     }
 
-    public function run(InputInterface $input = null, OutputInterface $output = null): int
+    public function run(?InputInterface $input = null, ?OutputInterface $output = null): int
     {
         if (null === $output) {
             $output = Factory::createOutput();

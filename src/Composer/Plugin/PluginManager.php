@@ -68,7 +68,7 @@ class PluginManager
     /** @var int */
     private static $classCounter = 0;
 
-    public function __construct(IOInterface $io, Composer $composer, PartialComposer $globalComposer = null, bool $disablePlugins = false)
+    public function __construct(IOInterface $io, Composer $composer, ?PartialComposer $globalComposer = null, bool $disablePlugins = false)
     {
         $this->io = $io;
         $this->composer = $composer;
@@ -382,7 +382,7 @@ class PluginManager
      *
      * @return void
      */
-    public function addPlugin(PluginInterface $plugin, bool $isGlobalPlugin = false, PackageInterface $sourcePackage = null): void
+    public function addPlugin(PluginInterface $plugin, bool $isGlobalPlugin = false, ?PackageInterface $sourcePackage = null): void
     {
         if ($sourcePackage === null) {
             trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);

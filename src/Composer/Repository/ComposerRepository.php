@@ -131,7 +131,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @param array<string, mixed> $repoConfig
      * @phpstan-param array{url: string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool} $repoConfig
      */
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, ?EventDispatcher $eventDispatcher = null)
     {
         parent::__construct();
         if (!Preg::isMatch('{^[\w.]+\??://}', $repoConfig['url'])) {
@@ -701,7 +701,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      *
      * @return array<string, BasePackage>
      */
-    private function whatProvides(string $name, array $acceptableStabilities = null, array $stabilityFlags = null, array $alreadyLoaded = array()): array
+    private function whatProvides(string $name, ?array $acceptableStabilities = null, ?array $stabilityFlags = null, array $alreadyLoaded = array()): array
     {
         $packagesSource = null;
         if (!$this->hasPartialPackages() || !isset($this->partialPackagesByName[$name])) {
@@ -872,7 +872,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      *
      * @return array{namesFound: array<string, true>, packages: array<string, BasePackage>}
      */
-    private function loadAsyncPackages(array $packageNames, array $acceptableStabilities = null, array $stabilityFlags = null, array $alreadyLoaded = array()): array
+    private function loadAsyncPackages(array $packageNames, ?array $acceptableStabilities = null, ?array $stabilityFlags = null, array $alreadyLoaded = array()): array
     {
         $this->loadRootServerFile();
 
@@ -982,7 +982,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      *
      * @return bool
      */
-    private function isVersionAcceptable(?ConstraintInterface $constraint, string $name, array $versionData, array $acceptableStabilities = null, array $stabilityFlags = null): bool
+    private function isVersionAcceptable(?ConstraintInterface $constraint, string $name, array $versionData, ?array $acceptableStabilities = null, ?array $stabilityFlags = null): bool
     {
         $versions = array($versionData['version_normalized']);
 

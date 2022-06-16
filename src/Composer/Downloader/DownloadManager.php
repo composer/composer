@@ -46,7 +46,7 @@ class DownloadManager
      * @param bool            $preferSource prefer downloading from source
      * @param Filesystem|null $filesystem   custom Filesystem object
      */
-    public function __construct(IOInterface $io, bool $preferSource = false, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, bool $preferSource = false, ?Filesystem $filesystem = null)
     {
         $this->io = $io;
         $this->preferSource = $preferSource;
@@ -184,7 +184,7 @@ class DownloadManager
      * @throws \RuntimeException
      * @return PromiseInterface
      */
-    public function download(PackageInterface $package, string $targetDir, PackageInterface $prevPackage = null): PromiseInterface
+    public function download(PackageInterface $package, string $targetDir, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $this->filesystem->ensureDirectoryExists(dirname($targetDir));
@@ -250,7 +250,7 @@ class DownloadManager
      *
      * @return PromiseInterface
      */
-    public function prepare(string $type, PackageInterface $package, string $targetDir, PackageInterface $prevPackage = null): PromiseInterface
+    public function prepare(string $type, PackageInterface $package, string $targetDir, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
@@ -362,7 +362,7 @@ class DownloadManager
      *
      * @return PromiseInterface
      */
-    public function cleanup(string $type, PackageInterface $package, string $targetDir, PackageInterface $prevPackage = null): PromiseInterface
+    public function cleanup(string $type, PackageInterface $package, string $targetDir, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
@@ -400,7 +400,7 @@ class DownloadManager
      * @return string[]
      * @phpstan-return array<'dist'|'source'>&non-empty-array
      */
-    private function getAvailableSources(PackageInterface $package, PackageInterface $prevPackage = null): array
+    private function getAvailableSources(PackageInterface $package, ?PackageInterface $prevPackage = null): array
     {
         $sourceType = $package->getSourceType();
         $distType = $package->getDistType();

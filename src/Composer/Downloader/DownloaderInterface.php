@@ -36,7 +36,7 @@ interface DownloaderInterface
      * @param  string $path download path
      * @return PromiseInterface
      */
-    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface;
+    public function download(PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface;
 
     /**
      * Do anything that needs to be done between all downloads have been completed and the actual operation is executed
@@ -52,7 +52,7 @@ interface DownloaderInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface
      */
-    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface;
+    public function prepare(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface;
 
     /**
      * Installs specific package into specific folder.
@@ -95,5 +95,5 @@ interface DownloaderInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface
      */
-    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface;
+    public function cleanup(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface;
 }

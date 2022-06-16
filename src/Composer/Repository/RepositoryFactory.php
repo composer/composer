@@ -64,7 +64,7 @@ class RepositoryFactory
      * @param  bool                $allowFilesystem
      * @return RepositoryInterface
      */
-    public static function fromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false, RepositoryManager $rm = null): RepositoryInterface
+    public static function fromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false, ?RepositoryManager $rm = null): RepositoryInterface
     {
         $repoConfig = static::configFromString($io, $config, $repository, $allowFilesystem);
 
@@ -77,7 +77,7 @@ class RepositoryFactory
      * @param  array<string, mixed> $repoConfig
      * @return RepositoryInterface
      */
-    public static function createRepo(IOInterface $io, Config $config, array $repoConfig, RepositoryManager $rm = null): RepositoryInterface
+    public static function createRepo(IOInterface $io, Config $config, array $repoConfig, ?RepositoryManager $rm = null): RepositoryInterface
     {
         if (!$rm) {
             @trigger_error('Not passing a repository manager when calling createRepo is deprecated since Composer 2.3.6', E_USER_DEPRECATED);
@@ -94,7 +94,7 @@ class RepositoryFactory
      * @param  RepositoryManager|null $rm
      * @return RepositoryInterface[]
      */
-    public static function defaultRepos(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null): array
+    public static function defaultRepos(?IOInterface $io = null, ?Config $config = null, ?RepositoryManager $rm = null): array
     {
         if (null === $rm) {
             @trigger_error('Not passing a repository manager when calling defaultRepos is deprecated since Composer 2.3.6, use defaultReposWithDefaultManager() instead if you cannot get a manager.', E_USER_DEPRECATED);
@@ -123,7 +123,7 @@ class RepositoryFactory
      * @param  HttpDownloader    $httpDownloader
      * @return RepositoryManager
      */
-    public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader = null, EventDispatcher $eventDispatcher = null, ProcessExecutor $process = null): RepositoryManager
+    public static function manager(IOInterface $io, Config $config, ?HttpDownloader $httpDownloader = null, ?EventDispatcher $eventDispatcher = null, ?ProcessExecutor $process = null): RepositoryManager
     {
         if ($httpDownloader === null) {
             $httpDownloader = Factory::createHttpDownloader($io, $config);

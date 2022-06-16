@@ -190,7 +190,7 @@ class Solver
     /**
      * @return LockTransaction
      */
-    public function solve(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null): LockTransaction
+    public function solve(Request $request, ?PlatformRequirementFilterInterface $platformRequirementFilter = null): LockTransaction
     {
         $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
 

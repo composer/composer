@@ -181,7 +181,7 @@ class RuleSet implements \IteratorAggregate, \Countable
      * @param bool $isVerbose
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null, bool $isVerbose = false): string
+    public function getPrettyString(?RepositorySet $repositorySet = null, ?Request $request = null, ?Pool $pool = null, bool $isVerbose = false): string
     {
         $string = "\n";
         foreach ($this->rules as $type => $rules) {

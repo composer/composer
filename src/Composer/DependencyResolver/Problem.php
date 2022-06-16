@@ -210,7 +210,7 @@ class Problem
      * @param string $packageName
      * @return array{0: string, 1: string}
      */
-    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, string $packageName, ConstraintInterface $constraint = null): array
+    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, string $packageName, ?ConstraintInterface $constraint = null): array
     {
         if (PlatformRepository::isPlatformPackage($packageName)) {
             // handle php/php-*/hhvm
@@ -392,7 +392,7 @@ class Problem
      * @param bool $useRemovedVersionGroup
      * @return string
      */
-    public static function getPackageList(array $packages, bool $isVerbose, Pool $pool = null, ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
+    public static function getPackageList(array $packages, bool $isVerbose, ?Pool $pool = null, ?ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
     {
         $prepared = array();
         $hasDefaultBranch = array();
@@ -537,7 +537,7 @@ class Problem
      * @param string $reason
      * @return array{0: string, 1: string}
      */
-    private static function computeCheckForLowerPrioRepo(Pool $pool, bool $isVerbose, string $packageName, array $higherRepoPackages, array $allReposPackages, string $reason, ConstraintInterface $constraint = null): array
+    private static function computeCheckForLowerPrioRepo(Pool $pool, bool $isVerbose, string $packageName, array $higherRepoPackages, array $allReposPackages, string $reason, ?ConstraintInterface $constraint = null): array
     {
         $nextRepoPackages = array();
         $nextRepo = null;
@@ -586,7 +586,7 @@ class Problem
      *
      * @return string
      */
-    protected static function constraintToText(ConstraintInterface $constraint = null): string
+    protected static function constraintToText(?ConstraintInterface $constraint = null): string
     {
         return $constraint ? ' '.$constraint->getPrettyString() : '';
     }

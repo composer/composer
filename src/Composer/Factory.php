@@ -163,7 +163,7 @@ class Factory
         return $home;
     }
 
-    public static function createConfig(IOInterface $io = null, ?string $cwd = null): Config
+    public static function createConfig(?IOInterface $io = null, ?string $cwd = null): Config
     {
         $cwd = $cwd ?? Platform::getCwd(true);
 
@@ -461,7 +461,7 @@ class Factory
      *
      * @return void
      */
-    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, string $vendorDir, RootPackageInterface $rootPackage, ProcessExecutor $process = null): void
+    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, string $vendorDir, RootPackageInterface $rootPackage, ?ProcessExecutor $process = null): void
     {
         $fs = null;
         if ($process) {
@@ -492,7 +492,7 @@ class Factory
      * @param  EventDispatcher            $eventDispatcher
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, ProcessExecutor $process, EventDispatcher $eventDispatcher = null): Downloader\DownloadManager
+    public function createDownloadManager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, ProcessExecutor $process, ?EventDispatcher $eventDispatcher = null): Downloader\DownloadManager
     {
         $cache = null;
         if ($config->get('cache-files-ttl') > 0) {
@@ -558,7 +558,7 @@ class Factory
     /**
      * @return Plugin\PluginManager
      */
-    protected function createPluginManager(IOInterface $io, Composer $composer, PartialComposer $globalComposer = null, bool $disablePlugins = false): Plugin\PluginManager
+    protected function createPluginManager(IOInterface $io, Composer $composer, ?PartialComposer $globalComposer = null, bool $disablePlugins = false): Plugin\PluginManager
     {
         return new Plugin\PluginManager($io, $composer, $globalComposer, $disablePlugins);
     }
@@ -566,7 +566,7 @@ class Factory
     /**
      * @return Installer\InstallationManager
      */
-    public function createInstallationManager(Loop $loop, IOInterface $io, EventDispatcher $eventDispatcher = null): Installer\InstallationManager
+    public function createInstallationManager(Loop $loop, IOInterface $io, ?EventDispatcher $eventDispatcher = null): Installer\InstallationManager
     {
         return new Installer\InstallationManager($loop, $io, $eventDispatcher);
     }
@@ -574,7 +574,7 @@ class Factory
     /**
      * @return void
      */
-    protected function createDefaultInstallers(Installer\InstallationManager $im, PartialComposer $composer, IOInterface $io, ProcessExecutor $process = null): void
+    protected function createDefaultInstallers(Installer\InstallationManager $im, PartialComposer $composer, IOInterface $io, ?ProcessExecutor $process = null): void
     {
         $fs = new Filesystem($process);
         $binaryInstaller = new Installer\BinaryInstaller($io, rtrim($composer->getConfig()->get('bin-dir'), '/'), $composer->getConfig()->get('bin-compat'), $fs, rtrim($composer->getConfig()->get('vendor-dir'), '/'));

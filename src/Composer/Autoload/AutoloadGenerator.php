@@ -77,7 +77,7 @@ class AutoloadGenerator
      */
     private $platformRequirementFilter;
 
-    public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
+    public function __construct(EventDispatcher $eventDispatcher, ?IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->io = $io;

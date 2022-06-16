@@ -35,7 +35,7 @@ class BufferIO extends ConsoleIO
      * @param int                           $verbosity
      * @param OutputFormatterInterface|null $formatter
      */
-    public function __construct(string $input = '', int $verbosity = StreamOutput::VERBOSITY_NORMAL, OutputFormatterInterface $formatter = null)
+    public function __construct(string $input = '', int $verbosity = StreamOutput::VERBOSITY_NORMAL, ?OutputFormatterInterface $formatter = null)
     {
         $input = new StringInput($input);
         $input->setInteractive(false);

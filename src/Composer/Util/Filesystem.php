@@ -28,7 +28,7 @@ class Filesystem
     /** @var ?ProcessExecutor */
     private $processExecutor;
 
-    public function __construct(ProcessExecutor $executor = null)
+    public function __construct(?ProcessExecutor $executor = null)
     {
         $this->processExecutor = $executor;
     }

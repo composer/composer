@@ -40,7 +40,7 @@ class GitLab
      * @param ProcessExecutor $process        Process instance, injectable for mocking
      * @param HttpDownloader  $httpDownloader Remote Filesystem, injectable for mocking
      */
-    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null)
+    public function __construct(IOInterface $io, Config $config, ?ProcessExecutor $process = null, ?HttpDownloader $httpDownloader = null)
     {
         $this->io = $io;
         $this->config = $config;
@@ -119,7 +119,7 @@ class GitLab
      *
      * @return bool true on success
      */
-    public function authorizeOAuthInteractively(string $scheme, string $originUrl, string $message = null): bool
+    public function authorizeOAuthInteractively(string $scheme, string $originUrl, ?string $message = null): bool
     {
         if ($message) {
             $this->io->writeError($message);

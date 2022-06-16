@@ -92,7 +92,7 @@ abstract class BaseCommand extends Command
      * @param bool|null $disableScripts If null, reads --no-scripts as default
      * @throws \RuntimeException
      */
-    public function requireComposer(bool $disablePlugins = null, bool $disableScripts = null): Composer
+    public function requireComposer(?bool $disablePlugins = null, ?bool $disableScripts = null): Composer
     {
         if (null === $this->composer) {
             $application = parent::getApplication();
@@ -118,7 +118,7 @@ abstract class BaseCommand extends Command
      * @param bool|null $disablePlugins If null, reads --no-plugins as default
      * @param bool|null $disableScripts If null, reads --no-scripts as default
      */
-    public function tryComposer(bool $disablePlugins = null, bool $disableScripts = null): ?Composer
+    public function tryComposer(?bool $disablePlugins = null, ?bool $disableScripts = null): ?Composer
     {
         if (null === $this->composer) {
             $application = parent::getApplication();

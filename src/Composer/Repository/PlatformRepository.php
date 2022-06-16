@@ -72,7 +72,7 @@ class PlatformRepository extends ArrayRepository
     /**
      * @param array<string, string|false> $overrides
      */
-    public function __construct(array $packages = array(), array $overrides = array(), Runtime $runtime = null, HhvmDetector $hhvmDetector = null)
+    public function __construct(array $packages = array(), array $overrides = array(), ?Runtime $runtime = null, ?HhvmDetector $hhvmDetector = null)
     {
         $this->runtime = $runtime ?: new Runtime();
         $this->hhvmDetector = $hhvmDetector ?: new HhvmDetector();

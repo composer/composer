@@ -74,7 +74,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
      * @param array{url: string, type?: string}&array<string, mixed> $repoConfig
      * @param array<string, class-string<VcsDriverInterface>>|null $drivers
      */
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null, ProcessExecutor $process = null, array $drivers = null, VersionCacheInterface $versionCache = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, ?EventDispatcher $dispatcher = null, ?ProcessExecutor $process = null, ?array $drivers = null, ?VersionCacheInterface $versionCache = null)
     {
         parent::__construct();
         $this->drivers = $drivers ?: array(

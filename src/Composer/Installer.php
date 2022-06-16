@@ -608,7 +608,7 @@ class Installer
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      * @phpstan-return self::ERROR_*
      */
-    protected function extractDevPackages(LockTransaction $lockTransaction, PlatformRepository $platformRepo, array $aliases, PolicyInterface $policy, LockArrayRepository $lockedRepository = null): int
+    protected function extractDevPackages(LockTransaction $lockTransaction, PlatformRepository $platformRepo, array $aliases, PolicyInterface $policy, ?LockArrayRepository $lockedRepository = null): int
     {
         if (!$this->package->getDevRequires()) {
             return 0;
@@ -895,7 +895,7 @@ class Installer
      * @param RootPackageInterface&BasePackage $rootPackage
      * @return Request
      */
-    private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo, LockArrayRepository $lockedRepository = null): Request
+    private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo, ?LockArrayRepository $lockedRepository = null): Request
     {
         $request = new Request($lockedRepository);
 
@@ -932,7 +932,7 @@ class Installer
      *
      * @return void
      */
-    private function requirePackagesForUpdate(Request $request, LockArrayRepository $lockedRepository = null, bool $includeDevRequires = true): void
+    private function requirePackagesForUpdate(Request $request, ?LockArrayRepository $lockedRepository = null, bool $includeDevRequires = true): void
     {
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
         if ($this->updateMirrors) {

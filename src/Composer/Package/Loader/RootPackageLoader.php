@@ -49,7 +49,7 @@ class RootPackageLoader extends ArrayLoader
      */
     private $versionGuesser;
 
-    public function __construct(RepositoryManager $manager, Config $config, VersionParser $parser = null, VersionGuesser $versionGuesser = null, IOInterface $io = null)
+    public function __construct(RepositoryManager $manager, Config $config, ?VersionParser $parser = null, ?VersionGuesser $versionGuesser = null, ?IOInterface $io = null)
     {
         parent::__construct($parser);
 
