@@ -324,9 +324,9 @@ class FilesystemTest extends TestCase
         $this->assertTrue($fs->isJunction($junction . '/../junction'), $junction . '/../junction: is a junction');
 
         // Remove junction
-        $this->assertTrue(is_dir($junction), $junction . ' is a directory');
+        $this->assertDirectoryExists($junction, $junction . ' is a directory');
         $this->assertTrue($fs->removeJunction($junction), $junction . ' has been removed');
-        $this->assertFalse(is_dir($junction), $junction . ' is not a directory');
+        $this->assertDirectoryNotExists($junction, $junction . ' is not a directory');
     }
 
     public function testCopy(): void
@@ -342,9 +342,9 @@ class FilesystemTest extends TestCase
 
         $result1 = $fs->copy($this->workingDir . '/foo', $this->workingDir . '/foop');
         $this->assertTrue($result1, 'Copying directory failed.');
-        $this->assertTrue(is_dir($this->workingDir . '/foop'), 'Not a directory: ' . $this->workingDir . '/foop');
-        $this->assertTrue(is_dir($this->workingDir . '/foop/bar'), 'Not a directory: ' . $this->workingDir . '/foop/bar');
-        $this->assertTrue(is_dir($this->workingDir . '/foop/baz'), 'Not a directory: ' . $this->workingDir . '/foop/baz');
+        $this->assertDirectoryExists($this->workingDir . '/foop', 'Not a directory: ' . $this->workingDir . '/foop');
+        $this->assertDirectoryExists($this->workingDir . '/foop/bar', 'Not a directory: ' . $this->workingDir . '/foop/bar');
+        $this->assertDirectoryExists($this->workingDir . '/foop/baz', 'Not a directory: ' . $this->workingDir . '/foop/baz');
         $this->assertTrue(is_file($this->workingDir . '/foop/foo.file'), 'Not a file: ' . $this->workingDir . '/foop/foo.file');
         $this->assertTrue(is_file($this->workingDir . '/foop/bar/foobar.file'), 'Not a file: ' . $this->workingDir . '/foop/bar/foobar.file');
         $this->assertTrue(is_file($this->workingDir . '/foop/baz/foobaz.file'), 'Not a file: ' . $this->workingDir . '/foop/baz/foobaz.file');
@@ -372,8 +372,8 @@ class FilesystemTest extends TestCase
         $this->assertFalse(is_file($this->workingDir . '/foo/baz/foobaz.file'), 'Still a file: ' . $this->workingDir . '/foo/baz/foobaz.file');
         $this->assertFalse(is_file($this->workingDir . '/foo/bar/foobar.file'), 'Still a file: ' . $this->workingDir . '/foo/bar/foobar.file');
         $this->assertFalse(is_file($this->workingDir . '/foo/foo.file'), 'Still a file: ' . $this->workingDir . '/foo/foo.file');
-        $this->assertFalse(is_dir($this->workingDir . '/foo/baz'), 'Still a directory: ' . $this->workingDir . '/foo/baz');
-        $this->assertFalse(is_dir($this->workingDir . '/foo/bar'), 'Still a directory: ' . $this->workingDir . '/foo/bar');
-        $this->assertFalse(is_dir($this->workingDir . '/foo'), 'Still a directory: ' . $this->workingDir . '/foo');
+        $this->assertDirectoryNotExists($this->workingDir . '/foo/baz', 'Still a directory: ' . $this->workingDir . '/foo/baz');
+        $this->assertDirectoryNotExists($this->workingDir . '/foo/bar', 'Still a directory: ' . $this->workingDir . '/foo/bar');
+        $this->assertDirectoryNotExists($this->workingDir . '/foo', 'Still a directory: ' . $this->workingDir . '/foo');
     }
 }

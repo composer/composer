@@ -1820,7 +1820,7 @@ EOF;
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
 
         if (null === $expectedFixture) {
-            $this->assertFalse(file_exists($this->vendorDir . '/composer/platform_check.php'));
+            $this->assertFileNotExists($this->vendorDir . '/composer/platform_check.php');
             $this->assertStringNotContainsString("require __DIR__ . '/platform_check.php';", (string) file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
         } else {
             $this->assertFileContentEquals(__DIR__ . '/Fixtures/platform/' . $expectedFixture . '.php', $this->vendorDir . '/composer/platform_check.php');
