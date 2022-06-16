@@ -105,7 +105,7 @@ EOT
             foreach ($results as $result) {
                 $nameLength = max(strlen($result['name']), $nameLength);
             }
-            $nameLength += 1;
+            ++$nameLength;
             foreach ($results as $result) {
                 $description = $result['description'] ?? '';
                 $warning = !empty($result['abandoned']) ? '<warning>! Abandoned !</warning> ' : '';

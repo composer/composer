@@ -136,7 +136,7 @@ class PhpFileCleaner
                     }
                 }
 
-                $this->index += 1;
+                ++$this->index;
                 if ($this->match(self::$restPattern, $match)) {
                     $clean .= $char . $match[0];
                     $this->index += \strlen($match[0]);
@@ -160,7 +160,7 @@ class PhpFileCleaner
                 break;
             }
 
-            $this->index += 1;
+            ++$this->index;
         }
     }
 
@@ -170,17 +170,17 @@ class PhpFileCleaner
      */
     private function skipString(string $delimiter): void
     {
-        $this->index += 1;
+        ++$this->index;
         while ($this->index < $this->len) {
             if ($this->contents[$this->index] === '\\' && ($this->peek('\\') || $this->peek($delimiter))) {
                 $this->index += 2;
                 continue;
             }
             if ($this->contents[$this->index] === $delimiter) {
-                $this->index += 1;
+                ++$this->index;
                 break;
             }
-            $this->index += 1;
+            ++$this->index;
         }
     }
 
@@ -196,7 +196,7 @@ class PhpFileCleaner
                 break;
             }
 
-            $this->index += 1;
+            ++$this->index;
         }
     }
 
@@ -209,7 +209,7 @@ class PhpFileCleaner
             if ($this->contents[$this->index] === "\r" || $this->contents[$this->index] === "\n") {
                 return;
             }
-            $this->index += 1;
+            ++$this->index;
         }
     }
 
@@ -228,7 +228,7 @@ class PhpFileCleaner
             switch ($this->contents[$this->index]) {
                 case "\t":
                 case " ":
-                    $this->index += 1;
+                    ++$this->index;
                     continue 2;
                 case $firstDelimiterChar:
                     if (
@@ -248,7 +248,7 @@ class PhpFileCleaner
 
                 // skip newlines
                 while ($this->index < $this->len && ($this->contents[$this->index] === "\r" || $this->contents[$this->index] === "\n")) {
-                    $this->index += 1;
+                    ++$this->index;
                 }
 
                 break;
