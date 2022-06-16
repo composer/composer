@@ -258,20 +258,20 @@ class JsonConfigSource implements ConfigSourceInterface
             // avoid ending up with arrays for keys that should be objects
             foreach (array('require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'support') as $prop) {
                 if (isset($config[$prop]) && $config[$prop] === array()) {
-                    $config[$prop] = new \stdClass;
+                    $config[$prop] = new \stdClass();
                 }
             }
             foreach (array('psr-0', 'psr-4') as $prop) {
                 if (isset($config['autoload'][$prop]) && $config['autoload'][$prop] === array()) {
-                    $config['autoload'][$prop] = new \stdClass;
+                    $config['autoload'][$prop] = new \stdClass();
                 }
                 if (isset($config['autoload-dev'][$prop]) && $config['autoload-dev'][$prop] === array()) {
-                    $config['autoload-dev'][$prop] = new \stdClass;
+                    $config['autoload-dev'][$prop] = new \stdClass();
                 }
             }
             foreach (array('platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'preferred-install') as $prop) {
                 if (isset($config['config'][$prop]) && $config['config'][$prop] === array()) {
-                    $config['config'][$prop] = new \stdClass;
+                    $config['config'][$prop] = new \stdClass();
                 }
             }
             $this->file->write($config);

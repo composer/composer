@@ -39,7 +39,7 @@ class RuleSetGenerator
     {
         $this->policy = $policy;
         $this->pool = $pool;
-        $this->rules = new RuleSet;
+        $this->rules = new RuleSet();
     }
 
     /**
@@ -167,7 +167,7 @@ class RuleSetGenerator
     protected function addRulesForPackage(BasePackage $package, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         /** @var \SplQueue<BasePackage> */
-        $workQueue = new \SplQueue;
+        $workQueue = new \SplQueue();
         $workQueue->enqueue($package);
 
         while (!$workQueue->isEmpty()) {
@@ -338,7 +338,7 @@ class RuleSetGenerator
 
         $rules = $this->rules;
 
-        $this->rules = new RuleSet;
+        $this->rules = new RuleSet();
 
         return $rules;
     }

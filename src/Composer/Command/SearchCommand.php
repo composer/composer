@@ -59,7 +59,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // init repos
-        $platformRepo = new PlatformRepository;
+        $platformRepo = new PlatformRepository();
         $io = $this->getIO();
 
         $format = $input->getOption('format');

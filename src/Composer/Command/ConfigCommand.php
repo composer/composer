@@ -193,12 +193,12 @@ EOT
         // Initialize the global file if it's not there, ignoring any warnings or notices
         if ($input->getOption('global') && !$this->configFile->exists()) {
             touch($this->configFile->getPath());
-            $this->configFile->write(array('config' => new \ArrayObject));
+            $this->configFile->write(array('config' => new \ArrayObject()));
             Silencer::call('chmod', $this->configFile->getPath(), 0600);
         }
         if ($input->getOption('global') && !$this->authConfigFile->exists()) {
             touch($this->authConfigFile->getPath());
-            $this->authConfigFile->write(array('bitbucket-oauth' => new \ArrayObject, 'github-oauth' => new \ArrayObject, 'gitlab-oauth' => new \ArrayObject, 'gitlab-token' => new \ArrayObject, 'http-basic' => new \ArrayObject, 'bearer' => new \ArrayObject));
+            $this->authConfigFile->write(array('bitbucket-oauth' => new \ArrayObject(), 'github-oauth' => new \ArrayObject(), 'gitlab-oauth' => new \ArrayObject(), 'gitlab-token' => new \ArrayObject(), 'http-basic' => new \ArrayObject(), 'bearer' => new \ArrayObject()));
             Silencer::call('chmod', $this->authConfigFile->getPath(), 0600);
         }
 

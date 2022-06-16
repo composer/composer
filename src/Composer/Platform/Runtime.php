@@ -77,7 +77,7 @@ class Runtime
     public function construct(string $class, array $arguments = array()): object
     {
         if (empty($arguments)) {
-            return new $class;
+            return new $class();
         }
 
         $refl = new \ReflectionClass($class);

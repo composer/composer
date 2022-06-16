@@ -147,7 +147,7 @@ EOT
             }
         }
 
-        $parser = new VersionParser;
+        $parser = new VersionParser();
         $temporaryConstraints = [];
         foreach ($reqs as $package => $constraint) {
             $temporaryConstraints[strtolower($package)] = $parser->parseConstraints($constraint);

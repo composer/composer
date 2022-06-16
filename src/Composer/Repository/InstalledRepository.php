@@ -197,7 +197,7 @@ class InstalledRepository extends CompositeRepository
 
                         $platformPkg = $this->findPackage($link->getTarget(), '*');
                         $description = $platformPkg ? 'but '.$platformPkg->getPrettyVersion().' is installed' : 'but it is missing';
-                        $results[] = array($package, new Link($package->getName(), $link->getTarget(), new MatchAllConstraint, Link::TYPE_REQUIRE, $link->getPrettyConstraint().' '.$description), false);
+                        $results[] = array($package, new Link($package->getName(), $link->getTarget(), new MatchAllConstraint(), Link::TYPE_REQUIRE, $link->getPrettyConstraint().' '.$description), false);
 
                         continue;
                     }
@@ -231,7 +231,7 @@ class InstalledRepository extends CompositeRepository
                                 }
 
                                 $results[] = array($package, $link, false);
-                                $results[] = array($rootPackage, new Link($rootPackage->getName(), $link->getTarget(), new MatchAllConstraint, Link::TYPE_DOES_NOT_REQUIRE, 'but ' . $pkg->getPrettyVersion() . ' is installed'), false);
+                                $results[] = array($rootPackage, new Link($rootPackage->getName(), $link->getTarget(), new MatchAllConstraint(), Link::TYPE_DOES_NOT_REQUIRE, 'but ' . $pkg->getPrettyVersion() . ' is installed'), false);
                             } else {
                                 // no root so let's just print whatever we found
                                 $results[] = array($package, $link, false);

@@ -121,7 +121,7 @@ class Problem
     {
         $messages = array();
         $templates = array();
-        $parser = new VersionParser;
+        $parser = new VersionParser();
         $deduplicatableRuleTypes = array(Rule::RULE_PACKAGE_REQUIRES, Rule::RULE_PACKAGE_CONFLICT);
         foreach ($rules as $rule) {
             $message = $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);

@@ -79,7 +79,7 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
         }
 
         if (Preg::isMatch($this->ignoreRegex, $req)) {
-            return new MatchAllConstraint;
+            return new MatchAllConstraint();
         }
 
         $intervals = Intervals::get($constraint);

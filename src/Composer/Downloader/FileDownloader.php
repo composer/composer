@@ -480,7 +480,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     {
         $prevIO = $this->io;
 
-        $this->io = new NullIO;
+        $this->io = new NullIO();
         $this->io->loadConfiguration($this->config);
         $e = null;
         $output = '';

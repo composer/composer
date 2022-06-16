@@ -92,7 +92,7 @@ EOT
         }
 
         $config->merge(array('config' => array('secure-http' => false)), Config::SOURCE_COMMAND);
-        $config->prohibitUrlByConfig('http://repo.packagist.org', new NullIO);
+        $config->prohibitUrlByConfig('http://repo.packagist.org', new NullIO());
 
         $this->httpDownloader = Factory::createHttpDownloader($io, $config);
 
@@ -178,7 +178,7 @@ EOT
         $io->write('OpenSSL version: ' . (defined('OPENSSL_VERSION_TEXT') ? '<comment>'.OPENSSL_VERSION_TEXT.'</comment>' : '<error>missing</error>'));
         $io->write('cURL version: ' . $this->getCurlVersion());
 
-        $finder = new ExecutableFinder;
+        $finder = new ExecutableFinder();
         $hasSystemUnzip = (bool) $finder->find('unzip');
         $bin7zip = '';
         if ($hasSystem7zip = (bool) $finder->find('7z', null, array('C:\Program Files\7-Zip'))) {

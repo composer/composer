@@ -202,7 +202,7 @@ class Solver
         unset($ruleSetGenerator);
         $this->checkForRootRequireProblems($request, $platformRequirementFilter);
         $this->decisions = new Decisions($this->pool);
-        $this->watchGraph = new RuleWatchGraph;
+        $this->watchGraph = new RuleWatchGraph();
 
         foreach ($this->rules as $rule) {
             $this->watchGraph->insert(new RuleWatchNode($rule));

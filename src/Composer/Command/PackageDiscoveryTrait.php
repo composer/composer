@@ -46,7 +46,7 @@ trait PackageDiscoveryTrait
     {
         if (null === $this->repos) {
             $this->repos = new CompositeRepository(array_merge(
-                array(new PlatformRepository),
+                array(new PlatformRepository()),
                 RepositoryFactory::defaultReposWithDefaultManager($this->getIO())
             ));
         }

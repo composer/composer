@@ -113,15 +113,15 @@ EOT
             unset($options['stability']);
         }
 
-        $options['require'] = isset($options['require']) ? $this->formatRequirements($options['require']) : new \stdClass;
+        $options['require'] = isset($options['require']) ? $this->formatRequirements($options['require']) : new \stdClass();
         if (array() === $options['require']) {
-            $options['require'] = new \stdClass;
+            $options['require'] = new \stdClass();
         }
 
         if (isset($options['require-dev'])) {
             $options['require-dev'] = $this->formatRequirements($options['require-dev']);
             if (array() === $options['require-dev']) {
-                $options['require-dev'] = new \stdClass;
+                $options['require-dev'] = new \stdClass();
             }
         }
 
@@ -229,7 +229,7 @@ EOT
             $io->loadConfiguration($config);
             $repoManager = RepositoryFactory::manager($io, $config);
 
-            $repos = array(new PlatformRepository);
+            $repos = array(new PlatformRepository());
             $createDefaultPackagistRepo = true;
             foreach ($repositories as $repo) {
                 $repoConfig = RepositoryFactory::configFromString($io, $config, $repo, true);

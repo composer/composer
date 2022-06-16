@@ -44,7 +44,7 @@ class ZipDownloader extends ArchiveDownloader
     {
         if (null === self::$unzipCommands) {
             self::$unzipCommands = array();
-            $finder = new ExecutableFinder;
+            $finder = new ExecutableFinder();
             if (Platform::isWindows() && ($cmd = $finder->find('7z', null, array('C:\Program Files\7-Zip')))) {
                 self::$unzipCommands[] = array('7z', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s');
             }

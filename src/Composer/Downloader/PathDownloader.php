@@ -189,7 +189,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         // can happen when using custom installers, see https://github.com/composer/composer/pull/9116
         // not using realpath here as we do not want to resolve the symlink to the original dist url
         // it points to
-        $fs = new Filesystem;
+        $fs = new Filesystem();
         $absPath = $fs->isAbsolutePath($path) ? $path : Platform::getCwd() . '/' . $path;
         $absDistUrl = $fs->isAbsolutePath($package->getDistUrl()) ? $package->getDistUrl() : Platform::getCwd() . '/' . $package->getDistUrl();
         if ($fs->normalizePath($absPath) === $fs->normalizePath($absDistUrl)) {
@@ -209,9 +209,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     public function getVcsReference(PackageInterface $package, string $path): ?string
     {
         $path = Filesystem::trimTrailingSlash($path);
-        $parser = new VersionParser;
+        $parser = new VersionParser();
         $guesser = new VersionGuesser($this->config, $this->process, $parser);
-        $dumper = new ArrayDumper;
+        $dumper = new ArrayDumper();
 
         $packageConfig = $dumper->dump($package);
         if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {

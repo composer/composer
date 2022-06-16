@@ -240,9 +240,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      */
     public function getVcsReference(PackageInterface $package, string $path): ?string
     {
-        $parser = new VersionParser;
+        $parser = new VersionParser();
         $guesser = new VersionGuesser($this->config, $this->process, $parser);
-        $dumper = new ArrayDumper;
+        $dumper = new ArrayDumper();
 
         $packageConfig = $dumper->dump($package);
         if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {

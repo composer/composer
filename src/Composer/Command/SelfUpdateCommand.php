@@ -508,7 +508,7 @@ TAGSPUBKEY
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
         $io = $this->getIO();
-        $fs = new Filesystem;
+        $fs = new Filesystem();
 
         foreach ($finder as $file) {
             if ($file->getBasename(self::OLD_INSTALL_EXT) === $except) {

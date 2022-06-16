@@ -376,7 +376,7 @@ class Factory
         }
 
         // load package
-        $parser = new VersionParser;
+        $parser = new VersionParser();
         $guesser = new VersionGuesser($config, $process, $parser);
         $loader = $this->loadRootPackage($rm, $config, $parser, $guesser, $io);
         $package = $loader->load($localConfig, 'Composer\Package\RootPackage', $cwd);
@@ -546,10 +546,10 @@ class Factory
     {
         $am = new Archiver\ArchiveManager($dm, $loop);
         if (class_exists(ZipArchive::class)) {
-            $am->addArchiver(new Archiver\ZipArchiver);
+            $am->addArchiver(new Archiver\ZipArchiver());
         }
         if (class_exists(Phar::class)) {
-            $am->addArchiver(new Archiver\PharArchiver);
+            $am->addArchiver(new Archiver\PharArchiver());
         }
 
         return $am;

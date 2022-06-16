@@ -40,7 +40,7 @@ class ArrayLoader implements LoaderInterface
     public function __construct(VersionParser $parser = null, bool $loadOptions = false)
     {
         if (!$parser) {
-            $parser = new VersionParser;
+            $parser = new VersionParser();
         }
         $this->versionParser = $parser;
         $this->loadOptions = $loadOptions;

@@ -129,7 +129,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->versionParser = new VersionParser;
+        $this->versionParser = new VersionParser();
         if ($input->getOption('tree')) {
             $this->initStyles($output);
         }

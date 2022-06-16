@@ -623,7 +623,7 @@ class PoolBuilder
                     $this->unlockPackage($request, $repositories, $replacerName);
 
                     if ($this->isRootRequire($request, $replacerName)) {
-                        $this->markPackageNameForLoading($request, $replacerName, new MatchAllConstraint);
+                        $this->markPackageNameForLoading($request, $replacerName, new MatchAllConstraint());
                     } else {
                         foreach ($this->packages as $loadedPackage) {
                             $requires = $loadedPackage->getRequires();

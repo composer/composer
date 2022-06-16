@@ -55,7 +55,7 @@ class FilesystemRepository extends WritableArrayRepository
         $this->file = $repositoryFile;
         $this->dumpVersions = $dumpVersions;
         $this->rootPackage = $rootPackage;
-        $this->filesystem = $filesystem ?: new Filesystem;
+        $this->filesystem = $filesystem ?: new Filesystem();
         if ($dumpVersions && !$rootPackage) {
             throw new \InvalidArgumentException('Expected a root package instance if $dumpVersions is true');
         }

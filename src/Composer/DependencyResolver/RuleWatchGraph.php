@@ -49,7 +49,7 @@ class RuleWatchGraph
         if (!$node->getRule() instanceof MultiConflictRule) {
             foreach (array($node->watch1, $node->watch2) as $literal) {
                 if (!isset($this->watchChains[$literal])) {
-                    $this->watchChains[$literal] = new RuleWatchChain;
+                    $this->watchChains[$literal] = new RuleWatchChain();
                 }
 
                 $this->watchChains[$literal]->unshift($node);
@@ -57,7 +57,7 @@ class RuleWatchGraph
         } else {
             foreach ($node->getRule()->getLiterals() as $literal) {
                 if (!isset($this->watchChains[$literal])) {
-                    $this->watchChains[$literal] = new RuleWatchChain;
+                    $this->watchChains[$literal] = new RuleWatchChain();
                 }
 
                 $this->watchChains[$literal]->unshift($node);
@@ -159,7 +159,7 @@ class RuleWatchGraph
     protected function moveWatch(int $fromLiteral, int $toLiteral, RuleWatchNode $node): void
     {
         if (!isset($this->watchChains[$toLiteral])) {
-            $this->watchChains[$toLiteral] = new RuleWatchChain;
+            $this->watchChains[$toLiteral] = new RuleWatchChain();
         }
 
         $node->moveWatch($fromLiteral, $toLiteral);

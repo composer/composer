@@ -95,9 +95,9 @@ EOT
         $unpushedChanges = array();
         $vcsVersionChanges = array();
 
-        $parser = new VersionParser;
+        $parser = new VersionParser();
         $guesser = new VersionGuesser($composer->getConfig(), $composer->getLoop()->getProcessExecutor() ?? new ProcessExecutor($io), $parser);
-        $dumper = new ArrayDumper;
+        $dumper = new ArrayDumper();
 
         // list packages
         foreach ($installedRepo->getCanonicalPackages() as $package) {

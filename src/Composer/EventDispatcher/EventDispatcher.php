@@ -293,7 +293,7 @@ class EventDispatcher
                         // in $PATH. This allows support for `@php foo` where foo is a binary name found in PATH but not an actual relative path
                         $matched = Preg::isMatch('{^[^\'"\s/\\\\]+}', $pathAndArgs, $match);
                         if ($matched && !file_exists($match[0])) {
-                            $finder = new ExecutableFinder;
+                            $finder = new ExecutableFinder();
                             if ($pathToExec = $finder->find($match[0])) {
                                 $pathAndArgs = $pathToExec . substr($pathAndArgs, strlen($match[0]));
                             }

@@ -121,7 +121,7 @@ EOT
         if ($composer) {
             $archiveManager = $composer->getArchiveManager();
         } else {
-            $factory = new Factory;
+            $factory = new Factory();
             $process = new ProcessExecutor();
             $httpDownloader = Factory::createHttpDownloader($io, $config);
             $downloadManager = $factory->createDownloadManager($io, $config, $httpDownloader, $process);
@@ -140,7 +140,7 @@ EOT
 
         $io->writeError('<info>Creating the archive into "'.$dest.'".</info>');
         $packagePath = $archiveManager->archive($package, $format, $dest, $fileName, $ignoreFilters);
-        $fs = new Filesystem;
+        $fs = new Filesystem();
         $shortPath = $fs->findShortestPath(Platform::getCwd(), $packagePath, true);
 
         $io->writeError('Created: ', false);

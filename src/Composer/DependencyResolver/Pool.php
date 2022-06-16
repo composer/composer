@@ -49,7 +49,7 @@ class Pool implements \Countable
      */
     public function __construct(array $packages = array(), array $unacceptableFixedOrLockedPackages = array(), array $removedVersions = array(), array $removedVersionsByPackage = array())
     {
-        $this->versionParser = new VersionParser;
+        $this->versionParser = new VersionParser();
         $this->setPackages($packages);
         $this->unacceptableFixedOrLockedPackages = $unacceptableFixedOrLockedPackages;
         $this->removedVersions = $removedVersions;
