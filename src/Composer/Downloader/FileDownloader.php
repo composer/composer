@@ -265,7 +265,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
             if ($retries) {
                 usleep(500000);
-                $retries--;
+                --$retries;
 
                 return $download();
             }

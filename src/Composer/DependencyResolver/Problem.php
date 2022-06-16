@@ -201,7 +201,7 @@ class Problem
      */
     public function nextSection(): void
     {
-        $this->section++;
+        ++$this->section;
     }
 
     /**

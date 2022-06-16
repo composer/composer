@@ -133,7 +133,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
                                     $optionalKeys[] = $propIndex;
                                 }
                                 $valTypes[] = $valType;
-                                $propIndex++;
+                                ++$propIndex;
                             }
 
                             if ($addlPropType !== null) {

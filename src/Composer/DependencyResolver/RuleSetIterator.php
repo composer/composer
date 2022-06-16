@@ -57,7 +57,7 @@ class RuleSetIterator implements \Iterator
 
     public function next(): void
     {
-        $this->currentOffset++;
+        ++$this->currentOffset;
 
         if (!isset($this->rules[$this->currentType])) {
             return;
@@ -67,7 +67,7 @@ class RuleSetIterator implements \Iterator
             $this->currentOffset = 0;
 
             do {
-                $this->currentTypeOffset++;
+                ++$this->currentTypeOffset;
 
                 if (!isset($this->types[$this->currentTypeOffset])) {
                     $this->currentType = -1;
@@ -87,7 +87,7 @@ class RuleSetIterator implements \Iterator
         $this->currentType = -1;
 
         do {
-            $this->currentTypeOffset++;
+            ++$this->currentTypeOffset;
 
             if (!isset($this->types[$this->currentTypeOffset])) {
                 $this->currentType = -1;

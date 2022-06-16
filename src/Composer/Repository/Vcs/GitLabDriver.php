@@ -340,7 +340,7 @@ class GitLabDriver extends VcsDriver
     private function urlEncodeAll(string $string): string
     {
         $encoded = '';
-        for ($i = 0; isset($string[$i]); $i++) {
+        for ($i = 0; isset($string[$i]); ++$i) {
             $character = $string[$i];
             if (!ctype_alnum($character) && !in_array($character, array('-', '_'), true)) {
                 $character = '%' . sprintf('%02X', ord($character));

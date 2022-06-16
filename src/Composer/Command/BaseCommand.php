@@ -398,7 +398,7 @@ abstract class BaseCommand extends Command
         $width = $terminal->getWidth();
 
         if (Platform::isWindows()) {
-            $width--;
+            --$width;
         } else {
             $width = max(80, $width);
         }

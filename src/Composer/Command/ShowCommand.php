@@ -1137,7 +1137,7 @@ EOT
                 $total = count($requires);
                 foreach ($requires as $require) {
                     $requireName = $require['name'];
-                    $j++;
+                    ++$j;
                     if ($j === $total) {
                         $treeBar = '└';
                     }
@@ -1228,7 +1228,7 @@ EOT
             $total = count($requires);
             foreach ($requires as $require) {
                 $currentTree = $packagesInTree;
-                $i++;
+                ++$i;
                 if ($i === $total) {
                     $treeBar = $previousTreeBar . '  └';
                 }

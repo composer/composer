@@ -272,7 +272,7 @@ class PluginManager
                 $code = Preg::replace('/^\s*<\?(php)?/i', '', $code, 1);
                 eval($code);
                 $class .= '_composer_tmp'.self::$classCounter;
-                self::$classCounter++;
+                ++self::$classCounter;
             }
 
             if ($oldInstallerPlugin) {

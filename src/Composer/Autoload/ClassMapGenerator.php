@@ -261,7 +261,7 @@ class ClassMapGenerator
         $classes = array();
         $namespace = '';
 
-        for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
+        for ($i = 0, $len = count($matches['type']); $i < $len; ++$i) {
             if (!empty($matches['ns'][$i])) {
                 $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', (string) $matches['nsname'][$i]) . '\\';
             } else {

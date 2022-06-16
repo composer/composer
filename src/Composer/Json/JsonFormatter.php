@@ -49,7 +49,7 @@ class JsonFormatter
         $buffer = '';
         $noescape = true;
 
-        for ($i = 0; $i < $strLen; $i++) {
+        for ($i = 0; $i < $strLen; ++$i) {
             // Grab the next character in the string
             $char = substr($json, $i, 1);
 
@@ -101,7 +101,7 @@ class JsonFormatter
                 // Add a space after the : character
                 $char .= ' ';
             } elseif ('}' === $char || ']' === $char) {
-                $pos--;
+                --$pos;
                 $prevChar = substr($json, $i - 1, 1);
 
                 if ('{' !== $prevChar && '[' !== $prevChar) {
@@ -123,7 +123,7 @@ class JsonFormatter
                 $result .= $newLine;
 
                 if ('{' === $char || '[' === $char) {
-                    $pos++;
+                    ++$pos;
                 }
 
                 $result .= str_repeat($indentStr, $pos);

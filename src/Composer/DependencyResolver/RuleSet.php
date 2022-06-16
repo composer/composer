@@ -91,7 +91,7 @@ class RuleSet implements \IteratorAggregate, \Countable
         $this->ruleById[$this->nextRuleId] = $rule;
         $rule->setType($type);
 
-        $this->nextRuleId++;
+        ++$this->nextRuleId;
 
         if (!isset($this->rulesByHash[$hash])) {
             $this->rulesByHash[$hash] = $rule;

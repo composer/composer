@@ -88,7 +88,7 @@ trait CompletionTrait
                             if (str_starts_with($pkg->getName(), $hintPrefix)) {
                                 if ($hintCount === 0 || $hintCount >= 99) {
                                     $platformHint[] = $pkg->getName();
-                                    $hintsToFind[$hintPrefix]++;
+                                    ++$hintsToFind[$hintPrefix];
                                 } elseif ($hintCount === 1) {
                                     unset($hintsToFind[$hintPrefix]);
                                     $platformHint[] = substr($pkg->getName(), 0, max(strlen($pkg->getName()) - 3, strlen($hintPrefix) + 1)).'...';

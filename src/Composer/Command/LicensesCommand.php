@@ -129,7 +129,7 @@ EOT
                         if (!isset($usedLicenses[$licenseName])) {
                             $usedLicenses[$licenseName] = 0;
                         }
-                        $usedLicenses[$licenseName]++;
+                        ++$usedLicenses[$licenseName];
                     }
                 }
 

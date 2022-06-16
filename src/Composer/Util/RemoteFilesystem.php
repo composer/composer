@@ -671,7 +671,7 @@ class RemoteFilesystem
         }
 
         if (!empty($targetUrl)) {
-            $this->redirects++;
+            ++$this->redirects;
 
             $this->io->writeError('', true, IOInterface::DEBUG);
             $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, Url::sanitize($targetUrl)), true, IOInterface::DEBUG);

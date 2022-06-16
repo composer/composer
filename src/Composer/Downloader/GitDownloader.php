@@ -265,7 +265,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $branchNotFoundError = false;
 
         // do two passes, as if we find anything we want to fetch and then re-try
-        for ($i = 0; $i <= 1; $i++) {
+        for ($i = 0; $i <= 1; ++$i) {
             $remoteBranches = array();
 
             // try to find matching branch names in remote repos

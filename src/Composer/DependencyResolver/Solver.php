@@ -91,7 +91,7 @@ class Solver
         $decisionStart = \count($this->decisions) - 1;
 
         $rulesCount = \count($this->rules);
-        for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
+        for ($ruleIndex = 0; $ruleIndex < $rulesCount; ++$ruleIndex) {
             $rule = $this->rules->ruleById[$ruleIndex];
 
             if (!$rule->isAssertion() || $rule->isDisabled()) {
@@ -244,7 +244,7 @@ class Solver
                 $this->decisions
             );
 
-            $this->propagateIndex++;
+            ++$this->propagateIndex;
 
             if ($conflict) {
                 return $conflict;
@@ -304,7 +304,7 @@ class Solver
      */
     private function setPropagateLearn(int $level, $literal, Rule $rule): int
     {
-        $level++;
+        ++$level;
 
         $this->decisions->decide($literal, $level, $rule);
 
@@ -405,9 +405,9 @@ class Solver
                 $l = $this->decisions->decisionLevel($literal);
 
                 if (1 === $l) {
-                    $l1num++;
+                    ++$l1num;
                 } elseif ($level === $l) {
-                    $num++;
+                    ++$num;
                 } else {
                     // not level1 or conflict level, add to new rule
                     $learnedLiterals[] = $literal;
@@ -435,7 +435,7 @@ class Solver
                         );
                     }
 
-                    $decisionId--;
+                    --$decisionId;
 
                     $decision = $this->decisions->atOffset($decisionId);
                     $literal = $decision[Decisions::DECISION_LITERAL];
@@ -463,7 +463,7 @@ class Solver
                         }
                     }
                     // only level 1 marks left
-                    $l1num++;
+                    ++$l1num;
                     $l1retry = true;
                 } else {
                     $decision = $this->decisions->atOffset($decisionId);
@@ -476,9 +476,9 @@ class Solver
                                 $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
                                 $l = $this->decisions->decisionLevel($literal);
                                 if (1 === $l) {
-                                    $l1num++;
+                                    ++$l1num;
                                 } elseif ($level === $l) {
-                                    $num++;
+                                    ++$num;
                                 } else {
                                     // not level1 or conflict level, add to new rule
                                     $learnedLiterals[] = $literal;
@@ -731,7 +731,7 @@ class Solver
                     }
 
                     $i = 0;
-                    $pass++;
+                    ++$pass;
                 }
 
                 $rule = $this->rules->ruleById[$i];
@@ -791,7 +791,7 @@ class Solver
                 $lastBranchIndex = 0;
                 $lastBranchOffset = 0;
 
-                for ($i = \count($this->branches) - 1; $i >= 0; $i--) {
+                for ($i = \count($this->branches) - 1; $i >= 0; --$i) {
                     list($literals, $l) = $this->branches[$i];
 
                     foreach ($literals as $offset => $literal) {

@@ -241,7 +241,7 @@ class ProcessExecutor
 
         // start job
         $job['status'] = self::STATUS_STARTED;
-        $this->runningJobs++;
+        ++$this->runningJobs;
 
         $command = $job['command'];
         $cwd = $job['cwd'];
@@ -338,7 +338,7 @@ class ProcessExecutor
         $active = 0;
         foreach ($this->jobs as $job) {
             if ($job['status'] < self::STATUS_COMPLETED) {
-                $active++;
+                ++$active;
             } else {
                 unset($this->jobs[$job['id']]);
             }
@@ -349,7 +349,7 @@ class ProcessExecutor
 
     private function markJobDone(): void
     {
-        $this->runningJobs--;
+        --$this->runningJobs;
     }
 
     /**

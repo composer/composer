@@ -179,7 +179,7 @@ class FilesystemRepository extends WritableArrayRepository
     private function dumpToPhpCode(array $array = array(), int $level = 0): string
     {
         $lines = "array(\n";
-        $level++;
+        ++$level;
 
         foreach ($array as $key => $value) {
             $lines .= str_repeat('    ', $level);

@@ -298,7 +298,7 @@ class HttpDownloader
 
         // start job
         $job['status'] = self::STATUS_STARTED;
-        $this->runningJobs++;
+        ++$this->runningJobs;
 
         $resolve = $job['resolve'];
         $reject = $job['reject'];
@@ -331,7 +331,7 @@ class HttpDownloader
 
     private function markJobDone(): void
     {
-        $this->runningJobs--;
+        --$this->runningJobs;
     }
 
     /**
@@ -385,7 +385,7 @@ class HttpDownloader
         $active = 0;
         foreach ($this->jobs as $job) {
             if ($job['status'] < self::STATUS_COMPLETED) {
-                $active++;
+                ++$active;
             } elseif (!$job['sync']) {
                 unset($this->jobs[$job['id']]);
             }
