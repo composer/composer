@@ -68,7 +68,7 @@ class AliasPackage extends BasePackage
 
         foreach (Link::$TYPES as $type) {
             $links = $aliasOf->{'get' . ucfirst($type)}();
-            $this->$type = $this->replaceSelfVersionDependencies($links, $type);
+            $this->{$type} = $this->replaceSelfVersionDependencies($links, $type);
         }
     }
 

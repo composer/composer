@@ -141,7 +141,7 @@ class RootPackageLoader extends ArrayLoader
                 $linkInfo = BasePackage::$supportedLinkTypes[$linkType];
                 $method = 'get'.ucfirst($linkInfo['method']);
                 $links = array();
-                foreach ($realPackage->$method() as $link) {
+                foreach ($realPackage->{$method}() as $link) {
                     $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
                 }
                 $aliases = $this->extractAliases($links, $aliases);

@@ -156,7 +156,7 @@ class ArrayDumper
             }
 
             $getter = 'get'.ucfirst($method);
-            $value = $package->$getter();
+            $value = $package->{$getter}();
 
             if (null !== $value && !(\is_array($value) && 0 === \count($value))) {
                 $data[$key] = $value;

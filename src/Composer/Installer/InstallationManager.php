@@ -414,7 +414,7 @@ class InstallationManager
                 if ($this->io->isDebug()) {
                     $this->io->writeError('  - ' . $operation->show(false));
                 }
-                $this->$opType($repo, $operation);
+                $this->{$opType}($repo, $operation);
 
                 continue;
             }
@@ -449,7 +449,7 @@ class InstallationManager
             }
 
             $promise = $promise->then(function () use ($opType, $repo, $operation) {
-                return $this->$opType($repo, $operation);
+                return $this->{$opType}($repo, $operation);
             })->then($cleanupPromises[$index])
             ->then(function () use ($devMode, $repo): void {
                 $repo->write($devMode, $this);
