@@ -101,7 +101,7 @@ class Problem
             }
 
             if (empty($packages)) {
-                return "\n    ".implode(self::getMissingPackageReason($repositorySet, $request, $pool, $isVerbose, $packageName, $constraint));
+                return "\n    ".implode('', self::getMissingPackageReason($repositorySet, $request, $pool, $isVerbose, $packageName, $constraint));
             }
         }
 
@@ -370,7 +370,7 @@ class Problem
 
         if ($providers = $repositorySet->getProviders($packageName)) {
             $maxProviders = 20;
-            $providersStr = implode(array_map(function ($p): string {
+            $providersStr = implode('', array_map(function ($p): string {
                 $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
 
                 return '      - '.$p['name'].$description."\n";
