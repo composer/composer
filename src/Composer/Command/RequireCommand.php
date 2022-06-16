@@ -250,7 +250,7 @@ EOT
                         return 0;
                     }
 
-                    list($requireKey, $removeKey) = array($removeKey, $requireKey);
+                    [$requireKey, $removeKey] = array($removeKey, $requireKey);
                 }
             }
         }
@@ -398,7 +398,7 @@ EOT
 
         $install = Installer::create($io, $composer);
 
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($composer->getConfig(), $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($composer->getConfig(), $input);
 
         $install
             ->setDryRun($input->getOption('dry-run'))

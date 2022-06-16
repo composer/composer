@@ -175,7 +175,7 @@ class FossilDriver extends VcsDriver
     public function getChangeDate(string $identifier): ?\DateTimeImmutable
     {
         $this->process->execute('fossil finfo -b -n 1 composer.json', $output, $this->checkoutDir);
-        list(, $date) = explode(' ', trim($output), 3);
+        [, $date] = explode(' ', trim($output), 3);
 
         return new \DateTimeImmutable($date, new \DateTimeZone('UTC'));
     }

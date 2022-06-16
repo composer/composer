@@ -92,7 +92,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         // Get the transport options with default values
         $transportOptions = $package->getTransportOptions() + array('relative' => true);
 
-        list($currentStrategy, $allowedStrategies) = $this->computeAllowedStrategies($transportOptions);
+        [$currentStrategy, $allowedStrategies] = $this->computeAllowedStrategies($transportOptions);
 
         $symfonyFilesystem = new SymfonyFilesystem();
         $this->filesystem->removeDirectory($path);
@@ -232,7 +232,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             return ': Source already present';
         }
 
-        list($currentStrategy) = $this->computeAllowedStrategies($package->getTransportOptions());
+        [$currentStrategy] = $this->computeAllowedStrategies($package->getTransportOptions());
 
         if ($currentStrategy === self::STRATEGY_SYMLINK) {
             if (Platform::isWindows()) {

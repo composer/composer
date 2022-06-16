@@ -275,7 +275,7 @@ EOT
         if (isset($package)) {
             $versions = array($package->getPrettyVersion() => $package->getVersion());
         } elseif (null !== $packageFilter && !str_contains($packageFilter, '*')) {
-            list($package, $versions) = $this->getPackage($installedRepo, $repos, $packageFilter, $input->getArgument('version'));
+            [$package, $versions] = $this->getPackage($installedRepo, $repos, $packageFilter, $input->getArgument('version'));
 
             if (!isset($package)) {
                 $options = $input->getOptions();
@@ -1274,7 +1274,7 @@ EOT
         array $packagesInTree
     ): array {
         $children = array();
-        list($package) = $this->getPackage(
+        [$package] = $this->getPackage(
             $installedRepo,
             $remoteRepos,
             $name,

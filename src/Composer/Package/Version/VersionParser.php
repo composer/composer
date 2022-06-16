@@ -60,7 +60,7 @@ class VersionParser extends SemverVersionParser
             }
 
             if (strpos($pair, ' ')) {
-                list($name, $version) = explode(' ', $pair, 2);
+                [$name, $version] = explode(' ', $pair, 2);
                 $result[] = array('name' => $name, 'version' => $version);
             } else {
                 $result[] = array('name' => $pair);

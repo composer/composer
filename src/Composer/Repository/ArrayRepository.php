@@ -159,7 +159,7 @@ class ArrayRepository implements RepositoryInterface
         foreach ($this->getPackages() as $package) {
             $name = $package->getName();
             if ($mode === self::SEARCH_VENDOR) {
-                list($name) = explode('/', $name);
+                [$name] = explode('/', $name);
             }
             if (isset($matches[$name])) {
                 continue;

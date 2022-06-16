@@ -136,7 +136,7 @@ class ProxyManager
     private function initProxyData(): void
     {
         try {
-            list($httpProxy, $httpsProxy, $noProxy) = ProxyHelper::getProxyData();
+            [$httpProxy, $httpsProxy, $noProxy] = ProxyHelper::getProxyData();
         } catch (\RuntimeException $e) {
             $this->error = $e->getMessage();
 

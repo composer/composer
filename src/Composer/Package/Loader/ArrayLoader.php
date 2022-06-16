@@ -346,7 +346,7 @@ class ArrayLoader implements LoaderInterface
                             $linkCache[$name][$type][$target][$constraint] = array($target, $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint));
                         }
 
-                        list($target, $link) = $linkCache[$name][$type][$target][$constraint];
+                        [$target, $link] = $linkCache[$name][$type][$target][$constraint];
                         $links[$target] = $link;
                     }
                 }

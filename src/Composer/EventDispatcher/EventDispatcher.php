@@ -276,7 +276,7 @@ class EventDispatcher
                         if (false === strpos($exec, '=')) {
                             Platform::clearEnv(substr($exec, 8));
                         } else {
-                            list($var, $value) = explode('=', substr($exec, 8), 2);
+                            [$var, $value] = explode('=', substr($exec, 8), 2);
                             Platform::putEnv($var, $value);
                         }
 

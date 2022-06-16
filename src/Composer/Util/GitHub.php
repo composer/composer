@@ -157,7 +157,7 @@ class GitHub
             if (false === strpos($header, 'X-RateLimit-')) {
                 continue;
             }
-            list($type, $value) = explode(':', $header, 2);
+            [$type, $value] = explode(':', $header, 2);
             switch ($type) {
                 case 'X-RateLimit-Limit':
                     $rateLimit['limit'] = (int) trim($value);

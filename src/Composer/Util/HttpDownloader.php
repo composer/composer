@@ -105,7 +105,7 @@ class HttpDownloader
      */
     public function get(string $url, array $options = array())
     {
-        list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null), true);
+        [$job] = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null), true);
         $this->wait($job['id']);
 
         $response = $this->getResponse($job['id']);
@@ -124,7 +124,7 @@ class HttpDownloader
      */
     public function add(string $url, array $options = array())
     {
-        list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null));
+        [, $promise] = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null));
 
         return $promise;
     }
@@ -141,7 +141,7 @@ class HttpDownloader
      */
     public function copy(string $url, string $to, array $options = array())
     {
-        list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to), true);
+        [$job] = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to), true);
         $this->wait($job['id']);
 
         return $this->getResponse($job['id']);
@@ -159,7 +159,7 @@ class HttpDownloader
      */
     public function addCopy(string $url, string $to, array $options = array())
     {
-        list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to));
+        [, $promise] = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to));
 
         return $promise;
     }

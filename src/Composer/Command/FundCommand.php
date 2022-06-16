@@ -137,7 +137,7 @@ class FundCommand extends BaseCommand
     private function insertFundingData(array $fundings, CompletePackageInterface $package): array
     {
         foreach ($package->getFunding() as $fundingOption) {
-            list($vendor, $packageName) = explode('/', $package->getPrettyName());
+            [$vendor, $packageName] = explode('/', $package->getPrettyName());
             // ignore malformed funding entries
             if (empty($fundingOption['url'])) {
                 continue;

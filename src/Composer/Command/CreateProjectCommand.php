@@ -129,7 +129,7 @@ EOT
         $config = Factory::createConfig();
         $io = $this->getIO();
 
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input, true);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($config, $input, true);
 
         if ($input->getOption('dev')) {
             $io->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
@@ -245,7 +245,7 @@ EOT
 
         // use the new config including the newly installed project
         $config = $composer->getConfig();
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($config, $input);
 
         // install dependencies of the created project
         if ($noInstall === false) {

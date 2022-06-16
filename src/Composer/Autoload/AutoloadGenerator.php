@@ -644,7 +644,7 @@ EOF;
         $includePaths = array();
 
         foreach ($packageMap as $item) {
-            list($package, $installPath) = $item;
+            [$package, $installPath] = $item;
 
             if (null !== $package->getTargetDir() && strlen($package->getTargetDir()) > 0) {
                 $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
@@ -1199,7 +1199,7 @@ INITIALIZER;
         $autoloads = array();
 
         foreach ($packageMap as $item) {
-            list($package, $installPath) = $item;
+            [$package, $installPath] = $item;
 
             $autoload = $package->getAutoload();
             if ($this->devMode && $package === $rootPackage) {
@@ -1357,7 +1357,7 @@ INITIALIZER;
         $paths = array();
 
         foreach ($packageMap as $item) {
-            list($package, $path) = $item;
+            [$package, $path] = $item;
             $name = $package->getName();
             $packages[$name] = $package;
             $paths[$name] = $path;

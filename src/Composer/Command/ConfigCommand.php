@@ -545,7 +545,7 @@ EOT
                 return 0;
             }
 
-            list($validator) = $uniqueConfigValues['preferred-install'];
+            [$validator] = $uniqueConfigValues['preferred-install'];
             if (!$validator($values[0])) {
                 throw new \RuntimeException('Invalid value for '.$settingKey.'. Should be one of: auto, source, or dist');
             }
@@ -821,7 +821,7 @@ EOT
      */
     protected function handleSingleValue(string $key, array $callbacks, array $values, string $method): void
     {
-        list($validator, $normalizer) = $callbacks;
+        [$validator, $normalizer] = $callbacks;
         if (1 !== count($values)) {
             throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
         }
@@ -856,7 +856,7 @@ EOT
      */
     protected function handleMultiValue(string $key, array $callbacks, array $values, string $method): void
     {
-        list($validator, $normalizer) = $callbacks;
+        [$validator, $normalizer] = $callbacks;
         if (true !== $validation = $validator($values)) {
             throw new \RuntimeException(sprintf(
                 '%s is an invalid value'.($validation ? ' ('.$validation.')' : ''),

@@ -212,7 +212,7 @@ class Git
                 }
             } elseif ($this->isAuthenticationFailure($url, $match)) { // private non-github/gitlab/bitbucket repo that failed to authenticate
                 if (strpos($match[2], '@')) {
-                    list($authParts, $match[2]) = explode('@', $match[2], 2);
+                    [$authParts, $match[2]] = explode('@', $match[2], 2);
                 }
 
                 $storeAuth = false;
@@ -222,7 +222,7 @@ class Git
                     $defaultUsername = null;
                     if (isset($authParts) && $authParts) {
                         if (false !== strpos($authParts, ':')) {
-                            list($defaultUsername, ) = explode(':', $authParts, 2);
+                            [$defaultUsername, ] = explode(':', $authParts, 2);
                         } else {
                             $defaultUsername = $authParts;
                         }

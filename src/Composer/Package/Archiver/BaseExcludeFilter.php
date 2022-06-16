@@ -52,7 +52,7 @@ abstract class BaseExcludeFilter
     public function filter(string $relativePath, bool $exclude): bool
     {
         foreach ($this->excludePatterns as $patternData) {
-            list($pattern, $negate, $stripLeadingSlash) = $patternData;
+            [$pattern, $negate, $stripLeadingSlash] = $patternData;
 
             if ($stripLeadingSlash) {
                 $path = substr($relativePath, 1);

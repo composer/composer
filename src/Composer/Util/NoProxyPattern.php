@@ -97,7 +97,7 @@ class NoProxyPattern
         }
 
         $hostName = $host . ($port ? ':' . $port : '');
-        list($host, $port, $err) = $this->splitHostPort($hostName);
+        [$host, $port, $err] = $this->splitHostPort($hostName);
 
         if ($err || !$this->ipCheckData($host, $ipdata)) {
             return false;
@@ -193,7 +193,7 @@ class NoProxyPattern
         }
 
         $this->rules[$index] = null;
-        list($host, $port, $err) = $this->splitHostPort($hostName);
+        [$host, $port, $err] = $this->splitHostPort($hostName);
 
         if ($err || !$this->ipCheckData($host, $ipdata, true)) {
             return null;
@@ -222,7 +222,7 @@ class NoProxyPattern
 
         // Check for a CIDR prefix-length
         if (strpos($host, '/') !== false) {
-            list($host, $prefix) = explode('/', $host);
+            [$host, $prefix] = explode('/', $host);
 
             if (!$allowPrefix || !$this->validateInt($prefix, 0, 128)) {
                 return false;
@@ -236,7 +236,7 @@ class NoProxyPattern
             return !$modified;
         }
 
-        list($ip, $size) = $this->ipGetAddr($host);
+        [$ip, $size] = $this->ipGetAddr($host);
 
         if ($prefix !== null) {
             // Check for a valid prefix
@@ -244,7 +244,7 @@ class NoProxyPattern
                 return false;
             }
 
-            list($ip, $netmask) = $this->ipGetNetwork($ip, $size, $prefix);
+            [$ip, $netmask] = $this->ipGetNetwork($ip, $size, $prefix);
         }
 
         $ipdata = $this->makeIpData($ip, $size, $netmask);

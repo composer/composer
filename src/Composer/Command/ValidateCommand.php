@@ -89,7 +89,7 @@ EOT
         $checkLock = !$input->getOption('no-check-lock');
         $checkVersion = $input->getOption('no-check-version') ? 0 : ConfigValidator::CHECK_VERSION;
         $isStrict = $input->getOption('strict');
-        list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll, $checkVersion);
+        [$errors, $publishErrors, $warnings] = $validator->validate($file, $checkAll, $checkVersion);
 
         $lockErrors = array();
         $composer = Factory::create($io, $file, $input->hasParameterOption('--no-plugins'));
@@ -143,7 +143,7 @@ EOT
                 $path = $composer->getInstallationManager()->getInstallPath($package);
                 $file = $path . '/composer.json';
                 if (is_dir($path) && file_exists($file)) {
-                    list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll, $checkVersion);
+                    [$errors, $publishErrors, $warnings] = $validator->validate($file, $checkAll, $checkVersion);
 
                     $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors);
 

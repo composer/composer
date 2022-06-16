@@ -259,7 +259,7 @@ class JsonManipulator
 
         $subName = null;
         if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
-            list($name, $subName) = explode('.', $name, 2);
+            [$name, $subName] = explode('.', $name, 2);
         }
 
         // no main node yet
@@ -395,7 +395,7 @@ class JsonManipulator
 
         $subName = null;
         if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
-            list($name, $subName) = explode('.', $name, 2);
+            [$name, $subName] = explode('.', $name, 2);
         }
 
         // no node to remove

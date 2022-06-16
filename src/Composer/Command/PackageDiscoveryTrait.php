@@ -99,7 +99,7 @@ trait PackageDiscoveryTrait
             foreach ($requires as $requirement) {
                 if (!isset($requirement['version'])) {
                     // determine the best version automatically
-                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $platformRepo, $preferredStability, $fixed);
+                    [$name, $version] = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $platformRepo, $preferredStability, $fixed);
                     $requirement['version'] = $version;
 
                     // replace package name from packagist.org
@@ -238,7 +238,7 @@ trait PackageDiscoveryTrait
                     );
 
                     if (false === $constraint) {
-                        list(, $constraint) = $this->findBestVersionAndNameForPackage($input, $package, $platformRepo, $preferredStability);
+                        [, $constraint] = $this->findBestVersionAndNameForPackage($input, $package, $platformRepo, $preferredStability);
 
                         $io->writeError(sprintf(
                             'Using version <info>%s</info> for <info>%s</info>',

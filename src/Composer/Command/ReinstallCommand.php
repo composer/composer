@@ -134,7 +134,7 @@ EOT
         $eventDispatcher->dispatch($commandEvent->getName(), $commandEvent);
 
         $config = $composer->getConfig();
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($config, $input);
 
         $installationManager = $composer->getInstallationManager();
         $downloadManager = $composer->getDownloadManager();

@@ -66,7 +66,7 @@ abstract class BaseDependencyCommand extends BaseCommand
         ));
 
         // Parse package name and constraint
-        list($needle, $textConstraint) = array_pad(
+        [$needle, $textConstraint] = array_pad(
             explode(':', $input->getArgument(self::ARGUMENT_PACKAGE)),
             2,
             $input->hasArgument(self::ARGUMENT_CONSTRAINT) ? $input->getArgument(self::ARGUMENT_CONSTRAINT) : '*'
@@ -149,7 +149,7 @@ abstract class BaseDependencyCommand extends BaseCommand
                  * @var PackageInterface $package
                  * @var Link             $link
                  */
-                list($package, $link, $children) = $result;
+                [$package, $link, $children] = $result;
                 $unique = (string) $link;
                 if (isset($doubles[$unique])) {
                     continue;
@@ -203,7 +203,7 @@ abstract class BaseDependencyCommand extends BaseCommand
         $count = count($results);
         $idx = 0;
         foreach ($results as $result) {
-            list($package, $link, $children) = $result;
+            [$package, $link, $children] = $result;
 
             $color = $this->colors[$level % count($this->colors)];
             $prevColor = $this->colors[($level - 1) % count($this->colors)];
