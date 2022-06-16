@@ -459,7 +459,7 @@ class PoolOptimizer
      * @param ConstraintInterface $constraint
      * @return void
      */
-    private function extractRequireConstraintsPerPackage($package, ConstraintInterface $constraint)
+    private function extractRequireConstraintsPerPackage($package, ConstraintInterface $constraint): void
     {
         foreach ($this->expandDisjunctiveMultiConstraints($constraint) as $expanded) {
             $this->requireConstraintsPerPackage[$package][(string) $expanded] = $expanded;
@@ -475,7 +475,7 @@ class PoolOptimizer
      * @param ConstraintInterface $constraint
      * @return void
      */
-    private function extractConflictConstraintsPerPackage($package, ConstraintInterface $constraint)
+    private function extractConflictConstraintsPerPackage($package, ConstraintInterface $constraint): void
     {
         foreach ($this->expandDisjunctiveMultiConstraints($constraint) as $expanded) {
             $this->conflictConstraintsPerPackage[$package][(string) $expanded] = $expanded;

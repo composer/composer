@@ -62,7 +62,7 @@ class RequireCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('require')
@@ -146,9 +146,9 @@ EOT
 
         if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
             pcntl_async_signals(true);
-            pcntl_signal(SIGINT, function () { $this->revertComposerFile(); });
-            pcntl_signal(SIGTERM, function () { $this->revertComposerFile(); });
-            pcntl_signal(SIGHUP, function () { $this->revertComposerFile(); });
+            pcntl_signal(SIGINT, function (): void { $this->revertComposerFile(); });
+            pcntl_signal(SIGTERM, function (): void { $this->revertComposerFile(); });
+            pcntl_signal(SIGHUP, function (): void { $this->revertComposerFile(); });
         }
 
         // check for writability by writing to the file as is_writable can not be trusted on network-mounts

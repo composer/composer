@@ -93,7 +93,7 @@ abstract class ArchiveDownloader extends FileDownloader
 
         $filesystem = $this->filesystem;
 
-        $cleanup = function () use ($path, $filesystem, $temporaryDir, $package) {
+        $cleanup = function () use ($path, $filesystem, $temporaryDir, $package): void {
             // remove cache if the file was corrupted
             $this->clearLastCacheWrite($package);
 
@@ -146,7 +146,7 @@ abstract class ArchiveDownloader extends FileDownloader
              * @param  string $to   Directory
              * @return void
              */
-            $renameRecursively = function ($from, $to) use ($filesystem, $getFolderContent, $package, &$renameRecursively) {
+            $renameRecursively = function ($from, $to) use ($filesystem, $getFolderContent, $package, &$renameRecursively): void {
                 $contentDir = $getFolderContent($from);
 
                 // move files back out of the temp dir
@@ -199,11 +199,11 @@ abstract class ArchiveDownloader extends FileDownloader
 
             $promise = $filesystem->removeDirectoryAsync($temporaryDir);
 
-            return $promise->then(function () use ($package, $path, $temporaryDir) {
+            return $promise->then(function () use ($package, $path, $temporaryDir): void {
                 $this->removeCleanupPath($package, $temporaryDir);
                 $this->removeCleanupPath($package, $path);
             });
-        }, function ($e) use ($cleanup) {
+        }, function ($e) use ($cleanup): void {
             $cleanup();
 
             throw $e;

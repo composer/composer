@@ -66,7 +66,7 @@ class Cache
      *
      * @return void
      */
-    public function setReadOnly(bool $readOnly)
+    public function setReadOnly(bool $readOnly): void
     {
         $this->readOnly = (bool) $readOnly;
     }

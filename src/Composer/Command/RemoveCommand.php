@@ -37,7 +37,7 @@ class RemoveCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('remove')
@@ -78,7 +78,7 @@ EOT
     /**
      * @return void
      */
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         if ($input->getOption('unused')) {
             $composer = $this->requireComposer();

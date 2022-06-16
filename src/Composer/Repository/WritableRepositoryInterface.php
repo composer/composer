@@ -28,7 +28,7 @@ interface WritableRepositoryInterface extends RepositoryInterface
      * @param bool $devMode Whether dev requirements were included or not in this installation
      * @return void
      */
-    public function write(bool $devMode, InstallationManager $installationManager);
+    public function write(bool $devMode, InstallationManager $installationManager): void;
 
     /**
      * Adds package to the repository.
@@ -36,7 +36,7 @@ interface WritableRepositoryInterface extends RepositoryInterface
      * @param PackageInterface $package package instance
      * @return void
      */
-    public function addPackage(PackageInterface $package);
+    public function addPackage(PackageInterface $package): void;
 
     /**
      * Removes package from the repository.
@@ -44,7 +44,7 @@ interface WritableRepositoryInterface extends RepositoryInterface
      * @param PackageInterface $package package instance
      * @return void
      */
-    public function removePackage(PackageInterface $package);
+    public function removePackage(PackageInterface $package): void;
 
     /**
      * Get unique packages (at most one package of each name), with aliases resolved and removed.
@@ -58,13 +58,13 @@ interface WritableRepositoryInterface extends RepositoryInterface
      *
      * @return void
      */
-    public function reload();
+    public function reload(): void;
 
     /**
      * @param string[] $devPackageNames
      * @return void
      */
-    public function setDevPackageNames(array $devPackageNames);
+    public function setDevPackageNames(array $devPackageNames): void;
 
     /**
      * @return string[] Names of dependencies installed through require-dev

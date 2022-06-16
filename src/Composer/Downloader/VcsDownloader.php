@@ -228,7 +228,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
 
         $promise = $this->filesystem->removeDirectoryAsync($path);
 
-        return $promise->then(function (bool $result) use ($path) {
+        return $promise->then(function (bool $result) use ($path): void {
             if (!$result) {
                 throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
             }

@@ -188,7 +188,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         return $this->versionTransportExceptions;
     }
 
-    protected function initialize()
+    protected function initialize(): void
     {
         parent::initialize();
 

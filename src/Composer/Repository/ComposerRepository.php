@@ -840,7 +840,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * @inheritDoc
      */
-    protected function initialize()
+    protected function initialize(): void
     {
         parent::initialize();
 
@@ -856,7 +856,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      *
      * @param PackageInterface $package
      */
-    public function addPackage(PackageInterface $package)
+    public function addPackage(PackageInterface $package): void
     {
         parent::addPackage($package);
         $this->configurePackageTransportOptions($package);

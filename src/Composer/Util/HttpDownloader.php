@@ -180,7 +180,7 @@ class HttpDownloader
      * @param  mixed[] $options
      * @return void
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = array_replace_recursive($this->options, $options);
     }
@@ -341,7 +341,7 @@ class HttpDownloader
      *
      * @return void
      */
-    public function wait(?int $index = null)
+    public function wait(?int $index = null): void
     {
         do {
             $jobCount = $this->countActiveJobs($index);

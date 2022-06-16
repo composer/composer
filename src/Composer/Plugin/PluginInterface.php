@@ -42,7 +42,7 @@ interface PluginInterface
      *
      * @return void
      */
-    public function activate(Composer $composer, IOInterface $io);
+    public function activate(Composer $composer, IOInterface $io): void;
 
     /**
      * Remove any hooks from Composer
@@ -56,7 +56,7 @@ interface PluginInterface
      *
      * @return void
      */
-    public function deactivate(Composer $composer, IOInterface $io);
+    public function deactivate(Composer $composer, IOInterface $io): void;
 
     /**
      * Prepare the plugin to be uninstalled
@@ -68,5 +68,5 @@ interface PluginInterface
      *
      * @return void
      */
-    public function uninstall(Composer $composer, IOInterface $io);
+    public function uninstall(Composer $composer, IOInterface $io): void;
 }

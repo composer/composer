@@ -61,7 +61,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         return $this->repoConfig;
     }
 
-    protected function initialize()
+    protected function initialize(): void
     {
         parent::initialize();
 

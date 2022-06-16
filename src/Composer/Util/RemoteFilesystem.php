@@ -142,7 +142,7 @@ class RemoteFilesystem
      * @param  mixed[] $options
      * @return void
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = array_replace_recursive($this->options, $options);
     }
@@ -554,7 +554,7 @@ class RemoteFilesystem
      *
      * @throws TransportException
      */
-    protected function callbackGet(int $notificationCode, int $severity, ?string $message, int $messageCode, int $bytesTransferred, int $bytesMax)
+    protected function callbackGet(int $notificationCode, int $severity, ?string $message, int $messageCode, int $bytesTransferred, int $bytesMax): void
     {
         switch ($notificationCode) {
             case STREAM_NOTIFY_FAILURE:
@@ -592,7 +592,7 @@ class RemoteFilesystem
      *
      * @return void
      */
-    protected function promptAuthAndRetry($httpStatus, ?string $reason = null, array $headers = array())
+    protected function promptAuthAndRetry($httpStatus, ?string $reason = null, array $headers = array()): void
     {
         $result = $this->authHelper->promptAuthIfNeeded($this->fileUrl, $this->originUrl, $httpStatus, $reason, $headers, 1 /** always pass 1 as RemoteFilesystem is single threaded there is no race condition possible */);
 

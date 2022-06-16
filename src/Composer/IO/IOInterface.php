@@ -72,7 +72,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function write($messages, bool $newline = true, int $verbosity = self::NORMAL);
+    public function write($messages, bool $newline = true, int $verbosity = self::NORMAL): void;
 
     /**
      * Writes a message to the error output.
@@ -83,7 +83,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function writeError($messages, bool $newline = true, int $verbosity = self::NORMAL);
+    public function writeError($messages, bool $newline = true, int $verbosity = self::NORMAL): void;
 
     /**
      * Writes a message to the output, without formatting it.
@@ -94,7 +94,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function writeRaw($messages, bool $newline = true, int $verbosity = self::NORMAL);
+    public function writeRaw($messages, bool $newline = true, int $verbosity = self::NORMAL): void;
 
     /**
      * Writes a message to the error output, without formatting it.
@@ -105,7 +105,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function writeErrorRaw($messages, bool $newline = true, int $verbosity = self::NORMAL);
+    public function writeErrorRaw($messages, bool $newline = true, int $verbosity = self::NORMAL): void;
 
     /**
      * Overwrites a previous message to the output.
@@ -117,7 +117,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function overwrite($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL);
+    public function overwrite($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL): void;
 
     /**
      * Overwrites a previous message to the error output.
@@ -129,7 +129,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function overwriteError($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL);
+    public function overwriteError($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL): void;
 
     /**
      * Asks a question to the user.
@@ -229,7 +229,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function setAuthentication(string $repositoryName, string $username, ?string $password = null);
+    public function setAuthentication(string $repositoryName, string $username, ?string $password = null): void;
 
     /**
      * Loads authentications from a config instance
@@ -238,5 +238,5 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function loadConfiguration(Config $config);
+    public function loadConfiguration(Config $config): void;
 }

@@ -129,7 +129,7 @@ class JsonFile
      * @throws \UnexpectedValueException|\Exception
      * @return void
      */
-    public function write(array $hash, int $options = JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+    public function write(array $hash, int $options = JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE): void
     {
         if ($this->path === 'php://memory') {
             file_put_contents($this->path, static::encode($hash, $options));

@@ -71,7 +71,7 @@ class ConsoleIO extends BaseIO
      *
      * @return void
      */
-    public function enableDebugging(float $startTime)
+    public function enableDebugging(float $startTime): void
     {
         $this->startTime = $startTime;
     }
@@ -119,7 +119,7 @@ class ConsoleIO extends BaseIO
     /**
      * @inheritDoc
      */
-    public function write($messages, bool $newline = true, int $verbosity = self::NORMAL)
+    public function write($messages, bool $newline = true, int $verbosity = self::NORMAL): void
     {
         $this->doWrite($messages, $newline, false, $verbosity);
     }
@@ -127,7 +127,7 @@ class ConsoleIO extends BaseIO
     /**
      * @inheritDoc
      */
-    public function writeError($messages, bool $newline = true, int $verbosity = self::NORMAL)
+    public function writeError($messages, bool $newline = true, int $verbosity = self::NORMAL): void
     {
         $this->doWrite($messages, $newline, true, $verbosity);
     }
@@ -135,7 +135,7 @@ class ConsoleIO extends BaseIO
     /**
      * @inheritDoc
      */
-    public function writeRaw($messages, bool $newline = true, int $verbosity = self::NORMAL)
+    public function writeRaw($messages, bool $newline = true, int $verbosity = self::NORMAL): void
     {
         $this->doWrite($messages, $newline, false, $verbosity, true);
     }
@@ -143,7 +143,7 @@ class ConsoleIO extends BaseIO
     /**
      * @inheritDoc
      */
-    public function writeErrorRaw($messages, bool $newline = true, int $verbosity = self::NORMAL)
+    public function writeErrorRaw($messages, bool $newline = true, int $verbosity = self::NORMAL): void
     {
         $this->doWrite($messages, $newline, true, $verbosity, true);
     }
@@ -194,7 +194,7 @@ class ConsoleIO extends BaseIO
     /**
      * @inheritDoc
      */
-    public function overwrite($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL)
+    public function overwrite($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL): void
     {
         $this->doOverwrite($messages, $newline, $size, false, $verbosity);
     }
@@ -202,7 +202,7 @@ class ConsoleIO extends BaseIO
     /**
      * @inheritDoc
      */
-    public function overwriteError($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL)
+    public function overwriteError($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL): void
     {
         $this->doOverwrite($messages, $newline, $size, true, $verbosity);
     }

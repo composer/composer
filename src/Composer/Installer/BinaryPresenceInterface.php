@@ -28,5 +28,5 @@ interface BinaryPresenceInterface
      *
      * @return void
      */
-    public function ensureBinariesPresence(PackageInterface $package);
+    public function ensureBinariesPresence(PackageInterface $package): void;
 }

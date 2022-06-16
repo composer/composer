@@ -48,7 +48,7 @@ class InitCommand extends BaseCommand
      *
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('init')
@@ -215,7 +215,7 @@ EOT
      *
      * @return void
      */
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $git = $this->getGitConfig();
         $io = $this->getIO();

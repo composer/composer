@@ -72,7 +72,7 @@ class FilesystemRepository extends WritableArrayRepository
     /**
      * Initializes repository (reads file, or remote address).
      */
-    protected function initialize()
+    protected function initialize(): void
     {
         parent::initialize();
 
@@ -109,7 +109,7 @@ class FilesystemRepository extends WritableArrayRepository
         }
     }
 
-    public function reload()
+    public function reload(): void
     {
         $this->packages = null;
         $this->initialize();
@@ -118,7 +118,7 @@ class FilesystemRepository extends WritableArrayRepository
     /**
      * Writes writable repository.
      */
-    public function write(bool $devMode, InstallationManager $installationManager)
+    public function write(bool $devMode, InstallationManager $installationManager): void
     {
         $data = array('packages' => array(), 'dev' => $devMode, 'dev-package-names' => array());
         $dumper = new ArrayDumper();

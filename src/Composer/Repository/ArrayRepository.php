@@ -212,7 +212,7 @@ class ArrayRepository implements RepositoryInterface
      *
      * @return void
      */
-    public function addPackage(PackageInterface $package)
+    public function addPackage(PackageInterface $package): void
     {
         if (!$package instanceof BasePackage) {
             throw new \InvalidArgumentException('Only subclasses of BasePackage are supported');
@@ -286,7 +286,7 @@ class ArrayRepository implements RepositoryInterface
      *
      * @return void
      */
-    public function removePackage(PackageInterface $package)
+    public function removePackage(PackageInterface $package): void
     {
         $packageId = $package->getUniqueName();
 
@@ -337,7 +337,7 @@ class ArrayRepository implements RepositoryInterface
      *
      * @return void
      */
-    protected function initialize()
+    protected function initialize(): void
     {
         $this->packages = array();
     }

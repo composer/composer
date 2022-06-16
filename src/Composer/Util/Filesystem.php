@@ -74,7 +74,7 @@ class Filesystem
      *
      * @return void
      */
-    public function emptyDirectory(string $dir, bool $ensureDirectoryExists = true)
+    public function emptyDirectory(string $dir, bool $ensureDirectoryExists = true): void
     {
         if (is_link($dir) && file_exists($dir)) {
             $this->unlink($dir);
@@ -256,7 +256,7 @@ class Filesystem
      *
      * @return void
      */
-    public function ensureDirectoryExists(string $directory)
+    public function ensureDirectoryExists(string $directory): void
     {
         if (!is_dir($directory)) {
             if (file_exists($directory)) {
@@ -345,7 +345,7 @@ class Filesystem
      *
      * @return void
      */
-    public function copyThenRemove(string $source, string $target)
+    public function copyThenRemove(string $source, string $target): void
     {
         $this->copy($source, $target);
         if (!is_dir($source)) {
@@ -393,7 +393,7 @@ class Filesystem
      *
      * @return void
      */
-    public function rename(string $source, string $target)
+    public function rename(string $source, string $target): void
     {
         if (true === @rename($source, $target)) {
             return;
@@ -811,7 +811,7 @@ class Filesystem
      *
      * @return void
      */
-    public function junction(string $target, string $junction)
+    public function junction(string $target, string $junction): void
     {
         if (!Platform::isWindows()) {
             throw new \LogicException(sprintf('Function %s is not available on non-Windows platform', __CLASS__));
@@ -912,7 +912,7 @@ class Filesystem
      *
      * @return void
      */
-    public function safeCopy(string $source, string $target)
+    public function safeCopy(string $source, string $target): void
     {
         if (!file_exists($target) || !file_exists($source) || !$this->filesAreEqual($source, $target)) {
             $sourceHandle = fopen($source, 'r');

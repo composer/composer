@@ -89,7 +89,7 @@ class AutoloadGenerator
      * @param bool $devMode
      * @return void
      */
-    public function setDevMode(bool $devMode = true)
+    public function setDevMode(bool $devMode = true): void
     {
         $this->devMode = $devMode;
     }
@@ -100,7 +100,7 @@ class AutoloadGenerator
      * @param bool $classMapAuthoritative
      * @return void
      */
-    public function setClassMapAuthoritative(bool $classMapAuthoritative)
+    public function setClassMapAuthoritative(bool $classMapAuthoritative): void
     {
         $this->classMapAuthoritative = $classMapAuthoritative;
     }
@@ -112,7 +112,7 @@ class AutoloadGenerator
      * @param string|null $apcuPrefix
      * @return void
      */
-    public function setApcu(bool $apcu, ?string $apcuPrefix = null)
+    public function setApcu(bool $apcu, ?string $apcuPrefix = null): void
     {
         $this->apcu = $apcu;
         $this->apcuPrefix = $apcuPrefix !== null ? $apcuPrefix : $apcuPrefix;
@@ -124,7 +124,7 @@ class AutoloadGenerator
      * @param bool $runScripts
      * @return void
      */
-    public function setRunScripts(bool $runScripts = true)
+    public function setRunScripts(bool $runScripts = true): void
     {
         $this->runScripts = $runScripts;
     }
@@ -141,7 +141,7 @@ class AutoloadGenerator
      *
      * @deprecated use setPlatformRequirementFilter instead
      */
-    public function setIgnorePlatformRequirements($ignorePlatformReqs)
+    public function setIgnorePlatformRequirements($ignorePlatformReqs): void
     {
         trigger_error('AutoloadGenerator::setIgnorePlatformRequirements is deprecated since Composer 2.2, use setPlatformRequirementFilter instead.', E_USER_DEPRECATED);
 
@@ -151,7 +151,7 @@ class AutoloadGenerator
     /**
      * @return void
      */
-    public function setPlatformRequirementFilter(PlatformRequirementFilterInterface $platformRequirementFilter)
+    public function setPlatformRequirementFilter(PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         $this->platformRequirementFilter = $platformRequirementFilter;
     }
@@ -525,7 +525,7 @@ EOF;
      * @return void
      * @throws \InvalidArgumentException Throws an exception, if the package has illegal settings.
      */
-    protected function validatePackage(PackageInterface $package)
+    protected function validatePackage(PackageInterface $package): void
     {
         $autoload = $package->getAutoload();
         if (!empty($autoload['psr-4']) && null !== $package->getTargetDir()) {

@@ -162,7 +162,7 @@ class ClassLoader
      *
      * @return void
      */
-    public function addClassMap(array $classMap)
+    public function addClassMap(array $classMap): void
     {
         if ($this->classMap) {
             $this->classMap = array_merge($this->classMap, $classMap);
@@ -181,7 +181,7 @@ class ClassLoader
      *
      * @return void
      */
-    public function add($prefix, $paths, $prepend = false)
+    public function add($prefix, $paths, $prepend = false): void
     {
         if (!$prefix) {
             if ($prepend) {
@@ -230,7 +230,7 @@ class ClassLoader
      *
      * @return void
      */
-    public function addPsr4($prefix, $paths, $prepend = false)
+    public function addPsr4($prefix, $paths, $prepend = false): void
     {
         if (!$prefix) {
             // Register directories for the root namespace.
@@ -277,7 +277,7 @@ class ClassLoader
      *
      * @return void
      */
-    public function set($prefix, $paths)
+    public function set($prefix, $paths): void
     {
         if (!$prefix) {
             $this->fallbackDirsPsr0 = (array) $paths;
@@ -297,7 +297,7 @@ class ClassLoader
      *
      * @return void
      */
-    public function setPsr4($prefix, $paths)
+    public function setPsr4($prefix, $paths): void
     {
         if (!$prefix) {
             $this->fallbackDirsPsr4 = (array) $paths;
@@ -318,7 +318,7 @@ class ClassLoader
      *
      * @return void
      */
-    public function setUseIncludePath($useIncludePath)
+    public function setUseIncludePath($useIncludePath): void
     {
         $this->useIncludePath = $useIncludePath;
     }
@@ -342,7 +342,7 @@ class ClassLoader
      *
      * @return void
      */
-    public function setClassMapAuthoritative($classMapAuthoritative)
+    public function setClassMapAuthoritative($classMapAuthoritative): void
     {
         $this->classMapAuthoritative = $classMapAuthoritative;
     }
@@ -364,7 +364,7 @@ class ClassLoader
      *
      * @return void
      */
-    public function setApcuPrefix($apcuPrefix)
+    public function setApcuPrefix($apcuPrefix): void
     {
         $this->apcuPrefix = function_exists('apcu_fetch') && filter_var(ini_get('apc.enabled'), FILTER_VALIDATE_BOOLEAN) ? $apcuPrefix : null;
     }
@@ -386,7 +386,7 @@ class ClassLoader
      *
      * @return void
      */
-    public function register($prepend = false)
+    public function register($prepend = false): void
     {
         spl_autoload_register(array($this, 'loadClass'), true, $prepend);
 
@@ -407,7 +407,7 @@ class ClassLoader
      *
      * @return void
      */
-    public function unregister()
+    public function unregister(): void
     {
         spl_autoload_unregister(array($this, 'loadClass'));
 
@@ -566,7 +566,7 @@ class ClassLoader
  * @return void
  * @private
  */
-function includeFile($file)
+function includeFile($file): void
 {
     include $file;
 }

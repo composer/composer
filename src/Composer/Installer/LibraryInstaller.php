@@ -246,7 +246,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
      *
      * @param PackageInterface $package Package instance
      */
-    public function ensureBinariesPresence(PackageInterface $package)
+    public function ensureBinariesPresence(PackageInterface $package): void
     {
         $this->binaryInstaller->installBinaries($package, $this->getInstallPath($package), false);
     }
@@ -329,7 +329,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     /**
      * @return void
      */
-    protected function initializeVendorDir()
+    protected function initializeVendorDir(): void
     {
         $this->filesystem->ensureDirectoryExists($this->vendorDir);
         $this->vendorDir = realpath($this->vendorDir);
