@@ -445,7 +445,7 @@ EOT
             @mkdir($directory, 0777, true);
             if ($realDir = realpath($directory)) {
                 pcntl_async_signals(true);
-                pcntl_signal(SIGINT, function () use ($realDir): void {
+                pcntl_signal(SIGINT, static function () use ($realDir): void {
                     $fs = new Filesystem();
                     $fs->removeDirectory($realDir);
                     exit(130);
@@ -456,7 +456,7 @@ EOT
         if (function_exists('sapi_windows_set_ctrl_handler') && PHP_SAPI === 'cli') {
             @mkdir($directory, 0777, true);
             if ($realDir = realpath($directory)) {
-                sapi_windows_set_ctrl_handler(function () use ($realDir): void {
+                sapi_windows_set_ctrl_handler(static function () use ($realDir): void {
                     $fs = new Filesystem();
                     $fs->removeDirectory($realDir);
                     exit(130);

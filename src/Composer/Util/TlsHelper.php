@@ -78,7 +78,7 @@ final class TlsHelper
 
         if (isset($info['extensions']['subjectAltName'])) {
             $subjectAltNames = Preg::split('{\s*,\s*}', $info['extensions']['subjectAltName']);
-            $subjectAltNames = array_filter(array_map(function ($name): ?string {
+            $subjectAltNames = array_filter(array_map(static function ($name): ?string {
                 if (0 === strpos($name, 'DNS:')) {
                     return strtolower(ltrim(substr($name, 4)));
                 }
@@ -179,7 +179,7 @@ final class TlsHelper
 
         if (0 === $wildcards) {
             // Literal match.
-            return function ($hostname) use ($certName): bool {
+            return static function ($hostname) use ($certName): bool {
                 return $hostname === $certName;
             };
         }
@@ -203,7 +203,7 @@ final class TlsHelper
             $wildcardRegex = str_replace('\\*', '[a-z0-9-]+', $wildcardRegex);
             $wildcardRegex = "{^{$wildcardRegex}$}";
 
-            return function ($hostname) use ($wildcardRegex): bool {
+            return static function ($hostname) use ($wildcardRegex): bool {
                 return Preg::isMatch($wildcardRegex, $hostname);
             };
         }

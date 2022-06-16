@@ -199,18 +199,18 @@ class InstallationManager
 
         $loop = $this->loop;
         $io = $this->io;
-        $runCleanup = function () use (&$cleanupPromises, $loop): void {
+        $runCleanup = static function () use (&$cleanupPromises, $loop): void {
             $promises = array();
 
             $loop->abortJobs();
 
             foreach ($cleanupPromises as $cleanup) {
-                $promises[] = new \React\Promise\Promise(function ($resolve, $reject) use ($cleanup): void {
+                $promises[] = new \React\Promise\Promise(static function ($resolve, $reject) use ($cleanup): void {
                     $promise = $cleanup();
                     if (!$promise instanceof PromiseInterface) {
                         $resolve();
                     } else {
-                        $promise->then(function () use ($resolve): void {
+                        $promise->then(static function () use ($resolve): void {
                             $resolve();
                         });
                     }
@@ -229,7 +229,7 @@ class InstallationManager
         if ($handleInterruptsUnix) {
             pcntl_async_signals(true);
             $prevHandler = pcntl_signal_get_handler(SIGINT);
-            pcntl_signal(SIGINT, function ($sig) use ($runCleanup, $prevHandler, $io): void {
+            pcntl_signal(SIGINT, static function ($sig) use ($runCleanup, $prevHandler, $io): void {
                 $io->writeError('Received SIGINT, aborting', true, IOInterface::DEBUG);
                 $runCleanup();
 
@@ -241,7 +241,7 @@ class InstallationManager
             });
         }
         if ($handleInterruptsWindows) {
-            $windowsHandler = function ($event) use ($runCleanup, $io): void {
+            $windowsHandler = static function ($event) use ($runCleanup, $io): void {
                 if ($event !== PHP_WINDOWS_EVENT_CTRL_C) {
                     return;
                 }
@@ -339,7 +339,7 @@ class InstallationManager
             }
             $installer = $this->getInstaller($package->getType());
 
-            $cleanupPromises[$index] = function () use ($opType, $installer, $package, $initialPackage) {
+            $cleanupPromises[$index] = static function () use ($opType, $installer, $package, $initialPackage) {
                 // avoid calling cleanup if the download was not even initialized for a package
                 // as without installation source configured nothing will work
                 if (!$package->getInstallationSource()) {
@@ -453,7 +453,7 @@ class InstallationManager
             })->then($cleanupPromises[$index])
             ->then(function () use ($devMode, $repo): void {
                 $repo->write($devMode, $this);
-            }, function ($e) use ($opType, $package, $io): void {
+            }, static function ($e) use ($opType, $package, $io): void {
                 $io->writeError('    <error>' . ucfirst($opType) .' of '.$package->getPrettyName().' failed</error>');
 
                 throw $e;
@@ -466,7 +466,7 @@ class InstallationManager
             ][$opType] ?? null;
 
             if (null !== $eventName && $runScripts && $dispatcher) {
-                $postExecCallbacks[] = function () use ($dispatcher, $eventName, $devMode, $repo, $allOperations, $operation): void {
+                $postExecCallbacks[] = static function () use ($dispatcher, $eventName, $devMode, $repo, $allOperations, $operation): void {
                     $dispatcher->dispatchPackageEvent($eventName, $devMode, $repo, $allOperations, $operation);
                 };
             }
@@ -558,7 +558,7 @@ class InstallationManager
             }
 
             $installer = $this->getInstaller($targetType);
-            $promise = $promise->then(function () use ($installer, $repo, $target): PromiseInterface {
+            $promise = $promise->then(static function () use ($installer, $repo, $target): PromiseInterface {
                 $promise = $installer->install($repo, $target);
                 if ($promise instanceof PromiseInterface) {
                     return $promise;

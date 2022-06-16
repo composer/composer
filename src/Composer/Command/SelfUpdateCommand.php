@@ -372,7 +372,7 @@ TAGSPUBKEY
 
         $io->write('Open <info>https://composer.github.io/pubkeys.html</info> to find the latest keys');
 
-        $validator = function ($value): string {
+        $validator = static function ($value): string {
             if (!Preg::isMatch('{^-----BEGIN PUBLIC KEY-----$}', trim($value))) {
                 throw new \UnexpectedValueException('Invalid input');
             }

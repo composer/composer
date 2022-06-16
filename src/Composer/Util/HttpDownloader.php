@@ -214,13 +214,13 @@ class HttpDownloader
         $rfs = $this->rfs;
 
         if ($this->canUseCurl($job)) {
-            $resolver = function ($resolve, $reject) use (&$job): void {
+            $resolver = static function ($resolve, $reject) use (&$job): void {
                 $job['status'] = HttpDownloader::STATUS_QUEUED;
                 $job['resolve'] = $resolve;
                 $job['reject'] = $reject;
             };
         } else {
-            $resolver = function ($resolve, $reject) use (&$job, $rfs): void {
+            $resolver = static function ($resolve, $reject) use (&$job, $rfs): void {
                 // start job
                 $url = $job['request']['url'];
                 $options = $job['request']['options'];
@@ -246,7 +246,7 @@ class HttpDownloader
 
         $curl = $this->curl;
 
-        $canceler = function () use (&$job, $curl): void {
+        $canceler = static function () use (&$job, $curl): void {
             if ($job['status'] === HttpDownloader::STATUS_QUEUED) {
                 $job['status'] = HttpDownloader::STATUS_ABORTED;
             }
@@ -428,7 +428,7 @@ class HttpDownloader
      */
     public static function outputWarnings(IOInterface $io, string $url, $data): void
     {
-        $cleanMessage = function ($msg) use ($io) {
+        $cleanMessage = static function ($msg) use ($io) {
             if (!$io->isDecorated()) {
                 $msg = Preg::replace('{'.chr(27).'\\[[;\d]*m}u', '', $msg);
             }

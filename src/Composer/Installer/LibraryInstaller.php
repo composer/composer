@@ -160,7 +160,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $binaryInstaller = $this->binaryInstaller;
         $installPath = $this->getInstallPath($package);
 
-        return $promise->then(function () use ($binaryInstaller, $installPath, $package, $repo): void {
+        return $promise->then(static function () use ($binaryInstaller, $installPath, $package, $repo): void {
             $binaryInstaller->installBinaries($package, $installPath);
             if (!$repo->hasPackage($package)) {
                 $repo->addPackage(clone $package);
@@ -188,7 +188,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $binaryInstaller = $this->binaryInstaller;
         $installPath = $this->getInstallPath($target);
 
-        return $promise->then(function () use ($binaryInstaller, $installPath, $target, $initial, $repo): void {
+        return $promise->then(static function () use ($binaryInstaller, $installPath, $target, $initial, $repo): void {
             $binaryInstaller->installBinaries($target, $installPath);
             $repo->removePackage($initial);
             if (!$repo->hasPackage($target)) {
@@ -215,7 +215,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $downloadPath = $this->getPackageBasePath($package);
         $filesystem = $this->filesystem;
 
-        return $promise->then(function () use ($binaryInstaller, $filesystem, $downloadPath, $package, $repo): void {
+        return $promise->then(static function () use ($binaryInstaller, $filesystem, $downloadPath, $package, $repo): void {
             $binaryInstaller->removeBinaries($package);
             $repo->removePackage($package);
 

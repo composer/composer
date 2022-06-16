@@ -91,7 +91,7 @@ abstract class BaseDependencyCommand extends BaseCommand
         $needles = array($needle);
         if ($inverted) {
             foreach ($packages as $package) {
-                $needles = array_merge($needles, array_map(function (Link $link): string {
+                $needles = array_merge($needles, array_map(static function (Link $link): string {
                     return $link->getTarget();
                 }, $package->getReplaces()));
             }

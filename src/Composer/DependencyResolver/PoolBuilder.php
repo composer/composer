@@ -532,7 +532,7 @@ class PoolBuilder
         $matches = array();
 
         if (isset($rootRequires[$name])) {
-            return array_map(function (PackageInterface $package) use ($name): string {
+            return array_map(static function (PackageInterface $package) use ($name): string {
                 if ($name !== $package->getName()) {
                     return $package->getName() .' (via replace of '.$name.')';
                 }

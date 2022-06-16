@@ -246,7 +246,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         }
 
         // Ensure environment-specific path separators are normalized to URL separators
-        return array_map(function ($val): string {
+        return array_map(static function ($val): string {
             return rtrim(str_replace(DIRECTORY_SEPARATOR, '/', $val), '/');
         }, glob($this->url, $flags));
     }

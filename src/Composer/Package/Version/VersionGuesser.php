@@ -305,7 +305,7 @@ class VersionGuesser
             // sort local branches first then remote ones
             // and sort numeric branches below named ones, to make sure if the branch has the same distance from main and 1.10 and 1.9 for example, main is picked
             // and sort using natural sort so that 1.10 will appear before 1.9
-            usort($branches, function ($a, $b): int {
+            usort($branches, static function ($a, $b): int {
                 $aRemote = 0 === strpos($a, 'remotes/');
                 $bRemote = 0 === strpos($b, 'remotes/');
 

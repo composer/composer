@@ -245,7 +245,7 @@ final class StreamContextFactory
         if (!is_array($header)) {
             $header = explode("\r\n", $header);
         }
-        uasort($header, function ($el): int {
+        uasort($header, static function ($el): int {
             return stripos($el, 'content-type') === 0 ? 1 : -1;
         });
 

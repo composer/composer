@@ -205,7 +205,7 @@ class DownloadManager
                 return \React\Promise\resolve(null);
             }
 
-            $handleError = function ($e) use ($sources, $source, $package, $io, $download) {
+            $handleError = static function ($e) use ($sources, $source, $package, $io, $download) {
                 if ($e instanceof \RuntimeException && !$e instanceof IrrecoverableDownloadException) {
                     if (!$sources) {
                         throw $e;
@@ -230,7 +230,7 @@ class DownloadManager
                 return $handleError($e);
             }
 
-            $res = $result->then(function ($res) {
+            $res = $result->then(static function ($res) {
                 return $res;
             }, $handleError);
 
@@ -426,7 +426,7 @@ class DownloadManager
             && !(!$prevPackage->isDev() && $prevPackage->getInstallationSource() === 'dist' && $package->isDev())
         ) {
             $prevSource = $prevPackage->getInstallationSource();
-            usort($sources, function ($a, $b) use ($prevSource): int {
+            usort($sources, static function ($a, $b) use ($prevSource): int {
                 return $a === $prevSource ? -1 : 1;
             });
 

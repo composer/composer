@@ -109,7 +109,7 @@ EOT
         $bins = glob($binDir . '/*');
         $localBins = $composer->getPackage()->getBinaries();
         if ($forDisplay) {
-            $localBins = array_map(function ($e) {
+            $localBins = array_map(static function ($e) {
                 return "$e (local)";
             }, $localBins);
         }

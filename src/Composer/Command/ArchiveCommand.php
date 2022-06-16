@@ -173,7 +173,7 @@ EOT
         if (count($packages) > 1) {
             $package = reset($packages);
             $io->writeError('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
-            $io->writeError('Alternatives were '.implode(', ', array_map(function ($p): string {
+            $io->writeError('Alternatives were '.implode(', ', array_map(static function ($p): string {
                 return $p->getPrettyString();
             }, $packages)).'.');
             $io->writeError('<comment>Please use a more specific constraint to pick a different package.</comment>');

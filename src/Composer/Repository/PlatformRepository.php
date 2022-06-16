@@ -369,7 +369,7 @@ class PlatformRepository extends ArrayRepository
 
                 case 'libxml':
                     // ext/dom, ext/simplexml, ext/xmlreader and ext/xmlwriter use the same libxml as the ext/libxml
-                    $libxmlProvides = array_map(function ($extension): string {
+                    $libxmlProvides = array_map(static function ($extension): string {
                         return $extension . '-libxml';
                     }, array_intersect($loadedExtensions, array('dom', 'simplexml', 'xml', 'xmlreader', 'xmlwriter')));
                     $this->addLibrary($name, $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version', array(), $libxmlProvides);

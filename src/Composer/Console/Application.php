@@ -96,14 +96,14 @@ class Application extends BaseApplication
         if (!$shutdownRegistered) {
             if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
                 pcntl_async_signals(true);
-                pcntl_signal(SIGINT, function ($sig): void {
+                pcntl_signal(SIGINT, static function ($sig): void {
                     exit(130);
                 });
             }
 
             $shutdownRegistered = true;
 
-            register_shutdown_function(function (): void {
+            register_shutdown_function(static function (): void {
                 $lastError = error_get_last();
 
                 if ($lastError && $lastError['message'] &&
@@ -296,7 +296,7 @@ class Application extends BaseApplication
             }
 
             // Check system temp folder for usability as it can cause weird runtime issues otherwise
-            Silencer::call(function () use ($io): void {
+            Silencer::call(static function () use ($io): void {
                 $tempfile = sys_get_temp_dir() . '/temp-' . md5(microtime());
                 if (!(file_put_contents($tempfile, __FILE__) && (file_get_contents($tempfile) == __FILE__) && unlink($tempfile) && !file_exists($tempfile))) {
                     $io->writeError(sprintf('<error>PHP temp directory (%s) does not exist or is not writable to Composer. Set sys_temp_dir in your php.ini</error>', sys_get_temp_dir()));

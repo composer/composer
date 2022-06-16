@@ -249,7 +249,7 @@ EOT
 
             if ($input->getOption('no-dev')) {
                 $packages = $this->filterRequiredPackages($installedRepo, $rootPkg);
-                $repos = $installedRepo = new InstalledRepository(array(new InstalledArrayRepository(array_map(function ($pkg): PackageInterface {
+                $repos = $installedRepo = new InstalledRepository(array(new InstalledArrayRepository(array_map(static function ($pkg): PackageInterface {
                     return clone $pkg;
                 }, $packages))));
             }
@@ -346,7 +346,7 @@ EOT
         if ($input->getOption('tree')) {
             $rootRequires = $this->getRootRequires();
             $packages = $installedRepo->getPackages();
-            usort($packages, function (BasePackage $a, BasePackage $b): int {
+            usort($packages, static function (BasePackage $a, BasePackage $b): int {
                 return strcmp((string) $a, (string) $b);
             });
             $arrayTree = array();
@@ -1011,7 +1011,7 @@ EOT
         if ($licenses = $package->getLicense()) {
             $spdxLicenses = new SpdxLicenses();
 
-            $json['licenses'] = array_map(function ($licenseId) use ($spdxLicenses) {
+            $json['licenses'] = array_map(static function ($licenseId) use ($spdxLicenses) {
                 $license = $spdxLicenses->getLicenseByIdentifier($licenseId); // keys: 0 fullname, 1 osi, 2 url
 
                 if (!$license) {

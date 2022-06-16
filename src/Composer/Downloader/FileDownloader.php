@@ -117,7 +117,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             throw new \InvalidArgumentException('The given package is missing url information');
         }
 
-        $cacheKeyGenerator = function (PackageInterface $package, $key): string {
+        $cacheKeyGenerator = static function (PackageInterface $package, $key): string {
             $cacheKey = sha1($key);
 
             return $package->getName().'/'.$cacheKey.'.'.$package->getDistType();
@@ -194,7 +194,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                     ->then($accept, $reject);
             }
 
-            return $result->then(function ($result) use ($fileName, $checksum, $url, $package, $eventDispatcher): string {
+            return $result->then(static function ($result) use ($fileName, $checksum, $url, $package, $eventDispatcher): string {
                 // in case of retry, the first call's Promise chain finally calls this twice at the end,
                 // once with $result being the returned $fileName from $accept, and then once for every
                 // failed request with a null result, which can be skipped.
@@ -420,7 +420,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
         $promise = $this->filesystem->removeDirectoryAsync($path);
 
-        return $promise->then(function ($result) use ($path): void {
+        return $promise->then(static function ($result) use ($path): void {
             if (!$result) {
                 throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
             }

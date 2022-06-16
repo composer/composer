@@ -84,7 +84,7 @@ abstract class BaseExcludeFilter
     {
         return array_filter(
             array_map(
-                function ($line) use ($lineParser) {
+                static function ($line) use ($lineParser) {
                     $line = trim($line);
 
                     if (!$line || 0 === strpos($line, '#')) {
@@ -95,7 +95,7 @@ abstract class BaseExcludeFilter
                 },
                 $lines
             ),
-            function ($pattern): bool {
+            static function ($pattern): bool {
                 return $pattern !== null;
             }
         );
