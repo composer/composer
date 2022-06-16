@@ -13,9 +13,9 @@
 namespace Composer\Package\Version;
 
 use Composer\Config;
+use Composer\IO\NullIO;
 use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\HgDriver;
-use Composer\IO\NullIO;
 use Composer\Semver\VersionParser as SemverVersionParser;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\HttpDownloader;

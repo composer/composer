@@ -18,17 +18,17 @@ use Composer\Installer\InstallerInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
+use Composer\Package\Link;
 use Composer\Package\Package;
+use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\PartialComposer;
 use Composer\Pcre\Preg;
-use Composer\Repository\RepositoryInterface;
-use Composer\Repository\InstalledRepository;
-use Composer\Repository\RootPackageRepository;
-use Composer\Package\PackageInterface;
-use Composer\Package\Link;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Plugin\Capability\Capability;
+use Composer\Repository\InstalledRepository;
+use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RootPackageRepository;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Util\PackageSorter;
 
 /**

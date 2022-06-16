@@ -12,13 +12,13 @@
 
 namespace Composer\Json;
 
+use Composer\Downloader\TransportException;
+use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
+use Composer\Util\HttpDownloader;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
-use Composer\Util\HttpDownloader;
-use Composer\IO\IOInterface;
-use Composer\Downloader\TransportException;
 
 /**
  * Reads/writes json files.

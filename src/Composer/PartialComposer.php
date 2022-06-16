@@ -12,11 +12,11 @@
 
 namespace Composer;
 
-use Composer\Package\RootPackageInterface;
-use Composer\Util\Loop;
-use Composer\Repository\RepositoryManager;
-use Composer\Installer\InstallationManager;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Installer\InstallationManager;
+use Composer\Package\RootPackageInterface;
+use Composer\Repository\RepositoryManager;
+use Composer\Util\Loop;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

@@ -13,10 +13,10 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package\BasePackage;
-use Composer\Pcre\Preg;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Version\VersionParser;
+use Composer\Pcre\Preg;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Spdx\SpdxLicenses;
 
 /**

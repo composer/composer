@@ -12,15 +12,15 @@
 
 namespace Composer\Package\Loader;
 
-use Composer\Package\BasePackage;
 use Composer\Config;
 use Composer\IO\IOInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\RootAliasPackage;
-use Composer\Pcre\Preg;
-use Composer\Repository\RepositoryFactory;
+use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
-use Composer\Package\RootPackage;
+use Composer\Pcre\Preg;
+use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;

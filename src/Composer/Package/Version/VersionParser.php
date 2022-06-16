@@ -14,9 +14,9 @@ namespace Composer\Package\Version;
 
 use Composer\Pcre\Preg;
 use Composer\Repository\PlatformRepository;
-use Composer\Semver\VersionParser as SemverVersionParser;
-use Composer\Semver\Semver;
 use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Semver;
+use Composer\Semver\VersionParser as SemverVersionParser;
 
 class VersionParser extends SemverVersionParser
 {

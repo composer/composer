@@ -12,8 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Util\IniHelper;
 use Composer\Repository\RepositorySet;
+use Composer\Util\IniHelper;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>

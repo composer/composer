@@ -22,12 +22,12 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
+use Composer\Util\Filesystem;
+use Composer\Util\Git as GitUtil;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
 use Composer\Util\Url;
-use Composer\Util\Git as GitUtil;
 
 /**
  * This repository allows installing local packages that are not necessarily under their own VCS.

@@ -12,9 +12,9 @@
 
 namespace Composer\Repository;
 
-use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;

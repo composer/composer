@@ -12,14 +12,14 @@
 
 namespace Composer\Command;
 
-use Composer\Package\CompletePackageInterface;
-use Composer\Repository\RepositoryInterface;
-use Composer\Repository\RootPackageRepository;
-use Composer\Repository\RepositoryFactory;
-use Composer\Util\Platform;
-use Composer\Util\ProcessExecutor;
 use Composer\Console\Input\InputArgument;
 use Composer\Console\Input\InputOption;
+use Composer\Package\CompletePackageInterface;
+use Composer\Repository\RepositoryFactory;
+use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RootPackageRepository;
+use Composer\Util\Platform;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 

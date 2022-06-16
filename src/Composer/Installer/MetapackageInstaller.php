@@ -12,12 +12,12 @@
 
 namespace Composer\Installer;
 
-use Composer\Repository\InstalledRepositoryInterface;
-use Composer\Package\PackageInterface;
-use Composer\IO\IOInterface;
-use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\IO\IOInterface;
+use Composer\Package\PackageInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 
 /**
  * Metapackage installation manager.

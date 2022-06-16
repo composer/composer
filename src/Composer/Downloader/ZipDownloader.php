@@ -17,9 +17,9 @@ use Composer\Pcre\Preg;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
+use React\Promise\PromiseInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
-use React\Promise\PromiseInterface;
 use ZipArchive;
 
 /**

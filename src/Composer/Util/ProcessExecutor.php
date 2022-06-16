@@ -14,10 +14,10 @@ namespace Composer\Util;
 
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\RuntimeException;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
+use Symfony\Component\Process\Exception\RuntimeException;
+use Symfony\Component\Process\Process;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>

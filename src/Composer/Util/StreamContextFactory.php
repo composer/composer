@@ -12,8 +12,8 @@
 
 namespace Composer\Util;
 
-use Composer\Composer;
 use Composer\CaBundle\CaBundle;
+use Composer\Composer;
 use Composer\Downloader\TransportException;
 use Composer\Repository\PlatformRepository;
 use Composer\Util\Http\ProxyManager;

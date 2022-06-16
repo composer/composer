@@ -19,17 +19,17 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Script\ScriptEvents;
 use Composer\Semver\Constraint\Bound;
 use Composer\Util\Filesystem;
-use Composer\Util\Platform;
-use Composer\Script\ScriptEvents;
 use Composer\Util\PackageSorter;
-use Composer\Json\JsonFile;
+use Composer\Util\Platform;
 
 /**
  * @author Igor Wiedler <igor@wiedler.ch>

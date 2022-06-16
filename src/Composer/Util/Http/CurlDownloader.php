@@ -14,14 +14,14 @@ namespace Composer\Util\Http;
 
 use Composer\Config;
 use Composer\Downloader\MaxFileSizeExceededException;
-use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
+use Composer\Util\AuthHelper;
+use Composer\Util\HttpDownloader;
 use Composer\Util\Platform;
 use Composer\Util\StreamContextFactory;
-use Composer\Util\AuthHelper;
 use Composer\Util\Url;
-use Composer\Util\HttpDownloader;
 use React\Promise\Promise;
 
 /**

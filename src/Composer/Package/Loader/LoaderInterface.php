@@ -12,11 +12,11 @@
 
 namespace Composer\Package\Loader;
 
-use Composer\Package\CompletePackage;
+use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
+use Composer\Package\CompletePackage;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\RootPackage;
-use Composer\Package\BasePackage;
 
 /**
  * Defines a loader that takes an array to create package instances

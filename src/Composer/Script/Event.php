@@ -13,8 +13,8 @@
 namespace Composer\Script;
 
 use Composer\Composer;
-use Composer\IO\IOInterface;
 use Composer\EventDispatcher\Event as BaseEvent;
+use Composer\IO\IOInterface;
 
 /**
  * The script event class

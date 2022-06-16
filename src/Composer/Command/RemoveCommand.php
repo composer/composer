@@ -13,18 +13,18 @@
 namespace Composer\Command;
 
 use Composer\Config\JsonConfigSource;
+use Composer\Console\Input\InputArgument;
+use Composer\Console\Input\InputOption;
 use Composer\DependencyResolver\Request;
+use Composer\Factory;
 use Composer\Installer;
+use Composer\Json\JsonFile;
+use Composer\Package\BasePackage;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Json\JsonFile;
-use Composer\Factory;
 use Symfony\Component\Console\Input\InputInterface;
-use Composer\Console\Input\InputOption;
-use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\Package\BasePackage;
 
 /**
  * @author Pierre du Plessis <pdples@gmail.com>

@@ -12,18 +12,18 @@
 
 namespace Composer\Command;
 
-use Composer\Factory;
-use Composer\Json\JsonFile;
-use Symfony\Component\Console\Formatter\OutputFormatter;
-use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputArgument;
 use Composer\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Factory;
+use Composer\Json\JsonFile;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
-use Composer\Plugin\CommandEvent;
-use Composer\Plugin\PluginEvents;
+use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>

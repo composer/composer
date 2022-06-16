@@ -14,10 +14,10 @@ namespace Composer\Installer;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
-use Composer\PartialComposer;
-use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\PartialComposer;
 use Composer\Plugin\PluginManager;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use React\Promise\PromiseInterface;

@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Console\Input\InputOption;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
@@ -23,13 +24,12 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
+use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
-use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Console\Helper\FormatterHelper;
 
 /**
  * @author Justin Rainbow <justin.rainbow@gmail.com>

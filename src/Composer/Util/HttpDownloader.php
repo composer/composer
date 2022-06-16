@@ -12,16 +12,16 @@
 
 namespace Composer\Util;
 
-use Composer\Config;
-use Composer\IO\IOInterface;
-use Composer\Downloader\TransportException;
-use Composer\Pcre\Preg;
-use Composer\Util\Http\Response;
-use Composer\Util\Http\CurlDownloader;
 use Composer\Composer;
-use Composer\Package\Version\VersionParser;
-use Composer\Semver\Constraint\Constraint;
+use Composer\Config;
+use Composer\Downloader\TransportException;
 use Composer\Exception\IrrecoverableDownloadException;
+use Composer\IO\IOInterface;
+use Composer\Package\Version\VersionParser;
+use Composer\Pcre\Preg;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Util\Http\CurlDownloader;
+use Composer\Util\Http\Response;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
 

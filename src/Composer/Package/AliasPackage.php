@@ -12,8 +12,8 @@
 
 namespace Composer\Package;
 
-use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Version\VersionParser;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

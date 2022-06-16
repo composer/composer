@@ -12,15 +12,15 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Config;
 use Composer\Cache;
+use Composer\Config;
+use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
-use Composer\Downloader\TransportException;
 use Composer\Pcre\Preg;
-use Composer\Util\HttpDownloader;
 use Composer\Util\GitLab;
 use Composer\Util\Http\Response;
+use Composer\Util\HttpDownloader;
 
 /**
  * Driver for GitLab API, use the Git driver for local checkouts.

@@ -12,10 +12,10 @@
 
 namespace Composer\Plugin;
 
-use Composer\EventDispatcher\Event;
-use Composer\Repository\RepositoryInterface;
 use Composer\DependencyResolver\Request;
+use Composer\EventDispatcher\Event;
 use Composer\Package\BasePackage;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * The pre command run event.

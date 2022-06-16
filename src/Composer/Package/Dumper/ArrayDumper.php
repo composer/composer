@@ -13,8 +13,8 @@
 namespace Composer\Package\Dumper;
 
 use Composer\Package\BasePackage;
-use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 
 /**

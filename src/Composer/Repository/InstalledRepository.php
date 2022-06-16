@@ -13,13 +13,13 @@
 namespace Composer\Repository;
 
 use Composer\Package\BasePackage;
-use Composer\Package\PackageInterface;
-use Composer\Package\Version\VersionParser;
-use Composer\Semver\Constraint\ConstraintInterface;
-use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\Constraint\MatchAllConstraint;
-use Composer\Package\RootPackageInterface;
 use Composer\Package\Link;
+use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
+use Composer\Package\Version\VersionParser;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\MatchAllConstraint;
 
 /**
  * Installed repository is a composite of all installed repo types.

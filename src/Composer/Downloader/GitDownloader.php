@@ -12,16 +12,16 @@
 
 namespace Composer\Downloader;
 
+use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Git as GitUtil;
-use Composer\Util\Url;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Cache;
+use Composer\Util\Url;
 use React\Promise\PromiseInterface;
 
 /**

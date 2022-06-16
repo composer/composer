@@ -12,13 +12,13 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Config;
 use Composer\Cache;
+use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
-use Composer\Util\ProcessExecutor;
-use Composer\Util\Perforce;
 use Composer\Util\Http\Response;
+use Composer\Util\Perforce;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>

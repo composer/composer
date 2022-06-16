@@ -13,16 +13,16 @@
 namespace Composer\Installer;
 
 use Composer\Composer;
+use Composer\Downloader\DownloadManager;
 use Composer\IO\IOInterface;
+use Composer\Package\PackageInterface;
 use Composer\PartialComposer;
 use Composer\Pcre\Preg;
 use Composer\Repository\InstalledRepositoryInterface;
-use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
-use Composer\Util\Silencer;
 use Composer\Util\Platform;
+use Composer\Util\Silencer;
 use React\Promise\PromiseInterface;
-use Composer\Downloader\DownloadManager;
 
 /**
  * Package installation manager.

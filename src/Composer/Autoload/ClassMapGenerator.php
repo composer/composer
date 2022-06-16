@@ -18,11 +18,11 @@
 
 namespace Composer\Autoload;
 
+use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
+use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Symfony\Component\Finder\Finder;
-use Composer\IO\IOInterface;
-use Composer\Util\Filesystem;
 
 /**
  * ClassMapGenerator

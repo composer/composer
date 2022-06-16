@@ -12,11 +12,11 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Cache;
 use Composer\Config;
 use Composer\Downloader\TransportException;
-use Composer\Json\JsonFile;
-use Composer\Cache;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
 use Composer\Util\GitHub;
 use Composer\Util\Http\Response;

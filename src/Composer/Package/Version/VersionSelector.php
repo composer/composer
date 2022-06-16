@@ -12,18 +12,18 @@
 
 namespace Composer\Package\Version;
 
+use Composer\Composer;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
-use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
-use Composer\Package\PackageInterface;
-use Composer\Composer;
-use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\BasePackage;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
-use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 

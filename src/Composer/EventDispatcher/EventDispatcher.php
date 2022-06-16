@@ -12,23 +12,23 @@
 
 namespace Composer\EventDispatcher;
 
-use Composer\DependencyResolver\Transaction;
-use Composer\Installer\InstallerEvent;
-use Composer\IO\IOInterface;
+use Composer\Autoload\ClassLoader;
 use Composer\Composer;
+use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\DependencyResolver\Transaction;
+use Composer\Installer\BinaryInstaller;
+use Composer\Installer\InstallerEvent;
+use Composer\Installer\PackageEvent;
+use Composer\IO\IOInterface;
 use Composer\PartialComposer;
 use Composer\Pcre\Preg;
-use Composer\Util\Platform;
-use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Script;
-use Composer\Installer\PackageEvent;
-use Composer\Installer\BinaryInstaller;
-use Composer\Util\ProcessExecutor;
 use Composer\Script\Event as ScriptEvent;
-use Composer\Autoload\ClassLoader;
-use Symfony\Component\Process\PhpExecutableFinder;
+use Composer\Util\Platform;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Process\ExecutableFinder;
+use Symfony\Component\Process\PhpExecutableFinder;
 
 /**
  * The Event Dispatcher.

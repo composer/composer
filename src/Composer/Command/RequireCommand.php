@@ -12,26 +12,26 @@
 
 namespace Composer\Command;
 
-use Composer\DependencyResolver\Request;
-use Composer\Util\Filesystem;
-use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputArgument;
 use Composer\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
+use Composer\DependencyResolver\Request;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\InstallerEvents;
+use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
-use Composer\Package\Version\VersionParser;
-use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\BasePackage;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Jérémy Romey <jeremy@free-agent.fr>

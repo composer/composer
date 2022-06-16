@@ -12,10 +12,10 @@
 
 namespace Composer\Downloader;
 
-use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\VcsRepository;
 use Composer\Util\Perforce;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>

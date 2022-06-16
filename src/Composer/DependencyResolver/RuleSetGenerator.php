@@ -15,8 +15,8 @@ namespace Composer\DependencyResolver;
 use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
-use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>

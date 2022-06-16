@@ -13,15 +13,15 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
-use Composer\Downloader\TransportException;
 use Composer\Config;
+use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
-use Composer\Util\ProcessExecutor;
-use Composer\Util\HttpDownloader;
 use Composer\Util\Filesystem;
 use Composer\Util\Http\Response;
+use Composer\Util\HttpDownloader;
+use Composer\Util\ProcessExecutor;
 
 /**
  * A driver implementation for driver with authentication interaction.

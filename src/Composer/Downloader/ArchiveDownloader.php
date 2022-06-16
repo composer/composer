@@ -12,11 +12,11 @@
 
 namespace Composer\Downloader;
 
+use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\PackageInterface;
 use Composer\Util\Platform;
-use Symfony\Component\Finder\Finder;
 use React\Promise\PromiseInterface;
-use Composer\DependencyResolver\Operation\InstallOperation;
+use Symfony\Component\Finder\Finder;
 
 /**
  * Base downloader for archives

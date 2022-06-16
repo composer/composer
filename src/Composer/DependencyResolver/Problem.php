@@ -12,19 +12,19 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
-use Composer\Repository\RepositorySet;
 use Composer\Repository\LockArrayRepository;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
-use Composer\Package\Version\VersionParser;
-use Composer\Repository\PlatformRepository;
 
 /**
  * Represents a problem detected while solving dependencies

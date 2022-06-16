@@ -12,14 +12,14 @@
 
 namespace Composer\Repository;
 
-use Composer\Factory;
-use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Factory;
+use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
-use Composer\Json\JsonFile;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

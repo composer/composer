@@ -12,11 +12,11 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
-use Composer\DependencyResolver\Operation\OperationInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>

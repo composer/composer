@@ -16,13 +16,13 @@ use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
-use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
-use Composer\Package\Version\VersionParser;
+use Composer\Package\PackageInterface;
 use Composer\Package\Version\StabilityFilter;
+use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
-use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * A repository implementation that simply stores packages in an array

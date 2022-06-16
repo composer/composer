@@ -12,8 +12,8 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\PackageInterface;
 use Composer\Installer\InstallationManager;
+use Composer\Package\PackageInterface;
 
 /**
  * Writable repository interface.

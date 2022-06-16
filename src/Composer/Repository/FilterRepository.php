@@ -12,8 +12,8 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\PackageInterface;
 use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 
 /**

@@ -12,17 +12,17 @@
 
 namespace Composer\Package;
 
-use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
-use Composer\Pcre\Preg;
-use Composer\Repository\LockArrayRepository;
-use Composer\Util\ProcessExecutor;
+use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionParser;
+use Composer\Pcre\Preg;
 use Composer\Plugin\PluginInterface;
+use Composer\Repository\LockArrayRepository;
 use Composer\Util\Git as GitUtil;
-use Composer\IO\IOInterface;
+use Composer\Util\ProcessExecutor;
 use Seld\JsonLint\ParsingException;
 
 /**

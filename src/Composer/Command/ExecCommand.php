@@ -12,10 +12,10 @@
 
 namespace Composer\Command;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Composer\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Console\Input\InputArgument;
+use Composer\Console\Input\InputOption;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Davey Shafik <me@daveyshafik.com>

@@ -13,10 +13,10 @@
 namespace Composer\Installer;
 
 use Composer\Composer;
-use Composer\IO\IOInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
-use Composer\Repository\RepositoryInterface;
 use Composer\EventDispatcher\Event;
+use Composer\IO\IOInterface;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * The Package Event.

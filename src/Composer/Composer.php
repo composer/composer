@@ -12,12 +12,12 @@
 
 namespace Composer;
 
+use Composer\Autoload\AutoloadGenerator;
+use Composer\Downloader\DownloadManager;
+use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\Locker;
 use Composer\Pcre\Preg;
 use Composer\Plugin\PluginManager;
-use Composer\Downloader\DownloadManager;
-use Composer\Autoload\AutoloadGenerator;
-use Composer\Package\Archiver\ArchiveManager;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

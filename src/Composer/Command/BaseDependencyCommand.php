@@ -12,21 +12,21 @@
 
 namespace Composer\Command;
 
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
-use Composer\Package\CompletePackageInterface;
 use Composer\Package\RootPackage;
-use Composer\Repository\InstalledArrayRepository;
+use Composer\Package\Version\VersionParser;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
-use Composer\Repository\RepositoryInterface;
-use Composer\Repository\RootPackageRepository;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
-use Composer\Plugin\CommandEvent;
-use Composer\Plugin\PluginEvents;
+use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RootPackageRepository;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Composer\Package\Version\VersionParser;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 

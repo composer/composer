@@ -12,8 +12,8 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\AliasPackage;
 use Composer\Installer\InstallationManager;
+use Composer\Package\AliasPackage;
 
 /**
  * Writable array repository.

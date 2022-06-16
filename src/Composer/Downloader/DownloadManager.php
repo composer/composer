@@ -12,11 +12,11 @@
 
 namespace Composer\Downloader;
 
-use Composer\Package\PackageInterface;
+use Composer\Exception\IrrecoverableDownloadException;
 use Composer\IO\IOInterface;
+use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
-use Composer\Exception\IrrecoverableDownloadException;
 use React\Promise\PromiseInterface;
 
 /**

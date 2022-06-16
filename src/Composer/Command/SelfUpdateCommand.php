@@ -13,19 +13,19 @@
 namespace Composer\Command;
 
 use Composer\Composer;
-use Composer\Factory;
 use Composer\Config;
-use Composer\Pcre\Preg;
-use Composer\Util\Filesystem;
-use Composer\Util\Platform;
-use Composer\SelfUpdate\Keys;
-use Composer\SelfUpdate\Versions;
-use Composer\IO\IOInterface;
+use Composer\Console\Input\InputArgument;
+use Composer\Console\Input\InputOption;
 use Composer\Downloader\FilesystemException;
 use Composer\Downloader\TransportException;
+use Composer\Factory;
+use Composer\IO\IOInterface;
+use Composer\Pcre\Preg;
+use Composer\SelfUpdate\Keys;
+use Composer\SelfUpdate\Versions;
+use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Input\InputInterface;
-use Composer\Console\Input\InputOption;
-use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 

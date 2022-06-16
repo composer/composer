@@ -15,11 +15,11 @@ namespace Composer\Package\Loader;
 use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
-use Composer\Package\RootPackage;
-use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
+use Composer\Package\PackageInterface;
 use Composer\Package\RootAliasPackage;
+use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
 

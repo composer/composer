@@ -12,13 +12,13 @@
 
 namespace Composer;
 
-use Composer\Json\JsonFile;
 use Composer\CaBundle\CaBundle;
+use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
+use Seld\PharUtils\Linter;
+use Seld\PharUtils\Timestamps;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
-use Seld\PharUtils\Timestamps;
-use Seld\PharUtils\Linter;
 
 /**
  * The Compiler class compiles composer into a phar

@@ -12,11 +12,11 @@
 
 namespace Composer\Installer;
 
-use React\Promise\PromiseInterface;
-use Composer\Package\PackageInterface;
 use Composer\Downloader\DownloadManager;
+use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
+use React\Promise\PromiseInterface;
 
 /**
  * Project Installer is used to install a single package into a directory as

@@ -12,24 +12,24 @@
 
 namespace Composer\Command;
 
+use Composer\Composer;
+use Composer\Config;
+use Composer\Console\Input\InputArgument;
+use Composer\Console\Input\InputOption;
 use Composer\Factory;
 use Composer\IO\IOInterface;
-use Composer\Config;
-use Composer\Composer;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Script\ScriptEvents;
-use Composer\Plugin\CommandEvent;
-use Composer\Plugin\PluginEvents;
 use Composer\Util\Filesystem;
 use Composer\Util\Loop;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**

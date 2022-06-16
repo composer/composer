@@ -13,12 +13,12 @@
 namespace Composer\IO;
 
 use Composer\Pcre\Preg;
-use Symfony\Component\Console\Helper\QuestionHelper;
-use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
+use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\StreamableInputInterface;
 use Symfony\Component\Console\Input\StringInput;
-use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Output\StreamOutput;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

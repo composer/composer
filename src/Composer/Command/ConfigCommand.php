@@ -12,21 +12,21 @@
 
 namespace Composer\Command;
 
-use Composer\Pcre\Preg;
-use Composer\Util\Filesystem;
-use Composer\Util\Platform;
-use Composer\Util\Silencer;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Config;
 use Composer\Config\JsonConfigSource;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
-use Composer\Semver\VersionParser;
 use Composer\Package\BasePackage;
+use Composer\Pcre\Preg;
+use Composer\Semver\VersionParser;
+use Composer\Util\Filesystem;
+use Composer\Util\Platform;
+use Composer\Util\Silencer;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @author Joshua Estes <Joshua.Estes@iostudio.com>

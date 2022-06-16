@@ -12,8 +12,8 @@
 
 namespace Composer\Downloader;
 
-use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
+use React\Promise\PromiseInterface;
 
 /**
  * Downloader for phar files

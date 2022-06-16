@@ -14,10 +14,10 @@ namespace Composer\Package\Loader;
 
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
-use Composer\Package\CompletePackage;
 use Composer\Package\CompleteAliasPackage;
-use Composer\Package\RootPackage;
+use Composer\Package\CompletePackage;
 use Composer\Package\RootAliasPackage;
+use Composer\Package\RootPackage;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>

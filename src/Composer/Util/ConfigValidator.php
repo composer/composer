@@ -12,12 +12,12 @@
 
 namespace Composer\Util;
 
-use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Loader\ValidatingArrayLoader;
-use Composer\Package\Loader\InvalidPackageException;
-use Composer\Json\JsonValidationException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonValidationException;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\InvalidPackageException;
+use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Pcre\Preg;
 use Composer\Spdx\SpdxLicenses;
 use Seld\JsonLint\DuplicateKeyException;

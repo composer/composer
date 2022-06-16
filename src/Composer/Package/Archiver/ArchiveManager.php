@@ -13,13 +13,13 @@
 namespace Composer\Package\Archiver;
 
 use Composer\Downloader\DownloadManager;
+use Composer\Json\JsonFile;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Loop;
 use Composer\Util\SyncHelper;
-use Composer\Json\JsonFile;
-use Composer\Package\CompletePackageInterface;
 
 /**
  * @author Matthieu Moquet <matthieu@moquet.net>

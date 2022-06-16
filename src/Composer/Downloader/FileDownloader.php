@@ -12,26 +12,26 @@
 
 namespace Composer\Downloader;
 
-use Composer\Config;
 use Composer\Cache;
-use Composer\IO\IOInterface;
-use Composer\IO\NullIO;
-use Composer\Exception\IrrecoverableDownloadException;
-use Composer\Package\Comparer\Comparer;
-use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\Config;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\EventDispatcher\EventDispatcher;
+use Composer\Exception\IrrecoverableDownloadException;
+use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
+use Composer\Package\Comparer\Comparer;
 use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PostFileDownloadEvent;
 use Composer\Plugin\PreFileDownloadEvent;
-use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
-use Composer\Util\Platform;
-use Composer\Util\Silencer;
 use Composer\Util\HttpDownloader;
-use Composer\Util\Url as UrlUtil;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Silencer;
+use Composer\Util\Url as UrlUtil;
 use React\Promise\PromiseInterface;
 
 /**

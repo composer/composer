@@ -15,9 +15,9 @@ namespace Composer\DependencyResolver;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Link;
+use Composer\Package\Version\VersionParser;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositorySet;
-use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 

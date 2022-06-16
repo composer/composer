@@ -13,17 +13,17 @@
 namespace Composer\Downloader;
 
 use Composer\Config;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\IO\IOInterface;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
-use Composer\Util\ProcessExecutor;
-use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 use React\Promise\PromiseInterface;
-use Composer\DependencyResolver\Operation\UpdateOperation;
-use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\Operation\UninstallOperation;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

@@ -14,10 +14,10 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
 use Composer\Config;
-use Composer\Pcre\Preg;
-use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
+use Composer\Pcre\Preg;
+use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 
 /**
  * @author BohwaZ <http://bohwaz.net/>

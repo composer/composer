@@ -13,8 +13,8 @@
 namespace Composer\Util;
 
 use React\Promise\CancellablePromiseInterface;
-use Symfony\Component\Console\Helper\ProgressBar;
 use React\Promise\PromiseInterface;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

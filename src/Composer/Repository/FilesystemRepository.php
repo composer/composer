@@ -12,14 +12,14 @@
 
 namespace Composer\Repository;
 
+use Composer\Installer\InstallationManager;
 use Composer\Json\JsonFile;
+use Composer\Package\AliasPackage;
+use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\RootPackageInterface;
-use Composer\Package\AliasPackage;
-use Composer\Package\Dumper\ArrayDumper;
-use Composer\Installer\InstallationManager;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 

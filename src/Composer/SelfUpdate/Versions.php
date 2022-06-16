@@ -12,10 +12,10 @@
 
 namespace Composer\SelfUpdate;
 
+use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
-use Composer\Config;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

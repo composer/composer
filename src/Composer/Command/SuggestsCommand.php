@@ -12,13 +12,13 @@
 
 namespace Composer\Command;
 
+use Composer\Console\Input\InputArgument;
+use Composer\Console\Input\InputOption;
+use Composer\Installer\SuggestedPackagesReporter;
+use Composer\Repository\InstalledRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
-use Composer\Repository\InstalledRepository;
-use Composer\Installer\SuggestedPackagesReporter;
-use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class SuggestsCommand extends BaseCommand

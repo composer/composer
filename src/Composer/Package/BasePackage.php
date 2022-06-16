@@ -12,8 +12,8 @@
 
 namespace Composer\Package;
 
-use Composer\Repository\RepositoryInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 
 /**
  * Base class for packages providing name storage and default match implementation

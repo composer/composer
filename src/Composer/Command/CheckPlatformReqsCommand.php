@@ -13,13 +13,13 @@
 namespace Composer\Command;
 
 use Composer\Package\Link;
+use Composer\Repository\InstalledRepository;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\Constraint;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Composer\Repository\PlatformRepository;
-use Composer\Repository\RootPackageRepository;
-use Composer\Repository\InstalledRepository;
 
 class CheckPlatformReqsCommand extends BaseCommand
 {

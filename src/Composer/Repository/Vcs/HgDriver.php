@@ -12,13 +12,13 @@
 
 namespace Composer\Repository\Vcs;
 
-use Composer\Config;
 use Composer\Cache;
+use Composer\Config;
+use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
+use Composer\Util\Filesystem;
 use Composer\Util\Hg as HgUtils;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
-use Composer\IO\IOInterface;
 
 /**
  * @author Per Bernhardt <plb@webfactory.de>
