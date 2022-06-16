@@ -442,7 +442,7 @@ EOT
 
         // handler Ctrl+C for unix-like systems
         if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
-            @mkdir($directory, 0777, true);
+            @mkdir($directory, 0o777, true);
             if ($realDir = realpath($directory)) {
                 pcntl_async_signals(true);
                 pcntl_signal(SIGINT, function () use ($realDir): void {
@@ -454,7 +454,7 @@ EOT
         }
         // handler Ctrl+C for Windows on PHP 7.4+
         if (function_exists('sapi_windows_set_ctrl_handler') && PHP_SAPI === 'cli') {
-            @mkdir($directory, 0777, true);
+            @mkdir($directory, 0o777, true);
             if ($realDir = realpath($directory)) {
                 sapi_windows_set_ctrl_handler(function () use ($realDir): void {
                     $fs = new Filesystem();

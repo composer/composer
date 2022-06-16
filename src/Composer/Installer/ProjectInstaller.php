@@ -72,7 +72,7 @@ class ProjectInstaller implements InstallerInterface
             throw new \InvalidArgumentException("Project directory $installPath is not empty.");
         }
         if (!is_dir($installPath)) {
-            mkdir($installPath, 0777, true);
+            mkdir($installPath, 0o777, true);
         }
 
         return $this->downloadManager->download($package, $installPath, $prevPackage);

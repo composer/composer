@@ -264,7 +264,7 @@ class Filesystem
                     $directory.' exists and is not a directory.'
                 );
             }
-            if (!@mkdir($directory, 0777, true)) {
+            if (!@mkdir($directory, 0o777, true)) {
                 throw new \RuntimeException(
                     $directory.' does not exist and could not be created.'
                 );

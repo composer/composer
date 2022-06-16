@@ -350,7 +350,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             // so we make sure if the file is a binary that it is executable
             foreach ($package->getBinaries() as $bin) {
                 if (file_exists($path . '/' . $bin) && !is_executable($path . '/' . $bin)) {
-                    Silencer::call('chmod', $path . '/' . $bin, 0777 & ~umask());
+                    Silencer::call('chmod', $path . '/' . $bin, 0o777 & ~umask());
                 }
             }
         }

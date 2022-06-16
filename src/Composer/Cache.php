@@ -98,7 +98,7 @@ class Cache
             $this->enabled = true;
 
             if (
-                (!is_dir($this->root) && !Silencer::call('mkdir', $this->root, 0777, true))
+                (!is_dir($this->root) && !Silencer::call('mkdir', $this->root, 0o777, true))
                 || !is_writable($this->root)
             ) {
                 $this->io->writeError('<warning>Cannot create cache directory ' . $this->root . ', or directory is not writable. Proceeding without cache</warning>');

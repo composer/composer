@@ -199,7 +199,7 @@ class Factory
             foreach ($dirs as $dir) {
                 if (!file_exists($dir . '/.htaccess')) {
                     if (!is_dir($dir)) {
-                        Silencer::call('mkdir', $dir, 0777, true);
+                        Silencer::call('mkdir', $dir, 0o777, true);
                     }
                     Silencer::call('file_put_contents', $dir . '/.htaccess', 'Deny from all');
                 }
