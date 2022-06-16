@@ -160,10 +160,10 @@ class CurlDownloader
     private function initDownload(callable $resolve, callable $reject, string $origin, string $url, array $options, ?string $copyTo = null, array $attributes = array()): int
     {
         // set defaults in a PHPStan-happy way (array_merge is not well supported)
-        $attributes['retryAuthFailure'] = $attributes['retryAuthFailure'] ?? true;
-        $attributes['redirects'] = $attributes['redirects'] ?? 0;
-        $attributes['retries'] = $attributes['retries'] ?? 0;
-        $attributes['storeAuth'] = $attributes['storeAuth'] ?? false;
+        $attributes['retryAuthFailure'] ??= true;
+        $attributes['redirects'] ??= 0;
+        $attributes['retries'] ??= 0;
+        $attributes['storeAuth'] ??= false;
 
         $originalOptions = $options;
 

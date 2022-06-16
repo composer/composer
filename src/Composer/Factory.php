@@ -165,7 +165,7 @@ class Factory
 
     public static function createConfig(IOInterface $io = null, ?string $cwd = null): Config
     {
-        $cwd = $cwd ?? Platform::getCwd(true);
+        $cwd ??= Platform::getCwd(true);
 
         $config = new Config(true, $cwd);
 
@@ -286,7 +286,7 @@ class Factory
      */
     public function createComposer(IOInterface $io, $localConfig = null, bool $disablePlugins = false, ?string $cwd = null, bool $fullLoad = true, bool $disableScripts = false)
     {
-        $cwd = $cwd ?? Platform::getCwd(true);
+        $cwd ??= Platform::getCwd(true);
 
         // load Composer configuration
         if (null === $localConfig) {

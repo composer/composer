@@ -54,7 +54,7 @@ class HhvmDetector
             $this->executableFinder = $this->executableFinder ?: new ExecutableFinder();
             $hhvmPath = $this->executableFinder->find('hhvm');
             if ($hhvmPath !== null) {
-                $this->processExecutor = $this->processExecutor ?? new ProcessExecutor();
+                $this->processExecutor ??= new ProcessExecutor();
                 $exitCode = $this->processExecutor->execute(
                     ProcessExecutor::escape($hhvmPath).
                     ' --php -d hhvm.jit=0 -r "echo HHVM_VERSION;" 2>/dev/null',

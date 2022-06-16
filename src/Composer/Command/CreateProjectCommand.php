@@ -197,7 +197,7 @@ EOT
             $repositories = (array) $repositories;
         }
 
-        $platformRequirementFilter = $platformRequirementFilter ?? PlatformRequirementFilterFactory::ignoreNothing();
+        $platformRequirementFilter ??= PlatformRequirementFilterFactory::ignoreNothing();
 
         // we need to manually load the configuration to pass the auth credentials to the io interface!
         $io->loadConfiguration($config);
