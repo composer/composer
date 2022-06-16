@@ -52,7 +52,7 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->flags = $flags;
 
         if ($strictName !== true) { // @phpstan-ignore-line
-            trigger_error('$strictName must be set to true in ValidatingArrayLoader\'s constructor as of 2.2, and it will be removed in 3.0', E_USER_DEPRECATED);
+            @trigger_error('$strictName must be set to true in ValidatingArrayLoader\'s constructor as of 2.2, and it will be removed in 3.0', E_USER_DEPRECATED);
         }
     }
 

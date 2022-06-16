@@ -391,7 +391,7 @@ class Config
                 }
 
                 if ($value === 'symlink') {
-                    trigger_error('config.bin-compat "symlink" is deprecated since Composer 2.2, use auto, full (for Windows compatibility) or proxy instead.', E_USER_DEPRECATED);
+                    @trigger_error('config.bin-compat "symlink" is deprecated since Composer 2.2, use auto, full (for Windows compatibility) or proxy instead.', E_USER_DEPRECATED);
                 }
 
                 return $value;

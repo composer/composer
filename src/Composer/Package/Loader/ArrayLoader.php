@@ -52,7 +52,7 @@ class ArrayLoader implements LoaderInterface
     public function load(array $config, string $class = 'Composer\Package\CompletePackage'): BasePackage
     {
         if ($class !== 'Composer\Package\CompletePackage' && $class !== 'Composer\Package\RootPackage') {
-            trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
+            @trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
         }
 
         $package = $this->createObject($config, $class);
@@ -258,7 +258,7 @@ class ArrayLoader implements LoaderInterface
                 }
                 foreach (array('composer', 'php', 'putenv') as $reserved) {
                     if (isset($config['scripts'][$reserved])) {
-                        trigger_error('The `'.$reserved.'` script name is reserved for internal use, please avoid defining it', E_USER_DEPRECATED);
+                        @trigger_error('The `'.$reserved.'` script name is reserved for internal use, please avoid defining it', E_USER_DEPRECATED);
                     }
                 }
                 $package->setScripts($config['scripts']);
