@@ -93,7 +93,7 @@ EOT
     {
         // TODO remove for Symfony 6+ as it is then in the interface
         if (!method_exists($input, '__toString')) { // @phpstan-ignore-line
-            throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
+            throw new \LogicException('Expected an Input instance that is stringable, got '.$input::class);
         }
 
         // extract real command name
@@ -122,7 +122,7 @@ EOT
     {
         // TODO remove for Symfony 6+ as it is then in the interface
         if (!method_exists($input, '__toString')) { // @phpstan-ignore-line
-            throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
+            throw new \LogicException('Expected an Input instance that is stringable, got '.$input::class);
         }
 
         // The COMPOSER env var should not apply to the global execution scope

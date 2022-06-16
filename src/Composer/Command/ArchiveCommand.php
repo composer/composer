@@ -187,7 +187,7 @@ EOT
         }
 
         if (!$package instanceof CompletePackageInterface) {
-            throw new \LogicException('Expected a CompletePackageInterface instance but found '.get_class($package));
+            throw new \LogicException('Expected a CompletePackageInterface instance but found '.$package::class);
         }
 
         return $package;

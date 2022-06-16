@@ -211,7 +211,7 @@ class Application extends BaseApplication
             try {
                 foreach ($this->getPluginCommands() as $command) {
                     if ($this->has($command->getName())) {
-                        $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
+                        $io->writeError('<warning>Plugin command '.$command->getName().' ('.$command::class.') would override a Composer command and has been skipped</warning>');
                     } else {
                         $this->add($command);
                     }
@@ -403,7 +403,7 @@ class Application extends BaseApplication
     {
         $io = $this->getIO();
 
-        if ((get_class($exception) === LogicException::class || $exception instanceof \Error) && $output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
+        if (($exception::class === LogicException::class || $exception instanceof \Error) && $output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
             $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
         }
 
@@ -602,11 +602,11 @@ class Application extends BaseApplication
             foreach ($pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', array('composer' => $composer, 'io' => $this->io)) as $capability) {
                 $newCommands = $capability->getCommands();
                 if (!is_array($newCommands)) {
-                    throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' failed to return an array from getCommands');
+                    throw new \UnexpectedValueException('Plugin capability '.$capability::class.' failed to return an array from getCommands');
                 }
                 foreach ($newCommands as $command) {
                     if (!$command instanceof Command\BaseCommand) {
-                        throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' returned an invalid value, we expected an array of Composer\Command\BaseCommand objects');
+                        throw new \UnexpectedValueException('Plugin capability '.$capability::class.' returned an invalid value, we expected an array of Composer\Command\BaseCommand objects');
                     }
                 }
                 $commands = array_merge($commands, $newCommands);

@@ -538,7 +538,7 @@ class PlatformRepository extends ArrayRepository
     public function addPackage(PackageInterface $package): void
     {
         if (!$package instanceof CompletePackage) {
-            throw new \UnexpectedValueException('Expected CompletePackage but got '.get_class($package));
+            throw new \UnexpectedValueException('Expected CompletePackage but got '.$package::class);
         }
 
         // Skip if overridden

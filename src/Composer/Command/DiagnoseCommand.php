@@ -269,7 +269,7 @@ EOT
                 }
             }
 
-            $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
+            $result[] = '<error>[' . $e::class . '] ' . $e->getMessage() . '</error>';
         }
 
         if (isset($tlsWarning)) {
@@ -473,7 +473,7 @@ EOT
         $hadError = false;
         $hadWarning = false;
         if ($result instanceof \Exception) {
-            $result = '<error>['.get_class($result).'] '.$result->getMessage().'</error>';
+            $result = '<error>['.$result::class.'] '.$result->getMessage().'</error>';
         }
 
         if (!$result) {

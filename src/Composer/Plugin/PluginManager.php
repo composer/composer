@@ -387,7 +387,7 @@ class PluginManager
         if ($sourcePackage === null) {
             trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);
         } elseif (!$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin)) {
-            $this->io->writeError('Skipped loading "'.get_class($plugin).' from '.$sourcePackage->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
+            $this->io->writeError('Skipped loading "'.$plugin::class.' from '.$sourcePackage->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
 
             return;
         }
@@ -399,7 +399,7 @@ class PluginManager
         if ($isGlobalPlugin) {
             $details[] = 'installed globally';
         }
-        $this->io->writeError('Loading plugin '.get_class($plugin).($details ? ' ('.implode(', ', $details).')' : ''), true, IOInterface::DEBUG);
+        $this->io->writeError('Loading plugin '.$plugin::class.($details ? ' ('.implode(', ', $details).')' : ''), true, IOInterface::DEBUG);
         $this->plugins[] = $plugin;
         $plugin->activate($this->composer, $this->io);
 
@@ -426,7 +426,7 @@ class PluginManager
             return;
         }
 
-        $this->io->writeError('Unloading plugin '.get_class($plugin), true, IOInterface::DEBUG);
+        $this->io->writeError('Unloading plugin '.$plugin::class, true, IOInterface::DEBUG);
         unset($this->plugins[$index]);
         $plugin->deactivate($this->composer, $this->io);
 
@@ -446,7 +446,7 @@ class PluginManager
      */
     public function uninstallPlugin(PluginInterface $plugin): void
     {
-        $this->io->writeError('Uninstalling plugin '.get_class($plugin), true, IOInterface::DEBUG);
+        $this->io->writeError('Uninstalling plugin '.$plugin::class, true, IOInterface::DEBUG);
         $plugin->uninstall($this->composer, $this->io);
     }
 
@@ -586,7 +586,7 @@ class PluginManager
             array_key_exists($capability, $capabilities)
             && (empty($capabilities[$capability]) || !is_string($capabilities[$capability]) || !trim($capabilities[$capability]))
         ) {
-            throw new \UnexpectedValueException('Plugin '.get_class($plugin).' provided invalid capability class name(s), got '.var_export($capabilities[$capability], true));
+            throw new \UnexpectedValueException('Plugin '.$plugin::class.' provided invalid capability class name(s), got '.var_export($capabilities[$capability], true));
         }
 
         return null;
@@ -607,7 +607,7 @@ class PluginManager
     {
         if ($capabilityClass = $this->getCapabilityImplementationClassName($plugin, $capabilityClassName)) {
             if (!class_exists($capabilityClass)) {
-                throw new \RuntimeException("Cannot instantiate Capability, as class $capabilityClass from plugin ".get_class($plugin)." does not exist.");
+                throw new \RuntimeException("Cannot instantiate Capability, as class $capabilityClass from plugin ".$plugin::class." does not exist.");
             }
 
             $ctorArgs['plugin'] = $plugin;

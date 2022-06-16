@@ -1293,7 +1293,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             return $packageInstances;
         } catch (\Exception $e) {
-            throw new \RuntimeException('Could not load packages '.($packages[0]['name'] ?? json_encode($packages)).' in '.$this->getRepoName().($source ? ' from '.$source : '').': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
+            throw new \RuntimeException('Could not load packages '.($packages[0]['name'] ?? json_encode($packages)).' in '.$this->getRepoName().($source ? ' from '.$source : '').': ['.$e::class.'] '.$e->getMessage(), 0, $e);
         }
     }
 

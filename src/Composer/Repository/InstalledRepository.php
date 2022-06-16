@@ -272,6 +272,6 @@ class InstalledRepository extends CompositeRepository
             return;
         }
 
-        throw new \LogicException('An InstalledRepository can not contain a repository of type '.get_class($repository).' ('.$repository->getRepoName().')');
+        throw new \LogicException('An InstalledRepository can not contain a repository of type '.$repository::class.' ('.$repository->getRepoName().')');
     }
 }

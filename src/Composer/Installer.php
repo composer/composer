@@ -1010,7 +1010,7 @@ class Installer
         foreach ($packages as $key => $package) {
             if ($package instanceof AliasPackage) {
                 $alias = (string) $package->getAliasOf();
-                $className = get_class($package);
+                $className = $package::class;
                 $packages[$key] = new $className($packages[$alias], $package->getVersion(), $package->getPrettyVersion());
             }
         }
