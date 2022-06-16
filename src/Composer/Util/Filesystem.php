@@ -915,9 +915,9 @@ class Filesystem
     public function safeCopy(string $source, string $target)
     {
         if (!file_exists($target) || !file_exists($source) || !$this->filesAreEqual($source, $target)) {
-            $sourceHandle = fopen($source, 'r');
+            $sourceHandle = fopen($source, 'rb');
             assert($sourceHandle !== false, 'Could not open "'.$source.'" for reading.');
-            $targetHandle = fopen($target, 'w+');
+            $targetHandle = fopen($target, 'w+b');
             assert($targetHandle !== false, 'Could not open "'.$target.'" for writing.');
 
             stream_copy_to_stream($sourceHandle, $targetHandle);

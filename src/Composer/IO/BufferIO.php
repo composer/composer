@@ -40,7 +40,7 @@ class BufferIO extends ConsoleIO
         $input = new StringInput($input);
         $input->setInteractive(false);
 
-        $output = new StreamOutput(fopen('php://memory', 'rw'), $verbosity, $formatter ? $formatter->isDecorated() : false, $formatter);
+        $output = new StreamOutput(fopen('php://memory', 'rwb'), $verbosity, $formatter ? $formatter->isDecorated() : false, $formatter);
 
         parent::__construct($input, $output, new HelperSet(array(
             new QuestionHelper(),
@@ -94,7 +94,7 @@ class BufferIO extends ConsoleIO
      */
     private function createStream(array $inputs)
     {
-        $stream = fopen('php://memory', 'r+');
+        $stream = fopen('php://memory', 'r+b');
 
         foreach ($inputs as $input) {
             fwrite($stream, $input.PHP_EOL);

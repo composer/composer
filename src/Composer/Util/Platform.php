@@ -200,7 +200,7 @@ class Platform
     public static function isTty($fd = null): bool
     {
         if ($fd === null) {
-            $fd = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'w');
+            $fd = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'wb');
             if ($fd === false) {
                 return false;
             }

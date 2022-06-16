@@ -155,7 +155,7 @@ class BinaryInstaller
             return 'call';
         }
 
-        $handle = fopen($bin, 'r');
+        $handle = fopen($bin, 'rb');
         $line = fgets($handle);
         fclose($handle);
         if (Preg::isMatch('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {

@@ -135,7 +135,7 @@ class Application extends BaseApplication
         $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
         $this->disableScriptsByDefault = $input->hasParameterOption('--no-scripts');
 
-        $stdin = defined('STDIN') ? STDIN : fopen('php://stdin', 'r');
+        $stdin = defined('STDIN') ? STDIN : fopen('php://stdin', 'rb');
         if (Platform::getEnv('COMPOSER_NO_INTERACTION') || $stdin === false || !Platform::isTty($stdin)) {
             $input->setInteractive(false);
         }

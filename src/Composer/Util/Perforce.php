@@ -482,7 +482,7 @@ class Perforce
     public function writeP4ClientSpec(): void
     {
         $clientSpec = $this->getP4ClientSpec();
-        $spec = fopen($clientSpec, 'w');
+        $spec = fopen($clientSpec, 'wb');
         try {
             $this->writeClientSpecToFile($spec);
         } catch (\Exception $e) {
