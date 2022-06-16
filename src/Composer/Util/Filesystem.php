@@ -462,11 +462,11 @@ class Filesystem
         }
 
         $commonPath = $to;
-        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !Preg::isMatch('{^[A-Z]:/?$}i', $commonPath)) {
+        while (!str_starts_with($from.'/', $commonPath.'/')   && '/' !== $commonPath && !Preg::isMatch('{^[A-Z]:/?$}i', $commonPath)) {
             $commonPath = strtr(\dirname($commonPath), '\\', '/');
         }
 
-        if (0 !== strpos($from, $commonPath) || '/' === $commonPath) {
+        if (  !str_starts_with($from, $commonPath) || '/' === $commonPath) {
             return $to;
         }
 
@@ -506,16 +506,16 @@ class Filesystem
         }
 
         $commonPath = $to;
-        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !Preg::isMatch('{^[A-Z]:/?$}i', $commonPath) && '.' !== $commonPath) {
+        while (!str_starts_with($from.'/', $commonPath.'/')   && '/' !== $commonPath && !Preg::isMatch('{^[A-Z]:/?$}i', $commonPath) && '.' !== $commonPath) {
             $commonPath = strtr(\dirname($commonPath), '\\', '/');
         }
 
-        if (0 !== strpos($from, $commonPath) || '/' === $commonPath || '.' === $commonPath) {
+        if (  !str_starts_with($from, $commonPath) || '/' === $commonPath || '.' === $commonPath) {
             return var_export($to, true);
         }
 
         $commonPath = rtrim($commonPath, '/') . '/';
-        if (strpos($to, $from.'/') === 0) {
+        if (str_starts_with($to, $from.'/')  ) {
             return '__DIR__ . '.var_export((string) substr($to, \strlen($from)), true);
         }
         $sourcePathDepth = substr_count((string) substr($from, \strlen($commonPath)), '/') + (int) $directories;
@@ -537,7 +537,7 @@ class Filesystem
      */
     public function isAbsolutePath(string $path)
     {
-        return strpos($path, '/') === 0 || substr($path, 1, 1) === ':' || strpos($path, '\\\\') === 0;
+        return str_starts_with($path, '/')   || substr($path, 1, 1) === ':' || str_starts_with($path, '\\\\')  ;
     }
 
     /**
@@ -575,7 +575,7 @@ class Filesystem
         $absolute = '';
 
         // extract windows UNC paths e.g. \\foo\bar
-        if (strpos($path, '//') === 0 && \strlen($path) > 2) {
+        if (str_starts_with($path, '//')   && \strlen($path) > 2) {
             $absolute = '//';
             $path = substr($path, 2);
         }
@@ -586,7 +586,7 @@ class Filesystem
             $path = substr($path, \strlen($prefix));
         }
 
-        if (strpos($path, '/') === 0) {
+        if (str_starts_with($path, '/')  ) {
             $absolute = '/';
             $path = substr($path, 1);
         }

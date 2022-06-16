@@ -41,7 +41,7 @@ class ZipArchiver implements ArchiverInterface
                 /** @var \SplFileInfo $file */
                 $filepath = strtr($file->getPath()."/".$file->getFilename(), '\\', '/');
                 $localname = $filepath;
-                if (strpos($localname, $sources . '/') === 0) {
+                if (str_starts_with($localname, $sources . '/')  ) {
                     $localname = substr($localname, strlen($sources . '/'));
                 }
                 if ($file->isDir()) {

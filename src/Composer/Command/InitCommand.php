@@ -509,7 +509,7 @@ EOT
      */
     public function namespaceFromPackageName(string $packageName): ?string
     {
-        if (!$packageName || strpos($packageName, '/') === false) {
+        if (!$packageName || !str_contains($packageName, '/')  ) {
             return null;
         }
 
@@ -600,7 +600,7 @@ EOT
         if (file_exists($ignoreFile)) {
             $contents = file_get_contents($ignoreFile);
 
-            if (strpos($contents, "\n") !== 0) {
+            if (!str_starts_with($contents, "\n")  ) {
                 $contents .= "\n";
             }
         }

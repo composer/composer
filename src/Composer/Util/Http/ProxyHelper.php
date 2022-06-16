@@ -178,9 +178,9 @@ class ProxyHelper
 
         if (isset($proxy['port'])) {
             $proxyUrl .= ':' . $proxy['port'];
-        } elseif (strpos($proxyUrl, 'http://') === 0) {
+        } elseif (str_starts_with($proxyUrl, 'http://')  ) {
             $proxyUrl .= ':80';
-        } elseif (strpos($proxyUrl, 'https://') === 0) {
+        } elseif (str_starts_with($proxyUrl, 'https://')  ) {
             $proxyUrl .= ':443';
         }
 

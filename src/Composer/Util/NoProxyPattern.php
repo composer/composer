@@ -221,7 +221,7 @@ class NoProxyPattern
         $modified = false;
 
         // Check for a CIDR prefix-length
-        if (strpos($host, '/') !== false) {
+        if (str_contains($host, '/')  ) {
             list($host, $prefix) = explode('/', $host);
 
             if (!$allowPrefix || !$this->validateInt($prefix, 0, 128)) {

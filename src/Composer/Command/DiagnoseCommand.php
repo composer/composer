@@ -151,7 +151,7 @@ EOT
         $io->write('Checking disk free space: ', false);
         $this->outputResult($this->checkDiskSpace($config));
 
-        if (strpos(__FILE__, 'phar:') === 0) {
+        if (str_starts_with(__FILE__, 'phar:')  ) {
             $io->write('Checking pubkeys: ', false);
             $this->outputResult($this->checkPubKeys($config));
 
@@ -165,7 +165,7 @@ EOT
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
         $phpPkg = $platformRepo->findPackage('php', '*');
         $phpVersion = $phpPkg->getPrettyVersion();
-        if ($phpPkg instanceof CompletePackageInterface && false !== strpos($phpPkg->getDescription(), 'overridden')) {
+        if ($phpPkg instanceof CompletePackageInterface &&   str_contains($phpPkg->getDescription(), 'overridden')) {
             $phpVersion .= ' - ' . $phpPkg->getDescription();
         }
 
@@ -484,9 +484,9 @@ EOT
                 $result = array($result);
             }
             foreach ($result as $message) {
-                if (false !== strpos($message, '<error>')) {
+                if (  str_contains($message, '<error>')) {
                     $hadError = true;
-                } elseif (false !== strpos($message, '<warning>')) {
+                } elseif (  str_contains($message, '<warning>')) {
                     $hadWarning = true;
                 }
             }
@@ -579,11 +579,11 @@ EOT
         if (Preg::isMatch('{Configure Command(?: *</td><td class="v">| *=> *)(.*?)(?:</td>|$)}m', $phpinfo, $match)) {
             $configure = $match[1];
 
-            if (false !== strpos($configure, '--enable-sigchild')) {
+            if (  str_contains($configure, '--enable-sigchild')) {
                 $warnings['sigchild'] = true;
             }
 
-            if (false !== strpos($configure, '--with-curlwrappers')) {
+            if (  str_contains($configure, '--with-curlwrappers')) {
                 $warnings['curlwrappers'] = true;
             }
         }

@@ -202,7 +202,7 @@ class RootPackageLoader extends ArrayLoader
                     'alias' => $match[2],
                     'alias_normalized' => $this->versionParser->normalize($match[2], $reqVersion),
                 );
-            } elseif (strpos($reqVersion, ' as ') !== false) {
+            } elseif (str_contains($reqVersion, ' as ')  ) {
                 throw new \UnexpectedValueException('Invalid alias definition in "'.$reqName.'": "'.$reqVersion.'". Aliases should be in the form "exact-version as other-exact-version".');
             }
         }

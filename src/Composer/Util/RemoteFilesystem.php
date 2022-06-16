@@ -251,7 +251,7 @@ class RemoteFilesystem
         $origFileUrl = $fileUrl;
 
         if (isset($options['gitlab-token'])) {
-            $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['gitlab-token'];
+            $fileUrl .= (  !str_contains($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['gitlab-token'];
             unset($options['gitlab-token']);
         }
 
@@ -259,7 +259,7 @@ class RemoteFilesystem
             $options['http']['ignore_errors'] = true;
         }
 
-        if ($this->degradedMode && strpos($fileUrl, 'http://repo.packagist.org/') === 0) {
+        if ($this->degradedMode && str_starts_with($fileUrl, 'http://repo.packagist.org/')  ) {
             // access packagist using the resolved IPv4 instead of the hostname to force IPv4 protocol
             $fileUrl = 'http://' . gethostbyname('repo.packagist.org') . substr($fileUrl, 20);
             $degradedPackagist = true;
@@ -275,11 +275,11 @@ class RemoteFilesystem
 
         $proxy = $this->proxyManager->getProxyForRequest($fileUrl);
         $usingProxy = $proxy->getFormattedUrl(' using proxy (%s)');
-        $this->io->writeError((strpos($origFileUrl, 'http') === 0 ? 'Downloading ' : 'Reading ') . Url::sanitize($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
+        $this->io->writeError((str_starts_with($origFileUrl, 'http')   ? 'Downloading ' : 'Reading ') . Url::sanitize($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
         unset($origFileUrl, $proxy, $usingProxy);
 
         // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
-        if ((!Preg::isMatch('{^http://(repo\.)?packagist\.org/p/}', $fileUrl) || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && empty($degradedPackagist)) {
+        if ((!Preg::isMatch('{^http://(repo\.)?packagist\.org/p/}', $fileUrl) || (  !str_contains($fileUrl, '$') &&   !str_contains($fileUrl, '%24'))) && empty($degradedPackagist)) {
             $this->config->prohibitUrlByConfig($fileUrl, $this->io);
         }
 
@@ -344,7 +344,7 @@ class RemoteFilesystem
         }
         restore_error_handler();
         if (isset($e) && !$this->retry) {
-            if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
+            if (!$this->degradedMode &&   str_contains($e->getMessage(), 'Operation timed out')) {
                 $this->degradedMode = true;
                 $this->io->writeError('');
                 $this->io->writeError(array(
@@ -383,7 +383,7 @@ class RemoteFilesystem
         // check for gitlab 404 when downloading archives
         if ($statusCode === 404
             && in_array($originUrl, $this->config->get('gitlab-domains'), true)
-            && false !== strpos($fileUrl, 'archive.zip')
+            &&   str_contains($fileUrl, 'archive.zip')
         ) {
             $result = false;
             if ($retryAuthFailure) {
@@ -419,7 +419,7 @@ class RemoteFilesystem
         }
 
         // decode gzip
-        if ($result && extension_loaded('zlib') && strpos($fileUrl, 'http') === 0 && !$hasFollowedRedirect) {
+        if ($result && extension_loaded('zlib') && str_starts_with($fileUrl, 'http')   && !$hasFollowedRedirect) {
             try {
                 $result = $this->decodeResult($result, $http_response_header);
             } catch (\Exception $e) {
@@ -479,7 +479,7 @@ class RemoteFilesystem
                 $e->setHeaders($http_response_header);
             }
 
-            if (!$this->degradedMode && false !== strpos($e->getMessage(), 'Operation timed out')) {
+            if (!$this->degradedMode &&   str_contains($e->getMessage(), 'Operation timed out')) {
                 $this->degradedMode = true;
                 $this->io->writeError('');
                 $this->io->writeError(array(

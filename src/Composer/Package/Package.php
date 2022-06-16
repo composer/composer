@@ -741,7 +741,7 @@ class Package extends BasePackage
             return array();
         }
 
-        if ($urlType === 'dist' && false !== strpos($url, '%')) {
+        if ($urlType === 'dist' &&   str_contains($url, '%')) {
             $url = ComposerMirror::processUrl($url, $this->name, $this->version, $ref, $type, $this->prettyVersion);
         }
 

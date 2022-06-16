@@ -119,7 +119,7 @@ class GitLabDriver extends VcsDriver
             $this->protocol = $protocol === 'git' ? 'ssh' : 'http';
         }
 
-        if (false !== strpos($this->originUrl, ':') || false !== strpos($this->originUrl, '/')) {
+        if (  str_contains($this->originUrl, ':') ||   str_contains($this->originUrl, '/')) {
             $this->hasNonstandardOrigin = true;
         }
 

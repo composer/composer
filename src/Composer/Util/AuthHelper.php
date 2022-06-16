@@ -290,7 +290,7 @@ class AuthHelper
     public function isPublicBitBucketDownload(string $urlToBitBucketFile): bool
     {
         $domain = parse_url($urlToBitBucketFile, PHP_URL_HOST);
-        if (strpos($domain, 'bitbucket.org') === false) {
+        if (!str_contains($domain, 'bitbucket.org')  ) {
             // Bitbucket downloads are hosted on amazonaws.
             // We do not need to authenticate there at all
             return true;

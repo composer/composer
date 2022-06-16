@@ -39,7 +39,7 @@ class RequestProxy
         $this->url = $url;
         $this->contextOptions = $contextOptions;
         $this->formattedUrl = $formattedUrl;
-        $this->isSecure = 0 === strpos($url, 'https://');
+        $this->isSecure =   str_starts_with($url, 'https://');
     }
 
     /**

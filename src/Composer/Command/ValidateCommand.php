@@ -244,7 +244,7 @@ EOT
 
         foreach ($messages as $style => $msgs) {
             foreach ($msgs as $msg) {
-                if (strpos($msg, '#') === 0) {
+                if (str_starts_with($msg, '#')  ) {
                     $io->writeError('<' . $style . '>' . $msg . '</' . $style . '>');
                 } else {
                     $io->writeError($msg);

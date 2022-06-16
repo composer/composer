@@ -631,7 +631,7 @@ EOT
             ),
         );
 
-        if ($input->getOption('global') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]) || strpos($settingKey, 'extra.') === 0)) {
+        if ($input->getOption('global') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]) || str_starts_with($settingKey, 'extra.')  )) {
             throw new \InvalidArgumentException('The ' . $settingKey . ' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global composer.json');
         }
         if ($input->getOption('unset') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]))) {
@@ -913,7 +913,7 @@ EOT
                 $source = ' (' . $this->config->getSourceOfValue($k . $key) . ')';
             }
 
-            if (null !== $k && 0 === strpos($k, 'repositories')) {
+            if (null !== $k &&   str_starts_with($k, 'repositories')) {
                 $link = 'https://getcomposer.org/doc/05-repositories.md';
             } else {
                 $id = Preg::replace('{\..*$}', '', $k === '' || $k === null ? (string) $key : $k);

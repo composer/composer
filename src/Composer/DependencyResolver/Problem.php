@@ -236,7 +236,7 @@ class Problem
 
             // handle php extensions
             if (0 === stripos($packageName, 'ext-')) {
-                if (false !== strpos($packageName, ' ')) {
+                if (  str_contains($packageName, ' ')) {
                     return array('- ', "PHP extension ".$packageName.' should be required as '.str_replace(' ', '-', $packageName).'.');
                 }
 

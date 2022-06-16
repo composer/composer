@@ -486,8 +486,8 @@ class HttpDownloader
         }
 
         if (
-            false !== strpos($e->getMessage(), 'Resolving timed out')
-            || false !== strpos($e->getMessage(), 'Could not resolve host')
+              str_contains($e->getMessage(), 'Resolving timed out')
+            ||   str_contains($e->getMessage(), 'Could not resolve host')
         ) {
             Silencer::suppress();
             $testConnectivity = file_get_contents('https://8.8.8.8', false, stream_context_create(array(

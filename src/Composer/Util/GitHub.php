@@ -154,7 +154,7 @@ class GitHub
 
         foreach ($headers as $header) {
             $header = trim($header);
-            if (false === strpos($header, 'X-RateLimit-')) {
+            if (  !str_contains($header, 'X-RateLimit-')) {
                 continue;
             }
             list($type, $value) = explode(':', $header, 2);

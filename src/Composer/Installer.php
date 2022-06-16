@@ -557,7 +557,7 @@ class Installer
             }
 
             // output op if lock file is enabled, but alias op only in debug verbosity
-            if ($this->config->get('lock') && (false === strpos($operation->getOperationType(), 'Alias') || $this->io->isDebug())) {
+            if ($this->config->get('lock') && (  !str_contains($operation->getOperationType(), 'Alias') || $this->io->isDebug())) {
                 $this->io->writeError('  - ' . $operation->show(true));
             }
         }
@@ -768,7 +768,7 @@ class Installer
         } else {
             foreach ($localRepoTransaction->getOperations() as $operation) {
                 // output op, but alias op only in debug verbosity
-                if (false === strpos($operation->getOperationType(), 'Alias') || $this->io->isDebug()) {
+                if (  !str_contains($operation->getOperationType(), 'Alias') || $this->io->isDebug()) {
                     $this->io->writeError('  - ' . $operation->show(false));
                 }
             }

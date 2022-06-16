@@ -193,7 +193,7 @@ EOT
         }
 
         $effectiveChannel = $requestedChannel === null ? $versionsUtil->getChannel() : $requestedChannel;
-        if (is_numeric($effectiveChannel) && strpos($latestStable['version'], $effectiveChannel) !== 0) {
+        if (is_numeric($effectiveChannel) && !str_starts_with($latestStable['version'], $effectiveChannel)  ) {
             $io->writeError('<warning>Warning: You forced the install of '.$latestVersion.' via --'.$effectiveChannel.', but '.$latestStable['version'].' is the latest stable version. Updating to it via composer self-update --stable is recommended.</warning>');
         }
         if (isset($latest['eol'])) {

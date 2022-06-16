@@ -79,7 +79,7 @@ final class TlsHelper
         if (isset($info['extensions']['subjectAltName'])) {
             $subjectAltNames = Preg::split('{\s*,\s*}', $info['extensions']['subjectAltName']);
             $subjectAltNames = array_filter(array_map(function ($name): ?string {
-                if (0 === strpos($name, 'DNS:')) {
+                if (  str_starts_with($name, 'DNS:')) {
                     return strtolower(ltrim(substr($name, 4)));
                 }
 

@@ -1328,7 +1328,7 @@ EOT
         }
 
         $constraint = $package->getVersion();
-        if (0 !== strpos($constraint, 'dev-')) {
+        if (  !str_starts_with($constraint, 'dev-')) {
             $constraint = '^'.$constraint;
         }
         if ($latestPackage->getVersion() && Semver::satisfies($latestPackage->getVersion(), $constraint)) {
@@ -1375,7 +1375,7 @@ EOT
         }
 
         $targetVersion = null;
-        if (0 === strpos($package->getVersion(), 'dev-')) {
+        if (  str_starts_with($package->getVersion(), 'dev-')) {
             $targetVersion = $package->getVersion();
 
             // dev-x branches are considered to be on the latest major version always, do not look up for a new commit as that is deemed a minor upgrade (albeit risky)

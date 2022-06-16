@@ -38,7 +38,7 @@ class Version
             $patch = '.'.self::convertAlphaVersionToIntVersion($matches['patch']);
         }
 
-        $isFips = strpos($matches['suffix'], 'fips') !== false;
+        $isFips = str_contains($matches['suffix'], 'fips')  ;
         $suffix = strtr('-'.ltrim($matches['suffix'], '-'), array('-fips' => '', '-pre' => '-alpha'));
 
         return rtrim($matches['version'].$patch.$suffix, '-');

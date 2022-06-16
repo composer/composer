@@ -682,7 +682,7 @@ class InstallationManager
                         'name' => $package->getPrettyName(),
                         'version' => $package->getVersion(),
                     );
-                    if (strpos($repoUrl, 'packagist.org/') !== false) {
+                    if (str_contains($repoUrl, 'packagist.org/')  ) {
                         if (isset(FileDownloader::$downloadMetadata[$package->getName()])) {
                             $packageNotification['downloaded'] = FileDownloader::$downloadMetadata[$package->getName()];
                         } else {

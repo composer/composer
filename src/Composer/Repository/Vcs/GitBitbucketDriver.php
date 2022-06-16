@@ -215,7 +215,7 @@ class GitBitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getFileContent($file, $identifier);
         }
 
-        if (strpos($identifier, '/') !== false) {
+        if (str_contains($identifier, '/')  ) {
             $branches = $this->getBranches();
             if (isset($branches[$identifier])) {
                 $identifier = $branches[$identifier];
@@ -242,7 +242,7 @@ class GitBitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getChangeDate($identifier);
         }
 
-        if (strpos($identifier, '/') !== false) {
+        if (str_contains($identifier, '/')  ) {
             $branches = $this->getBranches();
             if (isset($branches[$identifier])) {
                 $identifier = $branches[$identifier];
@@ -394,7 +394,7 @@ class GitBitbucketDriver extends VcsDriver
         } catch (TransportException $e) {
             $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process, $this->httpDownloader);
 
-            if (in_array($e->getCode(), array(403, 404), true) || (401 === $e->getCode() && strpos($e->getMessage(), 'Could not authenticate against') === 0)) {
+            if (in_array($e->getCode(), array(403, 404), true) || (401 === $e->getCode() && str_starts_with($e->getMessage(), 'Could not authenticate against')  )) {
                 if (!$this->io->hasAuthentication($this->originUrl)
                     && $bitbucketUtil->authorizeOAuth($this->originUrl)
                 ) {

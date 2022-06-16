@@ -155,8 +155,8 @@ class VersionGuesser
                 if ($branch && Preg::isMatch('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\(HEAD detached at \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if (
                         $match[1] === '(no branch)'
-                        || strpos($match[1], '(detached ') === 0
-                        || strpos($match[1], '(HEAD detached at') === 0
+                        || str_starts_with($match[1], '(detached ')  
+                        || str_starts_with($match[1], '(HEAD detached at')  
                     ) {
                         $version = 'dev-' . $match[2];
                         $prettyVersion = $version;
@@ -247,7 +247,7 @@ class VersionGuesser
         if (0 === $this->process->execute('hg branch', $output, $path)) {
             $branch = trim($output);
             $version = $this->versionParser->normalizeBranch($branch);
-            $isFeatureBranch = 0 === strpos($version, 'dev-');
+            $isFeatureBranch =   str_starts_with($version, 'dev-');
 
             if (VersionParser::DEFAULT_BRANCH_ALIAS === $version) {
                 return array('version' => $version, 'commit' => null, 'pretty_version' => 'dev-'.$branch);
@@ -306,8 +306,8 @@ class VersionGuesser
             // and sort numeric branches below named ones, to make sure if the branch has the same distance from main and 1.10 and 1.9 for example, main is picked
             // and sort using natural sort so that 1.10 will appear before 1.9
             usort($branches, function ($a, $b): int {
-                $aRemote = 0 === strpos($a, 'remotes/');
-                $bRemote = 0 === strpos($b, 'remotes/');
+                $aRemote =   str_starts_with($a, 'remotes/');
+                $bRemote =   str_starts_with($b, 'remotes/');
 
                 if ($aRemote !== $bRemote) {
                     return $aRemote ? 1 : -1;

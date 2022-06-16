@@ -140,7 +140,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
         $repoConfig['url'] = rtrim($repoConfig['url'], '/');
 
-        if (strpos($repoConfig['url'], 'https?') === 0) {
+        if (str_starts_with($repoConfig['url'], 'https?')  ) {
             $repoConfig['url'] = (extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
         }
 
@@ -673,7 +673,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected function configurePackageTransportOptions(PackageInterface $package): void
     {
         foreach ($package->getDistUrls() as $url) {
-            if (strpos($url, $this->baseUrl) === 0) {
+            if (str_starts_with($url, $this->baseUrl)  ) {
                 $package->setTransportOptions($this->options);
 
                 return;
@@ -1012,7 +1012,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         $jsonUrlParts = parse_url(strtr($this->url, '\\', '/'));
 
-        if (isset($jsonUrlParts['path']) && false !== strpos($jsonUrlParts['path'], '.json')) {
+        if (isset($jsonUrlParts['path']) &&   str_contains($jsonUrlParts['path'], '.json')) {
             return $this->url;
         }
 
@@ -1029,7 +1029,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $this->rootData;
         }
 
-        if (!extension_loaded('openssl') && strpos($this->url, 'https') === 0) {
+        if (!extension_loaded('openssl') && str_starts_with($this->url, 'https')  ) {
             throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
 

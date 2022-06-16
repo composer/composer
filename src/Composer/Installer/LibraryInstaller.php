@@ -292,8 +292,8 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         if ($targetDownloadPath !== $initialDownloadPath) {
             // if the target and initial dirs intersect, we force a remove + install
             // to avoid the rename wiping the target dir as part of the initial dir cleanup
-            if (strpos($initialDownloadPath, $targetDownloadPath) === 0
-                || strpos($targetDownloadPath, $initialDownloadPath) === 0
+            if (str_starts_with($initialDownloadPath, $targetDownloadPath)  
+                || str_starts_with($targetDownloadPath, $initialDownloadPath)  
             ) {
                 $promise = $this->removeCode($initial);
                 if (!$promise instanceof PromiseInterface) {

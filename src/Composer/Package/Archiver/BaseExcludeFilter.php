@@ -87,7 +87,7 @@ abstract class BaseExcludeFilter
                 function ($line) use ($lineParser) {
                     $line = trim($line);
 
-                    if (!$line || 0 === strpos($line, '#')) {
+                    if (!$line ||   str_starts_with($line, '#')) {
                         return null;
                     }
 

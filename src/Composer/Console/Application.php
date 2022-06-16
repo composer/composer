@@ -107,8 +107,8 @@ class Application extends BaseApplication
                 $lastError = error_get_last();
 
                 if ($lastError && $lastError['message'] &&
-                   (strpos($lastError['message'], 'Allowed memory') !== false /*Zend PHP out of memory error*/ ||
-                    strpos($lastError['message'], 'exceeded memory') !== false /*HHVM out of memory errors*/)) {
+                   (str_contains($lastError['message'], 'Allowed memory')   /*Zend PHP out of memory error*/ ||
+                    str_contains($lastError['message'], 'exceeded memory')   /*HHVM out of memory errors*/)) {
                     echo "\n". 'Check https://getcomposer.org/doc/articles/troubleshooting.md#memory-limit-errors for more info on how to handle out of memory errors.';
                 }
             });
@@ -425,12 +425,12 @@ class Application extends BaseApplication
         }
         Silencer::restore();
 
-        if (Platform::isWindows() && false !== strpos($exception->getMessage(), 'The system cannot find the path specified')) {
+        if (Platform::isWindows() &&   str_contains($exception->getMessage(), 'The system cannot find the path specified')) {
             $io->writeError('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>', true, IOInterface::QUIET);
             $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#-the-system-cannot-find-the-path-specified-windows- for details</error>', true, IOInterface::QUIET);
         }
 
-        if (false !== strpos($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
+        if (  str_contains($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
             $io->writeError('<error>The following exception is caused by a lack of memory or swap, or not having swap configured</error>', true, IOInterface::QUIET);
             $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>', true, IOInterface::QUIET);
         }
@@ -550,7 +550,7 @@ class Application extends BaseApplication
             new Command\BumpCommand(),
         ));
 
-        if (strpos(__FILE__, 'phar:') === 0 || '1' === Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING')) {
+        if (str_starts_with(__FILE__, 'phar:')   || '1' === Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING')) {
             $commands[] = new Command\SelfUpdateCommand();
         }
 

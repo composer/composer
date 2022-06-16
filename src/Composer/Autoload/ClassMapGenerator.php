@@ -68,7 +68,7 @@ class ClassMapGenerator
         if (is_string($path)) {
             if (is_file($path)) {
                 $path = array(new \SplFileInfo($path));
-            } elseif (is_dir($path) || strpos($path, '*') !== false) {
+            } elseif (is_dir($path) || str_contains($path, '*')  ) {
                 $path = Finder::create()->files()->followLinks()->name('/\.(php|inc|hh)$/')->in($path);
             } else {
                 throw new \RuntimeException(
@@ -129,7 +129,7 @@ class ClassMapGenerator
 
             foreach ($classes as $class) {
                 // skip classes not within the given namespace prefix
-                if (null === $autoloadType && null !== $namespace && '' !== $namespace && 0 !== strpos($class, $namespace)) {
+                if (null === $autoloadType && null !== $namespace && '' !== $namespace &&   !str_starts_with($class, $namespace)) {
                     continue;
                 }
 
@@ -169,7 +169,7 @@ class ClassMapGenerator
 
         foreach ($classes as $class) {
             // silently skip if ns doesn't have common root
-            if ('' !== $baseNamespace && 0 !== strpos($class, $baseNamespace)) {
+            if ('' !== $baseNamespace &&   !str_starts_with($class, $baseNamespace)) {
                 continue;
             }
             // transform class name to file path and validate

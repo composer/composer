@@ -227,7 +227,7 @@ class JsonFile
         }
 
         // Prepend with file:// only when not using a special schema already (e.g. in the phar)
-        if (false === strpos($schemaFile, '://')) {
+        if (  !str_contains($schemaFile, '://')) {
             $schemaFile = 'file://' . $schemaFile;
         }
 

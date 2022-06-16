@@ -461,7 +461,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     protected function processUrl(PackageInterface $package, string $url): string
     {
-        if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
+        if (!extension_loaded('openssl') &&   str_starts_with($url, 'https:')) {
             throw new \RuntimeException('You must enable the openssl extension to download files via https');
         }
 

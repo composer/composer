@@ -493,7 +493,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $exceptionExtra = '';
 
         // reference was not found (prints "fatal: reference is not a tree: $ref")
-        if (false !== strpos($this->process->getErrorOutput(), $reference)) {
+        if (  str_contains($this->process->getErrorOutput(), $reference)) {
             $this->io->writeError('    <warning>'.$reference.' is gone (history was rewritten?)</warning>');
             $exceptionExtra = "\nIt looks like the commit hash is not available in the repository, maybe ".($package->isDev() ? 'the commit was removed from the branch' : 'the tag was recreated').'? Run "composer update '.$package->getPrettyName().'" to resolve this.';
         }

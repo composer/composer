@@ -168,7 +168,7 @@ class CurlDownloader
         $originalOptions = $options;
 
         // check URL can be accessed (i.e. is not insecure), but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
-        if (!Preg::isMatch('{^http://(repo\.)?packagist\.org/p/}', $url) || (false === strpos($url, '$') && false === strpos($url, '%24'))) {
+        if (!Preg::isMatch('{^http://(repo\.)?packagist\.org/p/}', $url) || (  !str_contains($url, '$') &&   !str_contains($url, '%24'))) {
             $this->config->prohibitUrlByConfig($url, $this->io, $options);
         }
 
@@ -219,7 +219,7 @@ class CurlDownloader
 
         $version = curl_version();
         $features = $version['features'];
-        if (0 === strpos($url, 'https://') && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features)) {
+        if (  str_starts_with($url, 'https://') && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features)) {
             curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
         }
 
@@ -361,7 +361,7 @@ class CurlDownloader
                         (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')
                         && (
                             in_array($errno, array(7 /* CURLE_COULDNT_CONNECT */, 16 /* CURLE_HTTP2 */, 92 /* CURLE_HTTP2_STREAM */, 6 /* CURLE_COULDNT_RESOLVE_HOST */), true)
-                            || ($errno === 35 /* CURLE_SSL_CONNECT_ERROR */ && false !== strpos($error, 'Connection reset by peer'))
+                            || ($errno === 35 /* CURLE_SSL_CONNECT_ERROR */ &&   str_contains($error, 'Connection reset by peer'))
                         ) && $job['attributes']['retries'] < $this->maxRetries
                     ) {
                         $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to curl error '. $errno, true, IOInterface::DEBUG);
@@ -568,7 +568,7 @@ class CurlDownloader
         if (
             $response->getStatusCode() === 404
             && in_array($job['origin'], $this->config->get('gitlab-domains'), true)
-            && false !== strpos($job['url'], 'archive.zip')
+            &&   str_contains($job['url'], 'archive.zip')
         ) {
             $needsAuthRetry = 'GitLab requires authentication and it was not provided';
         }

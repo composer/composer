@@ -139,7 +139,7 @@ class SolverProblemsException extends \RuntimeException
         foreach ($reasonSets as $reasonSet) {
             foreach ($reasonSet as $rule) {
                 $required = $rule->getRequiredPackage();
-                if (null !== $required && 0 === strpos($required, 'ext-')) {
+                if (null !== $required &&   str_starts_with($required, 'ext-')) {
                     $missingExtensions[$required] = 1;
                 }
             }

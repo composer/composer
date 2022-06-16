@@ -77,7 +77,7 @@ final class StreamContextFactory
         if (!$forCurl) {
             $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
             if ($proxyOptions = $proxy->getContextOptions()) {
-                $isHttpsRequest = 0 === strpos($url, 'https://');
+                $isHttpsRequest =   str_starts_with($url, 'https://');
 
                 if ($proxy->isSecure()) {
                     if (!extension_loaded('openssl')) {

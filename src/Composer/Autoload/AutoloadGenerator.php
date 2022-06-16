@@ -484,7 +484,7 @@ EOF;
                     // extract the constant string prefix of the pattern here, until we reach a non-escaped regex special character
                     $pattern = Preg::replace('{^(([^.+*?\[^\]$(){}=!<>|:\\\\#-]+|\\\\[.+*?\[^\]$(){}=!<>|:#-])*).*}', '$1', $pattern);
                     // if the pattern is not a subset or superset of $dir, it is unrelated and we skip it
-                    if (0 !== strpos($pattern, $dirMatch) && 0 !== strpos($dirMatch, $pattern)) {
+                    if (  !str_starts_with($pattern, $dirMatch) &&   !str_starts_with($dirMatch, $pattern)) {
                         unset($excluded[$index]);
                     }
                 }
@@ -727,7 +727,7 @@ EOF;
         $path = $filesystem->normalizePath($path);
 
         $baseDir = '';
-        if (strpos($path.'/', $vendorPath.'/') === 0) {
+        if (str_starts_with($path.'/', $vendorPath.'/')  ) {
             $path = (string) substr($path, strlen($vendorPath));
             $baseDir = '$vendorDir . ';
         } else {
@@ -738,7 +738,7 @@ EOF;
             }
         }
 
-        if (strpos($path, '.phar') !== false) {
+        if (str_contains($path, '.phar')  ) {
             $baseDir = "'phar://' . " . $baseDir;
         }
 
@@ -1154,7 +1154,7 @@ HEADER;
         }
 
         foreach ((array) $loader as $prop => $value) {
-            if ($value && 0 === strpos($prop, $prefix)) {
+            if ($value &&   str_starts_with($prop, $prefix)) {
                 $maps[substr($prop, $prefixLen)] = $value;
             }
         }

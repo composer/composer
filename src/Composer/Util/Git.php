@@ -221,7 +221,7 @@ class Git
                 } elseif ($this->io->isInteractive()) {
                     $defaultUsername = null;
                     if (isset($authParts) && $authParts) {
-                        if (false !== strpos($authParts, ':')) {
+                        if (  str_contains($authParts, ':')) {
                             list($defaultUsername, ) = explode(':', $authParts, 2);
                         } else {
                             $defaultUsername = $authParts;
@@ -383,7 +383,7 @@ class Git
 
         $errorOutput = $this->process->getErrorOutput();
         foreach ($authFailures as $authFailure) {
-            if (strpos($errorOutput, $authFailure) !== false) {
+            if (str_contains($errorOutput, $authFailure)  ) {
                 return true;
             }
         }

@@ -78,7 +78,7 @@ class Zip
             $dirname = dirname($name);
 
             // ignore OSX specific resource fork folder
-            if (strpos($name, '__MACOSX') !== false) {
+            if (str_contains($name, '__MACOSX')  ) {
                 continue;
             }
 
@@ -92,7 +92,7 @@ class Zip
             }
 
             // handle archives which do not have a TOC record for the directory itself
-            if (false === strpos($dirname, '\\') && false === strpos($dirname, '/')) {
+            if (  !str_contains($dirname, '\\') &&   !str_contains($dirname, '/')) {
                 $topLevelPaths[$dirname.'/'] = true;
                 if (\count($topLevelPaths) > 1) {
                     throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));

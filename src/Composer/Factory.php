@@ -659,7 +659,7 @@ class Factory
         try {
             $httpDownloader = new HttpDownloader($io, $config, $httpDownloaderOptions, $disableTls);
         } catch (TransportException $e) {
-            if (false !== strpos($e->getMessage(), 'cafile')) {
+            if (  str_contains($e->getMessage(), 'cafile')) {
                 $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
                 $io->write('<error>A valid CA certificate file is required for SSL/TLS protection.</error>');
                 $io->write('<error>You can disable this error, at your own risk, by setting the \'disable-tls\' option to true.</error>');
@@ -673,7 +673,7 @@ class Factory
     private static function useXdg(): bool
     {
         foreach (array_keys($_SERVER) as $key) {
-            if (strpos($key, 'XDG_') === 0) {
+            if (str_starts_with($key, 'XDG_')  ) {
                 return true;
             }
         }

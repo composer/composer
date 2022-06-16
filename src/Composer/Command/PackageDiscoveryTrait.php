@@ -223,7 +223,7 @@ trait PackageDiscoveryTrait
                 }
 
                 // no constraint yet, determine the best version automatically
-                if (false !== $package && false === strpos($package, ' ')) {
+                if (false !== $package &&   !str_contains($package, ' ')) {
                     $validator = function (string $input) {
                         $input = trim($input);
 

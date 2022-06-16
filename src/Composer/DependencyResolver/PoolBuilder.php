@@ -596,7 +596,7 @@ class PoolBuilder
                     continue 2;
                 }
             }
-            if (strpos($pattern, '*') !== false) {
+            if (str_contains($pattern, '*')  ) {
                 $this->io->writeError('<warning>Pattern "' . $pattern . '" listed for update does not match any locked packages.</warning>');
             } else {
                 $this->io->writeError('<warning>Package "' . $pattern . '" listed for update is not locked.</warning>');

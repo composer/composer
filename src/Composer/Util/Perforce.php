@@ -654,7 +654,7 @@ class Perforce
         $resArray = explode(PHP_EOL, $result);
         $tags = array();
         foreach ($resArray as $line) {
-            if (strpos($line, 'Label') !== false) {
+            if (str_contains($line, 'Label')  ) {
                 $fields = explode(' ', $line);
                 $tags[$fields[1]] = $this->getStream() . '@' . $fields[1];
             }
@@ -673,7 +673,7 @@ class Perforce
         $result = $this->commandResult;
         $resArray = explode(PHP_EOL, $result);
         foreach ($resArray as $line) {
-            if (strpos($line, 'Depot') !== false) {
+            if (str_contains($line, 'Depot')  ) {
                 $fields = explode(' ', $line);
                 if (strcmp($this->p4Depot, $fields[1]) === 0) {
                     $this->p4DepotType = $fields[3];
@@ -700,7 +700,7 @@ class Perforce
         $command = $this->generateP4Command(' changes -m1 ' . ProcessExecutor::escape($label));
         $this->executeCommand($command);
         $changes = $this->commandResult;
-        if (strpos($changes, 'Change') !== 0) {
+        if (!str_starts_with($changes, 'Change')  ) {
             return null;
         }
         $fields = explode(' ', $changes);

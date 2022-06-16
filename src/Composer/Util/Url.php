@@ -66,7 +66,7 @@ class Url
      */
     public static function getOrigin(Config $config, string $url): string
     {
-        if (0 === strpos($url, 'file://')) {
+        if (  str_starts_with($url, 'file://')) {
             return $url;
         }
 
@@ -90,11 +90,11 @@ class Url
         // Gitlab can be installed in a non-root context (i.e. gitlab.com/foo). When downloading archives the originUrl
         // is the host without the path, so we look for the registered gitlab-domains matching the host here
         if (
-            false === strpos($origin, '/')
+              !str_contains($origin, '/')
             && !in_array($origin, $config->get('gitlab-domains'), true)
         ) {
             foreach ($config->get('gitlab-domains') as $gitlabDomain) {
-                if (0 === strpos($gitlabDomain, $origin)) {
+                if (  str_starts_with($gitlabDomain, $origin)) {
                     return $gitlabDomain;
                 }
             }

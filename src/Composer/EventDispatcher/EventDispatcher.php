@@ -209,7 +209,7 @@ class EventDispatcher
 
                     $args = array_merge($script, $event->getArguments());
                     $flags = $event->getFlags();
-                    if (strpos($callable, '@composer ') === 0) {
+                    if (str_starts_with($callable, '@composer ')  ) {
                         $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
                         if (0 !== ($exitCode = $this->executeTty($exec))) {
                             $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
@@ -272,8 +272,8 @@ class EventDispatcher
                         }
                     }
 
-                    if (strpos($exec, '@putenv ') === 0) {
-                        if (false === strpos($exec, '=')) {
+                    if (str_starts_with($exec, '@putenv ')  ) {
+                        if (  !str_contains($exec, '=')) {
                             Platform::clearEnv(substr($exec, 8));
                         } else {
                             list($var, $value) = explode('=', substr($exec, 8), 2);
@@ -282,7 +282,7 @@ class EventDispatcher
 
                         continue;
                     }
-                    if (strpos($exec, '@php ') === 0) {
+                    if (str_starts_with($exec, '@php ')  ) {
                         $pathAndArgs = substr($exec, 5);
                         if (Platform::isWindows()) {
                             $pathAndArgs = Preg::replaceCallback('{^\S+}', function ($path) {
@@ -316,7 +316,7 @@ class EventDispatcher
                     // if composer is being executed, make sure it runs the expected composer from current path
                     // resolution, even if bin-dir contains composer too because the project requires composer/composer
                     // see https://github.com/composer/composer/issues/8748
-                    if (strpos($exec, 'composer ') === 0) {
+                    if (str_starts_with($exec, 'composer ')  ) {
                         $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . substr($exec, 8);
                     }
 
@@ -524,7 +524,7 @@ class EventDispatcher
      */
     protected function isPhpScript(string $callable): bool
     {
-        return false === strpos($callable, ' ') && false !== strpos($callable, '::');
+        return   !str_contains($callable, ' ') &&   str_contains($callable, '::');
     }
 
     /**
@@ -535,7 +535,7 @@ class EventDispatcher
      */
     protected function isComposerScript(string $callable): bool
     {
-        return strpos($callable, '@') === 0 && strpos($callable, '@php ') !== 0 && strpos($callable, '@putenv ') !== 0;
+        return str_starts_with($callable, '@')   && !str_starts_with($callable, '@php ')   && !str_starts_with($callable, '@putenv ')  ;
     }
 
     /**

@@ -354,13 +354,13 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 // url that starts with "file://"
                 $fileProtocol = 'file://';
                 $isFileProtocol = false;
-                if (0 === strpos($url, $fileProtocol)) {
+                if (  str_starts_with($url, $fileProtocol)) {
                     $url = substr($url, strlen($fileProtocol));
                     $isFileProtocol = true;
                 }
 
                 // realpath() below will not understand %20 spaces etc.
-                if (false !== strpos($url, '%')) {
+                if (  str_contains($url, '%')) {
                     $url = rawurldecode($url);
                 }
 

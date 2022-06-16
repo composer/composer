@@ -415,7 +415,7 @@ class ArrayLoader implements LoaderInterface
             $config['version'] = (string) $config['version'];
         }
 
-        if (strpos($config['version'], 'dev-') !== 0 && '-dev' !== substr($config['version'], -4)) {
+        if (!str_starts_with($config['version'], 'dev-')   && '-dev' !== substr($config['version'], -4)) {
             return null;
         }
 

@@ -142,7 +142,7 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addProperty(string $name, $value): void
     {
         $this->manipulateJson('addProperty', function (&$config, $key, $val): void {
-            if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
+            if (str_starts_with($key, 'extra.')   || str_starts_with($key, 'scripts.')  ) {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
                 $arr = &$config[reset($bits)];
@@ -165,7 +165,7 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeProperty(string $name): void
     {
         $this->manipulateJson('removeProperty', function (&$config, $key): void {
-            if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
+            if (str_starts_with($key, 'extra.')   || str_starts_with($key, 'scripts.')  ) {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
                 $arr = &$config[reset($bits)];

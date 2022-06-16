@@ -50,7 +50,7 @@ class JsonManipulator
         if (!Preg::isMatch('#^\{(.*)\}$#s', $contents)) {
             throw new \InvalidArgumentException('The json file must be an object ({})');
         }
-        $this->newline = false !== strpos($contents, "\r\n") ? "\r\n" : "\n";
+        $this->newline =   str_contains($contents, "\r\n") ? "\r\n" : "\n";
         $this->contents = $contents === '{}' ? '{' . $this->newline . '}' : $contents;
         $this->detectIndenting();
     }
@@ -210,15 +210,15 @@ class JsonManipulator
      */
     public function addProperty(string $name, $value): bool
     {
-        if (strpos($name, 'suggest.') === 0) {
+        if (str_starts_with($name, 'suggest.')  ) {
             return $this->addSubNode('suggest', substr($name, 8), $value);
         }
 
-        if (strpos($name, 'extra.') === 0) {
+        if (str_starts_with($name, 'extra.')  ) {
             return $this->addSubNode('extra', substr($name, 6), $value);
         }
 
-        if (strpos($name, 'scripts.') === 0) {
+        if (str_starts_with($name, 'scripts.')  ) {
             return $this->addSubNode('scripts', substr($name, 8), $value);
         }
 
@@ -231,15 +231,15 @@ class JsonManipulator
      */
     public function removeProperty(string $name): bool
     {
-        if (strpos($name, 'suggest.') === 0) {
+        if (str_starts_with($name, 'suggest.')  ) {
             return $this->removeSubNode('suggest', substr($name, 8));
         }
 
-        if (strpos($name, 'extra.') === 0) {
+        if (str_starts_with($name, 'extra.')  ) {
             return $this->removeSubNode('extra', substr($name, 6));
         }
 
-        if (strpos($name, 'scripts.') === 0) {
+        if (str_starts_with($name, 'scripts.')  ) {
             return $this->removeSubNode('scripts', substr($name, 8));
         }
 
@@ -258,7 +258,7 @@ class JsonManipulator
         $decoded = JsonFile::parseJson($this->contents);
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'extra', 'scripts')) &&   str_contains($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 
@@ -394,7 +394,7 @@ class JsonManipulator
         }
 
         $subName = null;
-        if (in_array($mainNode, array('config', 'extra', 'scripts')) && false !== strpos($name, '.')) {
+        if (in_array($mainNode, array('config', 'extra', 'scripts')) &&   str_contains($name, '.')) {
             list($name, $subName) = explode('.', $name, 2);
         }
 

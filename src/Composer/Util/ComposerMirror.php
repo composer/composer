@@ -36,7 +36,7 @@ class ComposerMirror
         if ($reference) {
             $reference = Preg::isMatch('{^([a-f0-9]*|%reference%)$}', $reference) ? $reference : md5($reference);
         }
-        $version = strpos($version, '/') === false ? $version : md5($version);
+        $version = !str_contains($version, '/')   ? $version : md5($version);
 
         $from = array('%package%', '%version%', '%reference%', '%type%');
         $to = array($packageName, $version, $reference, $type);

@@ -54,7 +54,7 @@ class VersionParser extends SemverVersionParser
 
         for ($i = 0, $count = count($pairs); $i < $count; $i++) {
             $pair = Preg::replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
-            if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/') && !Preg::isMatch('{(?<=[a-z0-9_/-])\*|\*(?=[a-z0-9_/-])}i', $pairs[$i + 1]) && !PlatformRepository::isPlatformPackage($pairs[$i + 1])) {
+            if (  !str_contains($pair, ' ') && isset($pairs[$i + 1]) &&   !str_contains($pairs[$i + 1], '/') && !Preg::isMatch('{(?<=[a-z0-9_/-])\*|\*(?=[a-z0-9_/-])}i', $pairs[$i + 1]) && !PlatformRepository::isPlatformPackage($pairs[$i + 1])) {
                 $pair .= ' '.$pairs[$i + 1];
                 $i++;
             }
@@ -89,7 +89,7 @@ class VersionParser extends SemverVersionParser
             $normalizedTo = VersionParser::DEFAULT_BRANCH_ALIAS;
         }
 
-        if (strpos($normalizedFrom, 'dev-') === 0 || strpos($normalizedTo, 'dev-') === 0) {
+        if (str_starts_with($normalizedFrom, 'dev-')   || str_starts_with($normalizedTo, 'dev-')  ) {
             return true;
         }
 
