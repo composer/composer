@@ -18,7 +18,6 @@ use Composer\Package\CompletePackageInterface;
 use Composer\Package\RootPackage;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\CompositeRepository;
-use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RootPackageRepository;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\PlatformRepository;

@@ -13,7 +13,6 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Pcre\Preg;
-use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\Util\Url;

@@ -29,7 +29,6 @@ use Composer\Util\Silencer;
 use Composer\Plugin\PluginEvents;
 use Composer\EventDispatcher\Event;
 use Phar;
-use Seld\JsonLint\DuplicateKeyException;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -39,7 +38,6 @@ use Composer\Package\Version\VersionParser;
 use Composer\Downloader\TransportException;
 use Composer\Json\JsonValidationException;
 use Composer\Repository\InstalledRepositoryInterface;
-use Seld\JsonLint\JsonParser;
 use UnexpectedValueException;
 use ZipArchive;
 
