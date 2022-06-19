@@ -133,17 +133,6 @@ class ClassMapGeneratorTest extends TestCase
         ), ClassMapGenerator::createMap($finder));
     }
 
-    public function testFindClassesThrowsWhenFileDoesNotExist(): void
-    {
-        $r = new \ReflectionClass('Composer\\Autoload\\ClassMapGenerator');
-        $find = $r->getMethod('findClasses');
-        $find->setAccessible(true);
-
-        self::expectException('RuntimeException');
-        self::expectExceptionMessage('does not exist');
-        $find->invoke(null, __DIR__ . '/no-file');
-    }
-
     public function testAmbiguousReference(): void
     {
         $this->checkIfFinderIsAvailable();
