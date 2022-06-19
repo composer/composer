@@ -921,6 +921,8 @@ performance.
 * **--ignore-platform-req:** ignore a specific platform requirement (`php`, `hhvm`,
   `lib-*` and `ext-*`) and skip the [platform check](07-runtime.md#platform-check) for it.
   Multiple requirements can be ignored via wildcard.
+* **--strict-psr:** Return a failed status code (1) if PSR-4 or PSR-0 mapping errors
+  are present. Requires --optimize to work.
 
 ## clear-cache / clearcache / cc
 

@@ -12,6 +12,7 @@
 
 namespace Composer\Autoload;
 
+use Composer\ClassMapGenerator\ClassMap;
 use Composer\ClassMapGenerator\ClassMapGenerator;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
@@ -161,7 +162,7 @@ class AutoloadGenerator
     /**
      * @param string $targetDir
      * @param bool $scanPsrPackages
-     * @return int
+     * @return ClassMap
      * @throws \Seld\JsonLint\ParsingException
      * @throws \RuntimeException
      */
@@ -445,7 +446,7 @@ EOF;
             ));
         }
 
-        return \count($classMap);
+        return $classMap;
     }
 
     /**
