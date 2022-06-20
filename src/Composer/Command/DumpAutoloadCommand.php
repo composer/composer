@@ -41,6 +41,7 @@ class DumpAutoloadCommand extends BaseCommand
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules. Composer will by default infer this automatically according to the last install or update --no-dev state.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
+                new InputOption('strict-psr', null, InputOption::VALUE_NONE, 'Return a failed status code (1) if PSR-4 or PSR-0 mapping errors are present. Requires --optimize to work.'),
             ))
             ->setHelp(
                 <<<EOT
@@ -69,6 +70,10 @@ EOT
         $apcuPrefix = $input->getOption('apcu-prefix');
         $apcu = $apcuPrefix !== null || $input->getOption('apcu') || $config->get('apcu-autoloader');
 
+        if ($input->getOption('strict-psr') && !$optimize) {
+            throw new \InvalidArgumentException('--strict-psr mode only works with optimized autoloader, use --optimize if you want a strict return value.');
+        }
+
         if ($authoritative) {
             $this->getIO()->write('<info>Generating optimized autoload files (authoritative)</info>');
         } elseif ($optimize) {
@@ -91,7 +96,8 @@ EOT
         $generator->setRunScripts(true);
         $generator->setApcu($apcu, $apcuPrefix);
         $generator->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input));
-        $numberOfClasses = $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
+        $classMap = $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
+        $numberOfClasses = count($classMap);
 
         if ($authoritative) {
             $this->getIO()->write('<info>Generated optimized autoload files (authoritative) containing '. $numberOfClasses .' classes</info>');
@@ -99,6 +105,10 @@ EOT
             $this->getIO()->write('<info>Generated optimized autoload files containing '. $numberOfClasses .' classes</info>');
         } else {
             $this->getIO()->write('<info>Generated autoload files</info>');
+        }
+
+        if ($input->getOption('strict-psr') && count($classMap->getPsrViolations()) > 0) {
+            return 1;
         }
 
         return 0;
