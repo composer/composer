@@ -470,7 +470,7 @@ EOT
 
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        return;
+        
     }
 
     /**
