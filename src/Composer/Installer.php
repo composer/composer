@@ -388,19 +388,25 @@ class Installer
         }
 
         if ($this->audit) {
-            $packages = $localRepo->getCanonicalPackages();
+            if ($this->update && !$this->install) {
+                $packages = $lockedRepository->getCanonicalPackages();
+                $target = 'locked';
+            } else {
+                $packages = $localRepo->getCanonicalPackages();
+                $target = 'installed';
+            }
             if (count($packages) > 0) {
                 try {
                     $auditor = new Auditor(Factory::createHttpDownloader($this->io, $this->config));
                     $auditor->audit($this->io, $packages, $this->auditFormat);
                 } catch (TransportException $e) {
-                    $this->io->error('Failed to audit installed packages.');
+                    $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {
                         $this->io->error($e->getMessage());
                     }
                 }
             } else {
-                $this->io->writeError('No packages - skipping audit.');
+                $this->io->writeError('No '.$target.' packages - skipping audit.');
             }
         }
 
