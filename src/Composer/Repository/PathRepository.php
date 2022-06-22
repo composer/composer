@@ -213,7 +213,11 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 }
             }
 
-            $this->addPackage($this->loader->load($package));
+            try {
+                $this->addPackage($this->loader->load($package));
+            } catch (\Exception $e) {
+                throw new \RuntimeException('Failed loading the package in '.$composerFilePath, 0, $e);
+            }
         }
     }
 
