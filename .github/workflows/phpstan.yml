@@ -12,6 +12,9 @@ env:
   COMPOSER_FLAGS: "--ansi --no-interaction --prefer-dist"
   SYMFONY_PHPUNIT_VERSION: ""
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: "PHPStan"

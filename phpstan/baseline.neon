@@ -3541,11 +3541,6 @@ parameters:
 			path: ../src/Composer/Plugin/PluginManager.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, CapabilityClass of Composer\\\\Plugin\\\\Capability\\\\Capability\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Plugin/PluginManager.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\Package\\\\PackageInterface\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Plugin/PluginManager.php
