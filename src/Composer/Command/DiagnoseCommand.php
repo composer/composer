@@ -21,6 +21,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\ConfigValidator;
+use Composer\Util\Git;
 use Composer\Util\IniHelper;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\HttpDownloader;
@@ -225,10 +226,7 @@ EOT
         return true;
     }
 
-    /**
-     * @return string|true
-     */
-    private function checkGit()
+    private function checkGit(): string
     {
         if (!function_exists('proc_open')) {
             return '<comment>proc_open is not available, git cannot be used</comment>';
@@ -239,7 +237,16 @@ EOT
             return '<comment>Your git color.ui setting is set to always, this is known to create issues. Use "git config --global color.ui true" to set it correctly.</comment>';
         }
 
-        return true;
+        $gitVersion = Git::getVersion($this->process);
+        if (version_compare('2.24.0', $gitVersion, '>')) {
+            return '<warning>Your git version ('.$gitVersion.') is too old and possibly will cause issues. Please upgrade to git 2.24 or above</>';
+        }
+
+        if (null === $gitVersion) {
+            return '<comment>No git process found</>';
+        }
+
+        return '<info>OK</> <comment>git version '.$gitVersion.'</>';
     }
 
     /**
