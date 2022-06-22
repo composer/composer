@@ -529,6 +529,7 @@ class Application extends BaseApplication
             new Command\UpdateCommand(),
             new Command\SearchCommand(),
             new Command\ValidateCommand(),
+            new Command\AuditCommand(),
             new Command\ShowCommand(),
             new Command\SuggestsCommand(),
             new Command\RequireCommand(),

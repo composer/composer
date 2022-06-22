@@ -136,6 +136,7 @@ class InstallerTest extends TestCase
         $autoloadGenerator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')->disableOriginalConstructor()->getMock();
 
         $installer = new Installer($io, $config, clone $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
+        $installer->setAudit(false);
         $result = $installer->run();
 
         $output = str_replace("\r", '', $io->getOutput());
@@ -395,7 +396,8 @@ class InstallerTest extends TestCase
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setDryRun($input->getOption('dry-run'))
-                ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
+                ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
+                ->setAudit(false);
 
             return $installer->run();
         });
@@ -440,7 +442,8 @@ class InstallerTest extends TestCase
                 ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
                 ->setPreferStable($input->getOption('prefer-stable'))
                 ->setPreferLowest($input->getOption('prefer-lowest'))
-                ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
+                ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
+                ->setAudit(false);
 
             return $installer->run();
         });

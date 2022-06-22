@@ -27,6 +27,7 @@ use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\Downloader\DownloadManager;
+use Composer\Downloader\TransportException;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
@@ -61,6 +62,7 @@ use Composer\Repository\RepositoryManager;
 use Composer\Repository\LockArrayRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Util\Auditor;
 use Composer\Util\Platform;
 
 /**
@@ -163,6 +165,10 @@ class Installer
     protected $writeLock;
     /** @var bool */
     protected $executeOperations = true;
+    /** @var bool */
+    protected $audit = true;
+    /** @var string */
+    protected $auditFormat = Auditor::FORMAT_TABLE;
 
     /** @var bool */
     protected $updateMirrors = false;
@@ -379,6 +385,23 @@ class Installer
         // re-enable GC except on HHVM which triggers a warning here
         if (!defined('HHVM_VERSION')) {
             gc_enable();
+        }
+
+        if ($this->audit) {
+            $packages = $localRepo->getCanonicalPackages();
+            if (count($packages) > 0) {
+                try {
+                    $auditor = new Auditor(Factory::createHttpDownloader($this->io, $this->config));
+                    $auditor->audit($this->io, $packages, $this->auditFormat);
+                } catch (TransportException $e) {
+                    $this->io->error('Failed to audit installed packages.');
+                    if ($this->io->isVerbose()) {
+                        $this->io->error($e->getMessage());
+                    }
+                }
+            } else {
+                $this->io->writeError('No packages - skipping audit.');
+            }
         }
 
         return 0;
@@ -1071,10 +1094,13 @@ class Installer
 
     /**
      * @param array<string, ConstraintInterface> $constraints
+     * @return Installer
      */
-    public function setTemporaryConstraints(array $constraints): void
+    public function setTemporaryConstraints(array $constraints): self
     {
         $this->temporaryConstraints = $constraints;
+
+        return $this;
     }
 
     /**
@@ -1414,6 +1440,32 @@ class Installer
     public function setExecuteOperations(bool $executeOperations = true): self
     {
         $this->executeOperations = (bool) $executeOperations;
+
+        return $this;
+    }
+
+    /**
+     * Should an audit be run after installation is complete?
+     *
+     * @param boolean $audit
+     * @return Installer
+     */
+    public function setAudit(bool $audit): self
+    {
+        $this->audit = $audit;
+
+        return $this;
+    }
+
+    /**
+     * What format should be used for audit output?
+     *
+     * @param string $auditFormat
+     * @return Installer
+     */
+    public function setAuditFormat(string $auditFormat): self
+    {
+        $this->auditFormat = $auditFormat;
 
         return $this;
     }

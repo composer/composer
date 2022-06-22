@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Util\Auditor;
 use Composer\Util\HttpDownloader;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
@@ -51,6 +52,8 @@ class InstallCommand extends BaseCommand
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Do not use, only defined here to catch misuse of the install command.'),
+                new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Skip the audit step after installation is complete.'),
+                new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
@@ -130,6 +133,8 @@ EOT
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu, $apcuPrefix)
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
+            ->setAudit(!$input->getOption('no-audit'))
+            ->setAuditFormat($input->getOption('audit-format'))
         ;
 
         if ($input->getOption('no-plugins')) {

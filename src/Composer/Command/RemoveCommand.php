@@ -25,6 +25,7 @@ use Composer\Console\Input\InputOption;
 use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Package\BasePackage;
+use Composer\Util\Auditor;
 
 /**
  * @author Pierre du Plessis <pdples@gmail.com>
@@ -49,6 +50,8 @@ class RemoveCommand extends BaseCommand
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies (implies --no-install).'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Skip the install step after updating the composer.lock file.'),
+                new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Skip the audit step after updating the composer.lock file.'),
+                new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', 'w', InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies. (Deprecrated, is now default behavior)'),
                 new InputOption('update-with-all-dependencies', 'W', InputOption::VALUE_NONE, 'Allows all inherited dependencies to be updated, including those that are root requirements.'),
@@ -282,6 +285,8 @@ EOT
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setDryRun($dryRun)
+            ->setAudit(!$input->getOption('no-audit'))
+            ->setAuditFormat($input->getOption('audit-format'))
         ;
 
         // if no lock is present, we do not do a partial update as
