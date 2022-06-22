@@ -345,13 +345,13 @@ class FilesystemTest extends TestCase
         $this->assertDirectoryExists($this->workingDir . '/foop', 'Not a directory: ' . $this->workingDir . '/foop');
         $this->assertDirectoryExists($this->workingDir . '/foop/bar', 'Not a directory: ' . $this->workingDir . '/foop/bar');
         $this->assertDirectoryExists($this->workingDir . '/foop/baz', 'Not a directory: ' . $this->workingDir . '/foop/baz');
-        $this->assertTrue(is_file($this->workingDir . '/foop/foo.file'), 'Not a file: ' . $this->workingDir . '/foop/foo.file');
-        $this->assertTrue(is_file($this->workingDir . '/foop/bar/foobar.file'), 'Not a file: ' . $this->workingDir . '/foop/bar/foobar.file');
-        $this->assertTrue(is_file($this->workingDir . '/foop/baz/foobaz.file'), 'Not a file: ' . $this->workingDir . '/foop/baz/foobaz.file');
+        $this->assertFileExists($this->workingDir . '/foop/foo.file', 'Not a file: ' . $this->workingDir . '/foop/foo.file');
+        $this->assertFileExists($this->workingDir . '/foop/bar/foobar.file', 'Not a file: ' . $this->workingDir . '/foop/bar/foobar.file');
+        $this->assertFileExists($this->workingDir . '/foop/baz/foobaz.file', 'Not a file: ' . $this->workingDir . '/foop/baz/foobaz.file');
 
         $result2 = $fs->copy($this->testFile, $this->workingDir . '/testfile.file');
         $this->assertTrue($result2);
-        $this->assertTrue(is_file($this->workingDir . '/testfile.file'));
+        $this->assertFileExists($this->workingDir . '/testfile.file');
     }
 
     public function testCopyThenRemove(): void
@@ -366,12 +366,12 @@ class FilesystemTest extends TestCase
         $fs = new Filesystem();
 
         $fs->copyThenRemove($this->testFile, $this->workingDir . '/testfile.file');
-        $this->assertFalse(is_file($this->testFile), 'Still a file: ' . $this->testFile);
+        $this->assertFileDoesNotExist($this->testFile, 'Still a file: ' . $this->testFile);
 
         $fs->copyThenRemove($this->workingDir . '/foo', $this->workingDir . '/foop');
-        $this->assertFalse(is_file($this->workingDir . '/foo/baz/foobaz.file'), 'Still a file: ' . $this->workingDir . '/foo/baz/foobaz.file');
-        $this->assertFalse(is_file($this->workingDir . '/foo/bar/foobar.file'), 'Still a file: ' . $this->workingDir . '/foo/bar/foobar.file');
-        $this->assertFalse(is_file($this->workingDir . '/foo/foo.file'), 'Still a file: ' . $this->workingDir . '/foo/foo.file');
+        $this->assertFileDoesNotExist($this->workingDir . '/foo/baz/foobaz.file', 'Still a file: ' . $this->workingDir . '/foo/baz/foobaz.file');
+        $this->assertFileDoesNotExist($this->workingDir . '/foo/bar/foobar.file', 'Still a file: ' . $this->workingDir . '/foo/bar/foobar.file');
+        $this->assertFileDoesNotExist($this->workingDir . '/foo/foo.file', 'Still a file: ' . $this->workingDir . '/foo/foo.file');
         $this->assertDirectoryDoesNotExist($this->workingDir . '/foo/baz', 'Still a directory: ' . $this->workingDir . '/foo/baz');
         $this->assertDirectoryDoesNotExist($this->workingDir . '/foo/bar', 'Still a directory: ' . $this->workingDir . '/foo/bar');
         $this->assertDirectoryDoesNotExist($this->workingDir . '/foo', 'Still a directory: ' . $this->workingDir . '/foo');
