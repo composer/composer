@@ -638,7 +638,8 @@ class PluginManager
     {
         $capabilities = array();
         foreach ($this->getPlugins() as $plugin) {
-            if ($capability = $this->getPluginCapability($plugin, $capabilityClassName, $ctorArgs)) {
+            $capability = $this->getPluginCapability($plugin, $capabilityClassName, $ctorArgs);
+            if (null !== $capability) {
                 $capabilities[] = $capability;
             }
         }

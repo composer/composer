@@ -711,11 +711,6 @@ parameters:
 			path: ../src/Composer/Command/RemoveCommand.php
 
 		-
-			message: "#^Offset 'require'\\|'require\\-dev' does not exist on array\\{require\\?\\: array\\<string, string\\>, require\\-dev\\?\\: array\\<string, string\\>\\}\\.$#"
-			count: 8
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\Composer\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/RemoveCommand.php
@@ -1751,11 +1746,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/RuleSetGenerator.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, int\\<0, max\\> given\\.$#"
-			count: 2
-			path: ../src/Composer/DependencyResolver/RuleSetIterator.php
-
-		-
 			message: "#^Return type \\(\\-1\\|0\\|1\\|4\\) of method Composer\\\\DependencyResolver\\\\RuleSetIterator\\:\\:key\\(\\) should be covariant with return type \\(0\\|1\\|4\\) of method Iterator\\<int,Composer\\\\DependencyResolver\\\\Rule\\>\\:\\:key\\(\\)$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/RuleSetIterator.php
@@ -2528,11 +2518,6 @@ parameters:
 		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 1
-			path: ../src/Composer/IO/BaseIO.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 6
 			path: ../src/Composer/IO/BaseIO.php
 
 		-
@@ -3576,11 +3561,6 @@ parameters:
 			path: ../src/Composer/Plugin/PluginManager.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, CapabilityClass of Composer\\\\Plugin\\\\Capability\\\\Capability\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Plugin/PluginManager.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\Package\\\\PackageInterface\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Plugin/PluginManager.php
@@ -4034,22 +4014,7 @@ parameters:
 			path: ../src/Composer/Repository/RepositoryFactory.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Config\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/RepositoryFactory.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\IO\\\\IOInterface\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/RepositoryFactory.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Repository\\\\RepositoryManager\\|null given\\.$#"
-			count: 2
-			path: ../src/Composer/Repository/RepositoryFactory.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, Composer\\\\IO\\\\IOInterface\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/RepositoryFactory.php
 
@@ -4785,7 +4750,7 @@ parameters:
 
 		-
 			message: "#^Call to function is_resource\\(\\) with resource will always evaluate to true\\.$#"
-			count: 3
+			count: 2
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
@@ -4900,11 +4865,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$str of function rtrim expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$str of function strtolower expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -5070,21 +5030,6 @@ parameters:
 
 		-
 			message: "#^Offset 'exception' does not exist on array\\{id\\: int, status\\: 4, request\\: array\\{url\\: string, options\\?\\: array, copyTo\\?\\: string\\|null\\}, sync\\: bool, origin\\: string, resolve\\?\\: callable\\(\\)\\: mixed, reject\\?\\: callable\\(\\)\\: mixed, curl_id\\?\\: int, \\.\\.\\.\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
-			message: "#^Offset 'info'\\|'warning' does not exist on array\\{warning\\?\\: string, info\\?\\: string, warning\\-versions\\?\\: string, info\\-versions\\?\\: string, warnings\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>, infos\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
-			message: "#^Offset 'info\\-versions'\\|'warning\\-versions' does not exist on array\\{warning\\?\\: string, info\\?\\: string, warning\\-versions\\?\\: string, info\\-versions\\?\\: string, warnings\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>, infos\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
-			message: "#^Offset 'infos'\\|'warnings' does not exist on array\\{warning\\?\\: string, info\\?\\: string, warning\\-versions\\?\\: string, info\\-versions\\?\\: string, warnings\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>, infos\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>\\}\\.$#"
 			count: 1
 			path: ../src/Composer/Util/HttpDownloader.php
 
@@ -5659,11 +5604,6 @@ parameters:
 			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, array\\<string, Composer\\\\Package\\\\Link\\> given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
@@ -5679,11 +5619,6 @@ parameters:
 			path: ../tests/Composer/Test/Autoload/ClassMapGeneratorTest.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Autoload/ClassMapGeneratorTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$expected of method Composer\\\\Test\\\\Autoload\\\\ClassMapGeneratorTest\\:\\:assertEqualsNormalized\\(\\) expects array\\<class\\-string\\>, array\\<string, string\\> given\\.$#"
 			count: 3
 			path: ../tests/Composer/Test/Autoload/ClassMapGeneratorTest.php
@@ -5692,21 +5627,6 @@ parameters:
 			message: "#^Parameter \\#2 \\$actual of method Composer\\\\Test\\\\Autoload\\\\ClassMapGeneratorTest\\:\\:assertEqualsNormalized\\(\\) expects array\\<class\\-string\\>, array\\<class\\-string, string\\> given\\.$#"
 			count: 3
 			path: ../tests/Composer/Test/Autoload/ClassMapGeneratorTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/CacheTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Command/RunScriptCommandTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Config/JsonConfigSourceTest.php
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
@@ -5839,29 +5759,14 @@ parameters:
 			path: ../tests/Composer/Test/Downloader/DownloadManagerTest.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 6
-			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 3
 			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Downloader/FossilDownloaderTest.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 4
 			path: ../tests/Composer/Test/Downloader/FossilDownloaderTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Downloader/GitDownloaderTest.php
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Config\\|null given\\.$#"
@@ -5874,29 +5779,9 @@ parameters:
 			path: ../tests/Composer/Test/Downloader/GitDownloaderTest.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Downloader/HgDownloaderTest.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 4
 			path: ../tests/Composer/Test/Downloader/HgDownloaderTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Downloader/PerforceDownloaderTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Downloader/XzDownloaderTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Downloader/ZipDownloaderTest.php
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, string\\|false given\\.$#"
@@ -5927,11 +5812,6 @@ parameters:
 			path: ../tests/Composer/Test/InstalledVersionsTest.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/InstalledVersionsTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$path of function realpath expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/InstalledVersionsTest.php
@@ -5947,11 +5827,6 @@ parameters:
 			path: ../tests/Composer/Test/Installer/BinaryInstallerTest.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Installer/BinaryInstallerTest.php
-
-		-
 			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Composer' and Composer\\\\Composer will always evaluate to true\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Installer/InstallerEventTest.php
@@ -5960,11 +5835,6 @@ parameters:
 			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\IO…' and Composer\\\\IO\\\\IOInterface will always evaluate to true\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Installer/InstallerEventTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Installer/LibraryInstallerTest.php
 
 		-
 			message: "#^Call to function is_array\\(\\) with array\\<Composer\\\\Repository\\\\RepositoryInterface\\> will always evaluate to true\\.$#"
@@ -6092,11 +5962,6 @@ parameters:
 			path: ../tests/Composer/Test/Mock/VersionGuesserMock.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Package/Archiver/ArchivableFilesFinderTest.php
-
-		-
 			message: "#^Dynamic call to static method Composer\\\\Factory\\:\\:createConfig\\(\\)\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Package/Archiver/ArchiveManagerTest.php
@@ -6105,16 +5970,6 @@ parameters:
 			message: "#^Dynamic call to static method Composer\\\\Factory\\:\\:createHttpDownloader\\(\\)\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Package/Archiver/ArchiveManagerTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Package/Archiver/ArchiverTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Package/Archiver/PharArchiverTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$sources of method Composer\\\\Package\\\\Archiver\\\\PharArchiver\\:\\:archive\\(\\) expects string, string\\|null given\\.$#"
@@ -6212,11 +6067,6 @@ parameters:
 			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
-
-		-
 			message: "#^Parameter \\#2 \\$capabilityClassName of method Composer\\\\Plugin\\\\PluginManager\\:\\:getPluginCapability\\(\\) expects class\\-string\\<Composer\\\\Plugin\\\\Capability\\\\Capability\\>, string given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
@@ -6257,11 +6107,6 @@ parameters:
 			path: ../tests/Composer/Test/Repository/CompositeRepositoryTest.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/FilesystemRepositoryTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$path of function realpath expects string, string\\|false given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/Repository/PathRepositoryTest.php
@@ -6280,26 +6125,6 @@ parameters:
 			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Repository…' and Composer\\\\Repository\\\\RepositoryInterface will always evaluate to true\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/RepositoryManagerTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/RepositoryManagerTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/Vcs/FossilDriverTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/Vcs/GitBitbucketDriverTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/Vcs/GitHubDriverTest.php
 
 		-
 			message: "#^Offset 'reference' does not exist on array\\{type\\: string, url\\: string, reference\\: string, shasum\\: string\\}\\|null\\.$#"
@@ -6322,34 +6147,9 @@ parameters:
 			path: ../tests/Composer/Test/Repository/Vcs/GitHubDriverTest.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/Vcs/HgDriverTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/Vcs/PerforceDriverTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$repoConfig of class Composer\\\\Repository\\\\Vcs\\\\PerforceDriver constructor expects array\\{url\\: string\\}, array\\<string, string\\> given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/Vcs/PerforceDriverTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/Vcs/SvnDriverTest.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Repository/VcsRepositoryTest.php
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
@@ -6385,11 +6185,6 @@ parameters:
 			message: "#^Variable method call on Composer\\\\Package\\\\PackageInterface\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/TestCase.php
-
-		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Util/FilesystemTest.php
 
 		-
 			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Util\\\\\\\\Http…' and Composer\\\\Util\\\\Http\\\\ProxyManager will always evaluate to true\\.$#"
