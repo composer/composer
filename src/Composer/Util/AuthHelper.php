@@ -192,9 +192,9 @@ class AuthHelper
             // fail if the console is not interactive
             if (!$this->io->isInteractive()) {
                 if ($statusCode === 401) {
-                    $message = "The '" . $url . "' URL required authentication.\nYou must be using the interactive console to authenticate";
+                    $message = "The '" . $url . "' URL required authentication (HTTP 401).\nYou must be using the interactive console to authenticate";
                 } elseif ($statusCode === 403) {
-                    $message = "The '" . $url . "' URL could not be accessed: " . $reason;
+                    $message = "The '" . $url . "' URL could not be accessed (HTTP 403): " . $reason;
                 } else {
                     $message = "Unknown error code '" . $statusCode . "', reason: " . $reason;
                 }
@@ -210,7 +210,7 @@ class AuthHelper
                     return array('retry' => true, 'storeAuth' => false);
                 }
 
-                throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
+                throw new TransportException("Invalid credentials (HTTP $statusCode) for '$url', aborting.", $statusCode);
             }
 
             $this->io->writeError('    Authentication required (<info>'.$origin.'</info>):');
