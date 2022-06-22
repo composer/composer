@@ -3,6 +3,8 @@
 namespace Composer\Test\Util;
 
 use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
+use Composer\Json\JsonFile;
 use Composer\Package\Package;
 use Composer\Test\TestCase;
 use Composer\Util\Auditor;
@@ -13,17 +15,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 class AuditorTest extends TestCase
 {
-    /** @var IOInterface&\PHPUnit\Framework\MockObject\MockObject */
-    private $io;
-
-    protected function setUp(): void
-    {
-        $this->io = $this
-            ->getMockBuilder(IOInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-    }
-
     public function auditProvider()
     {
         return [
@@ -75,11 +66,14 @@ class AuditorTest extends TestCase
             $this->expectException(InvalidArgumentException::class);
         }
         $auditor = new Auditor($this->getHttpDownloader());
-        $result = $auditor->audit($this->io, $data['packages'], Auditor::FORMAT_PLAIN, $data['warningOnly']);
+        $result = $auditor->audit(new NullIO(), $data['packages'], Auditor::FORMAT_PLAIN, $data['warningOnly']);
         $this->assertSame($expected, $result, $message);
     }
 
-    public function advisoriesProvider()
+    /**
+     * @return mixed[]
+     */
+    public function advisoriesProvider(): array
     {
         $advisories = static::getMockAdvisories(null);
         return [
@@ -187,7 +181,7 @@ class AuditorTest extends TestCase
         if (count($data['packages']) === 0 && $data['updatedSince'] === null) {
             $this->expectException(InvalidArgumentException::class);
         }
-        $auditor = new Auditor($this->getHttpDownloader(), Auditor::FORMAT_PLAIN);
+        $auditor = new Auditor($this->getHttpDownloader());
         $result = $auditor->getAdvisories($data['packages'], $data['updatedSince'], $data['filterByVersion']);
         $this->assertSame($expected, $result, $message);
     }
@@ -204,7 +198,7 @@ class AuditorTest extends TestCase
             ->getMock();
 
         $callback = function(string $url, array $options) {
-            parse_str(parse_url($url, PHP_URL_QUERY) ?? '', $query);
+            parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
             $updatedSince = null;
             if (isset($query['updatedSince'])) {
                 $updatedSince = $query['updatedSince'];
@@ -217,13 +211,13 @@ class AuditorTest extends TestCase
                 parse_str($options['http']['content'], $body);
                 $packages = $body['packages'];
                 foreach ($advisories as $package => $data) {
-                    if (!in_array($package, $packages)) {
+                    if (!in_array($package, $packages, true)) {
                         unset($advisories[$package]);
                     }
                 }
             }
 
-            return new Response(['url' => 'https://packagist.org/api/security-advisories/'], 200, [], json_encode(['advisories' => $advisories]));
+            return new Response(['url' => 'https://packagist.org/api/security-advisories/'], 200, [], JsonFile::encode(['advisories' => $advisories]));
         };
 
         $httpDownloader
@@ -233,7 +227,10 @@ class AuditorTest extends TestCase
         return $httpDownloader;
     }
 
-    public static function getMockAdvisories(?int $updatedSince)
+    /**
+     * @return array<mixed>
+     */
+    public static function getMockAdvisories(?int $updatedSince): array
     {
         $advisories = [
             'vendor1/package1' => [
@@ -326,8 +323,7 @@ class AuditorTest extends TestCase
             ],
         ];
 
-        // Intentionally allow updatedSince === 0 to include these advisories
-        if (!$updatedSince) {
+        if (0 === $updatedSince || null === $updatedSince) {
             $advisories['vendor1/package1'][] = [
                 'advisoryId' => 'ID5',
                 'packageName' => 'vendor1/package1',

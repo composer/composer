@@ -286,7 +286,7 @@ EOT
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setDryRun($dryRun)
             ->setAudit(!$input->getOption('no-audit'))
-            ->setAuditFormat($input->getOption('audit-format'))
+            ->setAuditFormat($this->getAuditFormat($input))
         ;
 
         // if no lock is present, we do not do a partial update as

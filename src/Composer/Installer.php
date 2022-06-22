@@ -167,8 +167,8 @@ class Installer
     protected $executeOperations = true;
     /** @var bool */
     protected $audit = true;
-    /** @var string */
-    protected $auditFormat = Auditor::FORMAT_TABLE;
+    /** @var Auditor::FORMAT_* */
+    protected $auditFormat = Auditor::FORMAT_SUMMARY;
 
     /** @var bool */
     protected $updateMirrors = false;
@@ -1460,7 +1460,7 @@ class Installer
     /**
      * What format should be used for audit output?
      *
-     * @param string $auditFormat
+     * @param Auditor::FORMAT_* $auditFormat
      * @return Installer
      */
     public function setAuditFormat(string $auditFormat): self

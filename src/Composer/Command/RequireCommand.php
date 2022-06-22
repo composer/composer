@@ -419,7 +419,7 @@ EOT
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
             ->setAudit(!$input->getOption('no-audit'))
-            ->setAuditFormat($input->getOption('audit-format'))
+            ->setAuditFormat($this->getAuditFormat($input))
         ;
 
         // if no lock is present, or the file is brand new, we do not do a
@@ -475,7 +475,7 @@ EOT
 
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        
+
     }
 
     /**

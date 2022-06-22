@@ -264,7 +264,7 @@ EOT
                 ->setClassMapAuthoritative($config->get('classmap-authoritative'))
                 ->setApcuAutoloader($config->get('apcu-autoloader'))
                 ->setAudit(!$input->getOption('no-audit'))
-                ->setAuditFormat($input->getOption('audit-format'));
+                ->setAuditFormat($this->getAuditFormat($input));
 
             if (!$composer->getLocker()->isLocked()) {
                 $installer->setUpdate(true);

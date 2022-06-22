@@ -233,7 +233,7 @@ EOT
             ->setPreferLowest($input->getOption('prefer-lowest'))
             ->setTemporaryConstraints($temporaryConstraints)
             ->setAudit(!$input->getOption('no-audit'))
-            ->setAuditFormat($input->getOption('audit-format'))
+            ->setAuditFormat($this->getAuditFormat($input))
         ;
 
         if ($input->getOption('no-plugins')) {

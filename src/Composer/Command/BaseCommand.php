@@ -25,6 +25,7 @@ use Composer\IO\NullIO;
 use Composer\Plugin\PreCommandRunEvent;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
+use Composer\Util\Auditor;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
@@ -404,5 +405,24 @@ abstract class BaseCommand extends Command
         }
 
         return $width;
+    }
+
+    /**
+     * @internal
+     * @param 'format'|'audit-format' $optName
+     * @return Auditor::FORMAT_*
+     */
+    protected function getAuditFormat(InputInterface $input, string $optName = 'audit-format'): string
+    {
+        if (!$input->hasOption($optName)) {
+            throw new \LogicException('This should not be called on a Command which has no '.$optName.' option defined.');
+        }
+
+        $val = $input->getOption($optName);
+        if (!in_array($val, Auditor::FORMATS, true)) {
+            throw new \InvalidArgumentException('--'.$optName.' must be one of '.implode(', ', Auditor::FORMATS).'.');
+        }
+
+        return $val;
     }
 }

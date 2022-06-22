@@ -53,7 +53,8 @@ class Auditor
         if (count($advisories) > 0) {
             $numAdvisories = $this->countAdvisories($advisories);
             $plurality = $numAdvisories === 1 ? 'y' : 'ies';
-            $io->writeError("<$errorOrWarn>Found $numAdvisories security vulnerability advisor$plurality:</$errorOrWarn>");
+            $punctuation = $format === 'summary' ? '.' : ':';
+            $io->writeError("<$errorOrWarn>Found $numAdvisories security vulnerability advisor{$plurality}{$punctuation}</$errorOrWarn>");
             $this->outputAdvisories($io, $advisories, $format);
             return 1;
         }
@@ -177,8 +178,9 @@ class Auditor
             case self::FORMAT_SUMMARY:
                 // We've already output the number of advisories in audit()
                 $io->writeError('Run composer audit for a full list of advisories.');
+                return;
             default:
-                throw new InvalidArgumentException('Invalid format.');
+                throw new InvalidArgumentException('Invalid format "'.$format.'".');
         }
     }
 
@@ -203,7 +205,7 @@ class Auditor
                     ])
                     ->addRow([
                         $package,
-                        $advisory['cve'] ?: 'NO CVE',
+                        $advisory['cve'] ?? 'NO CVE',
                         $advisory['title'],
                         $advisory['link'],
                         $advisory['affectedVersions'],
@@ -230,7 +232,7 @@ class Auditor
                 if (!$firstAdvisory) {
                     $error[] = '--------';
                 }
-                $cve = $advisory['cve'] ?: 'NO CVE';
+                $cve = $advisory['cve'] ?? 'NO CVE';
                 $error[] = "Package: $package";
                 $error[] = "CVE: $cve";
                 $error[] = "Title: {$advisory['title']}";

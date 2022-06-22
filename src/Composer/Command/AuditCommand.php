@@ -9,7 +9,7 @@ use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\Auditor;
-use Symfony\Component\Console\Input\InputOption;
+use Composer\Console\Input\InputOption;
 
 class AuditCommand extends BaseCommand
 {
@@ -47,7 +47,7 @@ EOT
         }
 
         $auditor = new Auditor($httpDownloader);
-        return $auditor->audit($this->getIO(), $packages, $input->getOption('format'), false);
+        return $auditor->audit($this->getIO(), $packages, $this->getAuditFormat($input, 'format'), false);
     }
 
     /**
