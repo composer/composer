@@ -65,6 +65,10 @@ return $config->setRules([
         // TODO later once 2.2 is more stable
         // 'array_syntax' => true,
         // 'list_syntax' => true,
+        // 'regular_callable_call' => true,
+        // 'static_lambda' => true,
+        // 'nullable_type_declaration_for_default_null_value' => true,
+        // 'explicit_indirect_variable' => true,
         'visibility_required' => ['elements' => ['property', 'method', 'const']],
         'non_printable_character' => true,
         'combine_nested_dirname' => true,
