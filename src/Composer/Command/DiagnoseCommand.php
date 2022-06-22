@@ -238,12 +238,12 @@ EOT
         }
 
         $gitVersion = Git::getVersion($this->process);
-        if (version_compare('2.24.0', $gitVersion, '>')) {
-            return '<warning>Your git version ('.$gitVersion.') is too old and possibly will cause issues. Please upgrade to git 2.24 or above</>';
-        }
-
         if (null === $gitVersion) {
             return '<comment>No git process found</>';
+        }
+
+        if (version_compare('2.24.0', $gitVersion, '>')) {
+            return '<warning>Your git version ('.$gitVersion.') is too old and possibly will cause issues. Please upgrade to git 2.24 or above</>';
         }
 
         return '<info>OK</> <comment>git version '.$gitVersion.'</>';
