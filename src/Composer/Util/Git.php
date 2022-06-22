@@ -282,7 +282,7 @@ class Git
         // update the repo if it is a valid git repository
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             try {
-                $commandCallable = function ($url): string {
+                $commandCallable = static function ($url): string {
                     $sanitizedUrl = Preg::replace('{://([^@]+?):(.+?)@}', '://', $url);
 
                     return sprintf('git remote set-url origin -- %s && git remote update --prune origin && git remote set-url origin -- %s && git gc --auto', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
@@ -300,7 +300,7 @@ class Git
         // clean up directory and do a fresh clone into it
         $this->filesystem->removeDirectory($dir);
 
-        $commandCallable = function ($url) use ($dir): string {
+        $commandCallable = static function ($url) use ($dir): string {
             return sprintf('git clone --mirror -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
         };
 
@@ -401,7 +401,7 @@ class Git
             if ($isLocalPathRepository) {
                 $this->process->execute('git remote show origin', $output, $dir);
             } else {
-                $commandCallable = function ($url): string {
+                $commandCallable = static function ($url): string {
                     $sanitizedUrl = Preg::replace('{://([^@]+?):(.+?)@}', '://', $url);
 
                     return sprintf('git remote set-url origin -- %s && git remote show origin && git remote set-url origin -- %s', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));

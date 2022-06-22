@@ -163,7 +163,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
 
             $type = TypeCombinator::union(...$types);
         } elseif (isset($def['enum'])) {
-            $type = TypeCombinator::union(...array_map(function (string $value): ConstantStringType {
+            $type = TypeCombinator::union(...array_map(static function (string $value): ConstantStringType {
                 return new ConstantStringType($value);
             }, $def['enum']));
         } else {

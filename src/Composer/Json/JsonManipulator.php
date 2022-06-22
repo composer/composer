@@ -94,7 +94,7 @@ class JsonManipulator
             // update existing link
             $existingPackage = $packageMatches['package'];
             $packageRegex = str_replace('/', '\\\\?/', preg_quote($existingPackage));
-            $links = Preg::replaceCallback('{'.self::$DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', function ($m) use ($existingPackage, $constraint): string {
+            $links = Preg::replaceCallback('{'.self::$DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', static function ($m) use ($existingPackage, $constraint): string {
                 return JsonFile::encode(str_replace('\\/', '/', $existingPackage)) . $m['separator'] . '"' . $constraint . '"';
             }, $links);
         } else {
@@ -135,7 +135,7 @@ class JsonManipulator
      */
     private function sortPackages(array &$packages = array()): void
     {
-        $prefix = function ($requirement): string {
+        $prefix = static function ($requirement): string {
             if (PlatformRepository::isPlatformPackage($requirement)) {
                 return Preg::replace(
                     array(
@@ -159,7 +159,7 @@ class JsonManipulator
             return '5-'.$requirement;
         };
 
-        uksort($packages, function ($a, $b) use ($prefix): int {
+        uksort($packages, static function ($a, $b) use ($prefix): int {
             return strnatcmp($prefix($a), $prefix($b));
         });
     }
@@ -351,7 +351,7 @@ class JsonManipulator
             }
         }
 
-        $this->contents = Preg::replaceCallback($nodeRegex, function ($m) use ($children): string {
+        $this->contents = Preg::replaceCallback($nodeRegex, static function ($m) use ($children): string {
             return $m['start'] . $children . $m['end'];
         }, $this->contents);
 
@@ -437,7 +437,7 @@ class JsonManipulator
             $newline = $this->newline;
             $indent = $this->indent;
 
-            $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($indent, $newline): string {
+            $this->contents = Preg::replaceCallback($nodeRegex, static function ($matches) use ($indent, $newline): string {
                 return $matches['start'] . '{' . $newline . $indent . '}' . $matches['end'];
             }, $this->contents);
 

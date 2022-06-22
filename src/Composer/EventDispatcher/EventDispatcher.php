@@ -292,7 +292,7 @@ class EventDispatcher
                     if (strpos($exec, '@php ') === 0) {
                         $pathAndArgs = substr($exec, 5);
                         if (Platform::isWindows()) {
-                            $pathAndArgs = Preg::replaceCallback('{^\S+}', function ($path) {
+                            $pathAndArgs = Preg::replaceCallback('{^\S+}', static function ($path) {
                                 return str_replace('/', '\\', $path[0]);
                             }, $pathAndArgs);
                         }
@@ -314,7 +314,7 @@ class EventDispatcher
                         }
 
                         if (Platform::isWindows()) {
-                            $exec = Preg::replaceCallback('{^\S+}', function ($path) {
+                            $exec = Preg::replaceCallback('{^\S+}', static function ($path) {
                                 return str_replace('/', '\\', $path[0]);
                             }, $exec);
                         }

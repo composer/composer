@@ -118,7 +118,7 @@ EOT
 
             if (count($input->getArgument('packages')) === 0) {
                 $this->getIO()->writeError('<info>No unused packages to remove</info>');
-                $this->setCode(function (): int {
+                $this->setCode(static function (): int {
                     return 0;
                 });
             }

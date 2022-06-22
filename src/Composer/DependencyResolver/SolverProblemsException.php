@@ -121,7 +121,7 @@ class SolverProblemsException extends \RuntimeException
             array_shift($paths);
         }
 
-        $ignoreExtensionsArguments = implode(" ", array_map(function ($extension) {
+        $ignoreExtensionsArguments = implode(" ", array_map(static function ($extension) {
             return "--ignore-platform-req=$extension";
         }, $missingExtensions));
 

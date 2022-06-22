@@ -290,7 +290,7 @@ class RemoteFilesystem
         $errorMessage = '';
         $errorCode = 0;
         $result = false;
-        set_error_handler(function ($code, $msg) use (&$errorMessage): bool {
+        set_error_handler(static function ($code, $msg) use (&$errorMessage): bool {
             if ($errorMessage) {
                 $errorMessage .= "\n";
             }
@@ -445,7 +445,7 @@ class RemoteFilesystem
             }
 
             $errorMessage = '';
-            set_error_handler(function ($code, $msg) use (&$errorMessage): bool {
+            set_error_handler(static function ($code, $msg) use (&$errorMessage): bool {
                 if ($errorMessage) {
                     $errorMessage .= "\n";
                 }

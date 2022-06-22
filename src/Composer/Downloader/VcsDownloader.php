@@ -200,7 +200,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             }
 
             if ('' !== trim($logs)) {
-                $logs = implode("\n", array_map(function ($line): string {
+                $logs = implode("\n", array_map(static function ($line): string {
                     return '      ' . $line;
                 }, explode("\n", $logs)));
 
@@ -228,7 +228,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
 
         $promise = $this->filesystem->removeDirectoryAsync($path);
 
-        return $promise->then(function (bool $result) use ($path) {
+        return $promise->then(static function (bool $result) use ($path) {
             if (!$result) {
                 throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
             }

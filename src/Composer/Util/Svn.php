@@ -138,7 +138,7 @@ class Svn
 
         $output = null;
         $io = $this->io;
-        $handler = function ($type, $buffer) use (&$output, $io, $verbose) {
+        $handler = static function ($type, $buffer) use (&$output, $io, $verbose) {
             if ($type !== 'out') {
                 return null;
             }

@@ -163,7 +163,7 @@ EOT
 
             foreach ($errors as $path => $changes) {
                 if ($input->getOption('verbose')) {
-                    $indentedChanges = implode("\n", array_map(function ($line): string {
+                    $indentedChanges = implode("\n", array_map(static function ($line): string {
                         return '    ' . ltrim($line);
                     }, explode("\n", $changes)));
                     $io->write('<info>'.$path.'</info>:');
@@ -179,7 +179,7 @@ EOT
 
             foreach ($unpushedChanges as $path => $changes) {
                 if ($input->getOption('verbose')) {
-                    $indentedChanges = implode("\n", array_map(function ($line): string {
+                    $indentedChanges = implode("\n", array_map(static function ($line): string {
                         return '    ' . ltrim($line);
                     }, explode("\n", $changes)));
                     $io->write('<info>'.$path.'</info>:');

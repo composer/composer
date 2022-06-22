@@ -320,10 +320,10 @@ EOT
 
         $values = $input->getArgument('setting-value'); // what the user is trying to add/change
 
-        $booleanValidator = function ($val): bool {
+        $booleanValidator = static function ($val): bool {
             return in_array($val, array('true', 'false', '1', '0'), true);
         };
-        $booleanNormalizer = function ($val): bool {
+        $booleanNormalizer = static function ($val): bool {
             return $val !== 'false' && (bool) $val;
         };
 
@@ -333,26 +333,26 @@ EOT
             'use-include-path' => array($booleanValidator, $booleanNormalizer),
             'use-github-api' => array($booleanValidator, $booleanNormalizer),
             'preferred-install' => array(
-                function ($val): bool {
+                static function ($val): bool {
                     return in_array($val, array('auto', 'source', 'dist'), true);
                 },
-                function ($val) {
+                static function ($val) {
                     return $val;
                 },
             ),
             'gitlab-protocol' => array(
-                function ($val): bool {
+                static function ($val): bool {
                     return in_array($val, array('git', 'http', 'https'), true);
                 },
-                function ($val) {
+                static function ($val) {
                     return $val;
                 },
             ),
             'store-auths' => array(
-                function ($val): bool {
+                static function ($val): bool {
                     return in_array($val, array('true', 'false', 'prompt'), true);
                 },
-                function ($val) {
+                static function ($val) {
                     if ('prompt' === $val) {
                         return 'prompt';
                     }
@@ -361,56 +361,56 @@ EOT
                 },
             ),
             'notify-on-install' => array($booleanValidator, $booleanNormalizer),
-            'vendor-dir' => array('is_string', function ($val) {
+            'vendor-dir' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'bin-dir' => array('is_string', function ($val) {
+            'bin-dir' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'archive-dir' => array('is_string', function ($val) {
+            'archive-dir' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'archive-format' => array('is_string', function ($val) {
+            'archive-format' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'data-dir' => array('is_string', function ($val) {
+            'data-dir' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'cache-dir' => array('is_string', function ($val) {
+            'cache-dir' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'cache-files-dir' => array('is_string', function ($val) {
+            'cache-files-dir' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'cache-repo-dir' => array('is_string', function ($val) {
+            'cache-repo-dir' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'cache-vcs-dir' => array('is_string', function ($val) {
+            'cache-vcs-dir' => array('is_string', static function ($val) {
                 return $val;
             }),
             'cache-ttl' => array('is_numeric', 'intval'),
             'cache-files-ttl' => array('is_numeric', 'intval'),
             'cache-files-maxsize' => array(
-                function ($val): bool {
+                static function ($val): bool {
                     return Preg::isMatch('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val);
                 },
-                function ($val) {
+                static function ($val) {
                     return $val;
                 },
             ),
             'bin-compat' => array(
-                function ($val): bool {
+                static function ($val): bool {
                     return in_array($val, array('auto', 'full', 'symlink'));
                 },
-                function ($val) {
+                static function ($val) {
                     return $val;
                 },
             ),
             'discard-changes' => array(
-                function ($val): bool {
+                static function ($val): bool {
                     return in_array($val, array('stash', 'true', 'false', '1', '0'), true);
                 },
-                function ($val) {
+                static function ($val) {
                     if ('stash' === $val) {
                         return 'stash';
                     }
@@ -418,7 +418,7 @@ EOT
                     return $val !== 'false' && (bool) $val;
                 },
             ),
-            'autoloader-suffix' => array('is_string', function ($val) {
+            'autoloader-suffix' => array('is_string', static function ($val) {
                 return $val === 'null' ? null : $val;
             }),
             'sort-packages' => array($booleanValidator, $booleanNormalizer),
@@ -429,18 +429,18 @@ EOT
             'disable-tls' => array($booleanValidator, $booleanNormalizer),
             'secure-http' => array($booleanValidator, $booleanNormalizer),
             'cafile' => array(
-                function ($val): bool {
+                static function ($val): bool {
                     return file_exists($val) && Filesystem::isReadable($val);
                 },
-                function ($val) {
+                static function ($val) {
                     return $val === 'null' ? null : $val;
                 },
             ),
             'capath' => array(
-                function ($val): bool {
+                static function ($val): bool {
                     return is_dir($val) && Filesystem::isReadable($val);
                 },
-                function ($val) {
+                static function ($val) {
                     return $val === 'null' ? null : $val;
                 },
             ),
@@ -449,10 +449,10 @@ EOT
             'lock' => array($booleanValidator, $booleanNormalizer),
             'allow-plugins' => array($booleanValidator, $booleanNormalizer),
             'platform-check' => array(
-                function ($val): bool {
+                static function ($val): bool {
                     return in_array($val, array('php-only', 'true', 'false', '1', '0'), true);
                 },
-                function ($val) {
+                static function ($val) {
                     if ('php-only' === $val) {
                         return 'php-only';
                     }
@@ -461,10 +461,10 @@ EOT
                 },
             ),
             'use-parent-dir' => array(
-                function ($val): bool {
+                static function ($val): bool {
                     return in_array($val, array('true', 'false', 'prompt'), true);
                 },
-                function ($val) {
+                static function ($val) {
                     if ('prompt' === $val) {
                         return 'prompt';
                     }
@@ -475,7 +475,7 @@ EOT
         );
         $multiConfigValues = array(
             'github-protocols' => array(
-                function ($vals) {
+                static function ($vals) {
                     if (!is_array($vals)) {
                         return 'array expected';
                     }
@@ -488,31 +488,31 @@ EOT
 
                     return true;
                 },
-                function ($vals) {
+                static function ($vals) {
                     return $vals;
                 },
             ),
             'github-domains' => array(
-                function ($vals) {
+                static function ($vals) {
                     if (!is_array($vals)) {
                         return 'array expected';
                     }
 
                     return true;
                 },
-                function ($vals) {
+                static function ($vals) {
                     return $vals;
                 },
             ),
             'gitlab-domains' => array(
-                function ($vals) {
+                static function ($vals) {
                     if (!is_array($vals)) {
                         return 'array expected';
                     }
 
                     return true;
                 },
-                function ($vals) {
+                static function ($vals) {
                     return $vals;
                 },
             ),
@@ -579,26 +579,26 @@ EOT
 
         // handle properties
         $uniqueProps = array(
-            'name' => array('is_string', function ($val) {
+            'name' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'type' => array('is_string', function ($val) {
+            'type' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'description' => array('is_string', function ($val) {
+            'description' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'homepage' => array('is_string', function ($val) {
+            'homepage' => array('is_string', static function ($val) {
                 return $val;
             }),
-            'version' => array('is_string', function ($val) {
+            'version' => array('is_string', static function ($val) {
                 return $val;
             }),
             'minimum-stability' => array(
-                function ($val): bool {
+                static function ($val): bool {
                     return isset(BasePackage::$stabilities[VersionParser::normalizeStability($val)]);
                 },
-                function ($val): string {
+                static function ($val): string {
                     return VersionParser::normalizeStability($val);
                 },
             ),
@@ -606,26 +606,26 @@ EOT
         );
         $multiProps = array(
             'keywords' => array(
-                function ($vals) {
+                static function ($vals) {
                     if (!is_array($vals)) {
                         return 'array expected';
                     }
 
                     return true;
                 },
-                function ($vals) {
+                static function ($vals) {
                     return $vals;
                 },
             ),
             'license' => array(
-                function ($vals) {
+                static function ($vals) {
                     if (!is_array($vals)) {
                         return 'array expected';
                     }
 
                     return true;
                 },
-                function ($vals) {
+                static function ($vals) {
                     return $vals;
                 },
             ),
@@ -897,7 +897,7 @@ EOT
             }
 
             if (is_array($value)) {
-                $value = array_map(function ($val) {
+                $value = array_map(static function ($val) {
                     return is_array($val) ? json_encode($val) : $val;
                 }, $value);
 

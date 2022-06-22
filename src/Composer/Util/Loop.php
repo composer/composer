@@ -68,9 +68,9 @@ class Loop
         $uncaught = null;
 
         \React\Promise\all($promises)->then(
-            function (): void {
+            static function (): void {
             },
-            function ($e) use (&$uncaught): void {
+            static function ($e) use (&$uncaught): void {
                 $uncaught = $e;
             }
         );

@@ -124,7 +124,7 @@ abstract class ArchiveDownloader extends FileDownloader
              * @param  string         $dir Directory
              * @return \SplFileInfo[]
              */
-            $getFolderContent = function ($dir): array {
+            $getFolderContent = static function ($dir): array {
                 $finder = Finder::create()
                     ->ignoreVCS(false)
                     ->ignoreDotFiles(false)
@@ -146,7 +146,7 @@ abstract class ArchiveDownloader extends FileDownloader
              * @param  string $to   Directory
              * @return void
              */
-            $renameRecursively = function ($from, $to) use ($filesystem, $getFolderContent, $package, &$renameRecursively) {
+            $renameRecursively = static function ($from, $to) use ($filesystem, $getFolderContent, $package, &$renameRecursively) {
                 $contentDir = $getFolderContent($from);
 
                 // move files back out of the temp dir
@@ -203,7 +203,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 $this->removeCleanupPath($package, $temporaryDir);
                 $this->removeCleanupPath($package, $path);
             });
-        }, function ($e) use ($cleanup) {
+        }, static function ($e) use ($cleanup) {
             $cleanup();
 
             throw $e;

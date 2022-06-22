@@ -284,7 +284,7 @@ EOF;
         $mainAutoload = $rootPackage->getAutoload();
         if ($rootPackage->getTargetDir() && !empty($mainAutoload['psr-0'])) {
             $levels = substr_count($filesystem->normalizePath($rootPackage->getTargetDir()), '/') + 1;
-            $prefixes = implode(', ', array_map(function ($prefix): string {
+            $prefixes = implode(', ', array_map(static function ($prefix): string {
                 return var_export($prefix, true);
             }, array_keys($mainAutoload['psr-0'])));
             $baseDirFromTargetDirCode = $filesystem->findShortestPathCode($targetDir, $basePath, true);
@@ -543,7 +543,7 @@ EOF;
     {
         $rootPackageMap = array_shift($packageMap);
         if (is_array($filteredDevPackages)) {
-            $packageMap = array_filter($packageMap, function ($item) use ($filteredDevPackages): bool {
+            $packageMap = array_filter($packageMap, static function ($item) use ($filteredDevPackages): bool {
                 return !in_array($item[0]->getName(), $filteredDevPackages, true);
             });
         } elseif ($filteredDevPackages) {
@@ -797,7 +797,7 @@ EOF;
 
         ksort($requiredExtensions);
 
-        $formatToPhpVersionId = function (Bound $bound): int {
+        $formatToPhpVersionId = static function (Bound $bound): int {
             if ($bound->isZero()) {
                 return 0;
             }
@@ -812,7 +812,7 @@ EOF;
             return $chunks[0] * 10000 + $chunks[1] * 100 + $chunks[2];
         };
 
-        $formatToHumanReadable = function (Bound $bound) {
+        $formatToHumanReadable = static function (Bound $bound) {
             if ($bound->isZero()) {
                 return 0;
             }
@@ -1224,7 +1224,7 @@ INITIALIZER;
                         $updir = null;
                         $path = Preg::replaceCallback(
                             '{^((?:(?:\\\\\\.){1,2}+/)+)}',
-                            function ($matches) use (&$updir): string {
+                            static function ($matches) use (&$updir): string {
                                 if (isset($matches[1])) {
                                     // undo preg_quote for the matched string
                                     $updir = str_replace('\\.', '.', $matches[1]);
@@ -1298,7 +1298,7 @@ INITIALIZER;
             }
         }
 
-        $add = function (PackageInterface $package) use (&$add, $packages, &$include, $replacedBy): void {
+        $add = static function (PackageInterface $package) use (&$add, $packages, &$include, $replacedBy): void {
             foreach ($package->getRequires() as $link) {
                 $target = $link->getTarget();
                 if (isset($replacedBy[$target])) {
@@ -1316,7 +1316,7 @@ INITIALIZER;
 
         return array_filter(
             $packageMap,
-            function ($item) use ($include): bool {
+            static function ($item) use ($include): bool {
                 $package = $item[0];
                 foreach ($package->getNames() as $name) {
                     if (isset($include[$name])) {

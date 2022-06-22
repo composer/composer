@@ -42,7 +42,7 @@ class PackageSorter
         }
         $computing = array();
         $computed = array();
-        $computeImportance = function ($name) use (&$computeImportance, &$computing, &$computed, $usageList, $weights) {
+        $computeImportance = static function ($name) use (&$computeImportance, &$computing, &$computed, $usageList, $weights) {
             // reusing computed importance
             if (isset($computed[$name])) {
                 return $computed[$name];
@@ -76,7 +76,7 @@ class PackageSorter
             $weightedPackages[] = array('name' => $name, 'weight' => $weight, 'index' => $index);
         }
 
-        usort($weightedPackages, function (array $a, array $b): int {
+        usort($weightedPackages, static function (array $a, array $b): int {
             if ($a['weight'] !== $b['weight']) {
                 return $a['weight'] - $b['weight'];
             }

@@ -186,7 +186,7 @@ trait PackageDiscoveryTrait
                     $io->writeError($choices);
                     $io->writeError('');
 
-                    $validator = function (string $selection) use ($matches, $versionParser) {
+                    $validator = static function (string $selection) use ($matches, $versionParser) {
                         if ('' === $selection) {
                             return false;
                         }
@@ -224,7 +224,7 @@ trait PackageDiscoveryTrait
 
                 // no constraint yet, determine the best version automatically
                 if (false !== $package && false === strpos($package, ' ')) {
-                    $validator = function (string $input) {
+                    $validator = static function (string $input) {
                         $input = trim($input);
 
                         return strlen($input) > 0 ? $input : false;
@@ -296,7 +296,7 @@ trait PackageDiscoveryTrait
             if (count($providers) > 0) {
                 $constraint = '*';
                 if ($input->isInteractive()) {
-                    $constraint = $this->getIO()->askAndValidate('Package "<info>'.$name.'</info>" does not exist but is provided by '.count($providers).' packages. Which version constraint would you like to use? [<info>*</info>] ', function ($value) {
+                    $constraint = $this->getIO()->askAndValidate('Package "<info>'.$name.'</info>" does not exist but is provided by '.count($providers).' packages. Which version constraint would you like to use? [<info>*</info>] ', static function ($value) {
                         $parser = new VersionParser();
                         $parser->parseConstraints($value);
 

@@ -87,7 +87,7 @@ class VersionSelector
 
         if ($this->platformConstraints && !($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter)) {
             $platformConstraints = $this->platformConstraints;
-            $candidates = array_filter($candidates, function ($pkg) use ($platformConstraints, $platformRequirementFilter): bool {
+            $candidates = array_filter($candidates, static function ($pkg) use ($platformConstraints, $platformRequirementFilter): bool {
                 $reqs = $pkg->getRequires();
 
                 foreach ($reqs as $name => $link) {

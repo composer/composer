@@ -520,7 +520,7 @@ EOT
     private function checkPlatform()
     {
         $output = '';
-        $out = function ($msg, $style) use (&$output): void {
+        $out = static function ($msg, $style) use (&$output): void {
             $output .= '<'.$style.'>'.$msg.'</'.$style.'>'.PHP_EOL;
         };
 

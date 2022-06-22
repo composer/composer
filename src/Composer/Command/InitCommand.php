@@ -293,7 +293,7 @@ EOT
 
         $name = $io->askAndValidate(
             'Package name (<vendor>/<name>) [<comment>'.$name.'</comment>]: ',
-            function ($value) use ($name) {
+            static function ($value) use ($name) {
                 if (null === $value) {
                     return $name;
                 }
@@ -359,7 +359,7 @@ EOT
         $minimumStability = $input->getOption('stability') ?: null;
         $minimumStability = $io->askAndValidate(
             'Minimum Stability [<comment>'.$minimumStability.'</comment>]: ',
-            function ($value) use ($minimumStability) {
+            static function ($value) use ($minimumStability) {
                 if (null === $value) {
                     return $minimumStability;
                 }
@@ -433,7 +433,7 @@ EOT
         $namespace = $this->namespaceFromPackageName((string) $input->getOption('name'));
         $autoload = $io->askAndValidate(
             'Add PSR-4 autoload mapping? Maps namespace "'.$namespace.'" to the entered relative path. [<comment>'.$autoload.'</comment>, n to skip]: ',
-            function ($value) use ($autoload) {
+            static function ($value) use ($autoload) {
                 if (null === $value) {
                     return $autoload;
                 }
@@ -514,7 +514,7 @@ EOT
         }
 
         $namespace = array_map(
-            function ($part): string {
+            static function ($part): string {
                 $part = Preg::replace('/[^a-z0-9]/i', ' ', $part);
                 $part = ucwords($part);
 
