@@ -43,7 +43,7 @@ class Auditor
      * @param PackageInterface[] $packages
      * @param self::FORMAT_* $format The format that will be used to output audit results.
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
-     * @return int
+     * @return int Amount of advisories found
      * @throws InvalidArgumentException If no packages are passed in
      */
     public function audit(IOInterface $io, array $packages, string $format, bool $warningOnly = true): int
@@ -56,9 +56,12 @@ class Auditor
             $punctuation = $format === 'summary' ? '.' : ':';
             $io->writeError("<$errorOrWarn>Found $numAdvisories security vulnerability advisor{$plurality}{$punctuation}</$errorOrWarn>");
             $this->outputAdvisories($io, $advisories, $format);
-            return 1;
+
+            return count($advisories);
         }
+
         $io->writeError('<info>No security vulnerability advisories found</info>');
+
         return 0;
     }
 

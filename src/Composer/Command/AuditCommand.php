@@ -47,7 +47,8 @@ EOT
         }
 
         $auditor = new Auditor($httpDownloader);
-        return $auditor->audit($this->getIO(), $packages, $this->getAuditFormat($input, 'format'), false);
+
+        return min(255, $auditor->audit($this->getIO(), $packages, $this->getAuditFormat($input, 'format'), false));
     }
 
     /**
