@@ -114,15 +114,6 @@ interface RootPackageInterface extends CompletePackageInterface
     public function setReplaces(array $replaces);
 
     /**
-     * Set the repositories
-     *
-     * @param mixed[] $repositories
-     *
-     * @return void
-     */
-    public function setRepositories(array $repositories);
-
-    /**
      * Set the autoload mapping
      *
      * @param array $autoload Mapping of autoloading rules
