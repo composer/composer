@@ -127,6 +127,10 @@ abstract class BaseDependencyCommand extends BaseCommand
             $this->printTable($output, $results);
         }
 
+        if ($inverted) {
+            $this->getIO()->writeError('Not finding what you were looking for? Try calling `composer update "'.$input->getArgument(self::ARGUMENT_PACKAGE).':'.$input->getArgument(self::ARGUMENT_CONSTRAINT).'" --dry-run` to get another view on the problem.');
+        }
+
         return 0;
     }
 
