@@ -15,6 +15,7 @@ namespace Composer\Package\Version;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
+use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
@@ -65,10 +66,11 @@ class VersionSelector
      * @param string                                           $targetPackageVersion
      * @param string                                           $preferredStability
      * @param PlatformRequirementFilterInterface|bool|string[] $platformRequirementFilter
-     * @param int                                              $repoSetFlags*
+     * @param int                                              $repoSetFlags
+     * @param IOInterface|null                                 $io                        If passed, warnings will be output there in case versions cannot be selected due to platform requirements
      * @return PackageInterface|false
      */
-    public function findBestCandidate(string $packageName, string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0)
+    public function findBestCandidate(string $packageName, string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0, ?IOInterface $io = null)
     {
         if (!isset(BasePackage::$stabilities[$preferredStability])) {
             // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
@@ -84,10 +86,11 @@ class VersionSelector
 
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
         $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint, $repoSetFlags);
+        $skippedWarnings = [];
 
         if ($this->platformConstraints && !($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter)) {
             $platformConstraints = $this->platformConstraints;
-            $candidates = array_filter($candidates, static function ($pkg) use ($platformConstraints, $platformRequirementFilter): bool {
+            $candidates = array_filter($candidates, static function ($pkg) use ($platformConstraints, $platformRequirementFilter, &$skippedWarnings): bool {
                 $reqs = $pkg->getRequires();
 
                 foreach ($reqs as $name => $link) {
@@ -99,10 +102,12 @@ class VersionSelector
                                 }
                             }
 
+                            $skippedWarnings[$pkg->getName()][] = ['version' => $pkg->getPrettyVersion(), 'link' => $link, 'reason' => 'is not satisfied by your platform'];
                             return false;
                         } elseif (PlatformRepository::isPlatformPackage($name)) {
                             // Package requires a platform package that is unknown on current platform.
                             // It means that current platform cannot validate this constraint and so package is not installable.
+                            $skippedWarnings[$pkg->getName()][] = ['version' => $pkg->getPrettyVersion(), 'link' => $link, 'reason' => 'is missing from your platform'];
                             return false;
                         }
                     }
@@ -114,6 +119,20 @@ class VersionSelector
 
         if (!$candidates) {
             return false;
+        }
+
+        if (count($skippedWarnings) > 0 && $io !== null) {
+            foreach ($skippedWarnings as $name => $warnings) {
+                foreach ($warnings as $index => $warning) {
+                    $link = $warning['link'];
+                    $latest = $index === 0 ? "'s latest version" : '';
+                    $io->writeError(
+                        '<warning>Cannot use '.$name.$latest.' '.$warning['version'].' as it '.$link->getDescription().' '.$link->getTarget().' '.$link->getPrettyConstraint().' which '.$warning['reason'].'.</>',
+                        true,
+                        $index === 0 ? IOInterface::NORMAL : IOInterface::VERBOSE
+                    );
+                }
+            }
         }
 
         // select highest version if we have many

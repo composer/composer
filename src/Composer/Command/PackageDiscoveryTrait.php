@@ -282,7 +282,7 @@ trait PackageDiscoveryTrait
         $versionSelector = new VersionSelector($repoSet, $platformRepo);
         $effectiveMinimumStability = $this->getMinimumStability($input);
 
-        $package = $versionSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter);
+        $package = $versionSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, 0, $this->getIO());
 
         if (false === $package) {
             // platform packages can not be found in the pool in versions other than the local platform's has
