@@ -62,7 +62,7 @@ use Composer\Repository\RepositoryManager;
 use Composer\Repository\LockArrayRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Semver\Constraint\ConstraintInterface;
-use Composer\Util\Auditor;
+use Composer\Advisory\Auditor;
 use Composer\Util\Platform;
 
 /**
@@ -397,8 +397,12 @@ class Installer
             }
             if (count($packages) > 0) {
                 try {
-                    $auditor = new Auditor(Factory::createHttpDownloader($this->io, $this->config));
-                    $auditor->audit($this->io, $packages, $this->auditFormat);
+                    $auditor = new Auditor();
+                    $repoSet = new RepositorySet();
+                    foreach ($this->repositoryManager->getRepositories() as $repo) {
+                        $repoSet->addRepository($repo);
+                    }
+                    $auditor->audit($this->io, $repoSet, $packages, $this->auditFormat);
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {

@@ -15,7 +15,7 @@ namespace Composer\Command;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Util\Auditor;
+use Composer\Advisory\Auditor;
 use Composer\Util\HttpDownloader;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;

@@ -1,14 +1,15 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\Repository\RepositorySet;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\RepositoryInterface;
-use Composer\Util\Auditor;
+use Composer\Advisory\Auditor;
 use Composer\Console\Input\InputOption;
 
 class AuditCommand extends BaseCommand
@@ -39,16 +40,19 @@ EOT
     {
         $composer = $this->requireComposer();
         $packages = $this->getPackages($composer, $input);
-        $httpDownloader = $composer->getLoop()->getHttpDownloader();
 
         if (count($packages) === 0) {
             $this->getIO()->writeError('No packages - skipping audit.');
             return 0;
         }
 
-        $auditor = new Auditor($httpDownloader);
+        $auditor = new Auditor();
+        $repoSet = new RepositorySet();
+        foreach ($composer->getRepositoryManager()->getRepositories() as $repo) {
+            $repoSet->addRepository($repo);
+        }
 
-        return min(255, $auditor->audit($this->getIO(), $packages, $this->getAuditFormat($input, 'format'), false));
+        return min(255, $auditor->audit($this->getIO(), $repoSet, $packages, $this->getAuditFormat($input, 'format'), false));
     }
 
     /**
