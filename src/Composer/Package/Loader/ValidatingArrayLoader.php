@@ -252,6 +252,7 @@ class ValidatingArrayLoader implements LoaderInterface
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
             if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
                 foreach ($this->config[$linkType] as $package => $constraint) {
+                    $package = (string) $package;
                     if (0 === strcasecmp($package, $this->config['name'])) {
                         $this->errors[] = $linkType.'.'.$package.' : a package cannot set a '.$linkType.' on itself';
                         unset($this->config[$linkType][$package]);

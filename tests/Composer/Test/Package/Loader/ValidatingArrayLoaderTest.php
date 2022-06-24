@@ -419,6 +419,13 @@ class ValidatingArrayLoaderTest extends TestCase
                     'dist.url : must be present',
                 ),
             ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'replace' => array('acme/bar'),
+                ),
+                array('require.0 : invalid version constraint (Could not parse version constraint foo/Bar: Invalid version string "foo/Bar")')
+            ),
         ));
     }
 
