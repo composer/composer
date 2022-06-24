@@ -127,7 +127,7 @@ abstract class BaseDependencyCommand extends BaseCommand
             $this->printTable($output, $results);
         }
 
-        if ($inverted) {
+        if ($inverted && $input->hasArgument(self::ARGUMENT_CONSTRAINT)) {
             $this->getIO()->writeError('Not finding what you were looking for? Try calling `composer update "'.$input->getArgument(self::ARGUMENT_PACKAGE).':'.$input->getArgument(self::ARGUMENT_CONSTRAINT).'" --dry-run` to get another view on the problem.');
         }
 
