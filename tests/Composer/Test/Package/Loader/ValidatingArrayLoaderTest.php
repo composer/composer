@@ -424,7 +424,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     'name' => 'foo/bar',
                     'replace' => array('acme/bar'),
                 ),
-                array('replace.0 : invalid version constraint (Could not parse version constraint foo/Bar: Invalid version string "foo/Bar")')
+                array('replace.0 : invalid version constraint (Could not parse version constraint acme/bar: Invalid version string "acme/bar")')
             ),
         ));
     }
