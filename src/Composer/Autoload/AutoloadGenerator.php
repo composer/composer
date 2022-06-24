@@ -162,7 +162,7 @@ class AutoloadGenerator
     /**
      * @param string $targetDir
      * @param bool $scanPsrPackages
-     * @return ClassMap
+     * @return ClassMap|null
      * @throws \Seld\JsonLint\ParsingException
      * @throws \RuntimeException
      */
@@ -213,6 +213,67 @@ class AutoloadGenerator
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
+        if ('' === $suffix) {
+            $suffix = null;
+        }
+        if (null === $suffix) {
+            $suffix = $config->get('autoloader-suffix');
+
+            // carry over existing autoload.php's suffix if possible and none is configured
+            if (null === $suffix && Filesystem::isReadable($vendorPath.'/autoload.php')) {
+                $content = file_get_contents($vendorPath.'/autoload.php');
+                if (Preg::isMatch('{ComposerAutoloaderInit([^:\s]+)::}', (string) $content, $match)) {
+                    $suffix = $match[1];
+                }
+            }
+
+            // generate one if we still haven't got a suffix
+            if (null === $suffix) {
+                $suffix = md5(uniqid('', true));
+            }
+        }
+
+        // Collect information from all packages.
+        $devPackageNames = $localRepo->getDevPackageNames();
+        $packageMap = $this->buildPackageMap($installationManager, $rootPackage, $localRepo->getCanonicalPackages());
+        if ($this->devMode) {
+            // if dev mode is enabled, then we do not filter any dev packages out so disable this entirely
+            $filteredDevPackages = false;
+        } else {
+            // if the list of dev package names is available we use that straight, otherwise pass true which means use legacy algo to figure them out
+            $filteredDevPackages = $devPackageNames ?: true;
+        }
+        $autoloads = $this->parseAutoloads($packageMap, $rootPackage, $filteredDevPackages);
+
+        $autoloadConfigHash = null;
+        if (Filesystem::isReadable($vendorPath.'/composer/installed.json')) {
+            $hashBits = [
+                file_get_contents($vendorPath.'/composer/installed.json'),
+                var_export($autoloads, true),
+                $this->devMode,
+                $suffix,
+                $scanPsrPackages,
+                $this->apcu,
+                $this->apcuPrefix,
+                $this->classMapAuthoritative,
+                $rootPackage->getTargetDir(),
+                $rootPackage->getAutoload(),
+            ];
+
+            $oldHash = null;
+            $autoloadConfigHash = hash('sha256', implode(':', $hashBits));
+            if (Filesystem::isReadable($vendorPath.'/autoload.php')) {
+                $content = file_get_contents($vendorPath.'/autoload.php');
+                if (Preg::isMatch('{^// config-hash-([a-f0-9]+)}m', (string) $content, $match)) {
+                    $oldHash = $match[1];
+                }
+            }
+
+            if ($autoloadConfigHash === $oldHash) {
+                return null;
+            }
+        }
+
         $vendorPathCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
         $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, realpath($targetDir), true);
 
@@ -242,18 +303,6 @@ EOF;
 return array(
 
 EOF;
-
-        // Collect information from all packages.
-        $devPackageNames = $localRepo->getDevPackageNames();
-        $packageMap = $this->buildPackageMap($installationManager, $rootPackage, $localRepo->getCanonicalPackages());
-        if ($this->devMode) {
-            // if dev mode is enabled, then we do not filter any dev packages out so disable this entirely
-            $filteredDevPackages = false;
-        } else {
-            // if the list of dev package names is available we use that straight, otherwise pass true which means use legacy algo to figure them out
-            $filteredDevPackages = $devPackageNames ?: true;
-        }
-        $autoloads = $this->parseAutoloads($packageMap, $rootPackage, $filteredDevPackages);
 
         // Process the 'psr-0' base directories.
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
@@ -385,26 +434,6 @@ EOF;
         }
         $classmapFile .= ");\n";
 
-        if ('' === $suffix) {
-            $suffix = null;
-        }
-        if (null === $suffix) {
-            $suffix = $config->get('autoloader-suffix');
-
-            // carry over existing autoload.php's suffix if possible and none is configured
-            if (null === $suffix && Filesystem::isReadable($vendorPath.'/autoload.php')) {
-                $content = file_get_contents($vendorPath.'/autoload.php');
-                if (Preg::isMatch('{ComposerAutoloaderInit([^:\s]+)::}', $content, $match)) {
-                    $suffix = $match[1];
-                }
-            }
-
-            // generate one if we still haven't got a suffix
-            if (null === $suffix) {
-                $suffix = md5(uniqid('', true));
-            }
-        }
-
         $filesystem->filePutContentsIfModified($targetDir.'/autoload_namespaces.php', $namespacesFile);
         $filesystem->filePutContentsIfModified($targetDir.'/autoload_psr4.php', $psr4File);
         $filesystem->filePutContentsIfModified($targetDir.'/autoload_classmap.php', $classmapFile);
@@ -434,7 +463,7 @@ EOF;
         } elseif (file_exists($targetDir.'/platform_check.php')) {
             unlink($targetDir.'/platform_check.php');
         }
-        $filesystem->filePutContentsIfModified($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
+        $filesystem->filePutContentsIfModified($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix, $autoloadConfigHash));
         $filesystem->filePutContentsIfModified($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $checkPlatform));
 
         $filesystem->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
@@ -895,7 +924,7 @@ PLATFORM_CHECK;
      * @param  string $suffix
      * @return string
      */
-    protected function getAutoloadFile(string $vendorPathToTargetDirCode, string $suffix)
+    protected function getAutoloadFile(string $vendorPathToTargetDirCode, string $suffix, ?string $autoloadConfigHash)
     {
         $lastChar = $vendorPathToTargetDirCode[strlen($vendorPathToTargetDirCode) - 1];
         if ("'" === $lastChar || '"' === $lastChar) {
@@ -904,10 +933,12 @@ PLATFORM_CHECK;
             $vendorPathToTargetDirCode .= " . '/autoload_real.php'";
         }
 
+        $autoloadConfigHash = $autoloadConfigHash !== null ? "\n".'// config-hash-'.$autoloadConfigHash : '';
+
         return <<<AUTOLOAD
 <?php
 
-// autoload.php @generated by Composer
+// autoload.php @generated by Composer$autoloadConfigHash
 
 if (PHP_VERSION_ID < 50600) {
     echo 'Composer 2.3.0 dropped support for autoloading on PHP <5.6 and you are running '.PHP_VERSION.', please upgrade PHP or use Composer 2.2 LTS via "composer self-update --2.2". Aborting.'.PHP_EOL;

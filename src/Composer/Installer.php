@@ -348,7 +348,10 @@ class Installer
             $this->autoloadGenerator->setApcu($this->apcuAutoloader, $this->apcuAutoloaderPrefix);
             $this->autoloadGenerator->setRunScripts($this->runScripts);
             $this->autoloadGenerator->setPlatformRequirementFilter($this->platformRequirementFilter);
-            $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+            $result = $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
+            if ($result === null) {
+                $this->io->writeError('<info>Skipped autoload generation, nothing changed</info>');
+            }
         }
 
         if ($this->install && $this->executeOperations) {

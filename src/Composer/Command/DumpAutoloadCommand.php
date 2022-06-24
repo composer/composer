@@ -97,6 +97,13 @@ EOT
         $generator->setApcu($apcu, $apcuPrefix);
         $generator->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input));
         $classMap = $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
+
+        if ($classMap === null) {
+            $this->getIO()->write('<info>Skipped autoload generation, nothing changed</info>');
+
+            return 0;
+        }
+
         $numberOfClasses = count($classMap);
 
         if ($authoritative) {
