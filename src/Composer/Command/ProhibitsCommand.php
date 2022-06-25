@@ -40,6 +40,7 @@ class ProhibitsCommand extends BaseDependencyCommand
                 new InputArgument(self::ARGUMENT_CONSTRAINT, InputArgument::REQUIRED, 'Version constraint, which version you expected to be installed'),
                 new InputOption(self::OPTION_RECURSIVE, 'r', InputOption::VALUE_NONE, 'Recursively resolves up to the root package'),
                 new InputOption(self::OPTION_TREE, 't', InputOption::VALUE_NONE, 'Prints the results as a nested tree'),
+                new InputOption('locked', null, InputOption::VALUE_NONE, 'Read dependency information from composer.lock'),
             ))
             ->setHelp(
                 <<<EOT
