@@ -70,6 +70,7 @@ abstract class BaseDependencyCommand extends BaseCommand
             }
 
             $repos[] = $locker->getLockedRepository(true);
+            $repos[] = new PlatformRepository([], $locker->getPlatformOverrides());
         } else {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $rootPkg = $composer->getPackage();
