@@ -25,7 +25,7 @@ use Composer\Console\Input\InputOption;
 use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Package\BasePackage;
-use Composer\Util\Auditor;
+use Composer\Advisory\Auditor;
 
 /**
  * @author Pierre du Plessis <pdples@gmail.com>

@@ -17,14 +17,19 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\PoolBuilder;
 use Composer\DependencyResolver\Request;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Advisory\SecurityAdvisory;
+use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
+use Composer\Package\PackageInterface;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\StabilityFilter;
+use Composer\Semver\Constraint\MatchAllConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -224,6 +229,57 @@ class RepositorySet
         }
 
         return $result;
+    }
+
+    /**
+     * @param string[] $packageNames
+     * @return ($allowPartialAdvisories is true ? array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> : array<string, array<SecurityAdvisory>>)
+     */
+    public function getSecurityAdvisories(array $packageNames, bool $allowPartialAdvisories = false): array
+    {
+        $map = [];
+        foreach ($packageNames as $name) {
+            $map[$name] = new MatchAllConstraint();
+        }
+
+        return $this->getSecurityAdvisoriesForConstraints($map, $allowPartialAdvisories);
+    }
+
+    /**
+     * @param PackageInterface[] $packages
+     * @return ($allowPartialAdvisories is true ? array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> : array<string, array<SecurityAdvisory>>)
+     */
+    public function getMatchingSecurityAdvisories(array $packages, bool $allowPartialAdvisories = false): array
+    {
+        $map = [];
+        foreach ($packages as $package) {
+            $map[$package->getName()] = new Constraint('=', $package->getVersion());
+        }
+
+        return $this->getSecurityAdvisoriesForConstraints($map, $allowPartialAdvisories);
+    }
+
+    /**
+     * @param array<string, ConstraintInterface> $packageConstraintMap
+     * @return ($allowPartialAdvisories is true ? array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> : array<string, array<SecurityAdvisory>>)
+     */
+    private function getSecurityAdvisoriesForConstraints(array $packageConstraintMap, bool $allowPartialAdvisories): array
+    {
+        $advisories = [];
+        foreach ($this->repositories as $repository) {
+            if (!$repository instanceof AdvisoryProviderInterface || !$repository->hasSecurityAdvisories()) {
+                continue;
+            }
+
+            $result = $repository->getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories);
+            foreach ($result['namesFound'] as $nameFound) {
+                unset($packageConstraintMap[$nameFound]);
+            }
+
+            $advisories = array_merge($advisories, $result['advisories']);
+        }
+
+        return $advisories;
     }
 
     /**

@@ -31,7 +31,7 @@ use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\IO\IOInterface;
-use Composer\Util\Auditor;
+use Composer\Advisory\Auditor;
 use Composer\Util\Silencer;
 
 /**

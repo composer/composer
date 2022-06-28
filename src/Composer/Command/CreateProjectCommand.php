@@ -44,7 +44,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Version\VersionParser;
-use Composer\Util\Auditor;
+use Composer\Advisory\Auditor;
 
 /**
  * Install a package as new project into new directory.

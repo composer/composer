@@ -25,7 +25,7 @@ use Composer\IO\NullIO;
 use Composer\Plugin\PreCommandRunEvent;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
-use Composer\Util\Auditor;
+use Composer\Advisory\Auditor;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;

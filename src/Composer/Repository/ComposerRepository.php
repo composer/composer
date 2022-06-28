@@ -12,6 +12,8 @@
 
 namespace Composer\Repository;
 
+use Composer\Advisory\PartialSecurityAdvisory;
+use Composer\Advisory\SecurityAdvisory;
 use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
@@ -40,11 +42,12 @@ use Composer\Util\Http\Response;
 use Composer\MetadataMinifier\MetadataMinifier;
 use Composer\Util\Url;
 use React\Promise\PromiseInterface;
+use function React\Promise\resolve;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface
+class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface
 {
     /**
      * @var mixed[]
@@ -107,6 +110,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $partialPackagesByName = null;
     /** @var bool */
     private $displayedWarningAboutNonMatchingPackageIndex = false;
+    /** @var array{metadata: bool, query-all: bool, api-url: string|null}|null */
+    private $securityAdvisoryConfig = null;
 
     /**
      * @var array list of package names which are fresh and can be loaded from the cache directly in case loadPackage is called several times
@@ -472,7 +477,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         // this call initializes loadRootServerFile which is needed for the rest below to work
         $hasProviders = $this->hasProviders();
 
-        if (!$hasProviders && !$this->hasPartialPackages() && !$this->lazyProvidersUrl) {
+        if (!$hasProviders && !$this->hasPartialPackages() && null === $this->lazyProvidersUrl) {
             return parent::loadPackages($packageNameMap, $acceptableStabilities, $stabilityFlags, $alreadyLoaded);
         }
 
@@ -602,6 +607,102 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         return parent::search($query, $mode);
+    }
+
+    public function hasSecurityAdvisories(): bool
+    {
+        $this->loadRootServerFile(600);
+        return $this->securityAdvisoryConfig !== null && ($this->securityAdvisoryConfig['metadata'] || $this->securityAdvisoryConfig['api-url'] !== null);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSecurityAdvisories(array $packageConstraintMap, bool $allowPartialAdvisories = false): array
+    {
+        $this->loadRootServerFile(600);
+        if (null === $this->securityAdvisoryConfig) {
+            return ['namesFound' => [], 'advisories' => []];
+        }
+
+        $advisories = [];
+        $namesFound = [];
+
+        $apiUrl = $this->securityAdvisoryConfig['api-url'];
+
+        $parser = new VersionParser();
+        /**
+         * @param array<mixed> $data
+         * @param string $name
+         * @return ($allowPartialAdvisories is false ? SecurityAdvisory|null : PartialSecurityAdvisory|SecurityAdvisory|null)
+         */
+        $create = function (array $data, string $name) use ($parser, $allowPartialAdvisories, &$packageConstraintMap): ?PartialSecurityAdvisory {
+             $advisory = PartialSecurityAdvisory::create($name, $data, $parser);
+             if (!$allowPartialAdvisories && !$advisory instanceof SecurityAdvisory) {
+                 throw new \RuntimeException('Advisory for '.$name.' could not be loaded as a full advisory from '.$this->getRepoName() . PHP_EOL . var_export($data, true));
+             }
+             if (!$advisory->affectedVersions->matches($packageConstraintMap[$name])) {
+                 return null;
+             }
+
+             return $advisory;
+        };
+
+        if ($this->securityAdvisoryConfig['metadata'] && ($allowPartialAdvisories || $apiUrl === null)) {
+            $promises = [];
+            foreach ($packageConstraintMap as $name => $constraint) {
+                $name = strtolower($name);
+
+                // skip platform packages, root package and composer-plugin-api
+                if (PlatformRepository::isPlatformPackage($name) || '__root__' === $name) {
+                    continue;
+                }
+
+                $promises[] = $this->startCachedAsyncDownload($name, $name)
+                    ->then(function (array $spec) use (&$advisories, &$namesFound, &$packageConstraintMap, $name, $create): void {
+                        list($response, ) = $spec;
+
+                        if (!isset($response['security-advisories']) || !is_array($response['security-advisories'])) {
+                            return;
+                        }
+
+                        $namesFound[$name] = true;
+                        if (count($response['security-advisories']) > 0) {
+                            $advisories[$name] = array_filter(array_map(
+                                function ($data) use ($name, $create) { return $create($data, $name); },
+                                $response['security-advisories']
+                            ));
+                        }
+                        unset($packageConstraintMap[$name]);
+                    });
+            }
+
+            $this->loop->wait($promises);
+        }
+
+        if ($apiUrl !== null && count($packageConstraintMap) > 0) {
+            $options = [
+                'http' => [
+                    'method' => 'POST',
+                    'header' => ['Content-type: application/x-www-form-urlencoded'],
+                    'timeout' => 10,
+                    'content' => http_build_query(['packages' => array_keys($packageConstraintMap)]),
+                ],
+            ];
+            $response = $this->httpDownloader->get($apiUrl, $options);
+            /** @var string $name */
+            foreach ($response->decodeJson()['advisories'] as $name => $list) {
+                if (count($list) > 0) {
+                    $advisories[$name] = array_filter(array_map(
+                        function ($data) use ($name, $create) { return $create($data, $name); },
+                        $list
+                    ));
+                }
+                $namesFound[$name] = true;
+            }
+        }
+
+        return ['namesFound' => array_keys($namesFound), 'advisories' => array_filter($advisories)];
     }
 
     public function getProviders(string $packageName)
@@ -863,7 +964,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @param array<string, ConstraintInterface|null> $packageNames array of package name => ConstraintInterface|null - if a constraint is provided, only packages matching it will be loaded
+     * @param array<string, ConstraintInterface|null> $packageNames array of package name => ConstraintInterface|null - if a constraint is provided, only
+     *                                                packages matching it will be loaded
      * @param array<string, int>|null $acceptableStabilities
      * @phpstan-param array<string, BasePackage::STABILITY_*>|null $acceptableStabilities
      * @param array<string, int>|null $stabilityFlags an array of package name => BasePackage::STABILITY_* value
@@ -880,7 +982,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $namesFound = array();
         $promises = array();
 
-        if (!$this->lazyProvidersUrl) {
+        if (null === $this->lazyProvidersUrl) {
             throw new \LogicException('loadAsyncPackages only supports v2 protocol composer repos with a metadata-url');
         }
 
@@ -904,25 +1006,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 continue;
             }
 
-            $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
-            $cacheKey = 'provider-'.strtr($name, '/', '~').'.json';
-
-            $lastModified = null;
-            if ($contents = $this->cache->read($cacheKey)) {
-                $contents = json_decode($contents, true);
-                $lastModified = $contents['last-modified'] ?? null;
-            }
-
-            $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
-                ->then(function ($response) use (&$packages, &$namesFound, $url, $cacheKey, $contents, $realName, $constraint, $acceptableStabilities, $stabilityFlags, $alreadyLoaded): void {
-                    $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
-
-                    if (true === $response) {
-                        $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
-                        $response = $contents;
-                    }
-
-                    if (!isset($response['packages'][$realName])) {
+            $promises[] = $this->startCachedAsyncDownload($name, $realName)
+                ->then(function (array $spec) use (&$packages, &$namesFound, $realName, $constraint, $acceptableStabilities, $stabilityFlags, $alreadyLoaded): void {
+                    list($response, $packagesSource) = $spec;
+                    if (null === $response) {
                         return;
                     }
 
@@ -968,7 +1055,41 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->loop->wait($promises);
 
         return array('namesFound' => $namesFound, 'packages' => $packages);
-        // RepositorySet should call loadMetadata, getMetadata when all promises resolved, then metadataComplete when done so we can GC the loaded json and whatnot then as needed
+    }
+
+    private function startCachedAsyncDownload(string $fileName, string $packageName = null): PromiseInterface
+    {
+        if (null === $this->lazyProvidersUrl) {
+            throw new \LogicException('startCachedAsyncDownload only supports v2 protocol composer repos with a metadata-url');
+        }
+
+        $name = strtolower($fileName);
+        $packageName = $packageName ?? $name;
+
+        $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
+        $cacheKey = 'provider-'.strtr($name, '/', '~').'.json';
+
+        $lastModified = null;
+        if ($contents = $this->cache->read($cacheKey)) {
+            $contents = json_decode($contents, true);
+            $lastModified = $contents['last-modified'] ?? null;
+        }
+
+        return $this->asyncFetchFile($url, $cacheKey, $lastModified)
+            ->then(function ($response) use ($url, $cacheKey, $contents, $packageName): array {
+                $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
+
+                if (true === $response) {
+                    $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
+                    $response = $contents;
+                }
+
+                if (!isset($response['packages'][$packageName])) {
+                    return [null, $packagesSource];
+                }
+
+                return [$response, $packagesSource];
+            });
     }
 
     /**
@@ -1113,6 +1234,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             // Remove legacy keys as most repos need to be compatible with Composer v1
             // as well but we are not interested in the old format anymore at this point
             unset($data['providers-url'], $data['providers'], $data['providers-includes']);
+
+            if (isset($data['security-advisories']) && is_array($data['security-advisories'])) {
+                $this->securityAdvisoryConfig = [
+                    'metadata' => $data['security-advisories']['metadata'] ?? false,
+                    'api-url' => $data['security-advisories']['api-url'] ?? null,
+                    'query-all' => $data['security-advisories']['query-all'] ?? false,
+                ];
+            }
         }
 
         if ($this->allowSslDowngrade) {
