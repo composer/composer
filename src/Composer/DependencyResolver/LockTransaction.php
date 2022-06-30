@@ -92,7 +92,7 @@ class LockTransaction extends Transaction
         foreach ($packages as $package) {
             foreach ($this->resultPackages['dev'] as $i => $resultPackage) {
                 // TODO this comparison is probably insufficient, aliases, what about modified versions? I guess they aren't possible?
-                if ($package->getName() == $resultPackage->getName()) {
+                if ($package->getName() === $resultPackage->getName()) {
                     $this->resultPackages['non-dev'][] = $resultPackage;
                     unset($this->resultPackages['dev'][$i]);
                 }
@@ -115,7 +115,7 @@ class LockTransaction extends Transaction
                 // we do not reset references if the currently present package didn't have any, or if the type of VCS has changed
                 if ($updateMirrors && !isset($this->presentMap[spl_object_hash($package)])) {
                     foreach ($this->presentMap as $presentPackage) {
-                        if ($package->getName() == $presentPackage->getName() && $package->getVersion() == $presentPackage->getVersion()) {
+                        if ($package->getName() === $presentPackage->getName() && $package->getVersion() === $presentPackage->getVersion()) {
                             if ($presentPackage->getSourceReference() && $presentPackage->getSourceType() === $package->getSourceType()) {
                                 $package->setSourceDistReferences($presentPackage->getSourceReference());
                             }

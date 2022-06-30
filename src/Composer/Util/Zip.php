@@ -35,7 +35,7 @@ class Zip
             return null;
         }
 
-        if (0 == $zip->numFiles) {
+        if (0 === $zip->numFiles) {
             $zip->close();
 
             return null;

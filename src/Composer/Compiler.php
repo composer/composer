@@ -51,13 +51,13 @@ class Compiler
         }
 
         $process = new Process(array('git', 'log', '--pretty=%H', '-n1', 'HEAD'), __DIR__);
-        if ($process->run() != 0) {
+        if ($process->run() !== 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($process->getOutput());
 
         $process = new Process(array('git', 'log', '-n1', '--pretty=%ci', 'HEAD'), __DIR__);
-        if ($process->run() != 0) {
+        if ($process->run() !== 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
 
@@ -65,7 +65,7 @@ class Compiler
         $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
         $process = new Process(array('git', 'describe', '--tags', '--exact-match', 'HEAD'), __DIR__);
-        if ($process->run() == 0) {
+        if ($process->run() === 0) {
             $this->version = trim($process->getOutput());
         } else {
             // get branch-alias defined in composer.json for dev-main (if any)

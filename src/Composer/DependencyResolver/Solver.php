@@ -311,11 +311,11 @@ class Solver
         while (true) {
             $rule = $this->propagate($level);
 
-            if (!$rule) {
+            if (null === $rule) {
                 break;
             }
 
-            if ($level == 1) {
+            if ($level === 1) {
                 return $this->analyzeUnsolvable($rule);
             }
 
@@ -523,7 +523,7 @@ class Solver
         $why = spl_object_hash($conflictRule);
         $ruleSeen[$why] = true;
 
-        if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
+        if ($conflictRule->getType() === RuleSet::TYPE_LEARNED) {
             $learnedWhy = $this->learnedWhy[$why];
             $problemRules = $this->learnedPool[$learnedWhy];
 
@@ -536,7 +536,7 @@ class Solver
             return;
         }
 
-        if ($conflictRule->getType() == RuleSet::TYPE_PACKAGE) {
+        if ($conflictRule->getType() === RuleSet::TYPE_PACKAGE) {
             // package rules cannot be part of a problem
             return;
         }
@@ -723,7 +723,7 @@ class Solver
 
             $this->io->writeError('Looking at all rules.', true, IOInterface::DEBUG);
             for ($i = 0, $n = 0; $n < $rulesCount; $i++, $n++) {
-                if ($i == $rulesCount) {
+                if ($i === $rulesCount) {
                     if (1 === $pass) {
                         $this->io->writeError("Something's changed, looking at all rules again (pass #$pass)", false, IOInterface::DEBUG);
                     } else {
@@ -814,7 +814,7 @@ class Solver
 
                     $level = $this->setPropagateLearn($level, $lastLiteral, $why);
 
-                    if ($level == 0) {
+                    if ($level === 0) {
                         return;
                     }
 

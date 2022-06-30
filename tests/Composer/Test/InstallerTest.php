@@ -420,7 +420,7 @@ class InstallerTest extends TestCase
             $filteredPackages = array_filter($packages, function ($package): bool {
                 return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
             });
-            $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
+            $updateMirrors = $input->getOption('lock') || count($filteredPackages) !== count($packages);
             $packages = $filteredPackages;
 
             $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;

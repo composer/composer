@@ -234,7 +234,7 @@ abstract class BaseDependencyCommand extends BaseCommand
 
             $color = $this->colors[$level % count($this->colors)];
             $prevColor = $this->colors[($level - 1) % count($this->colors)];
-            $isLast = (++$idx == $count);
+            $isLast = (++$idx === $count);
             $versionText = $package->getPrettyVersion() === RootPackage::DEFAULT_PRETTY_VERSION ? '' : $package->getPrettyVersion();
             $packageText = rtrim(sprintf('<%s>%s</%1$s> %s', $color, $package->getPrettyName(), $versionText));
             $linkText = sprintf('%s <%s>%s</%2$s> %s', $link->getDescription(), $prevColor, $link->getTarget(), $link->getPrettyConstraint());

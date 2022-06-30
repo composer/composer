@@ -54,11 +54,11 @@ class GitExcludeFilter extends BaseExcludeFilter
     {
         $parts = Preg::split('#\s+#', $line);
 
-        if (count($parts) == 2 && $parts[1] === 'export-ignore') {
+        if (count($parts) === 2 && $parts[1] === 'export-ignore') {
             return $this->generatePattern($parts[0]);
         }
 
-        if (count($parts) == 2 && $parts[1] === '-export-ignore') {
+        if (count($parts) === 2 && $parts[1] === '-export-ignore') {
             return $this->generatePattern('!'.$parts[0]);
         }
 

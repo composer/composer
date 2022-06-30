@@ -116,7 +116,7 @@ class RuleWatchGraph
                             !$decisions->conflict($ruleLiteral);
                     });
 
-                    if ($alternativeLiterals) {
+                    if (\count($alternativeLiterals) > 0) {
                         reset($alternativeLiterals);
                         $this->moveWatch($literal, current($alternativeLiterals), $node);
                         continue;

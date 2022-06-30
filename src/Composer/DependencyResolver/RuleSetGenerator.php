@@ -134,7 +134,7 @@ class RuleSetGenerator
             $literals[] = -$package->id;
         }
 
-        if (\count($literals) == 2) {
+        if (\count($literals) === 2) {
             return new Rule2Literals($literals[0], $literals[1], $reason, $reasonData);
         }
 
@@ -262,7 +262,7 @@ class RuleSetGenerator
     protected function addRulesForRequest(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         foreach ($request->getFixedPackages() as $package) {
-            if ($package->id == -1) {
+            if ($package->id === -1) {
                 // fixed package was not added to the pool as it did not pass the stability requirements, this is fine
                 if ($this->pool->isUnacceptableFixedOrLockedPackage($package)) {
                     continue;

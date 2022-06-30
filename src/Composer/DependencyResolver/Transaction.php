@@ -73,8 +73,8 @@ class Transaction
     {
         $packageSort = static function (PackageInterface $a, PackageInterface $b): int {
             // sort alias packages by the same name behind their non alias version
-            if ($a->getName() == $b->getName()) {
-                if ($a instanceof AliasPackage != $b instanceof AliasPackage) {
+            if ($a->getName() === $b->getName()) {
+                if ($a instanceof AliasPackage !== $b instanceof AliasPackage) {
                     return $a instanceof AliasPackage ? -1 : 1;
                 }
                 // if names are the same, compare version, e.g. to sort aliases reliably, actual order does not matter
@@ -162,7 +162,7 @@ class Transaction
 
                         // do we need to update?
                         // TODO different for lock?
-                        if ($package->getVersion() != $presentPackageMap[$package->getName()]->getVersion() ||
+                        if ($package->getVersion() !== $presentPackageMap[$package->getName()]->getVersion() ||
                             $package->getDistReference() !== $presentPackageMap[$package->getName()]->getDistReference() ||
                             $package->getSourceReference() !== $presentPackageMap[$package->getName()]->getSourceReference()
                         ) {

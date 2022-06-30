@@ -596,16 +596,6 @@ parameters:
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
-			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
-			count: 2
-			path: ../src/Composer/Command/LicensesCommand.php
-
-		-
-			message: "#^Foreach overwrites \\$package with its value variable\\.$#"
-			count: 1
-			path: ../src/Composer/Command/LicensesCommand.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 2
 			path: ../src/Composer/Command/LicensesCommand.php
@@ -1646,11 +1636,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/RuleSetIterator.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, array\\<int\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/RuleWatchGraph.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 2
 			path: ../src/Composer/DependencyResolver/Solver.php
@@ -1672,11 +1657,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in &&, mixed given on the left side\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Solver.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\DependencyResolver\\\\Rule\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Solver.php
 
@@ -1726,7 +1706,7 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Solver.php
 
 		-
-			message: "#^Parameter \\#1 \\$literals of class Composer\\\\DependencyResolver\\\\GenericRule constructor expects array\\<int\\>, array\\<int, int\\|null\\> given\\.$#"
+			message: "#^Parameter \\#1 \\$literals of class Composer\\\\DependencyResolver\\\\GenericRule constructor expects array\\<int, int\\>, array\\<int, int\\|null\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Solver.php
 
@@ -2827,11 +2807,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in &&, Composer\\\\IO\\\\IOInterface\\|null given on the left side\\.$#"
-			count: 1
-			path: ../src/Composer/Json/JsonFile.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Json/JsonFile.php
 

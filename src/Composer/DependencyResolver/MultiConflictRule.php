@@ -19,11 +19,11 @@ namespace Composer\DependencyResolver;
  */
 class MultiConflictRule extends Rule
 {
-    /** @var int[] */
+    /** @var list<int> */
     protected $literals;
 
     /**
-     * @param int[] $literals
+     * @param list<int> $literals
      */
     public function __construct(array $literals, $reason, $reasonData)
     {
@@ -40,7 +40,7 @@ class MultiConflictRule extends Rule
     }
 
     /**
-     * @return int[]
+     * @return list<int>
      */
     public function getLiterals(): array
     {
@@ -102,7 +102,7 @@ class MultiConflictRule extends Rule
         $result = $this->isDisabled() ? 'disabled(multi(' : '(multi(';
 
         foreach ($this->literals as $i => $literal) {
-            if ($i != 0) {
+            if ($i !== 0) {
                 $result .= '|';
             }
             $result .= $literal;

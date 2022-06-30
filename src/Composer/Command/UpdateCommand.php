@@ -182,7 +182,7 @@ EOT
         $filteredPackages = array_filter($packages, static function ($package): bool {
             return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
         });
-        $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
+        $updateMirrors = $input->getOption('lock') || count($filteredPackages) !== count($packages);
         $packages = $filteredPackages;
 
         if ($updateMirrors && !empty($packages)) {

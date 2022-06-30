@@ -311,7 +311,7 @@ class Config
                     return $val;
                 }
 
-                return (($flags & self::RELATIVE_PATHS) == self::RELATIVE_PATHS) ? $val : $this->realpath($val);
+                return (($flags & self::RELATIVE_PATHS) === self::RELATIVE_PATHS) ? $val : $this->realpath($val);
 
             // booleans with env var support
             case 'cache-read-only':

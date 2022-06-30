@@ -202,7 +202,7 @@ class FilesystemRepository extends WritableArrayRepository
             }
         }
 
-        $lines .= str_repeat('    ', $level - 1) . ')' . ($level - 1 == 0 ? '' : ",\n");
+        $lines .= str_repeat('    ', $level - 1) . ')' . ($level - 1 === 0 ? '' : ",\n");
 
         return $lines;
     }

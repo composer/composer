@@ -302,6 +302,6 @@ class AuthHelper
         // {@link https://blog.bitbucket.org/2009/04/12/new-feature-downloads/}
         $pathParts = explode('/', $path);
 
-        return count($pathParts) >= 4 && $pathParts[3] == 'downloads';
+        return count($pathParts) >= 4 && $pathParts[3] === 'downloads';
     }
 }

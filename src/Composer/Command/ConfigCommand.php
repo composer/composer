@@ -921,7 +921,7 @@ EOT
                 $id = Preg::replace('{-+}', '-', $id);
                 $link = 'https://getcomposer.org/doc/06-config.md#' . $id;
             }
-            if (is_string($rawVal) && $rawVal != $value) {
+            if (is_string($rawVal) && $rawVal !== $value) {
                 $io->write('[<fg=yellow;href=' . $link .'>' . $k . $key . '</>] <info>' . $rawVal . ' (' . $value . ')</info>' . $source, true, IOInterface::QUIET);
             } else {
                 $io->write('[<fg=yellow;href=' . $link .'>' . $k . $key . '</>] <info>' . $value . '</info>' . $source, true, IOInterface::QUIET);

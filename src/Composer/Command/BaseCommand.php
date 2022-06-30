@@ -244,13 +244,13 @@ abstract class BaseCommand extends Command
         }
 
         if (true === $input->hasOption('no-dev')) {
-            if (!$input->getOption('no-dev') && true == Platform::getEnv('COMPOSER_NO_DEV')) {
+            if (!$input->getOption('no-dev') && (bool) Platform::getEnv('COMPOSER_NO_DEV')) {
                 $input->setOption('no-dev', true);
             }
         }
 
         if (true === $input->hasOption('ignore-platform-reqs')) {
-            if (!$input->getOption('ignore-platform-reqs') && true == Platform::getEnv('COMPOSER_IGNORE_PLATFORM_REQS')) {
+            if (!$input->getOption('ignore-platform-reqs') && (bool) Platform::getEnv('COMPOSER_IGNORE_PLATFORM_REQS')) {
                 $input->setOption('ignore-platform-reqs', true);
 
                 $io->writeError('<warning>COMPOSER_IGNORE_PLATFORM_REQS is set. You may experience unexpected errors.</warning>');

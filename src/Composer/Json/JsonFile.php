@@ -177,7 +177,7 @@ class JsonFile
     private function filePutContentsIfModified(string $path, string $content)
     {
         $currentContent = @file_get_contents($path);
-        if (!$currentContent || ($currentContent != $content)) {
+        if (false === $currentContent || $currentContent !== $content) {
             return file_put_contents($path, $content);
         }
 

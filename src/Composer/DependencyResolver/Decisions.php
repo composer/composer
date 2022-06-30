@@ -256,12 +256,12 @@ class Decisions implements \Iterator, \Countable
     {
         $packageId = abs($literal);
 
-        $previousDecision = $this->decisionMap[$packageId] ?? null;
-        if ($previousDecision != 0) {
+        $previousDecision = $this->decisionMap[$packageId] ?? 0;
+        if ($previousDecision !== 0) {
             $literalString = $this->pool->literalToPrettyString($literal, array());
             $package = $this->pool->literalToPackage($literal);
             throw new SolverBugException(
-                "Trying to decide $literalString on level $level, even though $package was previously decided as ".(int) $previousDecision."."
+                "Trying to decide $literalString on level $level, even though $package was previously decided as ".$previousDecision."."
             );
         }
 

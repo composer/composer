@@ -69,7 +69,7 @@ abstract class Rule
     }
 
     /**
-     * @return int[]
+     * @return list<int>
      */
     abstract public function getLiterals(): array;
 
@@ -380,13 +380,13 @@ abstract class Rule
                     $reason = null;
 
                     if (!isset($packageNames[$replacedName])) {
-                        $reason = 'They '.(count($literals) == 2 ? 'both' : 'all').' replace '.$replacedName.' and thus cannot coexist.';
+                        $reason = 'They '.(count($literals) === 2 ? 'both' : 'all').' replace '.$replacedName.' and thus cannot coexist.';
                     } else {
                         $replacerNames = $packageNames;
                         unset($replacerNames[$replacedName]);
                         $replacerNames = array_keys($replacerNames);
 
-                        if (count($replacerNames) == 1) {
+                        if (count($replacerNames) === 1) {
                             $reason = $replacerNames[0] . ' replaces ';
                         } else {
                             $reason = '['.implode(', ', $replacerNames).'] replace ';
@@ -469,7 +469,7 @@ abstract class Rule
             default:
                 $ruleText = '';
                 foreach ($literals as $i => $literal) {
-                    if ($i != 0) {
+                    if ($i !== 0) {
                         $ruleText .= '|';
                     }
                     $ruleText .= $pool->literalToPrettyString($literal, $installedMap);

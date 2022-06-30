@@ -530,8 +530,8 @@ class Installer
                     // when mirrors/metadata from a package gets updated we do not want to list it as an
                     // update in the output as it is only an internal lock file metadata update
                     if ($this->updateMirrors
-                        && $operation->getInitialPackage()->getName() == $operation->getTargetPackage()->getName()
-                        && $operation->getInitialPackage()->getVersion() == $operation->getTargetPackage()->getVersion()
+                        && $operation->getInitialPackage()->getName() === $operation->getTargetPackage()->getName()
+                        && $operation->getInitialPackage()->getVersion() === $operation->getTargetPackage()->getVersion()
                     ) {
                         continue;
                     }

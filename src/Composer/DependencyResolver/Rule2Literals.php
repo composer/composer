@@ -44,7 +44,9 @@ class Rule2Literals extends Rule
         }
     }
 
-    /** @return int[] */
+    /**
+     * @return list<int>
+     */
     public function getLiterals(): array
     {
         return array($this->literal1, $this->literal2);
@@ -82,7 +84,7 @@ class Rule2Literals extends Rule
         }
 
         $literals = $rule->getLiterals();
-        if (2 != \count($literals)) {
+        if (2 !== \count($literals)) {
             return false;
         }
 

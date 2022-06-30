@@ -369,7 +369,7 @@ class CurlDownloader
                         continue;
                     }
 
-                    if ($errno === 28 /* CURLE_OPERATION_TIMEDOUT */ && PHP_VERSION_ID >= 70300 && $progress['namelookup_time'] == 0 && !$timeoutWarning) {
+                    if ($errno === 28 /* CURLE_OPERATION_TIMEDOUT */ && PHP_VERSION_ID >= 70300 && $progress['namelookup_time'] === 0.0 && !$timeoutWarning) {
                         $timeoutWarning = true;
                         $this->io->writeError('<warning>A connection timeout was encountered. If you intend to run Composer without connecting to the internet, run the command again prefixed with COMPOSER_DISABLE_NETWORK=1 to make Composer run in offline mode.</warning>');
                     }
@@ -669,7 +669,7 @@ class CurlDownloader
      */
     private function checkCurlResult(int $code): void
     {
-        if ($code != CURLM_OK && $code != CURLM_CALL_MULTI_PERFORM) {
+        if ($code !== CURLM_OK && $code !== CURLM_CALL_MULTI_PERFORM) {
             throw new \RuntimeException(
                 isset($this->multiErrors[$code])
                 ? "cURL error: {$code} ({$this->multiErrors[$code][0]}): cURL message: {$this->multiErrors[$code][1]}"

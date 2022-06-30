@@ -93,7 +93,7 @@ class RuleWatchNode
      */
     public function getOtherWatch(int $literal): int
     {
-        if ($this->watch1 == $literal) {
+        if ($this->watch1 === $literal) {
             return $this->watch2;
         }
 
@@ -109,7 +109,7 @@ class RuleWatchNode
      */
     public function moveWatch(int $from, int $to): void
     {
-        if ($this->watch1 == $from) {
+        if ($this->watch1 === $from) {
             $this->watch1 = $to;
         } else {
             $this->watch2 = $to;

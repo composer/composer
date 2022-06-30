@@ -339,7 +339,7 @@ class Perforce
             $resArray = explode(PHP_EOL, $result);
             foreach ($resArray as $line) {
                 $fields = explode('=', $line);
-                if (strcmp($name, $fields[0]) == 0) {
+                if (strcmp($name, $fields[0]) === 0) {
                     $index = strpos($fields[1], ' ');
                     if ($index === false) {
                         $value = $fields[1];
