@@ -36,6 +36,7 @@ use Composer\Repository\RepositoryFactory;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
+use Composer\Repository\RepositoryUtils;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Semver;
@@ -248,7 +249,7 @@ EOT
             $repos = $installedRepo = new InstalledRepository(array($composer->getRepositoryManager()->getLocalRepository()));
 
             if ($input->getOption('no-dev')) {
-                $packages = $this->filterRequiredPackages($installedRepo, $rootPkg);
+                $packages = RepositoryUtils::filterRequiredPackages($installedRepo->getPackages(), $rootPkg);
                 $repos = $installedRepo = new InstalledRepository(array(new InstalledArrayRepository(array_map(static function ($pkg): PackageInterface {
                     return clone $pkg;
                 }, $packages))));
@@ -1422,30 +1423,5 @@ EOT
         }
 
         return $this->repositorySet;
-    }
-
-    /**
-     * Find package requires and child requires
-     *
-     * @param  array<PackageInterface> $bucket
-     * @return array<PackageInterface>
-     */
-    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = array()): array
-    {
-        $requires = $package->getRequires();
-
-        foreach ($repo->getPackages() as $candidate) {
-            foreach ($candidate->getNames() as $name) {
-                if (isset($requires[$name])) {
-                    if (!in_array($candidate, $bucket, true)) {
-                        $bucket[] = $candidate;
-                        $bucket = $this->filterRequiredPackages($repo, $candidate, $bucket);
-                    }
-                    break;
-                }
-            }
-        }
-
-        return $bucket;
     }
 }

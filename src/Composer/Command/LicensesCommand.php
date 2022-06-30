@@ -19,7 +19,9 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RepositoryUtils;
 use Composer\Util\PackageInfo;
+use Composer\Util\PackageSorter;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -65,12 +67,12 @@ EOT
         $repo = $composer->getRepositoryManager()->getLocalRepository();
 
         if ($input->getOption('no-dev')) {
-            $packages = $this->filterRequiredPackages($repo, $root);
+            $packages = RepositoryUtils::filterRequiredPackages($repo->getPackages(), $root);
         } else {
-            $packages = $this->appendPackages($repo->getPackages(), array());
+            $packages = $repo->getPackages();
         }
 
-        ksort($packages);
+        $packages = PackageSorter::sortPackagesAlphabetically($packages);
         $io = $this->getIO();
 
         switch ($format = $input->getOption('format')) {
@@ -152,48 +154,5 @@ EOT
         }
 
         return 0;
-    }
-
-    /**
-     * Find package requires and child requires
-     *
-     * @param  array<string, PackageInterface> $bucket
-     * @return array<string, PackageInterface>
-     */
-    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = array()): array
-    {
-        $requires = array_keys($package->getRequires());
-
-        $packageListNames = array_keys($bucket);
-        $packages = array_filter(
-            $repo->getPackages(),
-            static function ($package) use ($requires, $packageListNames): bool {
-                return in_array($package->getName(), $requires) && !in_array($package->getName(), $packageListNames);
-            }
-        );
-
-        $bucket = $this->appendPackages($packages, $bucket);
-
-        foreach ($packages as $package) {
-            $bucket = $this->filterRequiredPackages($repo, $package, $bucket);
-        }
-
-        return $bucket;
-    }
-
-    /**
-     * Adds packages to the package list
-     *
-     * @param  PackageInterface[]              $packages the list of packages to add
-     * @param  array<string, PackageInterface> $bucket   the list to add packages to
-     * @return array<string, PackageInterface>
-     */
-    public function appendPackages(array $packages, array $bucket): array
-    {
-        foreach ($packages as $package) {
-            $bucket[$package->getName()] = $package;
-        }
-
-        return $bucket;
     }
 }

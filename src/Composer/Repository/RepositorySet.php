@@ -33,6 +33,8 @@ use Composer\Semver\Constraint\MatchAllConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ *
+ * @see RepositoryUtils for ways to work with single repos
  */
 class RepositorySet
 {

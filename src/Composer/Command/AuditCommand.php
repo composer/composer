@@ -4,11 +4,11 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\Repository\RepositorySet;
+use Composer\Repository\RepositoryUtils;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepository;
-use Composer\Repository\RepositoryInterface;
 use Composer\Advisory\Auditor;
 use Composer\Console\Input\InputOption;
 
@@ -73,35 +73,9 @@ EOT
         $installedRepo = new InstalledRepository(array($composer->getRepositoryManager()->getLocalRepository()));
 
         if ($input->getOption('no-dev')) {
-            return $this->filterRequiredPackages($installedRepo, $rootPkg);
+            return RepositoryUtils::filterRequiredPackages($installedRepo->getPackages(), $rootPkg);
         }
 
         return $installedRepo->getPackages();
-    }
-
-    /**
-     * Find package requires and child requires.
-     * Effectively filters out dev dependencies.
-     *
-     * @param PackageInterface[] $bucket
-     * @return PackageInterface[]
-     */
-    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = array()): array
-    {
-        $requires = $package->getRequires();
-
-        foreach ($repo->getPackages() as $candidate) {
-            foreach ($candidate->getNames() as $name) {
-                if (isset($requires[$name])) {
-                    if (!in_array($candidate, $bucket, true)) {
-                        $bucket[] = $candidate;
-                        $bucket = $this->filterRequiredPackages($repo, $candidate, $bucket);
-                    }
-                    break;
-                }
-            }
-        }
-
-        return $bucket;
     }
 }

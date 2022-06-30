@@ -18,6 +18,22 @@ use Composer\Package\RootPackageInterface;
 class PackageSorter
 {
     /**
+     * Sorts packages by name
+     *
+     * @template T of PackageInterface
+     * @param array<T> $packages
+     * @return array<T>
+     */
+    public static function sortPackagesAlphabetically(array $packages): array
+    {
+        usort($packages, static function (PackageInterface $a, PackageInterface $b) {
+            return $a->getName() <=> $b->getName();
+        });
+
+        return $packages;
+    }
+
+    /**
      * Sorts packages by dependency weight
      *
      * Packages of equal weight are sorted alphabetically
