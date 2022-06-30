@@ -406,7 +406,7 @@ class Installer
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {
-                        $this->io->error($e->getMessage());
+                        $this->io->error('['.get_class($e).'] '.$e->getMessage());
                     }
                 }
             } else {
