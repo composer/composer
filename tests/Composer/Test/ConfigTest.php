@@ -371,4 +371,34 @@ class ConfigTest extends TestCase
 
         $this->assertEquals('COMPOSER_HTACCESS_PROTECT', $result);
     }
+
+    public function testMergesPluginConfig()
+    {
+        $config = new Config(false);
+        $config->merge(array('config' => array('allow-plugins' => array('some/plugin'))));
+        $this->assertEquals(array('some/plugin'), $config->get('allow-plugins'));
+
+        $config->merge(array('config' => array('allow-plugins' => array('another/package'))));
+        $this->assertEquals(array('some/plugin', 'another/plugin'), $config->get('allow-plugins'));
+    }
+
+    public function testOverridesGlobalBooleanPluginsConfig()
+    {
+        $config = new Config(false);
+        $config->merge(array('config' => array('allow-plugins' => true)));
+        $this->assertEquals(true, $config->get('allow-plugins'));
+
+        $config->merge(array('config' => array('allow-plugins' => array('another/package'))));
+        $this->assertEquals(array('another/plugin'), $config->get('allow-plugins'));
+    }
+
+    public function testAllowsAllPluginsFromLocalBoolean()
+    {
+        $config = new Config(false);
+        $config->merge(array('config' => array('allow-plugins' => array('some/plugin'))));
+        $this->assertEquals(array('some/plugin'), $config->get('allow-plugins'));
+
+        $config->merge(array('config' => array('allow-plugins' => true)));
+        $this->assertEquals(true, $config->get('allow-plugins'));
+    }
 }
