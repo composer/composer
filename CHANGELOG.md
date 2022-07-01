@@ -1,3 +1,11 @@
+### [2.2.15] 2022-07-01
+
+  * Fixed type error when using `allow-plugins: true` (#10909)
+  * Fixed @putenv scripts receiving arguments passed to the command (#10846)
+  * Fixed support for spaces in paths with binary proxies on Windows (#10836)
+  * Fixed type error in GitDownloader if branches cannot be listed (#10888)
+  * Fixed RootPackageInterface issue on PHP 5.3.3 (#10895)
+
 ### [2.2.14] 2022-06-06
 
   * Fixed handling of broken symlinks when checking whether a package is still installed (#6708)
@@ -1446,6 +1454,7 @@
 
   * Initial release
 
+[2.2.15]: https://github.com/composer/composer/compare/2.2.14...2.2.15
 [2.2.14]: https://github.com/composer/composer/compare/2.2.13...2.2.14
 [2.2.13]: https://github.com/composer/composer/compare/2.2.12...2.2.13
 [2.2.12]: https://github.com/composer/composer/compare/2.2.11...2.2.12
