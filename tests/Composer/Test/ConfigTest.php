@@ -376,7 +376,7 @@ class ConfigTest extends TestCase
     {
         $config = new Config(false);
         $config->merge(array('config' => array('allow-plugins' => array('some/plugin' => true))));
-        $this->assertEquals(array('some/plugin'), $config->get('allow-plugins'));
+        $this->assertEquals(array('some/plugin' => true), $config->get('allow-plugins'));
 
         $config->merge(array('config' => array('allow-plugins' => array('another/plugin' => true))));
         $this->assertEquals(array('some/plugin' => true, 'another/plugin' => true), $config->get('allow-plugins'));
@@ -396,7 +396,7 @@ class ConfigTest extends TestCase
     {
         $config = new Config(false);
         $config->merge(array('config' => array('allow-plugins' => array('some/plugin' => true))));
-        $this->assertEquals(array('some/plugin'), $config->get('allow-plugins'));
+        $this->assertEquals(array('some/plugin' => true), $config->get('allow-plugins'));
 
         $config->merge(array('config' => array('allow-plugins' => true)));
         $this->assertEquals(true, $config->get('allow-plugins'));
