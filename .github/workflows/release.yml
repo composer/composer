@@ -22,7 +22,7 @@ jobs:
           coverage: "none"
           extensions: "intl"
           ini-values: "memory_limit=-1"
-          php-version: "8.0"
+          php-version: "8.1"
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         run: "composer install ${{ env.COMPOSER_FLAGS }}"
