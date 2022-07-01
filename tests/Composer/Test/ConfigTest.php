@@ -408,4 +408,34 @@ class ConfigTest extends TestCase
             $this->assertCount(0, $value);
         }
     }
+
+    public function testMergesPluginConfig()
+    {
+        $config = new Config(false);
+        $config->merge(array('config' => array('allow-plugins' => array('some/plugin' => true))));
+        $this->assertEquals(array('some/plugin' => true), $config->get('allow-plugins'));
+
+        $config->merge(array('config' => array('allow-plugins' => array('another/plugin' => true))));
+        $this->assertEquals(array('some/plugin' => true, 'another/plugin' => true), $config->get('allow-plugins'));
+    }
+
+    public function testOverridesGlobalBooleanPluginsConfig()
+    {
+        $config = new Config(false);
+        $config->merge(array('config' => array('allow-plugins' => true)));
+        $this->assertEquals(true, $config->get('allow-plugins'));
+
+        $config->merge(array('config' => array('allow-plugins' => array('another/plugin' => true))));
+        $this->assertEquals(array('another/plugin' => true), $config->get('allow-plugins'));
+    }
+
+    public function testAllowsAllPluginsFromLocalBoolean()
+    {
+        $config = new Config(false);
+        $config->merge(array('config' => array('allow-plugins' => array('some/plugin' => true))));
+        $this->assertEquals(array('some/plugin' => true), $config->get('allow-plugins'));
+
+        $config->merge(array('config' => array('allow-plugins' => true)));
+        $this->assertEquals(true, $config->get('allow-plugins'));
+    }
 }
