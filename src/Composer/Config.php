@@ -183,7 +183,7 @@ class Config
                 } elseif (in_array($key, array('allow-plugins'), true) && isset($this->config[$key]) && is_array($this->config[$key]) && is_array($val)) {
                     // merging $val first to get the local config on top of the global one, then appending the global config,
                     // then merging local one again to make sure the values from local win over global ones for keys present in both
-                    $this->config[$key] = array_values(array_merge($val, $this->config[$key], $val));
+                    $this->config[$key] = array_merge($val, $this->config[$key], $val);
                     $this->setSourceOfConfigValue($val, $key, $source);
                 } elseif (in_array($key, array('gitlab-domains', 'github-domains'), true) && isset($this->config[$key])) {
                     $this->config[$key] = array_unique(array_merge($this->config[$key], $val));
