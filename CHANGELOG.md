@@ -1,5 +1,6 @@
 ### [2.2.15] 2022-07-01
 
+  * Fixed support for read-only caches where the filesystem is not writable (#10906)
   * Fixed type error when using `allow-plugins: true` (#10909)
   * Fixed @putenv scripts receiving arguments passed to the command (#10846)
   * Fixed support for spaces in paths with binary proxies on Windows (#10836)
