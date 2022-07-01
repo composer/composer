@@ -343,7 +343,7 @@ EOT
                     return;
                 }
                 $value = $value ?: $author;
-                $author = $this->parseAuthorString($value);
+                $author = $this->parseAuthorString($value ?? '');
 
                 if ($author['email'] === null) {
                     return $author['name'];

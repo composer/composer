@@ -98,10 +98,13 @@ class Cache
             $this->enabled = true;
 
             if (
-                (!is_dir($this->root) && !Silencer::call('mkdir', $this->root, 0777, true))
-                || !is_writable($this->root)
+                !$this->readOnly
+                && (
+                    (!is_dir($this->root) && !Silencer::call('mkdir', $this->root, 0777, true))
+                    || !is_writable($this->root)
+                )
             ) {
-                $this->io->writeError('<warning>Cannot create cache directory ' . $this->root . ', or directory is not writable. Proceeding without cache</warning>');
+                $this->io->writeError('<warning>Cannot create cache directory ' . $this->root . ', or directory is not writable. Proceeding without cache. See also cache-read-only config if your filesystem is read-only.</warning>');
                 $this->enabled = false;
             }
         }
@@ -262,7 +265,7 @@ class Cache
      */
     public function remove(string $file)
     {
-        if ($this->isEnabled()) {
+        if ($this->isEnabled() && !$this->readOnly) {
             $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
             if (file_exists($this->root . $file)) {
                 return $this->filesystem->unlink($this->root . $file);
@@ -277,7 +280,7 @@ class Cache
      */
     public function clear()
     {
-        if ($this->isEnabled()) {
+        if ($this->isEnabled() && !$this->readOnly) {
             $this->filesystem->emptyDirectory($this->root);
 
             return true;
@@ -311,7 +314,7 @@ class Cache
      */
     public function gc(int $ttl, int $maxSize)
     {
-        if ($this->isEnabled()) {
+        if ($this->isEnabled() && !$this->readOnly) {
             $expire = new \DateTime();
             $expire->modify('-'.$ttl.' seconds');
 

@@ -1,3 +1,13 @@
+### [2.3.8] 2022-07-01
+
+  * Fixed support for `cache-read-only` where the filesystem is not writable (#10906)
+  * Fixed type error when using `allow-plugins: true` (#10909)
+  * Fixed @putenv scripts receiving arguments passed to the command (#10846)
+  * Fixed support for spaces in paths with binary proxies on Windows (#10836)
+  * Fixed type error in GitDownloader if branches cannot be listed (#10888)
+  * Fixed RootPackageInterface issue on PHP 5.3.3 (#10895)
+  * Fixed type errors (#10904, #10897)
+
 ### [2.3.7] 2022-06-06
 
   * Fixed a few PHPStan ConfigReturnTypeExtension bugs
@@ -93,6 +103,15 @@
   * Added support for psr/log 3.x (#10454)
   * Fixed symlink creation in linux VM guest filesystems to be recognized by Windows (#10592)
   * Performance improvement in pool optimization step (#10585)
+
+### [2.2.15] 2022-07-01
+
+  * Fixed support for `cache-read-only` where the filesystem is not writable (#10906)
+  * Fixed type error when using `allow-plugins: true` (#10909)
+  * Fixed @putenv scripts receiving arguments passed to the command (#10846)
+  * Fixed support for spaces in paths with binary proxies on Windows (#10836)
+  * Fixed type error in GitDownloader if branches cannot be listed (#10888)
+  * Fixed RootPackageInterface issue on PHP 5.3.3 (#10895)
 
 ### [2.2.14] 2022-06-06
 
@@ -1542,6 +1561,7 @@
 
   * Initial release
 
+[2.3.8]: https://github.com/composer/composer/compare/2.3.7...2.3.8
 [2.3.7]: https://github.com/composer/composer/compare/2.3.6...2.3.7
 [2.3.6]: https://github.com/composer/composer/compare/2.3.5...2.3.6
 [2.3.5]: https://github.com/composer/composer/compare/2.3.4...2.3.5
@@ -1552,6 +1572,7 @@
 [2.3.0]: https://github.com/composer/composer/compare/2.3.0-RC2...2.3.0
 [2.3.0-RC2]: https://github.com/composer/composer/compare/2.3.0-RC1...2.3.0-RC2
 [2.3.0-RC1]: https://github.com/composer/composer/compare/2.2.9...2.3.0-RC1
+[2.2.15]: https://github.com/composer/composer/compare/2.2.14...2.2.15
 [2.2.14]: https://github.com/composer/composer/compare/2.2.13...2.2.14
 [2.2.13]: https://github.com/composer/composer/compare/2.2.12...2.2.13
 [2.2.12]: https://github.com/composer/composer/compare/2.2.11...2.2.12
