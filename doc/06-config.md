@@ -26,8 +26,7 @@ helper is available:
 
 ## allow-plugins
 
-Defaults to `null` (allow all plugins implicitly) for backwards compatibility until July 2022.
-At that point the default will become `{}` and plugins will not load anymore unless allowed.
+Defaults to `{}` which does not allow any plugins to be loaded.
 
 As of Composer 2.2.0, the `allow-plugins` option adds a layer of security
 allowing you to restrict which Composer plugins are able to execute code during
