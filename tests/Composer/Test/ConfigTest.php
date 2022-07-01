@@ -409,7 +409,7 @@ class ConfigTest extends TestCase
         }
     }
 
-    public function testMergesPluginConfig()
+    public function testMergesPluginConfig(): void
     {
         $config = new Config(false);
         $config->merge(array('config' => array('allow-plugins' => array('some/plugin' => true))));
@@ -419,7 +419,7 @@ class ConfigTest extends TestCase
         $this->assertEquals(array('some/plugin' => true, 'another/plugin' => true), $config->get('allow-plugins'));
     }
 
-    public function testOverridesGlobalBooleanPluginsConfig()
+    public function testOverridesGlobalBooleanPluginsConfig(): void
     {
         $config = new Config(false);
         $config->merge(array('config' => array('allow-plugins' => true)));
@@ -429,7 +429,7 @@ class ConfigTest extends TestCase
         $this->assertEquals(array('another/plugin' => true), $config->get('allow-plugins'));
     }
 
-    public function testAllowsAllPluginsFromLocalBoolean()
+    public function testAllowsAllPluginsFromLocalBoolean(): void
     {
         $config = new Config(false);
         $config->merge(array('config' => array('allow-plugins' => array('some/plugin' => true))));
