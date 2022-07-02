@@ -207,15 +207,18 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                         .' directory is writable and you have internet connectivity');
                 }
 
-                if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
+                $actualHash = hash_file('sha1', $fileName);
+                if ($checksum && $actualHash !== $checksum) {
                     // try redownload with file_get_contents
-                    $content = file_get_contents($url['base']);
-                    file_put_contents($fileName, $content);
-                    $newChecksum = hash_file('sha1', $fileName);
+                    $content = @file_get_contents($url['base']);
+                    if ($content !== false) {
+                        file_put_contents($fileName, $content);
+                        $actualHash = hash_file('sha1', $fileName);
+                    }
 
-                    if ($newChecksum !== $checksum) {
+                    if ($actualHash !== $checksum) {
                         $msgfmt = 'The checksum verification of the file failed (downloaded from %s),expected checksum=%s but actual= %s';
-                        throw new \UnexpectedValueException(sprintf($msgfmt, $url['base'], $checksum, $newChecksum));
+                        throw new \UnexpectedValueException(sprintf($msgfmt, $url['base'], $checksum, $actualHash));
                     }
                 }
 

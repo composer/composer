@@ -171,8 +171,10 @@ class ZipDownloader extends ArchiveDownloader
 
                     // try redownload with file_get_contents
                     if (is_string($package->getDistUrl())) {
-                        $content = file_get_contents($package->getDistUrl());
-                        file_put_contents($file, $content);
+                        $content = @file_get_contents($package->getDistUrl());
+                        if ($content !== false) {
+                            file_put_contents($file, $content);
+                        }
                     }
 
                     return $tryFallback(new \RuntimeException('Failed to extract '.$package->getName().': ('.$process->getExitCode().') '.$command."\n\n".$output));
