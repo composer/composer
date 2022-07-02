@@ -208,7 +208,15 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 }
 
                 if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
-                    throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url['base'].')');
+                    // try redownload with file_get_contents
+                    $content = file_get_contents($url['base']);
+                    file_put_contents($fileName, $content);
+                    $newChecksum = hash_file('sha1', $fileName);
+
+                    if ($newChecksum !== $checksum) {
+                        $msgfmt = 'The checksum verification of the file failed (downloaded from %s),expected checksum=%s but actual= %s';
+                        throw new \UnexpectedValueException(sprintf($msgfmt, $url['base'], $checksum, $newChecksum));
+                    }
                 }
 
                 if ($eventDispatcher) {

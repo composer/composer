@@ -169,6 +169,10 @@ class ZipDownloader extends ArchiveDownloader
                     $output = $process->getErrorOutput();
                     $output = str_replace(', '.$file.'.zip or '.$file.'.ZIP', '', $output);
 
+                    // try redownload with file_get_contents
+                    $content = file_get_contents($package->getDistUrl());
+                    file_put_contents($file, $content);
+
                     return $tryFallback(new \RuntimeException('Failed to extract '.$package->getName().': ('.$process->getExitCode().') '.$command."\n\n".$output));
                 }
             });
