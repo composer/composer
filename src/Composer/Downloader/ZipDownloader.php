@@ -170,7 +170,7 @@ class ZipDownloader extends ArchiveDownloader
                     $output = str_replace(', '.$file.'.zip or '.$file.'.ZIP', '', $output);
 
                     // try redownload with file_get_contents
-                    if (!empty($package->getDistUrl())) {
+                    if (is_string($package->getDistUrl())) {
                         $content = file_get_contents($package->getDistUrl());
                         file_put_contents($file, $content);
                     }
