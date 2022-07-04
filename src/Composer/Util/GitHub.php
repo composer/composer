@@ -102,15 +102,14 @@ class GitHub
         $this->io->writeError('For additional information, check https://getcomposer.org/doc/articles/authentication-for-private-packages.md#github-oauth');
 
         $token = $this->io->askAndHideAnswer('Token (hidden): ');
+        $token = is_string($token) ? trim($token) : '';
 
-        if (!$token) {
+        if ($token === '') {
             $this->io->writeError('<warning>No token given, aborting.</warning>');
             $this->io->writeError('You can also add it manually later by using "composer config --global --auth github-oauth.github.com <token>"');
 
             return false;
         }
-        
-        $token = trim($token);
 
         $this->io->setAuthentication($originUrl, $token, 'x-oauth-basic');
 
