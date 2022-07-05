@@ -18,6 +18,7 @@ use Composer\Installer\InstallerInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
+use Composer\Package\Locker;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\PartialComposer;
@@ -75,9 +76,8 @@ class PluginManager
         $this->globalComposer = $globalComposer;
         $this->versionParser = new VersionParser();
         $this->disablePlugins = $disablePlugins;
-
-        $this->allowPluginRules = $this->parseAllowedPlugins($composer->getConfig()->get('allow-plugins'));
-        $this->allowGlobalPluginRules = $this->parseAllowedPlugins($globalComposer !== null ? $globalComposer->getConfig()->get('allow-plugins') : false);
+        $this->allowPluginRules = $this->parseAllowedPlugins($composer->getConfig()->get('allow-plugins'), $composer->getLocker());
+        $this->allowGlobalPluginRules = $this->parseAllowedPlugins($globalComposer !== null ? $globalComposer->getConfig()->get('allow-plugins') : false, $globalComposer !== null ? $globalComposer->getLocker() : null);
     }
 
     /**
@@ -648,12 +648,12 @@ class PluginManager
     }
 
     /**
-     * @param  array<string, bool>|bool|null $allowPluginsConfig
+     * @param  array<string, bool>|bool $allowPluginsConfig
      * @return array<non-empty-string, bool>|null
      */
-    private function parseAllowedPlugins($allowPluginsConfig): ?array
+    private function parseAllowedPlugins($allowPluginsConfig, ?Locker $locker = null): ?array
     {
-        if (null === $allowPluginsConfig) {
+        if (array() === $allowPluginsConfig && $locker !== null && $locker->isLocked() && version_compare($locker->getPluginApi(), '2.2.0', '<')) {
             return null;
         }
 
@@ -674,22 +674,28 @@ class PluginManager
     }
 
     /**
+     * @internal
+     *
      * @param string $package
      * @param bool $isGlobalPlugin
      * @return bool
      */
-    private function isPluginAllowed(string $package, bool $isGlobalPlugin): bool
+    public function isPluginAllowed(string $package, bool $isGlobalPlugin): bool
     {
-        static $warned = array();
-        $rules = $isGlobalPlugin ? $this->allowGlobalPluginRules : $this->allowPluginRules;
+        if ($isGlobalPlugin) {
+            $rules = &$this->allowGlobalPluginRules;
+        } else {
+            $rules = &$this->allowPluginRules;
+        }
 
+        // This is a BC mode for lock files created pre-Composer-2.2 where the expectation of
+        // an allow-plugins config being present cannot be made.
         if ($rules === null) {
             if (!$this->io->isInteractive()) {
-                if (!isset($warned['all'])) {
-                    $this->io->writeError('<warning>For additional security you should declare the allow-plugins config with a list of packages names that are allowed to run code. See https://getcomposer.org/allow-plugins</warning>');
-                    $this->io->writeError('<warning>You have until July 2022 to add the setting. Composer will then switch the default behavior to disallow all plugins.</warning>');
-                    $warned['all'] = true;
-                }
+                $this->io->writeError('<warning>For additional security you should declare the allow-plugins config with a list of packages names that are allowed to run code. See https://getcomposer.org/allow-plugins</warning>');
+                $this->io->writeError('<warning>This warning will become an exception once you run composer update!</warning>');
+
+                $rules = array('{}' => true);
 
                 // if no config is defined we allow all plugins for BC
                 return true;
@@ -709,59 +715,54 @@ class PluginManager
             return false;
         }
 
-        if (!isset($warned[$package])) {
-            if ($this->io->isInteractive()) {
-                $composer = $isGlobalPlugin && $this->globalComposer !== null ? $this->globalComposer : $this->composer;
+        if ($this->io->isInteractive()) {
+            $composer = $isGlobalPlugin && $this->globalComposer !== null ? $this->globalComposer : $this->composer;
 
-                $this->io->writeError('<warning>'.$package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is currently not in your allow-plugins config. See https://getcomposer.org/allow-plugins</warning>');
-                $attempts = 0;
-                while (true) {
-                    // do not allow more than 5 prints of the help message, at some point assume the
-                    // input is not interactive and bail defaulting to a disabled plugin
-                    $default = '?';
-                    if ($attempts > 5) {
-                        $default = 'd';
-                    }
-
-                    switch ($answer = $this->io->ask('Do you trust "<fg=green;options=bold>'.$package.'</>" to execute code and wish to enable it now? (writes "allow-plugins" to composer.json) [<comment>y,n,d,?</comment>] ', $default)) {
-                        case 'y':
-                        case 'n':
-                        case 'd':
-                            $allow = $answer === 'y';
-
-                            // persist answer in current rules to avoid prompting again if the package gets reloaded
-                            if ($isGlobalPlugin) {
-                                $this->allowGlobalPluginRules[BasePackage::packageNameToRegexp($package)] = $allow;
-                            } else {
-                                $this->allowPluginRules[BasePackage::packageNameToRegexp($package)] = $allow;
-                            }
-
-                            // persist answer in composer.json if it wasn't simply discarded
-                            if ($answer === 'y' || $answer === 'n') {
-                                $composer->getConfig()->getConfigSource()->addConfigSetting('allow-plugins.'.$package, $allow);
-                            }
-
-                            return $allow;
-
-                        case '?':
-                        default:
-                            $attempts++;
-                            $this->io->writeError(array(
-                                'y - add package to allow-plugins in composer.json and let it run immediately',
-                                'n - add package (as disallowed) to allow-plugins in composer.json to suppress further prompts',
-                                'd - discard this, do not change composer.json and do not allow the plugin to run',
-                                '? - print help',
-                            ));
-                            break;
-                    }
+            $this->io->writeError('<warning>'.$package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is currently not in your allow-plugins config. See https://getcomposer.org/allow-plugins</warning>');
+            $attempts = 0;
+            while (true) {
+                // do not allow more than 5 prints of the help message, at some point assume the
+                // input is not interactive and bail defaulting to a disabled plugin
+                $default = '?';
+                if ($attempts > 5) {
+                    $this->io->writeError('Too many failed prompts, aborting.');
+                    break;
                 }
-            } else {
-                $this->io->writeError('<warning>'.$package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is blocked by your allow-plugins config. You may add it to the list if you consider it safe. See https://getcomposer.org/allow-plugins</warning>');
-                $this->io->writeError('<warning>You can run "composer '.($isGlobalPlugin ? 'global ' : '').'config --no-plugins allow-plugins.'.$package.' [true|false]" to enable it (true) or keep it disabled and suppress this warning (false)</warning>');
+
+                switch ($answer = $this->io->ask('Do you trust "<fg=green;options=bold>'.$package.'</>" to execute code and wish to enable it now? (writes "allow-plugins" to composer.json) [<comment>y,n,d,?</comment>] ', $default)) {
+                    case 'y':
+                    case 'n':
+                    case 'd':
+                        $allow = $answer === 'y';
+
+                        // persist answer in current rules to avoid prompting again if the package gets reloaded
+                        $rules[BasePackage::packageNameToRegexp($package)] = $allow;
+
+                        // persist answer in composer.json if it wasn't simply discarded
+                        if ($answer === 'y' || $answer === 'n') {
+                            $composer->getConfig()->getConfigSource()->addConfigSetting('allow-plugins.'.$package, $allow);
+                        }
+
+                        return $allow;
+
+                    case '?':
+                    default:
+                        $attempts++;
+                        $this->io->writeError(array(
+                            'y - add package to allow-plugins in composer.json and let it run immediately',
+                            'n - add package (as disallowed) to allow-plugins in composer.json to suppress further prompts',
+                            'd - discard this, do not change composer.json and do not allow the plugin to run',
+                            '? - print help',
+                        ));
+                        break;
+                }
             }
-            $warned[$package] = true;
         }
 
-        return false;
+        throw new \UnexpectedValueException(
+            $package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is blocked by your allow-plugins config. You may add it to the list if you consider it safe.'.PHP_EOL.
+            'You can run "composer '.($isGlobalPlugin ? 'global ' : '').'config --no-plugins allow-plugins.'.$package.' [true|false]" to enable it (true) or disable it explicitly and suppress this exception (false)'.PHP_EOL.
+            'See https://getcomposer.org/allow-plugins'
+        );
     }
 }
