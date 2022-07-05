@@ -319,6 +319,16 @@ class Locker
     }
 
     /**
+     * @return string
+     */
+    public function getPluginApi()
+    {
+        $lockData = $this->getLockData();
+
+        return isset($lockData['plugin-api-version']) ? $lockData['plugin-api-version'] : '1.1.0';
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function getLockData(): array

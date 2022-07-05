@@ -1129,7 +1129,12 @@ EOT
         foreach ($arrayTree as $package) {
             $io->write(sprintf('<info>%s</info>', $package['name']), false);
             $io->write(' ' . $package['version'], false);
-            $io->write(' ' . strtok($package['description'], "\r\n"));
+            if (isset($package['description'])) {
+                $io->write(' ' . strtok($package['description'], "\r\n"));
+            } else {
+                // output newline
+                $io->write('');
+            }
 
             if (isset($package['requires'])) {
                 $requires = $package['requires'];
