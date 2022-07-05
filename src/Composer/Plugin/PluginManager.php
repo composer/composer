@@ -676,6 +676,16 @@ class PluginManager
     /**
      * @internal
      *
+     * @return bool
+     */
+    public function arePluginsDisabled()
+    {
+        return $this->disablePlugins;
+    }
+
+    /**
+     * @internal
+     *
      * @param string $package
      * @param bool $isGlobalPlugin
      * @return bool
