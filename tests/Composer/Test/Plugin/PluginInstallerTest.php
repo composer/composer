@@ -15,10 +15,12 @@ namespace Composer\Test\Plugin;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Installer\PluginInstaller;
+use Composer\Json\JsonFile;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Locker;
 use Composer\Package\RootPackage;
 use Composer\Plugin\PluginManager;
 use Composer\IO\BufferIO;
@@ -26,6 +28,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 
 class PluginInstallerTest extends TestCase
 {
@@ -123,6 +126,7 @@ class PluginInstallerTest extends TestCase
         $this->composer->setAutoloadGenerator($this->autoloadGenerator);
         $this->composer->setEventDispatcher(new EventDispatcher($this->composer, $this->io));
         $this->composer->setPackage(new RootPackage('dummy/root', '1.0.0.0', '1.0.0'));
+        $this->composer->setLocker(new Locker($this->io, new JsonFile(Platform::getDevNull()), $im, '{}'));
 
         $config->merge(array(
             'config' => array(

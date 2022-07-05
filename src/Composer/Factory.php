@@ -413,6 +413,9 @@ class Factory
 
             $locker = new Package\Locker($io, new JsonFile($config->get('lock') ? $lockFile : Platform::getDevNull(), null, $io), $im, file_get_contents($composerFile), $process);
             $composer->setLocker($locker);
+        } elseif ($composer instanceof Composer) {
+            $locker = new Package\Locker($io, new JsonFile(Platform::getDevNull(), null, $io), $im, json_encode($localConfig), $process);
+            $composer->setLocker($locker);
         }
 
         if ($composer instanceof Composer) {

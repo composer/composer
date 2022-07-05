@@ -77,7 +77,7 @@ class PluginManager
         $this->versionParser = new VersionParser();
         $this->disablePlugins = $disablePlugins;
         $this->allowPluginRules = $this->parseAllowedPlugins($composer->getConfig()->get('allow-plugins'), $composer->getLocker());
-        $this->allowGlobalPluginRules = $this->parseAllowedPlugins($globalComposer !== null ? $globalComposer->getConfig()->get('allow-plugins') : false, $globalComposer !== null ? $globalComposer->getLocker() : null);
+        $this->allowGlobalPluginRules = $this->parseAllowedPlugins($globalComposer !== null ? $globalComposer->getConfig()->get('allow-plugins') : false);
     }
 
     /**

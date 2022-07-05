@@ -50,7 +50,7 @@ class PluginInstaller extends LibraryInstaller
     {
         // fail install process early if it going to fail due to a plugin not being allowed
         if ($type === 'install' || $type === 'update') {
-            $this->composer->getPluginManager()->isPluginAllowed($package->getName(), false);
+            $this->getPluginManager()->isPluginAllowed($package->getName(), false);
         }
 
         return parent::prepare($type, $package, $prevPackage);
