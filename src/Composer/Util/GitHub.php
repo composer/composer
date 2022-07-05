@@ -101,8 +101,7 @@ class GitHub
         $this->io->writeError(sprintf('Tokens will be stored in plain text in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
         $this->io->writeError('For additional information, check https://getcomposer.org/doc/articles/authentication-for-private-packages.md#github-oauth');
 
-        $token = $this->io->askAndHideAnswer('Token (hidden): ');
-        $token = is_string($token) ? trim($token) : '';
+        $token = trim((string) $this->io->askAndHideAnswer('Token (hidden): '));
 
         if ($token === '') {
             $this->io->writeError('<warning>No token given, aborting.</warning>');
