@@ -658,7 +658,7 @@ class PluginManager
      */
     private function parseAllowedPlugins($allowPluginsConfig, Locker $locker = null)
     {
-        if ([] === $allowPluginsConfig && $locker && $locker->isLocked() && version_compare($locker->getPluginApi(), '2.2.0', '<')) {
+        if (array() === $allowPluginsConfig && $locker !== null && $locker->isLocked() && version_compare($locker->getPluginApi(), '2.2.0', '<')) {
             return null;
         }
 
