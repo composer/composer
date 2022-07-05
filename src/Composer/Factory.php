@@ -427,6 +427,17 @@ class Factory
         // add installers to the manager (must happen after download manager is created since they read it out of $composer)
         $this->createDefaultInstallers($im, $composer, $io, $process);
 
+        // init locker if possible
+        if ($fullLoad && isset($composerFile)) {
+            $lockFile = self::getLockFile($composerFile);
+            if (!$config->get('lock') && file_exists($lockFile)) {
+                $io->writeError('<warning>'.$lockFile.' is present but ignored as the "lock" config option is disabled.</warning>');
+            }
+
+            $locker = new Package\Locker($io, new JsonFile($config->get('lock') ? $lockFile : Platform::getDevNull(), null, $io), $im, file_get_contents($composerFile), $process);
+            $composer->setLocker($locker);
+        }
+
         if ($fullLoad) {
             $globalComposer = null;
             if (realpath($config->get('home')) !== $cwd) {
@@ -437,17 +448,6 @@ class Factory
             $composer->setPluginManager($pm);
 
             $pm->loadInstalledPlugins();
-        }
-
-        // init locker if possible
-        if ($fullLoad && isset($composerFile)) {
-            $lockFile = self::getLockFile($composerFile);
-            if (!$config->get('lock') && file_exists($lockFile)) {
-                $io->writeError('<warning>'.$lockFile.' is present but ignored as the "lock" config option is disabled.</warning>');
-            }
-
-            $locker = new Package\Locker($io, new JsonFile($config->get('lock') ? $lockFile : Platform::getDevNull(), null, $io), $im, file_get_contents($composerFile), $process);
-            $composer->setLocker($locker);
         }
 
         if ($fullLoad) {
