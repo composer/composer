@@ -52,7 +52,15 @@ and **false** to disallow while suppressing further warnings and prompts.
 }
 ```
 
-You can also set the config option itself to `false` to disallow all plugins, or `true` to allow all plugins to run (NOT recommended).
+You can also set the config option itself to `false` to disallow all plugins, or `true` to allow all plugins to run (NOT recommended). For example:
+
+```json
+{
+    "config": {
+        "allow-plugins": false
+    }
+}
+```
 
 ## use-include-path
 
