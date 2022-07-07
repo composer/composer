@@ -1,8 +1,9 @@
 # See https://pre-commit.com/#new-hooks
+# Requires composer to be installed locally
 - id: composer-validate
   name: composer validate
   description: Validates composer.json and composer.lock
-  entry: bin/composer validate
-  language: script
+  entry: composer validate
+  language: system
   pass_filenames: false
   files: '^composer.(json|lock)$'
