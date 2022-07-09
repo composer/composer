@@ -28,7 +28,7 @@ class CheckPlatformReqsCommandTest extends TestCase
         $appTester->assertCommandIsSuccessful();
     }
 
-    protected function flagGenerator(): \Generator
+    public function flagGenerator(): \Generator
     {
         yield 'Disables checking of require-dev packages requirements.' => [
             ['--no-dev' => true]
