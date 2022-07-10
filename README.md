@@ -17,7 +17,9 @@ For usage, see [the documentation](https://getcomposer.org/doc/).
 Packages
 --------
 
-Find public packages on [Packagist.org](https://packagist.org). For private package hosting take a look at [Private Packagist](https://packagist.com).
+Find public packages on [Packagist.org](https://packagist.org). 
+
+For private package hosting take a look at [Private Packagist](https://packagist.com).
 
 Community
 ---------
