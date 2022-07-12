@@ -165,11 +165,6 @@ class PluginManager
             return;
         }
 
-        if (!$this->isPluginAllowed($package->getName(), $isGlobalPlugin)) {
-            $this->io->writeError('Skipped loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').'as it is not in config.allow-plugins', true, IOInterface::DEBUG);
-            return;
-        }
-
         if ($package->getType() === 'composer-plugin') {
             $requiresComposer = null;
             foreach ($package->getRequires() as $link) { /** @var Link $link */
@@ -199,6 +194,12 @@ class PluginManager
 
                 return;
             }
+        }
+
+        if (!$this->isPluginAllowed($package->getName(), $isGlobalPlugin)) {
+            $this->io->writeError('Skipped loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').'as it is not in config.allow-plugins', true, IOInterface::DEBUG);
+
+            return;
         }
 
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
