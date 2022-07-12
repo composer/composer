@@ -700,7 +700,7 @@ class PluginManager
 
         // This is a BC mode for lock files created pre-Composer-2.2 where the expectation of
         // an allow-plugins config being present cannot be made.
-        if ($rules === null) {
+        if (empty($rules)) {
             if (!$this->io->isInteractive()) {
                 $this->io->writeError('<warning>For additional security you should declare the allow-plugins config with a list of packages names that are allowed to run code. See https://getcomposer.org/allow-plugins</warning>');
                 $this->io->writeError('<warning>This warning will become an exception once you run composer update!</warning>');
