@@ -283,6 +283,7 @@ class Factory
      * @throws \InvalidArgumentException
      * @throws \UnexpectedValueException
      * @return Composer|PartialComposer Composer if $fullLoad is true, otherwise PartialComposer
+     * @phpstan-return ($fullLoad is true ? Composer : PartialComposer)
      */
     public function createComposer(IOInterface $io, $localConfig = null, bool $disablePlugins = false, ?string $cwd = null, bool $fullLoad = true, bool $disableScripts = false)
     {
@@ -450,10 +451,7 @@ class Factory
     {
         $factory = new static();
 
-        $composer = $factory->createGlobalComposer($io, static::createConfig($io), $disablePlugins, $disableScripts, true);
-        assert(null === $composer || $composer instanceof Composer);
-
-        return $composer;
+        return $factory->createGlobalComposer($io, static::createConfig($io), $disablePlugins, $disableScripts, true);
     }
 
     /**
@@ -474,6 +472,7 @@ class Factory
 
     /**
      * @return PartialComposer|Composer|null By default PartialComposer, but Composer if $fullLoad is set to true
+     * @phpstan-return ($fullLoad is true ? Composer|null : PartialComposer|null)
      */
     protected function createGlobalComposer(IOInterface $io, Config $config, bool $disablePlugins, bool $disableScripts, bool $fullLoad = false): ?PartialComposer
     {
@@ -615,10 +614,7 @@ class Factory
     {
         $factory = new static();
 
-        $composer = $factory->createComposer($io, $config, $disablePlugins, null, true, $disableScripts);
-        assert($composer instanceof Composer);
-
-        return $composer;
+        return $factory->createComposer($io, $config, $disablePlugins, null, true, $disableScripts);
     }
 
     /**
