@@ -135,7 +135,12 @@ abstract class BasePackage implements PackageInterface
     public function setRepository(RepositoryInterface $repository)
     {
         if ($this->repository && $repository !== $this->repository) {
-            throw new \LogicException('A package can only be added to one repository');
+            throw new \LogicException(sprintf(
+                'Package "%s" cannot be added to repository "%s" as it is already in repository "%s".',
+                $this->getPrettyName(),
+                $repository->getRepoName(),
+                $this->repository->getRepoName(),
+            ));
         }
         $this->repository = $repository;
     }
