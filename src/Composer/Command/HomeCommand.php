@@ -166,7 +166,7 @@ EOT
 
         if ($composer) {
             return array_merge(
-                array(new RootPackageRepository($composer->getPackage())), // root package
+                array(new RootPackageRepository(clone $composer->getPackage())), // root package
                 array($composer->getRepositoryManager()->getLocalRepository()), // installed packages
                 $composer->getRepositoryManager()->getRepositories() // remotes
             );

@@ -1,3 +1,11 @@
+### [2.3.10] 2022-07-13
+
+  * Fixed plugins from CWD/vendor being loaded in some cases like create-project or validate even though the target directory is outside of CWD (#10935)
+  * Fixed support for legacy (Composer 1.x, e.g. hirak/prestissimo) plugins which will not warn/error anymore if not in allow-plugins, as they are anyway not loaded (#10928)
+  * Fixed pre-install check for allowed plugins not taking --no-plugins into account (#10925)
+  * Fixed support for disable_functions containing disk_free_space (#10936)
+  * Fixed RootPackageRepository usages to always clone the root package to avoid interoperability issues with plugins (#10940)
+
 ### [2.3.9] 2022-07-05
 
   * Fixed non-interactive behavior of allow-plugins to throw instead of continue with a warning to avoid broken installs (#10920)
@@ -110,6 +118,14 @@
   * Added support for psr/log 3.x (#10454)
   * Fixed symlink creation in linux VM guest filesystems to be recognized by Windows (#10592)
   * Performance improvement in pool optimization step (#10585)
+
+### [2.2.17] 2022-07-13
+
+  * Fixed plugins from CWD/vendor being loaded in some cases like create-project or validate even though the target directory is outside of CWD (#10935)
+  * Fixed support for legacy (Composer 1.x, e.g. hirak/prestissimo) plugins which will not warn/error anymore if not in allow-plugins, as they are anyway not loaded (#10928)
+  * Fixed pre-install check for allowed plugins not taking --no-plugins into account (#10925)
+  * Fixed support for disable_functions containing disk_free_space (#10936)
+  * Fixed RootPackageRepository usages to always clone the root package to avoid interoperability issues with plugins (#10940)
 
 ### [2.2.16] 2022-07-05
 
@@ -1574,6 +1590,7 @@
 
   * Initial release
 
+[2.3.10]: https://github.com/composer/composer/compare/2.3.9...2.3.10
 [2.3.9]: https://github.com/composer/composer/compare/2.3.8...2.3.9
 [2.3.8]: https://github.com/composer/composer/compare/2.3.7...2.3.8
 [2.3.7]: https://github.com/composer/composer/compare/2.3.6...2.3.7
@@ -1586,6 +1603,7 @@
 [2.3.0]: https://github.com/composer/composer/compare/2.3.0-RC2...2.3.0
 [2.3.0-RC2]: https://github.com/composer/composer/compare/2.3.0-RC1...2.3.0-RC2
 [2.3.0-RC1]: https://github.com/composer/composer/compare/2.2.9...2.3.0-RC1
+[2.2.17]: https://github.com/composer/composer/compare/2.2.16...2.2.17
 [2.2.16]: https://github.com/composer/composer/compare/2.2.15...2.2.16
 [2.2.15]: https://github.com/composer/composer/compare/2.2.14...2.2.15
 [2.2.14]: https://github.com/composer/composer/compare/2.2.13...2.2.14

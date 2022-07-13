@@ -60,7 +60,7 @@ abstract class BaseDependencyCommand extends BaseCommand
 
         $repos = [];
 
-        $repos[] = new RootPackageRepository($composer->getPackage());
+        $repos[] = new RootPackageRepository(clone $composer->getPackage());
 
         if ($input->getOption('locked')) {
             $locker = $composer->getLocker();
