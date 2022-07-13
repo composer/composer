@@ -492,7 +492,7 @@ class Factory
     }
 
     /**
-     * @param bool $disablePlugins
+     * @param bool|'local'|'global' $disablePlugins Whether plugins should not be loaded, can be set to local or global to only disable local/global plugins
      * @param bool $disableScripts
      * @param bool $fullLoad
      *
