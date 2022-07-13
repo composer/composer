@@ -26,6 +26,7 @@ use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
 use Composer\Pcre\Preg;
+use Composer\Plugin\PluginBlockedException;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
@@ -268,9 +269,15 @@ EOT
                 $installer->disablePlugins();
             }
 
-            $status = $installer->run();
-            if (0 !== $status) {
-                return $status;
+            try {
+                $status = $installer->run();
+                if (0 !== $status) {
+                    return $status;
+                }
+            } catch (PluginBlockedException $e) {
+                $io->writeError('<error>Hint: To allow running the config command recommended below before dependencies are installed, run create-project with --no-install.</error>');
+                $io->writeError('<error>You can then cd into '.getcwd().', configure allow-plugins, and finally run a composer install to complete the process.</error>');
+                throw $e;
             }
         }
 

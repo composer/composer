@@ -765,7 +765,7 @@ class PluginManager
             }
         }
 
-        throw new \UnexpectedValueException(
+        throw new PluginBlockedException(
             $package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is blocked by your allow-plugins config. You may add it to the list if you consider it safe.'.PHP_EOL.
             'You can run "composer '.($isGlobalPlugin ? 'global ' : '').'config --no-plugins allow-plugins.'.$package.' [true|false]" to enable it (true) or disable it explicitly and suppress this exception (false)'.PHP_EOL.
             'See https://getcomposer.org/allow-plugins'
