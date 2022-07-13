@@ -47,7 +47,7 @@ class PluginManager
     protected $globalComposer;
     /** @var VersionParser */
     protected $versionParser;
-    /** @var bool */
+    /** @var bool|'local'|'global' */
     protected $disablePlugins = false;
 
     /** @var array<PluginInterface> */
@@ -74,7 +74,7 @@ class PluginManager
      * @param IOInterface $io
      * @param Composer    $composer
      * @param Composer    $globalComposer
-     * @param bool        $disablePlugins
+     * @param bool|'local'|'global' $disablePlugins Whether plugins should not be loaded, can be set to local or global to only disable local/global plugins
      */
     public function __construct(IOInterface $io, Composer $composer, Composer $globalComposer = null, $disablePlugins = false)
     {
@@ -94,15 +94,16 @@ class PluginManager
      */
     public function loadInstalledPlugins()
     {
-        if ($this->disablePlugins) {
-            return;
+        if (!$this->arePluginsDisabled('local')) {
+            $repo = $this->composer->getRepositoryManager()->getLocalRepository();
+            $this->loadRepository($repo, false);
         }
 
-        $repo = $this->composer->getRepositoryManager()->getLocalRepository();
-        $globalRepo = $this->globalComposer !== null ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
-        $this->loadRepository($repo, false);
-        if ($globalRepo) {
-            $this->loadRepository($globalRepo, true);
+        if (!$this->arePluginsDisabled('global')) {
+            $globalRepo = $this->globalComposer !== null ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
+            if ($globalRepo !== null) {
+                $this->loadRepository($globalRepo, true);
+            }
         }
     }
 
@@ -113,15 +114,16 @@ class PluginManager
      */
     public function deactivateInstalledPlugins()
     {
-        if ($this->disablePlugins) {
-            return;
+        if (!$this->arePluginsDisabled('local')) {
+            $repo = $this->composer->getRepositoryManager()->getLocalRepository();
+            $this->deactivateRepository($repo, false);
         }
 
-        $repo = $this->composer->getRepositoryManager()->getLocalRepository();
-        $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
-        $this->deactivateRepository($repo, false);
-        if ($globalRepo) {
-            $this->deactivateRepository($globalRepo, true);
+        if (!$this->arePluginsDisabled('global')) {
+            $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
+            if ($globalRepo !== null) {
+                $this->deactivateRepository($globalRepo, true);
+            }
         }
     }
 
@@ -161,7 +163,7 @@ class PluginManager
      */
     public function registerPackage(PackageInterface $package, $failOnMissingClasses = false, $isGlobalPlugin = false)
     {
-        if ($this->disablePlugins) {
+        if ($this->arePluginsDisabled($isGlobalPlugin ? 'global' : 'local')) {
             return;
         }
 
@@ -320,10 +322,6 @@ class PluginManager
      */
     public function deactivatePackage(PackageInterface $package)
     {
-        if ($this->disablePlugins) {
-            return;
-        }
-
         if (!isset($this->registeredPlugins[$package->getName()])) {
             return;
         }
@@ -351,10 +349,6 @@ class PluginManager
      */
     public function uninstallPackage(PackageInterface $package)
     {
-        if ($this->disablePlugins) {
-            return;
-        }
-
         if (!isset($this->registeredPlugins[$package->getName()])) {
             return;
         }
@@ -394,6 +388,10 @@ class PluginManager
      */
     public function addPlugin(PluginInterface $plugin, $isGlobalPlugin = false, PackageInterface $sourcePackage = null)
     {
+        if ($this->arePluginsDisabled($isGlobalPlugin ? 'global' : 'local')) {
+            return;
+        }
+
         if ($sourcePackage === null) {
             trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);
         } elseif (!$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin)) {
@@ -682,11 +680,12 @@ class PluginManager
     /**
      * @internal
      *
+     * @param 'local'|'global' $type
      * @return bool
      */
-    public function arePluginsDisabled()
+    public function arePluginsDisabled($type)
     {
-        return $this->disablePlugins;
+        return $this->disablePlugins === true || $this->disablePlugins === $type;
     }
 
     /**

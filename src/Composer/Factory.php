@@ -293,7 +293,7 @@ class Factory
      * @param  IOInterface                       $io             IO instance
      * @param  array<string, mixed>|string|null  $localConfig    either a configuration array or a filename to read from, if null it will
      *                                                           read from the default filename
-     * @param  bool                              $disablePlugins Whether plugins should not be loaded
+     * @param  bool|'local'|'global'             $disablePlugins Whether plugins should not be loaded, can be set to local or global to only disable local/global plugins
      * @param  bool                              $disableScripts Whether scripts should not be run
      * @param  string|null                       $cwd
      * @param  bool                              $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
@@ -500,6 +500,9 @@ class Factory
      */
     protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins, $disableScripts, $fullLoad = false)
     {
+        // make sure if disable plugins was 'local' it is now turned off
+        $disablePlugins = $disablePlugins === 'global' || $disablePlugins === true;
+
         $composer = null;
         try {
             $composer = $this->createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), $fullLoad, $disableScripts);
@@ -579,7 +582,7 @@ class Factory
      * @param  IOInterface          $io
      * @param  Composer             $composer
      * @param  Composer             $globalComposer
-     * @param  bool                 $disablePlugins
+     * @param  bool|'local'|'global' $disablePlugins Whether plugins should not be loaded, can be set to local or global to only disable local/global plugins
      * @return Plugin\PluginManager
      */
     protected function createPluginManager(IOInterface $io, Composer $composer, Composer $globalComposer = null, $disablePlugins = false)
@@ -635,7 +638,7 @@ class Factory
      * @param  IOInterface $io             IO instance
      * @param  mixed       $config         either a configuration array or a filename to read from, if null it will read from
      *                                     the default filename
-     * @param  bool        $disablePlugins Whether plugins should not be loaded
+     * @param  bool|'local'|'global' $disablePlugins Whether plugins should not be loaded, can be set to local or global to only disable local/global plugins
      * @param  bool        $disableScripts Whether scripts should not be run
      * @return Composer
      */

@@ -403,15 +403,7 @@ EOT
             throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
-        $composerJson = array_merge(
-            // prevent version guessing from happening
-            array('version' => '1.0.0'),
-            $config->all(),
-            // ensure the vendor dir and its plugins does not get loaded if CWD/vendor has plugins in it
-            array('config' => array('vendor-dir' => Platform::getDevNull()))
-        );
-        $factory = new Factory;
-        $composer = $factory->createComposer($io, $composerJson, $disablePlugins, Platform::getDevNull(), true, $disableScripts);
+        $composer = Factory::create($io, $config->all(), $disablePlugins === true ? true : 'local', $disableScripts);
         $config = $composer->getConfig();
         $rm = $composer->getRepositoryManager();
 
