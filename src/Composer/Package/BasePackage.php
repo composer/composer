@@ -139,7 +139,7 @@ abstract class BasePackage implements PackageInterface
                 'Package "%s" cannot be added to repository "%s" as it is already in repository "%s".',
                 $this->getPrettyName(),
                 $repository->getRepoName(),
-                $this->repository->getRepoName(),
+                $this->repository->getRepoName()
             ));
         }
         $this->repository = $repository;
