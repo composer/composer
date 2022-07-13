@@ -176,7 +176,7 @@ EOT
         $lockedRepo = null;
 
         if ($input->getOption('self')) {
-            $package = $this->requireComposer()->getPackage();
+            $package = clone $this->requireComposer()->getPackage();
             if ($input->getOption('name-only')) {
                 $io->write($package->getName());
 
