@@ -403,7 +403,7 @@ EOT
             throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
-        $composer = Factory::create($io, $config->all(), $disablePlugins === true ? true : 'local', $disableScripts);
+        $composer = Factory::create($io, $config->all(), $disablePlugins, $disableScripts);
         $config = $composer->getConfig();
         $rm = $composer->getRepositoryManager();
 

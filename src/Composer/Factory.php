@@ -646,6 +646,14 @@ class Factory
     {
         $factory = new static();
 
+        // for BC reasons, if a config is passed in either as array or a path that is not the default composer.json path
+        // we disable local plugins as they really should not be loaded from CWD
+        // If you want to avoid this behavior, you should be calling createComposer directly with a $cwd arg set correctly
+        // to the path where the composer.json being loaded resides
+        if ($config !== null && $config !== self::getComposerFile() && $disablePlugins === false) {
+            $disablePlugins = 'local';
+        }
+
         return $factory->createComposer($io, $config, $disablePlugins, null, true, $disableScripts);
     }
 
