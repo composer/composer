@@ -81,7 +81,7 @@ Your requirements could not be resolved to an installable set of packages.
 To enable extensions, verify that they are enabled in your .ini files:
 __inilist__
 You can also run `php --ini` in a terminal to see which files are used by PHP in CLI mode.
-Alternatively, you can run Composer with `--ignore-platform-req=ext-foobar --ignore-platform-req=ext-pcre --ignore-platform-req=ext-foobar --ignore-platform-req=ext-pcre` to temporarily ignore these required extensions.
+Alternatively, you can run Composer with `--ignore-platform-req=ext-foobar --ignore-platform-req=ext-pcre` to temporarily ignore these required extensions.
 
 --EXPECT--
 
