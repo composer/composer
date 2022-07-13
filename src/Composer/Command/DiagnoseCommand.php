@@ -370,6 +370,10 @@ EOT
      */
     private function checkDiskSpace(Config $config)
     {
+        if (!function_exists('disk_free_space')) {
+            return true;
+        }
+
         $minSpaceFree = 1024 * 1024;
         if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
             || (($df = @disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)

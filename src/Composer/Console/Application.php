@@ -386,7 +386,7 @@ class Application extends BaseApplication
         Silencer::suppress();
         try {
             $composer = $this->getComposer(false, true);
-            if ($composer) {
+            if (null !== $composer && function_exists('disk_free_space')) {
                 $config = $composer->getConfig();
 
                 $minSpaceFree = 1024 * 1024;

@@ -162,11 +162,11 @@ class Cache
                     unlink($tempFileName);
 
                     $message = sprintf(
-                        '<warning>Writing %1$s into cache failed after %2$u of %3$u bytes written, only %4$u bytes of free space available</warning>',
+                        '<warning>Writing %1$s into cache failed after %2$u of %3$u bytes written, only %4$s bytes of free space available</warning>',
                         $tempFileName,
                         $m[1],
                         $m[2],
-                        @disk_free_space(dirname($tempFileName))
+                        function_exists('disk_free_space') ? @disk_free_space(dirname($tempFileName)) : 'unknown'
                     );
 
                     $this->io->writeError($message);
