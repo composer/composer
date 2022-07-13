@@ -59,7 +59,7 @@ class BaseDependencyCommand extends BaseCommand
 
         $platformOverrides = $composer->getConfig()->get('platform') ?: array();
         $installedRepo = new InstalledRepository(array(
-            new RootPackageRepository($composer->getPackage()),
+            new RootPackageRepository(clone $composer->getPackage()),
             $composer->getRepositoryManager()->getLocalRepository(),
             new PlatformRepository(array(), $platformOverrides),
         ));
