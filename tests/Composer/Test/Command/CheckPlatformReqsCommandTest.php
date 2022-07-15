@@ -34,10 +34,6 @@ class CheckPlatformReqsCommandTest extends TestCase
             ['--no-dev' => true]
         ];
 
-        yield 'Whether to disable plugins.' => [
-            ['--no-plugins' => true]
-        ];
-
         yield 'Checks requirements only from the lock file, not from installed packages.' => [
             ['--lock' => true]
         ];
