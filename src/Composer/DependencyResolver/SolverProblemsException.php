@@ -117,9 +117,9 @@ class SolverProblemsException extends \RuntimeException
             return '';
         }
 
-        $ignoreExtensionsArguments = implode(" ", array_map(function ($extension) {
+        $ignoreExtensionsArguments = implode(" ", array_map(static function ($extension) {
             return "--ignore-platform-req=$extension";
-        }, $missingExtensions));
+        }, array_unique($missingExtensions)));
 
         $text = "To enable extensions, verify that they are enabled in your .ini files:\n    - ";
         $text .= implode("\n    - ", $paths);

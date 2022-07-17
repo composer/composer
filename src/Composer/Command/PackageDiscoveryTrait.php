@@ -97,6 +97,10 @@ trait PackageDiscoveryTrait
             $io = $this->getIO();
 
             foreach ($requires as $requirement) {
+                if (isset($requirement['version']) && Preg::isMatch('{^\d+(\.\d+)?$}', $requirement['version'])) {
+                    $io->writeError('<warning>The "'.$requirement['version'].'" constraint for "'.$requirement['name'].'" appears too strict and will likely not match what you want. See https://getcomposer.org/constraints');
+                }
+
                 if (!isset($requirement['version'])) {
                     // determine the best version automatically
                     list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $platformRepo, $preferredStability, null, null, $fixed);
