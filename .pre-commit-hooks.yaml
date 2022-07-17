@@ -7,3 +7,11 @@
   language: system
   pass_filenames: false
   files: '^composer.(json|lock)$'
+
+- id: composer-validate-strict
+  name: composer validate (strict mode)
+  description: Validates composer.json and composer.lock with --strict mode enabled
+  entry: composer validate --strict
+  language: system
+  pass_filenames: false
+  files: '^composer.(json|lock)$'
