@@ -287,6 +287,11 @@ class Factory
      */
     public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, ?string $cwd = null, bool $fullLoad = true, bool $disableScripts = false)
     {
+        // if a custom composer.json path is given, we change the default cwd to be that file's directory
+        if (is_string($localConfig) && is_file($localConfig) && null === $cwd) {
+            $cwd = dirname($localConfig);
+        }
+
         $cwd = $cwd ?? Platform::getCwd(true);
 
         // load Composer configuration
