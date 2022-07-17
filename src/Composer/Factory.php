@@ -303,6 +303,11 @@ class Factory
      */
     public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true, $disableScripts = false)
     {
+        // if a custom composer.json path is given, we change the default cwd to be that file's directory
+        if (is_string($localConfig) && is_file($localConfig) && null === $cwd) {
+            $cwd = dirname($localConfig);
+        }
+
         $cwd = $cwd ?: (string) getcwd();
 
         // load Composer configuration
