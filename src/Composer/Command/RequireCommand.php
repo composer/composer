@@ -67,6 +67,7 @@ class RequireCommand extends BaseCommand
     {
         $this
             ->setName('require')
+            ->setAliases(array('r'))
             ->setDescription('Adds required packages to your composer.json and installs them.')
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Optional package name can also include a version constraint, e.g. foo/bar or foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"', null, $this->suggestAvailablePackageInclPlatform()),

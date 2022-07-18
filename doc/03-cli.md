@@ -226,7 +226,7 @@ and this feature is only available for your root package dependencies.
 
 Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has the same effect as specifying the option `--lock`, for example `composer update mirrors` is exactly the same as `composer update --lock`.
 
-## require
+## require / r
 
 The `require` command adds new packages to the `composer.json` file from
 the current directory. If no file exists one will be created on the fly.
