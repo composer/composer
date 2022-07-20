@@ -35,6 +35,7 @@ use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Silencer;
 use Composer\Console\Input\InputArgument;
+use Seld\Signal\SignalHandler;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -452,28 +453,15 @@ EOT
             throw new \InvalidArgumentException($errorMessage .'.');
         }
 
-        // handler Ctrl+C for unix-like systems
-        if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
-            @mkdir($directory, 0777, true);
-            if ($realDir = realpath($directory)) {
-                pcntl_async_signals(true);
-                pcntl_signal(SIGINT, static function () use ($realDir): void {
-                    $fs = new Filesystem();
-                    $fs->removeDirectory($realDir);
-                    exit(130);
-                });
-            }
-        }
-        // handler Ctrl+C for Windows on PHP 7.4+
-        if (function_exists('sapi_windows_set_ctrl_handler') && PHP_SAPI === 'cli') {
-            @mkdir($directory, 0777, true);
-            if ($realDir = realpath($directory)) {
-                sapi_windows_set_ctrl_handler(static function () use ($realDir): void {
-                    $fs = new Filesystem();
-                    $fs->removeDirectory($realDir);
-                    exit(130);
-                });
-            }
+        // handler Ctrl+C aborts gracefully
+        @mkdir($directory, 0777, true);
+        if (false !== ($realDir = realpath($directory))) {
+            $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) use ($realDir) {
+                $this->getIO()->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
+                $fs = new Filesystem();
+                $fs->removeDirectory($realDir);
+                $handler->exitWithLastSignal();
+            });
         }
 
         // avoid displaying 9999999-dev as version if default-branch was selected
@@ -511,6 +499,11 @@ EOT
         chdir($directory);
 
         Platform::putEnv('COMPOSER_ROOT_VERSION', $package->getPrettyVersion());
+
+        // once the root project is fully initialized, we do not need to wipe everything on user abort anymore even if it happens during deps install
+        if (isset($signalHandler)) {
+            $signalHandler->unregister();
+        }
 
         return $installedFromVcs;
     }

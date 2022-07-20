@@ -28,6 +28,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Loop;
 use Composer\Util\Platform;
 use React\Promise\PromiseInterface;
+use Seld\Signal\SignalHandler;
 
 /**
  * Package operation manager.
@@ -222,36 +223,11 @@ class InstallationManager
             }
         };
 
-        $handleInterruptsUnix = function_exists('pcntl_async_signals') && function_exists('pcntl_signal');
-        $handleInterruptsWindows = PHP_VERSION_ID >= 70400 && function_exists('sapi_windows_set_ctrl_handler') && PHP_SAPI === 'cli';
-        $prevHandler = null;
-        $windowsHandler = null;
-        if ($handleInterruptsUnix) {
-            pcntl_async_signals(true);
-            $prevHandler = pcntl_signal_get_handler(SIGINT);
-            pcntl_signal(SIGINT, static function ($sig) use ($runCleanup, $prevHandler, $io): void {
-                $io->writeError('Received SIGINT, aborting', true, IOInterface::DEBUG);
-                $runCleanup();
-
-                if (!in_array($prevHandler, array(SIG_DFL, SIG_IGN), true)) {
-                    call_user_func($prevHandler, $sig);
-                }
-
-                exit(130);
-            });
-        }
-        if ($handleInterruptsWindows) {
-            $windowsHandler = static function ($event) use ($runCleanup, $io): void {
-                if ($event !== PHP_WINDOWS_EVENT_CTRL_C) {
-                    return;
-                }
-                $io->writeError('Received CTRL+C, aborting', true, IOInterface::DEBUG);
-                $runCleanup();
-
-                exit(130);
-            };
-            sapi_windows_set_ctrl_handler($windowsHandler);
-        }
+        $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], static function (string $signal, SignalHandler $handler) use ($io, $runCleanup) {
+            $io->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
+            $runCleanup();
+            $handler->exitWithLastSignal();
+        });
 
         try {
             // execute operations in batches to make sure download-modifying-plugins are installed
@@ -284,21 +260,9 @@ class InstallationManager
         } catch (\Exception $e) {
             $runCleanup();
 
-            if ($handleInterruptsUnix) {
-                pcntl_signal(SIGINT, $prevHandler);
-            }
-            if ($handleInterruptsWindows) {
-                sapi_windows_set_ctrl_handler($windowsHandler, false);
-            }
-
             throw $e;
-        }
-
-        if ($handleInterruptsUnix) {
-            pcntl_signal(SIGINT, $prevHandler);
-        }
-        if ($handleInterruptsWindows) {
-            sapi_windows_set_ctrl_handler($windowsHandler, false);
+        } finally {
+            $signalHandler->unregister();
         }
 
         // do a last write so that we write the repository even if nothing changed
