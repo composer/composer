@@ -243,9 +243,16 @@ abstract class BaseCommand extends Command
             $input->setOption('no-progress', true);
         }
 
-        if (true === $input->hasOption('no-dev')) {
-            if (!$input->getOption('no-dev') && (bool) Platform::getEnv('COMPOSER_NO_DEV')) {
-                $input->setOption('no-dev', true);
+        $envOptions = [
+            'COMPOSER_NO_DEV' => 'no-dev',
+            'COMPOSER_PREFER_STABLE' => 'prefer-stable',
+            'COMPOSER_PREFER_LOWEST' => 'prefer-lowest',
+        ];
+        foreach ($envOptions as $envName => $optionName) {
+            if (true === $input->hasOption($optionName)) {
+                if (false === $input->getOption($optionName) && (bool) Platform::getEnv($envName)) {
+                    $input->setOption($optionName, true);
+                }
             }
         }
 

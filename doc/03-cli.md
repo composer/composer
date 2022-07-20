@@ -218,9 +218,11 @@ and this feature is only available for your root package dependencies.
   a `+` makes it only ignore the upper-bound of the requirements. For example, if a package
   requires `php: ^7`, then the option `--ignore-platform-req=php+` would allow installing on PHP 8,
   but installation on PHP 5.6 would still fail.
-* **--prefer-stable:** Prefer stable versions of dependencies.
+* **--prefer-stable:** Prefer stable versions of dependencies. Can also be set via the
+  COMPOSER_PREFER_STABLE=1 env var.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
-  versions of requirements, generally used with `--prefer-stable`.
+  versions of requirements, generally used with `--prefer-stable`. Can also be set via the
+  COMPOSER_PREFER_LOWEST=1 env var.
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
 
@@ -275,9 +277,11 @@ If you do not specify a package, Composer will prompt you to search for a packag
 * **--ignore-platform-req:** ignore a specific platform requirement(`php`,
   `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
   does not fulfill it. Multiple requirements can be ignored via wildcard.
-* **--prefer-stable:** Prefer stable versions of dependencies.
+* **--prefer-stable:** Prefer stable versions of dependencies. Can also be set via the
+  COMPOSER_PREFER_STABLE=1 env var.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
-  versions of requirements, generally used with `--prefer-stable`.
+  versions of requirements, generally used with `--prefer-stable`. Can also be set via the
+  COMPOSER_PREFER_LOWEST=1 env var.
 * **--sort-packages:** Keep packages sorted in `composer.json`.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
   get a faster autoloader. This is recommended especially for production, but
@@ -1233,8 +1237,18 @@ useful for plugin authors to identify what is firing when exactly.
 
 ### COMPOSER_NO_DEV
 
-If set to `1`, it is the equivalent of passing the `--no-dev` argument to `install` or
+If set to `1`, it is the equivalent of passing the `--no-dev` option to `install` or
 `update`. You can override this for a single command by setting `COMPOSER_NO_DEV=0`.
+
+### COMPOSER_PREFER_STABLE
+
+If set to `1`, it is the equivalent of passing the `--prefer-stable` option to
+`update` or `require`.
+
+### COMPOSER_PREFER_LOWEST
+
+If set to `1`, it is the equivalent of passing the `--prefer-lowest` option to
+`update` or `require`.
 
 ### COMPOSER_IGNORE_PLATFORM_REQ or COMPOSER_IGNORE_PLATFORM_REQS
 
