@@ -520,7 +520,7 @@ php composer.phar show monolog/monolog 1.0.2
 * **--no-dev:** Filters dev dependencies from the package list.
 * **--major-only (-M):** Use with --latest or --outdated. Only shows packages that have major SemVer-compatible updates.
 * **--minor-only (-m):** Use with --latest or --outdated. Only shows packages that have minor SemVer-compatible updates.
-* **--patch-only (-p):** Use with --latest or --outdated. Only shows packages that have patch-level SemVer-compatible updates.
+* **--patch-only:** Use with --latest or --outdated. Only shows packages that have patch-level SemVer-compatible updates.
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 * **--strict:** Return a non-zero exit code when there are outdated packages.
 * **--format (-f):** Lets you pick between text (default) or json output format.
