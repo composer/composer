@@ -14,6 +14,8 @@ namespace Composer\Util;
 
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
+use Seld\Signal\SignalHandler;
+use Symfony\Component\Process\Exception\ProcessSignaledException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\RuntimeException;
 use React\Promise\Promise;
@@ -125,13 +127,28 @@ class ProcessExecutor
             $this->outputHandler($type, $buffer);
         };
 
-        $process->run($callback);
+        $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal) {
+            if ($this->io !== null) {
+                $this->io->writeError('Received '.$signal.', aborting when child process is done', true, IOInterface::DEBUG);
+            }
+        });
 
-        if ($this->captureOutput && !is_callable($output)) {
-            $output = $process->getOutput();
+        try {
+            $process->run($callback);
+
+            if ($this->captureOutput && !is_callable($output)) {
+                $output = $process->getOutput();
+            }
+
+            $this->errorOutput = $process->getErrorOutput();
+        } catch (ProcessSignaledException $e) {
+            if ($signalHandler->isTriggered()) {
+                // exiting as we were signaled and the child process exited too due to the signal
+                $signalHandler->exitWithLastSignal();
+            }
+        } finally {
+            $signalHandler->unregister();
         }
-
-        $this->errorOutput = $process->getErrorOutput();
 
         return $process->getExitCode();
     }

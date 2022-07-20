@@ -17,6 +17,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use LogicException;
+use Seld\Signal\SignalHandler;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Helper\HelperSet;
@@ -93,7 +94,15 @@ class Application extends BaseApplication
             date_default_timezone_set(Silencer::call('date_default_timezone_get'));
         }
 
+        $this->io = new NullIO();
+
         if (!$shutdownRegistered) {
+            $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) {
+                $this->io->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
+
+                $handler->exitWithLastSignal();
+            });
+
             $shutdownRegistered = true;
 
             register_shutdown_function(static function (): void {
@@ -106,8 +115,6 @@ class Application extends BaseApplication
                 }
             });
         }
-
-        $this->io = new NullIO();
 
         $this->initialWorkingDirectory = getcwd();
 
