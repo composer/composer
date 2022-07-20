@@ -43,7 +43,7 @@ class ConsoleIO extends BaseIO
 
     /** @var float */
     private $startTime;
-    /** @var array<int, int> */
+    /** @var array<IOInterface::*, OutputInterface::VERBOSITY_*> */
     private $verbosityMap;
 
     /**
@@ -166,11 +166,7 @@ class ConsoleIO extends BaseIO
         }
 
         if ($raw) {
-            if ($sfVerbosity === OutputInterface::OUTPUT_NORMAL) {
-                $sfVerbosity = OutputInterface::OUTPUT_RAW;
-            } else {
-                $sfVerbosity |= OutputInterface::OUTPUT_RAW;
-            }
+            $sfVerbosity |= OutputInterface::OUTPUT_RAW;
         }
 
         if (null !== $this->startTime) {
