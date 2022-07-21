@@ -18,6 +18,34 @@ use Composer\Package\RootPackageInterface;
 class PackageSorter
 {
     /**
+     * Returns the most recent version of a set of packages
+     *
+     * This is ideally the default branch version, or failing that it will return the package with the highest version
+     *
+     * @template T of PackageInterface
+     * @param array<T> $packages
+     * @return ($packages is non-empty-array<T> ? T : T|null)
+     */
+    public static function getMostCurrentVersion(array $packages): ?PackageInterface
+    {
+        return array_reduce($packages, function ($carry, $pkg) {
+            if ($carry === null) {
+                return $pkg;
+            }
+
+            if ($pkg->isDefaultBranch()) {
+                return $pkg;
+            }
+
+            if (!$carry->isDefaultBranch() && version_compare($carry->getVersion(), $pkg->getVersion(), '<')) {
+                return $pkg;
+            }
+
+            return $carry;
+        });
+    }
+
+    /**
      * Sorts packages by name
      *
      * @template T of PackageInterface

@@ -119,6 +119,10 @@ Examples:
 - redis
 - templating
 
+> **Note**: Some special keywords trigger `composer require` to prompt
+> the user if they would not rather add these packages to `require-dev` in case
+> the command is run without `--dev`. These are: `dev`, `testing`, `static analysis`.
+
 Optional.
 
 ### homepage

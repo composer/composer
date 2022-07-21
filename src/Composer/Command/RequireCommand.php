@@ -13,7 +13,10 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Request;
+use Composer\Package\CompletePackageInterface;
+use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\PackageSorter;
 use Seld\Signal\SignalHandler;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputArgument;
@@ -218,9 +221,36 @@ EOT
             throw $e;
         }
 
+        $requirements = $this->formatRequirements($requirements);
+
+        if (!$input->getOption('dev') && $io->isInteractive()) {
+            $devPackages = [];
+            $devTags = ['dev', 'testing', 'static analysis'];
+            $currentRequiresByKey = $this->getPackagesByRequireKey();
+            foreach ($requirements as $name => $version) {
+                // skip packages which are already in the composer.json as those have already been decided
+                if (isset($currentRequiresByKey[$name])) {
+                    continue;
+                }
+
+                $pkg = PackageSorter::getMostCurrentVersion($this->getRepos()->findPackages($name));
+                if ($pkg instanceof CompletePackageInterface && count(array_intersect($devTags, array_map('strtolower', $pkg->getKeywords()))) > 0) {
+                    $devPackages[] = $name;
+                }
+            }
+
+            if (count($devPackages) === count($requirements)) {
+                $plural = count($requirements) > 1 ? 's' : '';
+                $plural2 = count($requirements) > 1 ? 'are' : 'is';
+                $io->warning('The package'.$plural.' you required '.$plural2.' recommended to be placed in require-dev but you did not use --dev.');
+                if ($io->askConfirmation('<info>Do you want to re-run the command with --dev?</> [<comment>yes</>]? ')) {
+                    $input->setOption('dev', true);
+                }
+            }
+        }
+
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
-        $requirements = $this->formatRequirements($requirements);
 
         // validate requirements format
         $versionParser = new VersionParser();
@@ -254,6 +284,7 @@ EOT
                         return 0;
                     }
 
+                    $input->setOption('dev', true);
                     list($requireKey, $removeKey) = array($removeKey, $requireKey);
                 }
             }
