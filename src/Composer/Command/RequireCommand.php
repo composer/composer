@@ -240,7 +240,7 @@ EOT
         if (count($inconsistentRequireKeys) > 0) {
             foreach ($inconsistentRequireKeys as $package) {
                 $io->warning(sprintf(
-                    '%s is currently present in the %s key and you ran the command %s the --dev flag, which would move it to the %s key.',
+                    '%s is currently present in the %s key and you ran the command %s the --dev flag, which will move it to the %s key.',
                     $package,
                     $removeKey,
                     $input->getOption('dev') ? 'with' : 'without',

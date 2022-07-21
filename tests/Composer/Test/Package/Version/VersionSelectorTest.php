@@ -13,6 +13,8 @@
 namespace Composer\Test\Package\Version;
 
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\IO\BufferIO;
+use Composer\IO\IOInterface;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\Package;
 use Composer\Package\Link;
@@ -20,6 +22,7 @@ use Composer\Package\AliasPackage;
 use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
 use Composer\Test\TestCase;
+use Symfony\Component\Console\Output\StreamOutput;
 
 class VersionSelectorTest extends TestCase
 {
@@ -29,11 +32,11 @@ class VersionSelectorTest extends TestCase
 
     public function testLatestVersionIsReturned(): void
     {
-        $packageName = 'foobar';
+        $packageName = 'foo/bar';
 
-        $package1 = $this->createPackage('1.2.1');
-        $package2 = $this->createPackage('1.2.2');
-        $package3 = $this->createPackage('1.2.0');
+        $package1 = $this->getPackage('foo/bar', '1.2.1');
+        $package2 = $this->getPackage('foo/bar', '1.2.2');
+        $package3 = $this->getPackage('foo/bar', '1.2.0');
         $packages = array($package1, $package2, $package3);
 
         $repositorySet = $this->createMockRepositorySet();
@@ -51,42 +54,56 @@ class VersionSelectorTest extends TestCase
 
     public function testLatestVersionIsReturnedThatMatchesPhpRequirements(): void
     {
-        $packageName = 'foobar';
+        $packageName = 'foo/bar';
 
         $platform = new PlatformRepository(array(), array('php' => '5.5.0'));
         $repositorySet = $this->createMockRepositorySet();
         $versionSelector = new VersionSelector($repositorySet, $platform);
 
         $parser = new VersionParser;
-        $package1 = $this->createPackage('1.0.0');
+        $package1 = $this->getPackage('foo/bar', '1.0.0');
         $package1->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.4'), Link::TYPE_REQUIRE, '>=5.4')));
-        $package2 = $this->createPackage('2.0.0');
+        $package2 = $this->getPackage('foo/bar', '2.0.0');
         $package2->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), Link::TYPE_REQUIRE, '>=5.6')));
-        $packages = array($package1, $package2);
+        $package3 = $this->getPackage('foo/bar', '2.1.0');
+        $package3->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), Link::TYPE_REQUIRE, '>=5.6')));
+        $packages = array($package1, $package2, $package3);
 
         $repositorySet->expects($this->any())
             ->method('findPackages')
             ->with($packageName, null)
             ->will($this->returnValue($packages));
 
-        $best = $versionSelector->findBestCandidate($packageName);
-        $this->assertSame($package1, $best, 'Latest version supporting php 5.5 should be returned (1.0.0)');
+        $io = new BufferIO();
+        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', null, 0, $io);
+        $this->assertSame((string) $package1, (string) $best, 'Latest version supporting php 5.5 should be returned (1.0.0)');
+        self::assertSame("<warning>Cannot use foo/bar's latest version 2.1.0 as it requires php >=5.6 which is not satisfied by your platform.".PHP_EOL, $io->getOutput());
+
+        $io = new BufferIO('', StreamOutput::VERBOSITY_VERBOSE);
+        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', null, 0, $io);
+        $this->assertSame((string) $package1, (string) $best, 'Latest version supporting php 5.5 should be returned (1.0.0)');
+        self::assertSame(
+            "<warning>Cannot use foo/bar's latest version 2.1.0 as it requires php >=5.6 which is not satisfied by your platform.".PHP_EOL
+            ."<warning>Cannot use foo/bar 2.0.0 as it requires php >=5.6 which is not satisfied by your platform.".PHP_EOL,
+            $io->getOutput()
+        );
+
         $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
-        $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
+        $this->assertSame((string) $package3, (string) $best, 'Latest version should be returned when ignoring platform reqs (2.1.0)');
     }
 
     public function testLatestVersionIsReturnedThatMatchesExtRequirements(): void
     {
-        $packageName = 'foobar';
+        $packageName = 'foo/bar';
 
         $platform = new PlatformRepository(array(), array('ext-zip' => '5.3.0'));
         $repositorySet = $this->createMockRepositorySet();
         $versionSelector = new VersionSelector($repositorySet, $platform);
 
         $parser = new VersionParser;
-        $package1 = $this->createPackage('1.0.0');
+        $package1 = $this->getPackage('foo/bar', '1.0.0');
         $package1->setRequires(array('ext-zip' => new Link($packageName, 'ext-zip', $parser->parseConstraints('^5.2'), Link::TYPE_REQUIRE, '^5.2')));
-        $package2 = $this->createPackage('2.0.0');
+        $package2 = $this->getPackage('foo/bar', '2.0.0');
         $package2->setRequires(array('ext-zip' => new Link($packageName, 'ext-zip', $parser->parseConstraints('^5.4'), Link::TYPE_REQUIRE, '^5.4')));
         $packages = array($package1, $package2);
 
@@ -103,15 +120,15 @@ class VersionSelectorTest extends TestCase
 
     public function testLatestVersionIsReturnedThatMatchesPlatformExt(): void
     {
-        $packageName = 'foobar';
+        $packageName = 'foo/bar';
 
         $platform = new PlatformRepository();
         $repositorySet = $this->createMockRepositorySet();
         $versionSelector = new VersionSelector($repositorySet, $platform);
 
         $parser = new VersionParser;
-        $package1 = $this->createPackage('1.0.0');
-        $package2 = $this->createPackage('2.0.0');
+        $package1 = $this->getPackage('foo/bar', '1.0.0');
+        $package2 = $this->getPackage('foo/bar', '2.0.0');
         $package2->setRequires(array('ext-barfoo' => new Link($packageName, 'ext-barfoo', $parser->parseConstraints('*'), Link::TYPE_REQUIRE, '*')));
         $packages = array($package1, $package2);
 
@@ -128,16 +145,16 @@ class VersionSelectorTest extends TestCase
 
     public function testLatestVersionIsReturnedThatMatchesComposerRequirements(): void
     {
-        $packageName = 'foobar';
+        $packageName = 'foo/bar';
 
         $platform = new PlatformRepository(array(), array('composer-runtime-api' => '1.0.0'));
         $repositorySet = $this->createMockRepositorySet();
         $versionSelector = new VersionSelector($repositorySet, $platform);
 
         $parser = new VersionParser;
-        $package1 = $this->createPackage('1.0.0');
+        $package1 = $this->getPackage('foo/bar', '1.0.0');
         $package1->setRequires(array('composer-runtime-api' => new Link($packageName, 'composer-runtime-api', $parser->parseConstraints('^1.0'), Link::TYPE_REQUIRE, '^1.0')));
-        $package2 = $this->createPackage('1.1.0');
+        $package2 = $this->getPackage('foo/bar', '1.1.0');
         $package2->setRequires(array('composer-runtime-api' => new Link($packageName, 'composer-runtime-api', $parser->parseConstraints('^2.0'), Link::TYPE_REQUIRE, '^2.0')));
         $packages = array($package1, $package2);
 
@@ -154,10 +171,10 @@ class VersionSelectorTest extends TestCase
 
     public function testMostStableVersionIsReturned(): void
     {
-        $packageName = 'foobar';
+        $packageName = 'foo/bar';
 
-        $package1 = $this->createPackage('1.0.0');
-        $package2 = $this->createPackage('1.1.0-beta');
+        $package1 = $this->getPackage('foo/bar', '1.0.0');
+        $package2 = $this->getPackage('foo/bar', '1.1.0-beta');
         $packages = array($package1, $package2);
 
         $repositorySet = $this->createMockRepositorySet();
@@ -174,10 +191,10 @@ class VersionSelectorTest extends TestCase
 
     public function testMostStableVersionIsReturnedRegardlessOfOrder(): void
     {
-        $packageName = 'foobar';
+        $packageName = 'foo/bar';
 
-        $package1 = $this->createPackage('2.x-dev');
-        $package2 = $this->createPackage('2.0.0-beta3');
+        $package1 = $this->getPackage('foo/bar', '2.x-dev');
+        $package2 = $this->getPackage('foo/bar', '2.0.0-beta3');
         $packages = array($package1, $package2);
 
         $repositorySet = $this->createMockRepositorySet();
@@ -199,10 +216,10 @@ class VersionSelectorTest extends TestCase
 
     public function testHighestVersionIsReturned(): void
     {
-        $packageName = 'foobar';
+        $packageName = 'foo/bar';
 
-        $package1 = $this->createPackage('1.0.0');
-        $package2 = $this->createPackage('1.1.0-beta');
+        $package1 = $this->getPackage('foo/bar', '1.0.0');
+        $package2 = $this->getPackage('foo/bar', '1.1.0-beta');
         $packages = array($package1, $package2);
 
         $repositorySet = $this->createMockRepositorySet();
@@ -219,11 +236,11 @@ class VersionSelectorTest extends TestCase
 
     public function testHighestVersionMatchingStabilityIsReturned(): void
     {
-        $packageName = 'foobar';
+        $packageName = 'foo/bar';
 
-        $package1 = $this->createPackage('1.0.0');
-        $package2 = $this->createPackage('1.1.0-beta');
-        $package3 = $this->createPackage('1.2.0-alpha');
+        $package1 = $this->getPackage('foo/bar', '1.0.0');
+        $package2 = $this->getPackage('foo/bar', '1.1.0-beta');
+        $package3 = $this->getPackage('foo/bar', '1.2.0-alpha');
         $packages = array($package1, $package2, $package3);
 
         $repositorySet = $this->createMockRepositorySet();
@@ -240,10 +257,10 @@ class VersionSelectorTest extends TestCase
 
     public function testMostStableUnstableVersionIsReturned(): void
     {
-        $packageName = 'foobar';
+        $packageName = 'foo/bar';
 
-        $package2 = $this->createPackage('1.1.0-beta');
-        $package3 = $this->createPackage('1.2.0-alpha');
+        $package2 = $this->getPackage('foo/bar', '1.1.0-beta');
+        $package3 = $this->getPackage('foo/bar', '1.2.0-alpha');
         $packages = array($package2, $package3);
 
         $repositorySet = $this->createMockRepositorySet();
@@ -260,10 +277,10 @@ class VersionSelectorTest extends TestCase
 
     public function testDefaultBranchAliasIsNeverReturned(): void
     {
-        $packageName = 'foobar';
+        $packageName = 'foo/bar';
 
-        $package = $this->createPackage('1.1.0-beta');
-        $package2 = $this->createPackage('dev-main');
+        $package = $this->getPackage('foo/bar', '1.1.0-beta');
+        $package2 = $this->getPackage('foo/bar', 'dev-main');
         $package2Alias = new AliasPackage($package2, VersionParser::DEFAULT_BRANCH_ALIAS, VersionParser::DEFAULT_BRANCH_ALIAS);
         $packages = array($package, $package2Alias);
 
@@ -355,18 +372,6 @@ class VersionSelectorTest extends TestCase
             // ext versioned individually
             array('3.0.5', '^3.0', null, 'ext-xdebug'),
         );
-    }
-
-    /**
-     * @param string $version
-     *
-     * @return Package
-     */
-    private function createPackage(string $version): Package
-    {
-        $parser = new VersionParser();
-
-        return new Package('foo', $parser->normalize($version), $version);
     }
 
     /**
