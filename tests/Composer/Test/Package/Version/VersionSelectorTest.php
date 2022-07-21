@@ -61,13 +61,15 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet, $platform);
 
         $parser = new VersionParser;
+        $package0 = $this->getPackage('foo/bar', '0.9.0');
+        $package0->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), Link::TYPE_REQUIRE, '>=5.6')));
         $package1 = $this->getPackage('foo/bar', '1.0.0');
         $package1->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.4'), Link::TYPE_REQUIRE, '>=5.4')));
         $package2 = $this->getPackage('foo/bar', '2.0.0');
         $package2->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), Link::TYPE_REQUIRE, '>=5.6')));
         $package3 = $this->getPackage('foo/bar', '2.1.0');
         $package3->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), Link::TYPE_REQUIRE, '>=5.6')));
-        $packages = array($package1, $package2, $package3);
+        $packages = array($package0, $package1, $package2, $package3);
 
         $repositorySet->expects($this->any())
             ->method('findPackages')
