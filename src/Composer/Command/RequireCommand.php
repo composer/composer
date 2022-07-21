@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\DependencyResolver\Request;
 use Composer\Util\Filesystem;
+use Seld\Signal\SignalHandler;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputArgument;
 use Composer\Console\Input\InputOption;
@@ -148,12 +149,11 @@ EOT
         $this->composerBackup = file_get_contents($this->json->getPath());
         $this->lockBackup = file_exists($this->lock) ? file_get_contents($this->lock) : null;
 
-        if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
-            pcntl_async_signals(true);
-            pcntl_signal(SIGINT, function () { $this->revertComposerFile(); });
-            pcntl_signal(SIGTERM, function () { $this->revertComposerFile(); });
-            pcntl_signal(SIGHUP, function () { $this->revertComposerFile(); });
-        }
+        $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) {
+            $this->getIO()->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
+            $this->revertComposerFile();
+            $handler->exitWithLastSignal();
+        });
 
         // check for writability by writing to the file as is_writable can not be trusted on network-mounts
         // see https://github.com/composer/composer/issues/8231 and https://bugs.php.net/bug.php?id=68926
@@ -210,7 +210,7 @@ EOT
             );
         } catch (\Exception $e) {
             if ($this->newlyCreated) {
-                $this->revertComposerFile(false);
+                $this->revertComposerFile();
 
                 throw new \RuntimeException('No composer.json present in the current directory ('.$this->file.'), this may be the cause of the following exception.', 0, $e);
             }
@@ -293,9 +293,11 @@ EOT
             return $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
         } catch (\Exception $e) {
             if (!$this->dependencyResolutionCompleted) {
-                $this->revertComposerFile(false);
+                $this->revertComposerFile();
             }
             throw $e;
+        } finally {
+            $signalHandler->unregister();
         }
     }
 
@@ -439,7 +441,7 @@ EOT
                     }
                 }
             }
-            $this->revertComposerFile(false);
+            $this->revertComposerFile();
         }
 
         return $status;
@@ -479,11 +481,7 @@ EOT
 
     }
 
-    /**
-     * @param bool $hardExit
-     * @return void
-     */
-    public function revertComposerFile(bool $hardExit = true): void
+    private function revertComposerFile(): void
     {
         $io = $this->getIO();
 
@@ -503,10 +501,6 @@ EOT
             if ($this->lockBackup) {
                 file_put_contents($this->lock, $this->lockBackup);
             }
-        }
-
-        if ($hardExit) {
-            exit(1);
         }
     }
 }

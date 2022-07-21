@@ -40,7 +40,8 @@
         "react/promise": "^2.8",
         "composer/pcre": "^2 || ^3",
         "symfony/polyfill-php73": "^1.24",
-        "symfony/polyfill-php80": "^1.24"
+        "symfony/polyfill-php80": "^1.24",
+        "seld/signal-handler": "^2.0"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^6.0",
