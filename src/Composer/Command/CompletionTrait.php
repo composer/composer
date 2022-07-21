@@ -60,11 +60,15 @@ trait CompletionTrait
     /**
      * Suggest package names from installed.
      */
-    private function suggestInstalledPackage(bool $includePlatformPackages = false): \Closure
+    private function suggestInstalledPackage(bool $includeRootPackage = true, bool $includePlatformPackages = false): \Closure
     {
-        return function (CompletionInput $input) use ($includePlatformPackages): array {
+        return function (CompletionInput $input) use ($includeRootPackage, $includePlatformPackages): array {
             $composer = $this->requireComposer();
-            $installedRepos = [new RootPackageRepository(clone $composer->getPackage())];
+            $installedRepos = [];
+
+            if ($includeRootPackage) {
+                $installedRepos[] = new RootPackageRepository(clone $composer->getPackage());
+            }
 
             $locker = $composer->getLocker();
             if ($locker->isLocked()) {
