@@ -15,9 +15,10 @@ calls `composer dump-autoload`.
 
 ## Bash Completions
 
-To install bash completions you can run `composer completion bash > completion.bash` (put the file
-in /etc/bash_completion.d/composer to make it load automatically in new terminals) and then
-`source completion.bash` to enable it in the current terminal session.
+To install bash completions you can run `composer completion bash > completion.bash`.
+This will create a `completion.bash` file in the current directory.
+Then execute `source completion.bash` to enable it in the current terminal session.
+Move and rename the `completion.bash` file to `/etc/bash_completion.d/composer` to make it load automatically in new terminals.
 
 ## Global Options
 
