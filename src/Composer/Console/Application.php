@@ -81,6 +81,9 @@ class Application extends BaseApplication
      */
     private $initialWorkingDirectory;
 
+    /** @var SignalHandler */
+    private $signalHandler;
+
     public function __construct()
     {
         static $shutdownRegistered = false;
@@ -96,13 +99,13 @@ class Application extends BaseApplication
 
         $this->io = new NullIO();
 
+        $this->signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) {
+            $this->io->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
+
+            $handler->exitWithLastSignal();
+        });
+
         if (!$shutdownRegistered) {
-            $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) {
-                $this->io->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
-
-                $handler->exitWithLastSignal();
-            });
-
             $shutdownRegistered = true;
 
             register_shutdown_function(static function (): void {
@@ -119,6 +122,11 @@ class Application extends BaseApplication
         $this->initialWorkingDirectory = getcwd();
 
         parent::__construct('Composer', Composer::getVersion());
+    }
+
+    public function __destruct()
+    {
+        $this->signalHandler->unregister();
     }
 
     public function run(InputInterface $input = null, OutputInterface $output = null): int
