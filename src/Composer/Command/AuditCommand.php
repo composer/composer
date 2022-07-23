@@ -21,7 +21,7 @@ class AuditCommand extends BaseCommand
             ->setDescription('Checks for security vulnerability advisories for installed packages.')
             ->setDefinition(array(
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables auditing of require-dev packages.'),
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Output format. Must be "table", "plain", "json" or "summary".', Auditor::FORMAT_TABLE, Auditor::FORMATS),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_TABLE, Auditor::FORMATS),
                 new InputOption('locked', null, InputOption::VALUE_NONE, 'Audit based on the lock file instead of the installed packages.'),
             ))
             ->setHelp(
