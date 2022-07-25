@@ -114,7 +114,7 @@ resolution.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--audit:** Run an audit after installation is complete.
-* **--audit-format:** Audit output format. Must be "table", "plain", or "summary" (default).
+* **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -195,7 +195,7 @@ and this feature is only available for your root package dependencies.
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-audit:** Does not run the audit steps after updating the composer.lock file.
-* **--audit-format:** Audit output format. Must be "table", "plain", or "summary" (default).
+* **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
 * **--with:** Temporary version constraint to add, e.g. foo/bar:1.0.0 or foo/bar=1.0.0
@@ -270,7 +270,7 @@ If you do not specify a package, Composer will prompt you to search for a packag
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-audit:** Does not run the audit steps after updating the composer.lock file.
-* **--audit-format:** Audit output format. Must be "table", "plain", or "summary" (default).
+* **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
 * **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements.
 * **--update-with-all-dependencies (-W):** Also update dependencies of the newly required packages, including those that are root requirements.
@@ -316,7 +316,7 @@ uninstalled.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-audit:** Does not run the audit steps after installation is complete.
-* **--audit-format:** Audit output format. Must be "table", "plain", or "summary" (default).
+* **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies (-w):** Also update dependencies of the removed packages.
   (Deprecated, is now default behavior)
@@ -897,7 +897,7 @@ By default the command checks for the packages on packagist.org.
 * **--remove-vcs:** Force-remove the VCS metadata without prompting.
 * **--no-install:** Disables installation of the vendors.
 * **--no-audit:** Does not run the audit steps after installation is complete.
-* **--audit-format:** Audit output format. Must be "table", "plain", or "summary" (default).
+* **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
@@ -1023,7 +1023,7 @@ php composer.phar audit
 ### Options
 
 * **--no-dev:** Disables auditing of require-dev packages.
-* **--format (-f):** Audit output format. Must be "table" (default), "plain", or "summary".
+* **--format (-f):** Audit output format. Must be "table" (default), "plain", "json", or "summary".
 * **--locked:** Audit packages from the lock file, regardless of what is currently in vendor dir.
 
 ## help

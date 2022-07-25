@@ -4,6 +4,7 @@ namespace Composer\Advisory;
 
 use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositorySet;
 use InvalidArgumentException;
@@ -18,11 +19,14 @@ class Auditor
 
     public const FORMAT_PLAIN = 'plain';
 
+    public const FORMAT_JSON = 'json';
+
     public const FORMAT_SUMMARY = 'summary';
 
     public const FORMATS = [
         self::FORMAT_TABLE,
         self::FORMAT_PLAIN,
+        self::FORMAT_JSON,
         self::FORMAT_SUMMARY,
     ];
 
@@ -37,6 +41,11 @@ class Auditor
     public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true): int
     {
         $advisories = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY);
+        if (self::FORMAT_JSON === $format) {
+            $io->write(JsonFile::encode(['advisories' => $advisories]));
+            return count($advisories);
+        }
+
         $errorOrWarn = $warningOnly ? 'warning' : 'error';
         if (count($advisories) > 0) {
             [$affectedPackages, $totalAdvisories] = $this->countAdvisories($advisories);
