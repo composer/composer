@@ -237,8 +237,11 @@ class Git
                 }
 
                 if (null !== $auth) {
-                    $authUrl = $match[1] . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . $match[3];
-
+                    if ($auth['password'] === 'private-token' || $auth['password'] === 'oauth2' || $auth['password'] === 'gitlab-ci-token') {
+                        $authUrl = $match[1] . rawurlencode($auth['password']) . ':' . rawurlencode($auth['username']) . '@' . $match[2] . $match[3];
+                    } else {
+                        $authUrl = $match[1] . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . $match[3];
+                    }
                     $command = call_user_func($commandCallable, $authUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
