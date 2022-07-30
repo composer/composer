@@ -18,7 +18,9 @@ use Composer\XdebugHandler\XdebugHandler;
 use Composer\Util\Platform;
 use Composer\Util\ErrorHandler;
 
-error_reporting(-1);
+if(error_reporting() > 0) {
+    error_reporting(-1);
+}
 
 // Restart without Xdebug
 $xdebug = new XdebugHandler('Composer');
