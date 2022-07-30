@@ -304,8 +304,10 @@ class EventDispatcher
                             if ($pathToExec = $finder->find($match[0])) {
                                 $pathAndArgs = $pathToExec . substr($pathAndArgs, strlen($match[0]));
                             }
+                            $exec = $this->getPhpExecCommand() . ' ' . $pathAndArgs;
+                        } else {
+                            $exec = str_replace('@php', $this->getPhpExecCommand(), $exec);
                         }
-                        $exec = $this->getPhpExecCommand() . ' ' . $pathAndArgs;
                     } else {
                         $finder = new PhpExecutableFinder();
                         $phpPath = $finder->find(false);
