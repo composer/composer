@@ -20,6 +20,7 @@ jobs:
         days-before-close: 15
         stale-issue-message: 'This issue has been automatically marked Stale and will be closed in 15 days if no further activity happens.'
         stale-issue-label: 'Stale'
+        close-issue-reason: 'not_planned'
         only-labels: 'Support'
         exempt-all-milestones: true
         ascending: true
