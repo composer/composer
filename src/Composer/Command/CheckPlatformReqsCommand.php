@@ -20,6 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Repository\InstalledRepository;
+use Composer\Json\JsonFile;
 
 class CheckPlatformReqsCommand extends BaseCommand
 {
@@ -33,6 +34,7 @@ class CheckPlatformReqsCommand extends BaseCommand
             ->setDefinition(array(
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables checking of require-dev packages requirements.'),
                 new InputOption('lock', null, InputOption::VALUE_NONE, 'Checks requirements only from the lock file, not from installed packages.'),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
             ))
             ->setHelp(
                 <<<EOT
@@ -164,7 +166,7 @@ EOT
             }
         }
 
-        $this->printTable($output, $results);
+        $this->printTable($output, $results, $input->getOption('format'));
 
         return $exitCode;
     }
@@ -174,7 +176,7 @@ EOT
      *
      * @return void
      */
-    protected function printTable(OutputInterface $output, array $results): void
+    protected function printTable(OutputInterface $output, array $results, string $format): void
     {
         $rows = array();
         foreach ($results as $result) {
@@ -182,14 +184,29 @@ EOT
              * @var Link|null $link
              */
             list($platformPackage, $version, $link, $status) = $result;
-            $rows[] = array(
-                $platformPackage,
-                $version,
-                $link ? sprintf('%s %s %s (%s)', $link->getSource(), $link->getDescription(), $link->getTarget(), $link->getPrettyConstraint()) : '',
-                $status,
-            );
+            $link = $link ? sprintf('%s %s %s (%s)', $link->getSource(), $link->getDescription(), $link->getTarget(), $link->getPrettyConstraint()) : '';
+
+            if ('json' === $format) {
+                $rows[] = array(
+                    "name" => $platformPackage,
+                    "version" => $version,
+                    "link" => $link,
+                    "status" => $status,
+                );
+            } else {
+                $rows[] = array(
+                    $platformPackage,
+                    $version,
+                    $link,
+                    $status,
+                );
+            }
         }
 
-        $this->renderTable($rows, $output);
+        if ('json' === $format) {
+            $this->getIO()->write(JsonFile::encode($rows));
+        } else {
+            $this->renderTable($rows, $output);
+        }
     }
 }
