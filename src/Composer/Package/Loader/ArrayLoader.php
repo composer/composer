@@ -256,7 +256,7 @@ class ArrayLoader implements LoaderInterface
                 foreach ($config['scripts'] as $event => $listeners) {
                     $config['scripts'][$event] = (array) $listeners;
                 }
-                foreach (array('composer', 'php', 'putenv') as $reserved) {
+                foreach (array('composer', 'php', 'putenv', 'onWindows', 'onLinux', 'onDarwin') as $reserved) {
                     if (isset($config['scripts'][$reserved])) {
                         trigger_error('The `'.$reserved.'` script name is reserved for internal use, please avoid defining it', E_USER_DEPRECATED);
                     }

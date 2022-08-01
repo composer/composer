@@ -286,6 +286,21 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals($expected, $io->getOutput());
     }
 
+    public function testDispatcherOnlyRunOnWindows(): void
+    {
+        $this->markTestSkipped('TODO: add test for @onWindows command');
+    }
+
+    public function testDispatcherOnlyRunOnLinux(): void
+    {
+        $this->markTestSkipped('TODO: add test for @onLinux command');
+    }
+
+    public function testDispatcherOnlyRunOnDarwin(): void
+    {
+        $this->markTestSkipped('TODO: add test for @onDarwin command');
+    }
+
     public function testDispatcherAppendsDirBinOnPathForEveryListener(): void
     {
         $currentDirectoryBkp = Platform::getCwd();

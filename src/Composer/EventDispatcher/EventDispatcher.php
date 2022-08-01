@@ -254,6 +254,24 @@ class EventDispatcher
                 } else {
                     $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
 
+                    // run on specific platform only
+                    if (strpos($callable, '@onWindows ') === 0) {
+                        if (!Platform::isWindows()) {
+                            continue;
+                        };
+                        $callable = str_replace('@onWindows ', '', $callable);
+                    } elseif(strpos($callable, '@onLinux ') === 0) {
+                        if (PHP_OS !== 'Linux') {
+                            continue;
+                        };
+                        $callable = str_replace('@onLinux ', '', $callable);
+                    } elseif(strpos($callable, '@onDarwin ') === 0) {
+                        if (PHP_OS !== 'Darwin') {
+                            continue;
+                        };
+                        $callable = str_replace('@onDarwin ', '', $callable);
+                    }
+
                     // @putenv does not receive arguments
                     if (strpos($callable, '@putenv ') === 0) {
                         $exec = $callable;
@@ -289,6 +307,7 @@ class EventDispatcher
 
                         continue;
                     }
+
                     if (strpos($exec, '@php ') === 0) {
                         $pathAndArgs = substr($exec, 5);
                         if (Platform::isWindows()) {
@@ -542,7 +561,12 @@ class EventDispatcher
      */
     protected function isComposerScript(string $callable): bool
     {
-        return strpos($callable, '@') === 0 && strpos($callable, '@php ') !== 0 && strpos($callable, '@putenv ') !== 0;
+        return strpos($callable, '@') === 0
+            && strpos($callable, '@php ') !== 0
+            && strpos($callable, '@putenv ') !== 0
+            && strpos($callable, '@onWindows ') !== 0
+            && strpos($callable, '@onLinux ') !== 0
+            && strpos($callable, '@onDarwin ') !== 0;
     }
 
     /**
