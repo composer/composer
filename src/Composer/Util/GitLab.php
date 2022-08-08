@@ -160,7 +160,13 @@ class GitLab
             $this->io->setAuthentication($originUrl, $response['access_token'], 'oauth2');
 
             // store value in user config in auth file
-            $this->config->getAuthConfigSource()->addConfigSetting('gitlab-oauth.'.$originUrl, $response['access_token']);
+            $this->config->getAuthConfigSource()->addConfigSetting('gitlab-oauth.'.$originUrl,
+                array(
+                    'expires-at' => intval($response['created_at']) + intval($response['expires_in']),
+                    'refresh-token' => $response['refresh_token'],
+                    'token' => $response['access_token'],
+                )
+            );
 
             return true;
         }
@@ -169,10 +175,57 @@ class GitLab
     }
 
     /**
+     * Authorizes a GitLab domain interactively via OAuth.
+     *
+     * @param string $scheme    Scheme used in the origin URL
+     * @param string $originUrl The host this GitLab instance is located at
+     * @param string $message   The reason this authorization is required
+     *
+     * @throws \RuntimeException
+     * @throws TransportException|\Exception
+     *
+     * @return bool true on success
+     */
+    public function authorizeOAuthRefresh(string $scheme, string $originUrl, string $message = null): bool
+    {
+        if ($this->io->isInteractive()) {
+            if ($message) {
+                $this->io->writeError($message);
+            }
+
+            $this->io->writeError(sprintf('A new token will be created and stored in "%s".', $this->config->getAuthConfigSource()->getName()));
+            $this->io->writeError('To revoke access to this token you can visit '.$scheme.'://'.$originUrl.'/-/profile/personal_access_tokens');
+        }
+
+        try {
+            $response = $this->refreshToken($scheme, $originUrl);
+        } catch (TransportException $e) {
+
+            if ($this->io->isInteractive()) {
+                $this->io->writeError("Couldn't refresh access token.");
+            }
+            return false;
+        }
+
+        $this->io->setAuthentication($originUrl, $response['access_token'], 'oauth2');
+
+        // store value in user config in auth file
+        $this->config->getAuthConfigSource()->addConfigSetting('gitlab-oauth.'.$originUrl,
+            array(
+                'expires-at' => intval($response['created_at']) + intval($response['expires_in']),
+                'refresh-token' => $response['refresh_token'],
+                'token' => $response['access_token'],
+            )
+        );
+
+        return true;
+    }
+
+    /**
      * @param string $scheme
      * @param string $originUrl
      *
-     * @return array{access_token: non-empty-string, token_type: non-empty-string, expires_in: positive-int}
+     * @return array{access_token: non-empty-string, token_type: non-empty-string, expires_in: positive-int, created_at: positive-int}
      *
      * @see https://docs.gitlab.com/ee/api/oauth2.html#resource-owner-password-credentials-flow
      */
@@ -201,6 +254,66 @@ class GitLab
         $token = $this->httpDownloader->get($scheme.'://'.$apiUrl.'/oauth/token', $options)->decodeJson();
 
         $this->io->writeError('Token successfully created');
+
+        return $token;
+    }
+
+    /**
+     * Is the OAuth access token expired?
+     *
+     * @return bool true on expired token or expiration date is not set
+     */
+    public function isOAuthExpired(string $originUrl): bool {
+
+        $authTokens = $this->config->get('gitlab-oauth');
+        if (isset($authTokens[$originUrl], $authTokens[$originUrl]['expires-at'])) {
+            if ($authTokens[$originUrl]['expires-at'] < time()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string $scheme
+     * @param string $originUrl
+     *
+     * @return array{access_token: non-empty-string, token_type: non-empty-string, expires_in: positive-int, created_at: positive-int}
+     *
+     * @see https://docs.gitlab.com/ee/api/oauth2.html#resource-owner-password-credentials-flow
+     */
+    private function refreshToken(string $scheme, string $originUrl): array
+    {
+        $refreshToken = '';
+        $authTokens = $this->config->get('gitlab-oauth');
+        if (isset($authTokens[$originUrl], $authTokens[$originUrl]['refresh-token'])) {
+            $refreshToken = $authTokens[$originUrl]['refresh-token'];
+        } else {
+            throw new \RuntimeException('Invalid GitLab refresh token.');
+        }
+
+        $headers = array('Content-Type: application/x-www-form-urlencoded');
+
+        $apiUrl = $originUrl;
+        $data = http_build_query(array(
+            'refresh_token' => $refreshToken,
+            'grant_type' => 'refresh_token',
+        ), '', '&');
+        $options = array(
+            'retry-auth-failure' => false,
+            'http' => array(
+                'method' => 'POST',
+                'header' => $headers,
+                'content' => $data,
+            ),
+        );
+
+        $token = $this->httpDownloader->get($scheme.'://'.$apiUrl.'/oauth/token', $options)->decodeJson();
+
+        if ($this->io->isInteractive()) {
+            $this->io->writeError('Token successfully created');
+        }
 
         return $token;
     }
