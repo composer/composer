@@ -30,6 +30,8 @@ class GitLabTest extends TestCase
     private $origin = 'gitlab.com';
     /** @var string */
     private $token = 'gitlabtoken';
+    /** @var string */
+    private $refreshtoken = 'gitlabrefreshtoken';
 
     public function testUsernamePasswordAuthenticationFlow(): void
     {
@@ -54,7 +56,7 @@ class GitLabTest extends TestCase
 
         $httpDownloader = $this->getHttpDownloaderMock();
         $httpDownloader->expects(
-            [['url' => sprintf('http://%s/oauth/token', $this->origin), 'body' => sprintf('{"access_token": "%s", "token_type": "bearer", "expires_in": 7200}', $this->token)]],
+            [['url' => sprintf('http://%s/oauth/token', $this->origin), 'body' => sprintf('{"access_token": "%s", "refresh_token": "%s", "token_type": "bearer", "expires_in": 7200, "created_at": 0}', $this->token, $this->refreshtoken)]],
             true
         );
 
