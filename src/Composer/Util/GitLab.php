@@ -225,7 +225,7 @@ class GitLab
      * @param string $scheme
      * @param string $originUrl
      *
-     * @return array{access_token: non-empty-string, token_type: non-empty-string, expires_in: positive-int, created_at: positive-int}
+     * @return array{access_token: non-empty-string, refresh_token: non-empty-string, token_type: non-empty-string, expires_in: positive-int, created_at: positive-int}
      *
      * @see https://docs.gitlab.com/ee/api/oauth2.html#resource-owner-password-credentials-flow
      */
@@ -279,7 +279,7 @@ class GitLab
      * @param string $scheme
      * @param string $originUrl
      *
-     * @return array{access_token: non-empty-string, token_type: non-empty-string, expires_in: positive-int, created_at: positive-int}
+     * @return array{access_token: non-empty-string, refresh_token: non-empty-string, token_type: non-empty-string, expires_in: positive-int, created_at: positive-int}
      *
      * @see https://docs.gitlab.com/ee/api/oauth2.html#resource-owner-password-credentials-flow
      */
