@@ -60,6 +60,11 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      */
     protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
     {
+        // Do not create an extra local cache when repository is already local
+        if(Filesystem::isLocalPath($url)){
+            return \React\Promise\resolve(null);
+        }
+
         GitUtil::cleanEnv();
 
         $cachePath = $this->config->get('cache-vcs-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', $url).'/';
