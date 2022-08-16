@@ -137,6 +137,7 @@ abstract class BaseIO implements IOInterface
         }
 
         foreach ($gitlabOauth as $domain => $token) {
+            $token = is_array($token) ? $token["token"] : $token;
             $this->checkAndSetAuthentication($domain, $token, 'oauth2');
         }
 

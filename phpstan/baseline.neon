@@ -4585,7 +4585,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 1
+			count: 2
 			path: ../src/Composer/Util/GitLab.php
 
 		-
