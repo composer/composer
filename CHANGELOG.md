@@ -1,3 +1,11 @@
+### [2.4.0] 2022-08-16
+
+  * Added `json` format output to the new `audit` command (#10965)
+  * Added `json` format output to the `check-platform-reqs` command (#10979)
+  * Added GitLab 15+ token refresh support (#10988)
+  * Fixed `COMPOSER_NO_DEV` so it also works with `require` and `remove`'s `--update-no-dev` (#10995)
+  * Fixed various bash completion issues
+
 ### [2.4.0-RC1] 2022-07-21
 
   * Added bash completions for Composer commands, package names, etc (see [how to setup](https://getcomposer.org/doc/03-cli.md#bash-completions)) (#10320)
@@ -1611,6 +1619,7 @@
 
   * Initial release
 
+[2.4.0]: https://github.com/composer/composer/compare/2.4.0-RC1...2.4.0
 [2.4.0-RC1]: https://github.com/composer/composer/compare/2.3.10...2.4.0-RC1
 [2.3.10]: https://github.com/composer/composer/compare/2.3.9...2.3.10
 [2.3.9]: https://github.com/composer/composer/compare/2.3.8...2.3.9
