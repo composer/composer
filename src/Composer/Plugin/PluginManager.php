@@ -66,6 +66,9 @@ class PluginManager
      */
     private $allowGlobalPluginRules;
 
+    /** @var bool */
+    private $runningInGlobalDir = false;
+
     /** @var int */
     private static $classCounter = 0;
 
@@ -81,6 +84,11 @@ class PluginManager
         $this->disablePlugins = $disablePlugins;
         $this->allowPluginRules = $this->parseAllowedPlugins($composer->getConfig()->get('allow-plugins'), $composer->getLocker());
         $this->allowGlobalPluginRules = $this->parseAllowedPlugins($globalComposer !== null ? $globalComposer->getConfig()->get('allow-plugins') : false);
+    }
+
+    public function setRunningInGlobalDir(bool $runningInGlobalDir): void
+    {
+        $this->runningInGlobalDir = $runningInGlobalDir;
     }
 
     /**
@@ -174,20 +182,20 @@ class PluginManager
             if ($requiresComposer->getPrettyString() === $this->getPluginApiVersion()) {
                 $this->io->writeError('<warning>The "' . $package->getName() . '" plugin requires composer-plugin-api '.$this->getPluginApiVersion().', this *WILL* break in the future and it should be fixed ASAP (require ^'.$this->getPluginApiVersion().' instead for example).</warning>');
             } elseif (!$requiresComposer->matches($currentPluginApiConstraint)) {
-                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin '.($isGlobalPlugin ? '(installed globally) ' : '').'was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
+                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin '.($isGlobalPlugin || $this->runningInGlobalDir ? '(installed globally) ' : '').'was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
 
                 return;
             }
 
             if ($package->getName() === 'symfony/flex' && Preg::isMatch('{^[0-9.]+$}', $package->getVersion()) && version_compare($package->getVersion(), '1.9.8', '<')) {
-                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin '.($isGlobalPlugin ? '(installed globally) ' : '').'was skipped because it is not compatible with Composer 2+. Make sure to update it to version 1.9.8 or greater.</warning>');
+                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin '.($isGlobalPlugin || $this->runningInGlobalDir ? '(installed globally) ' : '').'was skipped because it is not compatible with Composer 2+. Make sure to update it to version 1.9.8 or greater.</warning>');
 
                 return;
             }
         }
 
         if (!$this->isPluginAllowed($package->getName(), $isGlobalPlugin)) {
-            $this->io->writeError('Skipped loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').'as it is not in config.allow-plugins', true, IOInterface::DEBUG);
+            $this->io->writeError('Skipped loading "'.$package->getName() . '" '.($isGlobalPlugin || $this->runningInGlobalDir ? '(installed globally) ' : '').'as it is not in config.allow-plugins', true, IOInterface::DEBUG);
 
             return;
         }
@@ -279,7 +287,7 @@ class PluginManager
                 if (!is_a($class, 'Composer\Installer\InstallerInterface', true)) {
                     throw new \RuntimeException('Could not activate plugin "'.$package->getName().'" as "'.$class.'" does not implement Composer\Installer\InstallerInterface');
                 }
-                $this->io->writeError('<warning>Loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').'which is a legacy composer-installer built for Composer 1.x, it is likely to cause issues as you are running Composer 2.x.</warning>');
+                $this->io->writeError('<warning>Loading "'.$package->getName() . '" '.($isGlobalPlugin || $this->runningInGlobalDir ? '(installed globally) ' : '').'which is a legacy composer-installer built for Composer 1.x, it is likely to cause issues as you are running Composer 2.x.</warning>');
                 $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
                 $this->registeredPlugins[$package->getName()] = $installer;
@@ -383,7 +391,7 @@ class PluginManager
         if ($sourcePackage === null) {
             trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);
         } elseif (!$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin)) {
-            $this->io->writeError('Skipped loading "'.get_class($plugin).' from '.$sourcePackage->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
+            $this->io->writeError('Skipped loading "'.get_class($plugin).' from '.$sourcePackage->getName() . '" '.($isGlobalPlugin || $this->runningInGlobalDir ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
 
             return;
         }
@@ -392,7 +400,7 @@ class PluginManager
         if ($sourcePackage) {
             $details[] = 'from '.$sourcePackage->getName();
         }
-        if ($isGlobalPlugin) {
+        if ($isGlobalPlugin || $this->runningInGlobalDir) {
             $details[] = 'installed globally';
         }
         $this->io->writeError('Loading plugin '.get_class($plugin).($details ? ' ('.implode(', ', $details).')' : ''), true, IOInterface::DEBUG);
@@ -725,7 +733,7 @@ class PluginManager
         if ($this->io->isInteractive()) {
             $composer = $isGlobalPlugin && $this->globalComposer !== null ? $this->globalComposer : $this->composer;
 
-            $this->io->writeError('<warning>'.$package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is currently not in your allow-plugins config. See https://getcomposer.org/allow-plugins</warning>');
+            $this->io->writeError('<warning>'.$package.($isGlobalPlugin || $this->runningInGlobalDir ? ' (installed globally)' : '').' contains a Composer plugin which is currently not in your allow-plugins config. See https://getcomposer.org/allow-plugins</warning>');
             $attempts = 0;
             while (true) {
                 // do not allow more than 5 prints of the help message, at some point assume the
@@ -767,8 +775,8 @@ class PluginManager
         }
 
         throw new PluginBlockedException(
-            $package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is blocked by your allow-plugins config. You may add it to the list if you consider it safe.'.PHP_EOL.
-            'You can run "composer '.($isGlobalPlugin ? 'global ' : '').'config --no-plugins allow-plugins.'.$package.' [true|false]" to enable it (true) or disable it explicitly and suppress this exception (false)'.PHP_EOL.
+            $package.($isGlobalPlugin || $this->runningInGlobalDir ? ' (installed globally)' : '').' contains a Composer plugin which is blocked by your allow-plugins config. You may add it to the list if you consider it safe.'.PHP_EOL.
+            'You can run "composer '.($isGlobalPlugin || $this->runningInGlobalDir ? 'global ' : '').'config --no-plugins allow-plugins.'.$package.' [true|false]" to enable it (true) or disable it explicitly and suppress this exception (false)'.PHP_EOL.
             'See https://getcomposer.org/allow-plugins'
         );
     }
