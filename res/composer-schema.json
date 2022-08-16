@@ -737,6 +737,7 @@
                 { "$ref": "#/definitions/composer-repository" },
                 { "$ref": "#/definitions/vcs-repository" },
                 { "$ref": "#/definitions/path-repository" },
+                { "$ref": "#/definitions/app-repository" },
                 { "$ref": "#/definitions/artifact-repository" },
                 { "$ref": "#/definitions/pear-repository" },
                 { "$ref": "#/definitions/package-repository" }
@@ -807,6 +808,34 @@
             "required": ["type", "url"],
             "properties": {
                 "type": { "type": "string", "enum": ["path"] },
+                "url": { "type": "string" },
+                "canonical": { "type": "boolean" },
+                "only": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "options": {
+                    "type": "object",
+                    "properties": {
+                        "symlink": { "type": ["boolean", "null"] }
+                    },
+                    "additionalProperties": true
+                }
+            }
+        },
+        "app-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["app"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
                 "only": {

@@ -46,6 +46,7 @@ class RepositoryFactoryTest extends TestCase
             'hg',
             'artifact',
             'path',
+            'app',
         ), array_keys($repositoryClasses));
     }
 
