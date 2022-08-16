@@ -44,7 +44,7 @@ class RemoveCommand extends BaseCommand
             ->setName('remove')
             ->setDescription('Removes a package from the require or require-dev')
             ->setDefinition(array(
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Packages that should be removed.', null, $this->suggestInstalledPackage(false, true)),
+                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Packages that should be removed.', null, $this->suggestRootRequirement()),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
