@@ -346,7 +346,7 @@ class GitHubDriverTest extends TestCase
      * @param string $url
      * @return void
      */
-    public function testInitializeInvalidReoUrl($url)
+    public function testInitializeInvalidRepoUrl($url)
     {
         $this->setExpectedException('\InvalidArgumentException');
 
@@ -364,14 +364,14 @@ class GitHubDriverTest extends TestCase
     }
 
     /**
-     * @return list<array{bool, string}>
+     * @return list<array{string}>
      */
     public function invalidUrlProvider()
     {
         return array(
-            array(false, 'https://github.com/acme'),
-            array(false, 'https://github.com/acme/repository/releases'),
-            array(false, 'https://github.com/acme/repository/pulls'),
+            array('https://github.com/acme'),
+            array('https://github.com/acme/repository/releases'),
+            array('https://github.com/acme/repository/pulls'),
         );
     }
 
