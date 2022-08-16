@@ -244,20 +244,17 @@ abstract class BaseCommand extends Command
         }
 
         $envOptions = [
-            'COMPOSER_NO_DEV' => 'no-dev',
-            'COMPOSER_PREFER_STABLE' => 'prefer-stable',
-            'COMPOSER_PREFER_LOWEST' => 'prefer-lowest',
+            'COMPOSER_NO_DEV' => ['no-dev', 'update-no-dev'],
+            'COMPOSER_PREFER_STABLE' => ['prefer-stable'],
+            'COMPOSER_PREFER_LOWEST' => ['prefer-lowest'],
         ];
-        foreach ($envOptions as $envName => $optionName) {
-            if (true === $input->hasOption($optionName)) {
-                if (false === $input->getOption($optionName) && (bool) Platform::getEnv($envName)) {
-                    $input->setOption($optionName, true);
+        foreach ($envOptions as $envName => $optionNames) {
+            foreach ($optionNames as $optionName) {
+                if (true === $input->hasOption($optionName)) {
+                    if (false === $input->getOption($optionName) && (bool) Platform::getEnv($envName)) {
+                        $input->setOption($optionName, true);
+                    }
                 }
-            }
-        }
-        if (true == $input->hasOption('update-no-dev')) {
-            if (true !== $input->getOption('update-no-dev') && true == Platform::getEnv('COMPOSER_NO_DEV')) {
-                $input->setOption('update-no-dev', true);
             }
         }
 
