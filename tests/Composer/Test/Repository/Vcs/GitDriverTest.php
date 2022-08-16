@@ -63,12 +63,9 @@ GIT;
 
         $process
             ->expects([[
-                'cmd' => 'git remote show origin',
-                'stdout' => $stdoutFailure,
-            ], [
                 'cmd' => 'git branch --no-color',
                 'stdout' => $stdout,
-            ]]);
+            ]], true);
 
         $this->assertSame('main', $driver->getRootIdentifier());
     }

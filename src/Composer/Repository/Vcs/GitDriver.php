@@ -95,12 +95,14 @@ class GitDriver extends VcsDriver
             $this->rootIdentifier = 'master';
 
             $gitUtil = new GitUtil($this->io, $this->config, $this->process, new Filesystem());
-            $defaultBranch = $gitUtil->getMirrorDefaultBranch($this->url, $this->repoDir, Filesystem::isLocalPath($this->url));
-            if ($defaultBranch !== null) {
-                return $this->rootIdentifier = $defaultBranch;
+            if (!Filesystem::isLocalPath($this->url)) {
+                $defaultBranch = $gitUtil->getMirrorDefaultBranch($this->url, $this->repoDir, false);
+                if ($defaultBranch !== null) {
+                    return $this->rootIdentifier = $defaultBranch;
+                }
             }
 
-            // select currently checked out branch if master is not available
+            // select currently checked out branch as default branch
             $this->process->execute('git branch --no-color', $output, $this->repoDir);
             $branches = $this->process->splitLines($output);
             if (!in_array('* master', $branches)) {
