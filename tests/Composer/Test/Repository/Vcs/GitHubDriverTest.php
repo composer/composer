@@ -305,14 +305,16 @@ class GitHubDriverTest extends TestCase
     }
 
     /**
+     * @dataProvider invalidUrlProvider
+     * @param string $url
      * @return void
      */
-    public function initializeInvalidReoUrl(): void
+    public function testInitializeInvalidRepoUrl($url): void
     {
         $this->expectException('\InvalidArgumentException');
 
         $repoConfig = array(
-            'url' => 'https://github.com/acme',
+            'url' => $url,
         );
 
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
@@ -322,6 +324,18 @@ class GitHubDriverTest extends TestCase
 
         $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $this->getProcessExecutorMock());
         $gitHubDriver->initialize();
+    }
+
+    /**
+     * @return list<array{string}>
+     */
+    public function invalidUrlProvider()
+    {
+        return array(
+            array('https://github.com/acme'),
+            array('https://github.com/acme/repository/releases'),
+            array('https://github.com/acme/repository/pulls'),
+        );
     }
 
     /**
@@ -345,6 +359,8 @@ class GitHubDriverTest extends TestCase
             array(false, 'https://github.com/acme'),
             array(true, 'https://github.com/acme/repository'),
             array(true, 'git@github.com:acme/repository.git'),
+            array(false, 'https://github.com/acme/repository/releases'),
+            array(false, 'https://github.com/acme/repository/pulls'),
         );
     }
 
