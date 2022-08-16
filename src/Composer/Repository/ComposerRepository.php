@@ -607,7 +607,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $result = array();
 
         if ($this->providersApiUrl) {
-            $apiResult = $this->httpDownloader->get(str_replace('%package%', $packageName, $this->providersApiUrl), $this->options)->decodeJson();
+            try {
+                $apiResult = $this->httpDownloader->get(str_replace('%package%', $packageName, $this->providersApiUrl), $this->options)->decodeJson();
+            } catch (TransportException $e) {
+                if ($e->getStatusCode() === 404) {
+                    return $result;
+                }
+                throw $e;
+            }
 
             foreach ($apiResult['providers'] as $provider) {
                 $result[$provider['name']] = $provider;
