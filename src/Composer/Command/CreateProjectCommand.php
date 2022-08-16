@@ -93,7 +93,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deleting the vcs folder.'),
                 new InputOption('remove-vcs', null, InputOption::VALUE_NONE, 'Whether to force deletion of the vcs folder without prompting.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
-                new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Whether to skip auditing of the installed package dependencies.'),
+                new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Whether to skip auditing of the installed package dependencies (can also be set via the COMPOSER_NO_AUDIT=1 env var).'),
                 new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", "json" or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
