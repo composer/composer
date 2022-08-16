@@ -537,7 +537,7 @@ class GitLabDriver extends VcsDriver
                         return parent::getContents($url);
                     }
 
-                    if ($gitLabUtil->isOAuthExpired($this->originUrl) && $gitLabUtil->authorizeOAuthRefresh($this->scheme, $this->originUrl, 'Your token has expired and must be refreshed.')){
+                    if ($gitLabUtil->isOAuthExpired($this->originUrl) && $gitLabUtil->authorizeOAuthRefresh($this->scheme, $this->originUrl)) {
                         return parent::getContents($url);
                     }
 
