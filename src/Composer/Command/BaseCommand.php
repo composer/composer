@@ -165,6 +165,11 @@ abstract class BaseCommand extends Command
                 $input->setOption('no-dev', true);
             }
         }
+        if (true == $input->hasOption('update-no-dev')) {
+            if (!$input->getOption('update-no-dev') && true == Platform::getEnv('COMPOSER_NO_DEV')) {
+                $input->setOption('update-no-dev', true);
+            }
+        }
 
         parent::initialize($input, $output);
     }
