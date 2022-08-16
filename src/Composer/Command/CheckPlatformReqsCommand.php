@@ -129,7 +129,8 @@ EOT
                                     $candidate->getName() === $require ? $candidate->getPrettyName() : $require,
                                     $candidateConstraint->getPrettyString(),
                                     $link,
-                                    '<error>failed</error>'.($candidate->getName() === $require ? '' : ' <comment>provided by '.$candidate->getPrettyName().'</comment>'),
+                                    '<error>failed</error>',
+                                    $candidate->getName() === $require ? '' : '<comment>provided by '.$candidate->getPrettyName().'</comment>',
                                 );
 
                                 // skip to next candidate
@@ -141,7 +142,8 @@ EOT
                             $candidate->getName() === $require ? $candidate->getPrettyName() : $require,
                             $candidateConstraint->getPrettyString(),
                             null,
-                            '<info>success</info>'.($candidate->getName() === $require ? '' : ' <comment>provided by '.$candidate->getPrettyName().'</comment>'),
+                            '<info>success</info>',
+                            $candidate->getName() === $require ? '' : '<comment>provided by '.$candidate->getPrettyName().'</comment>',
                         );
 
                         // candidate matched, skip to next requirement
@@ -160,6 +162,7 @@ EOT
                     'n/a',
                     $links[0],
                     '<error>missing</error>',
+                    '',
                 );
 
                 $exitCode = max($exitCode, 2);
@@ -183,22 +186,28 @@ EOT
             /**
              * @var Link|null $link
              */
-            list($platformPackage, $version, $link, $status) = $result;
-            $link = $link ? sprintf('%s %s %s (%s)', $link->getSource(), $link->getDescription(), $link->getTarget(), $link->getPrettyConstraint()) : '';
+            list($platformPackage, $version, $link, $status, $provider) = $result;
 
             if ('json' === $format) {
                 $rows[] = array(
                     "name" => $platformPackage,
                     "version" => $version,
-                    "link" => $link,
-                    "status" => $status,
+                    "status" => strip_tags($status),
+                    "failed_requirement" => $link instanceof Link ? [
+                        'source' => $link->getSource(),
+                        'type' => $link->getDescription(),
+                        'target' => $link->getTarget(),
+                        'constraint' => $link->getPrettyConstraint(),
+                    ] : null,
+                    "provider" => $provider === '' ? null : strip_tags($provider),
                 );
             } else {
                 $rows[] = array(
                     $platformPackage,
                     $version,
                     $link,
-                    $status,
+                    $link ? sprintf('%s %s %s (%s)', $link->getSource(), $link->getDescription(), $link->getTarget(), $link->getPrettyConstraint()) : '',
+                    rtrim($status.' '.$provider),
                 );
             }
         }
