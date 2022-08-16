@@ -663,7 +663,7 @@ Note that you can also specify platform requirements, for example to check
 whether you can upgrade your server to PHP 8.0:
 
 ```sh
-php composer.phar prohibits php:8
+php composer.phar prohibits php 8
  doctrine/cache        v1.6.0 requires php (~5.5|~7.0)
  doctrine/common       v2.6.1 requires php (~5.5|~7.0)
  doctrine/instantiator 1.0.5  requires php (>=5.3,<8.0-DEV)
