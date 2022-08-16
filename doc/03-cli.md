@@ -413,6 +413,12 @@ Unlike update/install, this command will ignore config.platform settings and
 check the real platform packages so you can be certain you have the required
 platform dependencies.
 
+### Options
+
+* **--lock:** Checks requirements only from the lock file, not from installed packages.
+* **--no-dev:** Disables checking of require-dev packages requirements.
+* **--format (-f):** Format of the output: text (default) or json
+
 ## global
 
 The global command allows you to run other commands like `install`, `remove`, `require`
