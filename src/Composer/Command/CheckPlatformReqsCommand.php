@@ -15,7 +15,7 @@ namespace Composer\Command;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
@@ -34,7 +34,7 @@ class CheckPlatformReqsCommand extends BaseCommand
             ->setDefinition(array(
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables checking of require-dev packages requirements.'),
                 new InputOption('lock', null, InputOption::VALUE_NONE, 'Checks requirements only from the lock file, not from installed packages.'),
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
             ))
             ->setHelp(
                 <<<EOT
