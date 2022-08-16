@@ -121,16 +121,6 @@ parameters:
 			path: ../src/Composer/Installer/BinaryInstaller.php
 
 		-
-			message: "#^Parameter \\#1 \\$callback of function call_user_func expects callable\\(\\)\\: mixed, int\\<min, \\-1\\>\\|int\\<2, max\\>\\|string given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Parameter \\#2 \\$handler of function pcntl_signal expects \\(callable\\(\\)\\: mixed\\)\\|int, int\\|string given\\.$#"
-			count: 2
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
 			message: "#^Only numeric types are allowed in \\-, int\\|false given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Archiver/PharArchiver.php
@@ -189,11 +179,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
 			count: 15
 			path: ../src/Composer/Util/Git.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/GitHub.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
