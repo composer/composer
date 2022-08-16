@@ -217,6 +217,11 @@ abstract class BaseCommand extends Command
                 $input->setOption('no-dev', true);
             }
         }
+        if (true == $input->hasOption('update-no-dev')) {
+            if (true !== $input->getOption('update-no-dev') && true == Platform::getEnv('COMPOSER_NO_DEV')) {
+                $input->setOption('update-no-dev', true);
+            }
+        }
 
         if (true === $input->hasOption('ignore-platform-reqs')) {
             if (!$input->getOption('ignore-platform-reqs') && true == Platform::getEnv('COMPOSER_IGNORE_PLATFORM_REQS')) {
