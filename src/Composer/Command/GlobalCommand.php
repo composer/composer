@@ -58,7 +58,7 @@ class GlobalCommand extends BaseCommand
     {
         $this
             ->setName('global')
-            ->setDescription('Allows running commands in the global composer dir ($COMPOSER_HOME).')
+            ->setDescription('Allows running commands in the global composer dir ($COMPOSER_HOME)')
             ->setDefinition(array(
                 new InputArgument('command-name', InputArgument::REQUIRED, ''),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),

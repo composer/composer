@@ -108,7 +108,7 @@ class RunScriptCommandTest extends TestCase
 
         $output = $appTester->getDisplay();
 
-        $this->assertStringContainsString('Runs the test script as defined in composer.json.', $output, 'The default description for the test script should be printed');
+        $this->assertStringContainsString('Runs the test script as defined in composer.json', $output, 'The default description for the test script should be printed');
         $this->assertStringContainsString('Run the codestyle fixer', $output, 'The custom description for the fix-cs script should be printed');
     }
 

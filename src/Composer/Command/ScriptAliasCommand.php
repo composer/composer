@@ -30,7 +30,7 @@ class ScriptAliasCommand extends BaseCommand
     public function __construct(string $script, ?string $description)
     {
         $this->script = $script;
-        $this->description = $description ?? 'Runs the '.$script.' script as defined in composer.json.';
+        $this->description = $description ?? 'Runs the '.$script.' script as defined in composer.json';
 
         parent::__construct();
     }

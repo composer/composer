@@ -34,7 +34,7 @@ class ProhibitsCommand extends BaseDependencyCommand
         $this
             ->setName('prohibits')
             ->setAliases(array('why-not'))
-            ->setDescription('Shows which packages prevent the given package from being installed.')
+            ->setDescription('Shows which packages prevent the given package from being installed')
             ->setDefinition(array(
                 new InputArgument(self::ARGUMENT_PACKAGE, InputArgument::REQUIRED, 'Package to inspect', null, $this->suggestAvailablePackage()),
                 new InputArgument(self::ARGUMENT_CONSTRAINT, InputArgument::REQUIRED, 'Version constraint, which version you expected to be installed'),

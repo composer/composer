@@ -76,7 +76,7 @@ class ShowCommand extends BaseCommand
         $this
             ->setName('show')
             ->setAliases(array('info'))
-            ->setDescription('Shows information about packages.')
+            ->setDescription('Shows information about packages')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.', null, $this->suggestPackageBasedOnMode()),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),

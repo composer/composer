@@ -42,7 +42,7 @@ class ValidateCommand extends BaseCommand
     {
         $this
             ->setName('validate')
-            ->setDescription('Validates a composer.json and composer.lock.')
+            ->setDescription('Validates a composer.json and composer.lock')
             ->setDefinition(array(
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not validate requires for overly strict/loose constraints'),
                 new InputOption('check-lock', null, InputOption::VALUE_NONE, 'Check if lock file is up to date (even when config.lock is false)'),

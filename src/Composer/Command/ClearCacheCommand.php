@@ -31,7 +31,7 @@ class ClearCacheCommand extends BaseCommand
         $this
             ->setName('clear-cache')
             ->setAliases(array('clearcache', 'cc'))
-            ->setDescription('Clears composer\'s internal package cache.')
+            ->setDescription('Clears composer\'s internal package cache')
             ->setDefinition(array(
                 new InputOption('gc', null, InputOption::VALUE_NONE, 'Only run garbage collection, not a full cache clear'),
             ))

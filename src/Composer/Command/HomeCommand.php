@@ -40,7 +40,7 @@ class HomeCommand extends BaseCommand
         $this
             ->setName('browse')
             ->setAliases(array('home'))
-            ->setDescription('Opens the package\'s repository URL or homepage in your browser.')
+            ->setDescription('Opens the package\'s repository URL or homepage in your browser')
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY, 'Package(s) to browse to.', null, $this->suggestInstalledPackage()),
                 new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL.'),

@@ -18,7 +18,7 @@ class AuditCommand extends BaseCommand
     {
         $this
             ->setName('audit')
-            ->setDescription('Checks for security vulnerability advisories for installed packages.')
+            ->setDescription('Checks for security vulnerability advisories for installed packages')
             ->setDefinition(array(
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables auditing of require-dev packages.'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_TABLE, Auditor::FORMATS),

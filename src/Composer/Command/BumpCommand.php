@@ -51,7 +51,7 @@ final class BumpCommand extends BaseCommand
     {
         $this
             ->setName('bump')
-            ->setDescription('Increases the lower limit of your composer.json requirements to the currently installed versions.')
+            ->setDescription('Increases the lower limit of your composer.json requirements to the currently installed versions')
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Optional package name(s) to restrict which packages are bumped.', null, $this->suggestRootRequirement()),
                 new InputOption('dev-only', 'D', InputOption::VALUE_NONE, 'Only bump requirements in "require-dev".'),

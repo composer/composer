@@ -40,7 +40,7 @@ class InstallCommand extends BaseCommand
         $this
             ->setName('install')
             ->setAliases(array('i'))
-            ->setDescription('Installs the project dependencies from the composer.lock file if present, or falls back on the composer.json.')
+            ->setDescription('Installs the project dependencies from the composer.lock file if present, or falls back on the composer.json')
             ->setDefinition(array(
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),

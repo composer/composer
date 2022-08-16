@@ -47,7 +47,7 @@ class SelfUpdateCommand extends BaseCommand
         $this
             ->setName('self-update')
             ->setAliases(array('selfupdate'))
-            ->setDescription('Updates composer.phar to the latest version.')
+            ->setDescription('Updates composer.phar to the latest version')
             ->setDefinition(array(
                 new InputOption('rollback', 'r', InputOption::VALUE_NONE, 'Revert to an older installation of composer'),
                 new InputOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update'),

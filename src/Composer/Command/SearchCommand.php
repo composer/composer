@@ -37,7 +37,7 @@ class SearchCommand extends BaseCommand
     {
         $this
             ->setName('search')
-            ->setDescription('Searches for packages.')
+            ->setDescription('Searches for packages')
             ->setDefinition(array(
                 new InputOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in package names'),
                 new InputOption('only-vendor', 'O', InputOption::VALUE_NONE, 'Search only for vendor / organization names, returns only "vendor" as result'),

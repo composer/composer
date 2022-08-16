@@ -29,7 +29,7 @@ class CheckPlatformReqsCommand extends BaseCommand
     protected function configure(): void
     {
         $this->setName('check-platform-reqs')
-            ->setDescription('Check that platform requirements are satisfied.')
+            ->setDescription('Check that platform requirements are satisfied')
             ->setDefinition(array(
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables checking of require-dev packages requirements.'),
                 new InputOption('lock', null, InputOption::VALUE_NONE, 'Checks requirements only from the lock file, not from installed packages.'),
