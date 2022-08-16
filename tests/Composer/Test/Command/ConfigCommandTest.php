@@ -123,17 +123,17 @@ class ConfigCommandTest extends TestCase
             'vendor',
         ];
         yield 'read repos by named key' => [
-            ['repositories' => ['foo' => ['type' => 'vcs', 'url' => 'https://example.org']]],
+            ['repositories' => ['foo' => ['type' => 'vcs', 'url' => 'https://example.org'], 'packagist.org' => ['type' => 'composer', 'url' => 'https://repo.packagist.org']]],
             ['setting-key' => 'repositories.foo'],
             '{"type":"vcs","url":"https://example.org"}',
         ];
         yield 'read repos by numeric index' => [
-            ['repositories' => [['type' => 'vcs', 'url' => 'https://example.org']]],
+            ['repositories' => [['type' => 'vcs', 'url' => 'https://example.org'], 'packagist.org' => ['type' => 'composer', 'url' => 'https://repo.packagist.org']]],
             ['setting-key' => 'repos.0'],
             '{"type":"vcs","url":"https://example.org"}',
         ];
         yield 'read all repos includes the default packagist' => [
-            ['repositories' => ['foo' => ['type' => 'vcs', 'url' => 'https://example.org']]],
+            ['repositories' => ['foo' => ['type' => 'vcs', 'url' => 'https://example.org'], 'packagist.org' => ['type' => 'composer', 'url' => 'https://repo.packagist.org']]],
             ['setting-key' => 'repos'],
             '{"foo":{"type":"vcs","url":"https://example.org"},"packagist.org":{"type":"composer","url":"https://repo.packagist.org"}}',
         ];

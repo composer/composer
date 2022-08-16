@@ -137,6 +137,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             $authJson = new \stdClass;
         }
 
+        if (is_array($composerJson) && isset($composerJson['repositories']) && !isset($composerJson['repositories']['packagist.org'])) {
+            $composerJson['repositories']['packagist.org'] = false;
+        }
+
         chdir($dir);
         file_put_contents($dir.'/composer.json', JsonFile::encode($composerJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         file_put_contents($dir.'/auth.json', JsonFile::encode($authJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
