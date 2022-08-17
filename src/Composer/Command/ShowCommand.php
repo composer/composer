@@ -571,11 +571,11 @@ EOT
                 $versionLength = $viewMetaData[$type]['versionLength'];
                 $latestLength = $viewMetaData[$type]['latestLength'];
 
-                $writeVersion = $nameLength + $versionLength + 3 <= $width;
-                $writeLatest = $nameLength + $versionLength + $latestLength + 3 <= $width;
-                $writeDescription = $nameLength + $versionLength + $latestLength + 24 <= $width;
+                $versionFits = $nameLength + $versionLength + 3 <= $width;
+                $latestFits = $nameLength + $versionLength + $latestLength + 3 <= $width;
+                $descriptionFits = $nameLength + $versionLength + $latestLength + 24 <= $width;
 
-                if ($writeLatest && !$io->isDecorated()) {
+                if ($latestFits && !$io->isDecorated()) {
                     $latestLength += 2;
                 }
 
@@ -601,19 +601,19 @@ EOT
                     $io->write('');
                     $io->write('<info>Direct dependencies:</>');
                     if (\count($directDeps) > 0) {
-                        $this->printPackages($io, $directDeps, $indent, $writeVersion, $writeLatest, $writeDescription, $width, $versionLength, $nameLength, $latestLength);
+                        $this->printPackages($io, $directDeps, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     } else {
                         $io->write('Everything up to date');
                     }
                     $io->write('');
                     $io->write('<info>Transitive dependencies:</>');
                     if (\count($transitiveDeps) > 0) {
-                        $this->printPackages($io, $transitiveDeps, $indent, $writeVersion, $writeLatest, $writeDescription, $width, $versionLength, $nameLength, $latestLength);
+                        $this->printPackages($io, $transitiveDeps, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     } else {
                         $io->write('Everything up to date');
                     }
                 } else {
-                    $this->printPackages($io, $packages, $indent, $writeVersion, $writeLatest, $writeDescription, $width, $versionLength, $nameLength, $latestLength);
+                    $this->printPackages($io, $packages, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                 }
 
                 if ($showAllTypes) {
