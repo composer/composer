@@ -178,7 +178,7 @@ class ProcessExecutorMock extends ProcessExecutor
         }
 
         if ($stdout) {
-            call_user_func($callback, Process::STDOUT, $stdout);
+            call_user_func($callback, Process::OUT, $stdout);
         }
         if ($stderr) {
             call_user_func($callback, Process::ERR, $stderr);
