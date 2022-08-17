@@ -91,13 +91,8 @@ class Problem
             $packageName = $reasonData['packageName'];
             $constraint = $reasonData['constraint'];
 
-            if (isset($constraint)) {
-                $packages = $pool->whatProvides($packageName, $constraint);
-            } else {
-                $packages = [];
-            }
-
-            if (empty($packages)) {
+            $packages = $pool->whatProvides($packageName, $constraint);
+            if (count($packages) === 0) {
                 return "\n    ".implode(self::getMissingPackageReason($repositorySet, $request, $pool, $isVerbose, $packageName, $constraint));
             }
         }

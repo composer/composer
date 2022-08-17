@@ -8,3 +8,7 @@ services:
         class: Composer\PHPStan\ConfigReturnTypeExtension
         tags:
             - phpstan.broker.dynamicMethodReturnTypeExtension
+    -
+        class: Composer\PHPStan\RuleReasonDataReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension
