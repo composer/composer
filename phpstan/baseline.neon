@@ -1411,27 +1411,12 @@ parameters:
 			path: ../src/Composer/DependencyResolver/PoolOptimizer.php
 
 		-
-			message: "#^Cannot access offset 'constraint' on array\\{package\\: Composer\\\\Package\\\\BasePackage\\}\\|array\\{packageName\\: string, constraint\\: Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\}\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Problem.php
-
-		-
-			message: "#^Cannot access offset 'packageName' on array\\{package\\: Composer\\\\Package\\\\BasePackage\\}\\|array\\{packageName\\: string, constraint\\: Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\}\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Problem.php
-
-		-
 			message: "#^Cannot call method getRepoName\\(\\) on Composer\\\\Repository\\\\RepositoryInterface\\|null\\.$#"
 			count: 3
 			path: ../src/Composer/DependencyResolver/Problem.php
 
 		-
 			message: "#^Cannot call method getRepository\\(\\) on Composer\\\\Package\\\\PackageInterface\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Problem.php
-
-		-
-			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Problem.php
 
@@ -1501,36 +1486,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Request.php
 
 		-
-			message: "#^Cannot access offset 'constraint' on array\\{package\\: Composer\\\\Package\\\\BasePackage\\}\\|array\\{packageName\\: string, constraint\\: Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\}\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
-			count: 2
-			path: ../src/Composer/DependencyResolver/Rule.php
-
-		-
-			message: "#^Cannot access offset 'package' on array\\{package\\: Composer\\\\Package\\\\BasePackage\\}\\|array\\{packageName\\: string, constraint\\: Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\}\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
-			count: 2
-			path: ../src/Composer/DependencyResolver/Rule.php
-
-		-
-			message: "#^Cannot access offset 'packageName' on array\\{package\\: Composer\\\\Package\\\\BasePackage\\}\\|array\\{packageName\\: string, constraint\\: Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\}\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
-			count: 4
-			path: ../src/Composer/DependencyResolver/Rule.php
-
-		-
-			message: "#^Cannot call method getConstraint\\(\\) on array\\<string, Composer\\\\Package\\\\BasePackage\\|Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|string\\>\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
-			count: 3
-			path: ../src/Composer/DependencyResolver/Rule.php
-
-		-
-			message: "#^Cannot call method getSource\\(\\) on array\\<string, Composer\\\\Package\\\\BasePackage\\|Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|string\\>\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Rule.php
-
-		-
-			message: "#^Cannot call method getTarget\\(\\) on array\\<string, Composer\\\\Package\\\\BasePackage\\|Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|string\\>\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
-			count: 3
-			path: ../src/Composer/DependencyResolver/Rule.php
-
-		-
 			message: "#^Foreach overwrites \\$literal with its value variable\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Rule.php
@@ -1568,11 +1523,6 @@ parameters:
 		-
 			message: "#^Only booleans are allowed in an if condition, array\\<int, Composer\\\\Package\\\\BasePackage\\> given\\.$#"
 			count: 1
-			path: ../src/Composer/DependencyResolver/Rule.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, array\\<string, Composer\\\\Package\\\\BasePackage\\|Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|string\\>\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string given\\.$#"
-			count: 2
 			path: ../src/Composer/DependencyResolver/Rule.php
 
 		-
