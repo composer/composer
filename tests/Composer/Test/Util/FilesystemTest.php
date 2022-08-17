@@ -52,12 +52,6 @@ class FilesystemTest extends TestCase
 
     /**
      * @dataProvider providePathCouplesAsCode
-     *
-     * @param string $a
-     * @param string $b
-     * @param bool   $directory
-     * @param string $expected
-     * @param bool   $static
      */
     public function testFindShortestPathCode(string $a, string $b, bool $directory, string $expected, bool $static = false): void
     {
@@ -67,60 +61,55 @@ class FilesystemTest extends TestCase
 
     public function providePathCouplesAsCode(): array
     {
-        return array(
-            array('/foo/bar', '/foo/bar', false, "__FILE__"),
-            array('/foo/bar', '/foo/baz', false, "__DIR__.'/baz'"),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
-            array('/foo/bin/run', '/bar/bin/run', false, "'/bar/bin/run'"),
-            array('c:/bin/run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
-            array('c:\\bin\\run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"),
-            array('c:/bin/run', 'D:/vendor/acme/bin/run', false, "'D:/vendor/acme/bin/run'"),
-            array('c:\\bin\\run', 'd:/vendor/acme/bin/run', false, "'D:/vendor/acme/bin/run'"),
-            array('/foo/bar', '/foo/bar', true, "__DIR__"),
-            array('/foo/bar/', '/foo/bar', true, "__DIR__"),
-            array('/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
-            array('/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"),
-            array('/bin/run', '/bin/run', true, "__DIR__"),
-            array('c:/bin/run', 'C:\\bin/run', true, "__DIR__"),
-            array('c:/bin/run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
-            array('c:\\bin\\run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"),
-            array('c:/bin/run', 'd:/vendor/acme/bin/run', true, "'D:/vendor/acme/bin/run'"),
-            array('c:\\bin\\run', 'd:/vendor/acme/bin/run', true, "'D:/vendor/acme/bin/run'"),
-            array('C:/Temp/test', 'C:\Temp', true, "dirname(__DIR__)"),
-            array('C:/Temp', 'C:\Temp\test', true, "__DIR__ . '/test'"),
-            array('/tmp/test', '/tmp', true, "dirname(__DIR__)"),
-            array('/tmp', '/tmp/test', true, "__DIR__ . '/test'"),
-            array('C:/Temp', 'c:\Temp\test', true, "__DIR__ . '/test'"),
-            array('/tmp/test/./', '/tmp/test/', true, '__DIR__'),
-            array('/tmp/test/../vendor', '/tmp/test', true, "dirname(__DIR__).'/test'"),
-            array('/tmp/test/.././vendor', '/tmp/test', true, "dirname(__DIR__).'/test'"),
-            array('C:/Temp', 'c:\Temp\..\..\test', true, "dirname(__DIR__).'/test'"),
-            array('C:/Temp/../..', 'd:\Temp\..\..\test', true, "'D:/test'"),
-            array('/foo/bar', '/foo/bar_vendor', true, "dirname(__DIR__).'/bar_vendor'"),
-            array('/foo/bar_vendor', '/foo/bar', true, "dirname(__DIR__).'/bar'"),
-            array('/foo/bar_vendor', '/foo/bar/src', true, "dirname(__DIR__).'/bar/src'"),
-            array('/foo/bar_vendor/src2', '/foo/bar/src/lib', true, "dirname(dirname(__DIR__)).'/bar/src/lib'"),
+        return [
+            ['/foo/bar', '/foo/bar', false, "__FILE__"],
+            ['/foo/bar', '/foo/baz', false, "__DIR__.'/baz'"],
+            ['/foo/bin/run', '/foo/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"],
+            ['/foo/bin/run', '/bar/bin/run', false, "'/bar/bin/run'"],
+            ['c:/bin/run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"],
+            ['c:\\bin\\run', 'c:/vendor/acme/bin/run', false, "dirname(__DIR__).'/vendor/acme/bin/run'"],
+            ['c:/bin/run', 'D:/vendor/acme/bin/run', false, "'D:/vendor/acme/bin/run'"],
+            ['c:\\bin\\run', 'd:/vendor/acme/bin/run', false, "'D:/vendor/acme/bin/run'"],
+            ['/foo/bar', '/foo/bar', true, "__DIR__"],
+            ['/foo/bar/', '/foo/bar', true, "__DIR__"],
+            ['/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"],
+            ['/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"],
+            ['/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"],
+            ['/bin/run', '/bin/run', true, "__DIR__"],
+            ['c:/bin/run', 'C:\\bin/run', true, "__DIR__"],
+            ['c:/bin/run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"],
+            ['c:\\bin\\run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"],
+            ['c:/bin/run', 'd:/vendor/acme/bin/run', true, "'D:/vendor/acme/bin/run'"],
+            ['c:\\bin\\run', 'd:/vendor/acme/bin/run', true, "'D:/vendor/acme/bin/run'"],
+            ['C:/Temp/test', 'C:\Temp', true, "dirname(__DIR__)"],
+            ['C:/Temp', 'C:\Temp\test', true, "__DIR__ . '/test'"],
+            ['/tmp/test', '/tmp', true, "dirname(__DIR__)"],
+            ['/tmp', '/tmp/test', true, "__DIR__ . '/test'"],
+            ['C:/Temp', 'c:\Temp\test', true, "__DIR__ . '/test'"],
+            ['/tmp/test/./', '/tmp/test/', true, '__DIR__'],
+            ['/tmp/test/../vendor', '/tmp/test', true, "dirname(__DIR__).'/test'"],
+            ['/tmp/test/.././vendor', '/tmp/test', true, "dirname(__DIR__).'/test'"],
+            ['C:/Temp', 'c:\Temp\..\..\test', true, "dirname(__DIR__).'/test'"],
+            ['C:/Temp/../..', 'd:\Temp\..\..\test', true, "'D:/test'"],
+            ['/foo/bar', '/foo/bar_vendor', true, "dirname(__DIR__).'/bar_vendor'"],
+            ['/foo/bar_vendor', '/foo/bar', true, "dirname(__DIR__).'/bar'"],
+            ['/foo/bar_vendor', '/foo/bar/src', true, "dirname(__DIR__).'/bar/src'"],
+            ['/foo/bar_vendor/src2', '/foo/bar/src/lib', true, "dirname(dirname(__DIR__)).'/bar/src/lib'"],
 
             // static use case
-            array('/tmp/test/../vendor', '/tmp/test', true, "__DIR__ . '/..'.'/test'", true),
-            array('/tmp/test/.././vendor', '/tmp/test', true, "__DIR__ . '/..'.'/test'", true),
-            array('C:/Temp', 'c:\Temp\..\..\test', true, "__DIR__ . '/..'.'/test'", true),
-            array('C:/Temp/../..', 'd:\Temp\..\..\test', true, "'D:/test'", true),
-            array('/foo/bar', '/foo/bar_vendor', true, "__DIR__ . '/..'.'/bar_vendor'", true),
-            array('/foo/bar_vendor', '/foo/bar', true, "__DIR__ . '/..'.'/bar'", true),
-            array('/foo/bar_vendor', '/foo/bar/src', true, "__DIR__ . '/..'.'/bar/src'", true),
-            array('/foo/bar_vendor/src2', '/foo/bar/src/lib', true, "__DIR__ . '/../..'.'/bar/src/lib'", true),
-        );
+            ['/tmp/test/../vendor', '/tmp/test', true, "__DIR__ . '/..'.'/test'", true],
+            ['/tmp/test/.././vendor', '/tmp/test', true, "__DIR__ . '/..'.'/test'", true],
+            ['C:/Temp', 'c:\Temp\..\..\test', true, "__DIR__ . '/..'.'/test'", true],
+            ['C:/Temp/../..', 'd:\Temp\..\..\test', true, "'D:/test'", true],
+            ['/foo/bar', '/foo/bar_vendor', true, "__DIR__ . '/..'.'/bar_vendor'", true],
+            ['/foo/bar_vendor', '/foo/bar', true, "__DIR__ . '/..'.'/bar'", true],
+            ['/foo/bar_vendor', '/foo/bar/src', true, "__DIR__ . '/..'.'/bar/src'", true],
+            ['/foo/bar_vendor/src2', '/foo/bar/src/lib', true, "__DIR__ . '/../..'.'/bar/src/lib'", true],
+        ];
     }
 
     /**
      * @dataProvider providePathCouples
-     *
-     * @param string $a
-     * @param string $b
-     * @param string $expected
-     * @param bool   $directory
      */
     public function testFindShortestPath(string $a, string $b, string $expected, bool $directory = false): void
     {
@@ -130,44 +119,44 @@ class FilesystemTest extends TestCase
 
     public function providePathCouples(): array
     {
-        return array(
-            array('/foo/bar', '/foo/bar', "./bar"),
-            array('/foo/bar', '/foo/baz', "./baz"),
-            array('/foo/bar/', '/foo/baz', "./baz"),
-            array('/foo/bar', '/foo/bar', "./", true),
-            array('/foo/bar', '/foo/baz', "../baz", true),
-            array('/foo/bar/', '/foo/baz', "../baz", true),
-            array('C:/foo/bar/', 'c:/foo/baz', "../baz", true),
-            array('/foo/bin/run', '/foo/vendor/acme/bin/run', "../vendor/acme/bin/run"),
-            array('/foo/bin/run', '/bar/bin/run', "/bar/bin/run"),
-            array('/foo/bin/run', '/bar/bin/run', "/bar/bin/run", true),
-            array('c:/foo/bin/run', 'd:/bar/bin/run', "D:/bar/bin/run", true),
-            array('c:/bin/run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
-            array('c:\\bin\\run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"),
-            array('c:/bin/run', 'd:/vendor/acme/bin/run', "D:/vendor/acme/bin/run"),
-            array('c:\\bin\\run', 'd:/vendor/acme/bin/run', "D:/vendor/acme/bin/run"),
-            array('C:/Temp/test', 'C:\Temp', "./"),
-            array('/tmp/test', '/tmp', "./"),
-            array('C:/Temp/test/sub', 'C:\Temp', "../"),
-            array('/tmp/test/sub', '/tmp', "../"),
-            array('/tmp/test/sub', '/tmp', "../../", true),
-            array('c:/tmp/test/sub', 'c:/tmp', "../../", true),
-            array('/tmp', '/tmp/test', "test"),
-            array('C:/Temp', 'C:\Temp\test', "test"),
-            array('C:/Temp', 'c:\Temp\test', "test"),
-            array('/tmp/test/./', '/tmp/test', './', true),
-            array('/tmp/test/../vendor', '/tmp/test', '../test', true),
-            array('/tmp/test/.././vendor', '/tmp/test', '../test', true),
-            array('C:/Temp', 'c:\Temp\..\..\test', "../test", true),
-            array('C:/Temp/../..', 'c:\Temp\..\..\test', "./test", true),
-            array('C:/Temp/../..', 'D:\Temp\..\..\test', "D:/test", true),
-            array('/tmp', '/tmp/../../test', '/test', true),
-            array('/foo/bar', '/foo/bar_vendor', '../bar_vendor', true),
-            array('/foo/bar_vendor', '/foo/bar', '../bar', true),
-            array('/foo/bar_vendor', '/foo/bar/src', '../bar/src', true),
-            array('/foo/bar_vendor/src2', '/foo/bar/src/lib', '../../bar/src/lib', true),
-            array('C:/', 'C:/foo/bar/', "foo/bar", true),
-        );
+        return [
+            ['/foo/bar', '/foo/bar', "./bar"],
+            ['/foo/bar', '/foo/baz', "./baz"],
+            ['/foo/bar/', '/foo/baz', "./baz"],
+            ['/foo/bar', '/foo/bar', "./", true],
+            ['/foo/bar', '/foo/baz', "../baz", true],
+            ['/foo/bar/', '/foo/baz', "../baz", true],
+            ['C:/foo/bar/', 'c:/foo/baz', "../baz", true],
+            ['/foo/bin/run', '/foo/vendor/acme/bin/run', "../vendor/acme/bin/run"],
+            ['/foo/bin/run', '/bar/bin/run', "/bar/bin/run"],
+            ['/foo/bin/run', '/bar/bin/run', "/bar/bin/run", true],
+            ['c:/foo/bin/run', 'd:/bar/bin/run', "D:/bar/bin/run", true],
+            ['c:/bin/run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"],
+            ['c:\\bin\\run', 'c:/vendor/acme/bin/run', "../vendor/acme/bin/run"],
+            ['c:/bin/run', 'd:/vendor/acme/bin/run', "D:/vendor/acme/bin/run"],
+            ['c:\\bin\\run', 'd:/vendor/acme/bin/run', "D:/vendor/acme/bin/run"],
+            ['C:/Temp/test', 'C:\Temp', "./"],
+            ['/tmp/test', '/tmp', "./"],
+            ['C:/Temp/test/sub', 'C:\Temp', "../"],
+            ['/tmp/test/sub', '/tmp', "../"],
+            ['/tmp/test/sub', '/tmp', "../../", true],
+            ['c:/tmp/test/sub', 'c:/tmp', "../../", true],
+            ['/tmp', '/tmp/test', "test"],
+            ['C:/Temp', 'C:\Temp\test', "test"],
+            ['C:/Temp', 'c:\Temp\test', "test"],
+            ['/tmp/test/./', '/tmp/test', './', true],
+            ['/tmp/test/../vendor', '/tmp/test', '../test', true],
+            ['/tmp/test/.././vendor', '/tmp/test', '../test', true],
+            ['C:/Temp', 'c:\Temp\..\..\test', "../test", true],
+            ['C:/Temp/../..', 'c:\Temp\..\..\test', "./test", true],
+            ['C:/Temp/../..', 'D:\Temp\..\..\test', "D:/test", true],
+            ['/tmp', '/tmp/../../test', '/test', true],
+            ['/foo/bar', '/foo/bar_vendor', '../bar_vendor', true],
+            ['/foo/bar_vendor', '/foo/bar', '../bar', true],
+            ['/foo/bar_vendor', '/foo/bar/src', '../bar/src', true],
+            ['/foo/bar_vendor/src2', '/foo/bar/src/lib', '../../bar/src/lib', true],
+            ['C:/', 'C:/foo/bar/', "foo/bar", true],
+        ];
     }
 
     /**
@@ -203,9 +192,6 @@ class FilesystemTest extends TestCase
 
     /**
      * @dataProvider provideNormalizedPaths
-     *
-     * @param string $expected
-     * @param string $actual
      */
     public function testNormalizePath(string $expected, string $actual): void
     {
@@ -215,28 +201,28 @@ class FilesystemTest extends TestCase
 
     public function provideNormalizedPaths(): array
     {
-        return array(
-            array('../foo', '../foo'),
-            array('C:/foo/bar', 'c:/foo//bar'),
-            array('C:/foo/bar', 'C:/foo/./bar'),
-            array('C:/foo/bar', 'C://foo//bar'),
-            array('C:/foo/bar', 'C:///foo//bar'),
-            array('C:/bar', 'C:/foo/../bar'),
-            array('/bar', '/foo/../bar/'),
-            array('phar://C:/Foo', 'phar://c:/Foo/Bar/..'),
-            array('phar://C:/Foo', 'phar://c:///Foo/Bar/..'),
-            array('phar://C:/', 'phar://c:/Foo/Bar/../../../..'),
-            array('/', '/Foo/Bar/../../../..'),
-            array('/', '/'),
-            array('/', '//'),
-            array('/', '///'),
-            array('/Foo', '///Foo'),
-            array('C:/', 'c:\\'),
-            array('../src', 'Foo/Bar/../../../src'),
-            array('C:../b', 'c:.\\..\\a\\..\\b'),
-            array('phar://C:../Foo', 'phar://c:../Foo'),
-            array('//foo/bar', '\\\\foo\\bar'),
-        );
+        return [
+            ['../foo', '../foo'],
+            ['C:/foo/bar', 'c:/foo//bar'],
+            ['C:/foo/bar', 'C:/foo/./bar'],
+            ['C:/foo/bar', 'C://foo//bar'],
+            ['C:/foo/bar', 'C:///foo//bar'],
+            ['C:/bar', 'C:/foo/../bar'],
+            ['/bar', '/foo/../bar/'],
+            ['phar://C:/Foo', 'phar://c:/Foo/Bar/..'],
+            ['phar://C:/Foo', 'phar://c:///Foo/Bar/..'],
+            ['phar://C:/', 'phar://c:/Foo/Bar/../../../..'],
+            ['/', '/Foo/Bar/../../../..'],
+            ['/', '/'],
+            ['/', '//'],
+            ['/', '///'],
+            ['/Foo', '///Foo'],
+            ['C:/', 'c:\\'],
+            ['../src', 'Foo/Bar/../../../src'],
+            ['C:../b', 'c:.\\..\\a\\..\\b'],
+            ['phar://C:../Foo', 'phar://c:../Foo'],
+            ['//foo/bar', '\\\\foo\\bar'],
+        ];
     }
 
     /**

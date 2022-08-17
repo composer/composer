@@ -19,10 +19,6 @@ class Zip
 {
     /**
      * Gets content of the root composer.json inside a ZIP archive.
-     *
-     * @param string $pathToZip
-     *
-     * @return string|null
      */
     public static function getComposerJson(string $pathToZip): ?string
     {
@@ -59,11 +55,7 @@ class Zip
     /**
      * Find a file by name, returning the one that has the shortest path.
      *
-     * @param  \ZipArchive       $zip
-     * @param  string            $filename
      * @throws \RuntimeException
-     *
-     * @return int
      */
     private static function locateFile(\ZipArchive $zip, string $filename): int
     {
@@ -72,7 +64,7 @@ class Zip
             return $index;
         }
 
-        $topLevelPaths = array();
+        $topLevelPaths = [];
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = $zip->getNameIndex($i);
             $dirname = dirname($name);

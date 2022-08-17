@@ -234,7 +234,6 @@ interface IOInterface extends LoggerInterface
     /**
      * Loads authentications from a config instance
      *
-     * @param Config $config
      *
      * @return void
      */

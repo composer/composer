@@ -50,11 +50,6 @@ class VersionGuesser
      */
     private $versionParser;
 
-    /**
-     * @param Config              $config
-     * @param ProcessExecutor     $process
-     * @param SemverVersionParser $versionParser
-     */
     public function __construct(Config $config, ProcessExecutor $process, SemverVersionParser $versionParser)
     {
         $this->config = $config;
@@ -66,7 +61,6 @@ class VersionGuesser
      * @param array<string, mixed> $packageConfig
      * @param string               $path Path to guess into
      *
-     * @return array|null
      * @phpstan-return Version|null
      */
     public function guessVersion(array $packageConfig, string $path): ?array
@@ -105,11 +99,8 @@ class VersionGuesser
     }
 
     /**
-     * @param array $versionData
-     *
      * @phpstan-param Version $versionData
      *
-     * @return array
      * @phpstan-return Version
      */
     private function postprocess(array $versionData): array
@@ -131,7 +122,6 @@ class VersionGuesser
 
     /**
      * @param array<string, mixed> $packageConfig
-     * @param string               $path
      *
      * @return array{version: string|null, commit: string|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}
      */
@@ -147,7 +137,7 @@ class VersionGuesser
 
         // try to fetch current version from git branch
         if (0 === $this->process->execute(['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'], $output, $path)) {
-            $branches = array();
+            $branches = [];
             $isFeatureBranch = false;
 
             // find current branch and collect all branch names
@@ -209,15 +199,13 @@ class VersionGuesser
         }
 
         if ($featureVersion) {
-            return array('version' => $version, 'commit' => $commit, 'pretty_version' => $prettyVersion, 'feature_version' => $featureVersion, 'feature_pretty_version' => $featurePrettyVersion);
+            return ['version' => $version, 'commit' => $commit, 'pretty_version' => $prettyVersion, 'feature_version' => $featureVersion, 'feature_pretty_version' => $featurePrettyVersion];
         }
 
-        return array('version' => $version, 'commit' => $commit, 'pretty_version' => $prettyVersion);
+        return ['version' => $version, 'commit' => $commit, 'pretty_version' => $prettyVersion];
     }
 
     /**
-     * @param string $path
-     *
      * @return array{version: string, pretty_version: string}|null
      */
     private function versionFromGitTags(string $path): ?array
@@ -227,7 +215,7 @@ class VersionGuesser
             try {
                 $version = $this->versionParser->normalize(trim($output));
 
-                return array('version' => $version, 'pretty_version' => trim($output));
+                return ['version' => $version, 'pretty_version' => trim($output)];
             } catch (\Exception $e) {
             }
         }
@@ -237,7 +225,6 @@ class VersionGuesser
 
     /**
      * @param array<string, mixed> $packageConfig
-     * @param string               $path
      *
      * @return array{version: string|null, commit: ''|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}|null
      */
@@ -250,16 +237,16 @@ class VersionGuesser
             $isFeatureBranch = 0 === strpos($version, 'dev-');
 
             if (VersionParser::DEFAULT_BRANCH_ALIAS === $version) {
-                return array('version' => $version, 'commit' => null, 'pretty_version' => 'dev-'.$branch);
+                return ['version' => $version, 'commit' => null, 'pretty_version' => 'dev-'.$branch];
             }
 
             if (!$isFeatureBranch) {
-                return array('version' => $version, 'commit' => null, 'pretty_version' => $version);
+                return ['version' => $version, 'commit' => null, 'pretty_version' => $version];
             }
 
             // re-use the HgDriver to fetch branches (this properly includes bookmarks)
             $io = new NullIO();
-            $driver = new HgDriver(array('url' => $path), $io, $this->config, new HttpDownloader($io, $this->config), $this->process);
+            $driver = new HgDriver(['url' => $path], $io, $this->config, new HttpDownloader($io, $this->config), $this->process);
             $branches = array_map('strval', array_keys($driver->getBranches()));
 
             // try to find the best (nearest) version branch to assume this feature's version
@@ -276,10 +263,7 @@ class VersionGuesser
 
     /**
      * @param array<string, mixed>     $packageConfig
-     * @param string|null              $version
      * @param string[]                 $branches
-     * @param string                   $scmCmdline
-     * @param string                   $path
      *
      * @phpstan-param non-empty-string $scmCmdline
      *
@@ -299,7 +283,7 @@ class VersionGuesser
 
             // return directly, if branch is configured to be non-feature branch
             if (!$this->isFeatureBranch($packageConfig, $branch)) {
-                return array('version' => $version, 'pretty_version' => $prettyVersion);
+                return ['version' => $version, 'pretty_version' => $prettyVersion];
             }
 
             // sort local branches first then remote ones
@@ -327,7 +311,7 @@ class VersionGuesser
                         continue;
                     }
 
-                    $cmdLine = str_replace(array('%candidate%', '%branch%'), array($candidate, $branch), $scmCmdline);
+                    $cmdLine = str_replace(['%candidate%', '%branch%'], [$candidate, $branch], $scmCmdline);
                     $promises[] = $this->process->executeAsync($cmdLine, $path)->then(function (Process $process) use (&$length, &$version, &$prettyVersion, $candidateVersion, &$promises): void {
                         if (!$process->isSuccessful()) {
                             return;
@@ -355,14 +339,11 @@ class VersionGuesser
             }
         }
 
-        return array('version' => $version, 'pretty_version' => $prettyVersion);
+        return ['version' => $version, 'pretty_version' => $prettyVersion];
     }
 
     /**
      * @param array<string, mixed> $packageConfig
-     * @param string|null          $branchName
-     *
-     * @return bool
      */
     private function isFeatureBranch(array $packageConfig, ?string $branchName): bool
     {
@@ -375,8 +356,6 @@ class VersionGuesser
     }
 
     /**
-     * @param string $path
-     *
      * @return array{version: string|null, commit: '', pretty_version: string|null}
      */
     private function guessFossilVersion(string $path): array
@@ -400,12 +379,11 @@ class VersionGuesser
             }
         }
 
-        return array('version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion);
+        return ['version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion];
     }
 
     /**
      * @param array<string, mixed> $packageConfig
-     * @param string               $path
      *
      * @return array{version: string, commit: '', pretty_version: string}|null
      */
@@ -427,7 +405,7 @@ class VersionGuesser
                     $version = $this->versionParser->normalizeBranch($matches[3]);
                     $prettyVersion = 'dev-' . $matches[3];
 
-                    return array('version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion);
+                    return ['version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion];
                 }
 
                 $prettyVersion = trim($matches[1]);
@@ -437,7 +415,7 @@ class VersionGuesser
                     $version = $this->versionParser->normalize($prettyVersion);
                 }
 
-                return array('version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion);
+                return ['version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion];
             }
         }
 

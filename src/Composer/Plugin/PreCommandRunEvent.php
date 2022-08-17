@@ -36,7 +36,6 @@ class PreCommandRunEvent extends Event
      * Constructor.
      *
      * @param string         $name    The event name
-     * @param InputInterface $input
      * @param string         $command The command about to be executed
      */
     public function __construct(string $name, InputInterface $input, string $command)
@@ -48,8 +47,6 @@ class PreCommandRunEvent extends Event
 
     /**
      * Returns the console input
-     *
-     * @return InputInterface
      */
     public function getInput(): InputInterface
     {
@@ -58,8 +55,6 @@ class PreCommandRunEvent extends Event
 
     /**
      * Returns the command about to be executed
-     *
-     * @return string
      */
     public function getCommand(): string
     {

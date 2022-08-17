@@ -46,19 +46,12 @@ class Hg
         $this->process = $process;
     }
 
-    /**
-     * @param callable    $commandCallable
-     * @param string      $url
-     * @param string|null $cwd
-     *
-     * @return void
-     */
     public function runCommand(callable $commandCallable, string $url, ?string $cwd): void
     {
         $this->config->prohibitUrlByConfig($url, $this->io);
 
         // Try as is
-        $command = call_user_func($commandCallable, $url);
+        $command = $commandCallable($url);
 
         if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
             return;
@@ -69,7 +62,7 @@ class Hg
             $auth = $this->io->getAuthentication($match[5]);
             $authenticatedUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[5] . (!empty($match[6]) ? $match[6] : null);
 
-            $command = call_user_func($commandCallable, $authenticatedUrl);
+            $command = $commandCallable($authenticatedUrl);
 
             if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                 return;
@@ -85,7 +78,6 @@ class Hg
 
     /**
      * @param non-empty-string $message
-     * @param string           $url
      *
      * @return never
      */

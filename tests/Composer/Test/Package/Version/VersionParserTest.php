@@ -32,21 +32,17 @@ class VersionParserTest extends TestCase
 
     public function provideParseNameVersionPairsData(): array
     {
-        return array(
-            array(array('php:^7.0'), array(array('name' => 'php', 'version' => '^7.0'))),
-            array(array('php', '^7.0'), array(array('name' => 'php', 'version' => '^7.0'))),
-            array(array('php', 'ext-apcu'), array(array('name' => 'php'), array('name' => 'ext-apcu'))),
-            array(array('foo/*', 'bar*', 'acme/baz', '*@dev'), array(array('name' => 'foo/*'), array('name' => 'bar*'), array('name' => 'acme/baz', 'version' => '*@dev'))),
-            array(array('php', '*'), array(array('name' => 'php', 'version' => '*'))),
-        );
+        return [
+            [['php:^7.0'], [['name' => 'php', 'version' => '^7.0']]],
+            [['php', '^7.0'], [['name' => 'php', 'version' => '^7.0']]],
+            [['php', 'ext-apcu'], [['name' => 'php'], ['name' => 'ext-apcu']]],
+            [['foo/*', 'bar*', 'acme/baz', '*@dev'], [['name' => 'foo/*'], ['name' => 'bar*'], ['name' => 'acme/baz', 'version' => '*@dev']]],
+            [['php', '*'], [['name' => 'php', 'version' => '*']]],
+        ];
     }
 
     /**
      * @dataProvider provideIsUpgradeTests
-     *
-     * @param string $from
-     * @param string $to
-     * @param bool   $expected
      */
     public function testIsUpgrade(string $from, string $to, bool $expected): void
     {
@@ -55,15 +51,15 @@ class VersionParserTest extends TestCase
 
     public function provideIsUpgradeTests(): array
     {
-        return array(
-            array('0.9.0.0', '1.0.0.0', true),
-            array('1.0.0.0', '0.9.0.0', false),
-            array('1.0.0.0', VersionParser::DEFAULT_BRANCH_ALIAS, true),
-            array(VersionParser::DEFAULT_BRANCH_ALIAS, VersionParser::DEFAULT_BRANCH_ALIAS, true),
-            array(VersionParser::DEFAULT_BRANCH_ALIAS, '1.0.0.0', false),
-            array('1.0.0.0', 'dev-foo', true),
-            array('dev-foo', 'dev-foo', true),
-            array('dev-foo', '1.0.0.0', true),
-        );
+        return [
+            ['0.9.0.0', '1.0.0.0', true],
+            ['1.0.0.0', '0.9.0.0', false],
+            ['1.0.0.0', VersionParser::DEFAULT_BRANCH_ALIAS, true],
+            [VersionParser::DEFAULT_BRANCH_ALIAS, VersionParser::DEFAULT_BRANCH_ALIAS, true],
+            [VersionParser::DEFAULT_BRANCH_ALIAS, '1.0.0.0', false],
+            ['1.0.0.0', 'dev-foo', true],
+            ['dev-foo', 'dev-foo', true],
+            ['dev-foo', '1.0.0.0', true],
+        ];
     }
 }

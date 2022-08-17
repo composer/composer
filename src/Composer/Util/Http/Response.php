@@ -31,10 +31,8 @@ class Response
     private $body;
 
     /**
-     * @param Request  $request
-     * @param int      $code
+     * @param Request      $request
      * @param list<string> $headers
-     * @param null|string  $body
      */
     public function __construct(array $request, ?int $code, array $headers, ?string $body)
     {
@@ -47,17 +45,11 @@ class Response
         $this->body = $body;
     }
 
-    /**
-     * @return int
-     */
     public function getStatusCode(): int
     {
         return $this->code;
     }
 
-    /**
-     * @return string|null
-     */
     public function getStatusMessage(): ?string
     {
         $value = null;
@@ -81,7 +73,6 @@ class Response
     }
 
     /**
-     * @param  string  $name
      * @return ?string
      */
     public function getHeader(string $name): ?string
@@ -106,7 +97,6 @@ class Response
     }
 
     /**
-     * @return void
      * @phpstan-impure
      */
     public function collect(): void
@@ -118,7 +108,6 @@ class Response
     /**
      * @param  string[]    $headers array of returned headers like from getLastHeaders()
      * @param  string      $name    header name (case insensitive)
-     * @return string|null
      */
     public static function findHeaderValue(array $headers, string $name): ?string
     {

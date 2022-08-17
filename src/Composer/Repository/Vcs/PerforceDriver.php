@@ -53,8 +53,6 @@ class PerforceDriver extends VcsDriver
 
     /**
      * @param array<string, mixed> $repoConfig
-     *
-     * @return void
      */
     private function initPerforce(array $repoConfig): void
     {
@@ -123,12 +121,12 @@ class PerforceDriver extends VcsDriver
      */
     public function getSource(string $identifier): array
     {
-        return array(
+        return [
             'type' => 'perforce',
             'url' => $this->repoConfig['url'],
             'reference' => $identifier,
             'p4user' => $this->perforce->getUser(),
-        );
+        ];
     }
 
     /**
@@ -178,17 +176,11 @@ class PerforceDriver extends VcsDriver
         $this->perforce = null;
     }
 
-    /**
-     * @return string
-     */
     public function getDepot(): string
     {
         return $this->depot;
     }
 
-    /**
-     * @return string
-     */
     public function getBranch(): string
     {
         return $this->branch;

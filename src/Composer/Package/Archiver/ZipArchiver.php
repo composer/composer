@@ -21,14 +21,14 @@ use Composer\Util\Filesystem;
 class ZipArchiver implements ArchiverInterface
 {
     /** @var array<string, bool> */
-    protected static $formats = array(
+    protected static $formats = [
         'zip' => true,
-    );
+    ];
 
     /**
      * @inheritDoc
      */
-    public function archive(string $sources, string $target, string $format, array $excludes = array(), bool $ignoreFilters = false): string
+    public function archive(string $sources, string $target, string $format, array $excludes = [], bool $ignoreFilters = false): string
     {
         $fs = new Filesystem();
         $sources = $fs->normalizePath($sources);
@@ -83,9 +83,6 @@ class ZipArchiver implements ArchiverInterface
         return isset(static::$formats[$format]) && $this->compressionAvailable();
     }
 
-    /**
-     * @return bool
-     */
     private function compressionAvailable(): bool
     {
         return class_exists('ZipArchive');

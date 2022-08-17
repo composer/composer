@@ -21,9 +21,6 @@ use Composer\Pcre\Preg;
 class Url
 {
     /**
-     * @param  Config $config
-     * @param  string $url
-     * @param  string $ref
      * @return string the updated URL
      */
     public static function updateDistReference(Config $config, string $url, string $ref): string
@@ -60,10 +57,6 @@ class Url
         return $url;
     }
 
-    /**
-     * @param  string $url
-     * @return string
-     */
     public static function getOrigin(Config $config, string $url): string
     {
         if (0 === strpos($url, 'file://')) {
@@ -103,10 +96,6 @@ class Url
         return $origin;
     }
 
-    /**
-     * @param  string $url
-     * @return string
-     */
     public static function sanitize(string $url): string
     {
         // GitHub repository rename result in redirect locations containing the access_token as GET parameter

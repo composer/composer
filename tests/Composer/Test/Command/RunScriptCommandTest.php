@@ -16,14 +16,11 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\Script\Event as ScriptEvent;
 use Composer\Test\TestCase;
-use Composer\Util\Filesystem;
 
 class RunScriptCommandTest extends TestCase
 {
     /**
      * @dataProvider getDevOptions
-     * @param bool $dev
-     * @param bool $noDev
      */
     public function testDetectAndPassDevModeToEventAndToDispatching(bool $dev, bool $noDev): void
     {
@@ -32,18 +29,18 @@ class RunScriptCommandTest extends TestCase
         $input = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $input
             ->method('getOption')
-            ->will($this->returnValueMap(array(
-                array('list', false),
-                array('dev', $dev),
-                array('no-dev', $noDev),
-            )));
+            ->will($this->returnValueMap([
+                ['list', false],
+                ['dev', $dev],
+                ['no-dev', $noDev],
+            ]));
 
         $input
             ->method('getArgument')
-            ->will($this->returnValueMap(array(
-                array('script', $scriptName),
-                array('args', array()),
-            )));
+            ->will($this->returnValueMap([
+                ['script', $scriptName],
+                ['args', []],
+            ]));
         $input
             ->method('hasArgument')
             ->with('command')
@@ -62,7 +59,7 @@ class RunScriptCommandTest extends TestCase
 
         $ed->expects($this->once())
             ->method('hasEventListeners')
-            ->with($this->callback(function (ScriptEvent $event) use ($scriptName, $expectedDevMode): bool {
+            ->with($this->callback(static function (ScriptEvent $event) use ($scriptName, $expectedDevMode): bool {
                 return $event->getName() === $scriptName
                 && $event->isDevMode() === $expectedDevMode;
             }))
@@ -70,19 +67,19 @@ class RunScriptCommandTest extends TestCase
 
         $ed->expects($this->once())
             ->method('dispatchScript')
-            ->with($scriptName, $expectedDevMode, array())
+            ->with($scriptName, $expectedDevMode, [])
             ->willReturn(0);
 
         $composer = $this->createComposerInstance();
         $composer->setEventDispatcher($ed);
 
         $command = $this->getMockBuilder('Composer\Command\RunScriptCommand')
-            ->onlyMethods(array(
+            ->onlyMethods([
                 'mergeApplicationDefinition',
                 'getSynopsis',
                 'initialize',
                 'requireComposer',
-            ))
+            ])
             ->getMock();
         $command->expects($this->any())->method('requireComposer')->willReturn($composer);
 
@@ -115,12 +112,12 @@ class RunScriptCommandTest extends TestCase
     /** @return bool[][] **/
     public function getDevOptions(): array
     {
-        return array(
-            array(true, true),
-            array(true, false),
-            array(false, true),
-            array(false, false),
-        );
+        return [
+            [true, true],
+            [true, false],
+            [false, true],
+            [false, false],
+        ];
     }
 
     /** @return Composer **/

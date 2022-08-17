@@ -55,7 +55,6 @@ class Platform
     /**
      * getenv() equivalent but reads from the runtime global variables first
      *
-     * @param  string $name
      * @return string|false
      */
     public static function getEnv(string $name)
@@ -72,10 +71,6 @@ class Platform
 
     /**
      * putenv() equivalent but updates the runtime global variables too
-     *
-     * @param  string $name
-     * @param  string $value
-     * @return void
      */
     public static function putEnv(string $name, string $value): void
     {
@@ -86,9 +81,6 @@ class Platform
 
     /**
      * putenv('X') equivalent but updates the runtime global variables too
-     *
-     * @param  string $name
-     * @return void
      */
     public static function clearEnv(string $name): void
     {
@@ -98,9 +90,6 @@ class Platform
 
     /**
      * Parses tildes and environment variables in paths.
-     *
-     * @param  string $path
-     * @return string
      */
     public static function expandPath(string $path): string
     {
@@ -176,7 +165,6 @@ class Platform
     }
 
     /**
-     * @param  string $str
      * @return int    return a guaranteed binary length of the string, regardless of silly mbstring configs
      */
     public static function strlen(string $str): int
@@ -195,7 +183,6 @@ class Platform
 
     /**
      * @param  ?resource $fd Open file descriptor or null to default to STDOUT
-     * @return bool
      */
     public static function isTty($fd = null): bool
     {
@@ -208,7 +195,7 @@ class Platform
 
         // detect msysgit/mingw and assume this is a tty because detection
         // does not work correctly, see https://github.com/composer/composer/issues/9690
-        if (in_array(strtoupper(self::getEnv('MSYSTEM') ?: ''), array('MINGW32', 'MINGW64'), true)) {
+        if (in_array(strtoupper(self::getEnv('MSYSTEM') ?: ''), ['MINGW32', 'MINGW64'], true)) {
             return true;
         }
 
@@ -236,9 +223,6 @@ class Platform
         return '_complete' === ($_SERVER['argv'][1] ?? null);
     }
 
-    /**
-     * @return void
-     */
     public static function workaroundFilesystemIssues(): void
     {
         if (self::isVirtualBoxGuest()) {
@@ -250,8 +234,6 @@ class Platform
      * Attempts detection of VirtualBox guest VMs
      *
      * This works based on the process' user being "vagrant", the COMPOSER_RUNTIME_ENV env var being set to "virtualbox", or lsmod showing the virtualbox guest additions are loaded
-     *
-     * @return bool
      */
     private static function isVirtualBoxGuest(): bool
     {

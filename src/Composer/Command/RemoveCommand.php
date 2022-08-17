@@ -43,7 +43,7 @@ class RemoveCommand extends BaseCommand
         $this
             ->setName('remove')
             ->setDescription('Removes a package from the require or require-dev')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Packages that should be removed.', null, $this->suggestRootRequirement()),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
@@ -64,7 +64,7 @@ class RemoveCommand extends BaseCommand
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
                 new InputOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>remove</info> command removes a package from the current
@@ -92,7 +92,7 @@ EOT
 
             $lockedPackages = $locker->getLockedRepository()->getPackages();
 
-            $required = array();
+            $required = [];
             foreach (array_merge($composer->getPackage()->getRequires(), $composer->getPackage()->getDevRequires()) as $link) {
                 $required[$link->getTarget()] = true;
             }
@@ -113,7 +113,7 @@ EOT
                 }
             } while ($found);
 
-            $unused = array();
+            $unused = [];
             foreach ($lockedPackages as $package) {
                 $unused[] = $package->getName();
             }
@@ -154,7 +154,7 @@ EOT
         }
 
         // make sure name checks are done case insensitively
-        foreach (array('require', 'require-dev') as $linkType) {
+        foreach (['require', 'require-dev'] as $linkType) {
             if (isset($composer[$linkType])) {
                 foreach ($composer[$linkType] as $name => $version) {
                     $composer[$linkType][strtolower($name)] = $name;
@@ -163,7 +163,7 @@ EOT
         }
 
         $dryRun = $input->getOption('dry-run');
-        $toRemove = array();
+        $toRemove = [];
         foreach ($packages as $package) {
             if (isset($composer[$type][$package])) {
                 if ($dryRun) {
@@ -224,10 +224,10 @@ EOT
 
         if ($dryRun) {
             $rootPackage = $composer->getPackage();
-            $links = array(
+            $links = [
                 'require' => $rootPackage->getRequires(),
                 'require-dev' => $rootPackage->getDevRequires(),
-            );
+            ];
             foreach ($toRemove as $type => $names) {
                 foreach ($names as $name) {
                     unset($links[$type][$name]);

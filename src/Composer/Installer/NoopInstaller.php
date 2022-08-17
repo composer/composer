@@ -43,7 +43,7 @@ class NoopInstaller implements InstallerInterface
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, PackageInterface $prevPackage = null)
+    public function download(PackageInterface $package, ?PackageInterface $prevPackage = null)
     {
         return \React\Promise\resolve(null);
     }
@@ -51,7 +51,7 @@ class NoopInstaller implements InstallerInterface
     /**
      * @inheritDoc
      */
-    public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    public function prepare($type, PackageInterface $package, ?PackageInterface $prevPackage = null)
     {
         return \React\Promise\resolve(null);
     }
@@ -59,7 +59,7 @@ class NoopInstaller implements InstallerInterface
     /**
      * @inheritDoc
      */
-    public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    public function cleanup($type, PackageInterface $package, ?PackageInterface $prevPackage = null)
     {
         return \React\Promise\resolve(null);
     }

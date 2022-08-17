@@ -129,7 +129,7 @@ class Application extends BaseApplication
         $this->signalHandler->unregister();
     }
 
-    public function run(InputInterface $input = null, OutputInterface $output = null): int
+    public function run(?InputInterface $input = null, ?OutputInterface $output = null): int
     {
         if (null === $output) {
             $output = Factory::createOutput();
@@ -148,9 +148,9 @@ class Application extends BaseApplication
             $input->setInteractive(false);
         }
 
-        $io = $this->io = new ConsoleIO($input, $output, new HelperSet(array(
+        $io = $this->io = new ConsoleIO($input, $output, new HelperSet([
             new QuestionHelper(),
-        )));
+        ]));
 
         // Register error handler again to pass it the IO instance
         ErrorHandler::register($io);
@@ -183,7 +183,7 @@ class Application extends BaseApplication
         }
 
         // prompt user for dir change if no composer.json is present in current dir
-        if ($io->isInteractive() && null === $newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'), true) && !file_exists(Factory::getComposerFile()) && ($useParentDirIfNoJsonAvailable = $this->getUseParentDirConfigValue()) !== false) {
+        if ($io->isInteractive() && null === $newWorkDir && !in_array($commandName, ['', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'], true) && !file_exists(Factory::getComposerFile()) && ($useParentDirIfNoJsonAvailable = $this->getUseParentDirConfigValue()) !== false) {
             $dir = dirname(Platform::getCwd(true));
             $home = realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
 
@@ -207,12 +207,12 @@ class Application extends BaseApplication
 
         // avoid loading plugins/initializing the Composer instance earlier than necessary if no plugin command is needed
         // if showing the version, we never need plugin commands
-        $mayNeedPluginCommand = false === $input->hasParameterOption(array('--version', '-V'))
+        $mayNeedPluginCommand = false === $input->hasParameterOption(['--version', '-V'])
             && (
                 // not a composer command, so try loading plugin ones
                 false === $commandName
                 // list command requires plugin commands to show them
-                || in_array($commandName, array('', 'list', 'help'), true)
+                || in_array($commandName, ['', 'list', 'help'], true)
             );
 
         if ($mayNeedPluginCommand && !$this->disablePluginsByDefault && !$this->hasPluginCommands) {
@@ -389,14 +389,13 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param  InputInterface    $input
      * @throws \RuntimeException
      * @return ?string
      */
     private function getNewWorkingDir(InputInterface $input): ?string
     {
         /** @var string|null $workingDir */
-        $workingDir = $input->getParameterOption(array('--working-dir', '-d'), null, true);
+        $workingDir = $input->getParameterOption(['--working-dir', '-d'], null, true);
         if (null !== $workingDir && !is_dir($workingDir)) {
             throw new \RuntimeException('Invalid working directory specified, '.$workingDir.' does not exist.');
         }
@@ -404,9 +403,6 @@ class Application extends BaseApplication
         return $workingDir;
     }
 
-    /**
-     * @return void
-     */
     private function hintCommonErrors(\Throwable $exception, OutputInterface $output): void
     {
         $io = $this->getIO();
@@ -457,9 +453,6 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param  bool                    $required
-     * @param  bool|null               $disablePlugins
-     * @param  bool|null               $disableScripts
      * @throws JsonValidationException
      * @throws \InvalidArgumentException
      * @return ?Composer If $required is true then the return value is guaranteed
@@ -496,8 +489,6 @@ class Application extends BaseApplication
 
     /**
      * Removes the cached composer instance
-     *
-     * @return void
      */
     public function resetComposer(): void
     {
@@ -507,9 +498,6 @@ class Application extends BaseApplication
         }
     }
 
-    /**
-     * @return IOInterface
-     */
     public function getIO(): IOInterface
     {
         return $this->io;
@@ -526,7 +514,7 @@ class Application extends BaseApplication
      */
     protected function getDefaultCommands(): array
     {
-        $commands = array_merge(parent::getDefaultCommands(), array(
+        $commands = array_merge(parent::getDefaultCommands(), [
             new Command\AboutCommand(),
             new Command\ConfigCommand(),
             new Command\DependsCommand(),
@@ -557,7 +545,7 @@ class Application extends BaseApplication
             new Command\FundCommand(),
             new Command\ReinstallCommand(),
             new Command\BumpCommand(),
-        ));
+        ]);
 
         if (strpos(__FILE__, 'phar:') === 0 || '1' === Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING')) {
             $commands[] = new Command\SelfUpdateCommand();
@@ -599,7 +587,7 @@ class Application extends BaseApplication
      */
     private function getPluginCommands(): array
     {
-        $commands = array();
+        $commands = [];
 
         $composer = $this->getComposer(false, false);
         if (null === $composer) {
@@ -608,7 +596,7 @@ class Application extends BaseApplication
 
         if (null !== $composer) {
             $pm = $composer->getPluginManager();
-            foreach ($pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', array('composer' => $composer, 'io' => $this->io)) as $capability) {
+            foreach ($pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', ['composer' => $composer, 'io' => $this->io]) as $capability) {
                 $newCommands = $capability->getCommands();
                 if (!is_array($newCommands)) {
                     throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' failed to return an array from getCommands');

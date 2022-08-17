@@ -23,18 +23,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ClearCacheCommand extends BaseCommand
 {
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this
             ->setName('clear-cache')
-            ->setAliases(array('clearcache', 'cc'))
+            ->setAliases(['clearcache', 'cc'])
             ->setDescription('Clears composer\'s internal package cache')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('gc', null, InputOption::VALUE_NONE, 'Only run garbage collection, not a full cache clear'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>clear-cache</info> deletes all cached packages from composer's
@@ -51,12 +48,12 @@ EOT
         $config = Factory::createConfig();
         $io = $this->getIO();
 
-        $cachePaths = array(
+        $cachePaths = [
             'cache-vcs-dir' => $config->get('cache-vcs-dir'),
             'cache-repo-dir' => $config->get('cache-repo-dir'),
             'cache-files-dir' => $config->get('cache-files-dir'),
             'cache-dir' => $config->get('cache-dir'),
-        );
+        ];
 
         foreach ($cachePaths as $key => $cachePath) {
             // only individual dirs get garbage collected
@@ -83,7 +80,7 @@ EOT
                 if ($key === 'cache-files-dir') {
                     $cache->gc($config->get('cache-files-ttl'), $config->get('cache-files-maxsize'));
                 } elseif ($key === 'cache-repo-dir') {
-                    $cache->gc($config->get('cache-ttl'), 1024*1024*1024 /* 1GB, this should almost never clear anything that is not outdated */);
+                    $cache->gc($config->get('cache-ttl'), 1024 * 1024 * 1024 /* 1GB, this should almost never clear anything that is not outdated */);
                 } elseif ($key === 'cache-vcs-dir') {
                     $cache->gcVcsCache($config->get('cache-ttl'));
                 }

@@ -13,9 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Config;
-use Composer\IO\BaseIO;
 use Composer\IO\IOInterface;
-use Composer\IO\NullIO;
 use Composer\Util\Platform;
 
 class ConfigTest extends TestCase
@@ -30,116 +28,116 @@ class ConfigTest extends TestCase
     {
         $config = new Config(false);
         if ($systemConfig) {
-            $config->merge(array('repositories' => $systemConfig));
+            $config->merge(['repositories' => $systemConfig]);
         }
-        $config->merge(array('repositories' => $localConfig));
+        $config->merge(['repositories' => $localConfig]);
 
         $this->assertEquals($expected, $config->getRepositories());
     }
 
     public function dataAddPackagistRepository(): array
     {
-        $data = array();
-        $data['local config inherits system defaults'] = array(
-            array(
-                'packagist.org' => array('type' => 'composer', 'url' => 'https://repo.packagist.org'),
-            ),
-            array(),
-        );
+        $data = [];
+        $data['local config inherits system defaults'] = [
+            [
+                'packagist.org' => ['type' => 'composer', 'url' => 'https://repo.packagist.org'],
+            ],
+            [],
+        ];
 
-        $data['local config can disable system config by name'] = array(
-            array(),
-            array(
-                array('packagist.org' => false),
-            ),
-        );
+        $data['local config can disable system config by name'] = [
+            [],
+            [
+                ['packagist.org' => false],
+            ],
+        ];
 
-        $data['local config can disable system config by name bc'] = array(
-            array(),
-            array(
-                array('packagist' => false),
-            ),
-        );
+        $data['local config can disable system config by name bc'] = [
+            [],
+            [
+                ['packagist' => false],
+            ],
+        ];
 
-        $data['local config adds above defaults'] = array(
-            array(
-                1 => array('type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'),
-                0 => array('type' => 'pear', 'url' => 'http://pear.composer.org'),
-                'packagist.org' => array('type' => 'composer', 'url' => 'https://repo.packagist.org'),
-            ),
-            array(
-                array('type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'),
-                array('type' => 'pear', 'url' => 'http://pear.composer.org'),
-            ),
-        );
+        $data['local config adds above defaults'] = [
+            [
+                1 => ['type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'],
+                0 => ['type' => 'pear', 'url' => 'http://pear.composer.org'],
+                'packagist.org' => ['type' => 'composer', 'url' => 'https://repo.packagist.org'],
+            ],
+            [
+                ['type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'],
+                ['type' => 'pear', 'url' => 'http://pear.composer.org'],
+            ],
+        ];
 
-        $data['system config adds above core defaults'] = array(
-            array(
-                'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
-                'packagist.org' => array('type' => 'composer', 'url' => 'https://repo.packagist.org'),
-            ),
-            array(),
-            array(
-                'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
-            ),
-        );
+        $data['system config adds above core defaults'] = [
+            [
+                'example.com' => ['type' => 'composer', 'url' => 'http://example.com'],
+                'packagist.org' => ['type' => 'composer', 'url' => 'https://repo.packagist.org'],
+            ],
+            [],
+            [
+                'example.com' => ['type' => 'composer', 'url' => 'http://example.com'],
+            ],
+        ];
 
-        $data['local config can disable repos by name and re-add them anonymously to bring them above system config'] = array(
-            array(
-                0 => array('type' => 'composer', 'url' => 'http://packagist.org'),
-                'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
-            ),
-            array(
-                array('packagist.org' => false),
-                array('type' => 'composer', 'url' => 'http://packagist.org'),
-            ),
-            array(
-                'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
-            ),
-        );
+        $data['local config can disable repos by name and re-add them anonymously to bring them above system config'] = [
+            [
+                0 => ['type' => 'composer', 'url' => 'http://packagist.org'],
+                'example.com' => ['type' => 'composer', 'url' => 'http://example.com'],
+            ],
+            [
+                ['packagist.org' => false],
+                ['type' => 'composer', 'url' => 'http://packagist.org'],
+            ],
+            [
+                'example.com' => ['type' => 'composer', 'url' => 'http://example.com'],
+            ],
+        ];
 
-        $data['local config can override by name to bring a repo above system config'] = array(
-            array(
-                'packagist.org' => array('type' => 'composer', 'url' => 'http://packagistnew.org'),
-                'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
-            ),
-            array(
-                'packagist.org' => array('type' => 'composer', 'url' => 'http://packagistnew.org'),
-            ),
-            array(
-                'example.com' => array('type' => 'composer', 'url' => 'http://example.com'),
-            ),
-        );
+        $data['local config can override by name to bring a repo above system config'] = [
+            [
+                'packagist.org' => ['type' => 'composer', 'url' => 'http://packagistnew.org'],
+                'example.com' => ['type' => 'composer', 'url' => 'http://example.com'],
+            ],
+            [
+                'packagist.org' => ['type' => 'composer', 'url' => 'http://packagistnew.org'],
+            ],
+            [
+                'example.com' => ['type' => 'composer', 'url' => 'http://example.com'],
+            ],
+        ];
 
-        $data['local config redefining packagist.org by URL override it if no named keys are used'] = array(
-            array(
-                array('type' => 'composer', 'url' => 'https://repo.packagist.org'),
-            ),
-            array(
-                array('type' => 'composer', 'url' => 'https://repo.packagist.org'),
-            ),
-        );
+        $data['local config redefining packagist.org by URL override it if no named keys are used'] = [
+            [
+                ['type' => 'composer', 'url' => 'https://repo.packagist.org'],
+            ],
+            [
+                ['type' => 'composer', 'url' => 'https://repo.packagist.org'],
+            ],
+        ];
 
-        $data['local config redefining packagist.org by URL override it also with named keys'] = array(
-            array(
-                'example' => array('type' => 'composer', 'url' => 'https://repo.packagist.org'),
-            ),
-            array(
-                'example' => array('type' => 'composer', 'url' => 'https://repo.packagist.org'),
-            ),
-        );
+        $data['local config redefining packagist.org by URL override it also with named keys'] = [
+            [
+                'example' => ['type' => 'composer', 'url' => 'https://repo.packagist.org'],
+            ],
+            [
+                'example' => ['type' => 'composer', 'url' => 'https://repo.packagist.org'],
+            ],
+        ];
 
-        $data['incorrect local config does not cause ErrorException'] = array(
-            array(
-                'packagist.org' => array('type' => 'composer', 'url' => 'https://repo.packagist.org'),
+        $data['incorrect local config does not cause ErrorException'] = [
+            [
+                'packagist.org' => ['type' => 'composer', 'url' => 'https://repo.packagist.org'],
                 'type' => 'vcs',
                 'url' => 'http://example.com',
-            ),
-            array(
+            ],
+            [
                 'type' => 'vcs',
                 'url' => 'http://example.com',
-            ),
-        );
+            ],
+        ];
 
         return $data;
     }
@@ -147,8 +145,8 @@ class ConfigTest extends TestCase
     public function testPreferredInstallAsString(): void
     {
         $config = new Config(false);
-        $config->merge(array('config' => array('preferred-install' => 'source')));
-        $config->merge(array('config' => array('preferred-install' => 'dist')));
+        $config->merge(['config' => ['preferred-install' => 'source']]);
+        $config->merge(['config' => ['preferred-install' => 'dist']]);
 
         $this->assertEquals('dist', $config->get('preferred-install'));
     }
@@ -156,29 +154,29 @@ class ConfigTest extends TestCase
     public function testMergePreferredInstall(): void
     {
         $config = new Config(false);
-        $config->merge(array('config' => array('preferred-install' => 'dist')));
-        $config->merge(array('config' => array('preferred-install' => array('foo/*' => 'source'))));
+        $config->merge(['config' => ['preferred-install' => 'dist']]);
+        $config->merge(['config' => ['preferred-install' => ['foo/*' => 'source']]]);
 
         // This assertion needs to make sure full wildcard preferences are placed last
         // Handled by composer because we convert string preferences for BC, all other
         // care for ordering and collision prevention is up to the user
-        $this->assertEquals(array('foo/*' => 'source', '*' => 'dist'), $config->get('preferred-install'));
+        $this->assertEquals(['foo/*' => 'source', '*' => 'dist'], $config->get('preferred-install'));
     }
 
     public function testMergeGithubOauth(): void
     {
         $config = new Config(false);
-        $config->merge(array('config' => array('github-oauth' => array('foo' => 'bar'))));
-        $config->merge(array('config' => array('github-oauth' => array('bar' => 'baz'))));
+        $config->merge(['config' => ['github-oauth' => ['foo' => 'bar']]]);
+        $config->merge(['config' => ['github-oauth' => ['bar' => 'baz']]]);
 
-        $this->assertEquals(array('foo' => 'bar', 'bar' => 'baz'), $config->get('github-oauth'));
+        $this->assertEquals(['foo' => 'bar', 'bar' => 'baz'], $config->get('github-oauth'));
     }
 
     public function testVarReplacement(): void
     {
         $config = new Config(false);
-        $config->merge(array('config' => array('a' => 'b', 'c' => '{$a}')));
-        $config->merge(array('config' => array('bin-dir' => '$HOME', 'cache-dir' => '~/foo/')));
+        $config->merge(['config' => ['a' => 'b', 'c' => '{$a}']]);
+        $config->merge(['config' => ['bin-dir' => '$HOME', 'cache-dir' => '~/foo/']]);
 
         $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '\\/');
         $this->assertEquals('b', $config->get('c'));
@@ -189,11 +187,11 @@ class ConfigTest extends TestCase
     public function testRealpathReplacement(): void
     {
         $config = new Config(false, '/foo/bar');
-        $config->merge(array('config' => array(
+        $config->merge(['config' => [
             'bin-dir' => '$HOME/foo',
             'cache-dir' => '/baz/',
             'vendor-dir' => 'vendor',
-        )));
+        ]]);
 
         $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '\\/');
         $this->assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
@@ -204,9 +202,9 @@ class ConfigTest extends TestCase
     public function testStreamWrapperDirs(): void
     {
         $config = new Config(false, '/foo/bar');
-        $config->merge(array('config' => array(
+        $config->merge(['config' => [
             'cache-dir' => 's3://baz/',
-        )));
+        ]]);
 
         $this->assertEquals('s3://baz', $config->get('cache-dir'));
     }
@@ -214,10 +212,10 @@ class ConfigTest extends TestCase
     public function testFetchingRelativePaths(): void
     {
         $config = new Config(false, '/foo/bar');
-        $config->merge(array('config' => array(
+        $config->merge(['config' => [
             'bin-dir' => '{$vendor-dir}/foo',
             'vendor-dir' => 'vendor',
-        )));
+        ]]);
 
         $this->assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
         $this->assertEquals('/foo/bar/vendor/foo', $config->get('bin-dir'));
@@ -228,27 +226,25 @@ class ConfigTest extends TestCase
     public function testOverrideGithubProtocols(): void
     {
         $config = new Config(false);
-        $config->merge(array('config' => array('github-protocols' => array('https', 'ssh'))));
-        $config->merge(array('config' => array('github-protocols' => array('https'))));
+        $config->merge(['config' => ['github-protocols' => ['https', 'ssh']]]);
+        $config->merge(['config' => ['github-protocols' => ['https']]]);
 
-        $this->assertEquals(array('https'), $config->get('github-protocols'));
+        $this->assertEquals(['https'], $config->get('github-protocols'));
     }
 
     public function testGitDisabledByDefaultInGithubProtocols(): void
     {
         $config = new Config(false);
-        $config->merge(array('config' => array('github-protocols' => array('https', 'git'))));
-        $this->assertEquals(array('https'), $config->get('github-protocols'));
+        $config->merge(['config' => ['github-protocols' => ['https', 'git']]]);
+        $this->assertEquals(['https'], $config->get('github-protocols'));
 
-        $config->merge(array('config' => array('secure-http' => false)));
-        $this->assertEquals(array('https', 'git'), $config->get('github-protocols'));
+        $config->merge(['config' => ['secure-http' => false]]);
+        $this->assertEquals(['https', 'git'], $config->get('github-protocols'));
     }
 
     /**
      * @dataProvider allowedUrlProvider
      * @doesNotPerformAssertions
-     *
-     * @param string $url
      */
     public function testAllowedUrlsPass(string $url): void
     {
@@ -258,8 +254,6 @@ class ConfigTest extends TestCase
 
     /**
      * @dataProvider prohibitedUrlProvider
-     *
-     * @param string $url
      */
     public function testProhibitedUrlsThrowException(string $url): void
     {
@@ -274,7 +268,7 @@ class ConfigTest extends TestCase
      */
     public function allowedUrlProvider(): array
     {
-        $urls = array(
+        $urls = [
             'https://packagist.org',
             'git@github.com:composer/composer.git',
             'hg://user:pass@my.satis/satis',
@@ -283,10 +277,10 @@ class ConfigTest extends TestCase
             'file://example.org/mygit.git',
             'git:Department/Repo.git',
             'ssh://[user@]host.xz[:port]/path/to/repo.git/',
-        );
+        ];
 
-        return array_combine($urls, array_map(function ($e): array {
-            return array($e);
+        return array_combine($urls, array_map(static function ($e): array {
+            return [$e];
         }, $urls));
     }
 
@@ -295,7 +289,7 @@ class ConfigTest extends TestCase
      */
     public function prohibitedUrlProvider(): array
     {
-        $urls = array(
+        $urls = [
             'http://packagist.org',
             'http://10.1.0.1/satis',
             'http://127.0.0.1/satis',
@@ -304,10 +298,10 @@ class ConfigTest extends TestCase
             'svn://192.168.0.1/trunk',
             'svn://1.2.3.4/trunk',
             'git://5.6.7.8/git.git',
-        );
+        ];
 
-        return array_combine($urls, array_map(function ($e): array {
-            return array($e);
+        return array_combine($urls, array_map(static function ($e): array {
+            return [$e];
         }, $urls));
     }
 
@@ -325,7 +319,7 @@ class ConfigTest extends TestCase
             'ssl' => [
                 'verify_peer' => false,
                 'verify_peer_name' => false,
-            ]
+            ],
         ]);
     }
 
@@ -336,11 +330,11 @@ class ConfigTest extends TestCase
     {
         $config = new Config;
         $config->merge(
-            array('config' => array('disable-tls' => 'false'))
+            ['config' => ['disable-tls' => 'false']]
         );
         $this->assertFalse($config->get('disable-tls'));
         $config->merge(
-            array('config' => array('disable-tls' => 'true'))
+            ['config' => ['disable-tls' => 'true']]
         );
         $this->assertTrue($config->get('disable-tls'));
     }
@@ -374,7 +368,7 @@ class ConfigTest extends TestCase
         $this->assertSame(Config::SOURCE_DEFAULT, $config->getSourceOfValue('process-timeout'));
 
         $config->merge(
-            array('config' => array('process-timeout' => 1)),
+            ['config' => ['process-timeout' => 1]],
             'phpunit-test'
         );
 
@@ -412,30 +406,30 @@ class ConfigTest extends TestCase
     public function testMergesPluginConfig(): void
     {
         $config = new Config(false);
-        $config->merge(array('config' => array('allow-plugins' => array('some/plugin' => true))));
-        $this->assertEquals(array('some/plugin' => true), $config->get('allow-plugins'));
+        $config->merge(['config' => ['allow-plugins' => ['some/plugin' => true]]]);
+        $this->assertEquals(['some/plugin' => true], $config->get('allow-plugins'));
 
-        $config->merge(array('config' => array('allow-plugins' => array('another/plugin' => true))));
-        $this->assertEquals(array('some/plugin' => true, 'another/plugin' => true), $config->get('allow-plugins'));
+        $config->merge(['config' => ['allow-plugins' => ['another/plugin' => true]]]);
+        $this->assertEquals(['some/plugin' => true, 'another/plugin' => true], $config->get('allow-plugins'));
     }
 
     public function testOverridesGlobalBooleanPluginsConfig(): void
     {
         $config = new Config(false);
-        $config->merge(array('config' => array('allow-plugins' => true)));
+        $config->merge(['config' => ['allow-plugins' => true]]);
         $this->assertEquals(true, $config->get('allow-plugins'));
 
-        $config->merge(array('config' => array('allow-plugins' => array('another/plugin' => true))));
-        $this->assertEquals(array('another/plugin' => true), $config->get('allow-plugins'));
+        $config->merge(['config' => ['allow-plugins' => ['another/plugin' => true]]]);
+        $this->assertEquals(['another/plugin' => true], $config->get('allow-plugins'));
     }
 
     public function testAllowsAllPluginsFromLocalBoolean(): void
     {
         $config = new Config(false);
-        $config->merge(array('config' => array('allow-plugins' => array('some/plugin' => true))));
-        $this->assertEquals(array('some/plugin' => true), $config->get('allow-plugins'));
+        $config->merge(['config' => ['allow-plugins' => ['some/plugin' => true]]]);
+        $this->assertEquals(['some/plugin' => true], $config->get('allow-plugins'));
 
-        $config->merge(array('config' => array('allow-plugins' => true)));
+        $config->merge(['config' => ['allow-plugins' => true]]);
         $this->assertEquals(true, $config->get('allow-plugins'));
     }
 }

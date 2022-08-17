@@ -22,7 +22,6 @@ class RepositoryUtilsTest extends TestCase
     /**
      * @dataProvider provideFilterRequireTests
      * @param PackageInterface[] $pkgs
-     * @param PackageInterface $requirer
      * @param string[] $expected
      */
     public function testFilterRequiredPackages(array $pkgs, PackageInterface $requirer, array $expected): void

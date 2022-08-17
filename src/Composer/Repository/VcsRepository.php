@@ -66,18 +66,18 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     /** @var ?VersionCacheInterface */
     private $versionCache;
     /** @var string[] */
-    private $emptyReferences = array();
+    private $emptyReferences = [];
     /** @var array<'tags'|'branches', array<string, TransportException>> */
-    private $versionTransportExceptions = array();
+    private $versionTransportExceptions = [];
 
     /**
      * @param array{url: string, type?: string}&array<string, mixed> $repoConfig
      * @param array<string, class-string<VcsDriverInterface>>|null $drivers
      */
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null, ProcessExecutor $process = null, array $drivers = null, VersionCacheInterface $versionCache = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, ?EventDispatcher $dispatcher = null, ?ProcessExecutor $process = null, ?array $drivers = null, ?VersionCacheInterface $versionCache = null)
     {
         parent::__construct();
-        $this->drivers = $drivers ?: array(
+        $this->drivers = $drivers ?: [
             'github' => 'Composer\Repository\Vcs\GitHubDriver',
             'gitlab' => 'Composer\Repository\Vcs\GitLabDriver',
             'bitbucket' => 'Composer\Repository\Vcs\GitBitbucketDriver',
@@ -88,7 +88,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             'fossil' => 'Composer\Repository\Vcs\FossilDriver',
             // svn must be last because identifying a subversion server for sure is practically impossible
             'svn' => 'Composer\Repository\Vcs\SvnDriver',
-        );
+        ];
 
         $this->url = $repoConfig['url'];
         $this->io = $io;
@@ -118,17 +118,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         return $this->repoConfig;
     }
 
-    /**
-     * @return void
-     */
     public function setLoader(LoaderInterface $loader): void
     {
         $this->loader = $loader;
     }
 
-    /**
-     * @return VcsDriverInterface|null
-     */
     public function getDriver(): ?VcsDriverInterface
     {
         if ($this->driver) {
@@ -164,9 +158,6 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         return null;
     }
 
-    /**
-     * @return bool
-     */
     public function hadInvalidBranches(): bool
     {
         return $this->branchErrorOccurred;
@@ -328,7 +319,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $branches = $driver->getBranches();
         // make sure the root identifier branch gets loaded first
         if ($hasRootIdentifierComposerJson && isset($branches[$driver->getRootIdentifier()])) {
-            $branches = array($driver->getRootIdentifier() => $branches[$driver->getRootIdentifier()]) + $branches;
+            $branches = [$driver->getRootIdentifier() => $branches[$driver->getRootIdentifier()]] + $branches;
         }
 
         foreach ($branches as $branch => $identifier) {
@@ -430,9 +421,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     }
 
     /**
-     * @param VcsDriverInterface $driver
      * @param array{name?: string, dist?: array{type: string, url: string, reference: string, shasum: string}, source?: array{type: string, url: string, reference: string}} $data
-     * @param string $identifier
      *
      * @return array{name: string|null, dist: array{type: string, url: string, reference: string, shasum: string}|null, source: array{type: string, url: string, reference: string}}
      */
@@ -455,8 +444,6 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     }
 
     /**
-     * @param string $branch
-     *
      * @return string|false
      */
     private function validateBranch(string $branch)
@@ -475,8 +462,6 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     }
 
     /**
-     * @param string $version
-     *
      * @return string|false
      */
     private function validateTag(string $version)
@@ -490,12 +475,6 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     }
 
     /**
-     * @param string $version
-     * @param string $identifier
-     * @param bool $isVerbose
-     * @param bool $isVeryVerbose
-     * @param bool $isDefaultBranch
-     *
      * @return \Composer\Package\CompletePackage|\Composer\Package\CompleteAliasPackage|null|false null if no cache present, false if the absence of a version was cached
      */
     private function getCachedPackageVersion(string $version, string $identifier, bool $isVerbose, bool $isVeryVerbose, bool $isDefaultBranch = false)
@@ -541,11 +520,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         return null;
     }
 
-    /**
-     * @return bool
-     */
     private function shouldRethrowTransportException(TransportException $e): bool
     {
-        return in_array($e->getCode(), array(401, 403, 429), true) || $e->getCode() >= 500;
+        return in_array($e->getCode(), [401, 403, 429], true) || $e->getCode() >= 500;
     }
 }

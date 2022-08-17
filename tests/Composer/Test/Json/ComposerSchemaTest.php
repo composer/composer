@@ -22,14 +22,14 @@ class ComposerSchemaTest extends TestCase
 {
     public function testNamePattern(): void
     {
-        $expectedError = array(
-            array(
+        $expectedError = [
+            [
                 'property' => 'name',
                 'message' => 'Does not match the regex pattern ^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$',
                 'constraint' => 'pattern',
                 'pattern' => '^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$',
-            ),
-        );
+            ],
+        ];
 
         $json = '{"name": "vendor/-pack__age", "description": "description"}';
         $this->assertEquals($expectedError, $this->check($json));
@@ -46,21 +46,21 @@ class ComposerSchemaTest extends TestCase
     public function testRequireTypes(): void
     {
         $json = '{"name": "vendor/package", "description": "description", "require": {"a": ["b"]} }';
-        $this->assertEquals(array(
-            array('property' => 'require.a', 'message' => 'Array value found, but a string is required', 'constraint' => 'type'),
-        ), $this->check($json));
+        $this->assertEquals([
+            ['property' => 'require.a', 'message' => 'Array value found, but a string is required', 'constraint' => 'type'],
+        ], $this->check($json));
     }
 
     public function testMinimumStabilityValues(): void
     {
-        $expectedError = array(
-            array(
+        $expectedError = [
+            [
                 'property' => 'minimum-stability',
                 'message' => 'Does not have a value in the enumeration ["dev","alpha","beta","rc","RC","stable"]',
                 'constraint' => 'enum',
-                'enum' => array('dev', 'alpha', 'beta', 'rc', 'RC', 'stable'),
-            ),
-        );
+                'enum' => ['dev', 'alpha', 'beta', 'rc', 'RC', 'stable'],
+            ],
+        ];
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "" }';
         $this->assertEquals($expectedError, $this->check($json), 'empty string');
@@ -91,13 +91,12 @@ class ComposerSchemaTest extends TestCase
     }
 
     /**
-     * @param string $json
      * @return mixed
      */
     private function check(string $json)
     {
         $validator = new Validator();
-        $validator->check(json_decode($json), (object) array('$ref' => 'file://' . __DIR__ . '/../../../../res/composer-schema.json'));
+        $validator->check(json_decode($json), (object) ['$ref' => 'file://' . __DIR__ . '/../../../../res/composer-schema.json']);
 
         if (!$validator->isValid()) {
             $errors = $validator->getErrors();

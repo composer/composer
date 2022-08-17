@@ -34,7 +34,7 @@ class CompositeRepository implements RepositoryInterface
      */
     public function __construct(array $repositories)
     {
-        $this->repositories = array();
+        $this->repositories = [];
         foreach ($repositories as $repo) {
             $this->addRepository($repo);
         }
@@ -93,22 +93,22 @@ class CompositeRepository implements RepositoryInterface
      */
     public function findPackages($name, $constraint = null): array
     {
-        $packages = array();
+        $packages = [];
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
             $packages[] = $repository->findPackages($name, $constraint);
         }
 
-        return $packages ? call_user_func_array('array_merge', $packages) : array();
+        return $packages ? array_merge(...$packages) : [];
     }
 
     /**
      * @inheritDoc
      */
-    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array()): array
+    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = []): array
     {
-        $packages = array();
-        $namesFound = array();
+        $packages = [];
+        $namesFound = [];
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
             $result = $repository->loadPackages($packageNameMap, $acceptableStabilities, $stabilityFlags, $alreadyLoaded);
@@ -116,10 +116,10 @@ class CompositeRepository implements RepositoryInterface
             $namesFound[] = $result['namesFound'];
         }
 
-        return array(
-            'packages' => $packages ? call_user_func_array('array_merge', $packages) : array(),
-            'namesFound' => $namesFound ? array_unique(call_user_func_array('array_merge', $namesFound)) : array(),
-        );
+        return [
+            'packages' => $packages ? array_merge(...$packages) : [],
+            'namesFound' => $namesFound ? array_unique(array_merge(...$namesFound)) : [],
+        ];
     }
 
     /**
@@ -127,13 +127,13 @@ class CompositeRepository implements RepositoryInterface
      */
     public function search(string $query, int $mode = 0, ?string $type = null): array
     {
-        $matches = array();
+        $matches = [];
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
             $matches[] = $repository->search($query, $mode, $type);
         }
 
-        return $matches ? call_user_func_array('array_merge', $matches) : array();
+        return $matches ? array_merge(...$matches) : [];
     }
 
     /**
@@ -141,13 +141,13 @@ class CompositeRepository implements RepositoryInterface
      */
     public function getPackages(): array
     {
-        $packages = array();
+        $packages = [];
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
             $packages[] = $repository->getPackages();
         }
 
-        return $packages ? call_user_func_array('array_merge', $packages) : array();
+        return $packages ? array_merge(...$packages) : [];
     }
 
     /**
@@ -155,18 +155,15 @@ class CompositeRepository implements RepositoryInterface
      */
     public function getProviders($packageName): array
     {
-        $results = array();
+        $results = [];
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
             $results[] = $repository->getProviders($packageName);
         }
 
-        return $results ? call_user_func_array('array_merge', $results) : array();
+        return $results ? array_merge(...$results) : [];
     }
 
-    /**
-     * @return void
-     */
     public function removePackage(PackageInterface $package): void
     {
         foreach ($this->repositories as $repository) {
@@ -192,9 +189,6 @@ class CompositeRepository implements RepositoryInterface
 
     /**
      * Add a repository.
-     * @param RepositoryInterface $repository
-     *
-     * @return void
      */
     public function addRepository(RepositoryInterface $repository): void
     {

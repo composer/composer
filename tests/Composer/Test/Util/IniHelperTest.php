@@ -28,9 +28,9 @@ class IniHelperTest extends TestCase
 
     public function testWithNoIni(): void
     {
-        $paths = array(
+        $paths = [
             '',
-        );
+        ];
 
         $this->setEnv($paths);
         $this->assertStringContainsString('does not exist', IniHelper::getMessage());
@@ -39,9 +39,9 @@ class IniHelperTest extends TestCase
 
     public function testWithLoadedIniOnly(): void
     {
-        $paths = array(
+        $paths = [
             'loaded.ini',
-        );
+        ];
 
         $this->setEnv($paths);
         $this->assertStringContainsString('loaded.ini', IniHelper::getMessage());
@@ -49,11 +49,11 @@ class IniHelperTest extends TestCase
 
     public function testWithLoadedIniAndAdditional(): void
     {
-        $paths = array(
+        $paths = [
             'loaded.ini',
             'one.ini',
             'two.ini',
-        );
+        ];
 
         $this->setEnv($paths);
         $this->assertStringContainsString('multiple ini files', IniHelper::getMessage());
@@ -62,11 +62,11 @@ class IniHelperTest extends TestCase
 
     public function testWithoutLoadedIniAndAdditional(): void
     {
-        $paths = array(
+        $paths = [
             '',
             'one.ini',
             'two.ini',
-        );
+        ];
 
         $this->setEnv($paths);
         $this->assertStringContainsString('multiple ini files', IniHelper::getMessage());
@@ -93,8 +93,6 @@ class IniHelperTest extends TestCase
 
     /**
      * @param string[] $paths
-     *
-     * @return void
      */
     protected function setEnv(array $paths): void
     {

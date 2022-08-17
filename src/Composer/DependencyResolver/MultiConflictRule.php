@@ -74,9 +74,6 @@ class MultiConflictRule extends Rule
         return false;
     }
 
-    /**
-     * @return bool
-     */
     public function isAssertion(): bool
     {
         return false;
@@ -93,8 +90,6 @@ class MultiConflictRule extends Rule
 
     /**
      * Formats a rule as a string of the format (Literal1|Literal2|...)
-     *
-     * @return string
      */
     public function __toString(): string
     {

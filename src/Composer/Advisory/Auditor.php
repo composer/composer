@@ -1,5 +1,15 @@
 <?php declare(strict_types=1);
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Advisory;
 
 use Composer\IO\ConsoleIO;
@@ -31,7 +41,6 @@ class Auditor
     ];
 
     /**
-     * @param IOInterface $io
      * @param PackageInterface[] $packages
      * @param self::FORMAT_* $format The format that will be used to output audit results.
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
@@ -43,6 +52,7 @@ class Auditor
         $advisories = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY);
         if (self::FORMAT_JSON === $format) {
             $io->write(JsonFile::encode(['advisories' => $advisories]));
+
             return count($advisories);
         }
 
@@ -73,14 +83,13 @@ class Auditor
         foreach ($advisories as $packageAdvisories) {
             $count += count($packageAdvisories);
         }
+
         return [count($advisories), $count];
     }
 
     /**
-     * @param IOInterface $io
      * @param array<string, array<SecurityAdvisory>> $advisories
      * @param self::FORMAT_* $format The format that will be used to output audit results.
-     * @return void
      */
     private function outputAdvisories(IOInterface $io, array $advisories, string $format): void
     {
@@ -90,13 +99,16 @@ class Auditor
                     throw new InvalidArgumentException('Cannot use table format with ' . get_class($io));
                 }
                 $this->outputAvisoriesTable($io, $advisories);
+
                 return;
             case self::FORMAT_PLAIN:
                 $this->outputAdvisoriesPlain($io, $advisories);
+
                 return;
             case self::FORMAT_SUMMARY:
                 // We've already output the number of advisories in audit()
                 $io->writeError('Run composer audit for a full list of advisories.');
+
                 return;
             default:
                 throw new InvalidArgumentException('Invalid format "'.$format.'".');
@@ -104,9 +116,7 @@ class Auditor
     }
 
     /**
-     * @param ConsoleIO $io
      * @param array<string, array<SecurityAdvisory>> $advisories
-     * @return void
      */
     private function outputAvisoriesTable(ConsoleIO $io, array $advisories): void
     {
@@ -138,9 +148,7 @@ class Auditor
     }
 
     /**
-     * @param IOInterface $io
      * @param array<string, array<SecurityAdvisory>> $advisories
-     * @return void
      */
     private function outputAdvisoriesPlain(IOInterface $io, array $advisories): void
     {

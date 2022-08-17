@@ -44,7 +44,7 @@ class InputArgument extends BaseInputArgument
      *
      * @throws InvalidArgumentException When argument mode is not valid
      */
-    public function __construct(string $name, int $mode = null, string $description = '', $default = null, $suggestedValues = [])
+    public function __construct(string $name, ?int $mode = null, string $description = '', $default = null, $suggestedValues = [])
     {
         parent::__construct($name, $mode, $description, $default);
 

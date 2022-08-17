@@ -68,9 +68,6 @@ class EventTest extends TestCase
         );
     }
 
-    /**
-     * @return Composer
-     */
     private function createComposerInstance(): Composer
     {
         $composer = new Composer;

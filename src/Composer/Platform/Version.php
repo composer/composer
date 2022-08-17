@@ -20,9 +20,7 @@ use Composer\Pcre\Preg;
 class Version
 {
     /**
-     * @param  string      $opensslVersion
      * @param  bool        $isFips Set by the method
-     * @return string|null
      */
     public static function parseOpenssl(string $opensslVersion, ?bool &$isFips): ?string
     {
@@ -39,15 +37,11 @@ class Version
         }
 
         $isFips = strpos($matches['suffix'], 'fips') !== false;
-        $suffix = strtr('-'.ltrim($matches['suffix'], '-'), array('-fips' => '', '-pre' => '-alpha'));
+        $suffix = strtr('-'.ltrim($matches['suffix'], '-'), ['-fips' => '', '-pre' => '-alpha']);
 
         return rtrim($matches['version'].$patch.$suffix, '-');
     }
 
-    /**
-     * @param  string      $libjpegVersion
-     * @return string|null
-     */
     public static function parseLibjpeg(string $libjpegVersion): ?string
     {
         if (!Preg::isMatch('/^(?<major>\d+)(?<minor>[a-z]*)$/', $libjpegVersion, $matches)) {
@@ -57,10 +51,6 @@ class Version
         return $matches['major'].'.'.self::convertAlphaVersionToIntVersion($matches['minor']);
     }
 
-    /**
-     * @param  string      $zoneinfoVersion
-     * @return string|null
-     */
     public static function parseZoneinfoVersion(string $zoneinfoVersion): ?string
     {
         if (!Preg::isMatch('/^(?<year>\d{4})(?<revision>[a-z]*)$/', $zoneinfoVersion, $matches)) {
@@ -72,39 +62,22 @@ class Version
 
     /**
      * "" => 0, "a" => 1, "zg" => 33
-     *
-     * @param  string $alpha
-     * @return int
      */
     private static function convertAlphaVersionToIntVersion(string $alpha): int
     {
         return strlen($alpha) * (-ord('a') + 1) + array_sum(array_map('ord', str_split($alpha)));
     }
 
-    /**
-     * @param  int    $versionId
-     * @return string
-     */
     public static function convertLibxpmVersionId(int $versionId): string
     {
         return self::convertVersionId($versionId, 100);
     }
 
-    /**
-     * @param  int    $versionId
-     * @return string
-     */
     public static function convertOpenldapVersionId(int $versionId): string
     {
         return self::convertVersionId($versionId, 100);
     }
 
-    /**
-     * @param int $versionId
-     * @param int $base
-     *
-     * @return string
-     */
     private static function convertVersionId(int $versionId, int $base): string
     {
         return sprintf(

@@ -27,23 +27,19 @@ use Composer\Json\JsonFile;
 class RepositoryFactory
 {
     /**
-     * @param  IOInterface $io
-     * @param  Config      $config
-     * @param  string      $repository
-     * @param  bool        $allowFilesystem
      * @return array|mixed
      */
     public static function configFromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false)
     {
         if (0 === strpos($repository, 'http')) {
-            $repoConfig = array('type' => 'composer', 'url' => $repository);
+            $repoConfig = ['type' => 'composer', 'url' => $repository];
         } elseif ("json" === pathinfo($repository, PATHINFO_EXTENSION)) {
             $json = new JsonFile($repository, Factory::createHttpDownloader($io, $config));
             $data = $json->read();
             if (!empty($data['packages']) || !empty($data['includes']) || !empty($data['provider-includes'])) {
-                $repoConfig = array('type' => 'composer', 'url' => 'file://' . strtr(realpath($repository), '\\', '/'));
+                $repoConfig = ['type' => 'composer', 'url' => 'file://' . strtr(realpath($repository), '\\', '/')];
             } elseif ($allowFilesystem) {
-                $repoConfig = array('type' => 'filesystem', 'json' => $json);
+                $repoConfig = ['type' => 'filesystem', 'json' => $json];
             } else {
                 throw new \InvalidArgumentException("Invalid repository URL ($repository) given. This file does not contain a valid composer repository.");
             }
@@ -57,14 +53,7 @@ class RepositoryFactory
         return $repoConfig;
     }
 
-    /**
-     * @param  IOInterface         $io
-     * @param  Config              $config
-     * @param  string              $repository
-     * @param  bool                $allowFilesystem
-     * @return RepositoryInterface
-     */
-    public static function fromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false, RepositoryManager $rm = null): RepositoryInterface
+    public static function fromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false, ?RepositoryManager $rm = null): RepositoryInterface
     {
         $repoConfig = static::configFromString($io, $config, $repository, $allowFilesystem);
 
@@ -72,29 +61,23 @@ class RepositoryFactory
     }
 
     /**
-     * @param  IOInterface         $io
-     * @param  Config              $config
      * @param  array<string, mixed> $repoConfig
-     * @return RepositoryInterface
      */
-    public static function createRepo(IOInterface $io, Config $config, array $repoConfig, RepositoryManager $rm = null): RepositoryInterface
+    public static function createRepo(IOInterface $io, Config $config, array $repoConfig, ?RepositoryManager $rm = null): RepositoryInterface
     {
         if (!$rm) {
             @trigger_error('Not passing a repository manager when calling createRepo is deprecated since Composer 2.3.6', E_USER_DEPRECATED);
             $rm = static::manager($io, $config);
         }
-        $repos = self::createRepos($rm, array($repoConfig));
+        $repos = self::createRepos($rm, [$repoConfig]);
 
         return reset($repos);
     }
 
     /**
-     * @param  IOInterface|null       $io
-     * @param  Config|null            $config
-     * @param  RepositoryManager|null $rm
      * @return RepositoryInterface[]
      */
-    public static function defaultRepos(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null): array
+    public static function defaultRepos(?IOInterface $io = null, ?Config $config = null, ?RepositoryManager $rm = null): array
     {
         if (null === $rm) {
             @trigger_error('Not passing a repository manager when calling defaultRepos is deprecated since Composer 2.3.6, use defaultReposWithDefaultManager() instead if you cannot get a manager.', E_USER_DEPRECATED);
@@ -117,13 +100,10 @@ class RepositoryFactory
     }
 
     /**
-     * @param  IOInterface       $io
-     * @param  Config            $config
      * @param  EventDispatcher   $eventDispatcher
      * @param  HttpDownloader    $httpDownloader
-     * @return RepositoryManager
      */
-    public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader = null, EventDispatcher $eventDispatcher = null, ProcessExecutor $process = null): RepositoryManager
+    public static function manager(IOInterface $io, Config $config, ?HttpDownloader $httpDownloader = null, ?EventDispatcher $eventDispatcher = null, ?ProcessExecutor $process = null): RepositoryManager
     {
         if ($httpDownloader === null) {
             $httpDownloader = Factory::createHttpDownloader($io, $config);
@@ -164,7 +144,6 @@ class RepositoryFactory
         return RepositoryFactory::defaultRepos($io, $config, $manager);
     }
 
-
     /**
      * @param array<int|string, mixed> $repoConfigs
      *
@@ -172,7 +151,7 @@ class RepositoryFactory
      */
     private static function createRepos(RepositoryManager $rm, array $repoConfigs): array
     {
-        $repos = array();
+        $repos = [];
 
         foreach ($repoConfigs as $index => $repo) {
             if (is_string($repo)) {
@@ -200,8 +179,6 @@ class RepositoryFactory
      * @param int|string $index
      * @param array{url?: string} $repo
      * @param array<string, mixed> $existingRepos
-     *
-     * @return string
      */
     public static function generateRepositoryName($index, array $repo, array $existingRepos): string
     {

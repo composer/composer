@@ -29,59 +29,55 @@ class VersionTest extends TestCase
      */
     public static function provideOpenSslVersions(): array
     {
-        return array(
+        return [
             // Generated
-            array('1.2.3', '1.2.3.0'),
-            array('1.2.3-beta3', '1.2.3.0-beta3'),
-            array('1.2.3-beta3-dev', '1.2.3.0-beta3-dev'),
-            array('1.2.3-beta3-fips', '1.2.3.0-beta3', true),
-            array('1.2.3-beta3-fips-dev', '1.2.3.0-beta3-dev', true),
-            array('1.2.3-dev', '1.2.3.0-dev'),
-            array('1.2.3-fips', '1.2.3.0', true),
-            array('1.2.3-fips-beta3', '1.2.3.0-beta3', true),
-            array('1.2.3-fips-beta3-dev', '1.2.3.0-beta3-dev', true),
-            array('1.2.3-fips-dev', '1.2.3.0-dev', true),
-            array('1.2.3-pre2', '1.2.3.0-alpha2'),
-            array('1.2.3-pre2-dev', '1.2.3.0-alpha2-dev'),
-            array('1.2.3-pre2-fips', '1.2.3.0-alpha2', true),
-            array('1.2.3-pre2-fips-dev', '1.2.3.0-alpha2-dev', true),
-            array('1.2.3a', '1.2.3.1'),
-            array('1.2.3a-beta3','1.2.3.1-beta3'),
-            array('1.2.3a-beta3-dev', '1.2.3.1-beta3-dev'),
-            array('1.2.3a-dev', '1.2.3.1-dev'),
-            array('1.2.3a-dev-fips', '1.2.3.1-dev', true),
-            array('1.2.3a-fips', '1.2.3.1', true),
-            array('1.2.3a-fips-beta3', '1.2.3.1-beta3', true),
-            array('1.2.3a-fips-dev', '1.2.3.1-dev', true),
-            array('1.2.3beta3', '1.2.3.0-beta3'),
-            array('1.2.3beta3-dev', '1.2.3.0-beta3-dev'),
-            array('1.2.3zh', '1.2.3.34'),
-            array('1.2.3zh-dev', '1.2.3.34-dev'),
-            array('1.2.3zh-fips', '1.2.3.34',true),
-            array('1.2.3zh-fips-dev', '1.2.3.34-dev', true),
+            ['1.2.3', '1.2.3.0'],
+            ['1.2.3-beta3', '1.2.3.0-beta3'],
+            ['1.2.3-beta3-dev', '1.2.3.0-beta3-dev'],
+            ['1.2.3-beta3-fips', '1.2.3.0-beta3', true],
+            ['1.2.3-beta3-fips-dev', '1.2.3.0-beta3-dev', true],
+            ['1.2.3-dev', '1.2.3.0-dev'],
+            ['1.2.3-fips', '1.2.3.0', true],
+            ['1.2.3-fips-beta3', '1.2.3.0-beta3', true],
+            ['1.2.3-fips-beta3-dev', '1.2.3.0-beta3-dev', true],
+            ['1.2.3-fips-dev', '1.2.3.0-dev', true],
+            ['1.2.3-pre2', '1.2.3.0-alpha2'],
+            ['1.2.3-pre2-dev', '1.2.3.0-alpha2-dev'],
+            ['1.2.3-pre2-fips', '1.2.3.0-alpha2', true],
+            ['1.2.3-pre2-fips-dev', '1.2.3.0-alpha2-dev', true],
+            ['1.2.3a', '1.2.3.1'],
+            ['1.2.3a-beta3','1.2.3.1-beta3'],
+            ['1.2.3a-beta3-dev', '1.2.3.1-beta3-dev'],
+            ['1.2.3a-dev', '1.2.3.1-dev'],
+            ['1.2.3a-dev-fips', '1.2.3.1-dev', true],
+            ['1.2.3a-fips', '1.2.3.1', true],
+            ['1.2.3a-fips-beta3', '1.2.3.1-beta3', true],
+            ['1.2.3a-fips-dev', '1.2.3.1-dev', true],
+            ['1.2.3beta3', '1.2.3.0-beta3'],
+            ['1.2.3beta3-dev', '1.2.3.0-beta3-dev'],
+            ['1.2.3zh', '1.2.3.34'],
+            ['1.2.3zh-dev', '1.2.3.34-dev'],
+            ['1.2.3zh-fips', '1.2.3.34',true],
+            ['1.2.3zh-fips-dev', '1.2.3.34-dev', true],
             // Additional cases
-            array('1.2.3zh-fips-rc3', '1.2.3.34-rc3', true, '1.2.3.34-RC3'),
-            array('1.2.3zh-alpha10-fips', '1.2.3.34-alpha10', true),
-            array('1.1.1l (Schannel)', '1.1.1.12'),
+            ['1.2.3zh-fips-rc3', '1.2.3.34-rc3', true, '1.2.3.34-RC3'],
+            ['1.2.3zh-alpha10-fips', '1.2.3.34-alpha10', true],
+            ['1.1.1l (Schannel)', '1.1.1.12'],
             // Check that alphabetical patch levels overflow correctly
-            array('1.2.3', '1.2.3.0'),
-            array('1.2.3a', '1.2.3.1'),
-            array('1.2.3z', '1.2.3.26'),
-            array('1.2.3za', '1.2.3.27'),
-            array('1.2.3zy', '1.2.3.51'),
-            array('1.2.3zz', '1.2.3.52'),
+            ['1.2.3', '1.2.3.0'],
+            ['1.2.3a', '1.2.3.1'],
+            ['1.2.3z', '1.2.3.26'],
+            ['1.2.3za', '1.2.3.27'],
+            ['1.2.3zy', '1.2.3.51'],
+            ['1.2.3zz', '1.2.3.52'],
             // 3.x
-            array('3.0.0', '3.0.0', false, '3.0.0.0'),
-            array('3.2.4-dev', '3.2.4-dev', false, '3.2.4.0-dev'),
-        );
+            ['3.0.0', '3.0.0', false, '3.0.0.0'],
+            ['3.2.4-dev', '3.2.4-dev', false, '3.2.4.0-dev'],
+        ];
     }
 
     /**
      * @dataProvider provideOpenSslVersions
-     * @param string      $input
-     * @param string      $parsedVersion
-     * @param bool        $fipsExpected
-     * @param string|null $normalizedVersion
      */
     public function testParseOpensslVersions(string $input, string $parsedVersion, bool $fipsExpected = false, ?string $normalizedVersion = null): void
     {
@@ -94,19 +90,17 @@ class VersionTest extends TestCase
 
     public function provideLibJpegVersions(): array
     {
-        return array(
-            array('9', '9.0'),
-            array('9a', '9.1'),
-            array('9b', '9.2'),
+        return [
+            ['9', '9.0'],
+            ['9a', '9.1'],
+            ['9b', '9.2'],
             // Never seen in the wild, just for overflow correctness
-            array('9za', '9.27'),
-        );
+            ['9za', '9.27'],
+        ];
     }
 
     /**
      * @dataProvider provideLibJpegVersions
-     * @param string $input
-     * @param string $parsedVersion
      */
     public function testParseLibjpegVersion(string $input, string $parsedVersion): void
     {
@@ -115,18 +109,16 @@ class VersionTest extends TestCase
 
     public function provideZoneinfoVersions(): array
     {
-        return array(
-            array('2019c', '2019.3'),
-            array('2020a', '2020.1'),
+        return [
+            ['2019c', '2019.3'],
+            ['2020a', '2020.1'],
             // Never happened so far but fixate overflow behavior
-            array('2020za', '2020.27'),
-        );
+            ['2020za', '2020.27'],
+        ];
     }
 
     /**
      * @dataProvider provideZoneinfoVersions
-     * @param string $input
-     * @param string $parsedVersion
      */
     public function testParseZoneinfoVersion(string $input, string $parsedVersion): void
     {

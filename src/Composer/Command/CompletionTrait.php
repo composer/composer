@@ -33,7 +33,7 @@ trait CompletionTrait
     /**
      * @see BaseCommand::requireComposer()
      */
-    abstract public function requireComposer(bool $disablePlugins = null, bool $disableScripts = null): Composer;
+    abstract public function requireComposer(?bool $disablePlugins = null, ?bool $disableScripts = null): Composer;
 
     /**
      * Suggestion values for "prefer-install" option
@@ -80,9 +80,9 @@ trait CompletionTrait
             $platformHint = [];
             if ($includePlatformPackages) {
                 if ($locker->isLocked()) {
-                    $platformRepo = new PlatformRepository(array(), $locker->getPlatformOverrides());
+                    $platformRepo = new PlatformRepository([], $locker->getPlatformOverrides());
                 } else {
-                    $platformRepo = new PlatformRepository(array(), $composer->getConfig()->get('platform'));
+                    $platformRepo = new PlatformRepository([], $composer->getConfig()->get('platform'));
                 }
                 if ($input->getCompletionValue() === '') {
                     // to reduce noise, when no text is yet entered we list only two entries for ext- and lib- prefixes
@@ -203,6 +203,7 @@ trait CompletionTrait
             $repos = new PlatformRepository([], $this->requireComposer()->getConfig()->get('platform'));
 
             $pattern = BasePackage::packageNameToRegexp($input->getCompletionValue().'*');
+
             return array_filter(array_map(static function (PackageInterface $package) {
                 return $package->getName();
             }, $repos->getPackages()), static function (string $name) use ($pattern): bool {

@@ -50,15 +50,12 @@ class PreFileDownloadEvent extends Event
     /**
      * @var mixed[]
      */
-    private $transportOptions = array();
+    private $transportOptions = [];
 
     /**
      * Constructor.
      *
      * @param string         $name           The event name
-     * @param HttpDownloader $httpDownloader
-     * @param string         $processedUrl
-     * @param string         $type
      * @param mixed          $context
      */
     public function __construct(string $name, HttpDownloader $httpDownloader, string $processedUrl, string $type, $context = null)
@@ -70,9 +67,6 @@ class PreFileDownloadEvent extends Event
         $this->context = $context;
     }
 
-    /**
-     * @return HttpDownloader
-     */
     public function getHttpDownloader(): HttpDownloader
     {
         return $this->httpDownloader;
@@ -80,8 +74,6 @@ class PreFileDownloadEvent extends Event
 
     /**
      * Retrieves the processed URL that will be downloaded.
-     *
-     * @return string
      */
     public function getProcessedUrl(): string
     {
@@ -92,8 +84,6 @@ class PreFileDownloadEvent extends Event
      * Sets the processed URL that will be downloaded.
      *
      * @param string $processedUrl New processed URL
-     *
-     * @return void
      */
     public function setProcessedUrl(string $processedUrl): void
     {
@@ -102,8 +92,6 @@ class PreFileDownloadEvent extends Event
 
     /**
      * Retrieves a custom package cache key for this download.
-     *
-     * @return string|null
      */
     public function getCustomCacheKey(): ?string
     {
@@ -114,8 +102,6 @@ class PreFileDownloadEvent extends Event
      * Sets a custom package cache key for this download.
      *
      * @param string|null $customCacheKey New cache key
-     *
-     * @return void
      */
     public function setCustomCacheKey(?string $customCacheKey): void
     {
@@ -124,8 +110,6 @@ class PreFileDownloadEvent extends Event
 
     /**
      * Returns the type of this download (package, metadata).
-     *
-     * @return string
      */
     public function getType(): string
     {
@@ -163,8 +147,6 @@ class PreFileDownloadEvent extends Event
      * Only available for events with type metadata, for packages set the transport options on the package itself.
      *
      * @param mixed[] $options
-     *
-     * @return void
      */
     public function setTransportOptions(array $options): void
     {

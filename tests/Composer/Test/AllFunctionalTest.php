@@ -99,7 +99,6 @@ class AllFunctionalTest extends TestCase
     /**
      * @dataProvider getTestFiles
      * @depends testBuildPhar
-     * @param string $testFile
      */
     public function testIntegration(string $testFile): void
     {
@@ -114,15 +113,15 @@ class AllFunctionalTest extends TestCase
             $fs->copy($testFileSetupDir, $this->testDir);
         }
 
-        $env = array(
+        $env = [
             'COMPOSER_HOME' => $this->testDir.'home',
             'COMPOSER_CACHE_DIR' => $this->testDir.'cache',
-        );
+        ];
 
         $proc = Process::fromShellCommandline(escapeshellcmd(PHP_BINARY).' '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'], $this->testDir, $env, null, 300);
         $output = '';
 
-        $exitCode = $proc->run(function ($type, $buffer) use (&$output): void {
+        $exitCode = $proc->run(static function ($type, $buffer) use (&$output): void {
             $output .= $buffer;
         });
 
@@ -182,22 +181,21 @@ class AllFunctionalTest extends TestCase
      */
     public function getTestFiles(): array
     {
-        $tests = array();
+        $tests = [];
         foreach (Finder::create()->in(__DIR__.'/Fixtures/functional')->name('*.test')->files() as $file) {
-            $tests[$file->getFilename()] = array((string) $file);
+            $tests[$file->getFilename()] = [(string) $file];
         }
 
         return $tests;
     }
 
     /**
-     * @param string $file
      * @return array{RUN: string, EXPECT?: string, EXPECT-EXIT-CODE?: int, EXPECT-REGEX?: string, EXPECT-REGEXES?: string, TEST?: string}
      */
     private function parseTestFile(string $file): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
-        $data = array();
+        $data = [];
         $section = null;
 
         foreach ($tokens as $token) {
@@ -252,10 +250,6 @@ class AllFunctionalTest extends TestCase
         return $data; // @phpstan-ignore-line
     }
 
-    /**
-     * @param string $output
-     * @return string
-     */
     private function cleanOutput(string $output): string
     {
         $processed = '';

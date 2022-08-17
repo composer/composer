@@ -24,7 +24,7 @@ class PlatformRepositoryTest extends TestCase
     public function testHhvmPackage(): void
     {
         $hhvmDetector = $this->getMockBuilder('Composer\Platform\HhvmDetector')->getMock();
-        $platformRepository = new PlatformRepository(array(), array(), null, $hhvmDetector);
+        $platformRepository = new PlatformRepository([], [], null, $hhvmDetector);
 
         $hhvmDetector
             ->method('getVersion')
@@ -38,79 +38,79 @@ class PlatformRepositoryTest extends TestCase
 
     public function providePhpFlavorTestCases(): array
     {
-        return array(
-            array(
-                array(
+        return [
+            [
+                [
                     'PHP_VERSION' => '7.1.33',
-                ),
-                array(
+                ],
+                [
                     'php' => '7.1.33',
-                ),
-            ),
-            array(
-                array(
+                ],
+            ],
+            [
+                [
                     'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
                     'PHP_DEBUG' => true,
-                ),
-                array(
+                ],
+                [
                     'php' => '7.2.31',
                     'php-debug' => '7.2.31',
-                ),
-            ),
-            array(
-                array(
+                ],
+            ],
+            [
+                [
                     'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
                     'PHP_ZTS' => true,
-                ),
-                array(
+                ],
+                [
                     'php' => '7.2.31',
                     'php-zts' => '7.2.31',
-                ),
-            ),
-            array(
-                array(
+                ],
+            ],
+            [
+                [
                     'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
                     'PHP_INT_SIZE' => 8,
-                ),
-                array(
+                ],
+                [
                     'php' => '7.2.31',
                     'php-64bit' => '7.2.31',
-                ),
-            ),
-            array(
-                array(
+                ],
+            ],
+            [
+                [
                     'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
                     'AF_INET6' => 30,
-                ),
-                array(
+                ],
+                [
                     'php' => '7.2.31',
                     'php-ipv6' => '7.2.31',
-                ),
-            ),
-            array(
-                array(
+                ],
+            ],
+            [
+                [
                     'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
-                ),
-                array(
+                ],
+                [
                     'php' => '7.2.31',
                     'php-ipv6' => '7.2.31',
-                ),
-                array(
-                    array('inet_pton', array('::'), ''),
-                ),
-            ),
-            array(
-                array(
+                ],
+                [
+                    ['inet_pton', ['::'], ''],
+                ],
+            ],
+            [
+                [
                     'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
-                ),
-                array(
+                ],
+                [
                     'php' => '7.2.31',
-                ),
-                array(
-                    array('inet_pton', array('::'), false),
-                ),
-            ),
-        );
+                ],
+                [
+                    ['inet_pton', ['::'], false],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -120,27 +120,27 @@ class PlatformRepositoryTest extends TestCase
      * @param array<string, string> $packages
      * @param list<array{string, list<string>, string|bool}>  $functions
      */
-    public function testPhpVersion(array $constants, array $packages, array $functions = array()): void
+    public function testPhpVersion(array $constants, array $packages, array $functions = []): void
     {
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
         $runtime
             ->method('getExtensions')
-            ->willReturn(array());
+            ->willReturn([]);
         $runtime
             ->method('hasConstant')
-            ->willReturnCallback(function ($constant, $class = null) use ($constants): bool {
+            ->willReturnCallback(static function ($constant, $class = null) use ($constants): bool {
                 return isset($constants[ltrim($class.'::'.$constant, ':')]);
             });
         $runtime
             ->method('getConstant')
-            ->willReturnCallback(function ($constant, $class = null) use ($constants) {
+            ->willReturnCallback(static function ($constant, $class = null) use ($constants) {
                 return $constants[ltrim($class.'::'.$constant, ':')] ?? null;
             });
         $runtime
             ->method('invoke')
             ->willReturnMap($functions);
 
-        $repository = new PlatformRepository(array(), array(), $runtime);
+        $repository = new PlatformRepository([], [], $runtime);
         foreach ($packages as $packageName => $version) {
             $package = $repository->findPackage($packageName, '*');
             self::assertNotNull($package, sprintf('Expected to find package "%s"', $packageName));
@@ -155,7 +155,7 @@ class PlatformRepositoryTest extends TestCase
         $runtime
             ->expects(self::once())
             ->method('invoke')
-            ->with('inet_pton', array('::'))
+            ->with('inet_pton', ['::'])
             ->willReturn(false);
         $runtime
             ->method('hasConstant')
@@ -167,21 +167,21 @@ class PlatformRepositoryTest extends TestCase
         ];
         $runtime
             ->method('getConstant')
-            ->willReturnCallback(function ($constant, $class = null) use ($constants) {
+            ->willReturnCallback(static function ($constant, $class = null) use ($constants) {
                 return $constants[ltrim($class.'::'.$constant, ':')] ?? null;
             });
         $runtime
             ->method('getExtensions')
-            ->willReturn(array());
-        $repository = new PlatformRepository(array(), array(), $runtime);
+            ->willReturn([]);
+        $repository = new PlatformRepository([], [], $runtime);
         $package = $repository->findPackage('php-ipv6', '*');
         self::assertNull($package);
     }
 
     public static function provideLibraryTestCases(): array
     {
-        return array(
-            'amqp' => array(
+        return [
+            'amqp' => [
                 'amqp',
                 '
 
@@ -195,12 +195,12 @@ librabbitmq version => 0.9.0
 Default max channels per connection => 256
 Default max frame size => 131072
 Default heartbeats interval => 0',
-                array(
+                [
                     'lib-amqp-protocol' => '0.9.1',
                     'lib-amqp-librabbitmq' => '0.9.0',
-                ),
-            ),
-            'bz2' => array(
+                ],
+            ],
+            'bz2' => [
                 'bz2',
                 '
 bz2
@@ -209,9 +209,9 @@ BZip2 Support => Enabled
 Stream Wrapper support => compress.bzip2://
 Stream Filter support => bzip2.decompress, bzip2.compress
 BZip2 Version => 1.0.5, 6-Sept-2010',
-                array('lib-bz2' => '1.0.5'),
-            ),
-            'curl' => array(
+                ['lib-bz2' => '1.0.5'],
+            ],
+            'curl' => [
                 'curl',
                 '
 curl
@@ -245,16 +245,16 @@ libSSH Version => libssh2/1.4.3
 
 Directive => Local Value => Master Value
 curl.cainfo => no value => no value',
-                array(
+                [
                     'lib-curl' => '2.0.0',
                     'lib-curl-openssl' => '1.0.1.20',
                     'lib-curl-zlib' => '1.2.8',
                     'lib-curl-libssh2' => '1.4.3',
-                ),
-                array(array('curl_version', array(), array('version' => '2.0.0'))),
-            ),
+                ],
+                [['curl_version', [], ['version' => '2.0.0']]],
+            ],
 
-            'curl: OpenSSL fips version' => array(
+            'curl: OpenSSL fips version' => [
                 'curl',
                 '
 curl
@@ -288,15 +288,15 @@ libSSH Version => libssh2/1.4.3
 
 Directive => Local Value => Master Value
 curl.cainfo => no value => no value',
-                array(
+                [
                     'lib-curl' => '2.0.0',
-                    'lib-curl-openssl-fips' => array('1.0.1.20', array(), array('lib-curl-openssl')),
+                    'lib-curl-openssl-fips' => ['1.0.1.20', [], ['lib-curl-openssl']],
                     'lib-curl-zlib' => '1.2.8',
                     'lib-curl-libssh2' => '1.4.3',
-                ),
-                array(array('curl_version', array(), array('version' => '2.0.0'))),
-            ),
-            'curl: gnutls' => array(
+                ],
+                [['curl_version', [], ['version' => '2.0.0']]],
+            ],
+            'curl: gnutls' => [
                 'curl',
                 '
 curl
@@ -324,14 +324,14 @@ Protocols => dict, file, ftp, ftps, gopher, http, https, imap, imaps, ldap, pop3
 Host => x86_64-pc-linux-gnu
 SSL Version => GnuTLS/2.12.14
 ZLib Version => 1.2.3.4',
-                array(
+                [
                     'lib-curl' => '7.22.0',
                     'lib-curl-zlib' => '1.2.3.4',
-                    'lib-curl-gnutls' => array('2.12.14', array('lib-curl-openssl')),
-                ),
-                array(array('curl_version', array(), array('version' => '7.22.0'))),
-            ),
-            'curl: NSS' => array(
+                    'lib-curl-gnutls' => ['2.12.14', ['lib-curl-openssl']],
+                ],
+                [['curl_version', [], ['version' => '7.22.0']]],
+            ],
+            'curl: NSS' => [
                 'curl',
                 '
 curl
@@ -358,15 +358,15 @@ Host => x86_64-redhat-linux-gnu
 SSL Version => NSS/3.13.3.0
 ZLib Version => 1.2.5
 libSSH Version => libssh2/1.4.1',
-                array(
+                [
                     'lib-curl' => '7.24.0',
-                    'lib-curl-nss' => array('3.13.3.0', array('lib-curl-openssl')),
+                    'lib-curl-nss' => ['3.13.3.0', ['lib-curl-openssl']],
                     'lib-curl-zlib' => '1.2.5',
                     'lib-curl-libssh2' => '1.4.1',
-                ),
-                array(array('curl_version', array(), array('version' => '7.24.0'))),
-            ),
-            'curl: libssh not libssh2' => array(
+                ],
+                [['curl_version', [], ['version' => '7.24.0']]],
+            ],
+            'curl: libssh not libssh2' => [
                 'curl',
                 '
 
@@ -404,15 +404,15 @@ Host => x86_64-pc-linux-gnu
 SSL Version => OpenSSL/1.1.1g
 ZLib Version => 1.2.11
 libSSH Version => libssh/0.9.3/openssl/zlib',
-                array(
+                [
                     'lib-curl' => '7.68.0',
                     'lib-curl-openssl' => '1.1.1.7',
                     'lib-curl-zlib' => '1.2.11',
                     'lib-curl-libssh' => '0.9.3',
-                ),
-                array(array('curl_version', array(), array('version' => '7.68.0'))),
-            ),
-            'date' => array(
+                ],
+                [['curl_version', [], ['version' => '7.68.0']]],
+            ],
+            'date' => [
                 'date',
                 '
 date
@@ -422,12 +422,12 @@ timelib version => 2018.03
 "Olson" Timezone Database Version => 2020.1
 Timezone Database => external
 Default timezone => Europe/Berlin',
-                array(
+                [
                     'lib-date-timelib' => '2018.03',
                     'lib-date-zoneinfo' => '2020.1',
-                ),
-            ),
-            'date: before timelib was extracted' => array(
+                ],
+            ],
+            'date: before timelib was extracted' => [
                 'date',
                 '
 date
@@ -436,13 +436,13 @@ date/time support => enabled
 "Olson" Timezone Database Version => 2013.2
 Timezone Database => internal
 Default timezone => Europe/Amsterdam',
-                array(
+                [
                     'lib-date-zoneinfo' => '2013.2',
                     'lib-date-timelib' => false,
-                ),
-            ),
-            'date: internal zoneinfo' => array(
-                array('date', 'timezonedb'),
+                ],
+            ],
+            'date: internal zoneinfo' => [
+                ['date', 'timezonedb'],
                 '
 date
 
@@ -450,10 +450,10 @@ date/time support => enabled
 "Olson" Timezone Database Version => 2020.1
 Timezone Database => internal
 Default timezone => UTC',
-                array('lib-date-zoneinfo' => '2020.1'),
-            ),
-            'date: external zoneinfo' => array(
-                array('date', 'timezonedb'),
+                ['lib-date-zoneinfo' => '2020.1'],
+            ],
+            'date: external zoneinfo' => [
+                ['date', 'timezonedb'],
                 '
 date
 
@@ -461,9 +461,9 @@ date/time support => enabled
 "Olson" Timezone Database Version => 2020.1
 Timezone Database => external
 Default timezone => UTC',
-                array('lib-timezonedb-zoneinfo' => array('2020.1', array('lib-date-zoneinfo'))),
-            ),
-            'date: zoneinfo 0.system' => array(
+                ['lib-timezonedb-zoneinfo' => ['2020.1', ['lib-date-zoneinfo']]],
+            ],
+            'date: zoneinfo 0.system' => [
                 'date',
                 '
 
@@ -480,21 +480,21 @@ date.default_latitude => 31.7667 => 31.7667
 date.default_longitude => 35.2333 => 35.2333
 date.sunset_zenith => 90.583333 => 90.583333
 date.sunrise_zenith => 90.583333 => 90.583333',
-                array(
+                [
                     'lib-date-zoneinfo' => '0',
                     'lib-date-timelib' => '2018.03',
-                ),
-            ),
-            'fileinfo' => array(
+                ],
+            ],
+            'fileinfo' => [
                 'fileinfo',
                 '
 fileinfo
 
 fileinfo support => enabled
 libmagic => 537',
-                array('lib-fileinfo-libmagic' => '537'),
-            ),
-            'gd' => array(
+                ['lib-fileinfo-libmagic' => '537'],
+            ],
+            'gd' => [
                 'gd',
                 '
 gd
@@ -516,16 +516,16 @@ WebP Support => enabled
 
 Directive => Local Value => Master Value
 gd.jpeg_ignore_warning => 1 => 1',
-                array(
+                [
                     'lib-gd' => '1.2.3',
                     'lib-gd-freetype' => '2.10.0',
                     'lib-gd-libjpeg' => '9.0',
                     'lib-gd-libpng' => '1.6.34',
-                ),
-                array(),
-                array(array('GD_VERSION', null, '1.2.3')),
-            ),
-            'gd: libjpeg version variation' => array(
+                ],
+                [],
+                [['GD_VERSION', null, '1.2.3']],
+            ],
+            'gd: libjpeg version variation' => [
                 'gd',
                 '
 gd
@@ -547,16 +547,16 @@ WebP Support => enabled
 
 Directive => Local Value => Master Value
 gd.jpeg_ignore_warning => 1 => 1',
-                array(
+                [
                     'lib-gd' => '1.2.3',
                     'lib-gd-freetype' => '2.9.1',
                     'lib-gd-libjpeg' => '6.2',
                     'lib-gd-libpng' => '1.6.35',
-                ),
-                array(),
-                array(array('GD_VERSION', null, '1.2.3')),
-            ),
-            'gd: libxpm' => array(
+                ],
+                [],
+                [['GD_VERSION', null, '1.2.3']],
+            ],
+            'gd: libxpm' => [
                 'gd',
                 '
 gd
@@ -581,31 +581,31 @@ WebP Support => enabled
 
 Directive => Local Value => Master Value
 gd.jpeg_ignore_warning => 1 => 1',
-                array(
+                [
                     'lib-gd' => '2.2.5',
                     'lib-gd-freetype' => '2.6.3',
                     'lib-gd-libjpeg' => '6.2',
                     'lib-gd-libpng' => '1.6.28',
                     'lib-gd-libxpm' => '3.4.11',
-                ),
-                array(),
-                array(array('GD_VERSION', null, '2.2.5')),
-            ),
-            'iconv' => array(
+                ],
+                [],
+                [['GD_VERSION', null, '2.2.5']],
+            ],
+            'iconv' => [
                 'iconv',
                 null,
-                array('lib-iconv' => '1.2.4'),
-                array(),
-                array(array('ICONV_VERSION', null, '1.2.4')),
-            ),
-            'gmp' => array(
+                ['lib-iconv' => '1.2.4'],
+                [],
+                [['ICONV_VERSION', null, '1.2.4']],
+            ],
+            'gmp' => [
                 'gmp',
                 null,
-                array('lib-gmp' => '6.1.0'),
-                array(),
-                array(array('GMP_VERSION', null, '6.1.0')),
-            ),
-            'intl' => array(
+                ['lib-gmp' => '6.1.0'],
+                [],
+                [['GMP_VERSION', null, '6.1.0']],
+            ],
+            'intl' => [
                 'intl',
                 '
 intl
@@ -620,23 +620,23 @@ Directive => Local Value => Master Value
 intl.default_locale => no value => no value
 intl.error_level => 0 => 0
 intl.use_exceptions => 0 => 0',
-                array(
+                [
                     'lib-icu' => '100',
                     'lib-icu-cldr' => ResourceBundleStub::STUB_VERSION,
                     'lib-icu-unicode' => '7.0.0',
                     'lib-icu-zoneinfo' => '2016.2',
-                ),
-                array(
-                    array(array('ResourceBundle', 'create'), array('root', 'ICUDATA', false), new ResourceBundleStub()),
-                    array(array('IntlChar', 'getUnicodeVersion'), array(), array(7, 0, 0, 0)),
-                ),
-                array(array('INTL_ICU_VERSION', null, '100')),
-                array(
-                    array('ResourceBundle'),
-                    array('IntlChar'),
-                ),
-            ),
-            'intl: INTL_ICU_VERSION not defined' => array(
+                ],
+                [
+                    [['ResourceBundle', 'create'], ['root', 'ICUDATA', false], new ResourceBundleStub()],
+                    [['IntlChar', 'getUnicodeVersion'], [], [7, 0, 0, 0]],
+                ],
+                [['INTL_ICU_VERSION', null, '100']],
+                [
+                    ['ResourceBundle'],
+                    ['IntlChar'],
+                ],
+            ],
+            'intl: INTL_ICU_VERSION not defined' => [
                 'intl',
                 '
 intl
@@ -645,25 +645,25 @@ Internationalization support => enabled
 version => 1.1.0
 ICU version => 57.1
 ICU Data version => 57.1',
-                array('lib-icu' => '57.1'),
-            ),
-            'imagick: 6.x' => array(
+                ['lib-icu' => '57.1'],
+            ],
+            'imagick: 6.x' => [
                 'imagick',
                 null,
-                array('lib-imagick-imagemagick' => array('6.2.9', array('lib-imagick'))),
-                array(),
-                array(),
-                array(array('Imagick', array(), new ImagickStub('ImageMagick 6.2.9 Q16 x86_64 2018-05-18 http://www.imagemagick.org'))),
-            ),
-            'imagick: 7.x' => array(
+                ['lib-imagick-imagemagick' => ['6.2.9', ['lib-imagick']]],
+                [],
+                [],
+                [['Imagick', [], new ImagickStub('ImageMagick 6.2.9 Q16 x86_64 2018-05-18 http://www.imagemagick.org')]],
+            ],
+            'imagick: 7.x' => [
                 'imagick',
                 null,
-                array('lib-imagick-imagemagick' => array('7.0.8.34', array('lib-imagick'))),
-                array(),
-                array(),
-                array(array('Imagick', array(), new ImagickStub('ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org'))),
-            ),
-            'ldap' => array(
+                ['lib-imagick-imagemagick' => ['7.0.8.34', ['lib-imagick']]],
+                [],
+                [],
+                [['Imagick', [], new ImagickStub('ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org')]],
+            ],
+            'ldap' => [
                 'ldap',
                 '
 ldap
@@ -678,23 +678,23 @@ SASL Support => Enabled
 
 Directive => Local Value => Master Value
 ldap.max_links => Unlimited => Unlimited',
-                array('lib-ldap-openldap' => '2.4.50'),
-            ),
-            'libxml' => array(
+                ['lib-ldap-openldap' => '2.4.50'],
+            ],
+            'libxml' => [
                 'libxml',
                 null,
-                array('lib-libxml' => '2.1.5'),
-                array(),
-                array(array('LIBXML_DOTTED_VERSION', null, '2.1.5')),
-            ),
-            'libxml: related extensions' => array(
-                array('libxml', 'dom', 'simplexml', 'xml', 'xmlreader', 'xmlwriter'),
+                ['lib-libxml' => '2.1.5'],
+                [],
+                [['LIBXML_DOTTED_VERSION', null, '2.1.5']],
+            ],
+            'libxml: related extensions' => [
+                ['libxml', 'dom', 'simplexml', 'xml', 'xmlreader', 'xmlwriter'],
                 null,
-                array('lib-libxml' => array('2.1.5', array(), array('lib-dom-libxml', 'lib-simplexml-libxml', 'lib-xml-libxml', 'lib-xmlreader-libxml', 'lib-xmlwriter-libxml'))),
-                array(),
-                array(array('LIBXML_DOTTED_VERSION', null, '2.1.5')),
-            ),
-            'mbstring' => array(
+                ['lib-libxml' => ['2.1.5', [], ['lib-dom-libxml', 'lib-simplexml-libxml', 'lib-xml-libxml', 'lib-xmlreader-libxml', 'lib-xmlwriter-libxml']]],
+                [],
+                [['LIBXML_DOTTED_VERSION', null, '2.1.5']],
+            ],
+            'mbstring' => [
                 'mbstring',
                 '
 mbstring
@@ -708,14 +708,14 @@ mbstring extension makes use of "streamable kanji code filter and converter", wh
 
 Multibyte (japanese) regex support => enabled
 Multibyte regex (oniguruma) version => 6.1.3',
-                array(
+                [
                     'lib-mbstring-libmbfl' => '1.3.2',
                     'lib-mbstring-oniguruma' => '7.0.0',
-                ),
-                array(),
-                array(array('MB_ONIGURUMA_VERSION', null, '7.0.0')),
-            ),
-            'mbstring: no MB_ONIGURUMA constant' => array(
+                ],
+                [],
+                [['MB_ONIGURUMA_VERSION', null, '7.0.0']],
+            ],
+            'mbstring: no MB_ONIGURUMA constant' => [
                 'mbstring',
                 '
 mbstring
@@ -729,12 +729,12 @@ mbstring extension makes use of "streamable kanji code filter and converter", wh
 
 Multibyte (japanese) regex support => enabled
 Multibyte regex (oniguruma) version => 6.1.3',
-                array(
+                [
                     'lib-mbstring-libmbfl' => '1.3.2',
                     'lib-mbstring-oniguruma' => '6.1.3',
-                ),
-            ),
-            'mbstring: no MB_ONIGURUMA constant <7.40' => array(
+                ],
+            ],
+            'mbstring: no MB_ONIGURUMA constant <7.40' => [
                 'mbstring',
                 '
 mbstring
@@ -749,12 +749,12 @@ mbstring extension makes use of "streamable kanji code filter and converter", wh
 
 Multibyte (japanese) regex support => enabled
 Multibyte regex (oniguruma) backtrack check => On',
-                array(
+                [
                     'lib-mbstring-libmbfl' => '1.3.2',
                     'lib-mbstring-oniguruma' => '6.9.4',
-                ),
-            ),
-            'memcached' => array(
+                ],
+            ],
+            'memcached' => [
                 'memcached',
                 '
 memcached
@@ -767,72 +767,72 @@ Session support => yes
 igbinary support => yes
 json support => yes
 msgpack support => yes',
-                array('lib-memcached-libmemcached' => '1.0.18'),
-            ),
-            'openssl' => array(
+                ['lib-memcached-libmemcached' => '1.0.18'],
+            ],
+            'openssl' => [
                 'openssl',
                 null,
-                array('lib-openssl' => '1.1.1.7'),
-                array(),
-                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g  21 Apr 2020')),
-            ),
-            'openssl: distro peculiarities' => array(
+                ['lib-openssl' => '1.1.1.7'],
+                [],
+                [['OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g  21 Apr 2020']],
+            ],
+            'openssl: distro peculiarities' => [
                 'openssl',
                 null,
-                array('lib-openssl' => '1.1.1.7'),
-                array(),
-                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-freebsd  21 Apr 2020')),
-            ),
-            'openssl: two letters suffix' => array(
+                ['lib-openssl' => '1.1.1.7'],
+                [],
+                [['OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-freebsd  21 Apr 2020']],
+            ],
+            'openssl: two letters suffix' => [
                 'openssl',
                 null,
-                array('lib-openssl' => '0.9.8.33'),
-                array(),
-                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 0.9.8zg  21 Apr 2020')),
-            ),
-            'openssl: pre release is treated as alpha' => array(
+                ['lib-openssl' => '0.9.8.33'],
+                [],
+                [['OPENSSL_VERSION_TEXT', null, 'OpenSSL 0.9.8zg  21 Apr 2020']],
+            ],
+            'openssl: pre release is treated as alpha' => [
                 'openssl',
                 null,
-                array('lib-openssl' => '1.1.1.7-alpha1'),
-                array(),
-                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-pre1  21 Apr 2020')),
-            ),
-            'openssl: beta release' => array(
+                ['lib-openssl' => '1.1.1.7-alpha1'],
+                [],
+                [['OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-pre1  21 Apr 2020']],
+            ],
+            'openssl: beta release' => [
                 'openssl',
                 null,
-                array('lib-openssl' => '1.1.1.7-beta2'),
-                array(),
-                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-beta2  21 Apr 2020')),
-            ),
-            'openssl: alpha release' => array(
+                ['lib-openssl' => '1.1.1.7-beta2'],
+                [],
+                [['OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-beta2  21 Apr 2020']],
+            ],
+            'openssl: alpha release' => [
                 'openssl',
                 null,
-                array('lib-openssl' => '1.1.1.7-alpha4'),
-                array(),
-                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-alpha4  21 Apr 2020')),
-            ),
-            'openssl: rc release' => array(
+                ['lib-openssl' => '1.1.1.7-alpha4'],
+                [],
+                [['OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-alpha4  21 Apr 2020']],
+            ],
+            'openssl: rc release' => [
                 'openssl',
                 null,
-                array('lib-openssl' => '1.1.1.7-rc2'),
-                array(),
-                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-rc2  21 Apr 2020')),
-            ),
-            'openssl: fips' => array(
+                ['lib-openssl' => '1.1.1.7-rc2'],
+                [],
+                [['OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-rc2  21 Apr 2020']],
+            ],
+            'openssl: fips' => [
                 'openssl',
                 null,
-                array('lib-openssl-fips' => array('1.1.1.7', array(), array('lib-openssl'))),
-                array(),
-                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-fips  21 Apr 2020')),
-            ),
-            'openssl: LibreSSL' => array(
+                ['lib-openssl-fips' => ['1.1.1.7', [], ['lib-openssl']]],
+                [],
+                [['OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-fips  21 Apr 2020']],
+            ],
+            'openssl: LibreSSL' => [
                 'openssl',
                 null,
-                array('lib-openssl' => '2.0.1.0'),
-                array(),
-                array(array('OPENSSL_VERSION_TEXT', null, 'LibreSSL 2.0.1')),
-            ),
-            'mysqlnd' => array(
+                ['lib-openssl' => '2.0.1.0'],
+                [],
+                [['OPENSSL_VERSION_TEXT', null, 'LibreSSL 2.0.1']],
+            ],
+            'mysqlnd' => [
                 'mysqlnd',
                 '
                 mysqlnd
@@ -850,9 +850,9 @@ Collecting memory statistics => Yes
 Tracing => n/a
 Loaded plugins => mysqlnd,debug_trace,auth_plugin_mysql_native_password,auth_plugin_mysql_clear_password,auth_plugin_sha256_password
 API Extensions => pdo_mysql,mysqli',
-                array('lib-mysqlnd-mysqlnd' => '5.0.11-dev'),
-            ),
-            'pdo_mysql' => array(
+                ['lib-mysqlnd-mysqlnd' => '5.0.11-dev'],
+            ],
+            'pdo_mysql' => [
                 'pdo_mysql',
                 '
                 pdo_mysql
@@ -862,9 +862,9 @@ Client API version => mysqlnd 5.0.10-dev - 20150407 - $Id: 38fea24f2847fa7519001
 
 Directive => Local Value => Master Value
 pdo_mysql.default_socket => /tmp/mysql.sock => /tmp/mysql.sock',
-                array('lib-pdo_mysql-mysqlnd' => '5.0.10-dev'),
-            ),
-            'mongodb' => array(
+                ['lib-pdo_mysql-mysqlnd' => '5.0.10-dev'],
+            ],
+            'mongodb' => [
                 'mongodb',
                 '
                 mongodb
@@ -887,12 +887,12 @@ libmongoc compression zlib => enabled
 
 Directive => Local Value => Master Value
 mongodb.debug => no value => no value',
-                array(
+                [
                     'lib-mongodb-libmongoc' => '1.15.2',
                     'lib-mongodb-libbson' => '1.15.2',
-                ),
-            ),
-            'pcre' => array(
+                ],
+            ],
+            'pcre' => [
                 'pcre',
                 '
 pcre
@@ -902,14 +902,14 @@ PCRE Library Version => 10.33 2019-04-16
 PCRE Unicode Version => 11.0.0
 PCRE JIT Support => enabled
 PCRE JIT Target => x86 64bit (little endian + unaligned)',
-                array(
+                [
                     'lib-pcre' => '10.33',
                     'lib-pcre-unicode' => '11.0.0',
-                ),
-                array(),
-                array(array('PCRE_VERSION', null, '10.33 2019-04-16')),
-            ),
-            'pcre: no unicode version included' => array(
+                ],
+                [],
+                [['PCRE_VERSION', null, '10.33 2019-04-16']],
+            ],
+            'pcre: no unicode version included' => [
                 'pcre',
                 '
 pcre
@@ -921,13 +921,13 @@ Directive => Local Value => Master Value
 pcre.backtrack_limit => 1000000 => 1000000
 pcre.recursion_limit => 100000 => 100000
                 ',
-                array(
+                [
                     'lib-pcre' => '8.38',
-                ),
-                array(),
-                array(array('PCRE_VERSION', null, '8.38 2015-11-23')),
-            ),
-            'pgsql' => array(
+                ],
+                [],
+                [['PCRE_VERSION', null, '8.38 2015-11-23']],
+            ],
+            'pgsql' => [
                 'pgsql',
                 '
 pgsql
@@ -947,9 +947,9 @@ pgsql.max_links => Unlimited => Unlimited
 pgsql.auto_reset_persistent => Off => Off
 pgsql.ignore_notice => Off => Off
 pgsql.log_notice => Off => Off',
-                array('lib-pgsql-libpq' => '12.2'),
-            ),
-            'pdo_pgsql' => array(
+                ['lib-pgsql-libpq' => '12.2'],
+            ],
+            'pdo_pgsql' => [
                 'pdo_pgsql',
                 '
                 pdo_pgsql
@@ -958,23 +958,23 @@ PDO Driver for PostgreSQL => enabled
 PostgreSQL(libpq) Version => 12.1
 Module version => 7.1.33
 Revision =>  $Id: 9c5f356c77143981d2e905e276e439501fe0f419 $',
-                array('lib-pdo_pgsql-libpq' => '12.1'),
-            ),
-            'libsodium' => array(
+                ['lib-pdo_pgsql-libpq' => '12.1'],
+            ],
+            'libsodium' => [
                 'libsodium',
                 null,
-                array('lib-libsodium' => '1.0.17'),
-                array(),
-                array(array('SODIUM_LIBRARY_VERSION', null, '1.0.17')),
-            ),
-            'libsodium: different extension name' => array(
+                ['lib-libsodium' => '1.0.17'],
+                [],
+                [['SODIUM_LIBRARY_VERSION', null, '1.0.17']],
+            ],
+            'libsodium: different extension name' => [
                 'sodium',
                 null,
-                array('lib-libsodium' => '1.0.15'),
-                array(),
-                array(array('SODIUM_LIBRARY_VERSION', null, '1.0.15')),
-            ),
-            'pdo_sqlite' => array(
+                ['lib-libsodium' => '1.0.15'],
+                [],
+                [['SODIUM_LIBRARY_VERSION', null, '1.0.15']],
+            ],
+            'pdo_sqlite' => [
                 'pdo_sqlite',
                 '
 pdo_sqlite
@@ -982,9 +982,9 @@ pdo_sqlite
 PDO Driver for SQLite 3.x => enabled
 SQLite Library => 3.32.3
                 ',
-                array('lib-pdo_sqlite-sqlite' => '3.32.3'),
-            ),
-            'sqlite3' => array(
+                ['lib-pdo_sqlite-sqlite' => '3.32.3'],
+            ],
+            'sqlite3' => [
                 'sqlite3',
                 '
 sqlite3
@@ -996,9 +996,9 @@ SQLite Library => 3.31.0
 Directive => Local Value => Master Value
 sqlite3.extension_dir => no value => no value
 sqlite3.defensive => 1 => 1',
-                array('lib-sqlite3-sqlite' => '3.31.0'),
-            ),
-            'ssh2' => array(
+                ['lib-sqlite3-sqlite' => '3.31.0'],
+            ],
+            'ssh2' => [
                 'ssh2',
                 '
 ssh2
@@ -1007,9 +1007,9 @@ SSH2 support => enabled
 extension version => 1.2
 libssh2 version => 1.8.0
 banner => SSH-2.0-libssh2_1.8.0',
-                array('lib-ssh2-libssh2' => '1.8.0'),
-            ),
-            'yaml' => array(
+                ['lib-ssh2-libssh2' => '1.8.0'],
+            ],
+            'yaml' => [
                 'yaml',
                 '
                 yaml
@@ -1025,9 +1025,9 @@ yaml.decode_php => 0 => 0
 yaml.output_canonical => 0 => 0
 yaml.output_indent => 2 => 2
 yaml.output_width => 80 => 80',
-                array('lib-yaml-libyaml' => '0.2.2'),
-            ),
-            'xsl' => array(
+                ['lib-yaml-libyaml' => '0.2.2'],
+            ],
+            'xsl' => [
                 'xsl',
                 '
 xsl
@@ -1037,28 +1037,28 @@ libxslt Version => 1.1.33
 libxslt compiled against libxml Version => 2.9.8
 EXSLT => enabled
 libexslt Version => 1.1.29',
-                array(
-                    'lib-libxslt' => array('1.1.29', array('lib-xsl')),
+                [
+                    'lib-libxslt' => ['1.1.29', ['lib-xsl']],
                     'lib-libxslt-libxml' => '2.9.8',
-                ),
-                array(),
-                array(array('LIBXSLT_DOTTED_VERSION', null, '1.1.29')),
-            ),
-            'zip' => array(
+                ],
+                [],
+                [['LIBXSLT_DOTTED_VERSION', null, '1.1.29']],
+            ],
+            'zip' => [
                 'zip',
                 null,
-                array('lib-zip-libzip' => array('1.5.0', array('lib-zip'))),
-                array(),
-                array(array('LIBZIP_VERSION', 'ZipArchive', '1.5.0')),
-            ),
-            'zlib' => array(
+                ['lib-zip-libzip' => ['1.5.0', ['lib-zip']]],
+                [],
+                [['LIBZIP_VERSION', 'ZipArchive', '1.5.0']],
+            ],
+            'zlib' => [
                 'zlib',
                 null,
-                array('lib-zlib' => '1.2.10'),
-                array(),
-                array(array('ZLIB_VERSION', null, '1.2.10')),
-            ),
-            'zlib: no constant present' => array(
+                ['lib-zlib' => '1.2.10'],
+                [],
+                [['ZLIB_VERSION', null, '1.2.10']],
+            ],
+            'zlib: no constant present' => [
                 'zlib',
                 '
 zlib
@@ -1068,16 +1068,15 @@ Stream Wrapper => compress.zlib://
 Stream Filter => zlib.inflate, zlib.deflate
 Compiled Version => 1.2.8
 Linked Version => 1.2.11',
-                array('lib-zlib' => '1.2.11'),
-            ),
-        );
+                ['lib-zlib' => '1.2.11'],
+            ],
+        ];
     }
 
     /**
      * @dataProvider provideLibraryTestCases
      *
      * @param string|string[]            $extensions
-     * @param string|null                $info
      * @param array<string,string|false|array{string|false, 1?: string[], 2?: string[]}> $expectations array of packageName => expected version (or false if expected to be msising), or packageName => array(expected version, expected replaced names, expected provided names)
      * @param list<mixed>                $functions
      * @param list<mixed>                $constants
@@ -1087,9 +1086,9 @@ Linked Version => 1.2.11',
         $extensions,
         ?string $info,
         array $expectations,
-        array $functions = array(),
-        array $constants = array(),
-        array $classDefinitions = array()
+        array $functions = [],
+        array $constants = [],
+        array $classDefinitions = []
     ): void {
         $extensions = (array) $extensions;
 
@@ -1103,16 +1102,16 @@ Linked Version => 1.2.11',
         $runtime
             ->method('getExtensionVersion')
             ->willReturnMap(
-                array_map(function ($extension) use ($extensionVersion): array {
-                    return array($extension, $extensionVersion);
+                array_map(static function ($extension) use ($extensionVersion): array {
+                    return [$extension, $extensionVersion];
                 }, $extensions)
             );
 
         $runtime
             ->method('getExtensionInfo')
             ->willReturnMap(
-                array_map(function ($extension) use ($info): array {
-                    return array($extension, $info);
+                array_map(static function ($extension) use ($info): array {
+                    return [$extension, $info];
                 }, $extensions)
             );
 
@@ -1120,10 +1119,10 @@ Linked Version => 1.2.11',
             ->method('invoke')
             ->willReturnMap($functions);
 
-        $constants[] = array('PHP_VERSION', null, '7.1.0');
+        $constants[] = ['PHP_VERSION', null, '7.1.0'];
         $runtime
             ->method('hasConstant')
-            ->willReturnCallback(function ($constant, $class = null) use ($constants): bool {
+            ->willReturnCallback(static function ($constant, $class = null) use ($constants): bool {
                 foreach ($constants as $definition) {
                     if ($definition[0] === $constant && $definition[1] === $class) {
                         return true;
@@ -1138,7 +1137,7 @@ Linked Version => 1.2.11',
 
         $runtime
             ->method('hasClass')
-            ->willReturnCallback(function ($class) use ($classDefinitions): bool {
+            ->willReturnCallback(static function ($class) use ($classDefinitions): bool {
                 foreach ($classDefinitions as $definition) {
                     if ($definition[0] === $class) {
                         return true;
@@ -1151,20 +1150,20 @@ Linked Version => 1.2.11',
             ->method('construct')
             ->willReturnMap($classDefinitions);
 
-        $platformRepository = new PlatformRepository(array(), array(), $runtime);
+        $platformRepository = new PlatformRepository([], [], $runtime);
 
         $libraries = array_map(
-            function ($package): string {
+            static function ($package): string {
                 return $package['name'];
             },
             array_filter(
                 $platformRepository->search('lib', PlatformRepository::SEARCH_NAME),
-                function ($package): bool {
+                static function ($package): bool {
                     return strpos($package['name'], 'lib-') === 0;
                 }
             )
         );
-        $expectedLibraries = array_keys(array_filter($expectations, function ($expectation): bool {
+        $expectedLibraries = array_keys(array_filter($expectations, static function ($expectation): bool {
             return $expectation !== false;
         }));
         self::assertCount(count(array_filter($expectedLibraries)), $libraries, sprintf('Expected: %s, got %s', var_export($expectedLibraries, true), var_export($libraries, true)));
@@ -1178,7 +1177,7 @@ Linked Version => 1.2.11',
             if (!is_array($expectation)) {
                 $expectation = [$expectation, [], []];
             }
-            list($expectedVersion, $expectedReplaces, $expectedProvides) = array_pad($expectation, 3, []);
+            [$expectedVersion, $expectedReplaces, $expectedProvides] = array_pad($expectation, 3, []);
 
             $package = $platformRepository->findPackage($packageName, '*');
             if ($expectedVersion === false) {
@@ -1193,11 +1192,8 @@ Linked Version => 1.2.11',
     }
 
     /**
-     * @param string           $context
      * @param string[]         $expectedLinks
      * @param Link[]           $links
-     *
-     * @return void
      */
     private function assertPackageLinks(string $context, array $expectedLinks, PackageInterface $sourcePackage, array $links): void
     {
@@ -1215,17 +1211,17 @@ Linked Version => 1.2.11',
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
         $runtime
             ->method('getExtensions')
-            ->willReturn(array());
+            ->willReturn([]);
         $runtime
             ->method('getConstant')
             ->willReturnMap(
-                array(
-                    array('PHP_VERSION', null, '7.0.0'),
-                    array('PHP_DEBUG', null, false),
-                )
+                [
+                    ['PHP_VERSION', null, '7.0.0'],
+                    ['PHP_DEBUG', null, false],
+                ]
             );
 
-        $platformRepository = new PlatformRepository(array(), array(), $runtime);
+        $platformRepository = new PlatformRepository([], [], $runtime);
 
         $package = $platformRepository->findPackage('composer', '='.Composer::getVersion());
         self::assertNotNull($package, 'Composer package exists');
@@ -1233,34 +1229,32 @@ Linked Version => 1.2.11',
 
     public static function providePlatformPackages(): array
     {
-        return array(
-            array('php', true),
-            array('php-debug', true),
-            array('php-ipv6', true),
-            array('php-64bit', true),
-            array('php-zts', true),
-            array('hhvm', true),
-            array('hhvm-foo', false),
-            array('ext-foo', true),
-            array('ext-123', true),
-            array('extfoo', false),
-            array('ext', false),
-            array('lib-foo', true),
-            array('lib-123', true),
-            array('libfoo', false),
-            array('lib', false),
-            array('composer', true),
-            array('composer-foo', false),
-            array('composer-plugin-api', true),
-            array('composer-plugin', false),
-            array('composer-runtime-api', true),
-            array('composer-runtime', false),
-        );
+        return [
+            ['php', true],
+            ['php-debug', true],
+            ['php-ipv6', true],
+            ['php-64bit', true],
+            ['php-zts', true],
+            ['hhvm', true],
+            ['hhvm-foo', false],
+            ['ext-foo', true],
+            ['ext-123', true],
+            ['extfoo', false],
+            ['ext', false],
+            ['lib-foo', true],
+            ['lib-123', true],
+            ['libfoo', false],
+            ['lib', false],
+            ['composer', true],
+            ['composer-foo', false],
+            ['composer-plugin-api', true],
+            ['composer-plugin', false],
+            ['composer-runtime-api', true],
+            ['composer-runtime', false],
+        ];
     }
 
     /**
-     * @param string $packageName
-     * @param bool $expectation
      * @dataProvider providePlatformPackages
      */
     public function testValidPlatformPackages(string $packageName, bool $expectation): void
@@ -1273,13 +1267,6 @@ class ResourceBundleStub
 {
     public const STUB_VERSION = '32.0.1';
 
-    /**
-     * @param string $locale
-     * @param string $bundleName
-     * @param bool   $fallback
-     *
-     * @return ResourceBundleStub
-     */
     public static function create(string $locale, string $bundleName, bool $fallback): ResourceBundleStub
     {
         Assert::assertSame(3, func_num_args());
@@ -1292,8 +1279,6 @@ class ResourceBundleStub
 
     /**
      * @param string|int $field
-     *
-     * @return string
      */
     public function get($field): string
     {
@@ -1311,9 +1296,6 @@ class ImagickStub
      */
     private $versionString;
 
-    /**
-     * @param string $versionString
-     */
     public function __construct(string $versionString)
     {
         $this->versionString = $versionString;
@@ -1327,6 +1309,6 @@ class ImagickStub
     {
         Assert::assertSame(0, func_num_args());
 
-        return array('versionString' => $this->versionString);
+        return ['versionString' => $this->versionString];
     }
 }

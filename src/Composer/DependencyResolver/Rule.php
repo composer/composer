@@ -80,14 +80,10 @@ abstract class Rule
 
     abstract public function __toString(): string;
 
-    /**
-     * @param Rule $rule
-     * @return bool
-     */
     abstract public function equals(Rule $rule): bool;
 
     /**
-     * @return int
+     * @return self::RULE_*
      */
     public function getReason(): int
     {
@@ -102,9 +98,6 @@ abstract class Rule
         return $this->reasonData;
     }
 
-    /**
-     * @return string|null
-     */
     public function getRequiredPackage(): ?string
     {
         $reason = $this->getReason();
@@ -126,61 +119,39 @@ abstract class Rule
 
     /**
      * @param RuleSet::TYPE_* $type
-     * @return void
      */
     public function setType($type): void
     {
         $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_TYPE)) | ((255 & $type) << self::BITFIELD_TYPE);
     }
 
-    /**
-     * @return int
-     */
     public function getType(): int
     {
         return ($this->bitfield & (255 << self::BITFIELD_TYPE)) >> self::BITFIELD_TYPE;
     }
 
-    /**
-     * @return void
-     */
     public function disable(): void
     {
         $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_DISABLED)) | (1 << self::BITFIELD_DISABLED);
     }
 
-    /**
-     * @return void
-     */
     public function enable(): void
     {
         $this->bitfield &= ~(255 << self::BITFIELD_DISABLED);
     }
 
-    /**
-     * @return bool
-     */
     public function isDisabled(): bool
     {
         return (bool) (($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
-    /**
-     * @return bool
-     */
     public function isEnabled(): bool
     {
         return !(($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
-    /**
-     * @return bool
-     */
     abstract public function isAssertion(): bool;
 
-    /**
-     * @return bool
-     */
     public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool): bool
     {
         if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
@@ -230,7 +201,6 @@ abstract class Rule
 
     /**
      * @internal
-     * @return BasePackage
      */
     public function getSourcePackage(Pool $pool): BasePackage
     {
@@ -244,7 +214,7 @@ abstract class Rule
                 if ($reasonData = $this->getReasonData()) {
                     // swap literals if they are not in the right order with package2 being the conflicter
                     if ($reasonData->getSource() === $package1->getName()) {
-                        list($package2, $package1) = array($package1, $package2);
+                        [$package2, $package1] = [$package1, $package2];
                     }
                 }
 
@@ -262,12 +232,10 @@ abstract class Rule
     }
 
     /**
-     * @param bool $isVerbose
      * @param BasePackage[] $installedMap
      * @param array<Rule[]> $learnedPool
-     * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = [], array $learnedPool = []): string
     {
         $literals = $this->getLiterals();
 
@@ -312,7 +280,7 @@ abstract class Rule
 
                     // swap literals if they are not in the right order with package2 being the conflicter
                     if ($reasonData->getSource() === $package1->getName()) {
-                        list($package2, $package1) = array($package1, $package2);
+                        [$package2, $package1] = [$package1, $package2];
                         $conflictTarget = $package1->getPrettyName().' '.$reasonData->getPrettyConstraint();
                     }
 
@@ -349,7 +317,7 @@ abstract class Rule
                 /** @var Link */
                 $reasonData = $this->reasonData;
 
-                $requires = array();
+                $requires = [];
                 foreach ($literals as $literal) {
                     $requires[] = $pool->literalToPackage($literal);
                 }
@@ -368,7 +336,7 @@ abstract class Rule
                 return $text;
 
             case self::RULE_PACKAGE_SAME_NAME:
-                $packageNames = array();
+                $packageNames = [];
                 foreach ($literals as $literal) {
                     $package = $pool->literalToPackage($literal);
                     $packageNames[$package->getName()] = true;
@@ -394,8 +362,8 @@ abstract class Rule
                         $reason .= $replacedName.' and thus cannot coexist with it.';
                     }
 
-                    $installedPackages = array();
-                    $removablePackages = array();
+                    $installedPackages = [];
+                    $removablePackages = [];
                     foreach ($literals as $literal) {
                         if (isset($installedMap[abs($literal)])) {
                             $installedPackages[] = $pool->literalToPackage($literal);
@@ -425,7 +393,7 @@ abstract class Rule
                 if (count($literals) === 1) {
                     $ruleText = $pool->literalToPrettyString($literals[0], $installedMap);
                 } else {
-                    $groups = array();
+                    $groups = [];
                     foreach ($literals as $literal) {
                         $package = $pool->literalToPackage($literal);
                         if (isset($installedMap[$package->id])) {
@@ -436,7 +404,7 @@ abstract class Rule
 
                         $groups[$group][] = $this->deduplicateDefaultBranchAlias($package);
                     }
-                    $ruleTexts = array();
+                    $ruleTexts = [];
                     foreach ($groups as $group => $packages) {
                         $ruleTexts[] = $group . (count($packages) > 1 ? ' one of' : '').' ' . $this->formatPackagesUnique($pool, $packages, $isVerbose);
                     }
@@ -481,11 +449,8 @@ abstract class Rule
 
     /**
      * @param array<int|BasePackage> $packages An array containing packages or literals
-     * @param bool $isVerbose
-     * @param bool $useRemovedVersionGroup
-     * @return string
      */
-    protected function formatPackagesUnique(Pool $pool, array $packages, bool $isVerbose, ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
+    protected function formatPackagesUnique(Pool $pool, array $packages, bool $isVerbose, ?ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
     {
         foreach ($packages as $index => $package) {
             if (!\is_object($package)) {
@@ -496,9 +461,6 @@ abstract class Rule
         return Problem::getPackageList($packages, $isVerbose, $pool, $constraint, $useRemovedVersionGroup);
     }
 
-    /**
-     * @return BasePackage
-     */
     private function deduplicateDefaultBranchAlias(BasePackage $package): BasePackage
     {
         if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {

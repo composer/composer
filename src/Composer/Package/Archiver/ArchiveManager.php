@@ -35,7 +35,7 @@ class ArchiveManager
     /**
      * @var ArchiverInterface[]
      */
-    protected $archivers = array();
+    protected $archivers = [];
 
     /**
      * @var bool
@@ -51,11 +51,6 @@ class ArchiveManager
         $this->loop = $loop;
     }
 
-    /**
-     * @param ArchiverInterface $archiver
-     *
-     * @return void
-     */
     public function addArchiver(ArchiverInterface $archiver): void
     {
         $this->archivers[] = $archiver;
@@ -89,7 +84,7 @@ class ArchiveManager
         } else {
             $baseName = Preg::replace('#[^a-z0-9-_]#i', '-', $package->getName());
         }
-        $nameParts = array($baseName);
+        $nameParts = [$baseName];
 
         if (null !== $package->getDistReference() && Preg::isMatch('{^[a-f0-9]{40}$}', $package->getDistReference())) {
             array_push($nameParts, $package->getDistReference(), $package->getDistType());
