@@ -34,8 +34,10 @@ packages, or your own. You can get it from
 
 For example let's assume you have a few packages you want to reuse across your
 company but don't really want to open-source. You would first define a Satis
-configuration: a json file with an arbitrary name that lists your curated
+configuration: a json file that lists your curated
 [repositories](../05-repositories.md).
+
+The default file name is satis.json but it could be anything you like.
 
 Here is an example configuration, you see that it holds a few VCS repositories,
 but those could be any types of [repositories](../05-repositories.md). Then it
@@ -46,7 +48,7 @@ The default file Satis looks for is `satis.json` in the root of the repository.
 
 ```json
 {
-  "name": "My Repository",
+  "name": "my/repository",
   "homepage": "http://packages.example.org",
   "repositories": [
     { "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
