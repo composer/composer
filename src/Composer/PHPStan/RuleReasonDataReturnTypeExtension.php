@@ -12,32 +12,23 @@
 
 namespace Composer\PHPStan;
 
-use Composer\Config;
 use Composer\DependencyResolver\Rule;
-use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\ConstraintInterface;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
-use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
 use PhpParser\Node\Identifier;
 
 final class RuleReasonDataReturnTypeExtension implements DynamicMethodReturnTypeExtension
