@@ -46,7 +46,7 @@ class Event
      * @param string[] $args  Arguments passed by the user
      * @param mixed[]  $flags Optional flags to pass data not as argument
      */
-    public function __construct(string $name, array $args = array(), array $flags = array())
+    public function __construct(string $name, array $args = [], array $flags = [])
     {
         $this->name = $name;
         $this->args = $args;
@@ -95,8 +95,6 @@ class Event
 
     /**
      * Prevents the event from being passed to further listeners
-     *
-     * @return void
      */
     public function stopPropagation(): void
     {

@@ -27,7 +27,7 @@ class ConfigValidatorTest extends TestCase
     public function testConfigValidatorCommitRefWarning(): void
     {
         $configValidator = new ConfigValidator(new NullIO());
-        list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_commit-ref.json');
+        [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_commit-ref.json');
 
         $this->assertContains(
             'The package "some/package" is pointing to a commit-ref, this is bad practice and can cause unforeseen issues.',
@@ -38,7 +38,7 @@ class ConfigValidatorTest extends TestCase
     public function testConfigValidatorWarnsOnScriptDescriptionForNonexistentScript(): void
     {
         $configValidator = new ConfigValidator(new NullIO());
-        list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-descriptions.json');
+        [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-descriptions.json');
 
         $this->assertContains(
             'Description for non-existent script "phpcsxxx" found in "scripts-descriptions"',
@@ -49,7 +49,7 @@ class ConfigValidatorTest extends TestCase
     public function testConfigValidatorWarnsOnUnnecessaryProvideReplace(): void
     {
         $configValidator = new ConfigValidator(new NullIO());
-        list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_provide-replace-requirements.json');
+        [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_provide-replace-requirements.json');
 
         $this->assertContains(
             'The package a/a in require is also listed in provide which satisfies the requirement. Remove it from provide if you wish to install it.',

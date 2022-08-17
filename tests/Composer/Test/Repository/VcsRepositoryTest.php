@@ -40,9 +40,6 @@ class VcsRepositoryTest extends TestCase
      */
     private $skipped = null;
 
-    /**
-     * @return void
-     */
     protected function initialize(): void
     {
         $locator = new ExecutableFinder();
@@ -64,7 +61,7 @@ class VcsRepositoryTest extends TestCase
 
         // init
         $process = new ProcessExecutor;
-        $exec = function ($command) use ($process): void {
+        $exec = static function ($command) use ($process): void {
             $cwd = Platform::getCwd();
             if ($process->execute($command, $output, $cwd) !== 0) {
                 throw new \RuntimeException('Failed to execute '.$command.': '.$process->getErrorOutput());
@@ -85,7 +82,7 @@ class VcsRepositoryTest extends TestCase
         $exec('git branch oldbranch');
 
         // add composed tag & master branch
-        $composer = array('name' => 'a/b');
+        $composer = ['name' => 'a/b'];
         file_put_contents('composer.json', json_encode($composer));
         $exec('git add composer.json');
         $exec('git commit -m addcomposer');
@@ -150,7 +147,7 @@ class VcsRepositoryTest extends TestCase
 
     public function testLoadVersions(): void
     {
-        $expected = array(
+        $expected = [
             '0.6.0' => true,
             '1.0.0' => true,
             '1.0.x-dev' => true,
@@ -159,16 +156,16 @@ class VcsRepositoryTest extends TestCase
             'dev-feature/a-1.0-B' => true,
             'dev-master' => true,
             '9999999-dev' => true, // alias of dev-master
-        );
+        ];
 
         $config = new Config();
-        $config->merge(array(
-            'config' => array(
+        $config->merge([
+            'config' => [
                 'home' => self::$composerHome,
-            ),
-        ));
+            ],
+        ]);
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
-        $repo = new VcsRepository(array('url' => self::$gitRepo, 'type' => 'vcs'), new NullIO, $config, $httpDownloader);
+        $repo = new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs'], new NullIO, $config, $httpDownloader);
         $packages = $repo->getPackages();
         $dumper = new ArrayDumper();
 

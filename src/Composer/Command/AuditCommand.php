@@ -1,5 +1,15 @@
 <?php declare(strict_types=1);
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Command;
 
 use Composer\Composer;
@@ -19,11 +29,11 @@ class AuditCommand extends BaseCommand
         $this
             ->setName('audit')
             ->setDescription('Checks for security vulnerability advisories for installed packages')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables auditing of require-dev packages.'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_TABLE, Auditor::FORMATS),
                 new InputOption('locked', null, InputOption::VALUE_NONE, 'Audit based on the lock file instead of the installed packages.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>audit</info> command checks for security vulnerability advisories for installed packages.
@@ -43,6 +53,7 @@ EOT
 
         if (count($packages) === 0) {
             $this->getIO()->writeError('No packages - skipping audit.');
+
             return 0;
         }
 
@@ -56,7 +67,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
      * @return PackageInterface[]
      */
     private function getPackages(Composer $composer, InputInterface $input): array
@@ -66,11 +76,12 @@ EOT
                 throw new \UnexpectedValueException('Valid composer.json and composer.lock files are required to run this command with --locked');
             }
             $locker = $composer->getLocker();
+
             return $locker->getLockedRepository(!$input->getOption('no-dev'))->getPackages();
         }
 
         $rootPkg = $composer->getPackage();
-        $installedRepo = new InstalledRepository(array($composer->getRepositoryManager()->getLocalRepository()));
+        $installedRepo = new InstalledRepository([$composer->getRepositoryManager()->getLocalRepository()]);
 
         if ($input->getOption('no-dev')) {
             return RepositoryUtils::filterRequiredPackages($installedRepo->getPackages(), $rootPkg);

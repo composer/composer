@@ -31,7 +31,7 @@ class RepositoryUtils
      * @param  array<T> $bucket Do not pass this in, only used to avoid recursion with circular deps
      * @return list<T>
      */
-    public static function filterRequiredPackages(array $packages, PackageInterface $requirer, array $bucket = array()): array
+    public static function filterRequiredPackages(array $packages, PackageInterface $requirer, array $bucket = []): array
     {
         $requires = $requirer->getRequires();
 

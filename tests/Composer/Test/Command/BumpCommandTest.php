@@ -68,7 +68,7 @@ class BumpCommandTest extends TestCase
                 'require-dev' => [
                     'dev/pkg' => '^2.3.4.5',
                 ],
-            ]
+            ],
         ];
 
         yield 'bump only dev with --dev-only' => [
@@ -90,7 +90,7 @@ class BumpCommandTest extends TestCase
                 'require-dev' => [
                     'dev/pkg' => '^2.3.4.5',
                 ],
-            ]
+            ],
         ];
 
         yield 'bump only non-dev with --no-dev-only' => [
@@ -112,7 +112,7 @@ class BumpCommandTest extends TestCase
                 'require-dev' => [
                     'dev/pkg' => '~2.0',
                 ],
-            ]
+            ],
         ];
 
         yield 'bump works from installed repo without lock file' => [
@@ -129,8 +129,7 @@ class BumpCommandTest extends TestCase
                     'second/pkg' => '^3.4',
                 ],
             ],
-            false
+            false,
         ];
-
     }
 }

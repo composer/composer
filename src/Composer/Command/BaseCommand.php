@@ -93,7 +93,7 @@ abstract class BaseCommand extends Command
      * @param bool|null $disableScripts If null, reads --no-scripts as default
      * @throws \RuntimeException
      */
-    public function requireComposer(bool $disablePlugins = null, bool $disableScripts = null): Composer
+    public function requireComposer(?bool $disablePlugins = null, ?bool $disableScripts = null): Composer
     {
         if (null === $this->composer) {
             $application = parent::getApplication();
@@ -119,7 +119,7 @@ abstract class BaseCommand extends Command
      * @param bool|null $disablePlugins If null, reads --no-plugins as default
      * @param bool|null $disableScripts If null, reads --no-scripts as default
      */
-    public function tryComposer(bool $disablePlugins = null, bool $disableScripts = null): ?Composer
+    public function tryComposer(?bool $disablePlugins = null, ?bool $disableScripts = null): ?Composer
     {
         if (null === $this->composer) {
             $application = parent::getApplication();
@@ -239,7 +239,7 @@ abstract class BaseCommand extends Command
             $composer->getEventDispatcher()->dispatch($preCommandRunEvent->getName(), $preCommandRunEvent);
         }
 
-        if (true === $input->hasParameterOption(array('--no-ansi')) && $input->hasOption('no-progress')) {
+        if (true === $input->hasParameterOption(['--no-ansi']) && $input->hasOption('no-progress')) {
             $input->setOption('no-progress', true);
         }
 
@@ -282,7 +282,6 @@ abstract class BaseCommand extends Command
     /**
      * Returns preferSource and preferDist values based on the configuration.
      *
-     * @param bool           $keepVcsRequiresPreferSource
      *
      * @return bool[] An array composed of the preferSource and preferDist values
      */
@@ -336,7 +335,7 @@ abstract class BaseCommand extends Command
             $preferDist = $input->getOption('prefer-dist');
         }
 
-        return array($preferSource, $preferDist);
+        return [$preferSource, $preferDist];
     }
 
     protected function getPlatformRequirementFilter(InputInterface $input): PlatformRequirementFilterInterface
@@ -364,7 +363,7 @@ abstract class BaseCommand extends Command
      */
     protected function formatRequirements(array $requirements)
     {
-        $requires = array();
+        $requires = [];
         $requirements = $this->normalizeRequirements($requirements);
         foreach ($requirements as $requirement) {
             if (!isset($requirement['version'])) {

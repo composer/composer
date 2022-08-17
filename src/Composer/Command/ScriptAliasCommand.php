@@ -35,19 +35,16 @@ class ScriptAliasCommand extends BaseCommand
         parent::__construct();
     }
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this
             ->setName($this->script)
             ->setDescription($this->description)
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>run-script</info> command runs scripts defined in composer.json:

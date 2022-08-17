@@ -67,9 +67,6 @@ class Composer extends PartialComposer
      */
     public const RUNTIME_API_VERSION = '2.2.2';
 
-    /**
-     * @return string
-     */
     public static function getVersion(): string
     {
         // no replacement done, this must be a source checkout

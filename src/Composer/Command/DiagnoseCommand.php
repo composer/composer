@@ -50,9 +50,6 @@ class DiagnoseCommand extends BaseCommand
     /** @var int */
     protected $exitCode = 0;
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this
@@ -92,7 +89,7 @@ EOT
             $config = Factory::createConfig();
         }
 
-        $config->merge(array('config' => array('secure-http' => false)), Config::SOURCE_COMMAND);
+        $config->merge(['config' => ['secure-http' => false]], Config::SOURCE_COMMAND);
         $config->prohibitUrlByConfig('http://repo.packagist.org', new NullIO);
 
         $this->httpDownloader = Factory::createHttpDownloader($io, $config);
@@ -162,8 +159,8 @@ EOT
 
         $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::getVersion()));
 
-        $platformOverrides = $config->get('platform') ?: array();
-        $platformRepo = new PlatformRepository(array(), $platformOverrides);
+        $platformOverrides = $config->get('platform') ?: [];
+        $platformRepo = new PlatformRepository([], $platformOverrides);
         $phpPkg = $platformRepo->findPackage('php', '*');
         $phpVersion = $phpPkg->getPrettyVersion();
         if ($phpPkg instanceof CompletePackageInterface && false !== strpos($phpPkg->getDescription(), 'overridden')) {
@@ -182,7 +179,7 @@ EOT
         $finder = new ExecutableFinder;
         $hasSystemUnzip = (bool) $finder->find('unzip');
         $bin7zip = '';
-        if ($hasSystem7zip = (bool) $finder->find('7z', null, array('C:\Program Files\7-Zip'))) {
+        if ($hasSystem7zip = (bool) $finder->find('7z', null, ['C:\Program Files\7-Zip'])) {
             $bin7zip = '7z';
         }
         if (!Platform::isWindows() && !$hasSystem7zip && $hasSystem7zip = (bool) $finder->find('7zz')) {
@@ -205,13 +202,13 @@ EOT
     private function checkComposerSchema()
     {
         $validator = new ConfigValidator($this->getIO());
-        list($errors, , $warnings) = $validator->validate(Factory::getComposerFile());
+        [$errors, , $warnings] = $validator->validate(Factory::getComposerFile());
 
         if ($errors || $warnings) {
-            $messages = array(
+            $messages = [
                 'error' => $errors,
                 'warning' => $warnings,
-            );
+            ];
 
             $output = '';
             foreach ($messages as $style => $msgs) {
@@ -250,8 +247,6 @@ EOT
     }
 
     /**
-     * @param string $proto
-     *
      * @return string|string[]|true
      */
     private function checkHttp(string $proto, Config $config)
@@ -261,7 +256,7 @@ EOT
             return $result;
         }
 
-        $result = array();
+        $result = [];
         if ($proto === 'https' && $config->get('disable-tls') === true) {
             $tlsWarning = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
         }
@@ -319,9 +314,6 @@ EOT
     }
 
     /**
-     * @param string $domain
-     * @param string $token
-     *
      * @return string|true|\Exception
      */
     private function checkGithubOauth(string $domain, string $token)
@@ -335,9 +327,9 @@ EOT
         try {
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/' : 'https://'.$domain.'/api/v3/';
 
-            $this->httpDownloader->get($url, array(
+            $this->httpDownloader->get($url, [
                 'retry-auth-failure' => false,
-            ));
+            ]);
 
             return true;
         } catch (\Exception $e) {
@@ -350,12 +342,11 @@ EOT
     }
 
     /**
-     * @param  string             $domain
      * @param  string             $token
      * @throws TransportException
      * @return mixed|string
      */
-    private function getGithubRateLimit(string $domain, string $token = null)
+    private function getGithubRateLimit(string $domain, ?string $token = null)
     {
         $result = $this->checkConnectivity();
         if ($result !== true) {
@@ -367,7 +358,7 @@ EOT
         }
 
         $url = $domain === 'github.com' ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
-        $data = $this->httpDownloader->get($url, array('retry-auth-failure' => false))->decodeJson();
+        $data = $this->httpDownloader->get($url, ['retry-auth-failure' => false])->decodeJson();
 
         return $data['resources']['core'];
     }
@@ -397,7 +388,7 @@ EOT
     private function checkPubKeys(Config $config)
     {
         $home = $config->get('home');
-        $errors = array();
+        $errors = [];
         $io = $this->getIO();
 
         if (file_exists($home.'/keys.tags.pub') && file_exists($home.'/keys.dev.pub')) {
@@ -447,9 +438,6 @@ EOT
         return true;
     }
 
-    /**
-     * @return string
-     */
     private function getCurlVersion(): string
     {
         if (extension_loaded('curl')) {
@@ -469,8 +457,6 @@ EOT
 
     /**
      * @param bool|string|string[]|\Exception $result
-     *
-     * @return void
      */
     private function outputResult($result): void
     {
@@ -492,7 +478,7 @@ EOT
             $hadError = true;
         } else {
             if (!is_array($result)) {
-                $result = array($result);
+                $result = [$result];
             }
             foreach ($result as $message) {
                 if (false !== strpos($message, '<error>')) {
@@ -529,8 +515,8 @@ EOT
         };
 
         // code below taken from getcomposer.org/installer, any changes should be made there and replicated here
-        $errors = array();
-        $warnings = array();
+        $errors = [];
+        $warnings = [];
         $displayIniMessage = false;
 
         $iniMessage = PHP_EOL.PHP_EOL.IniHelper::getMessage();

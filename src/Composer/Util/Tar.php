@@ -17,11 +17,6 @@ namespace Composer\Util;
  */
 class Tar
 {
-    /**
-     * @param string $pathToArchive
-     *
-     * @return string|null
-     */
     public static function getComposerJson(string $pathToArchive): ?string
     {
         $phar = new \PharData($pathToArchive);
@@ -34,11 +29,7 @@ class Tar
     }
 
     /**
-     * @param \PharData $phar
-     *
      * @throws \RuntimeException
-     *
-     * @return string
      */
     private static function extractComposerJsonFromFolder(\PharData $phar): string
     {
@@ -46,7 +37,7 @@ class Tar
             return $phar['composer.json']->getContent();
         }
 
-        $topLevelPaths = array();
+        $topLevelPaths = [];
         foreach ($phar as $folderFile) {
             $name = $folderFile->getBasename();
 

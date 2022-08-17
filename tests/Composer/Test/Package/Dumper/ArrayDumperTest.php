@@ -33,12 +33,12 @@ class ArrayDumperTest extends TestCase
     {
         $config = $this->dumper->dump($this->getPackage());
         $this->assertEquals(
-            array(
+            [
                 'name' => 'dummy/pkg',
                 'version' => '1.0.0',
                 'version_normalized' => '1.0.0.0',
                 'type' => 'library',
-            ),
+            ],
             $config
         );
     }
@@ -73,12 +73,11 @@ class ArrayDumperTest extends TestCase
     /**
      * @dataProvider provideKeys
      *
-     * @param string $key
      * @param mixed  $value
      * @param string $method
      * @param mixed  $expectedValue
      */
-    public function testKeys(string $key, $value, string $method = null, $expectedValue = null): void
+    public function testKeys(string $key, $value, ?string $method = null, $expectedValue = null): void
     {
         $package = $this->getRootPackage();
 
@@ -92,149 +91,149 @@ class ArrayDumperTest extends TestCase
 
     public function provideKeys(): array
     {
-        return array(
-            array(
+        return [
+            [
                 'type',
                 'library',
-            ),
-            array(
+            ],
+            [
                 'time',
                 $datetime = new \DateTime('2012-02-01'),
                 'ReleaseDate',
                 $datetime->format(DATE_RFC3339),
-            ),
-            array(
+            ],
+            [
                 'authors',
-                array('Nils Adermann <naderman@naderman.de>', 'Jordi Boggiano <j.boggiano@seld.be>'),
-            ),
-            array(
+                ['Nils Adermann <naderman@naderman.de>', 'Jordi Boggiano <j.boggiano@seld.be>'],
+            ],
+            [
                 'homepage',
                 'https://getcomposer.org',
-            ),
-            array(
+            ],
+            [
                 'description',
                 'Dependency Manager',
-            ),
-            array(
+            ],
+            [
                 'keywords',
-                array('package', 'dependency', 'autoload'),
+                ['package', 'dependency', 'autoload'],
                 null,
-                array('autoload', 'dependency', 'package'),
-            ),
-            array(
+                ['autoload', 'dependency', 'package'],
+            ],
+            [
                 'bin',
-                array('bin/composer'),
+                ['bin/composer'],
                 'binaries',
-            ),
-            array(
+            ],
+            [
                 'license',
-                array('MIT'),
-            ),
-            array(
+                ['MIT'],
+            ],
+            [
                 'autoload',
-                array('psr-0' => array('Composer' => 'src/')),
-            ),
-            array(
+                ['psr-0' => ['Composer' => 'src/']],
+            ],
+            [
                 'repositories',
-                array('packagist' => false),
-            ),
-            array(
+                ['packagist' => false],
+            ],
+            [
                 'scripts',
-                array('post-update-cmd' => 'MyVendor\\MyClass::postUpdate'),
-            ),
-            array(
+                ['post-update-cmd' => 'MyVendor\\MyClass::postUpdate'],
+            ],
+            [
                 'extra',
-                array('class' => 'MyVendor\\Installer'),
-            ),
-            array(
+                ['class' => 'MyVendor\\Installer'],
+            ],
+            [
                 'archive',
-                array('/foo/bar', 'baz', '!/foo/bar/baz'),
+                ['/foo/bar', 'baz', '!/foo/bar/baz'],
                 'archiveExcludes',
-                array(
-                    'exclude' => array('/foo/bar', 'baz', '!/foo/bar/baz'),
-                ),
-            ),
-            array(
+                [
+                    'exclude' => ['/foo/bar', 'baz', '!/foo/bar/baz'],
+                ],
+            ],
+            [
                 'require',
-                array('foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0')),
+                ['foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0')],
                 'requires',
-                array('foo/bar' => '1.0.0'),
-            ),
-            array(
+                ['foo/bar' => '1.0.0'],
+            ],
+            [
                 'require-dev',
-                array('foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_DEV_REQUIRE, '1.0.0')),
+                ['foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_DEV_REQUIRE, '1.0.0')],
                 'devRequires',
-                array('foo/bar' => '1.0.0'),
-            ),
-            array(
+                ['foo/bar' => '1.0.0'],
+            ],
+            [
                 'suggest',
-                array('foo/bar' => 'very useful package'),
+                ['foo/bar' => 'very useful package'],
                 'suggests',
-            ),
-            array(
+            ],
+            [
                 'support',
-                array('foo' => 'bar'),
-            ),
-            array(
+                ['foo' => 'bar'],
+            ],
+            [
                 'funding',
-                array('type' => 'foo', 'url' => 'https://example.com'),
-            ),
-            array(
+                ['type' => 'foo', 'url' => 'https://example.com'],
+            ],
+            [
                 'require',
-                array(
+                [
                     'foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
                     'bar/baz' => new Link('dummy/pkg', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
-                ),
+                ],
                 'requires',
-                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
-            ),
-            array(
+                ['bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'],
+            ],
+            [
                 'require-dev',
-                array(
+                [
                     'foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
                     'bar/baz' => new Link('dummy/pkg', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
-                ),
+                ],
                 'devRequires',
-                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
-            ),
-            array(
+                ['bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'],
+            ],
+            [
                 'suggest',
-                array('foo/bar' => 'very useful package', 'bar/baz' => 'another useful package'),
+                ['foo/bar' => 'very useful package', 'bar/baz' => 'another useful package'],
                 'suggests',
-                array('bar/baz' => 'another useful package', 'foo/bar' => 'very useful package'),
-            ),
-            array(
+                ['bar/baz' => 'another useful package', 'foo/bar' => 'very useful package'],
+            ],
+            [
                 'provide',
-                array(
+                [
                     'foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
                     'bar/baz' => new Link('dummy/pkg', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
-                ),
+                ],
                 'provides',
-                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
-            ),
-            array(
+                ['bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'],
+            ],
+            [
                 'replace',
-                array(
+                [
                     'foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
                     'bar/baz' => new Link('dummy/pkg', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
-                ),
+                ],
                 'replaces',
-                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
-            ),
-            array(
+                ['bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'],
+            ],
+            [
                 'conflict',
-                array(
+                [
                     'foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
                     'bar/baz' => new Link('dummy/pkg', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
-                ),
+                ],
                 'conflicts',
-                array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
-            ),
-            array(
+                ['bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'],
+            ],
+            [
                 'transport-options',
-                array('ssl' => array('local_cert' => '/opt/certs/test.pem')),
+                ['ssl' => ['local_cert' => '/opt/certs/test.pem']],
                 'transportOptions',
-            ),
-        );
+            ],
+        ];
     }
 }

@@ -25,15 +25,12 @@ class OutdatedCommand extends BaseCommand
 {
     use CompletionTrait;
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this
             ->setName('outdated')
             ->setDescription('Shows a list of installed packages that have updates available, including their latest version')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.', null, $this->suggestInstalledPackage(false)),
                 new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show only packages that are outdated (this is the default, but present here for compat with `show`'),
                 new InputOption('all', 'a', InputOption::VALUE_NONE, 'Show all installed packages with their latest versions'),
@@ -48,7 +45,7 @@ class OutdatedCommand extends BaseCommand
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages). Use with the --outdated option'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages). Use with the --outdated option'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The outdated command is just a proxy for `composer show -l`
@@ -69,10 +66,10 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $args = array(
+        $args = [
             'command' => 'show',
             '--latest' => true,
-        );
+        ];
         if (!$input->getOption('all')) {
             $args['--outdated'] = true;
         }

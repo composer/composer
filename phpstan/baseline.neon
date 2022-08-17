@@ -866,11 +866,6 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, array\\<string\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, array\\<string\\>\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
@@ -1416,6 +1411,16 @@ parameters:
 			path: ../src/Composer/DependencyResolver/PoolOptimizer.php
 
 		-
+			message: "#^Cannot access offset 'constraint' on array\\{package\\: Composer\\\\Package\\\\BasePackage\\}\\|array\\{packageName\\: string, constraint\\: Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\}\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/Problem.php
+
+		-
+			message: "#^Cannot access offset 'packageName' on array\\{package\\: Composer\\\\Package\\\\BasePackage\\}\\|array\\{packageName\\: string, constraint\\: Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\}\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/Problem.php
+
+		-
 			message: "#^Cannot call method getRepoName\\(\\) on Composer\\\\Repository\\\\RepositoryInterface\\|null\\.$#"
 			count: 3
 			path: ../src/Composer/DependencyResolver/Problem.php
@@ -1527,6 +1532,11 @@ parameters:
 
 		-
 			message: "#^Foreach overwrites \\$literal with its value variable\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/Rule.php
+
+		-
+			message: "#^Method Composer\\\\DependencyResolver\\\\Rule\\:\\:getReason\\(\\) should return 2\\|3\\|6\\|7\\|10\\|12\\|13\\|14 but returns int\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Rule.php
 

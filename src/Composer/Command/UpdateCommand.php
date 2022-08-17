@@ -21,10 +21,7 @@ use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\Version\VersionParser;
-use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Util\HttpDownloader;
-use Composer\Semver\Constraint\MultiConstraint;
-use Composer\Package\Link;
 use Composer\Advisory\Auditor;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -48,9 +45,9 @@ class UpdateCommand extends BaseCommand
     {
         $this
             ->setName('update')
-            ->setAliases(array('u', 'upgrade'))
+            ->setAliases(['u', 'upgrade'])
             ->setDescription('Updates your dependencies to the latest version according to composer.json, and updates the composer.lock file')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that should be updated, if not provided all packages are.', null, $this->suggestInstalledPackage(false)),
                 new InputOption('with', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Temporary version constraint to add, e.g. foo/bar:1.0.0 or foo/bar=1.0.0'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
@@ -79,7 +76,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies (can also be set via the COMPOSER_PREFER_LOWEST=1 env var).'),
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>update</info> command reads the composer.json file from the
@@ -180,7 +177,7 @@ EOT
         // the arguments lock/nothing/mirrors are not package names but trigger a mirror update instead
         // they are further mutually exclusive with listing actual package names
         $filteredPackages = array_filter($packages, static function ($package): bool {
-            return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
+            return !in_array($package, ['lock', 'nothing', 'mirrors'], true);
         });
         $updateMirrors = $input->getOption('lock') || count($filteredPackages) !== count($packages);
         $packages = $filteredPackages;
@@ -199,7 +196,7 @@ EOT
         $install = Installer::create($io, $composer);
 
         $config = $composer->getConfig();
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($config, $input);
 
         $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
@@ -257,7 +254,7 @@ EOT
             $composer->getPackage()->getRequires(),
             $composer->getPackage()->getDevRequires()
         );
-        $autocompleterValues = array();
+        $autocompleterValues = [];
         foreach ($requires as $require) {
             $target = $require->getTarget();
             $autocompleterValues[strtolower($target)] = $target;
@@ -294,9 +291,9 @@ EOT
         }
 
         $table = new Table($output);
-        $table->setHeaders(array('Selected packages'));
+        $table->setHeaders(['Selected packages']);
         foreach ($packages as $package) {
-            $table->addRow(array($package));
+            $table->addRow([$package]);
         }
         $table->render();
 

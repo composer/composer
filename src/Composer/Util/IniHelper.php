@@ -38,8 +38,6 @@ class IniHelper
 
     /**
      * Describes the location of the loaded php.ini file(s)
-     *
-     * @return string
      */
     public static function getMessage(): string
     {

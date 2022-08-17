@@ -49,8 +49,6 @@ abstract class ArchiverTest extends TestCase
 
     /**
      * Util method to quickly setup a package using the source path built.
-     *
-     * @return CompletePackage
      */
     protected function setupPackage(): CompletePackage
     {

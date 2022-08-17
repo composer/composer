@@ -15,10 +15,7 @@ namespace Composer\Platform;
 class Runtime
 {
     /**
-     * @param string $constant
      * @param class-string $class
-     *
-     * @return bool
      */
     public function hasConstant(string $constant, ?string $class = null): bool
     {
@@ -26,7 +23,6 @@ class Runtime
     }
 
     /**
-     * @param string $constant
      * @param class-string $class
      *
      * @return mixed
@@ -36,31 +32,23 @@ class Runtime
         return constant(ltrim($class.'::'.$constant, ':'));
     }
 
-    /**
-     * @param string $fn
-     *
-     * @return bool
-     */
     public function hasFunction(string $fn): bool
     {
         return function_exists($fn);
     }
 
     /**
-     * @param callable $callable
      * @param mixed[] $arguments
      *
      * @return mixed
      */
-    public function invoke(callable $callable, array $arguments = array())
+    public function invoke(callable $callable, array $arguments = [])
     {
-        return call_user_func_array($callable, $arguments);
+        return $callable(...$arguments);
     }
 
     /**
      * @param class-string $class
-     *
-     * @return bool
      */
     public function hasClass(string $class): bool
     {
@@ -71,10 +59,9 @@ class Runtime
      * @param class-string $class
      * @param mixed[] $arguments
      *
-     * @return object
      * @throws \ReflectionException
      */
-    public function construct(string $class, array $arguments = array()): object
+    public function construct(string $class, array $arguments = []): object
     {
         if (empty($arguments)) {
             return new $class;
@@ -91,11 +78,6 @@ class Runtime
         return get_loaded_extensions();
     }
 
-    /**
-     * @param string $extension
-     *
-     * @return string
-     */
     public function getExtensionVersion(string $extension): string
     {
         $version = phpversion($extension);
@@ -107,9 +89,6 @@ class Runtime
     }
 
     /**
-     * @param string $extension
-     *
-     * @return string
      * @throws \ReflectionException
      */
     public function getExtensionInfo(string $extension): string

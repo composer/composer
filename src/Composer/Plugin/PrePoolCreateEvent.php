@@ -98,9 +98,6 @@ class PrePoolCreateEvent extends Event
         return $this->repositories;
     }
 
-    /**
-     * @return Request
-     */
     public function getRequest(): Request
     {
         return $this->request;
@@ -160,8 +157,6 @@ class PrePoolCreateEvent extends Event
 
     /**
      * @param BasePackage[] $packages
-     *
-     * @return void
      */
     public function setPackages(array $packages): void
     {
@@ -170,8 +165,6 @@ class PrePoolCreateEvent extends Event
 
     /**
      * @param BasePackage[] $packages
-     *
-     * @return void
      */
     public function setUnacceptableFixedPackages(array $packages): void
     {

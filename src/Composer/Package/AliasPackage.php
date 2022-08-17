@@ -68,7 +68,7 @@ class AliasPackage extends BasePackage
 
         foreach (Link::$TYPES as $type) {
             $links = $aliasOf->{'get' . ucfirst($type)}();
-            $this->$type = $this->replaceSelfVersionDependencies($links, $type);
+            $this->{$type} = $this->replaceSelfVersionDependencies($links, $type);
         }
     }
 
@@ -167,7 +167,6 @@ class AliasPackage extends BasePackage
 
     /**
      * @see setRootPackageAlias
-     * @return bool
      */
     public function isRootPackageAlias(): bool
     {
@@ -188,8 +187,8 @@ class AliasPackage extends BasePackage
             $prettyVersion = $this->aliasOf->getPrettyVersion();
         }
 
-        if (\in_array($linkType, array(Link::TYPE_CONFLICT, Link::TYPE_PROVIDE, Link::TYPE_REPLACE), true)) {
-            $newLinks = array();
+        if (\in_array($linkType, [Link::TYPE_CONFLICT, Link::TYPE_PROVIDE, Link::TYPE_REPLACE], true)) {
+            $newLinks = [];
             foreach ($links as $link) {
                 // link is self.version, but must be replacing also the replaced version
                 if ('self.version' === $link->getPrettyConstraint()) {
@@ -213,9 +212,6 @@ class AliasPackage extends BasePackage
         return $links;
     }
 
-    /**
-     * @return bool
-     */
     public function hasSelfVersionRequires(): bool
     {
         return $this->hasSelfVersionRequires;

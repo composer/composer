@@ -27,7 +27,7 @@ class CurlResponse extends Response
     /**
      * @phpstan-param CurlInfo $curlInfo
      */
-    public function __construct(array $request, $code, array $headers, $body, array $curlInfo)
+    public function __construct(array $request, ?int $code, array $headers, ?string $body, array $curlInfo)
     {
         parent::__construct($request, $code, $headers, $body);
         $this->curlInfo = $curlInfo;

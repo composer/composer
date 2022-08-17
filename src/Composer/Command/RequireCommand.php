@@ -14,7 +14,6 @@ namespace Composer\Command;
 
 use Composer\DependencyResolver\Request;
 use Composer\Package\CompletePackageInterface;
-use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\PackageSorter;
 use Seld\Signal\SignalHandler;
@@ -71,9 +70,9 @@ class RequireCommand extends BaseCommand
     {
         $this
             ->setName('require')
-            ->setAliases(array('r'))
+            ->setAliases(['r'])
             ->setDescription('Adds required packages to your composer.json and installs them')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Optional package name can also include a version constraint, e.g. foo/bar or foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"', null, $this->suggestAvailablePackageInclPlatform()),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
@@ -101,7 +100,7 @@ class RequireCommand extends BaseCommand
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
                 new InputOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The require command adds required packages to your composer.json and installs them.
@@ -191,7 +190,7 @@ EOT
         $platformOverrides = $composer->getConfig()->get('platform');
         // initialize $this->repos as it is used by the PackageDiscoveryTrait
         $this->repos = new CompositeRepository(array_merge(
-            array($platformRepo = new PlatformRepository(array(), $platformOverrides)),
+            [$platformRepo = new PlatformRepository([], $platformOverrides)],
             $repos
         ));
 
@@ -285,7 +284,7 @@ EOT
                     }
 
                     $input->setOption('dev', true);
-                    list($requireKey, $removeKey) = array($removeKey, $requireKey);
+                    [$requireKey, $removeKey] = [$removeKey, $requireKey];
                 }
             }
         }
@@ -334,13 +333,12 @@ EOT
 
     /**
      * @param array<string, string> $newRequirements
-     * @param string $requireKey
      * @return string[]
      */
     private function getInconsistentRequireKeys(array $newRequirements, string $requireKey): array
     {
         $requireKeys = $this->getPackagesByRequireKey();
-        $inconsistentRequirements = array();
+        $inconsistentRequirements = [];
         foreach ($requireKeys as $package => $packageRequireKey) {
             if (!isset($newRequirements[$package])) {
                 continue;
@@ -359,8 +357,8 @@ EOT
     private function getPackagesByRequireKey(): array
     {
         $composerDefinition = $this->json->read();
-        $require = array();
-        $requireDev = array();
+        $require = [];
+        $requireDev = [];
 
         if (isset($composerDefinition['require'])) {
             $require = $composerDefinition['require'];
@@ -378,9 +376,6 @@ EOT
 
     /**
      * @param array<string, string> $requirements
-     * @param string $requireKey
-     * @param string $removeKey
-     * @return int
      * @throws \Exception
      */
     private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, string $requireKey, string $removeKey): int
@@ -396,10 +391,10 @@ EOT
 
         if ($input->getOption('dry-run')) {
             $rootPackage = $composer->getPackage();
-            $links = array(
+            $links = [
                 'require' => $rootPackage->getRequires(),
                 'require-dev' => $rootPackage->getDevRequires(),
-            );
+            ];
             $loader = new ArrayLoader();
             $newLinks = $loader->parseLinks($rootPackage->getName(), $rootPackage->getPrettyVersion(), BasePackage::$supportedLinkTypes[$requireKey]['method'], $requirements);
             $links[$requireKey] = array_merge($links[$requireKey], $newLinks);
@@ -435,7 +430,7 @@ EOT
 
         $install = Installer::create($io, $composer);
 
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($composer->getConfig(), $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($composer->getConfig(), $input);
 
         $install
             ->setDryRun($input->getOption('dry-run'))
@@ -480,10 +475,6 @@ EOT
 
     /**
      * @param array<string, string> $new
-     * @param string $requireKey
-     * @param string $removeKey
-     * @param bool $sortPackages
-     * @return bool
      */
     private function updateFileCleanly(JsonFile $json, array $new, string $requireKey, string $removeKey, bool $sortPackages): bool
     {
@@ -509,7 +500,6 @@ EOT
 
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-
     }
 
     private function revertComposerFile(): void

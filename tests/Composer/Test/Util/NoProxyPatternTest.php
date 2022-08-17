@@ -19,10 +19,6 @@ class NoProxyPatternTest extends TestCase
 {
     /**
      * @dataProvider dataHostName
-     *
-     * @param string $noproxy
-     * @param string $url
-     * @param bool   $expected
      */
     public function testHostName(string $noproxy, string $url, bool $expected): void
     {
@@ -36,24 +32,20 @@ class NoProxyPatternTest extends TestCase
         $noproxy = 'foobar.com, .barbaz.net';
 
         // noproxy, url, expected
-        return array(
-            'match as foobar.com' => array($noproxy, 'foobar.com', true),
-            'match foobar.com' => array($noproxy, 'www.foobar.com', true),
-            'no match foobar.com' => array($noproxy, 'foofoobar.com', false),
-            'match .barbaz.net 1' => array($noproxy, 'barbaz.net', true),
-            'match .barbaz.net 2' => array($noproxy, 'www.barbaz.net', true),
-            'no match .barbaz.net' => array($noproxy, 'barbarbaz.net', false),
-            'no match wrong domain' => array($noproxy, 'barbaz.com', false),
-            'no match FQDN' => array($noproxy, 'foobar.com.', false),
-        );
+        return [
+            'match as foobar.com' => [$noproxy, 'foobar.com', true],
+            'match foobar.com' => [$noproxy, 'www.foobar.com', true],
+            'no match foobar.com' => [$noproxy, 'foofoobar.com', false],
+            'match .barbaz.net 1' => [$noproxy, 'barbaz.net', true],
+            'match .barbaz.net 2' => [$noproxy, 'www.barbaz.net', true],
+            'no match .barbaz.net' => [$noproxy, 'barbarbaz.net', false],
+            'no match wrong domain' => [$noproxy, 'barbaz.com', false],
+            'no match FQDN' => [$noproxy, 'foobar.com.', false],
+        ];
     }
 
     /**
      * @dataProvider dataIpAddress
-     *
-     * @param string $noproxy
-     * @param string $url
-     * @param bool   $expected
      */
     public function testIpAddress(string $noproxy, string $url, bool $expected): void
     {
@@ -67,22 +59,18 @@ class NoProxyPatternTest extends TestCase
         $noproxy = '192.168.1.1, 2001:db8::52:0:1';
 
         // noproxy, url, expected
-        return array(
-            'match exact IPv4' => array($noproxy, '192.168.1.1', true),
-            'no match IPv4' => array($noproxy, '192.168.1.4', false),
-            'match exact IPv6' => array($noproxy, '[2001:db8:0:0:0:52:0:1]', true),
-            'no match IPv6' => array($noproxy, '[2001:db8:0:0:0:52:0:2]', false),
-            'match mapped IPv4' => array($noproxy, '[::FFFF:C0A8:0101]', true),
-            'no match mapped IPv4' => array($noproxy, '[::FFFF:C0A8:0104]', false),
-        );
+        return [
+            'match exact IPv4' => [$noproxy, '192.168.1.1', true],
+            'no match IPv4' => [$noproxy, '192.168.1.4', false],
+            'match exact IPv6' => [$noproxy, '[2001:db8:0:0:0:52:0:1]', true],
+            'no match IPv6' => [$noproxy, '[2001:db8:0:0:0:52:0:2]', false],
+            'match mapped IPv4' => [$noproxy, '[::FFFF:C0A8:0101]', true],
+            'no match mapped IPv4' => [$noproxy, '[::FFFF:C0A8:0104]', false],
+        ];
     }
 
     /**
      * @dataProvider dataIpRange
-     *
-     * @param string $noproxy
-     * @param string $url
-     * @param bool   $expected
      */
     public function testIpRange(string $noproxy, string $url, bool $expected): void
     {
@@ -96,22 +84,18 @@ class NoProxyPatternTest extends TestCase
         $noproxy = '10.0.0.0/30, 2002:db8:a::45/121';
 
         // noproxy, url, expected
-        return array(
-            'match IPv4/CIDR' => array($noproxy, '10.0.0.2', true),
-            'no match IPv4/CIDR' => array($noproxy, '10.0.0.4', false),
-            'match IPv6/CIDR' => array($noproxy, '[2002:db8:a:0:0:0:0:7f]', true),
-            'no match IPv6' => array($noproxy, '[2002:db8:a:0:0:0:0:ff]', false),
-            'match mapped IPv4' => array($noproxy, '[::FFFF:0A00:0002]', true),
-            'no match mapped IPv4' => array($noproxy, '[::FFFF:0A00:0004]', false),
-        );
+        return [
+            'match IPv4/CIDR' => [$noproxy, '10.0.0.2', true],
+            'no match IPv4/CIDR' => [$noproxy, '10.0.0.4', false],
+            'match IPv6/CIDR' => [$noproxy, '[2002:db8:a:0:0:0:0:7f]', true],
+            'no match IPv6' => [$noproxy, '[2002:db8:a:0:0:0:0:ff]', false],
+            'match mapped IPv4' => [$noproxy, '[::FFFF:0A00:0002]', true],
+            'no match mapped IPv4' => [$noproxy, '[::FFFF:0A00:0004]', false],
+        ];
     }
 
     /**
      * @dataProvider dataPort
-     *
-     * @param string $noproxy
-     * @param string $url
-     * @param bool   $expected
      */
     public function testPort(string $noproxy, string $url, bool $expected): void
     {
@@ -125,20 +109,16 @@ class NoProxyPatternTest extends TestCase
         $noproxy = '192.168.1.2:81, 192.168.1.3:80, [2001:db8::52:0:2]:443, [2001:db8::52:0:3]:80';
 
         // noproxy, url, expected
-        return array(
-            'match IPv4 port' => array($noproxy, '192.168.1.3', true),
-            'no match IPv4 port' => array($noproxy, '192.168.1.2', false),
-            'match IPv6 port' => array($noproxy, '[2001:db8::52:0:3]', true),
-            'no match IPv6 port' => array($noproxy, '[2001:db8::52:0:2]', false),
-        );
+        return [
+            'match IPv4 port' => [$noproxy, '192.168.1.3', true],
+            'no match IPv4 port' => [$noproxy, '192.168.1.2', false],
+            'match IPv6 port' => [$noproxy, '[2001:db8::52:0:3]', true],
+            'no match IPv6 port' => [$noproxy, '[2001:db8::52:0:2]', false],
+        ];
     }
 
     /**
      * Appends a scheme to the test url if it is missing
-     *
-     * @param string $url
-     *
-     * @return string
      */
     private function getUrl(string $url): string
     {
@@ -149,7 +129,7 @@ class NoProxyPatternTest extends TestCase
         $scheme = 'http';
 
         if (strpos($url, '[') !== 0 && strrpos($url, ':') !== false) {
-            list(, $port) = explode(':', $url);
+            [, $port] = explode(':', $url);
 
             if ($port === '443') {
                 $scheme = 'https';

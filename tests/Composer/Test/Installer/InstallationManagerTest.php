@@ -50,7 +50,7 @@ class InstallationManagerTest extends TestCase
         $installer
             ->expects($this->exactly(2))
             ->method('supports')
-            ->will($this->returnCallback(function ($arg): bool {
+            ->will($this->returnCallback(static function ($arg): bool {
                 return $arg === 'vendor';
             }));
 
@@ -70,7 +70,7 @@ class InstallationManagerTest extends TestCase
         $installer
             ->expects($this->exactly(2))
             ->method('supports')
-            ->will($this->returnCallback(function ($arg): bool {
+            ->will($this->returnCallback(static function ($arg): bool {
                 return $arg === 'vendor';
             }));
 
@@ -79,7 +79,7 @@ class InstallationManagerTest extends TestCase
         $installer2
             ->expects($this->exactly(1))
             ->method('supports')
-            ->will($this->returnCallback(function ($arg): bool {
+            ->will($this->returnCallback(static function ($arg): bool {
                 return $arg === 'vendor';
             }));
 
@@ -96,8 +96,8 @@ class InstallationManagerTest extends TestCase
     public function testExecute(): void
     {
         $manager = $this->getMockBuilder('Composer\Installer\InstallationManager')
-            ->setConstructorArgs(array($this->loop, $this->io))
-            ->onlyMethods(array('install', 'update', 'uninstall'))
+            ->setConstructorArgs([$this->loop, $this->io])
+            ->onlyMethods(['install', 'update', 'uninstall'])
             ->getMock();
 
         $installOperation = new InstallOperation($package = $this->createPackageMock());
@@ -125,7 +125,7 @@ class InstallationManagerTest extends TestCase
             ->with($this->repository, $updateOperation);
 
         $manager->addInstaller(new NoopInstaller());
-        $manager->execute($this->repository, array($installOperation, $removeOperation, $updateOperation));
+        $manager->execute($this->repository, [$installOperation, $removeOperation, $updateOperation]);
     }
 
     public function testInstall(): void
@@ -212,7 +212,7 @@ class InstallationManagerTest extends TestCase
         $bundleInstaller
             ->expects($this->exactly(2))
             ->method('supports')
-            ->will($this->returnCallback(function ($arg): bool {
+            ->will($this->returnCallback(static function ($arg): bool {
                 return $arg === 'bundles';
             }));
 

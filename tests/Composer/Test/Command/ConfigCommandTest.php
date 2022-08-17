@@ -12,11 +12,7 @@
 
 namespace Composer\Test\Command;
 
-use Composer\Composer;
-use Composer\Config;
-use Composer\Script\Event as ScriptEvent;
 use Composer\Test\TestCase;
-use Composer\Util\Filesystem;
 
 class ConfigCommandTest extends TestCase
 {

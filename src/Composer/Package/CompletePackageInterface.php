@@ -30,7 +30,6 @@ interface CompletePackageInterface extends PackageInterface
 
     /**
      * @param  array<string, string[]> $scripts
-     * @return void
      */
     public function setScripts(array $scripts): void;
 
@@ -45,7 +44,6 @@ interface CompletePackageInterface extends PackageInterface
      * Set the repositories
      *
      * @param  mixed[] $repositories
-     * @return void
      */
     public function setRepositories(array $repositories): void;
 
@@ -60,7 +58,6 @@ interface CompletePackageInterface extends PackageInterface
      * Set the license
      *
      * @param  string[] $license
-     * @return void
      */
     public function setLicense(array $license): void;
 
@@ -75,7 +72,6 @@ interface CompletePackageInterface extends PackageInterface
      * Set the keywords
      *
      * @param  string[] $keywords
-     * @return void
      */
     public function setKeywords(array $keywords): void;
 
@@ -88,9 +84,6 @@ interface CompletePackageInterface extends PackageInterface
 
     /**
      * Set the description
-     *
-     * @param  string $description
-     * @return void
      */
     public function setDescription(string $description): void;
 
@@ -103,9 +96,6 @@ interface CompletePackageInterface extends PackageInterface
 
     /**
      * Set the homepage
-     *
-     * @param  string $homepage
-     * @return void
      */
     public function setHomepage(string $homepage): void;
 
@@ -122,7 +112,6 @@ interface CompletePackageInterface extends PackageInterface
      * Set the authors
      *
      * @param  array<array{name?: string, homepage?: string, email?: string, role?: string}> $authors
-     * @return void
      */
     public function setAuthors(array $authors): void;
 
@@ -137,7 +126,6 @@ interface CompletePackageInterface extends PackageInterface
      * Set the support information
      *
      * @param  array{issues?: string, forum?: string, wiki?: string, source?: string, email?: string, irc?: string, docs?: string, rss?: string, chat?: string} $support
-     * @return void
      */
     public function setSupport(array $support): void;
 
@@ -154,27 +142,21 @@ interface CompletePackageInterface extends PackageInterface
      * Set the funding
      *
      * @param  array<array{type?: string, url?: string}> $funding
-     * @return void
      */
     public function setFunding(array $funding): void;
 
     /**
      * Returns if the package is abandoned or not
-     *
-     * @return bool
      */
     public function isAbandoned(): bool;
 
     /**
      * If the package is abandoned and has a suggested replacement, this method returns it
-     *
-     * @return string|null
      */
     public function getReplacementPackage(): ?string;
 
     /**
      * @param  bool|string $abandoned
-     * @return void
      */
     public function setAbandoned($abandoned): void;
 
@@ -187,9 +169,6 @@ interface CompletePackageInterface extends PackageInterface
 
     /**
      * Sets default base filename for archive
-     *
-     * @param  string $name
-     * @return void
      */
     public function setArchiveName(string $name): void;
 
@@ -204,7 +183,6 @@ interface CompletePackageInterface extends PackageInterface
      * Sets a list of patterns to be excluded from archives
      *
      * @param  string[] $excludes
-     * @return void
      */
     public function setArchiveExcludes(array $excludes): void;
 }

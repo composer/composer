@@ -66,14 +66,13 @@ class BinaryInstallerTest extends TestCase
 
     /**
      * @dataProvider executableBinaryProvider
-     * @param string $contents
      */
     public function testInstallAndExecBinaryWithFullCompat(string $contents): void
     {
         $package = $this->createPackageMock();
         $package->expects($this->any())
             ->method('getBinaries')
-            ->willReturn(array('binary'));
+            ->willReturn(['binary']);
 
         $this->ensureDirectoryExistsAndClear($this->vendorDir.'/foo/bar');
         file_put_contents($this->vendorDir.'/foo/bar/binary', $contents);
@@ -89,31 +88,31 @@ class BinaryInstallerTest extends TestCase
 
     public function executableBinaryProvider(): array
     {
-        return array(
-            'simple php file' => array(<<<'EOL'
+        return [
+            'simple php file' => [<<<'EOL'
 <?php
 
 echo 'success '.$_SERVER['argv'][1];
 EOL
-            ),
-            'php file with shebang' => array(<<<'EOL'
+            ],
+            'php file with shebang' => [<<<'EOL'
 #!/usr/bin/env php
 <?php
 
 echo 'success '.$_SERVER['argv'][1];
 EOL
-            ),
-            'phar file' => array(
+            ],
+            'phar file' => [
                 base64_decode('IyEvdXNyL2Jpbi9lbnYgcGhwCjw/cGhwCgpQaGFyOjptYXBQaGFyKCd0ZXN0LnBoYXInKTsKCnJlcXVpcmUgJ3BoYXI6Ly90ZXN0LnBoYXIvcnVuLnBocCc7CgpfX0hBTFRfQ09NUElMRVIoKTsgPz4NCj4AAAABAAAAEQAAAAEACQAAAHRlc3QucGhhcgAAAAAHAAAAcnVuLnBocCoAAADb9n9hKgAAAMUDDWGkAQAAAAAAADw/cGhwIGVjaG8gInN1Y2Nlc3MgIi4kX1NFUlZFUlsiYXJndiJdWzFdO1SOC0IE3+UN0yzrHIwyspp9slhmAgAAAEdCTUI='),
-            ),
-            'shebang with strict types declare' => array(<<<'EOL'
+            ],
+            'shebang with strict types declare' => [<<<'EOL'
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
 echo 'success '.$_SERVER['argv'][1];
 EOL
-            ),
-        );
+            ],
+        ];
     }
 
     /**
@@ -122,7 +121,7 @@ EOL
     protected function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')
-            ->setConstructorArgs(array(md5((string) mt_rand()), '1.0.0.0', '1.0.0'))
+            ->setConstructorArgs([md5((string) mt_rand()), '1.0.0.0', '1.0.0'])
             ->getMock();
     }
 }

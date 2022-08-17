@@ -12,13 +12,8 @@
 
 namespace Composer\Test\Package\Version;
 
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Package\Version\VersionBumper;
-use Composer\Package\Version\VersionSelector;
 use Composer\Package\Package;
-use Composer\Package\Link;
-use Composer\Package\AliasPackage;
-use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
 use Composer\Test\TestCase;
 use Generator;
@@ -36,7 +31,7 @@ class VersionBumperTest extends TestCase
         $package = new Package('foo/bar', $versionParser->normalize($prettyVersion), $prettyVersion);
 
         if ($branchAlias !== null) {
-            $package->setExtra(array('branch-alias' => array($prettyVersion => $branchAlias)));
+            $package->setExtra(['branch-alias' => [$prettyVersion => $branchAlias]]);
         }
 
         $newConstraint = $versionBumper->bumpRequirement($versionParser->parseConstraints($requirement), $package);

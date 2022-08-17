@@ -45,7 +45,7 @@ abstract class VcsDriver implements VcsDriverInterface
     /** @var HttpDownloader */
     protected $httpDownloader;
     /** @var array<int|string, mixed> */
-    protected $infoCache = array();
+    protected $infoCache = [];
     /** @var ?Cache */
     protected $cache;
 
@@ -75,9 +75,6 @@ abstract class VcsDriver implements VcsDriverInterface
 
     /**
      * Returns whether or not the given $identifier should be cached or not.
-     *
-     * @param  string $identifier
-     * @return bool
      */
     protected function shouldCache(string $identifier): bool
     {
@@ -107,8 +104,6 @@ abstract class VcsDriver implements VcsDriverInterface
     }
 
     /**
-     * @param string $identifier
-     *
      * @return array<mixed>|null
      */
     protected function getBaseComposerInformation(string $identifier): ?array
@@ -166,12 +161,11 @@ abstract class VcsDriver implements VcsDriverInterface
      *
      * @param string $url The URL of content
      *
-     * @return Response
      * @throws TransportException
      */
     protected function getContents(string $url): Response
     {
-        $options = $this->repoConfig['options'] ?? array();
+        $options = $this->repoConfig['options'] ?? [];
 
         return $this->httpDownloader->get($url, $options);
     }
@@ -181,6 +175,5 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     public function cleanup(): void
     {
-        
     }
 }

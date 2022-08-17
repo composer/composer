@@ -27,10 +27,8 @@ final class TlsHelper
      * @param mixed  $certificate X.509 certificate
      * @param string $hostname    Hostname in the URL
      * @param string $cn          Set to the common name of the certificate iff match found
-     *
-     * @return bool
      */
-    public static function checkCertificateHost($certificate, string $hostname, string &$cn = null): bool
+    public static function checkCertificateHost($certificate, string $hostname, ?string &$cn = null): bool
     {
         $names = self::getCertificateNames($certificate);
 
@@ -38,7 +36,7 @@ final class TlsHelper
             return false;
         }
 
-        $combinedNames = array_merge($names['san'], array($names['cn']));
+        $combinedNames = array_merge($names['san'], [$names['cn']]);
         $hostname = strtolower($hostname);
 
         foreach ($combinedNames as $certName) {
@@ -74,7 +72,7 @@ final class TlsHelper
         }
 
         $commonName = strtolower($info['subject']['commonName']);
-        $subjectAltNames = array();
+        $subjectAltNames = [];
 
         if (isset($info['extensions']['subjectAltName'])) {
             $subjectAltNames = Preg::split('{\s*,\s*}', $info['extensions']['subjectAltName']);
@@ -88,10 +86,10 @@ final class TlsHelper
             $subjectAltNames = array_values($subjectAltNames);
         }
 
-        return array(
+        return [
             'cn' => $commonName,
             'san' => $subjectAltNames,
-        );
+        ];
     }
 
     /**
@@ -132,9 +130,6 @@ final class TlsHelper
      * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
      * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
      * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-     *
-     * @param string $certificate
-     * @return string
      */
     public static function getCertificateFingerprint(string $certificate): string
     {
@@ -158,8 +153,6 @@ final class TlsHelper
      *
      * This checks if OpenSSL extensions is vulnerable to remote code execution
      * via the exploit documented as CVE-2013-6420.
-     *
-     * @return bool
      */
     public static function isOpensslParseSafe(): bool
     {
@@ -170,8 +163,6 @@ final class TlsHelper
      * Convert certificate name into matching function.
      *
      * @param string $certName CN/SAN
-     *
-     * @return callable|null
      */
     private static function certNameMatcher(string $certName): ?callable
     {

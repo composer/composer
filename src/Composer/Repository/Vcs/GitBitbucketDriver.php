@@ -72,12 +72,12 @@ class GitBitbucketDriver extends VcsDriver
         $this->originUrl = 'bitbucket.org';
         $this->cache = new Cache(
             $this->io,
-            implode('/', array(
+            implode('/', [
                 $this->config->get('cache-repo-dir'),
                 $this->originUrl,
                 $this->owner,
                 $this->repository,
-            ))
+            ])
         );
         $this->cache->setReadOnly($this->config->get('cache-read-only'));
     }
@@ -98,7 +98,6 @@ class GitBitbucketDriver extends VcsDriver
      * Attempts to fetch the repository data via the BitBucket API and
      * sets some parameters which are used in other methods
      *
-     * @return bool
      * @phpstan-impure
      */
     protected function getRepoData(): bool
@@ -108,7 +107,7 @@ class GitBitbucketDriver extends VcsDriver
             $this->owner,
             $this->repository,
             http_build_query(
-                array('fields' => '-project,-owner'),
+                ['fields' => '-project,-owner'],
                 '',
                 '&'
             )
@@ -269,7 +268,7 @@ class GitBitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getSource($identifier);
         }
 
-        return array('type' => $this->vcsType, 'url' => $this->getUrl(), 'reference' => $identifier);
+        return ['type' => $this->vcsType, 'url' => $this->getUrl(), 'reference' => $identifier];
     }
 
     /**
@@ -288,7 +287,7 @@ class GitBitbucketDriver extends VcsDriver
             $identifier
         );
 
-        return array('type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => '');
+        return ['type' => 'zip', 'url' => $url, 'reference' => $identifier, 'shasum' => ''];
     }
 
     /**
@@ -301,16 +300,16 @@ class GitBitbucketDriver extends VcsDriver
         }
 
         if (null === $this->tags) {
-            $tags = array();
+            $tags = [];
             $resource = sprintf(
                 '%s?%s',
                 $this->tagsUrl,
                 http_build_query(
-                    array(
+                    [
                         'pagelen' => 100,
                         'fields' => 'values.name,values.target.hash,next',
                         'sort' => '-target.date',
-                    ),
+                    ],
                     '',
                     '&'
                 )
@@ -344,16 +343,16 @@ class GitBitbucketDriver extends VcsDriver
         }
 
         if (null === $this->branches) {
-            $branches = array();
+            $branches = [];
             $resource = sprintf(
                 '%s?%s',
                 $this->branchesUrl,
                 http_build_query(
-                    array(
+                    [
                         'pagelen' => 100,
                         'fields' => 'values.name,values.target.hash,values.heads,next',
                         'sort' => '-target.date',
-                    ),
+                    ],
                     '',
                     '&'
                 )
@@ -381,7 +380,6 @@ class GitBitbucketDriver extends VcsDriver
      * Get the remote content.
      *
      * @param string $url              The URL of content
-     * @param bool   $fetchingRepoData
      *
      * @return Response The result
      *
@@ -394,7 +392,7 @@ class GitBitbucketDriver extends VcsDriver
         } catch (TransportException $e) {
             $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process, $this->httpDownloader);
 
-            if (in_array($e->getCode(), array(403, 404), true) || (401 === $e->getCode() && strpos($e->getMessage(), 'Could not authenticate against') === 0)) {
+            if (in_array($e->getCode(), [403, 404], true) || (401 === $e->getCode() && strpos($e->getMessage(), 'Could not authenticate against') === 0)) {
                 if (!$this->io->hasAuthentication($this->originUrl)
                     && $bitbucketUtil->authorizeOAuth($this->originUrl)
                 ) {
@@ -404,7 +402,7 @@ class GitBitbucketDriver extends VcsDriver
                 if (!$this->io->isInteractive() && $fetchingRepoData) {
                     $this->attemptCloneFallback();
 
-                    return new Response(array('url' => 'dummy'), 200, array(), 'null');
+                    return new Response(['url' => 'dummy'], 200, [], 'null');
                 }
             }
 
@@ -414,8 +412,6 @@ class GitBitbucketDriver extends VcsDriver
 
     /**
      * Generate an SSH URL
-     *
-     * @return string
      */
     protected function generateSshUrl(): string
     {
@@ -445,14 +441,10 @@ class GitBitbucketDriver extends VcsDriver
         }
     }
 
-    /**
-     * @param  string $url
-     * @return void
-     */
     protected function setupFallbackDriver(string $url): void
     {
         $this->fallbackDriver = new GitDriver(
-            array('url' => $url),
+            ['url' => $url],
             $this->io,
             $this->config,
             $this->httpDownloader,
@@ -463,7 +455,6 @@ class GitBitbucketDriver extends VcsDriver
 
     /**
      * @param  array<array{name: string, href: string}> $cloneLinks
-     * @return void
      */
     protected function parseCloneUrls(array $cloneLinks): void
     {

@@ -58,10 +58,6 @@ interface PackageInterface
 
     /**
      * Allows the solver to set an id for this package to refer to it.
-     *
-     * @param int $id
-     *
-     * @return void
      */
     public function setId(int $id): void;
 
@@ -74,8 +70,6 @@ interface PackageInterface
 
     /**
      * Returns whether the package is a development virtual package or a concrete one
-     *
-     * @return bool
      */
     public function isDev(): bool;
 
@@ -105,8 +99,6 @@ interface PackageInterface
      *
      * @param ?string $type source/dist
      * @phpstan-param 'source'|'dist'|null $type
-     *
-     * @return void
      */
     public function setInstallationSource(?string $type): void;
 
@@ -155,7 +147,6 @@ interface PackageInterface
 
     /**
      * @param  null|array<int, array{url: string, preferred: bool}> $mirrors
-     * @return void
      */
     public function setSourceMirrors(?array $mirrors): void;
 
@@ -203,7 +194,6 @@ interface PackageInterface
 
     /**
      * @param  null|array<int, array{url: string, preferred: bool}> $mirrors
-     * @return void
      */
     public function setDistMirrors(?array $mirrors): void;
 
@@ -244,7 +234,6 @@ interface PackageInterface
     /**
      * Returns the stability of this package: one of (dev, alpha, beta, RC, stable)
      *
-     * @return string
      *
      * @phpstan-return 'stable'|'RC'|'beta'|'alpha'|'dev'
      */
@@ -335,10 +324,6 @@ interface PackageInterface
 
     /**
      * Stores a reference to the repository that owns the package
-     *
-     * @param RepositoryInterface $repository
-     *
-     * @return void
      */
     public function setRepository(RepositoryInterface $repository): void;
 
@@ -358,8 +343,6 @@ interface PackageInterface
 
     /**
      * Returns package unique name, constructed from name and version.
-     *
-     * @return string
      */
     public function getUniqueName(): string;
 
@@ -372,21 +355,14 @@ interface PackageInterface
 
     /**
      * Converts the package into a readable and unique string
-     *
-     * @return string
      */
     public function __toString(): string;
 
     /**
      * Converts the package into a pretty readable string
-     *
-     * @return string
      */
     public function getPrettyString(): string;
 
-    /**
-     * @return bool
-     */
     public function isDefaultBranch(): bool;
 
     /**
@@ -400,35 +376,19 @@ interface PackageInterface
      * Configures the list of options to download package dist files
      *
      * @param mixed[] $options
-     *
-     * @return void
      */
     public function setTransportOptions(array $options): void;
 
-    /**
-     * @return void
-     */
     public function setSourceReference(?string $reference): void;
 
-    /**
-     * @return void
-     */
     public function setDistUrl(?string $url): void;
 
-    /**
-     * @return void
-     */
     public function setDistType(?string $type): void;
 
-    /**
-     * @return void
-     */
     public function setDistReference(?string $reference): void;
 
     /**
      * Set dist and source references and update dist URL for ones that contain a reference
-     *
-     * @return void
      */
     public function setSourceDistReferences(string $reference): void;
 }

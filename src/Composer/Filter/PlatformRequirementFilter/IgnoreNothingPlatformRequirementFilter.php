@@ -15,7 +15,6 @@ namespace Composer\Filter\PlatformRequirementFilter;
 final class IgnoreNothingPlatformRequirementFilter implements PlatformRequirementFilterInterface
 {
     /**
-     * @param string $req
      * @return false
      */
     public function isIgnored(string $req): bool

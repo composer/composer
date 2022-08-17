@@ -40,7 +40,7 @@ class GitLab
      * @param ProcessExecutor $process        Process instance, injectable for mocking
      * @param HttpDownloader  $httpDownloader Remote Filesystem, injectable for mocking
      */
-    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null)
+    public function __construct(IOInterface $io, Config $config, ?ProcessExecutor $process = null, ?HttpDownloader $httpDownloader = null)
     {
         $this->io = $io;
         $this->config = $config;
@@ -95,7 +95,7 @@ class GitLab
 
             // Composer expects the GitLab token to be stored as username and 'private-token' or 'gitlab-ci-token' to be stored as password
             // Detect cases where this is reversed and resolve automatically resolve it
-            if (in_array($username, array('private-token', 'gitlab-ci-token',  'oauth2'), true)) {
+            if (in_array($username, ['private-token', 'gitlab-ci-token',  'oauth2'], true)) {
                 $this->io->setAuthentication($originUrl, $password, $username);
             } else {
                 $this->io->setAuthentication($originUrl, $username, $password);
@@ -119,7 +119,7 @@ class GitLab
      *
      * @return bool true on success
      */
-    public function authorizeOAuthInteractively(string $scheme, string $originUrl, string $message = null): bool
+    public function authorizeOAuthInteractively(string $scheme, string $originUrl, ?string $message = null): bool
     {
         if ($message) {
             $this->io->writeError($message);
@@ -137,7 +137,7 @@ class GitLab
             } catch (TransportException $e) {
                 // 401 is bad credentials,
                 // 403 is max login attempts exceeded
-                if (in_array($e->getCode(), array(403, 401))) {
+                if (in_array($e->getCode(), [403, 401])) {
                     if (401 === $e->getCode()) {
                         $response = json_decode($e->getResponse(), true);
                         if (isset($response['error']) && $response['error'] === 'invalid_grant') {
@@ -197,6 +197,7 @@ class GitLab
             $response = $this->refreshToken($scheme, $originUrl);
         } catch (TransportException $e) {
             $this->io->writeError("Couldn't refresh access token: ".$e->getMessage());
+
             return false;
         }
 
@@ -216,9 +217,6 @@ class GitLab
     }
 
     /**
-     * @param string $scheme
-     * @param string $originUrl
-     *
      * @return array{access_token: non-empty-string, refresh_token: non-empty-string, token_type: non-empty-string, expires_in?: positive-int, created_at: positive-int}
      *
      * @see https://docs.gitlab.com/ee/api/oauth2.html#resource-owner-password-credentials-flow
@@ -228,22 +226,22 @@ class GitLab
         $username = $this->io->ask('Username: ');
         $password = $this->io->askAndHideAnswer('Password: ');
 
-        $headers = array('Content-Type: application/x-www-form-urlencoded');
+        $headers = ['Content-Type: application/x-www-form-urlencoded'];
 
         $apiUrl = $originUrl;
-        $data = http_build_query(array(
+        $data = http_build_query([
             'username' => $username,
             'password' => $password,
             'grant_type' => 'password',
-        ), '', '&');
-        $options = array(
+        ], '', '&');
+        $options = [
             'retry-auth-failure' => false,
-            'http' => array(
+            'http' => [
                 'method' => 'POST',
                 'header' => $headers,
                 'content' => $data,
-            ),
-        );
+            ],
+        ];
 
         $token = $this->httpDownloader->get($scheme.'://'.$apiUrl.'/oauth/token', $options)->decodeJson();
 
@@ -270,9 +268,6 @@ class GitLab
     }
 
     /**
-     * @param string $scheme
-     * @param string $originUrl
-     *
      * @return array{access_token: non-empty-string, refresh_token: non-empty-string, token_type: non-empty-string, expires_in: positive-int, created_at: positive-int}
      *
      * @see https://docs.gitlab.com/ee/api/oauth2.html#resource-owner-password-credentials-flow
@@ -285,20 +280,20 @@ class GitLab
         }
 
         $refreshToken = $authTokens[$originUrl]['refresh-token'];
-        $headers = array('Content-Type: application/x-www-form-urlencoded');
+        $headers = ['Content-Type: application/x-www-form-urlencoded'];
 
-        $data = http_build_query(array(
+        $data = http_build_query([
             'refresh_token' => $refreshToken,
             'grant_type' => 'refresh_token',
-        ), '', '&');
-        $options = array(
+        ], '', '&');
+        $options = [
             'retry-auth-failure' => false,
-            'http' => array(
+            'http' => [
                 'method' => 'POST',
                 'header' => $headers,
                 'content' => $data,
-            ),
-        );
+            ],
+        ];
 
         $token = $this->httpDownloader->get($scheme.'://'.$originUrl.'/oauth/token', $options)->decodeJson();
         $this->io->writeError('GitLab token successfully refreshed', true, IOInterface::VERY_VERBOSE);

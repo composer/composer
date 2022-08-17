@@ -21,9 +21,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class AboutCommand extends BaseCommand
 {
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this

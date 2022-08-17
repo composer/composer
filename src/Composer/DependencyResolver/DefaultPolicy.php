@@ -32,10 +32,6 @@ class DefaultPolicy implements PolicyInterface
     /** @var array<int, array<string, int>> */
     private $sortingCachePerPool;
 
-    /**
-     * @param bool $preferStable
-     * @param bool $preferLowest
-     */
     public function __construct(bool $preferStable = false, bool $preferLowest = false)
     {
         $this->preferStable = $preferStable;
@@ -44,7 +40,6 @@ class DefaultPolicy implements PolicyInterface
 
     /**
      * @param string $operator One of Constraint::STR_OP_*
-     * @return bool
      *
      * @phpstan-param Constraint::STR_OP_* $operator
      */
@@ -65,7 +60,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  string $requiredPackage
      * @return int[]
      */
-    public function selectPreferredPackages(Pool $pool, array $literals, string $requiredPackage = null): array
+    public function selectPreferredPackages(Pool $pool, array $literals, ?string $requiredPackage = null): array
     {
         sort($literals);
         $resultCacheKey = implode(',', $literals).$requiredPackage;
@@ -94,7 +89,7 @@ class DefaultPolicy implements PolicyInterface
             $sortedLiterals = $this->pruneRemoteAliases($pool, $sortedLiterals);
         }
 
-        $selected = \call_user_func_array('array_merge', array_values($packages));
+        $selected = array_merge(...array_values($packages));
 
         // now sort the result across all packages to respect replaces across packages
         usort($selected, function ($a, $b) use ($pool, $requiredPackage, $poolId): int {
@@ -116,12 +111,12 @@ class DefaultPolicy implements PolicyInterface
      */
     protected function groupLiteralsByName(Pool $pool, array $literals): array
     {
-        $packages = array();
+        $packages = [];
         foreach ($literals as $literal) {
             $packageName = $pool->literalToPackage($literal)->getName();
 
             if (!isset($packages[$packageName])) {
-                $packages[$packageName] = array();
+                $packages[$packageName] = [];
             }
             $packages[$packageName][] = $literal;
         }
@@ -131,9 +126,6 @@ class DefaultPolicy implements PolicyInterface
 
     /**
      * @protected
-     * @param null|string $requiredPackage
-     * @param bool $ignoreReplace
-     * @return int
      */
     public function compareByPriority(Pool $pool, BasePackage $a, BasePackage $b, ?string $requiredPackage = null, bool $ignoreReplace = false): int
     {
@@ -185,8 +177,6 @@ class DefaultPolicy implements PolicyInterface
      *
      * Replace constraints are ignored. This method should only be used for
      * prioritisation, not for actual constraint verification.
-     *
-     * @return bool
      */
     protected function replaces(BasePackage $source, BasePackage $target): bool
     {
@@ -194,7 +184,7 @@ class DefaultPolicy implements PolicyInterface
             if ($link->getTarget() === $target->getName()
 //                && (null === $link->getConstraint() ||
 //                $link->getConstraint()->matches(new Constraint('==', $target->getVersion())))) {
-                ) {
+            ) {
                 return true;
             }
         }
@@ -209,7 +199,7 @@ class DefaultPolicy implements PolicyInterface
     protected function pruneToBestVersion(Pool $pool, array $literals): array
     {
         $operator = $this->preferLowest ? '<' : '>';
-        $bestLiterals = array($literals[0]);
+        $bestLiterals = [$literals[0]];
         $bestPackage = $pool->literalToPackage($literals[0]);
         foreach ($literals as $i => $literal) {
             if (0 === $i) {
@@ -220,7 +210,7 @@ class DefaultPolicy implements PolicyInterface
 
             if ($this->versionCompare($package, $bestPackage, $operator)) {
                 $bestPackage = $package;
-                $bestLiterals = array($literal);
+                $bestLiterals = [$literal];
             } elseif ($this->versionCompare($package, $bestPackage, '==')) {
                 $bestLiterals[] = $literal;
             }
@@ -254,7 +244,7 @@ class DefaultPolicy implements PolicyInterface
             return $literals;
         }
 
-        $selected = array();
+        $selected = [];
         foreach ($literals as $literal) {
             $package = $pool->literalToPackage($literal);
 

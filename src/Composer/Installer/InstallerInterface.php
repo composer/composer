@@ -28,7 +28,6 @@ interface InstallerInterface
     /**
      * Decides if the installer supports the given type
      *
-     * @param  string $packageType
      * @return bool
      */
     public function supports(string $packageType);
@@ -50,7 +49,7 @@ interface InstallerInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
      */
-    public function download(PackageInterface $package, PackageInterface $prevPackage = null);
+    public function download(PackageInterface $package, ?PackageInterface $prevPackage = null);
 
     /**
      * Do anything that needs to be done between all downloads have been completed and the actual operation is executed
@@ -65,7 +64,7 @@ interface InstallerInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
      */
-    public function prepare(string $type, PackageInterface $package, PackageInterface $prevPackage = null);
+    public function prepare(string $type, PackageInterface $package, ?PackageInterface $prevPackage = null);
 
     /**
      * Installs specific package.
@@ -108,12 +107,11 @@ interface InstallerInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
      */
-    public function cleanup(string $type, PackageInterface $package, PackageInterface $prevPackage = null);
+    public function cleanup(string $type, PackageInterface $package, ?PackageInterface $prevPackage = null);
 
     /**
      * Returns the absolute installation path of a package.
      *
-     * @param  PackageInterface $package
      * @return string           absolute path to install to, which MUST not end with a slash
      */
     public function getInstallPath(PackageInterface $package);

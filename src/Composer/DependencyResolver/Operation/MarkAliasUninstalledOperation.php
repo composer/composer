@@ -35,8 +35,6 @@ class MarkAliasUninstalledOperation extends SolverOperation implements Operation
 
     /**
      * Returns package instance.
-     *
-     * @return AliasPackage
      */
     public function getPackage(): AliasPackage
     {

@@ -34,7 +34,6 @@ class ErrorHandler
      *
      * @static
      * @throws \ErrorException
-     * @return bool
      */
     public static function handle(int $level, string $message, string $file, int $line): bool
     {
@@ -73,14 +72,10 @@ class ErrorHandler
 
     /**
      * Register error handler.
-     *
-     * @param IOInterface|null $io
-     *
-     * @return void
      */
-    public static function register(IOInterface $io = null): void
+    public static function register(?IOInterface $io = null): void
     {
-        set_error_handler(array(__CLASS__, 'handle'));
+        set_error_handler([__CLASS__, 'handle']);
         error_reporting(E_ALL | E_STRICT);
         self::$io = $io;
     }

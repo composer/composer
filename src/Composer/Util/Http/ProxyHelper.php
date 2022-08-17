@@ -34,33 +34,32 @@ class ProxyHelper
 
         // Handle http_proxy/HTTP_PROXY on CLI only for security reasons
         if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
-            if ($env = self::getProxyEnv(array('http_proxy', 'HTTP_PROXY'), $name)) {
+            if ($env = self::getProxyEnv(['http_proxy', 'HTTP_PROXY'], $name)) {
                 $httpProxy = self::checkProxy($env, $name);
             }
         }
 
         // Prefer CGI_HTTP_PROXY if available
-        if ($env = self::getProxyEnv(array('CGI_HTTP_PROXY'), $name)) {
+        if ($env = self::getProxyEnv(['CGI_HTTP_PROXY'], $name)) {
             $httpProxy = self::checkProxy($env, $name);
         }
 
         // Handle https_proxy/HTTPS_PROXY
-        if ($env = self::getProxyEnv(array('https_proxy', 'HTTPS_PROXY'), $name)) {
+        if ($env = self::getProxyEnv(['https_proxy', 'HTTPS_PROXY'], $name)) {
             $httpsProxy = self::checkProxy($env, $name);
         } else {
             $httpsProxy = $httpProxy;
         }
 
         // Handle no_proxy
-        $noProxy = self::getProxyEnv(array('no_proxy', 'NO_PROXY'), $name);
+        $noProxy = self::getProxyEnv(['no_proxy', 'NO_PROXY'], $name);
 
-        return array($httpProxy, $httpsProxy, $noProxy);
+        return [$httpProxy, $httpsProxy, $noProxy];
     }
 
     /**
      * Returns http context options for the proxy url
      *
-     * @param string $proxyUrl
      *
      * @return array{http: array{proxy: string, header?: string}}
      */
@@ -70,7 +69,7 @@ class ProxyHelper
 
         // Remove any authorization
         $proxyUrl = self::formatParsedUrl($proxy, false);
-        $proxyUrl = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $proxyUrl);
+        $proxyUrl = str_replace(['http://', 'https://'], ['tcp://', 'ssl://'], $proxyUrl);
 
         $options['http']['proxy'] = $proxyUrl;
 
@@ -92,10 +91,7 @@ class ProxyHelper
     /**
      * Sets/unsets request_fulluri value in http context options array
      *
-     * @param string  $requestUrl
      * @param mixed[] $options Set by method
-     *
-     * @return void
      */
     public static function setRequestFullUri(string $requestUrl, array &$options): void
     {
@@ -128,8 +124,6 @@ class ProxyHelper
     /**
      * Checks and formats a proxy url from the environment
      *
-     * @param  string            $proxyUrl
-     * @param  string            $envName
      * @throws \RuntimeException on malformed url
      * @return string            The formatted proxy url
      */
@@ -157,7 +151,6 @@ class ProxyHelper
      * Formats a url from its component parts
      *
      * @param  array{scheme?: string, host: string, port?: int, user?: string, pass?: string} $proxy
-     * @param  bool                                                                           $includeAuth
      *
      * @return string The formatted value
      */

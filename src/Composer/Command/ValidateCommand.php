@@ -36,14 +36,13 @@ class ValidateCommand extends BaseCommand
 {
     /**
      * configure
-     * @return void
      */
     protected function configure(): void
     {
         $this
             ->setName('validate')
             ->setDescription('Validates a composer.json and composer.lock')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not validate requires for overly strict/loose constraints'),
                 new InputOption('check-lock', null, InputOption::VALUE_NONE, 'Check if lock file is up to date (even when config.lock is false)'),
                 new InputOption('no-check-lock', null, InputOption::VALUE_NONE, 'Do not check if lock file is up to date'),
@@ -52,7 +51,7 @@ class ValidateCommand extends BaseCommand
                 new InputOption('with-dependencies', 'A', InputOption::VALUE_NONE, 'Also validate the composer.json of all installed dependencies'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code for warnings as well as errors'),
                 new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The validate command validates a given composer.json and composer.lock
@@ -89,9 +88,9 @@ EOT
         $checkLock = !$input->getOption('no-check-lock');
         $checkVersion = $input->getOption('no-check-version') ? 0 : ConfigValidator::CHECK_VERSION;
         $isStrict = $input->getOption('strict');
-        list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll, $checkVersion);
+        [$errors, $publishErrors, $warnings] = $validator->validate($file, $checkAll, $checkVersion);
 
-        $lockErrors = array();
+        $lockErrors = [];
         $composer = Factory::create($io, $file, $input->hasParameterOption('--no-plugins'));
         // config.lock = false ~= implicit --no-check-lock; --check-lock overrides
         $checkLock = ($checkLock && $composer->getConfig()->get('lock')) || $input->getOption('check-lock');
@@ -102,14 +101,14 @@ EOT
 
         if ($locker->isLocked()) {
             $missingRequirements = false;
-            $sets = array(
-                array('repo' => $locker->getLockedRepository(false), 'method' => 'getRequires', 'description' => 'Required'),
-                array('repo' => $locker->getLockedRepository(true), 'method' => 'getDevRequires', 'description' => 'Required (in require-dev)'),
-            );
+            $sets = [
+                ['repo' => $locker->getLockedRepository(false), 'method' => 'getRequires', 'description' => 'Required'],
+                ['repo' => $locker->getLockedRepository(true), 'method' => 'getDevRequires', 'description' => 'Required (in require-dev)'],
+            ];
             foreach ($sets as $set) {
-                $installedRepo = new InstalledRepository(array($set['repo']));
+                $installedRepo = new InstalledRepository([$set['repo']]);
 
-                foreach (call_user_func(array($composer->getPackage(), $set['method'])) as $link) {
+                foreach (call_user_func([$composer->getPackage(), $set['method']]) as $link) {
                     if (PlatformRepository::isPlatformPackage($link->getTarget())) {
                         continue;
                     }
@@ -143,7 +142,7 @@ EOT
                 $path = $composer->getInstallationManager()->getInstallPath($package);
                 $file = $path . '/composer.json';
                 if (is_dir($path) && file_exists($file)) {
-                    list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll, $checkVersion);
+                    [$errors, $publishErrors, $warnings] = $validator->validate($file, $checkAll, $checkVersion);
 
                     $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors);
 
@@ -161,18 +160,12 @@ EOT
     }
 
     /**
-     * @param string $name
      * @param string[] $errors
      * @param string[] $warnings
-     * @param bool $checkPublish
      * @param string[] $publishErrors
-     * @param bool $checkLock
      * @param string[] $lockErrors
-     * @param bool $printSchemaUrl
-     *
-     * @return void
      */
-    private function outputResult(IOInterface $io, string $name, array &$errors, array &$warnings, bool $checkPublish = false, array $publishErrors = array(), bool $checkLock = false, array $lockErrors = array(), bool $printSchemaUrl = false): void
+    private function outputResult(IOInterface $io, string $name, array &$errors, array &$warnings, bool $checkPublish = false, array $publishErrors = [], bool $checkLock = false, array $lockErrors = [], bool $printSchemaUrl = false): void
     {
         $doPrintSchemaUrl = false;
 
@@ -209,7 +202,7 @@ EOT
         }
 
         // Avoid setting the exit code to 1 in case --strict and --no-check-publish/--no-check-lock are combined
-        $extraWarnings = array();
+        $extraWarnings = [];
 
         // If checking publish errors, display them as errors, otherwise just show them as warnings
         if ($publishErrors) {
@@ -237,10 +230,10 @@ EOT
             }
         }
 
-        $messages = array(
+        $messages = [
             'error' => $errors,
             'warning' => array_merge($warnings, $extraWarnings),
-        );
+        ];
 
         foreach ($messages as $style => $msgs) {
             foreach ($msgs as $msg) {
