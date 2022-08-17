@@ -61,7 +61,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
     {
         // Do not create an extra local cache when repository is already local
-        if(Filesystem::isLocalPath($url)){
+        if (Filesystem::isLocalPath($url)) {
             return \React\Promise\resolve(null);
         }
 
