@@ -194,7 +194,7 @@ and this feature is only available for your root package dependencies.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules. Also see [COMPOSER_NO_DEV](#composer-no-dev).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
-* **--no-audit:** Does not run the audit steps after updating the composer.lock file.
+* **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
@@ -269,7 +269,7 @@ If you do not specify a package, Composer will prompt you to search for a packag
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
-* **--no-audit:** Does not run the audit steps after updating the composer.lock file.
+* **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option. Also see [COMPOSER_NO_DEV](#composer-no-dev).
 * **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements.
@@ -315,7 +315,7 @@ uninstalled.
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
-* **--no-audit:** Does not run the audit steps after installation is complete.
+* **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--update-no-dev:** Run the dependency update with the --no-dev option. Also see [COMPOSER_NO_DEV](#composer-no-dev).
 * **--update-with-dependencies (-w):** Also update dependencies of the removed packages.
@@ -902,7 +902,7 @@ By default the command checks for the packages on packagist.org.
   mode.
 * **--remove-vcs:** Force-remove the VCS metadata without prompting.
 * **--no-install:** Disables installation of the vendors.
-* **--no-audit:** Does not run the audit steps after installation is complete.
+* **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
@@ -1244,6 +1244,10 @@ fully offline with `1`.
 
 If set to `1`, outputs information about events being dispatched, which can be
 useful for plugin authors to identify what is firing when exactly.
+
+### COMPOSER_NO_AUDIT
+
+If set to `1`, it is the equivalent of passing the `--no-audit` option to `require`, `update`, `remove` or `create-project` command.
 
 ### COMPOSER_NO_DEV
 

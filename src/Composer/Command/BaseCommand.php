@@ -244,6 +244,7 @@ abstract class BaseCommand extends Command
         }
 
         $envOptions = [
+            'COMPOSER_NO_AUDIT' => ['no-audit'],
             'COMPOSER_NO_DEV' => ['no-dev', 'update-no-dev'],
             'COMPOSER_PREFER_STABLE' => ['prefer-stable'],
             'COMPOSER_PREFER_LOWEST' => ['prefer-lowest'],
