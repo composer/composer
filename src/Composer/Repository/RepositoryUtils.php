@@ -49,4 +49,30 @@ class RepositoryUtils
 
         return $bucket;
     }
+
+    /**
+     * Unwraps CompositeRepository, InstalledRepository and optionally FilterRepository to get a flat array of pure repository instances
+     *
+     * @return RepositoryInterface[]
+     */
+    public static function flattenRepositories(RepositoryInterface $repo, bool $unwrapFilterRepos = true): array
+    {
+        // unwrap filter repos
+        if ($unwrapFilterRepos && $repo instanceof FilterRepository) {
+            $repo = $repo->getRepository();
+        }
+
+        if (!$repo instanceof CompositeRepository) {
+            return [$repo];
+        }
+
+        $repos = [];
+        foreach ($repo->getRepositories() as $r) {
+            foreach (self::flattenRepositories($r, $unwrapFilterRepos) as $r2) {
+                $repos[] = $r2;
+            }
+        }
+
+        return $repos;
+    }
 }
