@@ -291,7 +291,7 @@ EOT
                     $hint .= ', try using --platform (-p) to show platform packages';
                 }
                 if (!$input->getOption('all')) {
-                    $hint .= ', try using --all (-a) to show all available packages';
+                    $hint .= ', try using --available (-a) to show all available packages';
                 }
 
                 throw new \InvalidArgumentException('Package "' . $packageFilter . '" not found'.$hint.'.');
@@ -374,7 +374,7 @@ EOT
             $packageFilterRegex = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
         }
 
-        $packageListFilter = array();
+        $packageListFilter = null;
         if ($input->getOption('direct')) {
             $packageListFilter = $this->getRootRequires();
         }
@@ -384,7 +384,7 @@ EOT
             $input->setOption('path', false);
         }
 
-        foreach ($repos->getRepositories() as $repo) {
+        foreach (RepositoryUtils::flattenRepositories($repos) as $repo) {
             if ($repo === $platformRepo) {
                 $type = 'platform';
             } elseif ($lockedRepo !== null && $repo === $lockedRepo) {
@@ -408,7 +408,7 @@ EOT
                             $package = $package->getAliasOf();
                         }
                         if (!$packageFilterRegex || Preg::isMatch($packageFilterRegex, $package->getName())) {
-                            if (!$packageListFilter || in_array($package->getName(), $packageListFilter, true)) {
+                            if (null === $packageListFilter || in_array($package->getName(), $packageListFilter, true)) {
                                 $packages[$type][$package->getName()] = $package;
                             }
                         }
@@ -535,6 +535,7 @@ EOT
                     'nameLength' => $nameLength,
                     'versionLength' => $versionLength,
                     'latestLength' => $latestLength,
+                    'writeLatest' => $writeLatest,
                 );
                 if ($input->getOption('strict') && $hasOutdatedPackages) {
                     $exitCode = 1;
@@ -570,12 +571,13 @@ EOT
                 $nameLength = $viewMetaData[$type]['nameLength'];
                 $versionLength = $viewMetaData[$type]['versionLength'];
                 $latestLength = $viewMetaData[$type]['latestLength'];
+                $writeLatest = $viewMetaData[$type]['writeLatest'];
 
-                $writeVersion = $nameLength + $versionLength + 3 <= $width;
-                $writeLatest = $nameLength + $versionLength + $latestLength + 3 <= $width;
-                $writeDescription = $nameLength + $versionLength + $latestLength + 24 <= $width;
+                $versionFits = $nameLength + $versionLength + 3 <= $width;
+                $latestFits = $nameLength + $versionLength + $latestLength + 3 <= $width;
+                $descriptionFits = $nameLength + $versionLength + $latestLength + 24 <= $width;
 
-                if ($writeLatest && !$io->isDecorated()) {
+                if ($latestFits && !$io->isDecorated()) {
                     $latestLength += 2;
                 }
 
@@ -601,19 +603,19 @@ EOT
                     $io->write('');
                     $io->write('<info>Direct dependencies:</>');
                     if (\count($directDeps) > 0) {
-                        $this->printPackages($io, $directDeps, $indent, $writeVersion, $writeLatest, $writeDescription, $width, $versionLength, $nameLength, $latestLength);
+                        $this->printPackages($io, $directDeps, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     } else {
                         $io->write('Everything up to date');
                     }
                     $io->write('');
                     $io->write('<info>Transitive dependencies:</>');
                     if (\count($transitiveDeps) > 0) {
-                        $this->printPackages($io, $transitiveDeps, $indent, $writeVersion, $writeLatest, $writeDescription, $width, $versionLength, $nameLength, $latestLength);
+                        $this->printPackages($io, $transitiveDeps, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     } else {
                         $io->write('Everything up to date');
                     }
                 } else {
-                    $this->printPackages($io, $packages, $indent, $writeVersion, $writeLatest, $writeDescription, $width, $versionLength, $nameLength, $latestLength);
+                    $this->printPackages($io, $packages, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                 }
 
                 if ($showAllTypes) {
