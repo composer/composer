@@ -371,4 +371,31 @@ class ArrayLoaderTest extends TestCase
 
         $this->assertNull($this->loader->getBranchAlias($config));
     }
+
+    public function testPackageLinksReplace(): void
+    {
+        $config = array(
+            'name' => 'acme/package',
+            'version' => 'dev-1',
+            'replace' => [
+                'coyote/package' => 'self.version',
+            ],
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertArrayHasKey('coyote/package', $package->getReplaces());
+        $this->assertSame('dev-1', $package->getReplaces()['coyote/package']->getConstraint()->getPrettyString());
+    }
+
+    public function testPackageLinksReplaceInvalid(): void
+    {
+        $config = array(
+            'name' => 'acme/package',
+            'version' => 'dev-1',
+            'replace' => 'coyote/package',
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertCount(0, $package->getReplaces());
+    }
 }

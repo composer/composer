@@ -56,6 +56,9 @@ class ArrayLoader implements LoaderInterface
 
         foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
             if (isset($config[$type])) {
+                if (!is_array($config[$type])) {
+                    continue;
+                }
                 $method = 'set'.ucfirst($opts['method']);
                 $package->{$method}(
                     $this->parseLinks(
