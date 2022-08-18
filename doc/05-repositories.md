@@ -797,7 +797,7 @@ You can disable the default Packagist.org repository by adding this to your
 
 You can disable Packagist.org globally by using the global config flag:
 
-```bash
+```shell
 php composer.phar config -g repo.packagist false
 ```
 
