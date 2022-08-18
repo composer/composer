@@ -231,7 +231,7 @@ and thus installations usually take a lot longer.
 To enable your satis installation to create downloads for all (Git, Mercurial
 and Subversion) your packages, add the following to your `satis.json`:
 
-``` json
+```json
 {
   "archive": {
     "directory": "dist",

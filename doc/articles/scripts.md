@@ -270,14 +270,14 @@ composer.json configuration:
 It's also possible to set the global environment variable to disable the timeout
 of all following scripts in the current terminal environment:
 
-```
+```shell
 export COMPOSER_PROCESS_TIMEOUT=0
 ```
 
 To disable the timeout of a single script call, you must use the `run-script` composer
 command and specify the `--timeout` parameter:
 
-```
+```shell
 php composer.phar run-script --timeout=0 test
 ```
 

@@ -282,7 +282,7 @@ If you have been pointed to this page, you want to check a few things:
 
 You may run into errors if IPv6 is not configured correctly. A common error is:
 
-```
+```text
 The "https://getcomposer.org/version" file could not be downloaded: failed to
 open stream: Operation timed out
 ```

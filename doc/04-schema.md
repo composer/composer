@@ -861,7 +861,7 @@ override packages from it.
 Using JSON object notation is also possible. However, JSON key/value pairs
 are to be considered unordered so consistent behaviour cannot be guaranteed.
 
- ```json
+```json
 {
     "repositories": {
          "foo": {
@@ -870,7 +870,7 @@ are to be considered unordered so consistent behaviour cannot be guaranteed.
          }
     }
 }
- ```
+```
 
 ### config <span>([root-only](04-schema.md#root-package))</span>
 

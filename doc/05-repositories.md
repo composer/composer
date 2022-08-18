@@ -665,7 +665,7 @@ you to depend on a local directory, either absolute or relative. This can be
 especially useful when dealing with monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
-```
+```text
 ...
 ├── apps
 │   └── my-app
