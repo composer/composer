@@ -159,7 +159,7 @@ Close your current terminal. Test usage with a new terminal:
 C:\Users\username>composer -V
 ```
 ```text
-Composer version 2.0.12 2021-04-01 10:14:59
+Composer version 2.4.0 2022-08-16 16:10:48
 ```
 
 ## Docker Image

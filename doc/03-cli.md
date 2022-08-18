@@ -483,10 +483,14 @@ php composer.phar show
 To filter the list you can pass a package mask using wildcards.
 
 ```shell
-php composer.phar show monolog/*
+php composer.phar show "monolog/*"
 ```
 ```text
-monolog/monolog 1.19.0 Sends your logs to files, sockets, inboxes, databases and various web services
+Direct dependencies:
+Everything up to date
+
+Transitive dependencies:
+monolog/monolog 1.27.1 Sends your logs to files, sockets, inboxes, databases and various web services
 ```
 
 If you want to see the details of a certain package, you can pass the package
@@ -497,19 +501,27 @@ php composer.phar show monolog/monolog
 ```
 ```text
 name     : monolog/monolog
-versions : master-dev, 1.0.2, 1.0.1, 1.0.0, 1.0.0-RC1
+descrip. : Sends your logs to files, sockets, inboxes, databases and various web services
+keywords : log, logging, psr-3
+versions : * 1.27.1
 type     : library
-names    : monolog/monolog
-source   : [git] https://github.com/Seldaek/monolog.git 3d4e60d0cbc4b888fe5ad223d77964428b1978da
-dist     : [zip] https://github.com/Seldaek/monolog/zipball/3d4e60d0cbc4b888fe5ad223d77964428b1978da 3d4e60d0cbc4b888fe5ad223d77964428b1978da
-license  : MIT
+license  : MIT License (MIT) (OSI approved) https://spdx.org/licenses/MIT.html#licenseText
+homepage : http://github.com/Seldaek/monolog
+source   : [git] https://github.com/Seldaek/monolog.git 904713c5929655dc9b97288b69cfeedad610c9a1
+dist     : [zip] https://api.github.com/repos/Seldaek/monolog/zipball/904713c5929655dc9b97288b69cfeedad610c9a1 904713c5929655dc9b97288b69cfeedad610c9a1
+names    : monolog/monolog, psr/log-implementation
+
+support
+issues : https://github.com/Seldaek/monolog/issues
+source : https://github.com/Seldaek/monolog/tree/1.27.1
 
 autoload
-psr-0
-Monolog : src/
+psr-4
+Monolog\ => src/Monolog
 
 requires
 php >=5.3.0
+psr/log ~1.0
 ```
 
 You can even pass the package version, which will tell you the details of that
@@ -630,8 +642,8 @@ for the root package.
 php composer.phar depends doctrine/lexer
 ```
 ```text
- doctrine/annotations v1.2.7 requires doctrine/lexer (1.*)
- doctrine/common      v2.6.1 requires doctrine/lexer (1.*)
+doctrine/annotations  1.13.3 requires doctrine/lexer (1.*)
+doctrine/common       2.13.3 requires doctrine/lexer (^1.0)
 ```
 
 You can optionally specify a version constraint after the package to limit the
@@ -644,14 +656,13 @@ depended upon, for example:
 php composer.phar depends psr/log -t
 ```
 ```text
-psr/log 1.0.0 Common interface for logging libraries
-|- aboutyou/app-sdk 2.6.11 (requires psr/log 1.0.*)
-|  `- __root__ (requires aboutyou/app-sdk ^2.6)
-|- monolog/monolog 1.17.2 (requires psr/log ~1.0)
-|  `- laravel/framework v5.2.16 (requires monolog/monolog ~1.11)
-|     `- __root__ (requires laravel/framework ^5.2)
-`- symfony/symfony v3.0.2 (requires psr/log ~1.0)
-   `- __root__ (requires symfony/symfony ^3.0)
+psr/log 1.1.4 Common interface for logging libraries
+├──composer/composer 2.4.x-dev (requires psr/log ^1.0 || ^2.0 || ^3.0)
+├──composer/composer dev-main (requires psr/log ^1.0 || ^2.0 || ^3.0)
+├──composer/xdebug-handler 3.0.3 (requires psr/log ^1 || ^2 || ^3)
+│  ├──composer/composer 2.4.x-dev (requires composer/xdebug-handler ^2.0.2 || ^3.0.3)
+│  └──composer/composer dev-main (requires composer/xdebug-handler ^2.0.2 || ^3.0.3)
+└──symfony/console v5.4.11 (conflicts psr/log >=3) (circular dependency aborted here)
 ```
 
 ### Options
@@ -670,7 +681,7 @@ example:
 php composer.phar prohibits symfony/symfony 3.1
 ```
 ```text
- laravel/framework v5.2.16 requires symfony/var-dumper (2.8.*|3.0.*)
+laravel/framework v5.2.16 requires symfony/var-dumper (2.8.*|3.0.*)
 ```
 
 Note that you can also specify platform requirements, for example to check
@@ -680,9 +691,9 @@ whether you can upgrade your server to PHP 8.0:
 php composer.phar prohibits php 8
 ```
 ```text
- doctrine/cache        v1.6.0 requires php (~5.5|~7.0)
- doctrine/common       v2.6.1 requires php (~5.5|~7.0)
- doctrine/instantiator 1.0.5  requires php (>=5.3,<8.0-DEV)
+doctrine/cache        v1.6.0 requires php (~5.5|~7.0)
+doctrine/common       v2.6.1 requires php (~5.5|~7.0)
+doctrine/instantiator 1.0.5  requires php (>=5.3,<8.0-DEV)
 ```
 
 As with `depends` you can request a recursive lookup, which will list all
@@ -745,7 +756,7 @@ php composer.phar self-update
 If you would like to instead update to a specific release specify it:
 
 ```shell
-php composer.phar self-update 1.0.0-alpha7
+php composer.phar self-update 2.4.0-RC1
 ```
 
 If you have installed Composer for your entire system (see [global installation](00-intro.md#globally)),

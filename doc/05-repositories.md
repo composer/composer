@@ -669,8 +669,8 @@ For instance, if you have the following directory structure in your repository:
 ```text
 ...
 ├── apps
-│   └── my-app
-│       └── composer.json
+│   └── my-app
+│       └── composer.json
 ├── packages
 │   └── my-package
 │       └── composer.json
