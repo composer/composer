@@ -224,7 +224,8 @@ This could be happening because the VPS runs out of memory and has no Swap space
 
 ```shell
 free -m
-
+```
+```text
 total used free shared buffers cached
 Mem: 2048 357 1690 0 0 237
 -/+ buffers/cache: 119 1928

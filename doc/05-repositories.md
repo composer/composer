@@ -648,7 +648,8 @@ Each zip artifact is a ZIP archive with `composer.json` in root folder:
 
 ```shell
 unzip -l acme-corp-parser-10.3.5.zip
-
+```
+```text
 composer.json
 ...
 ```

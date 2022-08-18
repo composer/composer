@@ -484,7 +484,8 @@ To filter the list you can pass a package mask using wildcards.
 
 ```shell
 php composer.phar show monolog/*
-
+```
+```text
 monolog/monolog 1.19.0 Sends your logs to files, sockets, inboxes, databases and various web services
 ```
 
@@ -493,7 +494,8 @@ name.
 
 ```shell
 php composer.phar show monolog/monolog
-
+```
+```text
 name     : monolog/monolog
 versions : master-dev, 1.0.2, 1.0.1, 1.0.0, 1.0.0-RC1
 type     : library
@@ -626,6 +628,8 @@ for the root package.
 
 ```shell
 php composer.phar depends doctrine/lexer
+```
+```text
  doctrine/annotations v1.2.7 requires doctrine/lexer (1.*)
  doctrine/common      v2.6.1 requires doctrine/lexer (1.*)
 ```
@@ -638,6 +642,8 @@ depended upon, for example:
 
 ```shell
 php composer.phar depends psr/log -t
+```
+```text
 psr/log 1.0.0 Common interface for logging libraries
 |- aboutyou/app-sdk 2.6.11 (requires psr/log 1.0.*)
 |  `- __root__ (requires aboutyou/app-sdk ^2.6)
@@ -662,6 +668,8 @@ example:
 
 ```shell
 php composer.phar prohibits symfony/symfony 3.1
+```
+```text
  laravel/framework v5.2.16 requires symfony/var-dumper (2.8.*|3.0.*)
 ```
 
@@ -670,6 +678,8 @@ whether you can upgrade your server to PHP 8.0:
 
 ```shell
 php composer.phar prohibits php 8
+```
+```text
  doctrine/cache        v1.6.0 requires php (~5.5|~7.0)
  doctrine/common       v2.6.1 requires php (~5.5|~7.0)
  doctrine/instantiator 1.0.5  requires php (>=5.3,<8.0-DEV)
@@ -716,7 +726,8 @@ changed:
 
 ```shell
 php composer.phar status -v
-
+```
+```text
 You have changes in the following dependencies:
 vendor/seld/jsonlint:
     M README.mdown

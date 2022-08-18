@@ -29,12 +29,18 @@ repository:*
 
 ```shell
 ~/my-library$ git branch
+```
+```text
 v1
 v2
 my-feature
 another-feature
+```
 
+```shell
 ~/my-library$ git tag
+```
+```text
 v1.0
 v1.0.1
 v1.0.2

@@ -157,6 +157,8 @@ Close your current terminal. Test usage with a new terminal:
 
 ```shell
 C:\Users\username>composer -V
+```
+```text
 Composer version 2.0.12 2021-04-01 10:14:59
 ```
 
