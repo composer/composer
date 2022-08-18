@@ -234,7 +234,9 @@ You can even add your own code to the autoloader by adding an
 ```json
 {
     "autoload": {
-        "psr-4": {"Acme\\": "src/"}
+        "psr-4": {
+            "Acme\\": "src/"
+        }
     }
 }
 ```

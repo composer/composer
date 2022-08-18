@@ -21,7 +21,10 @@ for any given project.
 
 ```json
 {
-    "bin": ["bin/my-script", "bin/my-other-script"]
+    "bin": [
+        "bin/my-script",
+        "bin/my-other-script"
+    ]
 }
 ```
 
@@ -48,7 +51,9 @@ Say package `my-vendor/project-a` has binaries setup like this:
 ```json
 {
     "name": "my-vendor/project-a",
-    "bin": ["bin/project-a-bin"]
+    "bin": [
+        "bin/project-a-bin"
+    ]
 }
 ```
 

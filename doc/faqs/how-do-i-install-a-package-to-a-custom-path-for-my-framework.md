@@ -38,8 +38,12 @@ for a module that uses composer/installers, as well as putting all packages of t
 {
     "extra": {
         "installer-paths": {
-            "sites/example.com/modules/{$name}": ["vendor/package"],
-            "sites/example.com/themes/{$name}": ["type:drupal-theme"]
+            "sites/example.com/modules/{$name}": [
+                "vendor/package"
+            ],
+            "sites/example.com/themes/{$name}": [
+                "type:drupal-theme"
+            ]
         }
     }
 }

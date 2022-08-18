@@ -70,7 +70,10 @@ For example here we want to pick only the package `foo/bar` and all the packages
         {
             "type": "composer",
             "url": "https://example.org",
-            "only": ["foo/bar", "some-vendor/*"]
+            "only": [
+                "foo/bar",
+                "some-vendor/*"
+            ]
         }
     ]
 }
@@ -85,7 +88,9 @@ we may not want to load in this project.
         {
             "type": "composer",
             "url": "https://example.org",
-            "exclude": ["toy/package"]
+            "exclude": [
+                "toy/package"
+            ]
         }
     ]
 }

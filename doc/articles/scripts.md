@@ -302,10 +302,10 @@ You can also refer a script and pass it new arguments:
 
 ```json
 {
-  "scripts": {
-    "tests": "phpunit",
-    "testsVerbose": "@tests -vvv"
-  }
+    "scripts": {
+        "tests": "phpunit",
+        "testsVerbose": "@tests -vvv"
+    }
 }
 ```
 

@@ -182,8 +182,8 @@ An Example for disjunctive licenses:
 ```json
 {
     "license": [
-       "LGPL-2.1-only",
-       "GPL-3.0-or-later"
+        "LGPL-2.1-only",
+        "GPL-3.0-or-later"
     ]
 }
 ```
@@ -385,8 +385,8 @@ Example:
 
 ```json
 {
-    "require" : {
-        "php" : ">=7.4",
+    "require": {
+        "php": ">=7.4",
         "ext-mbstring": "*"
     }
 }
@@ -524,7 +524,12 @@ you can specify them as an array as such:
 ```json
 {
     "autoload": {
-        "psr-4": { "Monolog\\": ["src/", "lib/"] }
+        "psr-4": {
+            "Monolog\\": [
+                "src/",
+                "lib/"
+            ]
+        }
     }
 }
 ```
@@ -535,7 +540,9 @@ you can use an empty prefix like:
 ```json
 {
     "autoload": {
-        "psr-4": { "": "src/" }
+        "psr-4": {
+            "": "src/"
+        }
     }
 }
 ```
@@ -572,7 +579,12 @@ you can specify them as an array as such:
 ```json
 {
     "autoload": {
-        "psr-0": { "Monolog\\": ["src/", "lib/"] }
+        "psr-0": {
+            "Monolog\\": [
+                "src/",
+                "lib/"
+            ]
+        }
     }
 }
 ```
@@ -585,7 +597,9 @@ in the root of the package, for example, it may be declared like this:
 ```json
 {
     "autoload": {
-        "psr-0": { "UniqueGlobalClass": "" }
+        "psr-0": {
+            "UniqueGlobalClass": ""
+        }
     }
 }
 ```
@@ -596,7 +610,9 @@ use an empty prefix like:
 ```json
 {
     "autoload": {
-        "psr-0": { "": "src/" }
+        "psr-0": {
+            "": "src/"
+        }
     }
 }
 ```
@@ -617,7 +633,11 @@ Example:
 ```json
 {
     "autoload": {
-        "classmap": ["src/", "lib/", "Something.php"]
+        "classmap": [
+            "src/",
+            "lib/",
+            "Something.php"
+        ]
     }
 }
 ```
@@ -629,7 +649,11 @@ Example:
 ```json
 {
     "autoload": {
-        "classmap": ["src/addons/*/lib/", "3rd-party/*", "Something.php"]
+        "classmap": [
+            "src/addons/*/lib/",
+            "3rd-party/*",
+            "Something.php"
+        ]
     }
 }
 ```
@@ -645,7 +669,9 @@ Example:
 ```json
 {
     "autoload": {
-        "files": ["src/MyLibrary/functions.php"]
+        "files": [
+            "src/MyLibrary/functions.php"
+        ]
     }
 }
 ```
@@ -676,7 +702,11 @@ Example:
 ```json
 {
     "autoload": {
-        "exclude-from-classmap": ["/Tests/", "/test/", "/tests/"]
+        "exclude-from-classmap": [
+            "/Tests/",
+            "/test/",
+            "/tests/"
+        ]
     }
 }
 ```
@@ -704,10 +734,14 @@ Example:
 ```json
 {
     "autoload": {
-        "psr-4": { "MyLibrary\\": "src/" }
+        "psr-4": {
+            "MyLibrary\\": "src/"
+        }
     },
     "autoload-dev": {
-        "psr-4": { "MyLibrary\\Tests\\": "tests/" }
+        "psr-4": {
+            "MyLibrary\\Tests\\": "tests/"
+        }
     }
 }
 ```
@@ -724,7 +758,9 @@ Example:
 
 ```json
 {
-    "include-path": ["lib/"]
+    "include-path": [
+        "lib/"
+    ]
 }
 ```
 
@@ -753,7 +789,9 @@ To do that, `autoload` and `target-dir` are defined as follows:
 ```json
 {
     "autoload": {
-        "psr-0": { "Symfony\\Component\\Yaml\\": "" }
+        "psr-0": {
+            "Symfony\\Component\\Yaml\\": ""
+        }
     },
     "target-dir": "Symfony/Component/Yaml"
 }
@@ -864,10 +902,10 @@ are to be considered unordered so consistent behaviour cannot be guaranteed.
 ```json
 {
     "repositories": {
-         "foo": {
-             "type": "composer",
-             "url": "http://packages.foo.com"
-         }
+        "foo": {
+            "type": "composer",
+            "url": "http://packages.foo.com"
+        }
     }
 }
 ```
@@ -938,7 +976,12 @@ Example:
 ```json
 {
     "archive": {
-        "exclude": ["/foo/bar", "baz", "/*.test", "!/foo/bar/baz"]
+        "exclude": [
+            "/foo/bar",
+            "baz",
+            "/*.test",
+            "!/foo/bar/baz"
+        ]
     }
 }
 ```
@@ -991,7 +1034,9 @@ If you configure `latest-.*` as a pattern for non-feature-branches like this:
 
 ```json
 {
-    "non-feature-branches": ["latest-.*"]
+    "non-feature-branches": [
+        "latest-.*"
+    ]
 }
 ```
 

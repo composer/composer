@@ -23,8 +23,8 @@ That's how packages can add a dependency on the used PHP version:
 
 ```json
 {
-    "require" : {
-        "php" : ">=7.4"
+    "require": {
+        "php": ">=7.4"
     }
 }
 ```

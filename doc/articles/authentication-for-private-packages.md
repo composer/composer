@@ -217,12 +217,12 @@ php composer.phar config [--global] --editor
         {
             "type": "composer",
             "url": "https://example.org",
-            "options":  {
-              "http": {
-                "header": [
-                  "API-TOKEN: YOUR-API-TOKEN"
-                ]
-              }
+            "options": {
+                "http": {
+                    "header": [
+                        "API-TOKEN: YOUR-API-TOKEN"
+                    ]
+                }
             }
         }
     ]
@@ -354,8 +354,8 @@ php composer.phar config [--global] --editor --auth
 {
     "bitbucket-oauth": {
         "bitbucket.org": {
-             "consumer-key": "key",
-             "consumer-secret": "secret"
+            "consumer-key": "key",
+            "consumer-secret": "secret"
         }
     }
 }
