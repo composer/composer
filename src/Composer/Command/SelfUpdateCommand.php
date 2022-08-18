@@ -598,7 +598,7 @@ TAGSPUBKEY
         $helpMessage = 'Please run the self-update command as an Administrator.';
         $question = 'Complete this operation with Administrator privileges [<comment>Y,n</comment>]? ';
 
-        if (!$io->askConfirmation($question, false)) {
+        if (!$io->askConfirmation($question, true)) {
             $io->writeError('<warning>Operation cancelled. '.$helpMessage.'</warning>');
 
             return false;
