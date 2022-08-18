@@ -42,7 +42,7 @@ To resolve the conflict when we merge these two branches:
 Before committing, make sure the resulting `composer.json` and `composer.lock` files are valid.
 To do this, run the following commands:
 
-```sh
+```shell
 php composer.phar validate
 php composer.phar install [--dry-run]
 ```

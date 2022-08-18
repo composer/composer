@@ -27,7 +27,7 @@ in `composer.json`).
 *For the following discussion, let's assume the following sample library
 repository:*
 
-```sh
+```shell
 ~/my-library$ git branch
 v1
 v2

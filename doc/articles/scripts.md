@@ -194,7 +194,7 @@ objects:
 
 If you would like to run the scripts for an event manually, the syntax is:
 
-```sh
+```shell
 php composer.phar run-script [--dev] [--no-dev] script
 ```
 

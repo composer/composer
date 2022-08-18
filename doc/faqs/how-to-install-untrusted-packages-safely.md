@@ -10,7 +10,7 @@ Composer command.
 You can disable plugins and scripts during package installation or updates with the following
 syntax so only Composer's code, and no third party code, will execute:
 
-```sh
+```shell
 php composer.phar install --no-plugins --no-scripts ...
 php composer.phar update --no-plugins --no-scripts ...
 ```

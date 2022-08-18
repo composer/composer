@@ -157,7 +157,7 @@ In this case, the PHP `memory_limit` should be increased.
 
 To get the current `memory_limit` value, run:
 
-```sh
+```shell
 php -r "echo ini_get('memory_limit').PHP_EOL;"
 ```
 
@@ -171,13 +171,13 @@ memory_limit = -1
 
 Composer also respects a memory limit defined by the `COMPOSER_MEMORY_LIMIT` environment variable:
 
-```sh
+```shell
 COMPOSER_MEMORY_LIMIT=-1 composer.phar <...>
 ```
 
 Or, you can increase the limit with a command-line argument:
 
-```sh
+```shell
 php -d memory_limit=-1 composer.phar <...>
 ```
 
@@ -222,7 +222,7 @@ If Composer shows proc_open() fork failed on some commands:
 
 This could be happening because the VPS runs out of memory and has no Swap space enabled.
 
-```sh
+```shell
 free -m
 
 total used free shared buffers cached
@@ -233,7 +233,7 @@ Swap: 0 0 0
 
 To enable the swap you can use for example:
 
-```sh
+```shell
 /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
 /sbin/mkswap /var/swap.1
 /bin/chmod 0600 /var/swap.1
