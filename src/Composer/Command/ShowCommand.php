@@ -601,7 +601,7 @@ EOT
                     }
 
                     $io->write('');
-                    $io->write('<info>Direct dependencies:</>');
+                    $io->write('<info>Direct dependencies (i.e. required in your composer.json):</>');
                     if (\count($directDeps) > 0) {
                         $this->printPackages($io, $directDeps, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     } else {
