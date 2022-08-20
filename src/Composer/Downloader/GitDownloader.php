@@ -70,7 +70,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $this->io->writeError("  - Syncing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>) into cache");
             $this->io->writeError(sprintf('    Cloning to cache at %s', ProcessExecutor::escape($cachePath)), true, IOInterface::DEBUG);
             $ref = $package->getSourceReference();
-            if ($this->gitUtil->fetchRefOrSyncMirror($url, $cachePath, $ref) && is_dir($cachePath)) {
+            if ($this->gitUtil->fetchRefOrSyncMirror($url, $cachePath, $ref, $package->getPrettyVersion()) && is_dir($cachePath)) {
                 $this->cachedPackages[$package->getId()][$ref] = true;
             }
         } elseif (null === $gitVersion) {
