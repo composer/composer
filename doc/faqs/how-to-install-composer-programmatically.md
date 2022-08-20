@@ -6,7 +6,7 @@ it should not be relied upon in the long term.
 
 An alternative is to use this script which only works with UNIX utilities:
 
-```bash
+```shell
 #!/bin/sh
 
 EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
@@ -34,7 +34,7 @@ a specific version from GitHub's history. The commit hash should be enough to
 give it uniqueness and authenticity as long as you can trust the GitHub servers.
 For example:
 
-```bash
+```shell
 wget https://raw.githubusercontent.com/composer/getcomposer.org/76a7060ccb93902cd7576b67264ad91c8a2700e2/web/installer -O - -q | php -- --quiet
 ```
 

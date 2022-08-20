@@ -48,14 +48,14 @@ The default file Satis looks for is `satis.json` in the root of the repository.
 
 ```json
 {
-  "name": "my/repository",
-  "homepage": "http://packages.example.org",
-  "repositories": [
-    { "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
-    { "type": "vcs", "url": "http://svn.example.org/private/repo" },
-    { "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
-  ],
-  "require-all": true
+    "name": "my/repository",
+    "homepage": "http://packages.example.org",
+    "repositories": [
+        { "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
+        { "type": "vcs", "url": "http://svn.example.org/private/repo" },
+        { "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
+    ],
+    "require-all": true
 }
 ```
 
@@ -66,16 +66,16 @@ or another constraint if you want really specific versions.
 
 ```json
 {
-  "repositories": [
-    { "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
-    { "type": "vcs", "url": "http://svn.example.org/private/repo" },
-    { "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
-  ],
-  "require": {
-    "company/package": "*",
-    "company/package2": "*",
-    "company/package3": "2.0.0"
-  }
+    "repositories": [
+        { "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
+        { "type": "vcs", "url": "http://svn.example.org/private/repo" },
+        { "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
+    ],
+    "require": {
+        "company/package": "*",
+        "company/package2": "*",
+        "company/package3": "2.0.0"
+    }
 }
 ```
 
@@ -119,11 +119,11 @@ to declare a *name* for all your package (this only work on VCS repositories typ
 
 ```json
 {
-  "repositories": [
-    { "name": "company/privaterepo", "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
-    { "name": "private/repo", "type": "vcs", "url": "http://svn.example.org/private/repo" },
-    { "name": "mycompany/privaterepo2", "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
-  ]
+    "repositories": [
+        { "name": "company/privaterepo", "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
+        { "name": "private/repo", "type": "vcs", "url": "http://svn.example.org/private/repo" },
+        { "name": "mycompany/privaterepo2", "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
+    ]
 }
 ```
 
@@ -142,12 +142,12 @@ will update itself.
 
 ```json
 {
-  "repositories": [ { "type": "composer", "url": "http://packages.example.org/" } ],
-  "require": {
-    "company/package": "1.2.0",
-    "company/package2": "1.5.2",
-    "company/package3": "dev-master"
-  }
+    "repositories": [ { "type": "composer", "url": "http://packages.example.org/" } ],
+    "require": {
+        "company/package": "1.2.0",
+        "company/package2": "1.5.2",
+        "company/package3": "dev-master"
+    }
 }
 ```
 
@@ -161,17 +161,17 @@ Example using a custom repository using SSH (requires the SSH2 PECL extension):
 
 ```json
 {
-  "repositories": [{
-    "type": "composer",
-    "url": "ssh2.sftp://example.org",
-    "options": {
-      "ssh2": {
-        "username": "composer",
-        "pubkey_file": "/home/composer/.ssh/id_rsa.pub",
-        "privkey_file": "/home/composer/.ssh/id_rsa"
-      }
-    }
-  }]
+    "repositories": [{
+        "type": "composer",
+        "url": "ssh2.sftp://example.org",
+        "options": {
+            "ssh2": {
+                "username": "composer",
+                "pubkey_file": "/home/composer/.ssh/id_rsa.pub",
+                "privkey_file": "/home/composer/.ssh/id_rsa"
+            }
+        }
+    }]
 }
 ```
 
@@ -181,15 +181,15 @@ Example using SSL/TLS (HTTPS) using a client certificate:
 
 ```json
 {
-  "repositories": [{
-     "type": "composer",
-     "url": "https://example.org",
-     "options": {
-       "ssl": {
-         "local_cert": "/home/composer/.ssl/composer.pem"
-       }
-     }
-  }]
+    "repositories": [{
+         "type": "composer",
+         "url": "https://example.org",
+         "options": {
+             "ssl": {
+                 "local_cert": "/home/composer/.ssl/composer.pem"
+             }
+         }
+    }]
 }
 ```
 
@@ -199,17 +199,17 @@ Example using a custom HTTP Header field for token authentication:
 
 ```json
 {
-  "repositories": [{
-    "type": "composer",
-    "url": "https://example.org",
-    "options":  {
-      "http": {
-        "header": [
-          "API-TOKEN: YOUR-API-TOKEN"
-        ]
-      }
-    }
-  }]
+    "repositories": [{
+        "type": "composer",
+        "url": "https://example.org",
+        "options":  {
+            "http": {
+                "header": [
+                    "API-TOKEN: YOUR-API-TOKEN"
+                ]
+            }
+        }
+    }]
 }
 ```
 
@@ -231,14 +231,14 @@ and thus installations usually take a lot longer.
 To enable your satis installation to create downloads for all (Git, Mercurial
 and Subversion) your packages, add the following to your `satis.json`:
 
-``` json
+```json
 {
-  "archive": {
-    "directory": "dist",
-    "format": "tar",
-    "prefix-url": "https://amazing.cdn.example.org",
-    "skip-dev": true
-  }
+    "archive": {
+        "directory": "dist",
+        "format": "tar",
+        "prefix-url": "https://amazing.cdn.example.org",
+        "skip-dev": true
+    }
 }
 ```
 
@@ -287,10 +287,10 @@ add the following to your `satis.json`:
 
 ```json
 {
-  "abandoned": {
-    "company/package": true,
-    "company/package2": "company/newpackage"
-  }
+    "abandoned": {
+        "company/package": true,
+        "company/package2": "company/newpackage"
+    }
 }
 ```
 
@@ -309,8 +309,8 @@ complete local mirror of packages. Add the following to your `satis.json`:
 
 ```json
 {
-  "require-dependencies": true,
-  "require-dev-dependencies": true
+    "require-dependencies": true,
+    "require-dev-dependencies": true
 }
 ```
 

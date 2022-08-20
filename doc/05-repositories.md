@@ -646,9 +646,10 @@ those private packages:
 
 Each zip artifact is a ZIP archive with `composer.json` in root folder:
 
-```sh
+```shell
 unzip -l acme-corp-parser-10.3.5.zip
-
+```
+```text
 composer.json
 ...
 ```
@@ -665,11 +666,11 @@ you to depend on a local directory, either absolute or relative. This can be
 especially useful when dealing with monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
-```
+```text
 ...
 ├── apps
-│   └── my-app
-│       └── composer.json
+│   └── my-app
+│       └── composer.json
 ├── packages
 │   └── my-package
 │       └── composer.json
@@ -797,7 +798,7 @@ You can disable the default Packagist.org repository by adding this to your
 
 You can disable Packagist.org globally by using the global config flag:
 
-```bash
+```shell
 php composer.phar config -g repo.packagist false
 ```
 
