@@ -102,10 +102,10 @@ vendor/package generic description',
 ! patch or minor release available - update recommended
 ~ major release available - update possible
 
-Direct dependencies:
+Direct dependencies required in composer.json:
 Everything up to date
 
-Transitive dependencies:
+Transitive dependencies not required in composer.json:
 outdated/major 1.0.0 ~ 2.0.0
 outdated/minor 1.0.0 <highlight>! 1.1.1</highlight>
 outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
@@ -129,10 +129,10 @@ outdated/major 1.0.0 ~ 2.0.0',
 ! patch or minor release available - update recommended
 ~ major release available - update possible
 
-Direct dependencies:
+Direct dependencies required in composer.json:
 Everything up to date
 
-Transitive dependencies:
+Transitive dependencies not required in composer.json:
 outdated/major 1.0.0 ~ 2.0.0',
         ];
 
@@ -142,10 +142,10 @@ outdated/major 1.0.0 ~ 2.0.0',
 ! patch or minor release available - update recommended
 ~ major release available - update possible
 
-Direct dependencies:
+Direct dependencies required in composer.json:
 outdated/minor 1.0.0 <highlight>! 1.1.1</highlight>
 
-Transitive dependencies:
+Transitive dependencies not required in composer.json:
 outdated/major 1.0.0 <highlight>! 1.1.1</highlight>
 outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
             ['outdated/minor' => '*'],
@@ -157,10 +157,10 @@ outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
 ! patch or minor release available - update recommended
 ~ major release available - update possible
 
-Direct dependencies:
+Direct dependencies required in composer.json:
 Everything up to date
 
-Transitive dependencies:
+Transitive dependencies not required in composer.json:
 outdated/major 1.0.0 <highlight>! 1.0.1</highlight>
 outdated/minor 1.0.0 <highlight>! 1.0.1</highlight>
 outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
