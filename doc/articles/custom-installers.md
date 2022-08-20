@@ -88,9 +88,7 @@ Example:
     "type": "composer-plugin",
     "license": "MIT",
     "autoload": {
-        "psr-0": {
-            "phpDocumentor\\Composer": "src/"
-        }
+        "psr-0": {"phpDocumentor\\Composer": "src/"}
     },
     "extra": {
         "class": "phpDocumentor\\Composer\\TemplateInstallerPlugin"
