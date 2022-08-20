@@ -486,11 +486,7 @@ To filter the list you can pass a package mask using wildcards.
 php composer.phar show "monolog/*"
 ```
 ```text
-Direct dependencies:
-Everything up to date
-
-Transitive dependencies:
-monolog/monolog 1.27.1 Sends your logs to files, sockets, inboxes, databases and various web services
+monolog/monolog 2.4.0 Sends your logs to files, sockets, inboxes, databases and various web services
 ```
 
 If you want to see the details of a certain package, you can pass the package
