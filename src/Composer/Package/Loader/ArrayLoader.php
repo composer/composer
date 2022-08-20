@@ -55,20 +55,18 @@ class ArrayLoader implements LoaderInterface
         $package = $this->createObject($config, $class);
 
         foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
-            if (isset($config[$type])) {
-                if (!is_array($config[$type])) {
-                    continue;
-                }
-                $method = 'set'.ucfirst($opts['method']);
-                $package->{$method}(
-                    $this->parseLinks(
-                        $package->getName(),
-                        $package->getPrettyVersion(),
-                        $opts['method'],
-                        $config[$type]
-                    )
-                );
+            if (!isset($config[$type]) || !is_array($config[$type])) {
+                continue;
             }
+            $method = 'set'.ucfirst($opts['method']);
+            $package->{$method}(
+                $this->parseLinks(
+                    $package->getName(),
+                    $package->getPrettyVersion(),
+                    $opts['method'],
+                    $config[$type]
+                )
+            );
         }
 
         $package = $this->configureObject($package, $config);
