@@ -1,3 +1,10 @@
+### [2.4.1] 2022-08-20
+
+  * Added a `COMPOSER_NO_AUDIT` env var to easily apply the new --no-audit flag in CI (#10998)
+  * Fixed `show` command showing packages in two sections, this was only meant for the `outdated` command (#11000)
+  * Fixed local git repos being copied to cache unnecessarily (#11001)
+  * Fixed git cache invalidation issue when a git tag gets created after the cache has loaded a given reference (#11004)
+
 ### [2.4.0] 2022-08-16
 
   * Added `json` format output to the new `audit` command (#10965)
@@ -1619,6 +1626,7 @@
 
   * Initial release
 
+[2.4.1]: https://github.com/composer/composer/compare/2.4.0...2.4.1
 [2.4.0]: https://github.com/composer/composer/compare/2.4.0-RC1...2.4.0
 [2.4.0-RC1]: https://github.com/composer/composer/compare/2.3.10...2.4.0-RC1
 [2.3.10]: https://github.com/composer/composer/compare/2.3.9...2.3.10
