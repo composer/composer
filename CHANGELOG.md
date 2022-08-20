@@ -1,3 +1,10 @@
+### [2.2.18] 2022-08-20
+
+  * Fixed `COMPOSER_NO_DEV` so it also works with `require` and `remove`'s `--update-no-dev` (#10995)
+  * Fixed duplicate missing extension warnings being displayed (#10938)
+  * Fixed hg version detection (#10955)
+  * Fixed git cache invalidation issue when a git tag gets created after the cache has loaded a given reference (#11004)
+
 ### [2.2.17] 2022-07-13
 
   * Fixed plugins from CWD/vendor being loaded in some cases like create-project or validate even though the target directory is outside of CWD (#10935)
@@ -1469,6 +1476,7 @@
 
   * Initial release
 
+[2.2.18]: https://github.com/composer/composer/compare/2.2.17...2.2.18
 [2.2.17]: https://github.com/composer/composer/compare/2.2.16...2.2.17
 [2.2.16]: https://github.com/composer/composer/compare/2.2.15...2.2.16
 [2.2.15]: https://github.com/composer/composer/compare/2.2.14...2.2.15
