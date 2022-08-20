@@ -367,6 +367,9 @@ class ArrayLoader implements LoaderInterface
     {
         $res = [];
         foreach ($links as $target => $constraint) {
+            if (!is_string($constraint)) {
+                continue;
+            }
             $target = strtolower((string) $target);
             $res[$target] = $this->createLink($source, $sourceVersion, $description, $target, $constraint);
         }

@@ -297,9 +297,31 @@ class Git
         return true;
     }
 
-    public function fetchRefOrSyncMirror(string $url, string $dir, string $ref): bool
+    public function fetchRefOrSyncMirror(string $url, string $dir, string $ref, string $prettyVersion = null): bool
     {
         if ($this->checkRefIsInMirror($dir, $ref)) {
+            if (Preg::isMatch('{^[a-f0-9]{40}$}', $ref) && $prettyVersion !== null) {
+                $branch = Preg::replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $prettyVersion);
+                $branches = null;
+                $tags = null;
+                if (0 === $this->process->execute('git branch', $output, $dir)) {
+                    $branches = $output;
+                }
+                if (0 === $this->process->execute('git tag', $output, $dir)) {
+                    $tags = $output;
+                }
+
+                // if the pretty version cannot be found as a branch (nor branch with 'v' in front of the branch as it may have been stripped when generating pretty name),
+                // nor as a tag, then we sync the mirror as otherwise it will likely fail during install.
+                // this can occur if a git tag gets created *after* the reference is already put into the cache, as the ref check above will then not sync the new tags
+                // see https://github.com/composer/composer/discussions/11002
+                if (null !== $branches && !Preg::isMatch('{^[\s*]*v?'.preg_quote($branch).'$}m', $branches)
+                    && null !== $tags && !Preg::isMatch('{^[\s*]*'.preg_quote($branch).'$}m', $tags)
+                ) {
+                    $this->syncMirror($url, $dir);
+                }
+            }
+
             return true;
         }
 
