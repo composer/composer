@@ -49,7 +49,7 @@
         "phpstan/phpstan-phpunit": "^1.0",
         "phpstan/phpstan-deprecation-rules": "^1",
         "phpstan/phpstan-strict-rules": "^1",
-        "phpstan/phpstan-symfony": "^1.1"
+        "phpstan/phpstan-symfony": "^1.2.10"
     },
     "suggest": {
         "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages",
