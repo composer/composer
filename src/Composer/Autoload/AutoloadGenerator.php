@@ -1109,9 +1109,10 @@ HEADER;
         }
 
         foreach ((array) $loader as $prop => $value) {
-            if ($value && 0 === strpos($prop, $prefix)) {
-                $maps[substr($prop, $prefixLen)] = $value;
+            if (!is_array($value) || \count($value) === 0 || !str_starts_with($prop, $prefix)) {
+                continue;
             }
+            $maps[substr($prop, $prefixLen)] = $value;
         }
 
         foreach ($maps as $prop => $value) {
