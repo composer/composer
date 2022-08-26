@@ -389,7 +389,8 @@ class Config
                 return $value;
 
             case 'discard-changes':
-                if ($env = $this->getComposerEnv('COMPOSER_DISCARD_CHANGES')) {
+                $env = $this->getComposerEnv('COMPOSER_DISCARD_CHANGES');
+                if ($env !== false) {
                     if (!in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
                         throw new \RuntimeException(
                             "Invalid value for COMPOSER_DISCARD_CHANGES: {$env}. Expected 1, 0, true, false or stash"
@@ -551,7 +552,7 @@ class Config
      * that overload config values.
      *
      * @param  string      $var
-     * @return string|bool
+     * @return string|false
      */
     private function getComposerEnv($var)
     {
