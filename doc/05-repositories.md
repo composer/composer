@@ -149,7 +149,7 @@ number.
 
 This field is optional.
 
-### metadata-url, available-packages and available-package-patterns
+#### metadata-url, available-packages and available-package-patterns
 
 The `metadata-url` field allows you to provide a URL template to serve all
 packages which are in the repository. It must contain the placeholder
@@ -204,7 +204,7 @@ every matching package name in this repository).
 
 This field is optional.
 
-### providers-api
+#### providers-api
 
 The `providers-api` field allows you to provide a URL template to serve all
 packages which provide a given package name, but not the package which has
@@ -222,7 +222,7 @@ monolog/monolog itself.
 
 This field is optional.
 
-### list
+#### list
 
 The `list` field allows you to return the names of packages which match a
 given field (or all names if no filter is present). It should accept an
