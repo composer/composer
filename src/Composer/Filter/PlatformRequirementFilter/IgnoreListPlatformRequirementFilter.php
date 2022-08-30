@@ -69,7 +69,7 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
             return $constraint;
         }
 
-        if (!Preg::isMatch($this->ignoreUpperBoundRegex, $req) || !$allowUpperBoundOverride) {
+        if (!$allowUpperBoundOverride || !Preg::isMatch($this->ignoreUpperBoundRegex, $req)) {
             return $constraint;
         }
 
