@@ -1356,8 +1356,8 @@ EOT
         }
 
         if ($targetVersion === null) {
-            if ($majorOnly && Preg::isMatch('{^(\d+)\.}', $package->getVersion(), $match)) {
-                $targetVersion = '>='.($match[1] + 1).',<9999999-dev';
+            if ($majorOnly && Preg::isMatch('{^(?P<zero_major>0\.)?(?P<first_meaningful>\d+)\.}', $package->getVersion(), $match)) {
+                $targetVersion = '>='.$match['zero_major'].($match['first_meaningful'] + 1).',<9999999-dev';
             }
 
             if ($minorOnly) {

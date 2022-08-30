@@ -192,6 +192,61 @@ outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
         }
     }
 
+    public function testOutdatedWithZeroMajor(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'zero/major', 'description' => 'generic description', 'version' => '0.1.0'],
+                        ['name' => 'zero/major', 'description' => 'generic description', 'version' => '0.2.0'],
+                        ['name' => 'zero/minor', 'description' => 'generic description', 'version' => '0.1.0'],
+                        ['name' => 'zero/minor', 'description' => 'generic description', 'version' => '0.1.2'],
+                        ['name' => 'zero/patch', 'description' => 'generic description', 'version' => '0.1.2'],
+                        ['name' => 'zero/patch', 'description' => 'generic description', 'version' => '0.1.2.1'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'zero/major' => '^0.1',
+                'zero/minor' => '^0.1',
+                'zero/patch' => '^0.1',
+            ],
+        ]);
+
+        $this->createInstalledJson([
+            $this->getPackage('zero/major', '0.1.0'),
+            $this->getPackage('zero/minor', '0.1.0'),
+            $this->getPackage('zero/patch', '0.1.2'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated', '--direct' => true, '--patch-only' => true]);
+        self::assertSame(
+'Legend:
+! patch or minor release available - update recommended
+~ major release available - update possible
+zero/patch 0.1.2 <highlight>! 0.1.2.1</highlight>', trim($appTester->getDisplay(true)));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated', '--direct' => true, '--minor-only' => true]);
+        self::assertSame(
+'Legend:
+! patch or minor release available - update recommended
+~ major release available - update possible
+zero/minor 0.1.0 <highlight>! 0.1.2  </highlight>
+zero/patch 0.1.2 <highlight>! 0.1.2.1</highlight>', trim($appTester->getDisplay(true)));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated', '--direct' => true, '--major-only' => true]);
+        self::assertSame(
+'Legend:
+! patch or minor release available - update recommended
+~ major release available - update possible
+zero/major 0.1.0 ~ 0.2.0', trim($appTester->getDisplay(true)));
+    }
+
     public function testShowAllShowsAllSections(): void
     {
         $this->initTempComposer([
