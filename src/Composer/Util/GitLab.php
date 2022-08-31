@@ -127,7 +127,7 @@ class GitLab
 
         $this->io->writeError(sprintf('A token will be created and stored in "%s", your password will never be stored', $this->config->getAuthConfigSource()->getName()));
         $this->io->writeError('To revoke access to this token you can visit '.$scheme.'://'.$originUrl.'/-/profile/applications');
-        $this->io->writeError('Alternatively you can setup an personal access token on  '.$scheme.'://'.$originUrl.'/-/profile/personal_access_token and store it under "gitlab-token" see https://getcomposer.org/doc/articles/authentication-for-private-packages.md#gitlab-token for more details.');
+        $this->io->writeError('Alternatively you can setup an personal access token on  '.$scheme.'://'.$originUrl.'/-/profile/personal_access_tokens and store it under "gitlab-token" see https://getcomposer.org/doc/articles/authentication-for-private-packages.md#gitlab-token for more details.');
 
         $attemptCounter = 0;
 
