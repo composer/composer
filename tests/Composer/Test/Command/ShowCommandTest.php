@@ -199,6 +199,8 @@ outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
                 'packages' => [
                     'type' => 'package',
                     'package' => [
+                        ['name' => 'zerozero/major', 'description' => 'generic description', 'version' => '0.0.1'],
+                        ['name' => 'zerozero/major', 'description' => 'generic description', 'version' => '0.0.2'],
                         ['name' => 'zero/major', 'description' => 'generic description', 'version' => '0.1.0'],
                         ['name' => 'zero/major', 'description' => 'generic description', 'version' => '0.2.0'],
                         ['name' => 'zero/minor', 'description' => 'generic description', 'version' => '0.1.0'],
@@ -209,6 +211,7 @@ outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
                 ],
             ],
             'require' => [
+                'zerozero/major' => '^0.0.1',
                 'zero/major' => '^0.1',
                 'zero/minor' => '^0.1',
                 'zero/patch' => '^0.1',
@@ -216,6 +219,7 @@ outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
         ]);
 
         $this->createInstalledJson([
+            $this->getPackage('zerozero/major', '0.0.1'),
             $this->getPackage('zero/major', '0.1.0'),
             $this->getPackage('zero/minor', '0.1.0'),
             $this->getPackage('zero/patch', '0.1.2'),
@@ -244,7 +248,8 @@ zero/patch 0.1.2 <highlight>! 0.1.2.1</highlight>', trim($appTester->getDisplay(
 'Legend:
 ! patch or minor release available - update recommended
 ~ major release available - update possible
-zero/major 0.1.0 ~ 0.2.0', trim($appTester->getDisplay(true)));
+zero/major     0.1.0 ~ 0.2.0
+zerozero/major 0.0.1 ~ 0.0.2', trim($appTester->getDisplay(true)));
     }
 
     public function testShowAllShowsAllSections(): void
