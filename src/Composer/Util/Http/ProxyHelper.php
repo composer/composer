@@ -60,7 +60,6 @@ class ProxyHelper
     /**
      * Returns http context options for the proxy url
      *
-     *
      * @return array{http: array{proxy: string, header?: string}}
      */
     public static function getContextOptions(string $proxyUrl): array

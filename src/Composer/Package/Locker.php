@@ -339,7 +339,6 @@ class Locker
      * @param array<string, string|false> $platformOverrides
      * @param bool                        $write             Whether to actually write data to disk, useful in tests and for --dry-run
      *
-     *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      */
     public function setLockData(array $packages, ?array $devPackages, array $platformReqs, array $platformDevReqs, array $aliases, string $minimumStability, array $stabilityFlags, bool $preferStable, bool $preferLowest, array $platformOverrides, bool $write = true): bool

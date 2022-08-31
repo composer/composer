@@ -282,7 +282,6 @@ abstract class BaseCommand extends Command
     /**
      * Returns preferSource and preferDist values based on the configuration.
      *
-     *
      * @return bool[] An array composed of the preferSource and preferDist values
      */
     protected function getPreferredInstallOptions(Config $config, InputInterface $input, bool $keepVcsRequiresPreferSource = false)
