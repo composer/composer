@@ -324,7 +324,6 @@ class Filesystem
      * Some systems can't rename and also don't have proc_open,
      * which requires this solution.
      *
-     *
      * @return void
      */
     public function copyThenRemove(string $source, string $target)
@@ -716,7 +715,6 @@ class Filesystem
     /**
      * return true if that directory is a symlink.
      *
-     *
      * @return bool
      */
     public function isSymlinkedDirectory(string $directory)
@@ -761,7 +759,6 @@ class Filesystem
 
     /**
      * Creates an NTFS junction.
-     *
      *
      * @return void
      */
@@ -856,7 +853,6 @@ class Filesystem
 
     /**
      * Copy file using stream_copy_to_stream to work around https://bugs.php.net/bug.php?id=6463
-     *
      *
      * @return void
      */

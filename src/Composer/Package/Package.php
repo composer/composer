@@ -537,7 +537,6 @@ class Package extends BasePackage
      *
      * @param array $autoload Mapping of autoloading rules
      *
-     *
      * @phpstan-param AutoloadRules $autoload
      */
     public function setAutoload(array $autoload): void
@@ -557,7 +556,6 @@ class Package extends BasePackage
      * Set the dev autoload mapping
      *
      * @param array $devAutoload Mapping of dev autoloading rules
-     *
      *
      * @phpstan-param DevAutoloadRules $devAutoload
      */

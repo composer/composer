@@ -148,7 +148,6 @@ class PluginManager
      * @param bool             $failOnMissingClasses By default this silently skips plugins that can not be found, but if set to true it fails with an exception
      * @param bool             $isGlobalPlugin       Set to true to denote plugins which are installed in the global Composer directory
      *
-     *
      * @throws \UnexpectedValueException
      */
     public function registerPackage(PackageInterface $package, bool $failOnMissingClasses = false, bool $isGlobalPlugin = false): void
@@ -304,8 +303,6 @@ class PluginManager
      * If it's of type composer-installer it is unregistered from the installers
      * instead for BC
      *
-     *
-     *
      * @throws \UnexpectedValueException
      */
     public function deactivatePackage(PackageInterface $package): void
@@ -328,8 +325,6 @@ class PluginManager
      *
      * If it's of type composer-installer it is unregistered from the installers
      * instead for BC
-     *
-     *
      *
      * @throws \UnexpectedValueException
      */
@@ -445,7 +440,6 @@ class PluginManager
      * call this method as early as possible.
      *
      * @param RepositoryInterface $repo Repository to scan for plugins to install
-     *
      *
      * @throws \RuntimeException
      */

@@ -49,8 +49,6 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * @inheritDoc
      *
-     *
-     *
      * @throws \RuntimeException
      * @throws \UnexpectedValueException
      */

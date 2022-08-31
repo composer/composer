@@ -40,7 +40,6 @@ class Compiler
      *
      * @param string $pharFile The full path to the file to create
      *
-     *
      * @throws \RuntimeException
      */
     public function compile(string $pharFile = 'composer.phar'): void

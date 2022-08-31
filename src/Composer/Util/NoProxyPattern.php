@@ -69,7 +69,6 @@ class NoProxyPattern
     /**
      * Returns false is the url cannot be parsed, otherwise a data object
      *
-     *
      * @return bool|stdClass
      */
     protected function getUrlData(string $url)
@@ -165,7 +164,6 @@ class NoProxyPattern
     /**
      * Finds or creates rule data for a hostname
      *
-     *
      * @return null|stdClass Null if the hostname is invalid
      */
     private function getRule(int $index, string $hostName): ?stdClass
@@ -238,7 +236,6 @@ class NoProxyPattern
      *
      * IPv4 addresses are always mapped to IPv6, which simplifies handling
      * and comparison.
-     *
      *
      * @return mixed[] in_addr, size
      */
@@ -354,7 +351,6 @@ class NoProxyPattern
 
     /**
      * Splits the hostname into host and port components
-     *
      *
      * @return mixed[] host, port, if there was error
      */
