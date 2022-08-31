@@ -625,7 +625,6 @@ class Installer
      *
      * @param array<int, array<string, string>> $aliases
      *
-     *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      * @phpstan-return self::ERROR_*
      */
@@ -810,7 +809,6 @@ class Installer
 
     /**
      * @param  array<int, array<string, string>> $rootAliases
-     *
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $rootAliases
      */

@@ -174,7 +174,6 @@ class Cache
     /**
      * Copy a file into the cache
      *
-     *
      * @return bool
      */
     public function copyFrom(string $file, string $source)
@@ -197,7 +196,6 @@ class Cache
 
     /**
      * Copy a file out of the cache
-     *
      *
      * @return bool
      */

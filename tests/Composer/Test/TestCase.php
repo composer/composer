@@ -308,7 +308,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      *
      * @param string $executableName The name of the binary to test.
      *
-     *
      * @throws \PHPUnit\Framework\SkippedTestError
      */
     protected function skipIfNotExecutable(string $executableName): void
@@ -325,7 +324,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     /**
      * Transforms an escaped non-Windows command to match Windows escaping.
-     *
      *
      * @return string The transformed command
      */

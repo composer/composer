@@ -61,7 +61,6 @@ class RootPackageLoader extends ArrayLoader
     /**
      * @inheritDoc
      *
-     *
      * @return RootPackage|RootAliasPackage
      *
      * @phpstan-param class-string<RootPackage> $class

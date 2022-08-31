@@ -234,7 +234,6 @@ interface IOInterface extends LoggerInterface
     /**
      * Loads authentications from a config instance
      *
-     *
      * @return void
      */
     public function loadConfiguration(Config $config);

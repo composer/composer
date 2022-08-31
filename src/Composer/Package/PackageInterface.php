@@ -234,7 +234,6 @@ interface PackageInterface
     /**
      * Returns the stability of this package: one of (dev, alpha, beta, RC, stable)
      *
-     *
      * @phpstan-return 'stable'|'RC'|'beta'|'alpha'|'dev'
      */
     public function getStability(): string;
