@@ -172,12 +172,13 @@ class InstallationManager
     /**
      * Executes solver operation.
      *
-     * @param InstalledRepositoryInterface $repo       repository in which to add/remove/update packages
-     * @param OperationInterface[]         $operations operations to execute
-     * @param bool                         $devMode    whether the install is being run in dev mode
-     * @param bool                         $runScripts whether to dispatch script events
+     * @param InstalledRepositoryInterface $repo         repository in which to add/remove/update packages
+     * @param OperationInterface[]         $operations   operations to execute
+     * @param bool                         $devMode      whether the install is being run in dev mode
+     * @param bool                         $runScripts   whether to dispatch script events
+     * @param bool                         $downloadOnly whether to only download packages
      */
-    public function execute(InstalledRepositoryInterface $repo, array $operations, bool $devMode = true, bool $runScripts = true): void
+    public function execute(InstalledRepositoryInterface $repo, array $operations, bool $devMode = true, bool $runScripts = true, bool $downloadOnly = false): void
     {
         /** @var PromiseInterface[] */
         $cleanupPromises = [];
@@ -239,7 +240,7 @@ class InstallationManager
             }
 
             foreach ($batches as $batch) {
-                $this->downloadAndExecuteBatch($repo, $batch, $cleanupPromises, $devMode, $runScripts, $operations);
+                $this->downloadAndExecuteBatch($repo, $batch, $cleanupPromises, $devMode, $runScripts, $downloadOnly, $operations);
             }
         } catch (\Exception $e) {
             $runCleanup();
@@ -260,7 +261,7 @@ class InstallationManager
      * @param PromiseInterface[] $cleanupPromises
      * @param OperationInterface[] $allOperations Complete list of operations to be executed in the install job, used for event listeners
      */
-    private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, bool $devMode, bool $runScripts, array $allOperations): void
+    private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, bool $devMode, bool $runScripts, bool $downloadOnly, array $allOperations): void
     {
         $promises = [];
 
@@ -304,6 +305,10 @@ class InstallationManager
         // execute all downloads first
         if (count($promises)) {
             $this->waitOnPromises($promises);
+        }
+
+        if ($downloadOnly) {
+            return;
         }
 
         // execute operations in batches to make sure every plugin is installed in the

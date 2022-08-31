@@ -148,6 +148,8 @@ class Installer
     /** @var bool */
     protected $dryRun = false;
     /** @var bool */
+    protected $downloadOnly = false;
+    /** @var bool */
     protected $verbose = false;
     /** @var bool */
     protected $update = false;
@@ -256,6 +258,12 @@ class Installer
             $this->writeLock = false;
             $this->dumpAutoloader = false;
             $this->mockLocalRepositories($this->repositoryManager);
+        }
+
+        if ($this->downloadOnly) {
+            $this->runScripts = false;
+            $this->writeLock = false;
+            $this->dumpAutoloader = false;
         }
 
         if ($this->update && !$this->install) {
@@ -783,7 +791,7 @@ class Installer
 
         if ($this->executeOperations) {
             $localRepo->setDevPackageNames($this->locker->getDevPackageNames());
-            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts);
+            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts, $this->downloadOnly);
         } else {
             foreach ($localRepoTransaction->getOperations() as $operation) {
                 // output op, but alias op only in debug verbosity
@@ -1086,6 +1094,18 @@ class Installer
     public function isDryRun(): bool
     {
         return $this->dryRun;
+    }
+
+    /**
+     * Whether to download only or not.
+     *
+     * @return Installer
+     */
+    public function setDownloadOnly(bool $downloadOnly = true): self
+    {
+        $this->downloadOnly = $downloadOnly;
+
+        return $this;
     }
 
     /**
