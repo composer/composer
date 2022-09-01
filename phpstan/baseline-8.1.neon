@@ -51,11 +51,6 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$callback of function call_user_func expects callable\\(\\)\\: mixed, array\\{Composer\\\\Package\\\\RootPackageInterface, 'getDevRequires'\\|'getRequires'\\} given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ValidateCommand.php
-
-		-
 			message: "#^Parameter \\#1 \\$callback of function call_user_func_array expects callable\\(\\)\\: mixed, array\\{Composer\\\\Json\\\\JsonManipulator, string\\} given\\.$#"
 			count: 1
 			path: ../src/Composer/Config/JsonConfigSource.php
@@ -186,6 +181,11 @@ parameters:
 			path: ../src/Composer/Util/Hg.php
 
 		-
+			message: "#^Only booleans are allowed in &&, int\\<0, 2097152\\> given on the right side\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Parameter \\#1 \\$handle of function curl_close expects CurlHandle, resource given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -236,7 +236,7 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: CurlHandle\\|resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\.$#"
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\|array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array\\<\\('certinfo'\\|'connect_time'\\|'content_type'\\|'download_content…'\\|'filetime'\\|'header_size'\\|'http_code'\\|'http_version'\\|'local_ip'\\|'local_port'\\|'namelookup_time'\\|'pretransfer_time'\\|'primary_ip'\\|'primary_port'\\|'protocol'\\|'redirect_count'\\|'redirect_time'\\|'redirect_url'\\|'request_size'\\|'scheme'\\|'size_download'\\|'size_upload'\\|'speed_download'\\|'speed_upload'\\|'ssl_verify_result'\\|'ssl_verifyresult'\\|'starttransfer_time'\\|'total_time'\\|'upload_content…'\\|'url'\\), \\(array\\<int, array\\<string, string\\>\\>\\|float\\|int\\|string\\|null\\)\\>, curlHandle\\: CurlHandle, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
