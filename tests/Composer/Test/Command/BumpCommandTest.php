@@ -23,7 +23,7 @@ class BumpCommandTest extends TestCase
      * @param array<mixed> $command
      * @param array<mixed> $expected
      */
-    public function testBump(array $composerJson, array $command, array $expected, bool $lock = true): void
+    public function testBump(array $composerJson, array $command, array $expected, bool $lock = true, int $exitCode = 0): void
     {
         $this->initTempComposer($composerJson);
 
@@ -41,7 +41,7 @@ class BumpCommandTest extends TestCase
         }
 
         $appTester = $this->getApplicationTester();
-        $appTester->run(array_merge(['command' => 'bump'], $command));
+        $this->assertSame($exitCode, $appTester->run(array_merge(['command' => 'bump'], $command)));
 
         $json = new JsonFile('./composer.json');
         $this->assertSame($expected, $json->read());
@@ -130,6 +130,54 @@ class BumpCommandTest extends TestCase
                 ],
             ],
             false,
+        ];
+
+        yield 'bump with --dry-run with packages to bump' => [
+            [
+                'require' => [
+                    'first/pkg' => '^2.0',
+                    'second/pkg' => '3.*',
+                ],
+                'require-dev' => [
+                    'dev/pkg' => '~2.0',
+                ],
+            ],
+            ['--dry-run' => true],
+            [
+                'require' => [
+                    'first/pkg' => '^2.0',
+                    'second/pkg' => '3.*',
+                ],
+                'require-dev' => [
+                    'dev/pkg' => '~2.0',
+                ],
+            ],
+            true,
+            1,
+        ];
+
+        yield 'bump with --dry-run without packages to bump' => [
+            [
+                'require' => [
+                    'first/pkg' => '^2.3.4',
+                    'second/pkg' => '^3.4',
+                ],
+                'require-dev' => [
+                    'dev/pkg' => '^2.3.4.5',
+                ],
+            ],
+            ['--dry-run' => true],
+            [
+                'require' => [
+                    'first/pkg' => '^2.3.4',
+                    'second/pkg' => '^3.4',
+                ],
+                'require-dev' => [
+                    'dev/pkg' => '^2.3.4.5',
+                ],
+            ],
+            true,
+            0,
         ];
     }
 }
