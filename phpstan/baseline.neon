@@ -6,7 +6,7 @@ parameters:
 			path: ../src/Composer/Advisory/Auditor.php
 
 		-
-			message: "#^Binary operation \"\\.\" between non\\-empty\\-string and array\\|string\\|null results in an error\\.$#"
+			message: "#^Binary operation \"\\.\" between non\\-falsy\\-string and array\\|string\\|null results in an error\\.$#"
 			count: 1
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
 
@@ -17,11 +17,6 @@ parameters:
 
 		-
 			message: "#^Method Composer\\\\Autoload\\\\AutoloadGenerator\\:\\:parseAutoloads\\(\\) should return array\\{psr\\-0\\: array\\<string, array\\<string\\>\\>, psr\\-4\\: array\\<string, array\\<string\\>\\>, classmap\\: array\\<int, string\\>, files\\: array\\<string, string\\>, exclude\\-from\\-classmap\\: array\\<int, string\\>\\} but returns array\\{psr\\-0\\: array\\<int\\|string, array\\<string\\>\\|string\\>, psr\\-4\\: array\\<int\\|string, array\\<string\\>\\|string\\>, classmap\\: array\\<int\\|string, array\\<string\\>\\|string\\>, files\\: array\\<int\\|string, array\\<string\\>\\|string\\>, exclude\\-from\\-classmap\\: array\\<int\\|string, array\\<string\\>\\|string\\>\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Autoload/AutoloadGenerator.php
-
-		-
-			message: "#^Only booleans are allowed in &&, array\\<string, array\\<int\\|string, array\\<string\\>\\|int\\|string\\>\\|bool\\|string\\>\\|bool\\|string\\|null given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
 
@@ -511,11 +506,6 @@ parameters:
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
-			message: "#^Binary operation \"\\.\" between 'The package name ' and non\\-empty\\-array\\|float\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|non\\-empty\\-string\\|true results in an error\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
 			message: "#^Cannot call method get\\(\\) on Symfony\\\\Component\\\\Console\\\\Helper\\\\HelperSet\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
@@ -556,8 +546,8 @@ parameters:
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$author of method Composer\\\\Command\\\\InitCommand\\:\\:formatAuthors\\(\\) expects string, array\\|float\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string\\|true given\\.$#"
-			count: 1
+			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
+			count: 2
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
@@ -566,12 +556,12 @@ parameters:
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$path of function basename expects string, string\\|false given\\.$#"
-			count: 1
+			message: "#^Parameter \\#1 \\$options of method Composer\\\\Command\\\\InitCommand\\:\\:hasDependencies\\(\\) expects array\\<string, array\\<string\\>\\|string\\>, array\\<string, array\\<int\\|string, mixed\\>\\|stdClass\\|string\\> given\\.$#"
+			count: 2
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
-			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:isMatch\\(\\) expects string, array\\|float\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string\\|true given\\.$#"
+			message: "#^Parameter \\#1 \\$path of function basename expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
 
@@ -736,17 +726,12 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Binary operation \"\\.\" between ' in ' and array\\|bool\\|float\\|int\\|string results in an error\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
 			message: "#^Binary operation \"\\.\" between '\\<info\\>latest\\</info\\>…' and array\\<string\\>\\|string results in an error\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Binary operation \"\\.\" between non\\-empty\\-string and array\\<string\\>\\|string results in an error\\.$#"
+			message: "#^Binary operation \"\\.\" between non\\-falsy\\-string and array\\<string\\>\\|string results in an error\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
@@ -1121,11 +1106,6 @@ parameters:
 			path: ../src/Composer/Command/ValidateCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$function of function call_user_func expects callable\\(\\)\\: mixed, array\\{Composer\\\\Package\\\\RootPackageInterface, 'getDevRequires'\\|'getRequires'\\} given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ValidateCommand.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ValidateCommand.php
@@ -1182,11 +1162,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a ternary operator condition, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Config.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, bool\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/Config.php
 
@@ -1981,11 +1956,6 @@ parameters:
 			path: ../src/Composer/Downloader/HgDownloader.php
 
 		-
-			message: "#^Call to function in_array\\(\\) with arguments 20, array\\{0\\: 10\\|20, 1\\?\\: 20\\} and true will always evaluate to true\\.$#"
-			count: 2
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, array\\<string, string\\|null\\>\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/PathDownloader.php
@@ -2727,7 +2697,22 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, int given\\.$#"
-			count: 5
+			count: 1
+			path: ../src/Composer/Installer/SuggestedPackagesReporter.php
+
+		-
+			message: "#^Only booleans are allowed in an if condition, int\\<0, 1\\> given\\.$#"
+			count: 1
+			path: ../src/Composer/Installer/SuggestedPackagesReporter.php
+
+		-
+			message: "#^Only booleans are allowed in an if condition, int\\<0, 2\\> given\\.$#"
+			count: 2
+			path: ../src/Composer/Installer/SuggestedPackagesReporter.php
+
+		-
+			message: "#^Only booleans are allowed in an if condition, int\\<0, 4\\> given\\.$#"
+			count: 1
 			path: ../src/Composer/Installer/SuggestedPackagesReporter.php
 
 		-
@@ -2741,7 +2726,7 @@ parameters:
 			path: ../src/Composer/Json/JsonFile.php
 
 		-
-			message: "#^Only booleans are allowed in a ternary operator condition, int given\\.$#"
+			message: "#^Only booleans are allowed in a ternary operator condition, int\\<0, 128\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Json/JsonFile.php
 
@@ -3071,7 +3056,7 @@ parameters:
 			path: ../src/Composer/Package/Loader/ValidatingArrayLoader.php
 
 		-
-			message: "#^Cannot access offset 'scheme' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
+			message: "#^Cannot access offset 'scheme' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Loader/ValidatingArrayLoader.php
 
@@ -3086,8 +3071,13 @@ parameters:
 			path: ../src/Composer/Package/Loader/ValidatingArrayLoader.php
 
 		-
-			message: "#^Only booleans are allowed in &&, int given on the left side\\.$#"
-			count: 2
+			message: "#^Only booleans are allowed in &&, int\\<0, 1\\> given on the left side\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Loader/ValidatingArrayLoader.php
+
+		-
+			message: "#^Only booleans are allowed in &&, int\\<0, 2\\> given on the left side\\.$#"
+			count: 1
 			path: ../src/Composer/Package/Loader/ValidatingArrayLoader.php
 
 		-
@@ -3216,7 +3206,7 @@ parameters:
 			path: ../src/Composer/Package/Version/VersionGuesser.php
 
 		-
-			message: "#^Offset 'feature_pretty…' does not exist on array\\{version\\: non\\-empty\\-string, commit\\: string\\|null, pretty_version\\: string\\|null, feature_version\\: non\\-empty\\-string, feature_pretty_version\\?\\: string\\|null\\}\\.$#"
+			message: "#^Offset 'feature_pretty…' does not exist on array\\{version\\: non\\-falsy\\-string, commit\\: string\\|null, pretty_version\\: string\\|null, feature_version\\: non\\-falsy\\-string, feature_pretty_version\\?\\: string\\|null\\}\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Version/VersionGuesser.php
 
@@ -3436,7 +3426,7 @@ parameters:
 			path: ../src/Composer/Repository/ArtifactRepository.php
 
 		-
-			message: "#^Cannot access offset 'path' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
+			message: "#^Cannot access offset 'path' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
@@ -4409,7 +4399,7 @@ parameters:
 			path: ../src/Composer/Util/ConfigValidator.php
 
 		-
-			message: "#^Only booleans are allowed in &&, int given on the left side\\.$#"
+			message: "#^Only booleans are allowed in &&, int\\<0, 1\\> given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Util/ConfigValidator.php
 
@@ -4549,8 +4539,18 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Offset \\(int\\|string\\) on array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\> in isset\\(\\) always exists and is not nullable\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Only booleans are allowed in &&, int given on the right side\\.$#"
-			count: 2
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Only booleans are allowed in &&, int\\<0, 65536\\> given on the right side\\.$#"
+			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
@@ -4684,12 +4684,12 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Cannot access offset 'host' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
+			message: "#^Cannot access offset 'host' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/ProxyHelper.php
 
 		-
-			message: "#^Cannot access offset 'user' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
+			message: "#^Cannot access offset 'user' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/ProxyHelper.php
 
@@ -4709,7 +4709,7 @@ parameters:
 			path: ../src/Composer/Util/Http/ProxyHelper.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, int\\|false\\|null given\\.$#"
+			message: "#^Only booleans are allowed in a negated boolean, int\\<0, 65535\\>\\|false\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/ProxyHelper.php
 
@@ -4719,7 +4719,7 @@ parameters:
 			path: ../src/Composer/Util/Http/ProxyHelper.php
 
 		-
-			message: "#^Parameter \\#1 \\$proxy of static method Composer\\\\Util\\\\Http\\\\ProxyHelper\\:\\:formatParsedUrl\\(\\) expects array\\{scheme\\?\\: string, host\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string\\}, array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$proxy of static method Composer\\\\Util\\\\Http\\\\ProxyHelper\\:\\:formatParsedUrl\\(\\) expects array\\{scheme\\?\\: string, host\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string\\}, array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/ProxyHelper.php
 
@@ -4899,7 +4899,7 @@ parameters:
 			path: ../src/Composer/Util/NoProxyPattern.php
 
 		-
-			message: "#^Only booleans are allowed in a ternary operator condition, int\\|false\\|null given\\.$#"
+			message: "#^Only booleans are allowed in a ternary operator condition, int\\<0, 65535\\>\\|false\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/NoProxyPattern.php
 
@@ -5139,7 +5139,7 @@ parameters:
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
 		-
-			message: "#^Parameter \\#1 \\$result of method Composer\\\\Util\\\\RemoteFilesystem\\:\\:decodeResult\\(\\) expects string\\|false, non\\-empty\\-string\\|true given\\.$#"
+			message: "#^Parameter \\#1 \\$result of method Composer\\\\Util\\\\RemoteFilesystem\\:\\:decodeResult\\(\\) expects string\\|false, non\\-falsy\\-string\\|true given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
@@ -5189,11 +5189,6 @@ parameters:
 			path: ../src/Composer/Util/StreamContextFactory.php
 
 		-
-			message: "#^Method Composer\\\\Util\\\\StreamContextFactory\\:\\:initOptions\\(\\) should return array\\{http\\: array\\{header\\: array\\<string\\>, proxy\\?\\: string, request_fulluri\\: bool\\}, ssl\\?\\: array\\} but returns array\\.$#"
-			count: 1
-			path: ../src/Composer/Util/StreamContextFactory.php
-
-		-
 			message: "#^Only booleans are allowed in a ternary operator condition, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/StreamContextFactory.php
@@ -5209,7 +5204,7 @@ parameters:
 			path: ../src/Composer/Util/StreamContextFactory.php
 
 		-
-			message: "#^Cannot access offset 'user' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
+			message: "#^Cannot access offset 'user' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Svn.php
 
@@ -5304,7 +5299,7 @@ parameters:
 			path: ../src/Composer/Util/TlsHelper.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, int\\|false\\|null given\\.$#"
+			message: "#^Only booleans are allowed in an if condition, int\\<0, 65535\\>\\|false\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Url.php
 
@@ -5344,6 +5339,11 @@ parameters:
 			path: ../tests/Composer/Test/AllFunctionalTest.php
 
 		-
+			message: "#^Method Composer\\\\Test\\\\AllFunctionalTest\\:\\:cleanOutput\\(\\) should return string but returns string\\|false\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/AllFunctionalTest.php
+
+		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/AllFunctionalTest.php
@@ -5361,6 +5361,11 @@ parameters:
 		-
 			message: "#^Only numeric types are allowed in \\-, int\\<0, max\\>\\|false given on the left side\\.$#"
 			count: 3
+			path: ../tests/Composer/Test/AllFunctionalTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|false given\\.$#"
+			count: 1
 			path: ../tests/Composer/Test/AllFunctionalTest.php
 
 		-
@@ -5426,11 +5431,6 @@ parameters:
 		-
 			message: "#^Method Composer\\\\Test\\\\DependencyResolver\\\\PoolBuilderTest\\:\\:getPackageResultSet\\(\\) should return array\\<string\\> but returns array\\<int, int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string\\>\\.$#"
 			count: 1
-			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
-
-		-
-			message: "#^Only booleans are allowed in &&, mixed given on the right side\\.$#"
-			count: 2
 			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
 
 		-
@@ -6043,11 +6043,6 @@ parameters:
 
 		-
 			message: "#^Offset 'cn' does not exist on array\\{cn\\: string, san\\: array\\<string\\>\\}\\|null\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Util/TlsHelperTest.php
-
-		-
-			message: "#^Offset 'san' does not exist on array\\{cn\\: string, san\\: array\\<string\\>\\}\\|null\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Util/TlsHelperTest.php
 
