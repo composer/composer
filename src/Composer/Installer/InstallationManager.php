@@ -307,10 +307,6 @@ class InstallationManager
             $this->waitOnPromises($promises);
         }
 
-        if ($downloadOnly) {
-            return;
-        }
-
         // execute operations in batches to make sure every plugin is installed in the
         // right order and activated before the packages depending on it are installed
         $batches = [];
@@ -336,7 +332,7 @@ class InstallationManager
         }
 
         foreach ($batches as $batch) {
-            $this->executeBatch($repo, $batch, $cleanupPromises, $devMode, $runScripts, $allOperations);
+            $this->executeBatch($repo, $batch, $cleanupPromises, $devMode, $runScripts, $downloadOnly, $allOperations);
         }
     }
 
@@ -345,7 +341,7 @@ class InstallationManager
      * @param PromiseInterface[] $cleanupPromises
      * @param OperationInterface[] $allOperations Complete list of operations to be executed in the install job, used for event listeners
      */
-    private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, bool $devMode, bool $runScripts, array $allOperations): void
+    private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, bool $devMode, bool $runScripts, bool $downloadOnly, array $allOperations): void
     {
         $promises = [];
         $postExecCallbacks = [];
@@ -364,6 +360,8 @@ class InstallationManager
                 continue;
             }
 
+
+
             if ($opType === 'update') {
                 /** @var UpdateOperation $operation */
                 $package = $operation->getTargetPackage();
@@ -373,6 +371,12 @@ class InstallationManager
                 $package = $operation->getPackage();
                 $initialPackage = null;
             }
+
+            if ($downloadOnly) {
+                $this->download($package);
+                continue;
+            }
+
             $installer = $this->getInstaller($package->getType());
 
             $eventName = [
@@ -454,6 +458,19 @@ class InstallationManager
                 $this->io->writeError('');
             }
         }
+    }
+
+    /**
+     * Executes download operation.
+     *
+     * $param PackageInterface $package
+     */
+    public function download(PackageInterface $package): ?PromiseInterface
+    {
+        $installer = $this->getInstaller($package->getType());
+        $promise = $installer->cleanup("install", $package);
+
+        return $promise;
     }
 
     /**
