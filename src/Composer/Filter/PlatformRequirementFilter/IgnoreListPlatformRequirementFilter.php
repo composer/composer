@@ -60,13 +60,16 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
         return Preg::isMatch($this->ignoreRegex, $req);
     }
 
-    public function filterConstraint(string $req, ConstraintInterface $constraint): ConstraintInterface
+    /**
+     * @param bool $allowUpperBoundOverride For conflicts we do not want the upper bound to be skipped
+     */
+    public function filterConstraint(string $req, ConstraintInterface $constraint, bool $allowUpperBoundOverride = true): ConstraintInterface
     {
         if (!PlatformRepository::isPlatformPackage($req)) {
             return $constraint;
         }
 
-        if (!Preg::isMatch($this->ignoreUpperBoundRegex, $req)) {
+        if (!$allowUpperBoundOverride || !Preg::isMatch($this->ignoreUpperBoundRegex, $req)) {
             return $constraint;
         }
 

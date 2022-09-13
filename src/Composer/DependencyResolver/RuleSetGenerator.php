@@ -223,7 +223,7 @@ class RuleSetGenerator
                 if ($platformRequirementFilter->isIgnored($link->getTarget())) {
                     continue;
                 } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
-                    $constraint = $platformRequirementFilter->filterConstraint($link->getTarget(), $constraint);
+                    $constraint = $platformRequirementFilter->filterConstraint($link->getTarget(), $constraint, false);
                 }
 
                 $conflicts = $this->pool->whatProvides($link->getTarget(), $constraint);

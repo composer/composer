@@ -233,19 +233,26 @@ EOT
                 }
 
                 $pkg = PackageSorter::getMostCurrentVersion($this->getRepos()->findPackages($name));
-                if ($pkg instanceof CompletePackageInterface && count(array_intersect($devTags, array_map('strtolower', $pkg->getKeywords()))) > 0) {
-                    $devPackages[] = $name;
+                if ($pkg instanceof CompletePackageInterface) {
+                    $pkgDevTags = array_intersect($devTags, array_map('strtolower', $pkg->getKeywords()));
+                    if (count($pkgDevTags) > 0) {
+                        $devPackages[] = $pkgDevTags;
+                    }
                 }
             }
 
             if (count($devPackages) === count($requirements)) {
                 $plural = count($requirements) > 1 ? 's' : '';
                 $plural2 = count($requirements) > 1 ? 'are' : 'is';
-                $io->warning('The package'.$plural.' you required '.$plural2.' recommended to be placed in require-dev but you did not use --dev.');
+                $plural3 = count($requirements) > 1 ? 'they are' : 'it is';
+                $pkgDevTags = array_unique(array_merge(...$devPackages));
+                $io->warning('The package'.$plural.' you required '.$plural2.' recommended to be placed in require-dev (because '.$plural3.' tagged as "'.implode('", "', $pkgDevTags).'") but you did not use --dev.');
                 if ($io->askConfirmation('<info>Do you want to re-run the command with --dev?</> [<comment>yes</>]? ')) {
                     $input->setOption('dev', true);
                 }
             }
+
+            unset($devPackages, $pkgDevTags);
         }
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';

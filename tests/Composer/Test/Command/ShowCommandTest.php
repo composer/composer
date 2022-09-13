@@ -192,6 +192,20 @@ outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
         }
     }
 
+    public function testShowPlatformWorksWithoutComposerJson(): void
+    {
+        $this->initTempComposer([]);
+        unlink('./composer.json');
+        unlink('./auth.json');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '-p' => true]);
+        $output = trim($appTester->getDisplay(true));
+        foreach (Regex::matchAll('{^(\w+)}m', $output)->matches as $m) {
+            self::assertTrue(PlatformRepository::isPlatformPackage((string) $m[1]));
+        }
+    }
+
     public function testOutdatedWithZeroMajor(): void
     {
         $this->initTempComposer([
