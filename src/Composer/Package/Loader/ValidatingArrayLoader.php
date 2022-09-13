@@ -326,7 +326,7 @@ class ValidatingArrayLoader implements LoaderInterface
                 }
                 if ($type === 'psr-4') {
                     foreach ($typeConfig as $namespace => $dirs) {
-                        if ($namespace !== '' && '\\' !== substr($namespace, -1)) {
+                        if ($namespace !== '' && '\\' !== substr((string) $namespace, -1)) {
                             $this->errors[] = 'autoload.psr-4 : invalid value ('.$namespace.'), namespaces must end with a namespace separator, should be '.$namespace.'\\\\';
                         }
                     }
