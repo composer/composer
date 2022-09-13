@@ -677,7 +677,12 @@ EOT
      */
     protected function getRootRequires(): array
     {
-        $rootPackage = $this->requireComposer()->getPackage();
+        $composer = $this->tryComposer();
+        if ($composer === null) {
+            return [];
+        }
+
+        $rootPackage = $composer->getPackage();
 
         return array_map(
             'strtolower',
