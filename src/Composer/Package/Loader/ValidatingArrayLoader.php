@@ -65,7 +65,7 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->config = $config;
 
         $this->validateString('name', true);
-        if (isset($config['name']) && ($err = self::hasPackageNamingError($config['name']))) {
+        if (isset($config['name']) && null !== ($err = self::hasPackageNamingError($config['name']))) {
             $this->errors[] = 'name : '.$err;
         }
 
