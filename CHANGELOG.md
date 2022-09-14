@@ -1,5 +1,7 @@
 ### [2.4.2] 2022-09-14
 
+  * Fixed bash completion hanging when running as root without `COMPOSER_ALLOW_SUPERUSER` set (#11024)
+  * Fixed handling of plugin activation when running as root without `COMPOSER_ALLOW_SUPERUSER` set so it always happens after prompting, or does not happen if input is non-interactive
   * Fixed package filter on `bump` command (#11053)
   * Fixed handling of --ignore-platform-req with upper-bound ignores to not apply to conflict rules (#11037)
   * Fixed handling of `COMPOSER_DISCARD_CHANGES` when set to `0`
