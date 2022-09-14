@@ -1,3 +1,12 @@
+### [2.4.2] 2022-09-14
+
+  * Fixed package filter on `bump` command (#11053)
+  * Fixed handling of --ignore-platform-req with upper-bound ignores to not apply to conflict rules (#11037)
+  * Fixed handling of `COMPOSER_DISCARD_CHANGES` when set to `0`
+  * Fixed handling of zero-major versions in `outdated` command with `--major-only` (#11032)
+  * Fixed `show --platform` regression since 2.4.0 when running in a directory without composer.json (#11046)
+  * Fixed a few strict type errors
+
 ### [2.4.1] 2022-08-20
 
   * Added a `COMPOSER_NO_AUDIT` env var to easily apply the new --no-audit flag in CI (#10998)
@@ -1626,6 +1635,7 @@
 
   * Initial release
 
+[2.4.2]: https://github.com/composer/composer/compare/2.4.1...2.4.2
 [2.4.1]: https://github.com/composer/composer/compare/2.4.0...2.4.1
 [2.4.0]: https://github.com/composer/composer/compare/2.4.0-RC1...2.4.0
 [2.4.0-RC1]: https://github.com/composer/composer/compare/2.3.10...2.4.0-RC1
