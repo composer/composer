@@ -13,8 +13,10 @@
 namespace Composer\Command;
 
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 use Composer\Package\Locker;
 use Composer\Package\Version\VersionBumper;
+use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputArgument;
@@ -127,6 +129,18 @@ EOT
         }
         if (!$input->getOption('dev-only')) {
             $tasks['require'] = $composer->getPackage()->getRequires();
+        }
+
+        $packagesFilter = $input->getArgument('packages');
+        if (count($packagesFilter) > 0) {
+            $pattern = BasePackage::packageNamesToRegexp(array_unique(array_map('strtolower', $packagesFilter)));
+            foreach ($tasks as $key => $reqs) {
+                foreach ($reqs as $pkgName => $link) {
+                    if (!Preg::isMatch($pattern, $pkgName)) {
+                        unset($tasks[$key][$pkgName]);
+                    }
+                }
+            }
         }
 
         $updates = [];
