@@ -47,7 +47,7 @@ class ValidatingArrayLoader implements LoaderInterface
     public function __construct(LoaderInterface $loader, bool $strictName = true, ?VersionParser $parser = null, int $flags = 0)
     {
         $this->loader = $loader;
-        $this->versionParser = $parser ?: new VersionParser();
+        $this->versionParser = $parser ?? new VersionParser();
         $this->flags = $flags;
 
         if ($strictName !== true) { // @phpstan-ignore-line
@@ -69,7 +69,7 @@ class ValidatingArrayLoader implements LoaderInterface
             $this->errors[] = 'name : '.$err;
         }
 
-        if (!empty($this->config['version'])) {
+        if (isset($this->config['version'])) {
             if (!is_scalar($this->config['version'])) {
                 $this->validateString('version');
             } else {
@@ -85,7 +85,7 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        if (!empty($this->config['config']['platform'])) {
+        if (isset($this->config['config']['platform'])) {
             foreach ((array) $this->config['config']['platform'] as $key => $platform) {
                 if (false === $platform) {
                     continue;
@@ -121,7 +121,7 @@ class ValidatingArrayLoader implements LoaderInterface
 
         $releaseDate = null;
         $this->validateString('time');
-        if (!empty($this->config['time'])) {
+        if (isset($this->config['time'])) {
             try {
                 $releaseDate = new \DateTime($this->config['time'], new \DateTimeZone('UTC'));
             } catch (\Exception $e) {
@@ -131,7 +131,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         // check for license validity on newly updated branches
-        if (isset($this->config['license']) && (!$releaseDate || $releaseDate->getTimestamp() >= strtotime('-8days'))) {
+        if (isset($this->config['license']) && (null === $releaseDate || $releaseDate->getTimestamp() >= strtotime('-8days'))) {
             if (is_array($this->config['license']) || is_string($this->config['license'])) {
                 $licenses = (array) $this->config['license'];
 
@@ -160,7 +160,7 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        if ($this->validateArray('authors') && !empty($this->config['authors'])) {
+        if ($this->validateArray('authors')) {
             foreach ($this->config['authors'] as $key => $author) {
                 if (!is_array($author)) {
                     $this->errors[] = 'authors.'.$key.' : should be an array, '.gettype($author).' given';
@@ -177,15 +177,15 @@ class ValidatingArrayLoader implements LoaderInterface
                     $this->warnings[] = 'authors.'.$key.'.homepage : invalid value ('.$author['homepage'].'), must be an http/https URL';
                     unset($this->config['authors'][$key]['homepage']);
                 }
-                if (isset($author['email']) && !filter_var($author['email'], FILTER_VALIDATE_EMAIL)) {
+                if (isset($author['email']) && false === filter_var($author['email'], FILTER_VALIDATE_EMAIL)) {
                     $this->warnings[] = 'authors.'.$key.'.email : invalid value ('.$author['email'].'), must be a valid email address';
                     unset($this->config['authors'][$key]['email']);
                 }
-                if (empty($this->config['authors'][$key])) {
+                if (\count($this->config['authors'][$key]) === 0) {
                     unset($this->config['authors'][$key]);
                 }
             }
-            if (empty($this->config['authors'])) {
+            if (\count($this->config['authors']) === 0) {
                 unset($this->config['authors']);
             }
         }
@@ -301,7 +301,7 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        if ($this->validateArray('suggest') && !empty($this->config['suggest'])) {
+        if ($this->validateArray('suggest') && isset($this->config['suggest'])) {
             foreach ($this->config['suggest'] as $package => $description) {
                 if (!is_string($description)) {
                     $this->errors[] = 'suggest.'.$package.' : invalid value, must be a string describing why the package is suggested';
@@ -310,14 +310,14 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        if ($this->validateString('minimum-stability') && !empty($this->config['minimum-stability'])) {
+        if ($this->validateString('minimum-stability') && isset($this->config['minimum-stability'])) {
             if (!isset(BasePackage::$stabilities[strtolower($this->config['minimum-stability'])]) && $this->config['minimum-stability'] !== 'RC') {
                 $this->errors[] = 'minimum-stability : invalid value ('.$this->config['minimum-stability'].'), must be one of '.implode(', ', array_keys(BasePackage::$stabilities));
                 unset($this->config['minimum-stability']);
             }
         }
 
-        if ($this->validateArray('autoload') && !empty($this->config['autoload'])) {
+        if ($this->validateArray('autoload') && isset($this->config['autoload'])) {
             $types = ['psr-0', 'psr-4', 'classmap', 'files', 'exclude-from-classmap'];
             foreach ($this->config['autoload'] as $type => $typeConfig) {
                 if (!in_array($type, $types)) {
@@ -334,7 +334,7 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        if (!empty($this->config['autoload']['psr-4']) && !empty($this->config['target-dir'])) {
+        if (isset($this->config['autoload']['psr-4']) && isset($this->config['target-dir'])) {
             $this->errors[] = 'target-dir : this can not be used together with the autoload.psr-4 setting, remove target-dir to upgrade to psr-4';
             // Unset the psr-4 setting, since unsetting target-dir might
             // interfere with other settings.
