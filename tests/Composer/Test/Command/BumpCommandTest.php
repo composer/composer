@@ -115,6 +115,28 @@ class BumpCommandTest extends TestCase
             ],
         ];
 
+        yield 'bump only listed with packages arg' => [
+            [
+                'require' => [
+                    'first/pkg' => '^2.0',
+                    'second/pkg' => '3.*',
+                ],
+                'require-dev' => [
+                    'dev/pkg' => '~2.0',
+                ],
+            ],
+            ['packages' => ['first/pkg', 'dev/*']],
+            [
+                'require' => [
+                    'first/pkg' => '^2.3.4',
+                    'second/pkg' => '3.*',
+                ],
+                'require-dev' => [
+                    'dev/pkg' => '^2.3.4.5',
+                ],
+            ],
+        ];
+
         yield 'bump works from installed repo without lock file' => [
             [
                 'require' => [

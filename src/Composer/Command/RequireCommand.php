@@ -173,8 +173,8 @@ EOT
             /**
              * @see https://github.com/composer/composer/pull/8313#issuecomment-532637955
              */
-            if ($packageType !== 'project') {
-                $io->writeError('<error>The "--fixed" option is only allowed for packages with a "project" type to prevent possible misuses.</error>');
+            if ($packageType !== 'project' && !$input->getOption('dev')) {
+                $io->writeError('<error>The "--fixed" option is only allowed for packages with a "project" type or for dev dependencies to prevent possible misuses.</error>');
 
                 if (!isset($config['type'])) {
                     $io->writeError('<error>If your package is not a library, you can explicitly specify the "type" by using "composer config type project".</error>');
