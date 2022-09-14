@@ -19,7 +19,7 @@ The most important guidelines are described as follows:
 > Fork the project, create a feature branch, and send us a pull request.
 >
 > To ensure a consistent code base, you should make sure the code follows
-> the [PSR-2 Coding Standards](https://www.php-fig.org/psr/psr-2/).
+> the [PSR-12 Coding Standards](https://www.php-fig.org/psr/psr-12/).
 
 ## Support
 
