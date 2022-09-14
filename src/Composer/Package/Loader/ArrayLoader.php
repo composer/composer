@@ -271,7 +271,7 @@ class ArrayLoader implements LoaderInterface
             }
 
             if (!empty($config['keywords']) && \is_array($config['keywords'])) {
-                $package->setKeywords($config['keywords']);
+                $package->setKeywords(array_map('strval', $config['keywords']));
             }
 
             if (!empty($config['license'])) {
