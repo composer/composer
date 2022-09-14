@@ -571,7 +571,7 @@ class ValidatingArrayLoader implements LoaderInterface
                 continue;
             }
 
-            if ($regex && !Preg::isMatch('{^'.$regex.'$}u', $value)) {
+            if ($regex && !Preg::isMatch('{^'.$regex.'$}u', (string) $value)) {
                 $this->warnings[] = $property.'.'.$key.' : invalid value ('.$value.'), must match '.$regex;
                 unset($this->config[$property][$key]);
                 $pass = false;
