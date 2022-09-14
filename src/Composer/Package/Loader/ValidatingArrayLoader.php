@@ -36,7 +36,7 @@ class ValidatingArrayLoader implements LoaderInterface
     private $errors;
     /** @var string[] */
     private $warnings;
-    /** @var mixed[] */
+    /** @var array<int|string|bool|null|array<int|string|bool|null|array<int|string|bool|null|array<int|string|bool|null|array<int|string|bool|null|array<int|string|bool|null|array<int|string|bool|null>>>>>>> */
     private $config;
     /** @var int One or more of self::CHECK_* constants */
     private $flags;

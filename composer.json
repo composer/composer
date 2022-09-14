@@ -79,7 +79,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Composer\\Test\\": "tests/Composer/Test"
+            "Composer\\Test\\": "tests/Composer/Test",
+            "PHPStan\\": "tests/PHPStan"
         }
     },
     "bin": [

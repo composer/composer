@@ -28,7 +28,7 @@ interface LoaderInterface
     /**
      * Converts a package from an array to a real instance
      *
-     * @param  mixed[] $config package data
+     * @param  array<int|string|bool|null|array<int|string|bool|null|array<int|string|bool|null|array<int|string|bool|null|array<int|string|bool|null|array<int|string|bool|null|array<int|string|bool|null>>>>>>> $config package data
      * @param  string  $class  FQCN to be instantiated
      *
      * @return CompletePackage|CompleteAliasPackage|RootPackage|RootAliasPackage
