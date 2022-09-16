@@ -128,6 +128,11 @@ abstract class BaseIO implements IOInterface
         }
 
         foreach ($githubOauth as $domain => $token) {
+            if ($domain !== 'github.com' && !in_array($domain, $config->get('github-domains'), true)) {
+                $this->debug($domain.' is not in the configured github-domains, adding it implicitly as authentication is configured for this domain');
+                $config->merge(['config' => ['github-domains' => array_merge($config->get('github-domains'), [$domain])]], 'implicit-due-to-auth');
+            }
+
             // allowed chars for GH tokens are from https://github.blog/changelog/2021-03-04-authentication-token-format-updates/
             // plus dots which were at some point used for GH app integration tokens
             if (!Preg::isMatch('{^[.A-Za-z0-9_]+$}', $token)) {
@@ -137,11 +142,21 @@ abstract class BaseIO implements IOInterface
         }
 
         foreach ($gitlabOauth as $domain => $token) {
+            if ($domain !== 'gitlab.com' && !in_array($domain, $config->get('gitlab-domains'), true)) {
+                $this->debug($domain.' is not in the configured gitlab-domains, adding it implicitly as authentication is configured for this domain');
+                $config->merge(['config' => ['gitlab-domains' => array_merge($config->get('gitlab-domains'), [$domain])]], 'implicit-due-to-auth');
+            }
+
             $token = is_array($token) ? $token["token"] : $token;
             $this->checkAndSetAuthentication($domain, $token, 'oauth2');
         }
 
         foreach ($gitlabToken as $domain => $token) {
+            if ($domain !== 'gitlab.com' && !in_array($domain, $config->get('gitlab-domains'), true)) {
+                $this->debug($domain.' is not in the configured gitlab-domains, adding it implicitly as authentication is configured for this domain');
+                $config->merge(['config' => ['gitlab-domains' => array_merge($config->get('gitlab-domains'), [$domain])]], 'implicit-due-to-auth');
+            }
+
             $username = is_array($token) ? $token["username"] : $token;
             $password = is_array($token) ? $token["token"] : 'private-token';
             $this->checkAndSetAuthentication($domain, $username, $password);

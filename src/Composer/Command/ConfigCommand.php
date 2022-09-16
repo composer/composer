@@ -237,6 +237,8 @@ EOT
             $this->config->merge(['config' => $this->authConfigFile->exists() ? $this->authConfigFile->read() : []], $this->authConfigFile->getPath());
         }
 
+        $this->getIO()->loadConfiguration($this->config);
+
         // List the configuration of the file settings
         if (true === $input->getOption('list')) {
             $this->listConfiguration($this->config->all(), $this->config->raw(), $output, null, $input->getOption('source'));
