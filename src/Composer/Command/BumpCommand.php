@@ -196,7 +196,11 @@ EOT
             $lock->write($lockData);
         }
 
-        return $dryRun && $changeCount > 0 ? self::ERROR_GENERIC : 0;
+        if ($dryRun && $changeCount > 0) {
+            return self::ERROR_GENERIC;
+        }
+
+        return 0;
     }
 
     /**
