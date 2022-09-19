@@ -356,6 +356,7 @@ are local to the library and do not affect consumers of the package.
 
 * **--dev-only:** Only bump requirements in "require-dev".
 * **--no-dev-only:** Only bump requirements in "require".
+* **--dry-run:** Outputs the packages to bump, but will not execute anything.
 
 ## reinstall
 
