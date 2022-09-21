@@ -234,7 +234,7 @@ class Application extends BaseApplication
                 // not a composer command, so try loading plugin ones
                 false === $commandName
                 // list command requires plugin commands to show them
-                || in_array($commandName, ['', 'list', 'help'], true)
+                || in_array($commandName, ['', 'list', 'help', '_complete'], true)
             );
 
         if ($mayNeedPluginCommand && !$this->disablePluginsByDefault && !$this->hasPluginCommands) {
