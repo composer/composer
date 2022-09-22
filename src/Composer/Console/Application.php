@@ -234,7 +234,10 @@ class Application extends BaseApplication
                 // not a composer command, so try loading plugin ones
                 false === $commandName
                 // list command requires plugin commands to show them
-                || in_array($commandName, ['', 'list', 'help', '_complete'], true)
+                || in_array($commandName, ['', 'list', 'help'], true)
+                // autocompletion requires plugin commands but if we are running as root without COMPOSER_ALLOW_SUPERUSER
+                // we'd rather not autocomplete plugins than abort autocompletion entirely, so we avoid loading plugins in this case
+                || $commandName === '_complete' && !$isNonAllowedRoot
             );
 
         if ($mayNeedPluginCommand && !$this->disablePluginsByDefault && !$this->hasPluginCommands) {
