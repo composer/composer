@@ -591,7 +591,7 @@ time, there are some use cases for hosting your own repository.
 * **Separate ecosystem:** If you have a project which has its own ecosystem,
   and the packages aren't really reusable by the greater PHP community, you
   might want to keep them separate to packagist. An example of this would be
-  wordpress plugins.
+  WordPress plugins.
 
 For hosting your own packages, a native `composer` type of repository is
 recommended, which provides the best performance.
