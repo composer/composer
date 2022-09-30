@@ -1041,6 +1041,8 @@ for possible security issues. It checks for and
 lists security vulnerability advisories according to the
 [Packagist.org api](https://packagist.org/apidoc#list-security-advisories).
 
+_The audit command returns successfully (0) when no packages are required in the project._
+
 ```shell
 php composer.phar audit
 ```
