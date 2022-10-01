@@ -14,7 +14,6 @@ namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
 
-/** @group now */
 class ExecCommandTest extends TestCase
 {
     public function testListThrowsIfNoBinariesExist(): void
