@@ -38,11 +38,11 @@ class ExecCommandTest extends TestCase
             ]
         ]);
 
-        $vendorBinDir = "$composerDir/vendor/bin";
-        mkdir($vendorBinDir, 0777, true);
-        touch($vendorBinDir . '/b');
-        touch($vendorBinDir . '/b.bat');
-        touch($vendorBinDir . '/c');
+        $composerBinDir = "$composerDir/vendor/bin";
+        mkdir($composerBinDir, 0777, true);
+        touch($composerBinDir . '/b');
+        touch($composerBinDir . '/b.bat');
+        touch($composerBinDir . '/c');
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'exec', '--list' => true]);
