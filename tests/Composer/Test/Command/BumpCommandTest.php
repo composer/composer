@@ -47,6 +47,30 @@ class BumpCommandTest extends TestCase
         $this->assertSame($expected, $json->read());
     }
 
+    public function testBumpFailsOnNonExistingComposerFile(): void
+    {
+        $dir = $this->initTempComposer([]);
+        $composerJsonPath = $dir . '/composer.json';
+        unlink($composerJsonPath);
+
+        $appTester = $this->getApplicationTester();
+        $this->assertSame(1, $appTester->run(['command' => 'bump'], ['capture_stderr_separately' => true]));
+
+        $this->assertStringContainsString("./composer.json is not readable.", $appTester->getErrorOutput());
+    }
+
+    public function testBumpFailsOnWriteErrorToComposerFile(): void
+    {
+        $dir = $this->initTempComposer([]);
+        $composerJsonPath = $dir . '/composer.json';
+        chmod($composerJsonPath, 0444);
+
+        $appTester = $this->getApplicationTester();
+        $this->assertSame(1, $appTester->run(['command' => 'bump'], ['capture_stderr_separately' => true]));
+
+        $this->assertStringContainsString("./composer.json is not writable.", $appTester->getErrorOutput());
+    }
+
     public function provideTests(): \Generator
     {
         yield 'bump all by default' => [
@@ -200,6 +224,64 @@ class BumpCommandTest extends TestCase
             ],
             true,
             0,
+        ];
+
+        yield 'bump works with non-standard package' => [
+            [
+                'require' => [
+                    'php' => '>=5.3',
+                    'first/pkg' => '^2.3.4',
+                    'second/pkg' => '^3.4',
+                ],
+                'require-dev' => [
+                    'dev/pkg' => '^2.3.4.5',
+                ],
+            ],
+            [],
+            [
+                'require' => [
+                    'php' => '>=5.3',
+                    'first/pkg' => '^2.3.4',
+                    'second/pkg' => '^3.4',
+                ],
+                'require-dev' => [
+                    'dev/pkg' => '^2.3.4.5',
+                ],
+            ],
+        ];
+
+        yield 'bump works with unknown package' => [
+            [
+                'require' => [
+                    'first/pkg' => '^2.3.4',
+                    'second/pkg' => '^3.4',
+                    'third/pkg' => '^1.2',
+                ],
+            ],
+            [],
+            [
+                'require' => [
+                    'first/pkg' => '^2.3.4',
+                    'second/pkg' => '^3.4',
+                    'third/pkg' => '^1.2',
+                ],
+            ],
+        ];
+
+        yield 'bump works with aliased package' => [
+            [
+                'require' => [
+                    'first/pkg' => '^2.3.4',
+                    'second/pkg' => 'dev-bugfix as 3.4.x-dev',
+                ],
+            ],
+            [],
+            [
+                'require' => [
+                    'first/pkg' => '^2.3.4',
+                    'second/pkg' => 'dev-bugfix as 3.4.x-dev',
+                ],
+            ],
         ];
     }
 }
