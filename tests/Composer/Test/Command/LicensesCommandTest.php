@@ -12,11 +12,9 @@
 
 namespace Composer\Test\Command;
 
-use Composer\Json\JsonFile;
 use Composer\Test\TestCase;
-use PHPUnit\Util\Json;
 
-class LicenseCommandTest extends TestCase
+class LicensesCommandTest extends TestCase
 {
 
     protected function setUp(): void
@@ -52,7 +50,7 @@ class LicenseCommandTest extends TestCase
         $this->createComposerLock([$first, $second, $third], [$dev]);
     }
 
-    public function testBasicRun()
+    public function testBasicRun(): void
     {
         $appTester = $this->getApplicationTester();
         $this->assertSame(0, $appTester->run(['command' => 'license']));
@@ -74,7 +72,7 @@ TEXT;
         $this->assertSame($expected, $appTester->getDisplay());
     }
 
-    public function testNoDev()
+    public function testNoDev(): void
     {
         $appTester = $this->getApplicationTester();
         $this->assertSame(0, $appTester->run(['command' => 'license', '--no-dev' => true]));
@@ -95,7 +93,7 @@ TEXT;
         $this->assertSame($expected, $appTester->getDisplay());
     }
 
-    public function testFormatJson()
+    public function testFormatJson(): void
     {
         $appTester = $this->getApplicationTester();
         $this->assertSame(0, $appTester->run(['command' => 'license', '--format' => 'json'], ['capture_stderr_separately' => true]));
@@ -138,7 +136,7 @@ JSON;
         $this->assertSame($expected, $appTester->getDisplay());
     }
 
-    public function testFormatSummary()
+    public function testFormatSummary(): void
     {
         $appTester = $this->getApplicationTester();
         $this->assertSame(0, $appTester->run(['command' => 'license', '--format' => 'summary']));
@@ -158,7 +156,7 @@ TEXT;
         $this->assertSame($expected, $appTester->getDisplay());
     }
 
-    public function testFormatUnknown()
+    public function testFormatUnknown(): void
     {
         $this->expectException(\RuntimeException::class);
 
