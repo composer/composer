@@ -55,21 +55,30 @@ class LicensesCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $this->assertSame(0, $appTester->run(['command' => 'license']));
 
-        $expected = <<<TEXT
-Name: test/pkg
-Version: 1.0.0+no-version-set
-Licenses: MIT
-Dependencies:
+        $expected = [
+            ["Name:", "test/pkg"],
+            ["Version:", "1.0.0+no-version-set"],
+            ["Licenses:", "MIT"],
+            ["Dependencies:"],
+            [],
+            ["Name", "Version", "Licenses"],
+            ["dev/pkg", "2.3.4.5", "MIT"],
+            ["first/pkg", "2.3.4", "MIT"],
+            ["second/pkg", "3.4.0", "LGPL-2.0-only"],
+            ["third/pkg", "1.5.4", "none"],
+        ];
 
-Name       Version Licenses      
-dev/pkg    2.3.4.5 MIT           
-first/pkg  2.3.4   MIT           
-second/pkg 3.4.0   LGPL-2.0-only 
-third/pkg  1.5.4   none          
+        array_walk_recursive($expected, static function (&$value) {
+            $value = preg_quote($value, '/');
+        });
 
-TEXT;
+        foreach (explode(PHP_EOL, $appTester->getDisplay()) as $i => $line) {
+            if (trim($line) === '') {
+                continue;
+            }
 
-        $this->assertSame($expected, $appTester->getDisplay());
+            $this->assertMatchesRegularExpression("/" . implode("\s+", $expected[$i]) . "/", $line);
+        }
     }
 
     public function testNoDev(): void
@@ -77,20 +86,29 @@ TEXT;
         $appTester = $this->getApplicationTester();
         $this->assertSame(0, $appTester->run(['command' => 'license', '--no-dev' => true]));
 
-        $expected = <<<TEXT
-Name: test/pkg
-Version: 1.0.0+no-version-set
-Licenses: MIT
-Dependencies:
+        $expected = [
+            ["Name:", "test/pkg"],
+            ["Version:", "1.0.0+no-version-set"],
+            ["Licenses:", "MIT"],
+            ["Dependencies:"],
+            [],
+            ["Name", "Version", "Licenses"],
+            ["first/pkg", "2.3.4", "MIT"],
+            ["second/pkg", "3.4.0", "LGPL-2.0-only"],
+            ["third/pkg", "1.5.4", "none"],
+        ];
 
-Name       Version Licenses      
-first/pkg  2.3.4   MIT           
-second/pkg 3.4.0   LGPL-2.0-only 
-third/pkg  1.5.4   none          
+        array_walk_recursive($expected, static function (&$value) {
+            $value = preg_quote($value, '/');
+        });
 
-TEXT;
+        foreach (explode(PHP_EOL, $appTester->getDisplay()) as $i => $line) {
+            if (trim($line) === '') {
+                continue;
+            }
 
-        $this->assertSame($expected, $appTester->getDisplay());
+            $this->assertMatchesRegularExpression("/" . implode("\s+", $expected[$i]) . "/", $line);
+        }
     }
 
     public function testFormatJson(): void
@@ -98,42 +116,37 @@ TEXT;
         $appTester = $this->getApplicationTester();
         $this->assertSame(0, $appTester->run(['command' => 'license', '--format' => 'json'], ['capture_stderr_separately' => true]));
 
-        $expected = <<<JSON
-{
-    "name": "test/pkg",
-    "version": "1.0.0+no-version-set",
-    "license": [
-        "MIT"
-    ],
-    "dependencies": {
-        "dev/pkg": {
-            "version": "2.3.4.5",
-            "license": [
-                "MIT"
+        $expected = [
+            "name" => "test/pkg",
+            "version" => "1.0.0+no-version-set",
+            "license" => ["MIT"],
+            "dependencies" => [
+                "dev/pkg" => [
+                    "version" => "2.3.4.5",
+                    "license" => [
+                        "MIT"
+                    ]
+                ],
+                "first/pkg" => [
+                    "version" => "2.3.4",
+                    "license" => [
+                        "MIT"
+                    ]
+                ],
+                "second/pkg" => [
+                    "version" => "3.4.0",
+                    "license" => [
+                        "LGPL-2.0-only"
+                    ]
+                ],
+                "third/pkg" => [
+                    "version" => "1.5.4",
+                    "license" => []
+                ]
             ]
-        },
-        "first/pkg": {
-            "version": "2.3.4",
-            "license": [
-                "MIT"
-            ]
-        },
-        "second/pkg": {
-            "version": "3.4.0",
-            "license": [
-                "LGPL-2.0-only"
-            ]
-        },
-        "third/pkg": {
-            "version": "1.5.4",
-            "license": []
-        }
-    }
-}
+        ];
 
-JSON;
-
-        $this->assertSame($expected, $appTester->getDisplay());
+        $this->assertSame($expected, json_decode($appTester->getDisplay(), true));
     }
 
     public function testFormatSummary(): void
