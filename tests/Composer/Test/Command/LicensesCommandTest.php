@@ -141,19 +141,23 @@ JSON;
         $appTester = $this->getApplicationTester();
         $this->assertSame(0, $appTester->run(['command' => 'license', '--format' => 'summary']));
 
-        $expected = <<<TEXT
- --------------- ------------------------ 
-  License         Number of dependencies  
- --------------- ------------------------ 
-  MIT             2                       
-  LGPL-2.0-only   1                       
-  none            1                       
- --------------- ------------------------ 
+        $expected = [
+            ['-', '-'],
+            ['License', 'Number of dependencies'],
+            ['-', '-'],
+            ['MIT', '2'],
+            ['LGPL-2.0-only', '1'],
+            ['none', '1'],
+            ['-', '-'],
+        ];
 
+        $lines = explode("\n", $appTester->getDisplay());
 
-TEXT;
+        foreach ($expected as $i => $expect) {
+            [$key, $value] = $expect;
 
-        $this->assertSame($expected, $appTester->getDisplay());
+            $this->assertMatchesRegularExpression("/$key\s+$value/", $lines[$i]);
+        }
     }
 
     public function testFormatUnknown(): void
