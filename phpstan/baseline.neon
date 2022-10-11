@@ -351,16 +351,6 @@ parameters:
 			path: ../src/Composer/Command/CreateProjectCommand.php
 
 		-
-			message: "#^Cannot access offset 'libz_version' on array\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Command/DiagnoseCommand.php
-
-		-
-			message: "#^Cannot access offset 'ssl_version' on array\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Command/DiagnoseCommand.php
-
-		-
 			message: "#^Cannot access offset 'version' on array\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Command/DiagnoseCommand.php
@@ -373,16 +363,6 @@ parameters:
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 4
-			path: ../src/Composer/Command/DiagnoseCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, array\\<string, bool\\|string\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/DiagnoseCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, array\\<string, mixed\\> given\\.$#"
-			count: 1
 			path: ../src/Composer/Command/DiagnoseCommand.php
 
 		-
@@ -1716,11 +1696,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Transaction.php
 
 		-
-			message: "#^Parameter \\#2 \\$path of method Composer\\\\Downloader\\\\FileDownloader\\:\\:removeCleanupPath\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/ArchiveDownloader.php
-
-		-
 			message: "#^Call to function array_search\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/DownloadManager.php
@@ -1787,11 +1762,6 @@ parameters:
 
 		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/FileDownloader.php
-
-		-
-			message: "#^Cannot access offset 'cacheKey' on array\\{base\\: string, processed\\: string, cacheKey\\: string\\}\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/FileDownloader.php
 
@@ -2167,11 +2137,6 @@ parameters:
 
 		-
 			message: "#^Cannot access offset 0 on array\\{0\\: string, 1\\?\\: int\\}\\|int\\|string\\.$#"
-			count: 1
-			path: ../src/Composer/EventDispatcher/EventDispatcher.php
-
-		-
-			message: "#^Cannot access offset 1 on array\\{0\\: string, 1\\?\\: int\\}\\|int\\|string\\.$#"
 			count: 1
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
@@ -3056,11 +3021,6 @@ parameters:
 			path: ../src/Composer/Package/Loader/ValidatingArrayLoader.php
 
 		-
-			message: "#^Cannot access offset 'scheme' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Loader/ValidatingArrayLoader.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 8
 			path: ../src/Composer/Package/Loader/ValidatingArrayLoader.php
@@ -3409,11 +3369,6 @@ parameters:
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Package\\\\BasePackage\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ArtifactRepository.php
-
-		-
-			message: "#^Cannot access offset 'path' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
@@ -4524,22 +4479,12 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Offset \\(int\\|string\\) on array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\> in isset\\(\\) always exists and is not nullable\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Only booleans are allowed in &&, int given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
 			message: "#^Only booleans are allowed in &&, int\\<0, 65536\\> given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, resource\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -4575,11 +4520,21 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
 			message: "#^Only booleans are allowed in \\|\\|, string given on the right side\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$ch of function curl_close expects resource, CurlHandle given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$ch of function curl_getinfo expects resource, CurlHandle given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -4639,6 +4594,11 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Parameter \\#2 \\$ch of function curl_multi_remove_handle expects resource, CurlHandle given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:isMatch\\(\\) expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -4654,7 +4614,42 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\.$#"
+			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:failResponse\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:handleRedirect\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:isAuthenticatedRetryNeeded\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:rejectJob\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:restartJob\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:restartJobWithDelay\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: non\\-empty\\-string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: CurlHandle, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: non\\-empty\\-string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: CurlHandle\\|resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs has unknown class CurlHandle as its type\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -4667,16 +4662,6 @@ parameters:
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Cannot access offset 'host' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyHelper.php
-
-		-
-			message: "#^Cannot access offset 'user' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyHelper.php
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
@@ -4781,31 +4766,6 @@ parameters:
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 4
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
-			message: "#^Offset 'copyTo' does not exist on array\\{url\\: string, options\\?\\: array, copyTo\\?\\: string\\|null\\}\\.$#"
-			count: 2
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
-			message: "#^Offset 'exception' does not exist on array\\{id\\: int, status\\: 4, request\\: array\\{url\\: string, options\\?\\: array, copyTo\\?\\: string\\|null\\}, sync\\: bool, origin\\: string, resolve\\?\\: callable\\(\\)\\: mixed, reject\\?\\: callable\\(\\)\\: mixed, curl_id\\?\\: int, \\.\\.\\.\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
-			message: "#^Offset 'options' does not exist on array\\{url\\: string, options\\?\\: array, copyTo\\?\\: string\\|null\\}\\.$#"
-			count: 3
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
-			message: "#^Offset 'reject' does not exist on array\\{id\\: int, status\\: 2, request\\: array\\{url\\: string, options\\?\\: array, copyTo\\?\\: string\\|null\\}, sync\\: bool, origin\\: string, resolve\\?\\: callable\\(\\)\\: mixed, reject\\?\\: callable\\(\\)\\: mixed, curl_id\\?\\: int, \\.\\.\\.\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
-			message: "#^Offset 'resolve' does not exist on array\\{id\\: int, status\\: 2, request\\: array\\{url\\: string, options\\?\\: array, copyTo\\?\\: string\\|null\\}, sync\\: bool, origin\\: string, resolve\\?\\: callable\\(\\)\\: mixed, reject\\?\\: callable\\(\\)\\: mixed, curl_id\\?\\: int, \\.\\.\\.\\}\\.$#"
-			count: 1
 			path: ../src/Composer/Util/HttpDownloader.php
 
 		-
@@ -5189,11 +5149,6 @@ parameters:
 			path: ../src/Composer/Util/StreamContextFactory.php
 
 		-
-			message: "#^Cannot access offset 'user' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Svn.php
-
-		-
 			message: "#^Casting to bool something that's already \\*NEVER\\*\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Svn.php
@@ -5255,11 +5210,6 @@ parameters:
 
 		-
 			message: "#^Cannot access offset 'key' on array\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Util/TlsHelper.php
-
-		-
-			message: "#^Cannot access offset 'subject' on array\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Util/TlsHelper.php
 
@@ -5677,11 +5627,6 @@ parameters:
 			path: ../tests/Composer/Test/Json/JsonManipulatorTest.php
 
 		-
-			message: "#^Offset 'url' on array\\{url\\: string, options\\?\\: array, status\\?\\: int, body\\?\\: string, headers\\?\\: array\\<string\\>\\} on left side of \\?\\? always exists and is not nullable\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/HttpDownloaderMock.php
-
-		-
 			message: "#^Composer\\\\Test\\\\Mock\\\\InstallationManagerMock\\:\\:__construct\\(\\) does not call parent constructor from Composer\\\\Installer\\\\InstallationManager\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Mock/InstallationManagerMock.php
@@ -5690,11 +5635,6 @@ parameters:
 			message: "#^Variable method call on \\$this\\(Composer\\\\Test\\\\Mock\\\\InstallationManagerMock\\)\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Mock/InstallationManagerMock.php
-
-		-
-			message: "#^Offset 'cmd' on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\} on left side of \\?\\? always exists and is not nullable\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string given\\.$#"
