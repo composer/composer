@@ -722,7 +722,7 @@ EOT
             $out($iniMessage, 'comment');
         }
 
-        return !$warnings && !$errors ? true : $output;
+        return count($warnings) === 0 && count($errors) === 0 ? true : $output;
     }
 
     /**

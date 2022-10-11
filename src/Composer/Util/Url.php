@@ -21,7 +21,8 @@ use Composer\Pcre\Preg;
 class Url
 {
     /**
-     * @return string the updated URL
+     * @param non-empty-string $url
+     * @return non-empty-string the updated URL
      */
     public static function updateDistReference(Config $config, string $url, string $ref): string
     {
@@ -54,9 +55,15 @@ class Url
             $url = Preg::replace('{(/api/v[34]/projects/[^/]+/repository/archive\.(?:zip|tar\.gz|tar\.bz2|tar)\?sha=).+$}i', '${1}'.$ref, $url);
         }
 
+        assert($url !== '');
+
         return $url;
     }
 
+    /**
+     * @param non-empty-string $url
+     * @return non-empty-string
+     */
     public static function getOrigin(Config $config, string $url): string
     {
         if (0 === strpos($url, 'file://')) {
@@ -87,7 +94,7 @@ class Url
             && !in_array($origin, $config->get('gitlab-domains'), true)
         ) {
             foreach ($config->get('gitlab-domains') as $gitlabDomain) {
-                if (0 === strpos($gitlabDomain, $origin)) {
+                if ($gitlabDomain !== '' && str_starts_with($gitlabDomain, $origin)) {
                     return $gitlabDomain;
                 }
             }

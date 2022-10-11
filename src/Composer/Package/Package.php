@@ -38,17 +38,17 @@ class Package extends BasePackage
     protected $sourceUrl;
     /** @var ?string */
     protected $sourceReference;
-    /** @var ?array<int, array{url: string, preferred: bool}> */
+    /** @var ?array<int, array{url: non-empty-string, preferred: bool}> */
     protected $sourceMirrors;
-    /** @var ?string */
+    /** @var ?non-empty-string */
     protected $distType;
-    /** @var ?string */
+    /** @var ?non-empty-string */
     protected $distUrl;
     /** @var ?string */
     protected $distReference;
     /** @var ?string */
     protected $distSha1Checksum;
-    /** @var ?array<int, array{url: string, preferred: bool}> */
+    /** @var ?array<int, array{url: non-empty-string, preferred: bool}> */
     protected $distMirrors;
     /** @var string */
     protected $version;
@@ -276,7 +276,7 @@ class Package extends BasePackage
      */
     public function setDistType(?string $type): void
     {
-        $this->distType = $type;
+        $this->distType = $type === '' ? null : $type;
     }
 
     /**
@@ -288,11 +288,11 @@ class Package extends BasePackage
     }
 
     /**
-     * @param string $url
+     * @param string|null $url
      */
     public function setDistUrl(?string $url): void
     {
-        $this->distUrl = $url;
+        $this->distUrl = $url === '' ? null : $url;
     }
 
     /**
@@ -658,9 +658,9 @@ class Package extends BasePackage
     /**
      * @param mixed[]|null $mirrors
      *
-     * @return string[]
+     * @return non-empty-string[]
      *
-     * @phpstan-param list<array{url: string, preferred: bool}>|null $mirrors
+     * @phpstan-param list<array{url: non-empty-string, preferred: bool}>|null $mirrors
      */
     protected function getUrls(?string $url, ?array $mirrors, ?string $ref, ?string $type, string $urlType): array
     {

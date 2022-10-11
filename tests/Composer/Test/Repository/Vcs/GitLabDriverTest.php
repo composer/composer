@@ -86,6 +86,8 @@ class GitLabDriverTest extends TestCase
 
     /**
      * @dataProvider provideInitializeUrls
+     * @param non-empty-string $url
+     * @param non-empty-string $apiUrl
      */
     public function testInitialize(string $url, string $apiUrl): GitLabDriver
     {
@@ -126,6 +128,8 @@ JSON;
 
     /**
      * @dataProvider provideInitializeUrls
+     * @param non-empty-string $url
+     * @param non-empty-string $apiUrl
      */
     public function testInitializePublicProject(string $url, string $apiUrl): GitLabDriver
     {
@@ -164,6 +168,8 @@ JSON;
 
     /**
      * @dataProvider provideInitializeUrls
+     * @param non-empty-string $url
+     * @param non-empty-string $apiUrl
      */
     public function testInitializePublicProjectAsAnonymous(string $url, string $apiUrl): GitLabDriver
     {

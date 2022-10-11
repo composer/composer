@@ -30,7 +30,7 @@ final class StreamContextFactory
     /**
      * Creates a context supporting HTTP proxies
      *
-     * @param string $url URL the context is to be used for
+     * @param non-empty-string $url URL the context is to be used for
      * @phpstan-param array{http?: array{follow_location?: int, max_redirects?: int, header?: string|array<string>}} $defaultOptions
      * @param  mixed[]           $defaultOptions Options to merge with the default
      * @param  mixed[]           $defaultParams  Parameters to specify on the context
@@ -57,6 +57,7 @@ final class StreamContextFactory
     }
 
     /**
+     * @param non-empty-string $url
      * @param mixed[] $options
      * @param bool    $forCurl When true, will not add proxy values as these are handled separately
      * @phpstan-return array{http: array{header: string[], proxy?: string, request_fulluri: bool}, ssl?: mixed[]}

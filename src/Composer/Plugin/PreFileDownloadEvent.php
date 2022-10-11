@@ -28,7 +28,7 @@ class PreFileDownloadEvent extends Event
     private $httpDownloader;
 
     /**
-     * @var string
+     * @var non-empty-string
      */
     private $processedUrl;
 
@@ -55,8 +55,9 @@ class PreFileDownloadEvent extends Event
     /**
      * Constructor.
      *
-     * @param string         $name           The event name
-     * @param mixed          $context
+     * @param string           $name           The event name
+     * @param mixed            $context
+     * @param non-empty-string $processedUrl
      */
     public function __construct(string $name, HttpDownloader $httpDownloader, string $processedUrl, string $type, $context = null)
     {
@@ -74,6 +75,8 @@ class PreFileDownloadEvent extends Event
 
     /**
      * Retrieves the processed URL that will be downloaded.
+     *
+     * @return non-empty-string
      */
     public function getProcessedUrl(): string
     {
@@ -83,7 +86,7 @@ class PreFileDownloadEvent extends Event
     /**
      * Sets the processed URL that will be downloaded.
      *
-     * @param string $processedUrl New processed URL
+     * @param non-empty-string $processedUrl New processed URL
      */
     public function setProcessedUrl(string $processedUrl): void
     {
