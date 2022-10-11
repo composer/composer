@@ -660,7 +660,7 @@ EOF;
     {
         // Get the path to each file, and make sure these paths are unique.
         $files = array_map(
-            function (string $functionFile): string {
+            function (string $functionFile) use ($filesystem, $basePath, $vendorPath): string {
                 return $this->getpathCode($filesystem, $basePath, $vendorPath, $functionFile);
             },
             $files
