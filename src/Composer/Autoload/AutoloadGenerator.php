@@ -658,10 +658,19 @@ EOF;
      */
     protected function getIncludeFilesFile(array $files, Filesystem $filesystem, string $basePath, string $vendorPath, string $vendorPathCode, string $appBaseDirCode)
     {
+        // Get the path to each file, and make sure these paths are unique.
+        $files = array_map(
+            function (string $functionFile): string {
+                return $this->getpathCode($filesystem, $basePath, $vendorPath, $functionFile);
+            },
+            $files
+        );
+        $files = array_unique($files);
+
         $filesCode = '';
+
         foreach ($files as $fileIdentifier => $functionFile) {
-            $filesCode .= '    ' . var_export($fileIdentifier, true) . ' => '
-                . $this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile) . ",\n";
+            $filesCode .= '    ' . var_export($fileIdentifier, true) . ' => ' . $functionFile . ",\n";
         }
 
         if (!$filesCode) {
