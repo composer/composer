@@ -8,7 +8,7 @@ Installing double aliased package
             "package": [
                 {
                     "name": "a/a", "version": "dev-master",
-                    "dist": { "type": "file", "url": "" },
+                    "dist": { "type": "file", "url": "https://example.org" },
                     "require": {
                         "b/b": "dev-master"
                     },
@@ -17,7 +17,7 @@ Installing double aliased package
                 {
                     "name": "b/b", "version": "dev-foo",
                     "extra": { "branch-alias": { "dev-foo": "1.0.x-dev" } },
-                    "dist": { "type": "file", "url": "" }
+                    "dist": { "type": "file", "url": "https://example.org" }
                 }
             ]
         }

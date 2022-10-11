@@ -9,12 +9,12 @@ Updates installed alias packages
                 {
                     "name": "a/a", "version": "dev-master",
                     "require": { "b/b": "2.0.*" },
-                    "source": { "reference": "abcdef", "url": "", "type": "git" },
+                    "source": { "reference": "abcdef", "url": "https://example.org", "type": "git" },
                     "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } }
                 },
                 {
                     "name": "b/b", "version": "dev-master",
-                    "source": { "reference": "123456", "url": "", "type": "git" },
+                    "source": { "reference": "123456", "url": "https://example.org", "type": "git" },
                     "extra": { "branch-alias": { "dev-master": "2.0.x-dev" } }
                 }
             ]
@@ -30,12 +30,12 @@ Updates installed alias packages
     {
         "name": "a/a", "version": "dev-master",
         "require": { "b/b": "2.0.*" },
-        "source": { "reference": "abcdef", "url": "", "type": "git" },
+        "source": { "reference": "abcdef", "url": "https://example.org", "type": "git" },
         "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } }
     },
     {
         "name": "b/b", "version": "dev-master",
-        "source": { "reference": "123456", "url": "", "type": "git" },
+        "source": { "reference": "123456", "url": "https://example.org", "type": "git" },
         "extra": { "branch-alias": { "dev-master": "2.0.x-dev" } }
     }
 ]

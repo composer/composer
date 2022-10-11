@@ -74,6 +74,8 @@ class ProxyManager
 
     /**
      * Returns a RequestProxy instance for the request url
+     *
+     * @param non-empty-string $requestUrl
      */
     public function getProxyForRequest(string $requestUrl): RequestProxy
     {

@@ -74,23 +74,11 @@ class ProcessExecutorMock extends ProcessExecutor
                 throw new \UnexpectedValueException('Unexpected keys in process execution step: '.implode(', ', array_keys($diff)));
             }
 
-            // set defaults in a PHPStan-happy way (array_merge is not well supported)
-            $expect['cmd'] = $expect['cmd'] ?? $default['cmd'];
-            $expect['return'] = $expect['return'] ?? $default['return'];
-            $expect['stdout'] = $expect['stdout'] ?? $default['stdout'];
-            $expect['stderr'] = $expect['stderr'] ?? $default['stderr'];
-            $expect['callback'] = $expect['callback'] ?? $default['callback'];
-
-            return $expect;
+            return array_merge($default, $expect);
         }, $expectations);
         $this->strict = $strict;
 
-        // set defaults in a PHPStan-happy way (array_merge is not well supported)
-        $defaultHandler['return'] = $defaultHandler['return'] ?? $this->defaultHandler['return'];
-        $defaultHandler['stdout'] = $defaultHandler['stdout'] ?? $this->defaultHandler['stdout'];
-        $defaultHandler['stderr'] = $defaultHandler['stderr'] ?? $this->defaultHandler['stderr'];
-
-        $this->defaultHandler = $defaultHandler;
+        $this->defaultHandler = array_merge($this->defaultHandler, $defaultHandler);
     }
 
     public function assertComplete(): void

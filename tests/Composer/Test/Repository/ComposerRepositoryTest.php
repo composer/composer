@@ -274,6 +274,8 @@ class ComposerRepositoryTest extends TestCase
 
     /**
      * @dataProvider provideCanonicalizeUrlTestCases
+     * @param non-empty-string $url
+     * @param non-empty-string $repositoryUrl
      */
     public function testCanonicalizeUrl(string $expected, string $url, string $repositoryUrl): void
     {

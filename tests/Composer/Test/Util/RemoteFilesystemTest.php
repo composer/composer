@@ -276,6 +276,7 @@ class RemoteFilesystemTest extends TestCase
      * Tests that a BitBucket public download is correctly retrieved.
      *
      * @dataProvider provideBitbucketPublicDownloadUrls
+     * @param non-empty-string $url
      */
     public function testBitBucketPublicDownload(string $url, string $contents): void
     {
@@ -297,6 +298,7 @@ class RemoteFilesystemTest extends TestCase
      * Tests that a BitBucket public download is correctly retrieved when `bitbucket-oauth` is configured.
      *
      * @dataProvider provideBitbucketPublicDownloadUrls
+     * @param non-empty-string $url
      */
     public function testBitBucketPublicDownloadWithAuthConfigured(string $url, string $contents): void
     {

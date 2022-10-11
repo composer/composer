@@ -72,6 +72,7 @@ class ProxyManagerTest extends TestCase
      *
      * @param array<string, mixed> $server
      * @param mixed[]              $expectedOptions
+     * @param non-empty-string     $url
      */
     public function testGetProxyForRequest(array $server, string $url, string $expectedUrl, array $expectedOptions, bool $expectedSecure, string $expectedMessage): void
     {

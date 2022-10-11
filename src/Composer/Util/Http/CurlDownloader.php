@@ -29,7 +29,7 @@ use React\Promise\Promise;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
  * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, storeAuth: 'prompt'|bool}
- * @phpstan-type Job array{url: string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: resource, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable}
+ * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable}
  */
 class CurlDownloader
 {
@@ -125,6 +125,7 @@ class CurlDownloader
 
     /**
      * @param mixed[]  $options
+     * @param non-empty-string $url
      *
      * @return int internal job id
      */
@@ -143,16 +144,18 @@ class CurlDownloader
      * @param mixed[]  $options
      *
      * @param array{retryAuthFailure?: bool, redirects?: int<0, max>, retries?: int<0, max>, storeAuth?: 'prompt'|bool} $attributes
+     * @param non-empty-string $url
      *
      * @return int internal job id
      */
     private function initDownload(callable $resolve, callable $reject, string $origin, string $url, array $options, ?string $copyTo = null, array $attributes = []): int
     {
-        // set defaults in a PHPStan-happy way (array_merge is not well supported)
-        $attributes['retryAuthFailure'] = $attributes['retryAuthFailure'] ?? true;
-        $attributes['redirects'] = $attributes['redirects'] ?? 0;
-        $attributes['retries'] = $attributes['retries'] ?? 0;
-        $attributes['storeAuth'] = $attributes['storeAuth'] ?? false;
+        $attributes = array_merge([
+            'retryAuthFailure' => true,
+            'redirects' => 0,
+            'retries' => 0,
+            'storeAuth' => false,
+        ], $attributes);
 
         $originalOptions = $options;
 
@@ -167,22 +170,24 @@ class CurlDownloader
             throw new \RuntimeException('Failed to open a temp stream to store curl headers');
         }
 
-        if ($copyTo) {
-            $errorMessage = '';
-            // @phpstan-ignore-next-line
-            set_error_handler(static function ($code, $msg) use (&$errorMessage): void {
-                if ($errorMessage) {
-                    $errorMessage .= "\n";
-                }
-                $errorMessage .= Preg::replace('{^fopen\(.*?\): }', '', $msg);
-            });
-            $bodyHandle = fopen($copyTo.'~', 'w+b');
-            restore_error_handler();
-            if (!$bodyHandle) {
-                throw new TransportException('The "'.$url.'" file could not be written to '.$copyTo.': '.$errorMessage);
-            }
+        if ($copyTo !== null) {
+            $bodyTarget = $copyTo.'~';
         } else {
-            $bodyHandle = @fopen('php://temp/maxmemory:524288', 'w+b');
+            $bodyTarget = 'php://temp/maxmemory:524288';
+        }
+
+        $errorMessage = '';
+        // @phpstan-ignore-next-line
+        set_error_handler(static function ($code, $msg) use (&$errorMessage): void {
+            if ($errorMessage) {
+                $errorMessage .= "\n";
+            }
+            $errorMessage .= Preg::replace('{^fopen\(.*?\): }', '', $msg);
+        });
+        $bodyHandle = fopen($bodyTarget, 'w+b');
+        restore_error_handler();
+        if (false === $bodyHandle) {
+            throw new TransportException('The "'.$url.'" file could not be written to '.($copyTo ?? 'a temporary file').': '.$errorMessage);
         }
 
         curl_setopt($curlHandle, CURLOPT_URL, $url);
@@ -229,7 +234,9 @@ class CurlDownloader
         // Always set CURLOPT_PROXY to enable/disable proxy handling
         // Any proxy authorization is included in the proxy url
         $proxy = $this->proxyManager->getProxyForRequest($url);
-        curl_setopt($curlHandle, CURLOPT_PROXY, $proxy->getUrl());
+        if ($proxy->getUrl() !== '') {
+            curl_setopt($curlHandle, CURLOPT_PROXY, $proxy->getUrl());
+        }
 
         // Curl needs certificate locations for secure proxies.
         // CURLOPT_PROXY_SSL_VERIFY_PEER/HOST are enabled by default
@@ -373,8 +380,8 @@ class CurlDownloader
                         rewind($job['bodyHandle']);
                         $contents = stream_get_contents($job['bodyHandle']);
                     }
-                    $response = new CurlResponse(['url' => $progress['url']], $statusCode, $headers, $contents, $progress);
-                    $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
+                    $response = new CurlResponse(['url' => $job['url']], $statusCode, $headers, $contents, $progress);
+                    $this->io->writeError('['.$statusCode.'] '.Url::sanitize($job['url']), true, IOInterface::DEBUG);
                 } else {
                     $maxFileSize = $job['options']['max_file_size'] ?? null;
                     rewind($job['bodyHandle']);
@@ -389,8 +396,8 @@ class CurlDownloader
                         $contents = stream_get_contents($job['bodyHandle']);
                     }
 
-                    $response = new CurlResponse(['url' => $progress['url']], $statusCode, $headers, $contents, $progress);
-                    $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
+                    $response = new CurlResponse(['url' => $job['url']], $statusCode, $headers, $contents, $progress);
+                    $this->io->writeError('['.$statusCode.'] '.Url::sanitize($job['url']), true, IOInterface::DEBUG);
                 }
                 fclose($job['bodyHandle']);
 
@@ -456,9 +463,6 @@ class CurlDownloader
         }
 
         foreach ($this->jobs as $i => $curlHandle) {
-            if (!isset($this->jobs[$i])) {
-                continue;
-            }
             $curlHandle = $this->jobs[$i]['curlHandle'];
             $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
 
@@ -569,6 +573,7 @@ class CurlDownloader
 
     /**
      * @param  Job    $job
+     * @param non-empty-string $url
      *
      * @param  array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries?: int<1, max>} $attributes
      */
@@ -586,6 +591,7 @@ class CurlDownloader
 
     /**
      * @param  Job    $job
+     * @param non-empty-string $url
      *
      * @param  array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries: int<1, max>} $attributes
      */
