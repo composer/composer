@@ -176,8 +176,9 @@ you can skip `--with` and instead use constraints with the partial update syntax
 php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 ```
 
-The custom constraint has to be a subset of the existing constraint you have,
-and this feature is only available for your root package dependencies.
+> **Note:** For packages also required in your composer.json the custom constraint
+> must be a subset of the existing constraint. The composer.json constraints still
+> apply and the composer.json is not modified by these temporary update constraints.
 
 
 ### Options
