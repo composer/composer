@@ -180,10 +180,10 @@ class ProcessExecutorTest extends TestCase
             // double-quotes must be backslash-escaped
             'dq' => ['a"bc', 'a\^"bc', "'a\"bc'"],
 
-            // double-quotes must be backslash-escaped with preceeding backslashes doubled
+            // double-quotes must be backslash-escaped with preceding backslashes doubled
             'dq-bslash' => ['a\\"bc', 'a\\\\\^"bc', "'a\\\"bc'"],
 
-            // backslashes not preceeding a double-quote are treated as literal
+            // backslashes not preceding a double-quote are treated as literal
             'bslash' => ['ab\\\\c\\', 'ab\\\\c\\', "'ab\\\\c\\'"],
 
             // trailing backslashes must be doubled up when the argument is quoted

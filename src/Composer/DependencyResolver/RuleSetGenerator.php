@@ -214,7 +214,7 @@ class RuleSetGenerator
         /** @var BasePackage $package */
         foreach ($this->addedMap as $package) {
             foreach ($package->getConflicts() as $link) {
-                // even if conlict ends up being with an alias, there would be at least one actual package by this name
+                // even if conflict ends up being with an alias, there would be at least one actual package by this name
                 if (!isset($this->addedPackagesByNames[$link->getTarget()])) {
                     continue;
                 }

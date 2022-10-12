@@ -98,7 +98,7 @@ class Auditor
                 if (!($io instanceof ConsoleIO)) {
                     throw new InvalidArgumentException('Cannot use table format with ' . get_class($io));
                 }
-                $this->outputAvisoriesTable($io, $advisories);
+                $this->outputAdvisoriesTable($io, $advisories);
 
                 return;
             case self::FORMAT_PLAIN:
@@ -118,7 +118,7 @@ class Auditor
     /**
      * @param array<string, array<SecurityAdvisory>> $advisories
      */
-    private function outputAvisoriesTable(ConsoleIO $io, array $advisories): void
+    private function outputAdvisoriesTable(ConsoleIO $io, array $advisories): void
     {
         foreach ($advisories as $packageAdvisories) {
             foreach ($packageAdvisories as $advisory) {
