@@ -8,7 +8,7 @@ Updating a dev package to its latest ref should pick up new dependencies
             "package": [
                 {
                     "name": "a/devpackage", "version": "dev-main",
-                    "source": { "reference": "newref", "url": "", "type": "git" },
+                    "source": { "reference": "newref", "url": "https://example.org", "type": "git" },
                     "require": {
                         "a/dependency": "*"
                     },
@@ -16,7 +16,7 @@ Updating a dev package to its latest ref should pick up new dependencies
                 },
                 {
                     "name": "a/dependency", "version": "dev-main",
-                    "source": { "reference": "ref", "url": "", "type": "git" },
+                    "source": { "reference": "ref", "url": "https://example.org", "type": "git" },
                     "require": {},
                     "default-branch": true
                 }
@@ -32,7 +32,7 @@ Updating a dev package to its latest ref should pick up new dependencies
 [
     {
         "name": "a/devpackage", "version": "dev-main",
-        "source": { "reference": "oldref", "url": "", "type": "git" },
+        "source": { "reference": "oldref", "url": "https://example.org", "type": "git" },
         "require": {},
         "default-branch": true
     }

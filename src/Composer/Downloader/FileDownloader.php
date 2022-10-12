@@ -123,7 +123,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $retries = 3;
         $distUrls = $package->getDistUrls();
-        /** @var array<array{base: string, processed: string, cacheKey: string}> $urls */
+        /** @var non-empty-array<array{base: non-empty-string, processed: non-empty-string, cacheKey: string}> $urls */
         $urls = [];
         foreach ($distUrls as $index => $url) {
             $processedUrl = $this->processUrl($package, $url);
@@ -151,7 +151,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $accept = null;
         $reject = null;
         $download = function () use ($io, $output, $httpDownloader, $cache, $cacheKeyGenerator, $eventDispatcher, $package, $fileName, &$urls, &$accept, &$reject) {
-            /** @var array{base: string, processed: string, cacheKey: string} $url */
             $url = reset($urls);
             $index = key($urls);
 
@@ -435,9 +434,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * Process the download url
      *
      * @param  PackageInterface  $package package the url is coming from
-     * @param  string            $url     download url
+     * @param  non-empty-string  $url     download url
      * @throws \RuntimeException If any problem with the url
-     * @return string            url
+     * @return non-empty-string  url
      */
     protected function processUrl(PackageInterface $package, string $url): string
     {

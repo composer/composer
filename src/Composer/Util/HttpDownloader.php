@@ -27,7 +27,7 @@ use React\Promise\PromiseInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
- * @phpstan-type Request array{url: string, options?: mixed[], copyTo?: ?string}
+ * @phpstan-type Request array{url: non-empty-string, options: mixed[], copyTo: string|null}
  * @phpstan-type Job array{id: int, status: int, request: Request, sync: bool, origin: string, resolve?: callable, reject?: callable, curl_id?: int, response?: Response, exception?: TransportException}
  */
 class HttpDownloader
@@ -104,6 +104,9 @@ class HttpDownloader
      */
     public function get(string $url, array $options = [])
     {
+        if ('' === $url) {
+            throw new \InvalidArgumentException('$url must not be an empty string');
+        }
         [$job] = $this->addJob(['url' => $url, 'options' => $options, 'copyTo' => null], true);
         $this->wait($job['id']);
 
@@ -123,6 +126,9 @@ class HttpDownloader
      */
     public function add(string $url, array $options = [])
     {
+        if ('' === $url) {
+            throw new \InvalidArgumentException('$url must not be an empty string');
+        }
         [, $promise] = $this->addJob(['url' => $url, 'options' => $options, 'copyTo' => null]);
 
         return $promise;
@@ -140,6 +146,9 @@ class HttpDownloader
      */
     public function copy(string $url, string $to, array $options = [])
     {
+        if ('' === $url) {
+            throw new \InvalidArgumentException('$url must not be an empty string');
+        }
         [$job] = $this->addJob(['url' => $url, 'options' => $options, 'copyTo' => $to], true);
         $this->wait($job['id']);
 
@@ -158,6 +167,9 @@ class HttpDownloader
      */
     public function addCopy(string $url, string $to, array $options = [])
     {
+        if ('' === $url) {
+            throw new \InvalidArgumentException('$url must not be an empty string');
+        }
         [, $promise] = $this->addJob(['url' => $url, 'options' => $options, 'copyTo' => $to]);
 
         return $promise;
@@ -295,6 +307,9 @@ class HttpDownloader
         $job['status'] = self::STATUS_STARTED;
         $this->runningJobs++;
 
+        assert(isset($job['resolve']));
+        assert(isset($job['reject']));
+
         $resolve = $job['resolve'];
         $reject = $job['reject'];
         $url = $job['request']['url'];
@@ -397,6 +412,7 @@ class HttpDownloader
         }
 
         if ($this->jobs[$index]['status'] === self::STATUS_FAILED) {
+            assert(isset($this->jobs[$index]['exception']));
             throw $this->jobs[$index]['exception'];
         }
 

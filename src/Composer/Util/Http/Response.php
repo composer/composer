@@ -17,7 +17,7 @@ use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
 
 /**
- * @phpstan-import-type Request from HttpDownloader
+ * @phpstan-type Request array{url: non-empty-string, options?: mixed[], copyTo?: string|null}
  */
 class Response
 {
@@ -31,7 +31,7 @@ class Response
     private $body;
 
     /**
-     * @param Request      $request
+     * @param Request $request
      * @param list<string> $headers
      */
     public function __construct(array $request, ?int $code, array $headers, ?string $body)

@@ -21,6 +21,10 @@ use Composer\Pcre\Preg;
  */
 class ComposerMirror
 {
+    /**
+     * @param non-empty-string $mirrorUrl
+     * @return non-empty-string
+     */
     public static function processUrl(string $mirrorUrl, string $packageName, string $version, ?string $reference, ?string $type, ?string $prettyVersion = null): string
     {
         if ($reference) {
@@ -35,9 +39,16 @@ class ComposerMirror
             $to[] = $prettyVersion;
         }
 
-        return str_replace($from, $to, $mirrorUrl);
+        $url = str_replace($from, $to, $mirrorUrl);
+        assert($url !== '');
+
+        return $url;
     }
 
+    /**
+     * @param non-empty-string $mirrorUrl
+     * @return string
+     */
     public static function processGitUrl(string $mirrorUrl, string $packageName, string $url, ?string $type): string
     {
         if (Preg::isMatch('#^(?:(?:https?|git)://github\.com/|git@github\.com:)([^/]+)/(.+?)(?:\.git)?$#', $url, $match)) {
@@ -55,6 +66,10 @@ class ComposerMirror
         );
     }
 
+    /**
+     * @param non-empty-string $mirrorUrl
+     * @return string
+     */
     public static function processHgUrl(string $mirrorUrl, string $packageName, string $url, string $type): string
     {
         return self::processGitUrl($mirrorUrl, $packageName, $url, $type);

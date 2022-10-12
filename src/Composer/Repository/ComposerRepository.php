@@ -55,9 +55,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $repoConfig;
     /** @var mixed[] */
     private $options;
-    /** @var string */
+    /** @var non-empty-string */
     private $url;
-    /** @var string */
+    /** @var non-empty-string */
     private $baseUrl;
     /** @var IOInterface */
     private $io;
@@ -67,17 +67,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $loop;
     /** @var Cache */
     protected $cache;
-    /** @var ?string */
+    /** @var ?non-empty-string */
     protected $notifyUrl = null;
-    /** @var ?string */
+    /** @var ?non-empty-string */
     protected $searchUrl = null;
-    /** @var ?string a URL containing %package% which can be queried to get providers of a given name */
+    /** @var ?non-empty-string a URL containing %package% which can be queried to get providers of a given name */
     protected $providersApiUrl = null;
     /** @var bool */
     protected $hasProviders = false;
-    /** @var ?string */
+    /** @var ?non-empty-string */
     protected $providersUrl = null;
-    /** @var ?string */
+    /** @var ?non-empty-string */
     protected $listUrl = null;
     /** @var bool Indicates whether a comprehensive list of packages this repository might provide is expressed in the repository root. **/
     protected $hasAvailablePackageList = false;
@@ -85,7 +85,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $availablePackages = null;
     /** @var ?array<non-empty-string> */
     protected $availablePackagePatterns = null;
-    /** @var ?string */
+    /** @var ?non-empty-string */
     protected $lazyProvidersUrl = null;
     /** @var ?array<string, array{sha256: string}> */
     protected $providerListing;
@@ -95,9 +95,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $allowSslDowngrade = false;
     /** @var ?EventDispatcher */
     private $eventDispatcher;
-    /** @var ?array<string, array<int, array{url: string, preferred: bool}>> */
+    /** @var ?array<string, array<int, array{url: non-empty-string, preferred: bool}>> */
     private $sourceMirrors;
-    /** @var ?array<int, array{url: string, preferred: bool}> */
+    /** @var ?array<int, array{url: non-empty-string, preferred: bool}> */
     private $distMirrors;
     /** @var bool */
     private $degradedMode = false;
@@ -133,7 +133,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     /**
      * @param array<string, mixed> $repoConfig
-     * @phpstan-param array{url: string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool} $repoConfig
+     * @phpstan-param array{url: non-empty-string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool} $repoConfig
      */
     public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, ?EventDispatcher $eventDispatcher = null)
     {
@@ -143,8 +143,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
         $repoConfig['url'] = rtrim($repoConfig['url'], '/');
+        if ($repoConfig['url'] === '') {
+            throw new \InvalidArgumentException('The repository url must not be an empty string');
+        }
 
-        if (strpos($repoConfig['url'], 'https?') === 0) {
+        if (str_starts_with($repoConfig['url'], 'https?')) {
             $repoConfig['url'] = (extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
         }
 
@@ -168,7 +171,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->url = $match['proto'].'://repo.packagist.org';
         }
 
-        $this->baseUrl = rtrim(Preg::replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
+        $baseUrl = rtrim(Preg::replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
+        assert($baseUrl !== '');
+        $this->baseUrl = $baseUrl;
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($this->url)), 'a-z0-9.$~');
         $this->cache->setReadOnly($config->get('cache-read-only'));
@@ -1265,6 +1270,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return $this->rootData = $data;
     }
 
+    /**
+     * @param non-empty-string $url
+     * @return non-empty-string
+     */
     private function canonicalizeUrl(string $url): string
     {
         if ('/' === $url[0]) {
@@ -1416,6 +1425,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     protected function fetchFile(string $filename, ?string $cacheKey = null, ?string $sha256 = null, bool $storeLastModifiedTime = false)
     {
+        if ('' === $filename) {
+            throw new \InvalidArgumentException('$filename should not be an empty string');
+        }
+
         if (null === $cacheKey) {
             $cacheKey = $filename;
             $filename = $this->baseUrl.'/'.$filename;
@@ -1519,6 +1532,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     private function fetchFileIfLastModified(string $filename, string $cacheKey, string $lastModifiedTime)
     {
+        if ('' === $filename) {
+            throw new \InvalidArgumentException('$filename should not be an empty string');
+        }
+
         try {
             $options = $this->options;
             if ($this->eventDispatcher) {
@@ -1578,6 +1595,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     private function asyncFetchFile(string $filename, string $cacheKey, ?string $lastModifiedTime = null): PromiseInterface
     {
+        if ('' === $filename) {
+            throw new \InvalidArgumentException('$filename should not be an empty string');
+        }
+
         if (isset($this->packagesNotFoundCache[$filename])) {
             return \React\Promise\resolve(['packages' => []]);
         }

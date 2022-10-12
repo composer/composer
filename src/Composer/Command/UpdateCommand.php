@@ -21,6 +21,7 @@ use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\Version\VersionParser;
+use Composer\Semver\Intervals;
 use Composer\Util\HttpDownloader;
 use Composer\Advisory\Auditor;
 use Symfony\Component\Console\Helper\Table;
@@ -147,15 +148,21 @@ EOT
             }
         }
 
-        $parser = new VersionParser;
-        $temporaryConstraints = [];
-        foreach ($reqs as $package => $constraint) {
-            $temporaryConstraints[strtolower($package)] = $parser->parseConstraints($constraint);
-        }
-
         $rootPackage = $composer->getPackage();
         $rootPackage->setReferences(RootPackageLoader::extractReferences($reqs, $rootPackage->getReferences()));
         $rootPackage->setStabilityFlags(RootPackageLoader::extractStabilityFlags($reqs, $rootPackage->getMinimumStability(), $rootPackage->getStabilityFlags()));
+
+        $parser = new VersionParser;
+        $temporaryConstraints = [];
+        $rootRequirements = array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires());
+        foreach ($reqs as $package => $constraint) {
+            $package = strtolower($package);
+            $parsedConstraint = $parser->parseConstraints($constraint);
+            $temporaryConstraints[$package] = $parsedConstraint;
+            if (isset($rootRequirements[$package]) && !Intervals::haveIntersections($parsedConstraint, $rootRequirements[$package]->getConstraint())) {
+                throw new \InvalidArgumentException('The temporary constraint "'.$constraint.'" for "'.$package.'" must be a subset of the constraint in your composer.json ('.$rootRequirements[$package]->getPrettyConstraint().')');
+            }
+        }
 
         if ($input->getOption('interactive')) {
             $packages = $this->getPackagesInteractively($io, $input, $output, $composer, $packages);

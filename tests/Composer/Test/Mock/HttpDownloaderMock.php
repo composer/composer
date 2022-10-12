@@ -24,7 +24,7 @@ use PHPUnit\Framework\AssertionFailedError;
 class HttpDownloaderMock extends HttpDownloader
 {
     /**
-     * @var array<array{url: string, options: array<mixed>|null, status: int, body: string, headers: list<string>}>|null
+     * @var array<array{url: non-empty-string, options: array<mixed>|null, status: int, body: string, headers: list<string>}>|null
      */
     private $expectations = null;
     /**
@@ -52,7 +52,7 @@ class HttpDownloaderMock extends HttpDownloader
     }
 
     /**
-     * @param array<array{url: string, options?: array<mixed>, status?: int, body?: string, headers?: array<string>}> $expectations
+     * @param array<array{url: non-empty-string, options?: array<mixed>, status?: int, body?: string, headers?: array<string>}> $expectations
      * @param bool                                                                                                    $strict         set to true if you want to provide *all* expected http requests, and not just a subset you are interested in testing
      * @param array{status?: int, body?: string, headers?: array<string>}                                             $defaultHandler default URL handler for undefined requests if not in strict mode
      */
@@ -64,23 +64,11 @@ class HttpDownloaderMock extends HttpDownloader
                 throw new \UnexpectedValueException('Unexpected keys in process execution step: '.implode(', ', array_keys($diff)));
             }
 
-            // set defaults in a PHPStan-happy way (array_merge is not well supported)
-            $expect['url'] = $expect['url'] ?? $default['url'];
-            $expect['options'] = $expect['options'] ?? $default['options'];
-            $expect['status'] = $expect['status'] ?? $default['status'];
-            $expect['body'] = $expect['body'] ?? $default['body'];
-            $expect['headers'] = $expect['headers'] ?? $default['headers'];
-
-            return $expect;
+            return array_merge($default, $expect);
         }, $expectations);
         $this->strict = $strict;
 
-        // set defaults in a PHPStan-happy way (array_merge is not well supported)
-        $defaultHandler['status'] = $defaultHandler['status'] ?? $this->defaultHandler['status'];
-        $defaultHandler['body'] = $defaultHandler['body'] ?? $this->defaultHandler['body'];
-        $defaultHandler['headers'] = $defaultHandler['headers'] ?? $this->defaultHandler['headers'];
-
-        $this->defaultHandler = $defaultHandler;
+        $this->defaultHandler = array_merge($this->defaultHandler, $defaultHandler);
     }
 
     public function assertComplete(): void
@@ -107,6 +95,10 @@ class HttpDownloaderMock extends HttpDownloader
 
     public function get($fileUrl, $options = []): Response
     {
+        if ('' === $fileUrl) {
+            throw new \LogicException('url cannot be an empty string');
+        }
+
         $this->log[] = $fileUrl;
 
         if (is_array($this->expectations) && count($this->expectations) > 0 && $fileUrl === $this->expectations[0]['url'] && ($this->expectations[0]['options'] === null || $options === $this->expectations[0]['options'])) {
@@ -128,6 +120,7 @@ class HttpDownloaderMock extends HttpDownloader
 
     /**
      * @param string[] $headers
+     * @param non-empty-string $url
      */
     private function respond(string $url, int $status, array $headers, string $body): Response
     {

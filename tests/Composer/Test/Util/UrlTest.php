@@ -22,6 +22,7 @@ class UrlTest extends TestCase
      * @dataProvider distRefsProvider
      *
      * @param array<string, mixed> $conf
+     * @param non-empty-string $url
      */
     public function testUpdateDistReference(string $url, string $expectedUrl, array $conf = [], string $ref = 'newref'): void
     {
