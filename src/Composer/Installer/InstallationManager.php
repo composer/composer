@@ -172,44 +172,20 @@ class InstallationManager
     /**
      * Executes solver operation.
      *
-     * @param InstalledRepositoryInterface $repo       repository in which to add/remove/update packages
-     * @param OperationInterface[]         $operations operations to execute
-     * @param bool                         $devMode    whether the install is being run in dev mode
-     * @param bool                         $runScripts whether to dispatch script events
+     * @param InstalledRepositoryInterface $repo         repository in which to add/remove/update packages
+     * @param OperationInterface[]         $operations   operations to execute
+     * @param bool                         $devMode      whether the install is being run in dev mode
+     * @param bool                         $runScripts   whether to dispatch script events
+     * @param bool                         $downloadOnly whether to only download packages
      */
-    public function execute(InstalledRepositoryInterface $repo, array $operations, bool $devMode = true, bool $runScripts = true): void
+    public function execute(InstalledRepositoryInterface $repo, array $operations, bool $devMode = true, bool $runScripts = true, bool $downloadOnly = false): void
     {
-        /** @var PromiseInterface[] */
+        /** @var array<callable(): ?PromiseInterface> */
         $cleanupPromises = [];
 
-        $loop = $this->loop;
-        $io = $this->io;
-        $runCleanup = static function () use (&$cleanupPromises, $loop): void {
-            $promises = [];
-
-            $loop->abortJobs();
-
-            foreach ($cleanupPromises as $cleanup) {
-                $promises[] = new \React\Promise\Promise(static function ($resolve, $reject) use ($cleanup): void {
-                    $promise = $cleanup();
-                    if (!$promise instanceof PromiseInterface) {
-                        $resolve();
-                    } else {
-                        $promise->then(static function () use ($resolve): void {
-                            $resolve();
-                        });
-                    }
-                });
-            }
-
-            if (!empty($promises)) {
-                $loop->wait($promises);
-            }
-        };
-
-        $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], static function (string $signal, SignalHandler $handler) use ($io, $runCleanup) {
-            $io->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
-            $runCleanup();
+        $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) use (&$cleanupPromises) {
+            $this->io->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
+            $this->runCleanup($cleanupPromises);
             $handler->exitWithLastSignal();
         });
 
@@ -239,14 +215,18 @@ class InstallationManager
             }
 
             foreach ($batches as $batch) {
-                $this->downloadAndExecuteBatch($repo, $batch, $cleanupPromises, $devMode, $runScripts, $operations);
+                $this->downloadAndExecuteBatch($repo, $batch, $cleanupPromises, $devMode, $runScripts, $downloadOnly, $operations);
             }
         } catch (\Exception $e) {
-            $runCleanup();
+            $this->runCleanup($cleanupPromises);
 
             throw $e;
         } finally {
             $signalHandler->unregister();
+        }
+
+        if ($downloadOnly) {
+            return;
         }
 
         // do a last write so that we write the repository even if nothing changed
@@ -257,10 +237,10 @@ class InstallationManager
 
     /**
      * @param OperationInterface[] $operations    List of operations to execute in this batch
-     * @param PromiseInterface[] $cleanupPromises
+     * @param array<callable(): ?PromiseInterface> $cleanupPromises
      * @param OperationInterface[] $allOperations Complete list of operations to be executed in the install job, used for event listeners
      */
-    private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, bool $devMode, bool $runScripts, array $allOperations): void
+    private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, bool $devMode, bool $runScripts, bool $downloadOnly, array $allOperations): void
     {
         $promises = [];
 
@@ -283,11 +263,11 @@ class InstallationManager
             }
             $installer = $this->getInstaller($package->getType());
 
-            $cleanupPromises[$index] = static function () use ($opType, $installer, $package, $initialPackage) {
+            $cleanupPromises[$index] = static function () use ($opType, $installer, $package, $initialPackage): ?PromiseInterface {
                 // avoid calling cleanup if the download was not even initialized for a package
                 // as without installation source configured nothing will work
                 if (!$package->getInstallationSource()) {
-                    return;
+                    return \React\Promise\resolve();
                 }
 
                 return $installer->cleanup($opType, $package, $initialPackage);
@@ -304,6 +284,11 @@ class InstallationManager
         // execute all downloads first
         if (count($promises)) {
             $this->waitOnPromises($promises);
+        }
+
+        if ($downloadOnly) {
+            $this->runCleanup($cleanupPromises);
+            return;
         }
 
         // execute operations in batches to make sure every plugin is installed in the
@@ -337,7 +322,7 @@ class InstallationManager
 
     /**
      * @param OperationInterface[] $operations    List of operations to execute in this batch
-     * @param PromiseInterface[] $cleanupPromises
+     * @param array<callable(): ?PromiseInterface> $cleanupPromises
      * @param OperationInterface[] $allOperations Complete list of operations to be executed in the install job, used for event listeners
      */
     private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, bool $devMode, bool $runScripts, array $allOperations): void
@@ -368,6 +353,7 @@ class InstallationManager
                 $package = $operation->getPackage();
                 $initialPackage = null;
             }
+
             $installer = $this->getInstaller($package->getType());
 
             $eventName = [
@@ -449,6 +435,19 @@ class InstallationManager
                 $this->io->writeError('');
             }
         }
+    }
+
+    /**
+     * Executes download operation.
+     *
+     * $param PackageInterface $package
+     */
+    public function download(PackageInterface $package): ?PromiseInterface
+    {
+        $installer = $this->getInstaller($package->getType());
+        $promise = $installer->cleanup("install", $package);
+
+        return $promise;
     }
 
     /**
@@ -635,6 +634,34 @@ class InstallationManager
     {
         if ($package->getNotificationUrl()) {
             $this->notifiablePackages[$package->getNotificationUrl()][$package->getName()] = $package;
+        }
+    }
+
+    /**
+     * @param array<callable(): ?PromiseInterface> $cleanupPromises
+     * @return void
+     */
+    private function runCleanup(array $cleanupPromises): void
+    {
+        $promises = [];
+
+        $this->loop->abortJobs();
+
+        foreach ($cleanupPromises as $cleanup) {
+            $promises[] = new \React\Promise\Promise(static function ($resolve, $reject) use ($cleanup): void {
+                $promise = $cleanup();
+                if (!$promise instanceof PromiseInterface) {
+                    $resolve();
+                } else {
+                    $promise->then(static function () use ($resolve): void {
+                        $resolve();
+                    });
+                }
+            });
+        }
+
+        if (!empty($promises)) {
+            $this->loop->wait($promises);
         }
     }
 }
