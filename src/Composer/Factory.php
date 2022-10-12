@@ -219,9 +219,7 @@ class Factory
         if ($composerAuthEnv = Platform::getEnv('COMPOSER_AUTH')) {
             $authData = json_decode($composerAuthEnv);
             if (null === $authData) {
-                if ($io instanceof IOInterface) {
-                    $io->writeError('<error>COMPOSER_AUTH environment variable is malformed, should be a valid JSON object</error>');
-                }
+                throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed, should be a valid JSON object');
             } else {
                 if ($io instanceof IOInterface) {
                     $io->writeError('Loading auth config from COMPOSER_AUTH', true, IOInterface::DEBUG);
