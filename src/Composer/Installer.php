@@ -261,8 +261,6 @@ class Installer
         }
 
         if ($this->downloadOnly) {
-            $this->runScripts = false;
-            $this->writeLock = false;
             $this->dumpAutoloader = false;
         }
 
