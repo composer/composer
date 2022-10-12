@@ -193,7 +193,7 @@ class RootPackageLoader extends ArrayLoader
     private function extractAliases(array $requires, array $aliases): array
     {
         foreach ($requires as $reqName => $reqVersion) {
-            if (Preg::isMatch('{^([^,\s#]+)(?:#[^ ]+)? +as +([^,\s]+)$}', $reqVersion, $match)) {
+            if (Preg::isMatch('{(?:^|\| *|, *)([^,\s#|]+)(?:#[^ ]+)? +as +([^,\s|]+)(?:$| *\|| *,)}', $reqVersion, $match)) {
                 $aliases[] = [
                     'package' => strtolower($reqName),
                     'version' => $this->versionParser->normalize($match[1], $reqVersion),

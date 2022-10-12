@@ -94,6 +94,9 @@ abstract class BaseDependencyCommand extends BaseCommand
             2,
             $input->hasArgument(self::ARGUMENT_CONSTRAINT) ? $input->getArgument(self::ARGUMENT_CONSTRAINT) : '*'
         );
+        if (!$input->hasArgument(self::ARGUMENT_CONSTRAINT)) {
+            $textConstraint = '*';
+        }
 
         // Find packages that are or provide the requested package first
         $packages = $installedRepo->findPackagesWithReplacersAndProviders($needle);
@@ -107,6 +110,8 @@ abstract class BaseDependencyCommand extends BaseCommand
             $defaultRepos = new CompositeRepository(RepositoryFactory::defaultRepos($this->getIO(), $composer->getConfig(), $composer->getRepositoryManager()));
             if ($match = $defaultRepos->findPackage($needle, $textConstraint)) {
                 $installedRepo->addRepository(new InstalledArrayRepository([clone $match]));
+            } else {
+                $this->getIO()->writeError('<error>Package "'.$needle.'" could not be found with constraint "'.$textConstraint.'", results below will most likely be incomplete.</error>');
             }
         }
 
