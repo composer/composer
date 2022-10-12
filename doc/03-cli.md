@@ -134,7 +134,7 @@ resolution.
   requires `php: ^7`, then the option `--ignore-platform-req=php+` would allow installing on PHP 8,
   but installation on PHP 5.6 would still fail.
 
-## update / u
+## update / u / upgrade
 
 In order to get the latest versions of the dependencies and to update the
 `composer.lock` file, you should use the `update` command. This command is also
@@ -473,7 +473,7 @@ You can also search for more than one term by passing multiple arguments.
   for Packagist.org search results and other repositories may return more or less
   data.
 
-## show
+## show / info
 
 To list all of the available packages, you can use the `show` command.
 
@@ -629,7 +629,7 @@ get machine-readable output.
 
 * **--format (-f):** Lets you pick between text (default) or json output format.
 
-## depends (why)
+## depends / why
 
 The `depends` command tells you which other packages depend on a certain
 package. As with installation `require-dev` relationships are only considered
@@ -667,7 +667,7 @@ psr/log 1.1.4 Common interface for logging libraries
 * **--recursive (-r):** Recursively resolves up to the root package.
 * **--tree (-t):** Prints the results as a nested tree, implies -r.
 
-## prohibits (why-not)
+## prohibits / why-not
 
 The `prohibits` command tells you which packages are blocking a given package
 from being installed. Specify a version constraint to verify whether upgrades
@@ -741,7 +741,7 @@ vendor/seld/jsonlint:
     M README.mdown
 ```
 
-## self-update (selfupdate)
+## self-update / selfupdate
 
 To update Composer itself to the latest version, run the `self-update`
 command. It will replace your `composer.phar` with the latest version.
@@ -932,7 +932,7 @@ By default the command checks for the packages on packagist.org.
   does not fulfill it. Multiple requirements can be ignored via wildcard.
 * **--ask:** Ask the user to provide a target directory for the new project.
 
-## dump-autoload (dumpautoload)
+## dump-autoload / dumpautoload
 
 If you need to update the autoloader because of new classes in a classmap
 package for example, you can use `dump-autoload` to do that without having to
@@ -985,7 +985,7 @@ Lists the name, version and license of every package installed. Use
 * **--format:** Format of the output: text, json or summary (default: "text")
 * **--no-dev:** Remove dev dependencies from the output
 
-## run-script
+## run-script / run
 
 ### Options
 
