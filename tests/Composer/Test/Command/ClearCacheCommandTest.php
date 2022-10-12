@@ -13,9 +13,16 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 
 class ClearCacheCommandTest extends TestCase
 {
+    public function tearDown(): void
+    {
+        // --no-cache triggers the env to change so make sure the env is cleaned up after these tests run
+        Platform::clearEnv('COMPOSER_CACHE_DIR');
+    }
+
     public function testClearCacheCommandSuccess(): void
     {
         $appTester = $this->getApplicationTester();
