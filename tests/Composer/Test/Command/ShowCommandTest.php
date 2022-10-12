@@ -167,6 +167,88 @@ outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
         ];
     }
 
+    public function testOutdatedFiltersAccordingToPlatformReqsAndWarns(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0'],
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.0', 'require' => ['ext-missing' => '3']],
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.2.0', 'require' => ['ext-missing' => '3']],
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.3.0', 'require' => ['ext-missing' => '3']],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->createInstalledJson([
+            $this->getPackage('vendor/package', '1.1.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated']);
+        self::assertSame("<warning>Cannot use vendor/package 1.1.0 as it requires ext-missing 3 which is missing from your platform.
+Legend:
+! patch or minor release available - update recommended
+~ major release available - update possible
+
+Direct dependencies required in composer.json:
+Everything up to date
+
+Transitive dependencies not required in composer.json:
+vendor/package 1.1.0 ~ 1.0.0", trim($appTester->getDisplay(true)));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated', '--verbose' => true]);
+        self::assertSame("<warning>Cannot use vendor/package's latest version 1.3.0 as it requires ext-missing 3 which is missing from your platform.
+<warning>Cannot use vendor/package 1.2.0 as it requires ext-missing 3 which is missing from your platform.
+<warning>Cannot use vendor/package 1.1.0 as it requires ext-missing 3 which is missing from your platform.
+Legend:
+! patch or minor release available - update recommended
+~ major release available - update possible
+
+Direct dependencies required in composer.json:
+Everything up to date
+
+Transitive dependencies not required in composer.json:
+vendor/package 1.1.0 ~ 1.0.0", trim($appTester->getDisplay(true)));
+    }
+
+    public function testOutdatedFiltersAccordingToPlatformReqsWithoutWarningForHigherVersions(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0'],
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.0'],
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.2.0'],
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.3.0', 'require' => ['php' => '^99']],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->createInstalledJson([
+            $this->getPackage('vendor/package', '1.1.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated']);
+        self::assertSame("Legend:
+! patch or minor release available - update recommended
+~ major release available - update possible
+
+Direct dependencies required in composer.json:
+Everything up to date
+
+Transitive dependencies not required in composer.json:
+vendor/package 1.1.0 <highlight>! 1.2.0</highlight>", trim($appTester->getDisplay(true)));
+    }
+
     public function testShowPlatformOnlyShowsPlatformPackages(): void
     {
         $this->initTempComposer([

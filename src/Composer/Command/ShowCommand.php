@@ -1379,7 +1379,17 @@ EOT
             }
         }
 
-        $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability, $platformReqFilter);
+        if ($this->getIO()->isVerbose()) {
+            $showWarnings = true;
+        } else {
+            $showWarnings = static function (PackageInterface $candidate) use ($package): bool {
+                if (str_starts_with($candidate->getVersion(), 'dev-') || str_starts_with($package->getVersion(), 'dev-')) {
+                    return false;
+                }
+                return version_compare($candidate->getVersion(), $package->getVersion(), '<=');
+            };
+        }
+        $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability, $platformReqFilter, 0, $this->getIO(), $showWarnings);
         while ($candidate instanceof AliasPackage) {
             $candidate = $candidate->getAliasOf();
         }
