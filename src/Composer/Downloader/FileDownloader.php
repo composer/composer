@@ -308,9 +308,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
 
         $dirsToCleanUp = [
+            $path,
+            $this->config->get('vendor-dir').'/'.explode('/', $package->getPrettyName())[0],
             $this->config->get('vendor-dir').'/composer/',
             $this->config->get('vendor-dir'),
-            $path,
         ];
 
         if (isset($this->additionalCleanupPaths[$package->getName()])) {
