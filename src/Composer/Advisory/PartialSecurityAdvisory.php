@@ -14,8 +14,9 @@ namespace Composer\Advisory;
 
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\VersionParser;
+use JsonSerializable;
 
-class PartialSecurityAdvisory
+class PartialSecurityAdvisory implements JsonSerializable
 {
     /**
      * @var string
@@ -54,5 +55,17 @@ class PartialSecurityAdvisory
         $this->advisoryId = $advisoryId;
         $this->packageName = $packageName;
         $this->affectedVersions = $affectedVersions;
+    }
+
+    /**
+     * @return mixed
+     */
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        $data = (array) $this;
+        $data['affectedVersions'] = $data['affectedVersions']->getPrettyString();
+
+        return $data;
     }
 }
