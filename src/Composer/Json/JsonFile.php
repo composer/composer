@@ -93,6 +93,9 @@ class JsonFile
             if ($this->httpDownloader) {
                 $json = $this->httpDownloader->get($this->path)->getBody();
             } else {
+                if (!is_readable($this->path)) {
+                    throw new \RuntimeException('The file "'.$this->path.'" is not readable.');
+                }
                 if ($this->io && $this->io->isDebug()) {
                     $realpathInfo = '';
                     $realpath = realpath($this->path);
@@ -190,6 +193,9 @@ class JsonFile
      */
     public function validateSchema(int $schema = self::STRICT_SCHEMA, ?string $schemaFile = null): bool
     {
+        if (!is_readable($this->path)) {
+            throw new \RuntimeException('The file "'.$this->path.'" is not readable.');
+        }
         $content = file_get_contents($this->path);
         $data = json_decode($content);
 

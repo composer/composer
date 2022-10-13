@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\DependencyResolver\Request;
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\Loader\RootPackageLoader;
 use Composer\Util\Filesystem;
 use Composer\Util\PackageSorter;
 use Seld\Signal\SignalHandler;
@@ -410,6 +411,15 @@ EOT
             }
             $rootPackage->setRequires($links['require']);
             $rootPackage->setDevRequires($links['require-dev']);
+
+            // extract stability flags & references as they weren't present when loading the unmodified composer.json
+            $references = $rootPackage->getReferences();
+            $references = RootPackageLoader::extractReferences($requirements, $references);
+            $rootPackage->setReferences($references);
+            $stabilityFlags = $rootPackage->getStabilityFlags();
+            $stabilityFlags = RootPackageLoader::extractStabilityFlags($requirements, $rootPackage->getMinimumStability(), $stabilityFlags);
+            $rootPackage->setStabilityFlags($stabilityFlags);
+            unset($stabilityFlags, $references);
         }
 
         $updateDevMode = !$input->getOption('update-no-dev');

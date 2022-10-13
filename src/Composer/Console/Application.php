@@ -288,6 +288,7 @@ class Application extends BaseApplication
         }
 
         if ($isNonAllowedRoot && !$io->isInteractive()) {
+            $io->writeError('<error>Composer plugins have been disabled for safety in this non-interactive session. Set COMPOSER_ALLOW_SUPERUSER=1 if you want to allow plugins to run as root/super user.</error>');
             $this->disablePluginsByDefault = true;
         }
 
