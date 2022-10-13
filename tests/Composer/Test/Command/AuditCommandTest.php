@@ -16,7 +16,7 @@ use Composer\Test\TestCase;
 
 class AuditCommandTest extends TestCase
 {
-    public function testSuccessfullResponseCodeWhenNoPackagesAreRequired(): void
+    public function testSuccessfulResponseCodeWhenNoPackagesAreRequired(): void
     {
         $this->initTempComposer();
 
