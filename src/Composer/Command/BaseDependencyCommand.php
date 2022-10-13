@@ -89,14 +89,8 @@ abstract class BaseDependencyCommand extends BaseCommand
         $installedRepo = new InstalledRepository($repos);
 
         // Parse package name and constraint
-        [$needle, $textConstraint] = array_pad(
-            explode(':', $input->getArgument(self::ARGUMENT_PACKAGE)),
-            2,
-            $input->hasArgument(self::ARGUMENT_CONSTRAINT) ? $input->getArgument(self::ARGUMENT_CONSTRAINT) : '*'
-        );
-        if (!$input->hasArgument(self::ARGUMENT_CONSTRAINT)) {
-            $textConstraint = '*';
-        }
+        $needle = $input->getArgument(self::ARGUMENT_PACKAGE);
+        $textConstraint = $input->hasArgument(self::ARGUMENT_CONSTRAINT) ? $input->getArgument(self::ARGUMENT_CONSTRAINT) : '*';
 
         // Find packages that are or provide the requested package first
         $packages = $installedRepo->findPackagesWithReplacersAndProviders($needle);
