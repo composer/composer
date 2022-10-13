@@ -50,14 +50,11 @@ class ExecCommandTest extends TestCase
         $output = $appTester->getDisplay(true);
 
         $this->assertSame(
-            <<<OUTPUT
-Available binaries:
+            'Available binaries:
 - b
 - c
-- a (local)
-
-OUTPUT,
-            $output
+- a (local)',
+            trim($output)
         );
     }
 }
