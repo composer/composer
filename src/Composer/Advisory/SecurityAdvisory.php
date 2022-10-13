@@ -61,4 +61,16 @@ class SecurityAdvisory extends PartialSecurityAdvisory
         $this->cve = $cve;
         $this->link = $link;
     }
+
+    /**
+     * @return mixed
+     */
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        $data = parent::jsonSerialize();
+        $data['reportedAt'] = $data['reportedAt']->format(DATE_RFC3339);
+
+        return $data;
+    }
 }
