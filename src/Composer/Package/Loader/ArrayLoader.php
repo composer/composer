@@ -209,7 +209,8 @@ class ArrayLoader implements LoaderInterface
 
         if (isset($config['suggest']) && \is_array($config['suggest'])) {
             foreach ($config['suggest'] as $target => $reason) {
-                if ('self.version' === trim($reason)) {
+                // Json may produce non-string reasons.
+                if ('self.version' === trim((string) $reason)) {
                     $config['suggest'][$target] = $package->getPrettyVersion();
                 }
             }
