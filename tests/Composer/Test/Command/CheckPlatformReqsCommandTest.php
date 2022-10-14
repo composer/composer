@@ -13,29 +13,83 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use LogicException;
 
 class CheckPlatformReqsCommandTest extends TestCase
 {
     /**
-     * @dataProvider flagGenerator
-     * @param array<mixed> $flag
+     * @dataProvider caseProvider
+     * @param array<mixed> $composerJson
+     * @param array<mixed> $command
+     * @param string $expected
+     * @param bool $lock
      */
-    public function testPlatformReqsAreSatisfied(array $flag): void
-    {
+    public function testPlatformReqsAreSatisfied(
+        array $composerJson,
+        array $command,
+        string $expected,
+        bool $lock = true
+    ): void {
+       $this->initTempComposer($composerJson);
+
+        $packages = [
+            $this->getPackage('first/pkg', '2.3.4'),
+            $this->getPackage('second/pkg', '3.4.0'),
+        ];
+        $devPackages = [
+            $this->getPackage('dev/pkg', '2.3.4.5')
+        ];
+
+        $this->createInstalledJson($packages, $devPackages);
+
+        if ($lock) {
+           $this->createComposerLock($packages, $devPackages);
+        }
+
         $appTester = $this->getApplicationTester();
-        $appTester->run(array_merge(['command' => 'check-platform-reqs'], $flag));
+        $appTester->run(array_merge(['command' => 'check-platform-reqs'], $command));
 
         $appTester->assertCommandIsSuccessful();
+        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
-    public function flagGenerator(): \Generator
+    public function testExceptionThrownIfNoLockfileFound(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage("No lockfile found. Unable to read locked packages");
+        $this->initTempComposer([]);
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'check-platform-reqs']);
+    }
+
+    public function caseProvider(): \Generator
     {
         yield 'Disables checking of require-dev packages requirements.' => [
-            ['--no-dev' => true]
+            [
+                'require' => [
+                    'first/pkg' => '^2.0',
+                    'second/pkg' => '3.*',
+                ],
+                'require-dev' => [
+                    'dev/pkg' => '~2.0',
+                ],
+            ],
+            ['--no-dev' => true],
+            'Checking non-dev platform requirements for packages in the vendor dir',
         ];
 
         yield 'Checks requirements only from the lock file, not from installed packages.' => [
-            ['--lock' => true]
+            [
+                'require' => [
+                    'first/pkg' => '^2.0',
+                    'second/pkg' => '3.*',
+                ],
+                'require-dev' => [
+                    'dev/pkg' => '~2.0',
+                ],
+            ],
+            ['--lock' => true],
+            'Checking platform requirements using the lock file'
         ];
     }
 }
