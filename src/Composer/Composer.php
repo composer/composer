@@ -51,10 +51,10 @@ class Composer extends PartialComposer
      *
      * @see getVersion()
      */
-    public const VERSION = '2.4.3';
-    public const BRANCH_ALIAS_VERSION = '';
-    public const RELEASE_DATE = '2022-10-14 16:56:41';
-    public const SOURCE_VERSION = '';
+    public const VERSION = '@package_version@';
+    public const BRANCH_ALIAS_VERSION = '@package_branch_alias_version@';
+    public const RELEASE_DATE = '@release_date@';
+    public const SOURCE_VERSION = '2.4.999-dev+source';
 
     /**
      * Version number of the internal composer-runtime-api package
