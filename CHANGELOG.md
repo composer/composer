@@ -1,3 +1,13 @@
+### [2.4.3] 2022-10-14
+
+  * BC Break: The json format of `audit` command now has `reportedAt` as an RFC3339 string instead of an object which was a mistake (#11120)
+  * Fixed json format of `audit` command which was missing affectedVersions (#11120)
+  * Fixed plugin commands not being loaded during bash completions (#11074)
+  * Fixed parsing of inline aliases within complex constraints with `||` or `,` (#11086)
+  * Fixed min-php version check in autoload.php to avoid crashing sites running on PHP 5.5 or below silently with a 200 (#11091)
+  * Fixed JsonFile reading files without checking if they are readable first (#11077)
+  * Fixed `require` command with `--dry-run` failing when requiring a package requiring stability flag extraction (#11112)
+
 ### [2.4.2] 2022-09-14
 
   * Fixed bash completion hanging when running as root without `COMPOSER_ALLOW_SUPERUSER` set (#11024)
@@ -1637,6 +1647,7 @@
 
   * Initial release
 
+[2.4.3]: https://github.com/composer/composer/compare/2.4.2...2.4.3
 [2.4.2]: https://github.com/composer/composer/compare/2.4.1...2.4.2
 [2.4.1]: https://github.com/composer/composer/compare/2.4.0...2.4.1
 [2.4.0]: https://github.com/composer/composer/compare/2.4.0-RC1...2.4.0
