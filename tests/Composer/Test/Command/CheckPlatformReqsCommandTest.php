@@ -33,11 +33,10 @@ class CheckPlatformReqsCommandTest extends TestCase
        $this->initTempComposer($composerJson);
 
         $packages = [
-            $this->getPackage('first/pkg', '2.3.4'),
-            $this->getPackage('second/pkg', '3.4.0'),
+            $this->getPackage('ext-foobar', '2.3.4'),
         ];
         $devPackages = [
-            $this->getPackage('dev/pkg', '2.3.4.5')
+            $this->getPackage('ext-barbaz', '2.3.4.5')
         ];
 
         $this->createInstalledJson($packages, $devPackages);
@@ -67,29 +66,26 @@ class CheckPlatformReqsCommandTest extends TestCase
         yield 'Disables checking of require-dev packages requirements.' => [
             [
                 'require' => [
-                    'first/pkg' => '^2.0',
-                    'second/pkg' => '3.*',
+                    'ext-foobar' => '^2.0',
                 ],
                 'require-dev' => [
-                    'dev/pkg' => '~2.0',
-                ],
+                    'ext-barbaz' => '~4.0',
+                ]
             ],
             ['--no-dev' => true],
-            'Checking non-dev platform requirements for packages in the vendor dir',
+            'Checking non-dev platform requirements for packages in the vendor dir
+ext-foobar 2.3.4  success'
         ];
 
         yield 'Checks requirements only from the lock file, not from installed packages.' => [
             [
                 'require' => [
-                    'first/pkg' => '^2.0',
-                    'second/pkg' => '3.*',
-                ],
-                'require-dev' => [
-                    'dev/pkg' => '~2.0',
+                    'ext-foobar' => '^2.3',
                 ],
             ],
             ['--lock' => true],
-            'Checking platform requirements using the lock file'
+            'Checking platform requirements using the lock file
+ext-foobar 2.3.4  success'
         ];
     }
 }
