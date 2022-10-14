@@ -82,10 +82,14 @@ ext-foobar 2.3.4  success'
                 'require' => [
                     'ext-foobar' => '^2.3',
                 ],
+                'require-dev' => [
+                    'ext-barbaz' => '~2.0',
+                ]
             ],
             ['--lock' => true],
             'Checking platform requirements using the lock file
-ext-foobar 2.3.4  success'
+ext-barbaz 2.3.4.5  success 
+ext-foobar 2.3.4    success'
         ];
     }
 }
