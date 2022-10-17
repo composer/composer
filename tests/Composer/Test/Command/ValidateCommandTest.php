@@ -32,39 +32,80 @@ class ValidateCommandTest extends TestCase
         $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
-    public function provideUpdates(): \Generator
-    {
-        $simpleComposerConfiguration = [
-            'name' => 'test/suite',
-            'type' => 'library',
-            'description' => 'A generical test suite',
-            'license' => 'MIT',
-            'repositories' => [
-                'packages' => [
-                    'type' => 'package',
-                    'package' => [
-                        ['name' => 'root/req', 'version' => '1.0.0', 'require' => ['dep/pkg' => '^1']],
-                        ['name' => 'dep/pkg', 'version' => '1.0.0'],
-                        ['name' => 'dep/pkg', 'version' => '1.0.1'],
-                        ['name' => 'dep/pkg', 'version' => '1.0.2'],
-                    ],
+    /**
+     * 
+     */
+    public function testValidateOnFileIssues(){
+
+        $directory = $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
+        unlink( $directory.'/composer.json');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'validate']);
+        $expected = <<<OUTPUT
+        ./composer.json not found.
+OUTPUT;
+
+        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+    }
+
+
+    /**
+     * I prepared this test but will await for some feedback 
+     * @author giulio-Joshi
+     */
+    public function testUnaccessibleFile(){
+
+        $this->markTestSkipped("Looks like this configuration can't be currently be tested on command, since the paplication throws exception in Composer/Json/JsonFile.php:197
+        ");
+
+        $directory = $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
+        chmod( $directory.'/composer.json', 0200);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'validate']);
+        $expected = <<<OUTPUT
+        ./composer.json is not readable.
+OUTPUT;
+    
+        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+        chmod( $directory.'/composer.json', 0700);
+    }
+
+
+    private const  MINIMAL_VALID_CONFIGURATION = [
+        'name' => 'test/suite',
+        'type' => 'library',
+        'description' => 'A generical test suite',
+        'license' => 'MIT',
+        'repositories' => [
+            'packages' => [
+                'type' => 'package',
+                'package' => [
+                    ['name' => 'root/req', 'version' => '1.0.0', 'require' => ['dep/pkg' => '^1']],
+                    ['name' => 'dep/pkg', 'version' => '1.0.0'],
+                    ['name' => 'dep/pkg', 'version' => '1.0.1'],
+                    ['name' => 'dep/pkg', 'version' => '1.0.2'],
                 ],
             ],
-            'require' => [
-                'root/req' => '1.*',
-            ],
-        ];
+        ],
+        'require' => [
+            'root/req' => '1.*',
+        ],
+    ];
 
+    public function provideUpdates(): \Generator
+    {
     
         yield 'validation passing' => [
-            $simpleComposerConfiguration,
+            self::MINIMAL_VALID_CONFIGURATION,
             [],
             <<<OUTPUT
             ./composer.json is valid
 OUTPUT
         ];
 
-        $publishDataStripped= array_diff_key( $simpleComposerConfiguration, array( 'name' => true,'type' => true,'description' => true ,'license' => true));
+        $publishDataStripped= array_diff_key( self::MINIMAL_VALID_CONFIGURATION, array( 'name' => true,'type' => true,'description' => true ,'license' => true));
 
         yield 'passing but with warnings' => [
             $publishDataStripped,
