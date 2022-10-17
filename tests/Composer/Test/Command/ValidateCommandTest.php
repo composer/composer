@@ -155,7 +155,7 @@ strict errors that make it unable to be published as a package
 <warning># Publish warnings</warning>
 - name : The property name is required
 - description : The property description is required
-OUTPUT   
+OUTPUT
         ];
     }
 }
