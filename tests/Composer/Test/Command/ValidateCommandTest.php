@@ -49,6 +49,27 @@ OUTPUT;
         $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
+    /**
+     * 
+    */
+    public function testWithComposerLock(){
+
+        $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
+        $this->createComposerLock();
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'validate']);
+        $expected = <<<OUTPUT
+        ./composer.json is valid but your composer.lock has some errors
+# Lock file errors
+- Required package "root/req" is not present in the lock file.
+This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.
+Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md
+and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require
+OUTPUT;
+
+        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+    }
 
     /**
      * I prepared this test but will await for some feedback 
