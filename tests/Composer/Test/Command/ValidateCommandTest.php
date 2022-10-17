@@ -35,7 +35,7 @@ class ValidateCommandTest extends TestCase
     /**
      * 
      */
-    public function testValidateOnFileIssues():void 
+    public function testValidateOnFileIssues(): void 
     {
         $directory = $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
         unlink( $directory.'/composer.json');
@@ -78,19 +78,23 @@ OUTPUT;
     public function testUnaccessibleFile(): void 
     {
         $this->markTestSkipped("Looks like this configuration can't be currently be tested on command,".
-                               " since the application throws exception in Composer/Json/JsonFile.php:197");
+        " since the application throws exception in Composer/Json/JsonFile.php:197");
 
-        $directory = $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
-        chmod( $directory.'/composer.json', 0200);
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'validate']);
-        $expected = <<<OUTPUT
-        ./composer.json is not readable.
-OUTPUT;
-    
-        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
-        chmod( $directory.'/composer.json', 0700);
+        /**
+         * Example of test execution that fails:
+         * 
+         * $directory = $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
+         * chmod( $directory.'/composer.json', 0200);
+         * 
+         * $appTester = $this->getApplicationTester();
+         * $appTester->run(['command' => 'validate']);
+         * $expected = <<<OUTPUT
+         *   ./composer.json is not readable.
+         * OUTPUT;
+         *
+         * $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+         * chmod( $directory.'/composer.json', 0700);
+         */
     }
 
 
