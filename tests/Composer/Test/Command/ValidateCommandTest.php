@@ -35,8 +35,8 @@ class ValidateCommandTest extends TestCase
     /**
      * 
      */
-    public function testValidateOnFileIssues(){
-
+    public function testValidateOnFileIssues():void 
+    {
         $directory = $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
         unlink( $directory.'/composer.json');
 
@@ -52,8 +52,8 @@ OUTPUT;
     /**
      * 
     */
-    public function testWithComposerLock(){
-
+    public function testWithComposerLock(): void 
+    {
         $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
         $this->createComposerLock();
 
@@ -75,10 +75,10 @@ OUTPUT;
      * I prepared this test but will await for some feedback 
      * @author giulio-Joshi
      */
-    public function testUnaccessibleFile(){
-
-        $this->markTestSkipped("Looks like this configuration can't be currently be tested on command, since the paplication throws exception in Composer/Json/JsonFile.php:197
-        ");
+    public function testUnaccessibleFile(): void 
+    {
+        $this->markTestSkipped("Looks like this configuration can't be currently be tested on command,".
+                               " since the application throws exception in Composer/Json/JsonFile.php:197");
 
         $directory = $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
         chmod( $directory.'/composer.json', 0200);
