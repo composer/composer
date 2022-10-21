@@ -252,6 +252,10 @@ Defaults to `vendor`. You can install dependencies into a different directory if
 you want to. `$HOME` and `~` will be replaced by your home directory's path in
 vendor-dir and all `*-dir` options below.
 
+## tmp-dir
+
+Defaults to `vendor/composer`.
+
 ## bin-dir
 
 Defaults to `vendor/bin`. If a project includes binaries, they will be symlinked

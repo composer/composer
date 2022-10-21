@@ -33,3 +33,4 @@ Platform::putEnv('COMPOSER_TESTS_ARE_RUNNING', '1');
 Platform::clearEnv('COMPOSER');
 Platform::clearEnv('COMPOSER_VENDOR_DIR');
 Platform::clearEnv('COMPOSER_BIN_DIR');
+Platform::clearEnv('COMPOSER_TMP_DIR');

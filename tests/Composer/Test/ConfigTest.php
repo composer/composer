@@ -190,6 +190,7 @@ class ConfigTest extends TestCase
         $config->merge(['config' => [
             'bin-dir' => '$HOME/foo',
             'cache-dir' => '/baz/',
+            'tmp-dir' => '/build/',
             'vendor-dir' => 'vendor',
         ]]);
 
@@ -197,6 +198,7 @@ class ConfigTest extends TestCase
         $this->assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
         $this->assertEquals($home.'/foo', $config->get('bin-dir'));
         $this->assertEquals('/baz', $config->get('cache-dir'));
+        $this->assertEquals('/build', $config->get('tmp-dir'));
     }
 
     public function testStreamWrapperDirs(): void
@@ -219,6 +221,7 @@ class ConfigTest extends TestCase
 
         $this->assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
         $this->assertEquals('/foo/bar/vendor/foo', $config->get('bin-dir'));
+        $this->assertEquals('/foo/bar/vendor/composer', $config->get('tmp-dir'));
         $this->assertEquals('vendor', $config->get('vendor-dir', Config::RELATIVE_PATHS));
         $this->assertEquals('vendor/foo', $config->get('bin-dir', Config::RELATIVE_PATHS));
     }

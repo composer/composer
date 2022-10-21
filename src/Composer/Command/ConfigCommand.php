@@ -362,6 +362,9 @@ EOT
             'vendor-dir' => ['is_string', static function ($val) {
                 return $val;
             }],
+            'tmp-dir' => ['is_string', static function ($val) {
+                return $val;
+            }],
             'bin-dir' => ['is_string', static function ($val) {
                 return $val;
             }],

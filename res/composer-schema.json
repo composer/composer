@@ -438,6 +438,10 @@
                     "type": "string",
                     "description": "The location where all packages are installed, defaults to \"vendor\"."
                 },
+                "tmp-dir": {
+                    "type": "string",
+                    "description": "The location where all packages are extracted, defaults to \"vendor/composer\"."
+                },
                 "bin-dir": {
                     "type": "string",
                     "description": "The location where all binaries are linked, defaults to \"vendor/bin\"."

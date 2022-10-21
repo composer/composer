@@ -311,6 +311,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $this->config->get('vendor-dir').'/'.explode('/', $package->getPrettyName())[0],
             $this->config->get('vendor-dir').'/composer/',
             $this->config->get('vendor-dir'),
+            $this->config->get('tmp-dir'),
         ];
 
         if (isset($this->additionalCleanupPaths[$package->getName()])) {
@@ -417,7 +418,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     protected function getFileName(PackageInterface $package, string $path): string
     {
-        return rtrim($this->config->get('vendor-dir').'/composer/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
+        return rtrim($this->config->get('tmp-dir').'/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
     }
 
     /**

@@ -41,6 +41,7 @@ class Config
         'github-protocols' => ['https', 'ssh', 'git'],
         'gitlab-protocol' => null,
         'vendor-dir' => 'vendor',
+        'tmp-dir' => '{$vendor-dir}/composer',
         'bin-dir' => '{$vendor-dir}/bin',
         'cache-dir' => '{$home}/cache',
         'data-dir' => '{$home}',
@@ -262,6 +263,7 @@ class Config
         switch ($key) {
             // strings/paths with env var and {$refs} support
             case 'vendor-dir':
+            case 'tmp-dir':
             case 'bin-dir':
             case 'process-timeout':
             case 'data-dir':

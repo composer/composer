@@ -80,8 +80,18 @@ class ZipDownloaderTest extends TestCase
 
         $this->config->expects($this->any())
             ->method('get')
-            ->with('vendor-dir')
-            ->will($this->returnValue($this->testDir));
+            ->withConsecutive(
+                ['tmp-dir'],
+                ['vendor-dir'],
+                ['tmp-dir'],
+                ['tmp-dir']
+            )
+            ->willReturnOnConsecutiveCalls(
+                $this->returnValue($this->testDir . '/composer'),
+                $this->returnValue($this->testDir),
+                $this->returnValue($this->testDir . '/composer'),
+                $this->returnValue($this->testDir . '/composer')
+            );
 
         $this->package->expects($this->any())
             ->method('getDistUrl')

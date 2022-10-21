@@ -1111,6 +1111,12 @@ and following the
 By setting this option you can change the `bin` ([Vendor Binaries](articles/vendor-binaries.md))
 directory to something other than `vendor/bin`.
 
+### COMPOSER_TMP_DIR
+
+By setting this option you can change the `tmp` directory to something other than `vendor/composer`.
+
+This can help speed up installation on NFS volumes by fetching, unpacking and cleaning files on a local disk.
+
 ### COMPOSER_CACHE_DIR
 
 The `COMPOSER_CACHE_DIR` var allows you to change the Composer cache directory,
