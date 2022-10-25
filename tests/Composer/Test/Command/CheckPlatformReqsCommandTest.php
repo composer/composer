@@ -21,8 +21,6 @@ class CheckPlatformReqsCommandTest extends TestCase
      * @dataProvider caseProvider
      * @param array<mixed> $composerJson
      * @param array<mixed> $command
-     * @param string $expected
-     * @param bool $lock
      */
     public function testPlatformReqsAreSatisfied(
         array $composerJson,
@@ -30,7 +28,7 @@ class CheckPlatformReqsCommandTest extends TestCase
         string $expected,
         bool $lock = true
     ): void {
-       $this->initTempComposer($composerJson);
+        $this->initTempComposer($composerJson);
 
         $packages = [
             $this->getPackage('ext-foobar', '2.3.4'),
