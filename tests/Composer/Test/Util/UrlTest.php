@@ -82,6 +82,7 @@ class UrlTest extends TestCase
             ['https://example.org/foo/bar?access_token=***', 'https://example.org/foo/bar?access_token=abcdef'],
             ['https://example.org/foo/bar?foo=bar&access_token=***', 'https://example.org/foo/bar?foo=bar&access_token=abcdef'],
             ['https://***:***@github.com/acme/repo', 'https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB:x-oauth-basic@github.com/acme/repo'],
+            ['https://***:***@github.com/acme/repo', 'https://github_pat_1234567890abcdefghijkl_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW:x-oauth-basic@github.com/acme/repo'],
             // without scheme
             ['foo:***@example.org/', 'foo:bar@example.org/'],
             ['foo@example.org/', 'foo@example.org/'],
