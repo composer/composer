@@ -17,6 +17,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use LogicException;
+use RuntimeException;
 use Seld\Signal\SignalHandler;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
@@ -509,6 +510,10 @@ class Application extends BaseApplication
                     throw $e;
                 }
             } catch (JsonValidationException $e) {
+                if ($required) {
+                    throw $e;
+                }
+            } catch (RuntimeException $e) {
                 if ($required) {
                     throw $e;
                 }
