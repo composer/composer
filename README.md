@@ -1,5 +1,9 @@
-Composer - Dependency Management for PHP
-========================================
+<p align="center">
+    <a href="https://getcomposer.org">
+        <img src="https://getcomposer.org/img/logo-composer-transparent.png" alt="Composer">
+    </a>
+</p>
+<h1 align="center">Dependency Management for PHP</h1>
 
 Composer helps you declare, manage, and install dependencies of PHP projects.
 
@@ -17,7 +21,7 @@ For usage, see [the documentation](https://getcomposer.org/doc/).
 Packages
 --------
 
-Find public packages on [Packagist.org](https://packagist.org). 
+Find public packages on [Packagist.org](https://packagist.org).
 
 For private package hosting take a look at [Private Packagist](https://packagist.com).
 
