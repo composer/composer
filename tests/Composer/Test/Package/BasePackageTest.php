@@ -22,7 +22,7 @@ class BasePackageTest extends TestCase
      */
     public function testSetSameRepository(): void
     {
-        $package = $this->getMockForAbstractClass('Composer\Package\BasePackage', array('foo'));
+        $package = $this->getMockForAbstractClass('Composer\Package\BasePackage', ['foo']);
         $repository = $this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock();
 
         $package->setRepository($repository);
@@ -37,7 +37,7 @@ class BasePackageTest extends TestCase
     {
         self::expectException('LogicException');
 
-        $package = $this->getMockForAbstractClass('Composer\Package\BasePackage', array('foo'));
+        $package = $this->getMockForAbstractClass('Composer\Package\BasePackage', ['foo']);
 
         $package->setRepository($this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock());
         $package->setRepository($this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock());
@@ -45,9 +45,6 @@ class BasePackageTest extends TestCase
 
     /**
      * @dataProvider provideFormattedVersions
-     *
-     * @param bool   $truncate
-     * @param string $expected
      */
     public function testFormatVersionForDevPackage(BasePackage $package, bool $truncate, string $expected): void
     {
@@ -56,37 +53,37 @@ class BasePackageTest extends TestCase
 
     public function provideFormattedVersions(): array
     {
-        $data = array(
-            array(
+        $data = [
+            [
                 'sourceReference' => 'v2.1.0-RC2',
                 'truncate' => true,
                 'expected' => 'PrettyVersion v2.1.0-RC2',
-            ),
-            array(
+            ],
+            [
                 'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
                 'truncate' => true,
                 'expected' => 'PrettyVersion bbf527a',
-            ),
-            array(
+            ],
+            [
                 'sourceReference' => 'v1.0.0',
                 'truncate' => false,
                 'expected' => 'PrettyVersion v1.0.0',
-            ),
-            array(
+            ],
+            [
                 'sourceReference' => 'bbf527a27356414bfa9bf520f018c5cb7af67c77',
                 'truncate' => false,
                 'expected' => 'PrettyVersion bbf527a27356414bfa9bf520f018c5cb7af67c77',
-            ),
-        );
+            ],
+        ];
 
         $createPackage = function ($arr): array {
-            $package = $this->getMockForAbstractClass('\Composer\Package\BasePackage', array(), '', false);
+            $package = $this->getMockForAbstractClass('\Composer\Package\BasePackage', [], '', false);
             $package->expects($this->once())->method('isDev')->will($this->returnValue(true));
             $package->expects($this->any())->method('getSourceType')->will($this->returnValue('git'));
             $package->expects($this->once())->method('getPrettyVersion')->will($this->returnValue('PrettyVersion'));
             $package->expects($this->any())->method('getSourceReference')->will($this->returnValue($arr['sourceReference']));
 
-            return array($package, $arr['truncate'], $arr['expected']);
+            return [$package, $arr['truncate'], $arr['expected']];
         };
 
         return array_map($createPackage, $data);
@@ -95,7 +92,6 @@ class BasePackageTest extends TestCase
     /**
      * @param string[] $packageNames
      * @param non-empty-string $wrap
-     * @param string $expectedRegexp
      *
      * @dataProvider dataPackageNamesToRegexp
      */
@@ -111,13 +107,13 @@ class BasePackageTest extends TestCase
      */
     public function dataPackageNamesToRegexp(): array
     {
-        return array(
-            array(
-                array('ext-*', 'monolog/monolog'), '{^%s$}i', '{^ext\-.*|monolog/monolog$}i',
-                array('php'), '{^%s$}i', '{^php$}i',
-                array('*'), '{^%s$}i', '{^.*$}i',
-                array('foo', 'bar'), '§%s§', '§foo|bar§',
-            ),
-        );
+        return [
+            [
+                ['ext-*', 'monolog/monolog'], '{^%s$}i', '{^ext\-.*|monolog/monolog$}i',
+                ['php'], '{^%s$}i', '{^php$}i',
+                ['*'], '{^%s$}i', '{^.*$}i',
+                ['foo', 'bar'], '§%s§', '§foo|bar§',
+            ],
+        ];
     }
 }

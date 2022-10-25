@@ -76,7 +76,7 @@ running the installer when following
 [the Download page instructions](https://getcomposer.org/download/) add the
 following parameters:
 
-```sh
+```shell
 php composer-setup.php --install-dir=bin --filename=composer
 ```
 
@@ -92,7 +92,7 @@ interpreter.
 After running the installer following [the Download page instructions](https://getcomposer.org/download/)
 you can run this to move composer.phar to a directory that is in your path:
 
-```sh
+```shell
 mv composer.phar /usr/local/bin/composer
 ```
 
@@ -138,13 +138,13 @@ Create a new `composer.bat` file alongside `composer.phar`:
 
 Using cmd.exe:
 
-```sh
+```shell
 C:\bin> echo @php "%~dp0composer.phar" %*>composer.bat
 ```
 
 Using PowerShell:
 
-```sh
+```shell
 PS C:\bin> Set-Content composer.bat '@php "%~dp0composer.phar" %*'
 ```
 
@@ -155,9 +155,11 @@ use your search engine of choice.
 
 Close your current terminal. Test usage with a new terminal:
 
-```sh
+```shell
 C:\Users\username>composer -V
-Composer version 2.0.12 2021-04-01 10:14:59
+```
+```text
+Composer version 2.4.0 2022-08-16 16:10:48
 ```
 
 ## Docker Image
@@ -166,7 +168,7 @@ Composer is published as Docker container in a few places, see the list in the [
 
 Example usage:
 
-```sh
+```shell
 docker pull composer/composer
 docker run --rm -it -v "$(pwd):/app" composer/composer install
 ```

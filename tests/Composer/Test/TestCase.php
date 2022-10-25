@@ -49,7 +49,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @var array<string, bool>
      */
-    private static $executableCache = array();
+    private static $executableCache = [];
 
     /**
      * @var list<HttpDownloaderMock>
@@ -88,9 +88,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @return string
-     */
     public static function getUniqueTmpDirectory(): string
     {
         $attempts = 5;
@@ -137,6 +134,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             $authJson = new \stdClass;
         }
 
+        if (is_array($composerJson) && isset($composerJson['repositories']) && !isset($composerJson['repositories']['packagist.org'])) {
+            $composerJson['repositories']['packagist.org'] = false;
+        }
+
         chdir($dir);
         file_put_contents($dir.'/composer.json', JsonFile::encode($composerJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         file_put_contents($dir.'/auth.json', JsonFile::encode($authJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
@@ -154,7 +155,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         mkdir('vendor/composer', 0777, true);
         $repo = new InstalledFilesystemRepository(new JsonFile('vendor/composer/installed.json'));
-        $repo->setDevPackageNames(array_map(function (PackageInterface $pkg) { return $pkg->getPrettyName(); }, $devPackages));
+        $repo->setDevPackageNames(array_map(static function (PackageInterface $pkg) {
+            return $pkg->getPrettyName();
+        }, $devPackages));
         foreach ($packages as $pkg) {
             $repo->addPackage($pkg);
             mkdir('vendor/'.$pkg->getName(), 0777, true);
@@ -191,9 +194,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         return new ApplicationTester($application);
     }
 
-    /**
-     * @return VersionParser
-     */
     protected static function getVersionParser(): VersionParser
     {
         if (!self::$parser) {
@@ -205,8 +205,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     /**
      * @param Constraint::STR_OP_* $operator
-     * @param string $version
-     * @return Constraint
      */
     protected function getVersionConstraint($operator, string $version): Constraint
     {
@@ -224,8 +222,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @template PackageClass of CompletePackage|CompleteAliasPackage
      *
      * @param  string $class  FQCN to be instantiated
-     * @param  string $name
-     * @param  string $version
      *
      * @return CompletePackage|CompleteAliasPackage|RootPackage|RootAliasPackage
      *
@@ -247,7 +243,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @param string $version
      * @return ($package is RootPackage ? RootAliasPackage : ($package is CompletePackage ? CompleteAliasPackage : AliasPackage))
      */
     protected function getAliasPackage(Package $package, string $version): AliasPackage
@@ -266,7 +261,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     /**
      * @param array<string, array<string, string>> $config
-     * @return void
      */
     protected function configureLinks(PackageInterface $package, array $config): void
     {
@@ -298,10 +292,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         return $config;
     }
 
-    /**
-     * @param  string $directory
-     * @return void
-     */
     protected static function ensureDirectoryExistsAndClear(string $directory): void
     {
         $fs = new Filesystem();
@@ -317,8 +307,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * Check whether or not the given name is an available executable.
      *
      * @param string $executableName The name of the binary to test.
-     *
-     * @return void
      *
      * @throws \PHPUnit\Framework\SkippedTestError
      */
@@ -337,14 +325,12 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * Transforms an escaped non-Windows command to match Windows escaping.
      *
-     * @param string $cmd
-     *
      * @return string The transformed command
      */
     protected function getCmd(string $cmd): string
     {
         if (Platform::isWindows()) {
-            $cmd = Preg::replaceCallback("/('[^']*')/", function ($m) {
+            $cmd = Preg::replaceCallback("/('[^']*')/", static function ($m) {
                 // Double-quotes are used only when needed
                 $char = (strpbrk($m[1], " \t^&|<>()") !== false || $m[1] === "''") ? '"' : '';
 
@@ -355,7 +341,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         return $cmd;
     }
 
-    protected function getHttpDownloaderMock(IOInterface $io = null, Config $config = null): HttpDownloaderMock
+    protected function getHttpDownloaderMock(?IOInterface $io = null, ?Config $config = null): HttpDownloaderMock
     {
         $this->httpDownloaderMocks[] = $mock = new HttpDownloaderMock($io, $config);
 

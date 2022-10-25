@@ -1,5 +1,15 @@
 <?php declare(strict_types=1);
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Test\Repository\Vcs;
 
 use Composer\Config;
@@ -8,7 +18,6 @@ use Composer\Repository\Vcs\GitDriver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
-use Composer\Test\Mock\ProcessExecutorMock;
 
 class GitDriverTest extends TestCase
 {
@@ -63,12 +72,9 @@ GIT;
 
         $process
             ->expects([[
-                'cmd' => 'git remote show origin',
-                'stdout' => $stdoutFailure,
-            ], [
                 'cmd' => 'git branch --no-color',
                 'stdout' => $stdout,
-            ]]);
+            ]], true);
 
         $this->assertSame('main', $driver->getRootIdentifier());
     }
@@ -138,7 +144,7 @@ GIT;
         $process = $this->getProcessExecutorMock();
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
-        $driver = new GitDriver(array('url' => 'https://example.org/acme.git'), $io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
+        $driver = new GitDriver(['url' => 'https://example.org/acme.git'], $io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
         $this->setRepoDir($driver, $this->home);
 
         // Branches starting with a - character are not valid git branches names
@@ -150,16 +156,16 @@ GIT;
 GIT;
 
         $process
-            ->expects(array(array(
+            ->expects([[
                 'cmd' => 'git branch --no-color --no-abbrev -v',
                 'stdout' => $stdout,
-            )));
+            ]]);
 
         $branches = $driver->getBranches();
-        $this->assertSame(array(
+        $this->assertSame([
             'main' => '089681446ba44d6d9004350192486f2ceb4eaa06',
             '2.2' => '12681446ba44d6d9004350192486f2ceb4eaa06',
-        ), $branches);
+        ], $branches);
     }
 
     public function testFileGetContentInvalidIdentifier(): void
@@ -168,7 +174,7 @@ GIT;
 
         $process = $this->getProcessExecutorMock();
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $driver = new GitDriver(array('url' => 'https://example.org/acme.git'), $io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
+        $driver = new GitDriver(['url' => 'https://example.org/acme.git'], $io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
 
         $this->assertNull($driver->getFileContent('file.txt', 'h'));
 

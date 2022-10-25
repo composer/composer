@@ -25,15 +25,15 @@ class PathRepositoryTest extends TestCase
     {
         self::expectException('RuntimeException');
 
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'missing'));
-        $repository = $this->createPathRepo(array('url' => $repositoryUrl));
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'missing']);
+        $repository = $this->createPathRepo(['url' => $repositoryUrl]);
         $repository->getPackages();
     }
 
     public function testLoadPackageFromFileSystemWithVersion(): void
     {
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'with-version'));
-        $repository = $this->createPathRepo(array('url' => $repositoryUrl));
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'with-version']);
+        $repository = $this->createPathRepo(['url' => $repositoryUrl]);
         $repository->getPackages();
 
         $this->assertSame(1, $repository->count());
@@ -42,8 +42,8 @@ class PathRepositoryTest extends TestCase
 
     public function testLoadPackageFromFileSystemWithoutVersion(): void
     {
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'without-version'));
-        $repository = $this->createPathRepo(array('url' => $repositoryUrl));
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'without-version']);
+        $repository = $this->createPathRepo(['url' => $repositoryUrl]);
         $packages = $repository->getPackages();
 
         $this->assertGreaterThanOrEqual(1, $repository->count());
@@ -57,10 +57,10 @@ class PathRepositoryTest extends TestCase
 
     public function testLoadPackageFromFileSystemWithWildcard(): void
     {
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = $this->createPathRepo(array('url' => $repositoryUrl));
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', '*']);
+        $repository = $this->createPathRepo(['url' => $repositoryUrl]);
         $packages = $repository->getPackages();
-        $names = array();
+        $names = [];
 
         $this->assertGreaterThanOrEqual(2, $repository->count());
 
@@ -71,22 +71,22 @@ class PathRepositoryTest extends TestCase
         $names[] = $package->getName();
 
         sort($names);
-        $this->assertEquals(array('test/path-unversioned', 'test/path-versioned'), $names);
+        $this->assertEquals(['test/path-unversioned', 'test/path-versioned'], $names);
     }
 
     public function testLoadPackageWithExplicitVersions(): void
     {
-        $options = array(
-            'versions' => array(
+        $options = [
+            'versions' => [
                 'test/path-unversioned' => '4.3.2.1',
                 'test/path-versioned' => '3.2.1.0',
-            ),
-        );
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = $this->createPathRepo(array('url' => $repositoryUrl, 'options' => $options));
+            ],
+        ];
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', '*']);
+        $repository = $this->createPathRepo(['url' => $repositoryUrl, 'options' => $options]);
         $packages = $repository->getPackages();
 
-        $versions = array();
+        $versions = [];
 
         $this->assertEquals(2, $repository->count());
 
@@ -97,7 +97,7 @@ class PathRepositoryTest extends TestCase
         $versions[$package->getName()] = $package->getVersion();
 
         ksort($versions);
-        $this->assertSame(array('test/path-unversioned' => '4.3.2.1', 'test/path-versioned' => '3.2.1.0'), $versions);
+        $this->assertSame(['test/path-unversioned' => '4.3.2.1', 'test/path-versioned' => '3.2.1.0'], $versions);
     }
 
     /**
@@ -107,12 +107,12 @@ class PathRepositoryTest extends TestCase
     {
         // realpath() does not fully expand the paths
         // PHP Bug https://bugs.php.net/bug.php?id=72642
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(realpath(realpath(__DIR__)), 'Fixtures', 'path', 'with-version'));
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [realpath(realpath(__DIR__)), 'Fixtures', 'path', 'with-version']);
         // getcwd() not necessarily match __DIR__
         // PHP Bug https://bugs.php.net/bug.php?id=73797
         $relativeUrl = ltrim(substr($repositoryUrl, strlen(realpath(realpath(Platform::getCwd())))), DIRECTORY_SEPARATOR);
 
-        $repository = $this->createPathRepo(array('url' => $relativeUrl));
+        $repository = $this->createPathRepo(['url' => $relativeUrl]);
         $packages = $repository->getPackages();
 
         $this->assertSame(1, $repository->count());
@@ -127,11 +127,11 @@ class PathRepositoryTest extends TestCase
 
     public function testReferenceNone(): void
     {
-        $options = array(
+        $options = [
             'reference' => 'none',
-        );
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = $this->createPathRepo(array('url' => $repositoryUrl, 'options' => $options));
+        ];
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', '*']);
+        $repository = $this->createPathRepo(['url' => $repositoryUrl, 'options' => $options]);
         $packages = $repository->getPackages();
 
         $this->assertGreaterThanOrEqual(2, $repository->count());
@@ -143,12 +143,12 @@ class PathRepositoryTest extends TestCase
 
     public function testReferenceConfig(): void
     {
-        $options = array(
+        $options = [
             'reference' => 'config',
             'relative' => true,
-        );
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = $this->createPathRepo(array('url' => $repositoryUrl, 'options' => $options));
+        ];
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', '*']);
+        $repository = $this->createPathRepo(['url' => $repositoryUrl, 'options' => $options]);
         $packages = $repository->getPackages();
 
         $this->assertGreaterThanOrEqual(2, $repository->count());
@@ -171,7 +171,6 @@ class PathRepositoryTest extends TestCase
         $config = new \Composer\Config();
         $proc = new ProcessExecutor();
         $loop = new Loop(new HttpDownloader($io, $config), $proc);
-
 
         return new PathRepository($options, $io, $config, null, null, $proc);
     }

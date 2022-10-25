@@ -37,17 +37,16 @@ class StatusCommand extends BaseCommand
     private const EXIT_CODE_VERSION_CHANGES = 4;
 
     /**
-     * @return void
      * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
      */
     protected function configure(): void
     {
         $this
             ->setName('status')
-            ->setDescription('Shows a list of locally modified packages.')
-            ->setDefinition(array(
+            ->setDescription('Shows a list of locally modified packages')
+            ->setDefinition([
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The status command displays a list of dependencies that have
@@ -77,9 +76,6 @@ EOT
         return $exitCode;
     }
 
-    /**
-     * @return int
-     */
     private function doExecute(InputInterface $input): int
     {
         // init repos
@@ -90,10 +86,10 @@ EOT
         $dm = $composer->getDownloadManager();
         $im = $composer->getInstallationManager();
 
-        $errors = array();
+        $errors = [];
         $io = $this->getIO();
-        $unpushedChanges = array();
-        $vcsVersionChanges = array();
+        $unpushedChanges = [];
+        $vcsVersionChanges = [];
 
         $parser = new VersionParser;
         $guesser = new VersionGuesser($composer->getConfig(), $composer->getLoop()->getProcessExecutor() ?? new ProcessExecutor($io), $parser);
@@ -130,16 +126,16 @@ EOT
                     $currentVersion = $guesser->guessVersion($dumper->dump($package), $targetDir);
 
                     if ($previousRef && $currentVersion && $currentVersion['commit'] !== $previousRef) {
-                        $vcsVersionChanges[$targetDir] = array(
-                            'previous' => array(
+                        $vcsVersionChanges[$targetDir] = [
+                            'previous' => [
                                 'version' => $package->getPrettyVersion(),
                                 'ref' => $previousRef,
-                            ),
-                            'current' => array(
+                            ],
+                            'current' => [
                                 'version' => $currentVersion['pretty_version'],
                                 'ref' => $currentVersion['commit'],
-                            ),
-                        );
+                            ],
+                        ];
                     }
                 }
             }

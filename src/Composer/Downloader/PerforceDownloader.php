@@ -28,7 +28,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
+    protected function doDownload(PackageInterface $package, string $path, string $url, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         return \React\Promise\resolve(null);
     }
@@ -53,11 +53,6 @@ class PerforceDownloader extends VcsDownloader
         return \React\Promise\resolve(null);
     }
 
-    /**
-     * @param string $ref
-     *
-     * @return string|null
-     */
     private function getLabelFromSourceReference(string $ref): ?string
     {
         $pos = strpos($ref, '@');
@@ -68,12 +63,6 @@ class PerforceDownloader extends VcsDownloader
         return null;
     }
 
-    /**
-     * @param string $path
-     * @param string $url
-     *
-     * @return void
-     */
     public function initPerforce(PackageInterface $package, string $path, string $url): void
     {
         if (!empty($this->perforce)) {
@@ -124,9 +113,6 @@ class PerforceDownloader extends VcsDownloader
         return $this->perforce->getCommitLogs($fromReference, $toReference);
     }
 
-    /**
-     * @return void
-     */
     public function setPerforce(Perforce $perforce): void
     {
         $this->perforce = $perforce;

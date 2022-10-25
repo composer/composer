@@ -37,7 +37,7 @@ class LockerTest extends TestCase
         $json
             ->expects($this->any())
             ->method('read')
-            ->will($this->returnValue(array('packages' => array())));
+            ->will($this->returnValue(['packages' => []]));
 
         $this->assertTrue($locker->isLocked());
     }
@@ -73,12 +73,12 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(array(
-                'packages' => array(
-                    array('name' => 'pkg1', 'version' => '1.0.0-beta'),
-                    array('name' => 'pkg2', 'version' => '0.1.10'),
-                ),
-            )));
+            ->will($this->returnValue([
+                'packages' => [
+                    ['name' => 'pkg1', 'version' => '1.0.0-beta'],
+                    ['name' => 'pkg2', 'version' => '0.1.10'],
+                ],
+            ]));
 
         $repo = $locker->getLockedRepository();
         $this->assertNotNull($repo->findPackage('pkg1', '1.0.0-beta'));
@@ -101,28 +101,28 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('write')
-            ->with(array(
-                '_readme' => array('This file locks the dependencies of your project to a known state',
+            ->with([
+                '_readme' => ['This file locks the dependencies of your project to a known state',
                                    'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies',
-                                   'This file is @gener'.'ated automatically', ),
+                                   'This file is @gener'.'ated automatically', ],
                 'content-hash' => $contentHash,
-                'packages' => array(
-                    array('name' => 'pkg1', 'version' => '1.0.0-beta', 'type' => 'library'),
-                    array('name' => 'pkg2', 'version' => '0.1.10', 'type' => 'library'),
-                ),
-                'packages-dev' => array(),
-                'aliases' => array(),
+                'packages' => [
+                    ['name' => 'pkg1', 'version' => '1.0.0-beta', 'type' => 'library'],
+                    ['name' => 'pkg2', 'version' => '0.1.10', 'type' => 'library'],
+                ],
+                'packages-dev' => [],
+                'aliases' => [],
                 'minimum-stability' => 'dev',
-                'stability-flags' => array(),
-                'platform' => array(),
-                'platform-dev' => array(),
-                'platform-overrides' => array('foo/bar' => '1.0'),
+                'stability-flags' => [],
+                'platform' => [],
+                'platform-dev' => [],
+                'platform-overrides' => ['foo/bar' => '1.0'],
                 'prefer-stable' => false,
                 'prefer-lowest' => false,
                 'plugin-api-version' => PluginInterface::PLUGIN_API_VERSION,
-            ));
+            ]);
 
-        $locker->setLockData(array($package1, $package2), array(), array(), array(), array(), 'dev', array(), false, false, array('foo/bar' => '1.0'));
+        $locker->setLockData([$package1, $package2], [], [], [], [], 'dev', [], false, false, ['foo/bar' => '1.0']);
     }
 
     public function testLockBadPackages(): void
@@ -140,7 +140,7 @@ class LockerTest extends TestCase
 
         self::expectException('LogicException');
 
-        $locker->setLockData(array($package1), array(), array(), array(), array(), 'dev', array(), false, false, array());
+        $locker->setLockData([$package1], [], [], [], [], 'dev', [], false, false, []);
     }
 
     public function testIsFresh(): void
@@ -154,7 +154,7 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(array('hash' => md5($jsonContent))));
+            ->will($this->returnValue(['hash' => md5($jsonContent)]));
 
         $this->assertTrue($locker->isFresh());
     }
@@ -169,7 +169,7 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(array('hash' => $this->getJsonContent(array('name' => 'test2')))));
+            ->will($this->returnValue(['hash' => $this->getJsonContent(['name' => 'test2'])]));
 
         $this->assertFalse($locker->isFresh());
     }
@@ -185,7 +185,7 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(array('hash' => md5($jsonContent . '  '), 'content-hash' => md5($jsonContent))));
+            ->will($this->returnValue(['hash' => md5($jsonContent . '  '), 'content-hash' => md5($jsonContent)]));
 
         $this->assertTrue($locker->isFresh());
     }
@@ -201,7 +201,7 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(array('content-hash' => md5($jsonContent))));
+            ->will($this->returnValue(['content-hash' => md5($jsonContent)]));
 
         $this->assertTrue($locker->isFresh());
     }
@@ -213,12 +213,12 @@ class LockerTest extends TestCase
 
         $locker = new Locker(new NullIO, $json, $inst, $this->getJsonContent());
 
-        $differentHash = md5($this->getJsonContent(array('name' => 'test2')));
+        $differentHash = md5($this->getJsonContent(['name' => 'test2']));
 
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(array('hash' => $differentHash, 'content-hash' => $differentHash)));
+            ->will($this->returnValue(['hash' => $differentHash, 'content-hash' => $differentHash]));
 
         $this->assertFalse($locker->isFresh());
     }
@@ -256,12 +256,12 @@ class LockerTest extends TestCase
     /**
      * @param array<string, string> $customData
      */
-    private function getJsonContent(array $customData = array()): string
+    private function getJsonContent(array $customData = []): string
     {
-        $data = array_merge(array(
+        $data = array_merge([
             'minimum-stability' => 'beta',
             'name' => 'test',
-        ), $customData);
+        ], $customData);
 
         ksort($data);
 

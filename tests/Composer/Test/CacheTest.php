@@ -31,7 +31,7 @@ class CacheTest extends TestCase
     public function setUp(): void
     {
         $this->root = self::getUniqueTmpDirectory();
-        $this->files = array();
+        $this->files = [];
         $zeros = str_repeat('0', 1000);
 
         for ($i = 0; $i < 4; $i++) {
@@ -44,8 +44,8 @@ class CacheTest extends TestCase
 
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->cache = $this->getMockBuilder('Composer\Cache')
-            ->onlyMethods(array('getFinder'))
-            ->setConstructorArgs(array($io, $this->root))
+            ->onlyMethods(['getFinder'])
+            ->setConstructorArgs([$io, $this->root])
             ->getMock();
         $this->cache
             ->expects($this->any())

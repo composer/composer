@@ -16,8 +16,6 @@ use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
-use Composer\Package\CompleteAliasPackage;
-use Composer\Package\CompletePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
@@ -108,10 +106,8 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      * Initializes path repository.
      *
      * @param array{url?: string, options?: array{symlink?: bool, reference?: string, relative?: bool, versions?: array<string, string>}} $repoConfig
-     * @param IOInterface $io
-     * @param Config      $config
      */
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader = null, EventDispatcher $dispatcher = null, ProcessExecutor $process = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, ?HttpDownloader $httpDownloader = null, ?EventDispatcher $dispatcher = null, ?ProcessExecutor $process = null)
     {
         if (!isset($repoConfig['url'])) {
             throw new \RuntimeException('You must specify the `url` configuration for the path repository');
@@ -122,7 +118,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         $this->process = $process ?? new ProcessExecutor($io);
         $this->versionGuesser = new VersionGuesser($config, $this->process, new VersionParser());
         $this->repoConfig = $repoConfig;
-        $this->options = $repoConfig['options'] ?? array();
+        $this->options = $repoConfig['options'] ?? [];
         if (!isset($this->options['relative'])) {
             $filesystem = new Filesystem();
             $this->options['relative'] = !$filesystem->isAbsolutePath($this->url);
@@ -177,10 +173,10 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
             $json = file_get_contents($composerFilePath);
             $package = JsonFile::parseJson($json, $composerFilePath);
-            $package['dist'] = array(
+            $package['dist'] = [
                 'type' => 'path',
                 'url' => $url,
-            );
+            ];
             $reference = $this->options['reference'] ?? 'auto';
             if ('none' === $reference) {
                 $package['dist']['reference'] = null;
@@ -189,7 +185,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             }
 
             // copy symlink/relative options to transport options
-            $package['transport-options'] = array_intersect_key($this->options, array('symlink' => true, 'relative' => true));
+            $package['transport-options'] = array_intersect_key($this->options, ['symlink' => true, 'relative' => true]);
             // use the version provided as option if available
             if (isset($package['name'], $this->options['versions'][$package['name']])) {
                 $package['version'] = $this->options['versions'][$package['name']];

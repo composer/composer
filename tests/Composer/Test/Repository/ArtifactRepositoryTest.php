@@ -29,7 +29,7 @@ class ArtifactRepositoryTest extends TestCase
 
     public function testExtractsConfigsFromZipArchives(): void
     {
-        $expectedPackages = array(
+        $expectedPackages = [
             'vendor0/package0-0.0.1',
             'composer/composer-1.0.0-alpha6',
             'vendor1/package2-4.3.2',
@@ -39,12 +39,12 @@ class ArtifactRepositoryTest extends TestCase
             'test/jsonInFirstLevel-1.0.0',
             //The files not-an-artifact.zip and jsonSecondLevel are not valid
             //artifacts and do not get detected.
-        );
+        ];
 
-        $coordinates = array('type' => 'artifact', 'url' => __DIR__ . '/Fixtures/artifacts');
+        $coordinates = ['type' => 'artifact', 'url' => __DIR__ . '/Fixtures/artifacts'];
         $repo = new ArtifactRepository($coordinates, new NullIO());
 
-        $foundPackages = array_map(function (BasePackage $package) {
+        $foundPackages = array_map(static function (BasePackage $package) {
             return "{$package->getPrettyName()}-{$package->getPrettyVersion()}";
         }, $repo->getPackages());
 
@@ -53,7 +53,7 @@ class ArtifactRepositoryTest extends TestCase
 
         $this->assertSame($expectedPackages, $foundPackages);
 
-        $tarPackage = array_filter($repo->getPackages(), function (BasePackage $package): bool {
+        $tarPackage = array_filter($repo->getPackages(), static function (BasePackage $package): bool {
             return $package->getPrettyName() === 'test/jsonInRootTarFile';
         });
         $this->assertCount(1, $tarPackage);
@@ -64,7 +64,7 @@ class ArtifactRepositoryTest extends TestCase
     public function testAbsoluteRepoUrlCreatesAbsoluteUrlPackages(): void
     {
         $absolutePath = __DIR__ . '/Fixtures/artifacts';
-        $coordinates = array('type' => 'artifact', 'url' => $absolutePath);
+        $coordinates = ['type' => 'artifact', 'url' => $absolutePath];
         $repo = new ArtifactRepository($coordinates, new NullIO());
 
         foreach ($repo->getPackages() as $package) {
@@ -75,7 +75,7 @@ class ArtifactRepositoryTest extends TestCase
     public function testRelativeRepoUrlCreatesRelativeUrlPackages(): void
     {
         $relativePath = 'tests/Composer/Test/Repository/Fixtures/artifacts';
-        $coordinates = array('type' => 'artifact', 'url' => $relativePath);
+        $coordinates = ['type' => 'artifact', 'url' => $relativePath];
         $repo = new ArtifactRepository($coordinates, new NullIO());
 
         foreach ($repo->getPackages() as $package) {

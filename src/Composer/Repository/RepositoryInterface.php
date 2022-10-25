@@ -81,7 +81,7 @@ interface RepositoryInterface extends \Countable
      * @phpstan-param  array<string, ConstraintInterface|null> $packageNameMap
      * @phpstan-return array{namesFound: array<string>, packages: array<BasePackage>}
      */
-    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array());
+    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = []);
 
     /**
      * Searches the repository for packages containing the query

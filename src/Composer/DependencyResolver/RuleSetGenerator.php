@@ -31,9 +31,9 @@ class RuleSetGenerator
     /** @var RuleSet */
     protected $rules;
     /** @var array<int, BasePackage> */
-    protected $addedMap = array();
+    protected $addedMap = [];
     /** @var array<string, BasePackage[]> */
-    protected $addedPackagesByNames = array();
+    protected $addedPackagesByNames = [];
 
     public function __construct(PolicyInterface $policy, Pool $pool)
     {
@@ -58,7 +58,7 @@ class RuleSetGenerator
      */
     protected function createRequireRule(BasePackage $package, array $providers, $reason, $reasonData = null): ?Rule
     {
-        $literals = array(-$package->id);
+        $literals = [-$package->id];
 
         foreach ($providers as $provider) {
             // self fulfilling rule?
@@ -87,7 +87,7 @@ class RuleSetGenerator
      */
     protected function createInstallOneOfRule(array $packages, $reason, $reasonData): Rule
     {
-        $literals = array();
+        $literals = [];
         foreach ($packages as $package) {
             $literals[] = $package->id;
         }
@@ -123,13 +123,12 @@ class RuleSetGenerator
      * @param BasePackage[] $packages
      * @param Rule::RULE_* $reason A RULE_* constant
      * @param mixed $reasonData
-     * @return Rule
      *
      * @phpstan-param ReasonData $reasonData
      */
     protected function createMultiConflictRule(array $packages, $reason, $reasonData): Rule
     {
-        $literals = array();
+        $literals = [];
         foreach ($packages as $package) {
             $literals[] = -$package->id;
         }
@@ -149,10 +148,8 @@ class RuleSetGenerator
      *
      * @param RuleSet::TYPE_* $type A TYPE_* constant defining the rule type
      * @param Rule $newRule The rule about to be added
-     *
-     * @return void
      */
-    private function addRule($type, Rule $newRule = null): void
+    private function addRule($type, ?Rule $newRule = null): void
     {
         if (!$newRule) {
             return;
@@ -161,9 +158,6 @@ class RuleSetGenerator
         $this->rules->add($newRule, $type);
     }
 
-    /**
-     * @return void
-     */
     protected function addRulesForPackage(BasePackage $package, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         /** @var \SplQueue<BasePackage> */
@@ -184,10 +178,10 @@ class RuleSetGenerator
                 }
             } else {
                 $workQueue->enqueue($package->getAliasOf());
-                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($package->getAliasOf()), Rule::RULE_PACKAGE_ALIAS, $package));
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, [$package->getAliasOf()], Rule::RULE_PACKAGE_ALIAS, $package));
 
                 // aliases must be installed with their main package, so create a rule the other way around as well
-                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), array($package), Rule::RULE_PACKAGE_INVERSE_ALIAS, $package->getAliasOf()));
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), [$package], Rule::RULE_PACKAGE_INVERSE_ALIAS, $package->getAliasOf()));
 
                 // if alias package has no self.version requires, its requirements do not
                 // need to be added as the aliased package processing will take care of it
@@ -215,15 +209,12 @@ class RuleSetGenerator
         }
     }
 
-    /**
-     * @return void
-     */
     protected function addConflictRules(PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         /** @var BasePackage $package */
         foreach ($this->addedMap as $package) {
             foreach ($package->getConflicts() as $link) {
-                // even if conlict ends up being with an alias, there would be at least one actual package by this name
+                // even if conflict ends up being with an alias, there would be at least one actual package by this name
                 if (!isset($this->addedPackagesByNames[$link->getTarget()])) {
                     continue;
                 }
@@ -232,7 +223,7 @@ class RuleSetGenerator
                 if ($platformRequirementFilter->isIgnored($link->getTarget())) {
                     continue;
                 } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
-                    $constraint = $platformRequirementFilter->filterConstraint($link->getTarget(), $constraint);
+                    $constraint = $platformRequirementFilter->filterConstraint($link->getTarget(), $constraint, false);
                 }
 
                 $conflicts = $this->pool->whatProvides($link->getTarget(), $constraint);
@@ -256,9 +247,6 @@ class RuleSetGenerator
         }
     }
 
-    /**
-     * @return void
-     */
     protected function addRulesForRequest(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         foreach ($request->getFixedPackages() as $package) {
@@ -274,9 +262,9 @@ class RuleSetGenerator
 
             $this->addRulesForPackage($package, $platformRequirementFilter);
 
-            $rule = $this->createInstallOneOfRule(array($package), Rule::RULE_FIXED, array(
+            $rule = $this->createInstallOneOfRule([$package], Rule::RULE_FIXED, [
                 'package' => $package,
-            ));
+            ]);
             $this->addRule(RuleSet::TYPE_REQUEST, $rule);
         }
 
@@ -293,18 +281,15 @@ class RuleSetGenerator
                     $this->addRulesForPackage($package, $platformRequirementFilter);
                 }
 
-                $rule = $this->createInstallOneOfRule($packages, Rule::RULE_ROOT_REQUIRE, array(
+                $rule = $this->createInstallOneOfRule($packages, Rule::RULE_ROOT_REQUIRE, [
                     'packageName' => $packageName,
                     'constraint' => $constraint,
-                ));
+                ]);
                 $this->addRule(RuleSet::TYPE_REQUEST, $rule);
             }
         }
     }
 
-    /**
-     * @return void
-     */
     protected function addRulesForRootAliases(PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         foreach ($this->pool->getPackages() as $package) {
@@ -320,10 +305,7 @@ class RuleSetGenerator
         }
     }
 
-    /**
-     * @return RuleSet
-     */
-    public function getRulesFor(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null): RuleSet
+    public function getRulesFor(Request $request, ?PlatformRequirementFilterInterface $platformRequirementFilter = null): RuleSet
     {
         $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
 
@@ -334,7 +316,7 @@ class RuleSetGenerator
         $this->addConflictRules($platformRequirementFilter);
 
         // Remove references to packages
-        $this->addedMap = $this->addedPackagesByNames = array();
+        $this->addedMap = $this->addedPackagesByNames = [];
 
         $rules = $this->rules;
 

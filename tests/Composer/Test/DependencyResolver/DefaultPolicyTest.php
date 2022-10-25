@@ -48,8 +48,8 @@ class DefaultPolicyTest extends TestCase
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
 
-        $literals = array($packageA->getId());
-        $expected = array($packageA->getId());
+        $literals = [$packageA->getId()];
+        $expected = [$packageA->getId()];
 
         $selected = $this->policy->selectPreferredPackages($pool, $literals);
 
@@ -64,8 +64,8 @@ class DefaultPolicyTest extends TestCase
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
 
-        $literals = array($packageA1->getId(), $packageA2->getId());
-        $expected = array($packageA2->getId());
+        $literals = [$packageA1->getId(), $packageA2->getId()];
+        $expected = [$packageA2->getId()];
 
         $selected = $this->policy->selectPreferredPackages($pool, $literals);
 
@@ -80,8 +80,8 @@ class DefaultPolicyTest extends TestCase
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
 
-        $literals = array($packageA1->getId(), $packageA2->getId());
-        $expected = array($packageA2->getId());
+        $literals = [$packageA1->getId(), $packageA2->getId()];
+        $expected = [$packageA2->getId()];
 
         $selected = $this->policy->selectPreferredPackages($pool, $literals);
 
@@ -96,8 +96,8 @@ class DefaultPolicyTest extends TestCase
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
 
-        $literals = array($packageA1->getId(), $packageA2->getId());
-        $expected = array($packageA1->getId());
+        $literals = [$packageA1->getId(), $packageA2->getId()];
+        $expected = [$packageA1->getId()];
 
         $policy = new DefaultPolicy(true);
         $selected = $policy->selectPreferredPackages($pool, $literals);
@@ -113,8 +113,8 @@ class DefaultPolicyTest extends TestCase
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
 
-        $literals = array($packageA1->getId(), $packageA2->getId());
-        $expected = array($packageA2->getId());
+        $literals = [$packageA1->getId(), $packageA2->getId()];
+        $expected = [$packageA2->getId()];
 
         $selected = $this->policy->selectPreferredPackages($pool, $literals);
 
@@ -136,8 +136,8 @@ class DefaultPolicyTest extends TestCase
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
 
-        $literals = array($package1->getId(), $package2->getId(), $package3->getId(), $package4->getId());
-        $expected = array($package2->getId());
+        $literals = [$package1->getId(), $package2->getId(), $package3->getId(), $package4->getId()];
+        $expected = [$package2->getId()];
         $selected = $this->policy->selectPreferredPackages($pool, $literals);
 
         $this->assertSame($expected, $selected);
@@ -148,7 +148,7 @@ class DefaultPolicyTest extends TestCase
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
 
-        $expected = array($package4->getId());
+        $expected = [$package4->getId()];
         $selected = $this->policy->selectPreferredPackages($pool, $literals);
 
         $this->assertSame($expected, $selected);
@@ -173,12 +173,12 @@ class DefaultPolicyTest extends TestCase
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
 
         $packages = $pool->whatProvides('a', new Constraint('=', '2.1.9999999.9999999-dev'));
-        $literals = array();
+        $literals = [];
         foreach ($packages as $package) {
             $literals[] = $package->getId();
         }
 
-        $expected = array($packageAAliasImportant->getId());
+        $expected = [$packageAAliasImportant->getId()];
 
         $selected = $this->policy->selectPreferredPackages($pool, $literals);
 
@@ -190,14 +190,14 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
 
-        $packageA->setProvides(array('x' => new Link('A', 'X', new Constraint('==', '1.0'), Link::TYPE_PROVIDE)));
-        $packageB->setProvides(array('x' => new Link('B', 'X', new Constraint('==', '1.0'), Link::TYPE_PROVIDE)));
+        $packageA->setProvides(['x' => new Link('A', 'X', new Constraint('==', '1.0'), Link::TYPE_PROVIDE)]);
+        $packageB->setProvides(['x' => new Link('B', 'X', new Constraint('==', '1.0'), Link::TYPE_PROVIDE)]);
 
         $this->repositorySet->addRepository($this->repo);
 
-        $pool = $this->repositorySet->createPoolForPackages(array('A', 'B'), $this->repoLocked);
+        $pool = $this->repositorySet->createPoolForPackages(['A', 'B'], $this->repoLocked);
 
-        $literals = array($packageA->getId(), $packageB->getId());
+        $literals = [$packageA->getId(), $packageB->getId()];
         $expected = $literals;
 
         $selected = $this->policy->selectPreferredPackages($pool, $literals);
@@ -210,13 +210,13 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
 
-        $packageB->setReplaces(array('a' => new Link('B', 'A', new Constraint('==', '1.0'), Link::TYPE_REPLACE)));
+        $packageB->setReplaces(['a' => new Link('B', 'A', new Constraint('==', '1.0'), Link::TYPE_REPLACE)]);
 
         $this->repositorySet->addRepository($this->repo);
 
-        $pool = $this->repositorySet->createPoolForPackages(array('A', 'B'), $this->repoLocked);
+        $pool = $this->repositorySet->createPoolForPackages(['A', 'B'], $this->repoLocked);
 
-        $literals = array($packageA->getId(), $packageB->getId());
+        $literals = [$packageA->getId(), $packageB->getId()];
         $expected = $literals;
 
         $selected = $this->policy->selectPreferredPackages($pool, $literals);
@@ -230,14 +230,14 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageB = $this->getPackage('vendor-b/replacer', '1.0'));
         $this->repo->addPackage($packageA = $this->getPackage('vendor-a/replacer', '1.0'));
 
-        $packageA->setReplaces(array('vendor-a/package' => new Link('vendor-a/replacer', 'vendor-a/package', new Constraint('==', '1.0'), Link::TYPE_REPLACE)));
-        $packageB->setReplaces(array('vendor-a/package' => new Link('vendor-b/replacer', 'vendor-a/package', new Constraint('==', '1.0'), Link::TYPE_REPLACE)));
+        $packageA->setReplaces(['vendor-a/package' => new Link('vendor-a/replacer', 'vendor-a/package', new Constraint('==', '1.0'), Link::TYPE_REPLACE)]);
+        $packageB->setReplaces(['vendor-a/package' => new Link('vendor-b/replacer', 'vendor-a/package', new Constraint('==', '1.0'), Link::TYPE_REPLACE)]);
 
         $this->repositorySet->addRepository($this->repo);
 
-        $pool = $this->repositorySet->createPoolForPackages(array('vendor-a/replacer', 'vendor-b/replacer'), $this->repoLocked);
+        $pool = $this->repositorySet->createPoolForPackages(['vendor-a/replacer', 'vendor-b/replacer'], $this->repoLocked);
 
-        $literals = array($packageA->getId(), $packageB->getId());
+        $literals = [$packageA->getId(), $packageB->getId()];
         $expected = $literals;
 
         $selected = $this->policy->selectPreferredPackages($pool, $literals, 'vendor-a/package');
@@ -251,9 +251,9 @@ class DefaultPolicyTest extends TestCase
         $repositorySet = new RepositorySet('dev');
         $repositorySet->addRepository($this->repo);
 
-        $pool = $this->repositorySet->createPoolForPackages(array('vendor-a/replacer', 'vendor-b/replacer'), $this->repoLocked);
+        $pool = $this->repositorySet->createPoolForPackages(['vendor-a/replacer', 'vendor-b/replacer'], $this->repoLocked);
 
-        $literals = array($packageA->getId(), $packageB->getId());
+        $literals = [$packageA->getId(), $packageB->getId()];
         $expected = $literals;
 
         $selected = $this->policy->selectPreferredPackages($pool, $literals, 'vendor-a/package');
@@ -270,8 +270,8 @@ class DefaultPolicyTest extends TestCase
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
 
-        $literals = array($packageA1->getId(), $packageA2->getId());
-        $expected = array($packageA1->getId());
+        $literals = [$packageA1->getId(), $packageA2->getId()];
+        $expected = [$packageA1->getId()];
 
         $selected = $policy->selectPreferredPackages($pool, $literals);
 

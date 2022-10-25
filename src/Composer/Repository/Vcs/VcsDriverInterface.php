@@ -23,8 +23,6 @@ interface VcsDriverInterface
 {
     /**
      * Initializes the driver (git clone, svn checkout, fetch info etc)
-     *
-     * @return void
      */
     public function initialize(): void;
 
@@ -38,17 +36,11 @@ interface VcsDriverInterface
 
     /**
      * Return the content of $file or null if the file does not exist.
-     *
-     * @param  string      $file
-     * @param  string      $identifier
-     * @return string|null
      */
     public function getFileContent(string $file, string $identifier): ?string;
 
     /**
      * Get the changedate for $identifier.
-     *
-     * @param  string         $identifier
      */
     public function getChangeDate(string $identifier): ?\DateTimeImmutable;
 
@@ -89,8 +81,6 @@ interface VcsDriverInterface
 
     /**
      * Return the URL of the repository
-     *
-     * @return string
      */
     public function getUrl(): string;
 
@@ -105,8 +95,6 @@ interface VcsDriverInterface
 
     /**
      * Performs any cleanup necessary as the driver is not longer needed
-     *
-     * @return void
      */
     public function cleanup(): void;
 
@@ -117,7 +105,6 @@ interface VcsDriverInterface
      * @param  Config      $config current $config
      * @param  string      $url    URL to validate/check
      * @param  bool        $deep   unless true, only shallow checks (url matching typically) should be done
-     * @return bool
      */
     public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false): bool;
 }

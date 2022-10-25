@@ -7,13 +7,15 @@ Update with ignore-platform-req list ignoring upper bound of a dependency
             "type": "package",
             "package": [
                 { "name": "a/a", "version": "1.0.1", "require": { "ext-foo-bar": "3.*" } },
-                { "name": "b/b", "version": "1.0.1", "require": { "ext-foo-bar": "10.*" } }
+                { "name": "b/b", "version": "1.0.1", "require": { "ext-foo-bar": "10.*" } },
+                { "name": "c/c", "version": "1.0.1", "conflict": { "ext-foo-bar": "4.0.0 - 4.0.2", "php": "3.0.*" } }
             ]
         }
     ],
     "require": {
         "a/a": "1.0.*",
         "b/b": "1.0.*",
+        "c/c": "1.0.*",
         "php": "^4.3",
         "ext-foo-baz": "9.0.0"
     },

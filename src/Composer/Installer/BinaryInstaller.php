@@ -41,13 +41,9 @@ class BinaryInstaller
     private $vendorDir;
 
     /**
-     * @param IOInterface $io
-     * @param string      $binDir
-     * @param string      $binCompat
      * @param Filesystem  $filesystem
-     * @param string|null $vendorDir
      */
-    public function __construct(IOInterface $io, string $binDir, string $binCompat, Filesystem $filesystem = null, ?string $vendorDir = null)
+    public function __construct(IOInterface $io, string $binDir, string $binCompat, ?Filesystem $filesystem = null, ?string $vendorDir = null)
     {
         $this->binDir = $binDir;
         $this->binCompat = $binCompat;
@@ -56,12 +52,6 @@ class BinaryInstaller
         $this->vendorDir = $vendorDir;
     }
 
-    /**
-     * @param string $installPath
-     * @param bool $warnOnOverwrite
-     *
-     * @return void
-     */
     public function installBinaries(PackageInterface $package, string $installPath, bool $warnOnOverwrite = true): void
     {
         $binaries = $this->getBinaries($package);
@@ -117,9 +107,6 @@ class BinaryInstaller
         }
     }
 
-    /**
-     * @return void
-     */
     public function removeBinaries(PackageInterface $package): void
     {
         $this->initializeBinDir();
@@ -144,11 +131,6 @@ class BinaryInstaller
         }
     }
 
-    /**
-     * @param string $bin
-     *
-     * @return string
-     */
     public static function determineBinaryCaller(string $bin): string
     {
         if ('.bat' === substr($bin, -4) || '.exe' === substr($bin, -4)) {
@@ -173,13 +155,6 @@ class BinaryInstaller
         return $package->getBinaries();
     }
 
-    /**
-     * @param string $binPath
-     * @param string $link
-     * @param string $bin
-     *
-     * @return void
-     */
     protected function installFullBinaries(string $binPath, string $link, string $bin, PackageInterface $package): void
     {
         // add unixy support for cygwin and similar environments
@@ -196,33 +171,18 @@ class BinaryInstaller
         }
     }
 
-    /**
-     * @param string $binPath
-     * @param string $link
-     *
-     * @return void
-     */
     protected function installUnixyProxyBinaries(string $binPath, string $link): void
     {
         file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
         Silencer::call('chmod', $link, 0777 & ~umask());
     }
 
-    /**
-     * @return void
-     */
     protected function initializeBinDir(): void
     {
         $this->filesystem->ensureDirectoryExists($this->binDir);
         $this->binDir = realpath($this->binDir);
     }
 
-    /**
-     * @param string $bin
-     * @param string $link
-     *
-     * @return string
-     */
     protected function generateWindowsProxyCode(string $bin, string $link): string
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
@@ -246,12 +206,6 @@ class BinaryInstaller
             "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 
-    /**
-     * @param string $bin
-     * @param string $link
-     *
-     * @return string
-     */
     protected function generateUnixyProxyCode(string $bin, string $link): string
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);

@@ -49,7 +49,7 @@ class RootPackageLoader extends ArrayLoader
      */
     private $versionGuesser;
 
-    public function __construct(RepositoryManager $manager, Config $config, VersionParser $parser = null, VersionGuesser $versionGuesser = null, IOInterface $io = null)
+    public function __construct(RepositoryManager $manager, Config $config, ?VersionParser $parser = null, ?VersionGuesser $versionGuesser = null, ?IOInterface $io = null)
     {
         parent::__construct($parser);
 
@@ -60,8 +60,6 @@ class RootPackageLoader extends ArrayLoader
 
     /**
      * @inheritDoc
-     *
-     * @param string|null $cwd
      *
      * @return RootPackage|RootAliasPackage
      *
@@ -100,16 +98,16 @@ class RootPackageLoader extends ArrayLoader
             }
 
             if ($commit) {
-                $config['source'] = array(
+                $config['source'] = [
                     'type' => '',
                     'url' => '',
                     'reference' => $commit,
-                );
-                $config['dist'] = array(
+                ];
+                $config['dist'] = [
                     'type' => '',
                     'url' => '',
                     'reference' => $commit,
-                );
+                ];
             }
         }
 
@@ -133,15 +131,15 @@ class RootPackageLoader extends ArrayLoader
             $realPackage->setMinimumStability(VersionParser::normalizeStability($config['minimum-stability']));
         }
 
-        $aliases = array();
-        $stabilityFlags = array();
-        $references = array();
-        foreach (array('require', 'require-dev') as $linkType) {
+        $aliases = [];
+        $stabilityFlags = [];
+        $references = [];
+        foreach (['require', 'require-dev'] as $linkType) {
             if (isset($config[$linkType])) {
                 $linkInfo = BasePackage::$supportedLinkTypes[$linkType];
                 $method = 'get'.ucfirst($linkInfo['method']);
-                $links = array();
-                foreach ($realPackage->$method() as $link) {
+                $links = [];
+                foreach ($realPackage->{$method}() as $link) {
                     $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
                 }
                 $aliases = $this->extractAliases($links, $aliases);
@@ -195,13 +193,13 @@ class RootPackageLoader extends ArrayLoader
     private function extractAliases(array $requires, array $aliases): array
     {
         foreach ($requires as $reqName => $reqVersion) {
-            if (Preg::isMatch('{^([^,\s#]+)(?:#[^ ]+)? +as +([^,\s]+)$}', $reqVersion, $match)) {
-                $aliases[] = array(
+            if (Preg::isMatch('{(?:^|\| *|, *)([^,\s#|]+)(?:#[^ ]+)? +as +([^,\s|]+)(?:$| *\|| *,)}', $reqVersion, $match)) {
+                $aliases[] = [
                     'package' => strtolower($reqName),
                     'version' => $this->versionParser->normalize($match[1], $reqVersion),
                     'alias' => $match[2],
                     'alias_normalized' => $this->versionParser->normalize($match[2], $reqVersion),
-                );
+                ];
             } elseif (strpos($reqVersion, ' as ') !== false) {
                 throw new \UnexpectedValueException('Invalid alias definition in "'.$reqName.'": "'.$reqVersion.'". Aliases should be in the form "exact-version as other-exact-version".');
             }
@@ -214,7 +212,6 @@ class RootPackageLoader extends ArrayLoader
      * @internal
      *
      * @param array<string, string> $requires
-     * @param string                $minimumStability
      * @param array<string, int>    $stabilityFlags
      *
      * @return array<string, int>
@@ -228,7 +225,7 @@ class RootPackageLoader extends ArrayLoader
         /** @var int $minimumStability */
         $minimumStability = $stabilities[$minimumStability];
         foreach ($requires as $reqName => $reqVersion) {
-            $constraints = array();
+            $constraints = [];
 
             // extract all sub-constraints in case it is an OR/AND multi-constraint
             $orSplit = Preg::split('{\s*\|\|?\s*}', trim($reqVersion));

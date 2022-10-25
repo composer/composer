@@ -340,9 +340,24 @@
                 },
                 "gitlab-oauth": {
                     "type": "object",
-                    "description": "An object of domain name => gitlab API oauth tokens, typically {\"gitlab.com\":\"<token>\"}.",
+                    "description": "An object of domain name => gitlab API oauth tokens, typically {\"gitlab.com\":{\"expires-at\":\"<expiration date>\", \"refresh-token\":\"<refresh token>\", \"token\":\"<token>\"}}.",
                     "additionalProperties": {
-                        "type": "string"
+                        "type": ["string", "object"],
+                        "required": [ "token"],
+                        "properties": {
+                            "expires-at": {
+                                "type": "integer",
+                                "description": "The expiration date for this GitLab token"
+                            },
+                            "refresh-token": {
+                                "type": "string",
+                                "description": "The refresh token used for GitLab authentication"
+                            },
+                            "token": {
+                                "type": "string",
+                                "description": "The token used for GitLab authentication"
+                            }
+                        }
                     }
                 },
                 "gitlab-token": {

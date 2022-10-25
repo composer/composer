@@ -75,7 +75,7 @@ class PluginInstallerTest extends TestCase
     protected function setUp(): void
     {
         $loader = new JsonLoader(new ArrayLoader());
-        $this->packages = array();
+        $this->packages = [];
         $this->directory = self::getUniqueTmpDirectory();
         for ($i = 1; $i <= 8; $i++) {
             $filename = '/Fixtures/plugin-v'.$i.'/composer.json';
@@ -108,7 +108,7 @@ class PluginInstallerTest extends TestCase
         $im = $this->getMockBuilder('Composer\Installer\InstallationManager')->disableOriginalConstructor()->getMock();
         $im->expects($this->any())
             ->method('getInstallPath')
-            ->will($this->returnCallback(function ($package): string {
+            ->will($this->returnCallback(static function ($package): string {
                 return __DIR__.'/Fixtures/'.$package->getPrettyName();
             }));
 
@@ -128,14 +128,14 @@ class PluginInstallerTest extends TestCase
         $this->composer->setPackage(new RootPackage('dummy/root', '1.0.0.0', '1.0.0'));
         $this->composer->setLocker(new Locker($this->io, new JsonFile(Platform::getDevNull()), $im, '{}'));
 
-        $config->merge(array(
-            'config' => array(
+        $config->merge([
+            'config' => [
                 'vendor-dir' => $this->directory.'/Fixtures/',
                 'home' => $this->directory.'/Fixtures',
                 'bin-dir' => $this->directory.'/Fixtures/bin',
                 'allow-plugins' => true,
-            ),
-        ));
+            ],
+        ]);
 
         $this->pm = new PluginManager($this->io, $this->composer);
         $this->composer->setPluginManager($this->pm);
@@ -153,7 +153,7 @@ class PluginInstallerTest extends TestCase
         $this->repository
             ->expects($this->any())
             ->method('getPackages')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue([]));
         $installer = new PluginInstaller($this->io, $this->composer);
         $this->pm->loadInstalledPlugins();
 
@@ -172,13 +172,13 @@ class PluginInstallerTest extends TestCase
         $this->repository
             ->expects($this->any())
             ->method('getPackages')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue([]));
         $installer = new PluginInstaller($this->io, $this->composer);
         $this->pm->loadInstalledPlugins();
 
         $this->autoloadGenerator->setDevMode(true);
-        $this->composer->getPackage()->setAutoload(array('files' => array(__DIR__ . '/Fixtures/files_autoload_which_should_not_run.php')));
-        $this->composer->getPackage()->setDevAutoload(array('files' => array(__DIR__ . '/Fixtures/files_autoload_which_should_not_run.php')));
+        $this->composer->getPackage()->setAutoload(['files' => [__DIR__ . '/Fixtures/files_autoload_which_should_not_run.php']]);
+        $this->composer->getPackage()->setDevAutoload(['files' => [__DIR__ . '/Fixtures/files_autoload_which_should_not_run.php']]);
         $installer->install($this->repository, $this->packages[0]);
 
         $plugins = $this->pm->getPlugins();
@@ -194,7 +194,7 @@ class PluginInstallerTest extends TestCase
         $this->repository
             ->expects($this->any())
             ->method('getPackages')
-            ->will($this->returnValue(array($this->packages[3])));
+            ->will($this->returnValue([$this->packages[3]]));
         $installer = new PluginInstaller($this->io, $this->composer);
         $this->pm->loadInstalledPlugins();
 
@@ -213,7 +213,7 @@ class PluginInstallerTest extends TestCase
         $this->repository
             ->expects($this->any())
             ->method('getPackages')
-            ->will($this->returnValue(array($this->packages[0])));
+            ->will($this->returnValue([$this->packages[0]]));
         $this->repository
             ->expects($this->exactly(2))
             ->method('hasPackage')
@@ -234,7 +234,7 @@ class PluginInstallerTest extends TestCase
         $this->repository
             ->expects($this->any())
             ->method('getPackages')
-            ->will($this->returnValue(array($this->packages[0])));
+            ->will($this->returnValue([$this->packages[0]]));
         $this->repository
             ->expects($this->exactly(1))
             ->method('hasPackage')
@@ -254,7 +254,7 @@ class PluginInstallerTest extends TestCase
         $this->repository
             ->expects($this->any())
             ->method('getPackages')
-            ->will($this->returnValue(array($this->packages[1])));
+            ->will($this->returnValue([$this->packages[1]]));
         $this->repository
             ->expects($this->exactly(2))
             ->method('hasPackage')
@@ -274,7 +274,7 @@ class PluginInstallerTest extends TestCase
         $this->repository
             ->expects($this->any())
             ->method('getPackages')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue([]));
         $installer = new PluginInstaller($this->io, $this->composer);
         $this->pm->loadInstalledPlugins();
 
@@ -288,17 +288,14 @@ class PluginInstallerTest extends TestCase
     }
 
     /**
-     * @param string            $newPluginApiVersion
      * @param array<CompletePackage|CompleteAliasPackage> $plugins
-     *
-     * @return void
      */
-    private function setPluginApiVersionWithPlugins(string $newPluginApiVersion, array $plugins = array()): void
+    private function setPluginApiVersionWithPlugins(string $newPluginApiVersion, array $plugins = []): void
     {
         // reset the plugin manager's installed plugins
         $this->pm = $this->getMockBuilder('Composer\Plugin\PluginManager')
-                         ->onlyMethods(array('getPluginApiVersion'))
-                         ->setConstructorArgs(array($this->io, $this->composer))
+                         ->onlyMethods(['getPluginApiVersion'])
+                         ->setConstructorArgs([$this->io, $this->composer])
                          ->getMock();
 
         // mock the Plugin API version
@@ -316,8 +313,8 @@ class PluginInstallerTest extends TestCase
         $this->repository
             ->expects($this->any())
             ->method('getPackages')
-            ->will($this->returnCallback(function () use ($plugApiInternalPackage, $plugins): array {
-                return array_merge(array($plugApiInternalPackage), $plugins);
+            ->will($this->returnCallback(static function () use ($plugApiInternalPackage, $plugins): array {
+                return array_merge([$plugApiInternalPackage], $plugins);
             }));
 
         $this->pm->loadInstalledPlugins();
@@ -325,7 +322,7 @@ class PluginInstallerTest extends TestCase
 
     public function testStarPluginVersionWorksWithAnyAPIVersion(): void
     {
-        $starVersionPlugin = array($this->packages[4]);
+        $starVersionPlugin = [$this->packages[4]];
 
         $this->setPluginApiVersionWithPlugins('1.0.0', $starVersionPlugin);
         $this->assertCount(1, $this->pm->getPlugins());
@@ -342,7 +339,7 @@ class PluginInstallerTest extends TestCase
 
     public function testPluginConstraintWorksOnlyWithCertainAPIVersion(): void
     {
-        $pluginWithApiConstraint = array($this->packages[5]);
+        $pluginWithApiConstraint = [$this->packages[5]];
 
         $this->setPluginApiVersionWithPlugins('1.0.0', $pluginWithApiConstraint);
         $this->assertCount(0, $this->pm->getPlugins());
@@ -359,7 +356,7 @@ class PluginInstallerTest extends TestCase
 
     public function testPluginRangeConstraintsWorkOnlyWithCertainAPIVersion(): void
     {
-        $pluginWithApiConstraint = array($this->packages[6]);
+        $pluginWithApiConstraint = [$this->packages[6]];
 
         $this->setPluginApiVersionWithPlugins('1.0.0', $pluginWithApiConstraint);
         $this->assertCount(0, $this->pm->getPlugins());
@@ -376,12 +373,12 @@ class PluginInstallerTest extends TestCase
         $this->repository
             ->expects($this->any())
             ->method('getPackages')
-            ->will($this->returnValue(array($this->packages[7])));
+            ->will($this->returnValue([$this->packages[7]]));
         $installer = new PluginInstaller($this->io, $this->composer);
         $this->pm->loadInstalledPlugins();
 
         /** @var \Composer\Plugin\Capability\CommandProvider[] $caps */
-        $caps = $this->pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', array('composer' => $this->composer, 'io' => $this->io));
+        $caps = $this->pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', ['composer' => $this->composer, 'io' => $this->io]);
         $this->assertCount(1, $caps);
         $this->assertInstanceOf('Composer\Plugin\Capability\CommandProvider', $caps[0]);
 
@@ -407,31 +404,31 @@ class PluginInstallerTest extends TestCase
 
         $plugin->expects($this->once())
                ->method('getCapabilities')
-               ->will($this->returnCallback(function () use ($capabilityImplementation, $capabilityApi): array {
-                   return array($capabilityApi => $capabilityImplementation);
+               ->will($this->returnCallback(static function () use ($capabilityImplementation, $capabilityApi): array {
+                   return [$capabilityApi => $capabilityImplementation];
                }));
 
         /** @var \Composer\Test\Plugin\Mock\Capability $capability */
-        $capability = $this->pm->getPluginCapability($plugin, $capabilityApi, array('a' => 1, 'b' => 2));
+        $capability = $this->pm->getPluginCapability($plugin, $capabilityApi, ['a' => 1, 'b' => 2]);
 
         $this->assertInstanceOf($capabilityApi, $capability);
         $this->assertInstanceOf($capabilityImplementation, $capability);
-        $this->assertSame(array('a' => 1, 'b' => 2, 'plugin' => $plugin), $capability->args);
+        $this->assertSame(['a' => 1, 'b' => 2, 'plugin' => $plugin], $capability->args);
     }
 
     /** @return mixed[] */
     public function invalidImplementationClassNames(): array
     {
-        return array(
-            array(null),
-            array(""),
-            array(0),
-            array(1000),
-            array("   "),
-            array(array(1)),
-            array(array()),
-            array(new \stdClass()),
-        );
+        return [
+            [null],
+            [""],
+            [0],
+            [1000],
+            ["   "],
+            [[1]],
+            [[]],
+            [new \stdClass()],
+        ];
     }
 
     /**
@@ -450,8 +447,8 @@ class PluginInstallerTest extends TestCase
 
         $plugin->expects($this->once())
                ->method('getCapabilities')
-               ->will($this->returnCallback(function () use ($invalidImplementationClassNames, $capabilityApi): array {
-                   return array($capabilityApi => $invalidImplementationClassNames);
+               ->will($this->returnCallback(static function () use ($invalidImplementationClassNames, $capabilityApi): array {
+                   return [$capabilityApi => $invalidImplementationClassNames];
                }));
 
         $this->pm->getPluginCapability($plugin, $capabilityApi);
@@ -466,8 +463,8 @@ class PluginInstallerTest extends TestCase
 
         $plugin->expects($this->once())
                ->method('getCapabilities')
-               ->will($this->returnCallback(function (): array {
-                   return array();
+               ->will($this->returnCallback(static function (): array {
+                   return [];
                }));
 
         $this->assertNull($this->pm->getPluginCapability($plugin, $capabilityApi));
@@ -476,10 +473,10 @@ class PluginInstallerTest extends TestCase
     /** @return mixed[] */
     public function nonExistingOrInvalidImplementationClassTypes(): array
     {
-        return array(
-            array('\stdClass'),
-            array('NonExistentClassLikeMiddleClass'),
-        );
+        return [
+            ['\stdClass'],
+            ['NonExistentClassLikeMiddleClass'],
+        ];
     }
 
     /**

@@ -8,7 +8,7 @@ Updates a dev package forcing its reference
             "package": [
                 {
                     "name": "a/a", "version": "dev-master",
-                    "source": { "reference": "abc123", "url": "", "type": "git" }
+                    "source": { "reference": "abc123", "url": "https://example.org", "type": "git" }
                 }
             ]
         }
@@ -21,7 +21,7 @@ Updates a dev package forcing its reference
 [
     {
         "name": "a/a", "version": "dev-master",
-        "source": { "reference": "abc123", "url": "", "type": "git" }
+        "source": { "reference": "abc123", "url": "https://example.org", "type": "git" }
     }
 ]
 --RUN--

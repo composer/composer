@@ -162,7 +162,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setMinimumStability($minimumStability): void
+    public function setMinimumStability(string $minimumStability): void
     {
         $this->aliasOf->setMinimumStability($minimumStability);
     }
@@ -170,7 +170,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setPreferStable($preferStable): void
+    public function setPreferStable(bool $preferStable): void
     {
         $this->aliasOf->setPreferStable($preferStable);
     }

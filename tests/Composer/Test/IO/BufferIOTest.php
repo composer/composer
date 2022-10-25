@@ -31,11 +31,11 @@ class BufferIOTest extends TestCase
             self::expectExceptionMessage('Setting the user inputs requires at least the version 3.2 of the symfony/console component.');
         }
 
-        $bufferIO->setUserInputs(array(
+        $bufferIO->setUserInputs([
             'yes',
             'no',
             '',
-        ));
+        ]);
 
         $this->assertTrue($bufferIO->askConfirmation('Please say yes!', false));
         $this->assertFalse($bufferIO->askConfirmation('Now please say no!', true));

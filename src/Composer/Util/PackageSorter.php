@@ -18,6 +18,34 @@ use Composer\Package\RootPackageInterface;
 class PackageSorter
 {
     /**
+     * Returns the most recent version of a set of packages
+     *
+     * This is ideally the default branch version, or failing that it will return the package with the highest version
+     *
+     * @template T of PackageInterface
+     * @param array<T> $packages
+     * @return ($packages is non-empty-array<T> ? T : T|null)
+     */
+    public static function getMostCurrentVersion(array $packages): ?PackageInterface
+    {
+        return array_reduce($packages, static function ($carry, $pkg) {
+            if ($carry === null) {
+                return $pkg;
+            }
+
+            if ($pkg->isDefaultBranch()) {
+                return $pkg;
+            }
+
+            if (!$carry->isDefaultBranch() && version_compare($carry->getVersion(), $pkg->getVersion(), '<')) {
+                return $pkg;
+            }
+
+            return $carry;
+        });
+    }
+
+    /**
      * Sorts packages by name
      *
      * @template T of PackageInterface
@@ -42,9 +70,9 @@ class PackageSorter
      * @param  array<string, int> $weights Pre-set weights for some packages to give them more (negative number) or less (positive) weight offsets
      * @return PackageInterface[] sorted array
      */
-    public static function sortPackages(array $packages, array $weights = array()): array
+    public static function sortPackages(array $packages, array $weights = []): array
     {
-        $usageList = array();
+        $usageList = [];
 
         foreach ($packages as $package) {
             $links = $package->getRequires();
@@ -56,8 +84,8 @@ class PackageSorter
                 $usageList[$target][] = $package->getName();
             }
         }
-        $computing = array();
-        $computed = array();
+        $computing = [];
+        $computed = [];
         $computeImportance = static function ($name) use (&$computeImportance, &$computing, &$computed, $usageList, $weights) {
             // reusing computed importance
             if (isset($computed[$name])) {
@@ -84,12 +112,12 @@ class PackageSorter
             return $weight;
         };
 
-        $weightedPackages = array();
+        $weightedPackages = [];
 
         foreach ($packages as $index => $package) {
             $name = $package->getName();
             $weight = $computeImportance($name);
-            $weightedPackages[] = array('name' => $name, 'weight' => $weight, 'index' => $index);
+            $weightedPackages[] = ['name' => $name, 'weight' => $weight, 'index' => $index];
         }
 
         usort($weightedPackages, static function (array $a, array $b): int {
@@ -100,7 +128,7 @@ class PackageSorter
             return strnatcasecmp($a['name'], $b['name']);
         });
 
-        $sortedPackages = array();
+        $sortedPackages = [];
 
         foreach ($weightedPackages as $pkg) {
             $sortedPackages[] = $packages[$pkg['index']];

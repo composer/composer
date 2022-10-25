@@ -26,9 +26,9 @@ class HttpDownloaderTest extends TestCase
         $config = $this->getMockBuilder('Composer\Config')->getMock();
         $config->expects($this->any())
             ->method('get')
-            ->will($this->returnCallback(function ($key) {
+            ->will($this->returnCallback(static function ($key) {
                 if ($key === 'github-domains' || $key === 'gitlab-domains') {
-                    return array();
+                    return [];
                 }
             }));
 
@@ -56,22 +56,22 @@ class HttpDownloaderTest extends TestCase
     public function testOutputWarnings(): void
     {
         $io = new BufferIO();
-        HttpDownloader::outputWarnings($io, '$URL', array());
+        HttpDownloader::outputWarnings($io, '$URL', []);
         $this->assertSame('', $io->getOutput());
-        HttpDownloader::outputWarnings($io, '$URL', array(
+        HttpDownloader::outputWarnings($io, '$URL', [
             'warning' => 'old warning msg',
             'warning-versions' => '>=2.0',
             'info' => 'old info msg',
             'info-versions' => '>=2.0',
-            'warnings' => array(
-                array('message' => 'should not appear', 'versions' => '<2.2'),
-                array('message' => 'visible warning', 'versions' => '>=2.2-dev'),
-            ),
-            'infos' => array(
-                array('message' => 'should not appear', 'versions' => '<2.2'),
-                array('message' => 'visible info', 'versions' => '>=2.2-dev'),
-            ),
-        ));
+            'warnings' => [
+                ['message' => 'should not appear', 'versions' => '<2.2'],
+                ['message' => 'visible warning', 'versions' => '>=2.2-dev'],
+            ],
+            'infos' => [
+                ['message' => 'should not appear', 'versions' => '<2.2'],
+                ['message' => 'visible info', 'versions' => '>=2.2-dev'],
+            ],
+        ]);
 
         // the <info> tag are consumed by the OutputFormatter, but not <warning> as that is not a default output format
         $this->assertSame(

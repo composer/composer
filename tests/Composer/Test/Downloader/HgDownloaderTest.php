@@ -40,9 +40,8 @@ class HgDownloaderTest extends TestCase
      * @param \Composer\Config $config
      * @param \Composer\Test\Mock\ProcessExecutorMock $executor
      * @param \Composer\Util\Filesystem $filesystem
-     * @return HgDownloader
      */
-    protected function getDownloaderMock(\Composer\IO\IOInterface $io = null, \Composer\Config $config = null, \Composer\Test\Mock\ProcessExecutorMock $executor = null, Filesystem $filesystem = null): HgDownloader
+    protected function getDownloaderMock(?\Composer\IO\IOInterface $io = null, ?\Composer\Config $config = null, ?\Composer\Test\Mock\ProcessExecutorMock $executor = null, ?Filesystem $filesystem = null): HgDownloader
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $config = $config ?: $this->getMockBuilder('Composer\Config')->getMock();
@@ -73,13 +72,13 @@ class HgDownloaderTest extends TestCase
             ->will($this->returnValue('ref'));
         $packageMock->expects($this->once())
             ->method('getSourceUrls')
-            ->will($this->returnValue(array('https://mercurial.dev/l3l0/composer')));
+            ->will($this->returnValue(['https://mercurial.dev/l3l0/composer']));
 
         $process = $this->getProcessExecutorMock();
-        $process->expects(array(
+        $process->expects([
             $this->getCmd('hg clone -- \'https://mercurial.dev/l3l0/composer\' \''.$this->workingDir.'\''),
             $this->getCmd('hg up -- \'ref\''),
-        ), true);
+        ], true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
         $downloader->install($packageMock, $this->workingDir);
@@ -114,13 +113,13 @@ class HgDownloaderTest extends TestCase
             ->will($this->returnValue('1.0.0.0'));
         $packageMock->expects($this->any())
             ->method('getSourceUrls')
-            ->will($this->returnValue(array('https://github.com/l3l0/composer')));
+            ->will($this->returnValue(['https://github.com/l3l0/composer']));
 
         $process = $this->getProcessExecutorMock();
-        $process->expects(array(
+        $process->expects([
             $this->getCmd('hg st'),
             $this->getCmd("hg pull -- 'https://github.com/l3l0/composer' && hg up -- 'ref'"),
-        ), true);
+        ], true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
         $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
@@ -135,9 +134,9 @@ class HgDownloaderTest extends TestCase
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
 
         $process = $this->getProcessExecutorMock();
-        $process->expects(array(
+        $process->expects([
             $this->getCmd('hg st'),
-        ), true);
+        ], true);
 
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $filesystem->expects($this->once())

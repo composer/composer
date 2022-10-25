@@ -42,13 +42,13 @@ class Link
      * @var string[]
      * @phpstan-var array<self::TYPE_REQUIRE|self::TYPE_DEV_REQUIRE|self::TYPE_PROVIDE|self::TYPE_CONFLICT|self::TYPE_REPLACE>
      */
-    public static $TYPES = array(
+    public static $TYPES = [
         self::TYPE_REQUIRE,
         self::TYPE_DEV_REQUIRE,
         self::TYPE_PROVIDE,
         self::TYPE_CONFLICT,
         self::TYPE_REPLACE,
-    );
+    ];
 
     /**
      * @var string
@@ -79,11 +79,8 @@ class Link
     /**
      * Creates a new package link.
      *
-     * @param string              $source
-     * @param string              $target
      * @param ConstraintInterface $constraint       Constraint applying to the target of this link
      * @param self::TYPE_*        $description      Used to create a descriptive string representation
-     * @param string|null         $prettyConstraint
      */
     public function __construct(
         string $source,
@@ -99,33 +96,21 @@ class Link
         $this->prettyConstraint = $prettyConstraint;
     }
 
-    /**
-     * @return string
-     */
     public function getDescription(): string
     {
         return $this->description;
     }
 
-    /**
-     * @return string
-     */
     public function getSource(): string
     {
         return $this->source;
     }
 
-    /**
-     * @return string
-     */
     public function getTarget(): string
     {
         return $this->target;
     }
 
-    /**
-     * @return ConstraintInterface
-     */
     public function getConstraint(): ConstraintInterface
     {
         return $this->constraint;
@@ -133,7 +118,6 @@ class Link
 
     /**
      * @throws \UnexpectedValueException If no pretty constraint was provided
-     * @return string
      */
     public function getPrettyConstraint(): string
     {
@@ -144,18 +128,11 @@ class Link
         return $this->prettyConstraint;
     }
 
-    /**
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->source.' '.$this->description.' '.$this->target.' ('.$this->constraint.')';
     }
 
-    /**
-     * @param  PackageInterface $sourcePackage
-     * @return string
-     */
     public function getPrettyString(PackageInterface $sourcePackage): string
     {
         return $sourcePackage->getPrettyString().' '.$this->description.' '.$this->target.' '.$this->constraint->getPrettyString();

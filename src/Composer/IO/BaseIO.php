@@ -20,7 +20,7 @@ use Psr\Log\LogLevel;
 abstract class BaseIO implements IOInterface
 {
     /** @var array<string, array{username: string|null, password: string|null}> */
-    protected $authentications = array();
+    protected $authentications = [];
 
     /**
      * @inheritDoc
@@ -35,7 +35,7 @@ abstract class BaseIO implements IOInterface
      */
     public function resetAuthentications()
     {
-        $this->authentications = array();
+        $this->authentications = [];
     }
 
     /**
@@ -55,7 +55,7 @@ abstract class BaseIO implements IOInterface
             return $this->authentications[$repositoryName];
         }
 
-        return array('username' => null, 'password' => null);
+        return ['username' => null, 'password' => null];
     }
 
     /**
@@ -63,7 +63,7 @@ abstract class BaseIO implements IOInterface
      */
     public function setAuthentication($repositoryName, $username, $password = null)
     {
-        $this->authentications[$repositoryName] = array('username' => $username, 'password' => $password);
+        $this->authentications[$repositoryName] = ['username' => $username, 'password' => $password];
     }
 
     /**
@@ -91,7 +91,7 @@ abstract class BaseIO implements IOInterface
      *
      * @return void
      */
-    protected function checkAndSetAuthentication(string $repositoryName, string $username, string $password = null)
+    protected function checkAndSetAuthentication(string $repositoryName, string $username, ?string $password = null)
     {
         if ($this->hasAuthentication($repositoryName)) {
             $auth = $this->getAuthentication($repositoryName);
@@ -128,6 +128,11 @@ abstract class BaseIO implements IOInterface
         }
 
         foreach ($githubOauth as $domain => $token) {
+            if ($domain !== 'github.com' && !in_array($domain, $config->get('github-domains'), true)) {
+                $this->debug($domain.' is not in the configured github-domains, adding it implicitly as authentication is configured for this domain');
+                $config->merge(['config' => ['github-domains' => array_merge($config->get('github-domains'), [$domain])]], 'implicit-due-to-auth');
+            }
+
             // allowed chars for GH tokens are from https://github.blog/changelog/2021-03-04-authentication-token-format-updates/
             // plus dots which were at some point used for GH app integration tokens
             if (!Preg::isMatch('{^[.A-Za-z0-9_]+$}', $token)) {
@@ -137,10 +142,21 @@ abstract class BaseIO implements IOInterface
         }
 
         foreach ($gitlabOauth as $domain => $token) {
+            if ($domain !== 'gitlab.com' && !in_array($domain, $config->get('gitlab-domains'), true)) {
+                $this->debug($domain.' is not in the configured gitlab-domains, adding it implicitly as authentication is configured for this domain');
+                $config->merge(['config' => ['gitlab-domains' => array_merge($config->get('gitlab-domains'), [$domain])]], 'implicit-due-to-auth');
+            }
+
+            $token = is_array($token) ? $token["token"] : $token;
             $this->checkAndSetAuthentication($domain, $token, 'oauth2');
         }
 
         foreach ($gitlabToken as $domain => $token) {
+            if ($domain !== 'gitlab.com' && !in_array($domain, $config->get('gitlab-domains'), true)) {
+                $this->debug($domain.' is not in the configured gitlab-domains, adding it implicitly as authentication is configured for this domain');
+                $config->merge(['config' => ['gitlab-domains' => array_merge($config->get('gitlab-domains'), [$domain])]], 'implicit-due-to-auth');
+            }
+
             $username = is_array($token) ? $token["username"] : $token;
             $password = is_array($token) ? $token["token"] : 'private-token';
             $this->checkAndSetAuthentication($domain, $username, $password);
@@ -159,51 +175,51 @@ abstract class BaseIO implements IOInterface
         ProcessExecutor::setTimeout($config->get('process-timeout'));
     }
 
-    public function emergency($message, array $context = array()): void
+    public function emergency($message, array $context = []): void
     {
         $this->log(LogLevel::EMERGENCY, $message, $context);
     }
 
-    public function alert($message, array $context = array()): void
+    public function alert($message, array $context = []): void
     {
         $this->log(LogLevel::ALERT, $message, $context);
     }
 
-    public function critical($message, array $context = array()): void
+    public function critical($message, array $context = []): void
     {
         $this->log(LogLevel::CRITICAL, $message, $context);
     }
 
-    public function error($message, array $context = array()): void
+    public function error($message, array $context = []): void
     {
         $this->log(LogLevel::ERROR, $message, $context);
     }
 
-    public function warning($message, array $context = array()): void
+    public function warning($message, array $context = []): void
     {
         $this->log(LogLevel::WARNING, $message, $context);
     }
 
-    public function notice($message, array $context = array()): void
+    public function notice($message, array $context = []): void
     {
         $this->log(LogLevel::NOTICE, $message, $context);
     }
 
-    public function info($message, array $context = array()): void
+    public function info($message, array $context = []): void
     {
         $this->log(LogLevel::INFO, $message, $context);
     }
 
-    public function debug($message, array $context = array()): void
+    public function debug($message, array $context = []): void
     {
         $this->log(LogLevel::DEBUG, $message, $context);
     }
 
-    public function log($level, $message, array $context = array()): void
+    public function log($level, $message, array $context = []): void
     {
         $message = (string) $message;
 
-        if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
+        if (in_array($level, [LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR])) {
             $this->writeError('<error>'.$message.'</error>');
         } elseif ($level === LogLevel::WARNING) {
             $this->writeError('<warning>'.$message.'</warning>');

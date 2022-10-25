@@ -16,8 +16,6 @@ final class PlatformRequirementFilterFactory
 {
     /**
      * @param mixed $boolOrList
-     *
-     * @return PlatformRequirementFilterInterface
      */
     public static function fromBoolOrList($boolOrList): PlatformRequirementFilterInterface
     {
@@ -37,17 +35,11 @@ final class PlatformRequirementFilterFactory
         );
     }
 
-    /**
-     * @return PlatformRequirementFilterInterface
-     */
     public static function ignoreAll(): PlatformRequirementFilterInterface
     {
         return new IgnoreAllPlatformRequirementFilter();
     }
 
-    /**
-     * @return PlatformRequirementFilterInterface
-     */
     public static function ignoreNothing(): PlatformRequirementFilterInterface
     {
         return new IgnoreNothingPlatformRequirementFilter();

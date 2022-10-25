@@ -24,12 +24,12 @@ $config = new PhpCsFixer\Config();
 return $config->setRules([
         '@PSR2' => true,
         'binary_operator_spaces' => true,
-        'blank_line_before_statement' => array('statements' => array('declare', 'return')),
-        'cast_spaces' => array('space' => 'single'),
-        'header_comment' => array('header' => $header),
+        'blank_line_before_statement' => ['statements' => ['declare', 'return']],
+        'cast_spaces' => ['space' => 'single'],
+        'header_comment' => ['header' => $header],
         'include' => true,
 
-        'class_attributes_separation' => array('elements' => array('method' => 'one', 'trait_import' => 'none')),
+        'class_attributes_separation' => ['elements' => ['method' => 'one', 'trait_import' => 'none']],
         'no_blank_lines_after_class_opening' => true,
         'no_blank_lines_after_phpdoc' => true,
         'no_empty_statement' => true,
@@ -40,6 +40,8 @@ return $config->setRules([
         'object_operator_without_whitespace' => true,
         //'phpdoc_align' => true,
         'phpdoc_indent' => true,
+        'no_empty_comment' => true,
+        'no_empty_phpdoc' => true,
         'phpdoc_no_access' => true,
         'phpdoc_no_package' => true,
         //'phpdoc_order' => true,
@@ -62,13 +64,12 @@ return $config->setRules([
         'single_import_per_statement' => true,
 
         // PHP 7.2 migration
-        // TODO later once 2.2 is more stable
-        // 'array_syntax' => true,
-        // 'list_syntax' => true,
-        // 'regular_callable_call' => true,
-        // 'static_lambda' => true,
-        // 'nullable_type_declaration_for_default_null_value' => true,
-        // 'explicit_indirect_variable' => true,
+        'array_syntax' => true,
+        'list_syntax' => true,
+        'regular_callable_call' => true,
+        'static_lambda' => true,
+        'nullable_type_declaration_for_default_null_value' => true,
+        'explicit_indirect_variable' => true,
         'visibility_required' => ['elements' => ['property', 'method', 'const']],
         'non_printable_character' => true,
         'combine_nested_dirname' => true,
@@ -76,6 +77,9 @@ return $config->setRules([
         'ternary_to_null_coalescing' => true,
         'phpdoc_to_param_type' => true,
         'declare_strict_types' => true,
+        'no_superfluous_phpdoc_tags' => [
+            'allow_mixed' => true,
+        ],
 
         // TODO php 7.4 migration (one day..)
         // 'phpdoc_to_property_type' => true,

@@ -26,17 +26,11 @@ interface ConfigSourceInterface
      * @param string        $name   Name
      * @param mixed[]|false $config Configuration
      * @param bool          $append Whether the repo should be appended (true) or prepended (false)
-     *
-     * @return void
      */
     public function addRepository(string $name, $config, bool $append = true): void;
 
     /**
      * Remove a repository
-     *
-     * @param string $name
-     *
-     * @return void
      */
     public function removeRepository(string $name): void;
 
@@ -45,17 +39,11 @@ interface ConfigSourceInterface
      *
      * @param string $name  Name
      * @param mixed  $value Value
-     *
-     * @return void
      */
     public function addConfigSetting(string $name, $value): void;
 
     /**
      * Remove a config setting
-     *
-     * @param string $name
-     *
-     * @return void
      */
     public function removeConfigSetting(string $name): void;
 
@@ -64,17 +52,11 @@ interface ConfigSourceInterface
      *
      * @param string $name  Name
      * @param string|string[] $value Value
-     *
-     * @return void
      */
     public function addProperty(string $name, $value): void;
 
     /**
      * Remove a property
-     *
-     * @param string $name
-     *
-     * @return void
      */
     public function removeProperty(string $name): void;
 
@@ -84,8 +66,6 @@ interface ConfigSourceInterface
      * @param string $type  Type (require, require-dev, provide, suggest, replace, conflict)
      * @param string $name  Name
      * @param string $value Value
-     *
-     * @return void
      */
     public function addLink(string $type, string $name, string $value): void;
 
@@ -94,15 +74,11 @@ interface ConfigSourceInterface
      *
      * @param string $type Type (require, require-dev, provide, suggest, replace, conflict)
      * @param string $name Name
-     *
-     * @return void
      */
     public function removeLink(string $type, string $name): void;
 
     /**
      * Gives a user-friendly name to this source (file path or so)
-     *
-     * @return string
      */
     public function getName(): string;
 }

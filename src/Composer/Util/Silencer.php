@@ -22,7 +22,7 @@ class Silencer
     /**
      * @var int[] Unpop stack
      */
-    private static $stack = array();
+    private static $stack = [];
 
     /**
      * Suppresses given mask or errors.
@@ -44,8 +44,6 @@ class Silencer
 
     /**
      * Restores a single state.
-     *
-     * @return void
      */
     public static function restore(): void
     {

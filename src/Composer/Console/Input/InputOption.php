@@ -43,7 +43,7 @@ class InputOption extends BaseInputOption
      *
      * @throws InvalidArgumentException If option mode is invalid or incompatible
      */
-    public function __construct(string $name, $shortcut = null, int $mode = null, string $description = '', $default = null, $suggestedValues = [])
+    public function __construct(string $name, $shortcut = null, ?int $mode = null, string $description = '', $default = null, $suggestedValues = [])
     {
         parent::__construct($name, $shortcut, $mode, $description, $default);
 

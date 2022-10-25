@@ -12,7 +12,7 @@ Installing locked dev packages should remove old dependencies
     "packages": [
         {
             "name": "a/devpackage", "version": "dev-master",
-            "source": { "reference": "newref", "url": "", "type": "git" },
+            "source": { "reference": "newref", "url": "https://example.org", "type": "git" },
             "require": {},
             "default-branch": true
         }
@@ -28,7 +28,7 @@ Installing locked dev packages should remove old dependencies
 [
     {
         "name": "a/devpackage", "version": "dev-master",
-        "source": { "reference": "oldref", "url": "", "type": "git" },
+        "source": { "reference": "oldref", "url": "https://example.org", "type": "git" },
         "require": {
             "a/dependency": "*"
         },
@@ -36,7 +36,7 @@ Installing locked dev packages should remove old dependencies
     },
     {
         "name": "a/dependency", "version": "dev-master",
-        "source": { "reference": "ref", "url": "", "type": "git" },
+        "source": { "reference": "ref", "url": "https://example.org", "type": "git" },
         "require": {},
         "default-branch": true
     }

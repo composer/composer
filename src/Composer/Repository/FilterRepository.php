@@ -69,8 +69,6 @@ class FilterRepository implements RepositoryInterface
 
     /**
      * Returns the wrapped repositories
-     *
-     * @return RepositoryInterface
      */
     public function getRepository(): RepositoryInterface
     {
@@ -103,7 +101,7 @@ class FilterRepository implements RepositoryInterface
     public function findPackages($name, $constraint = null): array
     {
         if (!$this->isAllowed($name)) {
-            return array();
+            return [];
         }
 
         return $this->repo->findPackages($name, $constraint);
@@ -112,7 +110,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array()): array
+    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = []): array
     {
         foreach ($packageNameMap as $name => $constraint) {
             if (!$this->isAllowed($name)) {
@@ -121,12 +119,12 @@ class FilterRepository implements RepositoryInterface
         }
 
         if (!$packageNameMap) {
-            return array('namesFound' => array(), 'packages' => array());
+            return ['namesFound' => [], 'packages' => []];
         }
 
         $result = $this->repo->loadPackages($packageNameMap, $acceptableStabilities, $stabilityFlags, $alreadyLoaded);
         if (!$this->canonical) {
-            $result['namesFound'] = array();
+            $result['namesFound'] = [];
         }
 
         return $result;
@@ -137,7 +135,7 @@ class FilterRepository implements RepositoryInterface
      */
     public function search(string $query, int $mode = 0, ?string $type = null): array
     {
-        $result = array();
+        $result = [];
 
         foreach ($this->repo->search($query, $mode, $type) as $package) {
             if ($this->isAllowed($package['name'])) {
@@ -153,7 +151,7 @@ class FilterRepository implements RepositoryInterface
      */
     public function getPackages(): array
     {
-        $result = array();
+        $result = [];
         foreach ($this->repo->getPackages() as $package) {
             if ($this->isAllowed($package->getName())) {
                 $result[] = $package;
@@ -168,7 +166,7 @@ class FilterRepository implements RepositoryInterface
      */
     public function getProviders($packageName): array
     {
-        $result = array();
+        $result = [];
         foreach ($this->repo->getProviders($packageName) as $name => $provider) {
             if ($this->isAllowed($provider['name'])) {
                 $result[$name] = $provider;
@@ -190,11 +188,6 @@ class FilterRepository implements RepositoryInterface
         return 0;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return bool
-     */
     private function isAllowed(string $name): bool
     {
         if (!$this->only && !$this->exclude) {

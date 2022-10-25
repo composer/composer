@@ -39,9 +39,6 @@ class JsonConfigSource implements ConfigSourceInterface
 
     /**
      * Constructor
-     *
-     * @param JsonFile $file
-     * @param bool     $authConfig
      */
     public function __construct(JsonFile $file, bool $authConfig = false)
     {
@@ -70,7 +67,7 @@ class JsonConfigSource implements ConfigSourceInterface
                     if ($index === $repo) {
                         continue;
                     }
-                    if (is_numeric($index) && ($val === array('packagist' => false) || $val === array('packagist.org' => false))) {
+                    if (is_numeric($index) && ($val === ['packagist' => false] || $val === ['packagist.org' => false])) {
                         unset($config['repositories'][$index]);
                         $config['repositories']['packagist.org'] = false;
                         break;
@@ -81,7 +78,7 @@ class JsonConfigSource implements ConfigSourceInterface
             if ($append) {
                 $config['repositories'][$repo] = $repoConfig;
             } else {
-                $config['repositories'] = array($repo => $repoConfig) + $config['repositories'];
+                $config['repositories'] = [$repo => $repoConfig] + $config['repositories'];
             }
         }, $name, $config, $append);
     }
@@ -104,7 +101,7 @@ class JsonConfigSource implements ConfigSourceInterface
         $authConfig = $this->authConfig;
         $this->manipulateJson('addConfigSetting', static function (&$config, $key, $val) use ($authConfig): void {
             if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
-                list($key, $host) = explode('.', $key, 2);
+                [$key, $host] = explode('.', $key, 2);
                 if ($authConfig) {
                     $config[$key][$host] = $val;
                 } else {
@@ -124,7 +121,7 @@ class JsonConfigSource implements ConfigSourceInterface
         $authConfig = $this->authConfig;
         $this->manipulateJson('removeConfigSetting', static function (&$config, $key) use ($authConfig): void {
             if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
-                list($key, $host) = explode('.', $key, 2);
+                [$key, $host] = explode('.', $key, 2);
                 if ($authConfig) {
                     unset($config[$key][$host]);
                 } else {
@@ -148,7 +145,7 @@ class JsonConfigSource implements ConfigSourceInterface
                 $arr = &$config[reset($bits)];
                 foreach ($bits as $bit) {
                     if (!isset($arr[$bit])) {
-                        $arr[$bit] = array();
+                        $arr[$bit] = [];
                     }
                     $arr = &$arr[$bit];
                 }
@@ -208,11 +205,7 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
-     * @param string $method
-     * @param callable $fallback
      * @param mixed ...$args
-     *
-     * @return void
      */
     private function manipulateJson(string $method, callable $fallback, ...$args): void
     {
@@ -239,38 +232,38 @@ class JsonConfigSource implements ConfigSourceInterface
         // override manipulator method for auth config files
         if ($this->authConfig && $method === 'addConfigSetting') {
             $method = 'addSubNode';
-            list($mainNode, $name) = explode('.', $args[0], 2);
-            $args = array($mainNode, $name, $args[1]);
+            [$mainNode, $name] = explode('.', $args[0], 2);
+            $args = [$mainNode, $name, $args[1]];
         } elseif ($this->authConfig && $method === 'removeConfigSetting') {
             $method = 'removeSubNode';
-            list($mainNode, $name) = explode('.', $args[0], 2);
-            $args = array($mainNode, $name);
+            [$mainNode, $name] = explode('.', $args[0], 2);
+            $args = [$mainNode, $name];
         }
 
         // try to update cleanly
-        if (call_user_func_array(array($manipulator, $method), $args)) {
+        if (call_user_func_array([$manipulator, $method], $args)) {
             file_put_contents($this->file->getPath(), $manipulator->getContents());
         } else {
             // on failed clean update, call the fallback and rewrite the whole file
             $config = $this->file->read();
             $this->arrayUnshiftRef($args, $config);
-            call_user_func_array($fallback, $args);
+            $fallback(...$args);
             // avoid ending up with arrays for keys that should be objects
-            foreach (array('require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'support') as $prop) {
-                if (isset($config[$prop]) && $config[$prop] === array()) {
+            foreach (['require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'support'] as $prop) {
+                if (isset($config[$prop]) && $config[$prop] === []) {
                     $config[$prop] = new \stdClass;
                 }
             }
-            foreach (array('psr-0', 'psr-4') as $prop) {
-                if (isset($config['autoload'][$prop]) && $config['autoload'][$prop] === array()) {
+            foreach (['psr-0', 'psr-4'] as $prop) {
+                if (isset($config['autoload'][$prop]) && $config['autoload'][$prop] === []) {
                     $config['autoload'][$prop] = new \stdClass;
                 }
-                if (isset($config['autoload-dev'][$prop]) && $config['autoload-dev'][$prop] === array()) {
+                if (isset($config['autoload-dev'][$prop]) && $config['autoload-dev'][$prop] === []) {
                     $config['autoload-dev'][$prop] = new \stdClass;
                 }
             }
-            foreach (array('platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'preferred-install') as $prop) {
-                if (isset($config['config'][$prop]) && $config['config'][$prop] === array()) {
+            foreach (['platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'preferred-install'] as $prop) {
+                if (isset($config['config'][$prop]) && $config['config'][$prop] === []) {
                     $config['config'][$prop] = new \stdClass;
                 }
             }
@@ -295,7 +288,6 @@ class JsonConfigSource implements ConfigSourceInterface
      *
      * @param  mixed[] $array
      * @param  mixed $value
-     * @return int
      */
     private function arrayUnshiftRef(array &$array, &$value): int
     {

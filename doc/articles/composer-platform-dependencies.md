@@ -23,8 +23,8 @@ That's how packages can add a dependency on the used PHP version:
 
 ```json
 {
-    "require" : {
-        "php" : ">=7.4"
+    "require": {
+        "php": ">=7.4"
     }
 }
 ```
@@ -61,7 +61,7 @@ autoloader are considered the application "runtime".
 Starting with version 2.0, Composer makes [additional features](../07-runtime.md) (besides registering the class autoloader) available to the application runtime environment.
 
 Similar to `composer-plugin-api`, not every Composer release adds new runtime features,
-thus the version of `composer-runtimeapi` is also increased independently from Composer's version. 
+thus the version of `composer-runtimeapi` is also increased independently from Composer's version.
 
 ## Composer package `composer`
 

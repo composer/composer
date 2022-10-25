@@ -28,30 +28,30 @@ class InstallationManagerMock extends InstallationManager
     /**
      * @var PackageInterface[]
      */
-    private $installed = array();
+    private $installed = [];
     /**
      * @var PackageInterface[][]
      */
-    private $updated = array();
+    private $updated = [];
     /**
      * @var PackageInterface[]
      */
-    private $uninstalled = array();
+    private $uninstalled = [];
     /**
      * @var string[]
      */
-    private $trace = array();
+    private $trace = [];
 
     public function __construct()
     {
     }
 
-    public function execute(InstalledRepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true): void
+    public function execute(InstalledRepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true, $downloadOnly = false): void
     {
         foreach ($operations as $operation) {
             $method = $operation->getOperationType();
             // skipping download() step here for tests
-            $this->$method($repo, $operation);
+            $this->{$method}($repo, $operation);
         }
     }
 
@@ -82,7 +82,7 @@ class InstallationManagerMock extends InstallationManager
      */
     public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation): ?PromiseInterface
     {
-        $this->updated[] = array($operation->getInitialPackage(), $operation->getTargetPackage());
+        $this->updated[] = [$operation->getInitialPackage(), $operation->getTargetPackage()];
         $this->trace[] = strip_tags((string) $operation);
         $repo->removePackage($operation->getInitialPackage());
         if (!$repo->hasPackage($operation->getTargetPackage())) {

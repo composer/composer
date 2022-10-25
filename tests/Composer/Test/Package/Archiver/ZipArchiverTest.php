@@ -19,42 +19,40 @@ use Composer\Package\Archiver\ZipArchiver;
 class ZipArchiverTest extends ArchiverTest
 {
     /**
-     * @param string $include
-     *
      * @dataProvider provideGitignoreExcludeNegationTestCases
      */
     public function testGitignoreExcludeNegation(string $include): void
     {
-        $this->testZipArchive(array(
+        $this->testZipArchive([
             'docs/README.md' => '# The doc',
             '.gitignore' => "/*\n.*\n!.git*\n$include",
-        ));
+        ]);
     }
 
     public function provideGitignoreExcludeNegationTestCases(): array
     {
-        return array(
-            array('!/docs'),
-            array('!/docs/'),
-        );
+        return [
+            ['!/docs'],
+            ['!/docs/'],
+        ];
     }
 
     /**
      * @param array<string, string> $files
      */
-    public function testZipArchive(array $files = array()): void
+    public function testZipArchive(array $files = []): void
     {
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('Cannot run ZipArchiverTest, missing class "ZipArchive".');
         }
 
         if (empty($files)) {
-            $files = array(
+            $files = [
                 'file.txt' => null,
                 'foo/bar/baz' => null,
                 'x/baz' => null,
                 'x/includeme' => null,
-            );
+            ];
 
             if (!Platform::isWindows()) {
                 $files['foo' . Platform::getCwd() . '/file.txt'] = null;
@@ -84,8 +82,6 @@ class ZipArchiverTest extends ArchiverTest
      * Create a local dummy repository to run tests against!
      *
      * @param array<string, string|null> $files
-     *
-     * @return void
      */
     protected function setupDummyRepo(array &$files): void
     {
@@ -101,13 +97,6 @@ class ZipArchiverTest extends ArchiverTest
         chdir($currentWorkDir);
     }
 
-    /**
-     * @param string $path
-     * @param string $content
-     * @param string $currentWorkDir
-     *
-     * @return void
-     */
     protected function writeFile(string $path, string $content, string $currentWorkDir): void
     {
         if (!file_exists(dirname($path))) {

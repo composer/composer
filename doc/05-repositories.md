@@ -149,7 +149,7 @@ number.
 
 This field is optional.
 
-### metadata-url, available-packages and available-package-patterns
+#### metadata-url, available-packages and available-package-patterns
 
 The `metadata-url` field allows you to provide a URL template to serve all
 packages which are in the repository. It must contain the placeholder
@@ -204,7 +204,7 @@ every matching package name in this repository).
 
 This field is optional.
 
-### providers-api
+#### providers-api
 
 The `providers-api` field allows you to provide a URL template to serve all
 packages which provide a given package name, but not the package which has
@@ -222,7 +222,7 @@ monolog/monolog itself.
 
 This field is optional.
 
-### list
+#### list
 
 The `list` field allows you to return the names of packages which match a
 given field (or all names if no filter is present). It should accept an
@@ -591,7 +591,7 @@ time, there are some use cases for hosting your own repository.
 * **Separate ecosystem:** If you have a project which has its own ecosystem,
   and the packages aren't really reusable by the greater PHP community, you
   might want to keep them separate to packagist. An example of this would be
-  wordpress plugins.
+  WordPress plugins.
 
 For hosting your own packages, a native `composer` type of repository is
 recommended, which provides the best performance.
@@ -646,9 +646,10 @@ those private packages:
 
 Each zip artifact is a ZIP archive with `composer.json` in root folder:
 
-```sh
+```shell
 unzip -l acme-corp-parser-10.3.5.zip
-
+```
+```text
 composer.json
 ...
 ```
@@ -665,11 +666,11 @@ you to depend on a local directory, either absolute or relative. This can be
 especially useful when dealing with monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
-```
+```text
 ...
 ├── apps
-│   └── my-app
-│       └── composer.json
+│   └── my-app
+│       └── composer.json
 ├── packages
 │   └── my-package
 │       └── composer.json
@@ -797,7 +798,7 @@ You can disable the default Packagist.org repository by adding this to your
 
 You can disable Packagist.org globally by using the global config flag:
 
-```bash
+```shell
 php composer.phar config -g repo.packagist false
 ```
 
