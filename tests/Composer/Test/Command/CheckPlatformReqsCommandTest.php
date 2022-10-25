@@ -72,7 +72,7 @@ class CheckPlatformReqsCommandTest extends TestCase
             ],
             ['--no-dev' => true],
             'Checking non-dev platform requirements for packages in the vendor dir
-ext-foobar 2.3.4  success'
+ext-foobar 2.3.4   success'
         ];
 
         yield 'Checks requirements only from the lock file, not from installed packages.' => [
@@ -86,8 +86,8 @@ ext-foobar 2.3.4  success'
             ],
             ['--lock' => true],
             'Checking platform requirements using the lock file
-ext-barbaz 2.3.4.5  success 
-ext-foobar 2.3.4    success'
+ext-barbaz 2.3.4.5   success 
+ext-foobar 2.3.4     success'
         ];
     }
 }
