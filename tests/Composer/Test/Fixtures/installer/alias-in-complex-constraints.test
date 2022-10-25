@@ -1,0 +1,58 @@
+--TEST--
+Aliases can be extracted out of complex AND or OR constraints
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-feature-foo",
+                    "source": { "reference": "feat.a", "type": "git", "url": "" }
+                },
+                {
+                    "name": "a/b", "version": "dev-feature-foo",
+                    "source": { "reference": "feat.b", "type": "git", "url": "" }
+                },
+                {
+                    "name": "a/c", "version": "dev-feature-foo",
+                    "source": { "reference": "feat.c", "type": "git", "url": "" }
+                },
+                {
+                    "name": "a/d", "version": "dev-feature-foo",
+                    "source": { "reference": "feat.d", "type": "git", "url": "" }
+                },
+                {
+                    "name": "enforcer/pkg", "version": "1.0.0",
+                    "source": { "reference": "feat.c", "type": "git", "url": "" },
+                    "require": {
+                        "a/a": "^1",
+                        "a/b": "^1",
+                        "a/c": "^1",
+                        "a/d": "^1"
+                    }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.*||dev-feature-foo as 1.0.2||^2",
+        "a/b": "dev-feature-foo, dev-feature-foo as 1.0.2",
+        "a/c": "dev-feature-foo as 1.0.2||^2",
+        "a/d": "dev-feature-foo as 1.0.2, dev-feature-foo",
+        "enforcer/pkg": "*"
+    },
+    "minimum-stability": "dev"
+}
+--RUN--
+install
+--EXPECT--
+Installing a/d (dev-feature-foo feat.d)
+Marking a/d (1.0.2) as installed, alias of a/d (dev-feature-foo feat.d)
+Installing a/c (dev-feature-foo feat.c)
+Marking a/c (1.0.2) as installed, alias of a/c (dev-feature-foo feat.c)
+Installing a/b (dev-feature-foo feat.b)
+Marking a/b (1.0.2) as installed, alias of a/b (dev-feature-foo feat.b)
+Installing a/a (dev-feature-foo feat.a)
+Marking a/a (1.0.2) as installed, alias of a/a (dev-feature-foo feat.a)
+Installing enforcer/pkg (1.0.0)

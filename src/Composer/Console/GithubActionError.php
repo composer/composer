@@ -27,13 +27,6 @@ final class GithubActionError
         $this->io = $io;
     }
 
-    /**
-     * @param string      $message
-     * @param null|string $file
-     * @param null|int    $line
-     *
-     * @return void
-     */
     public function emit(string $message, ?string $file = null, ?int $line = null): void
     {
         if (Platform::getEnv('GITHUB_ACTIONS') && !Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING')) {
@@ -51,10 +44,6 @@ final class GithubActionError
         }
     }
 
-    /**
-     * @param string $data
-     * @return string
-     */
     private function escapeData(string $data): string
     {
         // see https://github.com/actions/toolkit/blob/4f7fb6513a355689f69f0849edeb369a4dc81729/packages/core/src/command.ts#L80-L85
@@ -65,10 +54,6 @@ final class GithubActionError
         return $data;
     }
 
-    /**
-     * @param string $property
-     * @return string
-     */
     private function escapeProperty(string $property): string
     {
         // see https://github.com/actions/toolkit/blob/4f7fb6513a355689f69f0849edeb369a4dc81729/packages/core/src/command.ts#L87-L94

@@ -25,20 +25,17 @@ class CompletePackageTest extends TestCase
      */
     public function providerVersioningSchemes(): array
     {
-        $provider[] = array('foo',              '1-beta');
-        $provider[] = array('node',             '0.5.6');
-        $provider[] = array('li3',              '0.10');
-        $provider[] = array('mongodb_odm',      '1.0.0BETA3');
-        $provider[] = array('DoctrineCommon',   '2.2.0-DEV');
+        $provider[] = ['foo',              '1-beta'];
+        $provider[] = ['node',             '0.5.6'];
+        $provider[] = ['li3',              '0.10'];
+        $provider[] = ['mongodb_odm',      '1.0.0BETA3'];
+        $provider[] = ['DoctrineCommon',   '2.2.0-DEV'];
 
         return $provider;
     }
 
     /**
      * @dataProvider providerVersioningSchemes
-     *
-     * @param string $name
-     * @param string $version
      */
     public function testPackageHasExpectedNamingSemantics(string $name, string $version): void
     {
@@ -50,9 +47,6 @@ class CompletePackageTest extends TestCase
 
     /**
      * @dataProvider providerVersioningSchemes
-     *
-     * @param string $name
-     * @param string $version
      */
     public function testPackageHasExpectedVersioningSemantics(string $name, string $version): void
     {
@@ -65,9 +59,6 @@ class CompletePackageTest extends TestCase
 
     /**
      * @dataProvider providerVersioningSchemes
-     *
-     * @param string $name
-     * @param string $version
      */
     public function testPackageHasExpectedMarshallingSemantics(string $name, string $version): void
     {

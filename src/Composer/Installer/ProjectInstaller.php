@@ -33,9 +33,6 @@ class ProjectInstaller implements InstallerInterface
     /** @var Filesystem */
     private $filesystem;
 
-    /**
-     * @param string $installPath
-     */
     public function __construct(string $installPath, DownloadManager $dm, Filesystem $fs)
     {
         $this->installPath = rtrim(strtr($installPath, '\\', '/'), '/').'/';
@@ -45,9 +42,6 @@ class ProjectInstaller implements InstallerInterface
 
     /**
      * Decides if the installer supports the given type
-     *
-     * @param  string $packageType
-     * @return bool
      */
     public function supports(string $packageType): bool
     {
@@ -65,7 +59,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, PackageInterface $prevPackage = null): ?PromiseInterface
+    public function download(PackageInterface $package, ?PackageInterface $prevPackage = null): ?PromiseInterface
     {
         $installPath = $this->installPath;
         if (file_exists($installPath) && !$this->filesystem->isDirEmpty($installPath)) {
@@ -81,7 +75,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * @inheritDoc
      */
-    public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null): ?PromiseInterface
+    public function prepare($type, PackageInterface $package, ?PackageInterface $prevPackage = null): ?PromiseInterface
     {
         return $this->downloadManager->prepare($type, $package, $this->installPath, $prevPackage);
     }
@@ -89,7 +83,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * @inheritDoc
      */
-    public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null): ?PromiseInterface
+    public function cleanup($type, PackageInterface $package, ?PackageInterface $prevPackage = null): ?PromiseInterface
     {
         return $this->downloadManager->cleanup($type, $package, $this->installPath, $prevPackage);
     }
@@ -121,7 +115,6 @@ class ProjectInstaller implements InstallerInterface
     /**
      * Returns the installation path of a package
      *
-     * @param  PackageInterface $package
      * @return string           path
      */
     public function getInstallPath(PackageInterface $package): string

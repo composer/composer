@@ -26,13 +26,13 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /** @var bool */
     protected $preferStable = false;
     /** @var array<string, BasePackage::STABILITY_*> Map of package name to stability constant */
-    protected $stabilityFlags = array();
+    protected $stabilityFlags = [];
     /** @var mixed[] */
-    protected $config = array();
+    protected $config = [];
     /** @var array<string, string> Map of package name to reference/commit hash */
-    protected $references = array();
+    protected $references = [];
     /** @var array<array{package: string, version: string, alias: string, alias_normalized: string}> */
-    protected $aliases = array();
+    protected $aliases = [];
 
     /**
      * @inheritDoc

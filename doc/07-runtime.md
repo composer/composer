@@ -101,6 +101,10 @@ source/docblocks of [the class itself](https://github.com/composer/composer/blob
 
 The `getInstallPath` method to retrieve a package's absolute install path.
 
+> **Note:** The path, while absolute, may contain `../` or symlinks. It is
+> not guaranteed to be equivalent to a `realpath()` so you should run a
+> realpath on it if that matters to you.
+
 ```php
 // returns an absolute path to the package installation location if vendor/package is installed,
 // or null if it is provided/replaced, or the package is a metapackage

@@ -194,7 +194,7 @@ objects:
 
 If you would like to run the scripts for an event manually, the syntax is:
 
-```sh
+```shell
 php composer.phar run-script [--dev] [--no-dev] script
 ```
 
@@ -270,14 +270,14 @@ composer.json configuration:
 It's also possible to set the global environment variable to disable the timeout
 of all following scripts in the current terminal environment:
 
-```
+```shell
 export COMPOSER_PROCESS_TIMEOUT=0
 ```
 
 To disable the timeout of a single script call, you must use the `run-script` composer
 command and specify the `--timeout` parameter:
 
-```
+```shell
 php composer.phar run-script --timeout=0 test
 ```
 
@@ -302,10 +302,10 @@ You can also refer a script and pass it new arguments:
 
 ```json
 {
-  "scripts": {
-    "tests": "phpunit",
-    "testsVerbose": "@tests -vvv"
-  }
+    "scripts": {
+        "tests": "phpunit",
+        "testsVerbose": "@tests -vvv"
+    }
 }
 ```
 

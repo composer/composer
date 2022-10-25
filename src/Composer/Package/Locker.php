@@ -55,12 +55,11 @@ class Locker
     /**
      * Initializes packages locker.
      *
-     * @param IOInterface         $io
      * @param JsonFile            $lockFile             lockfile loader
      * @param InstallationManager $installationManager  installation manager instance
      * @param string              $composerFileContents The contents of the composer file
      */
-    public function __construct(IOInterface $io, JsonFile $lockFile, InstallationManager $installationManager, string $composerFileContents, ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, JsonFile $lockFile, InstallationManager $installationManager, string $composerFileContents, ?ProcessExecutor $process = null)
     {
         $this->lockFile = $lockFile;
         $this->installationManager = $installationManager;
@@ -75,14 +74,12 @@ class Locker
      * Returns the md5 hash of the sorted content of the composer file.
      *
      * @param string $composerFileContents The contents of the composer file.
-     *
-     * @return string
      */
     public static function getContentHash(string $composerFileContents): string
     {
         $content = JsonFile::parseJson($composerFileContents, 'composer.json');
 
-        $relevantKeys = array(
+        $relevantKeys = [
             'name',
             'version',
             'require',
@@ -94,9 +91,9 @@ class Locker
             'prefer-stable',
             'repositories',
             'extra',
-        );
+        ];
 
-        $relevantContent = array();
+        $relevantContent = [];
 
         foreach (array_intersect($relevantKeys, array_keys($content)) as $key) {
             $relevantContent[$key] = $content[$key];
@@ -112,8 +109,6 @@ class Locker
 
     /**
      * Checks whether locker has been locked (lockfile found).
-     *
-     * @return bool
      */
     public function isLocked(): bool
     {
@@ -128,8 +123,6 @@ class Locker
 
     /**
      * Checks whether the lock file is still up to date with the current hash
-     *
-     * @return bool
      */
     public function isFresh(): bool
     {
@@ -154,7 +147,6 @@ class Locker
      *
      * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
      * @throws \RuntimeException
-     * @return \Composer\Repository\LockArrayRepository
      */
     public function getLockedRepository(bool $withDevReqs = false): LockArrayRepository
     {
@@ -175,7 +167,7 @@ class Locker
         }
 
         if (isset($lockedPackages[0]['name'])) {
-            $packageByName = array();
+            $packageByName = [];
             foreach ($lockedPackages as $info) {
                 $package = $this->loader->load($info);
                 $packages->addPackage($package);
@@ -207,7 +199,7 @@ class Locker
      */
     public function getDevPackageNames(): array
     {
-        $names = array();
+        $names = [];
         $lockData = $this->getLockData();
         if (isset($lockData['packages-dev'])) {
             foreach ($lockData['packages-dev'] as $package) {
@@ -227,14 +219,14 @@ class Locker
     public function getPlatformRequirements(bool $withDevReqs = false): array
     {
         $lockData = $this->getLockData();
-        $requirements = array();
+        $requirements = [];
 
         if (!empty($lockData['platform'])) {
             $requirements = $this->loader->parseLinks(
                 '__root__',
                 '1.0.0',
                 Link::TYPE_REQUIRE,
-                $lockData['platform'] ?? array()
+                $lockData['platform'] ?? []
             );
         }
 
@@ -243,7 +235,7 @@ class Locker
                 '__root__',
                 '1.0.0',
                 Link::TYPE_REQUIRE,
-                $lockData['platform-dev'] ?? array()
+                $lockData['platform-dev'] ?? []
             );
 
             $requirements = array_merge($requirements, $devRequirements);
@@ -252,9 +244,6 @@ class Locker
         return $requirements;
     }
 
-    /**
-     * @return string
-     */
     public function getMinimumStability(): string
     {
         $lockData = $this->getLockData();
@@ -269,12 +258,9 @@ class Locker
     {
         $lockData = $this->getLockData();
 
-        return $lockData['stability-flags'] ?? array();
+        return $lockData['stability-flags'] ?? [];
     }
 
-    /**
-     * @return bool|null
-     */
     public function getPreferStable(): ?bool
     {
         $lockData = $this->getLockData();
@@ -284,9 +270,6 @@ class Locker
         return $lockData['prefer-stable'] ?? null;
     }
 
-    /**
-     * @return bool|null
-     */
     public function getPreferLowest(): ?bool
     {
         $lockData = $this->getLockData();
@@ -303,7 +286,7 @@ class Locker
     {
         $lockData = $this->getLockData();
 
-        return $lockData['platform-overrides'] ?? array();
+        return $lockData['platform-overrides'] ?? [];
     }
 
     /**
@@ -315,7 +298,7 @@ class Locker
     {
         $lockData = $this->getLockData();
 
-        return $lockData['aliases'] ?? array();
+        return $lockData['aliases'] ?? [];
     }
 
     /**
@@ -325,7 +308,7 @@ class Locker
     {
         $lockData = $this->getLockData();
 
-        return isset($lockData['plugin-api-version']) ? $lockData['plugin-api-version'] : '1.1.0';
+        return $lockData['plugin-api-version'] ?? '1.1.0';
     }
 
     /**
@@ -352,14 +335,9 @@ class Locker
      * @param array<string, string>       $platformReqs      array of package name => constraint for required platform packages
      * @param array<string, string>       $platformDevReqs   array of package name => constraint for dev-required platform packages
      * @param string[][]                  $aliases           array of aliases
-     * @param string                      $minimumStability
      * @param array<string, int>          $stabilityFlags
-     * @param bool                        $preferStable
-     * @param bool                        $preferLowest
      * @param array<string, string|false> $platformOverrides
      * @param bool                        $write             Whether to actually write data to disk, useful in tests and for --dry-run
-     *
-     * @return bool
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      */
@@ -368,17 +346,17 @@ class Locker
         // keep old default branch names normalized to DEFAULT_BRANCH_ALIAS for BC as that is how Composer 1 outputs the lock file
         // when loading the lock file the version is anyway ignored in Composer 2, so it has no adverse effect
         $aliases = array_map(static function ($alias): array {
-            if (in_array($alias['version'], array('dev-master', 'dev-trunk', 'dev-default'), true)) {
+            if (in_array($alias['version'], ['dev-master', 'dev-trunk', 'dev-default'], true)) {
                 $alias['version'] = VersionParser::DEFAULT_BRANCH_ALIAS;
             }
 
             return $alias;
         }, $aliases);
 
-        $lock = array(
-            '_readme' => array('This file locks the dependencies of your project to a known state',
+        $lock = [
+            '_readme' => ['This file locks the dependencies of your project to a known state',
                                'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies',
-                               'This file is @gener'.'ated automatically', ),
+                               'This file is @gener'.'ated automatically', ],
             'content-hash' => $this->contentHash,
             'packages' => null,
             'packages-dev' => null,
@@ -387,7 +365,7 @@ class Locker
             'stability-flags' => $stabilityFlags,
             'prefer-stable' => $preferStable,
             'prefer-lowest' => $preferLowest,
-        );
+        ];
 
         $lock['packages'] = $this->lockPackages($packages);
         if (null !== $devPackages) {
@@ -431,7 +409,7 @@ class Locker
      */
     private function lockPackages(array $packages): array
     {
-        $locked = array();
+        $locked = [];
 
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
@@ -497,7 +475,7 @@ class Locker
         $sourceType = $package->getSourceType();
         $datetime = null;
 
-        if ($path && in_array($sourceType, array('git', 'hg'))) {
+        if ($path && in_array($sourceType, ['git', 'hg'])) {
             $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
             switch ($sourceType) {
                 case 'git':

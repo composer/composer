@@ -43,9 +43,6 @@ class GitTest extends TestCase
 
     /**
      * @dataProvider publicGithubNoCredentialsProvider
-     *
-     * @param string $protocol
-     * @param string $expectedUrl
      */
     public function testRunCommandPublicGitHubRepositoryNotInitialClone(string $protocol, string $expectedUrl): void
     {
@@ -57,17 +54,17 @@ class GitTest extends TestCase
 
         $this->mockConfig($protocol);
 
-        $this->process->expects(array('git command'), true);
+        $this->process->expects(['git command'], true);
 
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
     }
 
     public function publicGithubNoCredentialsProvider(): array
     {
-        return array(
-            array('ssh', 'git@github.com:acme/repo'),
-            array('https', 'https://github.com/acme/repo'),
-        );
+        return [
+            ['ssh', 'git@github.com:acme/repo'],
+            ['https', 'https://github.com/acme/repo'],
+        ];
     }
 
     public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithoutAuthentication(): void
@@ -82,26 +79,20 @@ class GitTest extends TestCase
 
         $this->mockConfig('https');
 
-        $this->process->expects(array(
-            array('cmd' => 'git command', 'return' => 1),
-            array('cmd' => 'git --version', 'return' => 0),
-        ), true);
+        $this->process->expects([
+            ['cmd' => 'git command', 'return' => 1],
+            ['cmd' => 'git --version', 'return' => 0],
+        ], true);
 
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
     }
 
     /**
      * @dataProvider privateGithubWithCredentialsProvider
-     *
-     * @param string $gitUrl
-     * @param string $protocol
-     * @param string $gitHubToken
-     * @param string $expectedUrl
-     * @param int    $expectedFailuresBeforeSuccess
      */
     public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithAuthentication(string $gitUrl, string $protocol, string $gitHubToken, string $expectedUrl, int $expectedFailuresBeforeSuccess): void
     {
-        $commandCallable = function ($url) use ($expectedUrl): string {
+        $commandCallable = static function ($url) use ($expectedUrl): string {
             if ($url !== $expectedUrl) {
                 return 'git command failing';
             }
@@ -111,8 +102,8 @@ class GitTest extends TestCase
 
         $this->mockConfig($protocol);
 
-        $expectedCalls = array_fill(0, $expectedFailuresBeforeSuccess, array('cmd' => 'git command failing', 'return' => 1));
-        $expectedCalls[] = array('cmd' => 'git command ok', 'return' => 0);
+        $expectedCalls = array_fill(0, $expectedFailuresBeforeSuccess, ['cmd' => 'git command failing', 'return' => 1]);
+        $expectedCalls[] = ['cmd' => 'git command ok', 'return' => 0];
 
         $this->process->expects($expectedCalls, true);
 
@@ -130,31 +121,26 @@ class GitTest extends TestCase
             ->expects($this->atLeastOnce())
             ->method('getAuthentication')
             ->with($this->equalTo('github.com'))
-            ->willReturn(array('username' => 'token', 'password' => $gitHubToken));
+            ->willReturn(['username' => 'token', 'password' => $gitHubToken]);
 
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 
     public function privateGithubWithCredentialsProvider(): array
     {
-        return array(
-            array('git@github.com:acme/repo.git', 'ssh', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git', 1),
-            array('https://github.com/acme/repo', 'https', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git', 2),
-        );
+        return [
+            ['git@github.com:acme/repo.git', 'ssh', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git', 1],
+            ['https://github.com/acme/repo', 'https', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git', 2],
+        ];
     }
 
-    /**
-     * @param string $protocol
-     *
-     * @return void
-     */
     private function mockConfig(string $protocol): void
     {
         $this->config
             ->method('get')
-            ->willReturnMap(array(
-                array('github-domains', 0, array('github.com')),
-                array('github-protocols', 0, array($protocol)),
-            ));
+            ->willReturnMap([
+                ['github-domains', 0, ['github.com']],
+                ['github-protocols', 0, [$protocol]],
+            ]);
     }
 }

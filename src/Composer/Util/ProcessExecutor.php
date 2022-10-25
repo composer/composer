@@ -14,6 +14,8 @@ namespace Composer\Util;
 
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
+use Seld\Signal\SignalHandler;
+use Symfony\Component\Process\Exception\ProcessSignaledException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\RuntimeException;
 use React\Promise\Promise;
@@ -44,7 +46,7 @@ class ProcessExecutor
     /**
      * @phpstan-var array<int, array<string, mixed>>
      */
-    private $jobs = array();
+    private $jobs = [];
     /** @var int */
     private $runningJobs = 0;
     /** @var int */
@@ -54,7 +56,7 @@ class ProcessExecutor
     /** @var bool */
     private $allowAsync = false;
 
-    public function __construct(IOInterface $io = null)
+    public function __construct(?IOInterface $io = null)
     {
         $this->io = $io;
     }
@@ -95,10 +97,7 @@ class ProcessExecutor
 
     /**
      * @param  string|list<string> $command
-     * @param  null|string $cwd
-     * @param  bool    $tty
      * @param  mixed   $output
-     * @return int
      */
     private function doExecute($command, ?string $cwd, bool $tty, &$output = null): int
     {
@@ -125,13 +124,28 @@ class ProcessExecutor
             $this->outputHandler($type, $buffer);
         };
 
-        $process->run($callback);
+        $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal) {
+            if ($this->io !== null) {
+                $this->io->writeError('Received '.$signal.', aborting when child process is done', true, IOInterface::DEBUG);
+            }
+        });
 
-        if ($this->captureOutput && !is_callable($output)) {
-            $output = $process->getOutput();
+        try {
+            $process->run($callback);
+
+            if ($this->captureOutput && !is_callable($output)) {
+                $output = $process->getOutput();
+            }
+
+            $this->errorOutput = $process->getErrorOutput();
+        } catch (ProcessSignaledException $e) {
+            if ($signalHandler->isTriggered()) {
+                // exiting as we were signaled and the child process exited too due to the signal
+                $signalHandler->exitWithLastSignal();
+            }
+        } finally {
+            $signalHandler->unregister();
         }
-
-        $this->errorOutput = $process->getErrorOutput();
 
         return $process->getExitCode();
     }
@@ -141,7 +155,6 @@ class ProcessExecutor
      *
      * @param  string|list<string> $command the command to execute
      * @param  string              $cwd     the working directory
-     * @return PromiseInterface
      */
     public function executeAsync($command, ?string $cwd = null): PromiseInterface
     {
@@ -149,12 +162,12 @@ class ProcessExecutor
             throw new \LogicException('You must use the ProcessExecutor instance which is part of a Composer\Loop instance to be able to run async processes');
         }
 
-        $job = array(
+        $job = [
             'id' => $this->idGen++,
             'status' => self::STATUS_QUEUED,
             'command' => $command,
             'cwd' => $cwd,
-        );
+        ];
 
         $resolver = static function ($resolve, $reject) use (&$job): void {
             $job['status'] = ProcessExecutor::STATUS_QUEUED;
@@ -228,10 +241,6 @@ class ProcessExecutor
         }
     }
 
-    /**
-     * @param  int  $id
-     * @return void
-     */
     private function startJob(int $id): void
     {
         $job = &$this->jobs[$id];
@@ -255,7 +264,7 @@ class ProcessExecutor
                 $process = new Process($command, $cwd, null, null, static::getTimeout());
             }
         } catch (\Throwable $e) {
-            call_user_func($job['reject'], $e);
+            $job['reject']($e);
 
             return;
         }
@@ -265,7 +274,7 @@ class ProcessExecutor
         try {
             $process->start();
         } catch (\Throwable $e) {
-            call_user_func($job['reject'], $e);
+            $job['reject']($e);
 
             return;
         }
@@ -283,7 +292,6 @@ class ProcessExecutor
 
     /**
      * @param  ?int $index job id
-     * @return void
      */
     public function wait($index = null): void
     {
@@ -298,8 +306,6 @@ class ProcessExecutor
 
     /**
      * @internal
-     *
-     * @return void
      */
     public function enableAsync(): void
     {
@@ -353,20 +359,17 @@ class ProcessExecutor
     }
 
     /**
-     * @param  null|string  $output
      * @return string[]
      */
     public function splitLines(?string $output): array
     {
         $output = trim((string) $output);
 
-        return $output === '' ? array() : Preg::split('{\r?\n}', $output);
+        return $output === '' ? [] : Preg::split('{\r?\n}', $output);
     }
 
     /**
      * Get any error output from the last command
-     *
-     * @return string
      */
     public function getErrorOutput(): string
     {
@@ -383,7 +386,6 @@ class ProcessExecutor
 
     /**
      * @param  int  $timeout the timeout in seconds
-     * @return void
      */
     public static function setTimeout(int $timeout): void
     {
@@ -439,8 +441,6 @@ class ProcessExecutor
      * MIT Licensed (c) John Stevenson <john-stevenson@blueyonder.co.uk>
      *
      * @param string|false|null $argument
-     *
-     * @return string
      */
     private static function escapeArgument($argument): string
     {

@@ -45,35 +45,35 @@ class FilterRepositoryTest extends TestCase
         $repo = new FilterRepository($this->arrayRepo, $config);
         $packages = $repo->getPackages();
 
-        $this->assertSame($expected, array_map(function ($p): string {
+        $this->assertSame($expected, array_map(static function ($p): string {
             return $p->getName();
         }, $packages));
     }
 
     public static function provideRepoMatchingTestCases(): array
     {
-        return array(
-            array(array('foo/aaa', 'foo/bbb'), array('only' => array('foo/*'))),
-            array(array('foo/aaa', 'baz/yyy'), array('only' => array('foo/aaa', 'baz/yyy'))),
-            array(array('bar/xxx'), array('exclude' => array('foo/*', 'baz/yyy'))),
+        return [
+            [['foo/aaa', 'foo/bbb'], ['only' => ['foo/*']]],
+            [['foo/aaa', 'baz/yyy'], ['only' => ['foo/aaa', 'baz/yyy']]],
+            [['bar/xxx'], ['exclude' => ['foo/*', 'baz/yyy']]],
             // make sure sub-patterns are not matched without wildcard
-            array(array('foo/aaa', 'foo/bbb', 'bar/xxx', 'baz/yyy'), array('exclude' => array('foo/aa', 'az/yyy'))),
-            array(array(), array('only' => array('foo/aa', 'az/yyy'))),
-        );
+            [['foo/aaa', 'foo/bbb', 'bar/xxx', 'baz/yyy'], ['exclude' => ['foo/aa', 'az/yyy']]],
+            [[], ['only' => ['foo/aa', 'az/yyy']]],
+        ];
     }
 
     public function testCanonicalDefaultTrue(): void
     {
-        $repo = new FilterRepository($this->arrayRepo, array());
-        $result = $repo->loadPackages(array('foo/aaa' => new MatchAllConstraint), BasePackage::$stabilities, array());
+        $repo = new FilterRepository($this->arrayRepo, []);
+        $result = $repo->loadPackages(['foo/aaa' => new MatchAllConstraint], BasePackage::$stabilities, []);
         $this->assertCount(1, $result['packages']);
         $this->assertCount(1, $result['namesFound']);
     }
 
     public function testNonCanonical(): void
     {
-        $repo = new FilterRepository($this->arrayRepo, array('canonical' => false));
-        $result = $repo->loadPackages(array('foo/aaa' => new MatchAllConstraint), BasePackage::$stabilities, array());
+        $repo = new FilterRepository($this->arrayRepo, ['canonical' => false]);
+        $result = $repo->loadPackages(['foo/aaa' => new MatchAllConstraint], BasePackage::$stabilities, []);
         $this->assertCount(1, $result['packages']);
         $this->assertCount(0, $result['namesFound']);
     }

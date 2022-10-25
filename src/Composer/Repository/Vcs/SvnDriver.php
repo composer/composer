@@ -111,7 +111,7 @@ class SvnDriver extends VcsDriver
      */
     public function getSource(string $identifier): array
     {
-        return array('type' => 'svn', 'url' => $this->baseUrl, 'reference' => $identifier);
+        return ['type' => 'svn', 'url' => $this->baseUrl, 'reference' => $identifier];
     }
 
     /**
@@ -173,10 +173,6 @@ class SvnDriver extends VcsDriver
         return $this->infoCache[$identifier];
     }
 
-    /**
-     * @param string $file
-     * @param string $identifier
-     */
     public function getFileContent(string $file, string $identifier): ?string
     {
         $identifier = '/' . trim($identifier, '/') . '/';
@@ -235,7 +231,7 @@ class SvnDriver extends VcsDriver
     public function getTags(): array
     {
         if (null === $this->tags) {
-            $tags = array();
+            $tags = [];
 
             if ($this->tagsPath !== false) {
                 $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->tagsPath);
@@ -266,7 +262,7 @@ class SvnDriver extends VcsDriver
     public function getBranches(): array
     {
         if (null === $this->branches) {
-            $branches = array();
+            $branches = [];
 
             if (false === $this->trunkPath) {
                 $trunkParent = $this->baseUrl . '/';
@@ -360,10 +356,6 @@ class SvnDriver extends VcsDriver
 
     /**
      * An absolute path (leading '/') is converted to a file:// url.
-     *
-     * @param string $url
-     *
-     * @return string
      */
     protected static function normalizeUrl(string $url): string
     {
@@ -382,7 +374,6 @@ class SvnDriver extends VcsDriver
      * @param  string            $command The svn command to run.
      * @param  string            $url     The SVN URL.
      * @throws \RuntimeException
-     * @return string
      */
     protected function execute(string $command, string $url): string
     {
@@ -409,8 +400,6 @@ class SvnDriver extends VcsDriver
      *
      * @param string $baseDir  The path to trunk/branch/tag
      * @param string $revision The revision mark to add to identifier
-     *
-     * @return string
      */
     protected function buildIdentifier(string $baseDir, string $revision): string
     {

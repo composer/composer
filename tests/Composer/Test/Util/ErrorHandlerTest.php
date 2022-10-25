@@ -44,7 +44,7 @@ class ErrorHandlerTest extends TestCase
             self::expectExceptionMessage('Undefined index: baz');
         }
 
-        $array = array('foo' => 'bar');
+        $array = ['foo' => 'bar'];
         // @phpstan-ignore-next-line
         $array['baz'];
     }
@@ -63,7 +63,7 @@ class ErrorHandlerTest extends TestCase
         }
 
         // @phpstan-ignore-next-line
-        array_merge(array(), 'string');
+        array_merge([], 'string');
     }
 
     /**

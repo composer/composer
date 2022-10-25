@@ -25,16 +25,13 @@ class OutdatedCommand extends BaseCommand
 {
     use CompletionTrait;
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this
             ->setName('outdated')
-            ->setDescription('Shows a list of installed packages that have updates available, including their latest version.')
-            ->setDefinition(array(
-                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.', null, $this->suggestInstalledPackage()),
+            ->setDescription('Shows a list of installed packages that have updates available, including their latest version')
+            ->setDefinition([
+                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.', null, $this->suggestInstalledPackage(false)),
                 new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show only packages that are outdated (this is the default, but present here for compat with `show`'),
                 new InputOption('all', 'a', InputOption::VALUE_NONE, 'Show all installed packages with their latest versions'),
                 new InputOption('locked', null, InputOption::VALUE_NONE, 'Shows updates for packages from the lock file, regardless of what is currently in vendor dir'),
@@ -44,11 +41,11 @@ class OutdatedCommand extends BaseCommand
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates.'),
                 new InputOption('patch-only', 'p', InputOption::VALUE_NONE, 'Show only packages that have patch SemVer-compatible updates.'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
-                new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it if you don\'t want to be informed about new versions of some packages.', null, $this->suggestInstalledPackage()),
+                new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it if you don\'t want to be informed about new versions of some packages.', null, $this->suggestInstalledPackage(false)),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages). Use with the --outdated option'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages). Use with the --outdated option'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The outdated command is just a proxy for `composer show -l`
@@ -69,10 +66,10 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $args = array(
+        $args = [
             'command' => 'show',
             '--latest' => true,
-        );
+        ];
         if (!$input->getOption('all')) {
             $args['--outdated'] = true;
         }

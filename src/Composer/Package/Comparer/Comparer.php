@@ -28,29 +28,17 @@ class Comparer
     /** @var array{changed?: string[], removed?: string[], added?: string[]} */
     private $changed;
 
-    /**
-     * @param string $source
-     *
-     * @return void
-     */
     public function setSource(string $source): void
     {
         $this->source = $source;
     }
 
-    /**
-     * @param string $update
-     *
-     * @return void
-     */
     public function setUpdate(string $update): void
     {
         $this->update = $update;
     }
 
     /**
-     * @param bool $explicated
-     *
      * @return array{changed?: string[], removed?: string[], added?: string[]}|false false if no change
      */
     public function getChanged(bool $explicated = false)
@@ -71,8 +59,6 @@ class Comparer
     }
 
     /**
-     * @param bool $explicated
-     *
      * @return string empty string if no changes
      */
     public function getChangedAsString(bool $toString = false, bool $explicated = false): string
@@ -82,7 +68,7 @@ class Comparer
             return '';
         }
 
-        $strings = array();
+        $strings = [];
         foreach ($changed as $sectionKey => $itemSection) {
             foreach ($itemSection as $itemKey => $item) {
                 $strings[] = $item."\r\n";
@@ -92,14 +78,11 @@ class Comparer
         return trim(implode("\r\n", $strings));
     }
 
-    /**
-     * @return void
-     */
     public function doCompare(): void
     {
-        $source = array();
-        $destination = array();
-        $this->changed = array();
+        $source = [];
+        $destination = [];
+        $this->changed = [];
         $currentDirectory = Platform::getCwd();
         chdir($this->source);
         $source = $this->doTree('.', $source);
@@ -134,7 +117,6 @@ class Comparer
     }
 
     /**
-     * @param string $dir
      * @param mixed[] $array
      *
      * @return array<string, array<string, string|false>>|false

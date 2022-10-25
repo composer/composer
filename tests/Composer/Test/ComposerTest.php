@@ -47,7 +47,7 @@ class ComposerTest extends TestCase
     {
         $composer = new Composer();
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')->setConstructorArgs(array($io))->getMock();
+        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')->setConstructorArgs([$io])->getMock();
         $composer->setDownloadManager($manager);
 
         $this->assertSame($manager, $composer->getDownloadManager());

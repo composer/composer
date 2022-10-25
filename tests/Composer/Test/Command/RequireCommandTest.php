@@ -58,11 +58,6 @@ class RequireCommandTest extends TestCase
         } else {
             $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
         }
-
-        // workaround until https://github.com/symfony/symfony/pull/46747 is merged
-        putenv('SHELL_VERBOSITY');
-        unset($_ENV['SHELL_VERBOSITY']);
-        unset($_SERVER['SHELL_VERBOSITY']);
     }
 
     public function provideRequire(): \Generator

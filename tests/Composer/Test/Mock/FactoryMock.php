@@ -31,14 +31,14 @@ use Composer\Util\ProcessExecutor;
 
 class FactoryMock extends Factory
 {
-    public static function createConfig(IOInterface $io = null, ?string $cwd = null): Config
+    public static function createConfig(?IOInterface $io = null, ?string $cwd = null): Config
     {
         $config = new Config(true, $cwd);
 
-        $config->merge(array(
-            'config' => array('home' => TestCase::getUniqueTmpDirectory()),
-            'repositories' => array('packagist' => false),
-        ));
+        $config->merge([
+            'config' => ['home' => TestCase::getUniqueTmpDirectory()],
+            'repositories' => ['packagist' => false],
+        ]);
 
         return $config;
     }
@@ -48,17 +48,17 @@ class FactoryMock extends Factory
         return new \Composer\Package\Loader\RootPackageLoader($rm, $config, $parser, new VersionGuesserMock(), $io);
     }
 
-    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage, ProcessExecutor $process = null): void
+    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, string $vendorDir, RootPackageInterface $rootPackage, ?ProcessExecutor $process = null): void
     {
         $rm->setLocalRepository(new InstalledArrayRepository);
     }
 
-    public function createInstallationManager(Loop $loop = null, IOInterface $io = null, EventDispatcher $dispatcher = null): InstallationManager
+    public function createInstallationManager(?Loop $loop = null, ?IOInterface $io = null, ?EventDispatcher $dispatcher = null): InstallationManager
     {
         return new InstallationManagerMock();
     }
 
-    protected function createDefaultInstallers(InstallationManager $im, PartialComposer $composer, IOInterface $io, ProcessExecutor $process = null): void
+    protected function createDefaultInstallers(InstallationManager $im, PartialComposer $composer, IOInterface $io, ?ProcessExecutor $process = null): void
     {
     }
 

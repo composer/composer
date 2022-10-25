@@ -32,14 +32,14 @@ trait CanonicalPackagesTrait
         $packages = $this->getPackages();
 
         // get at most one package of each name, preferring non-aliased ones
-        $packagesByName = array();
+        $packagesByName = [];
         foreach ($packages as $package) {
             if (!isset($packagesByName[$package->getName()]) || $packagesByName[$package->getName()] instanceof AliasPackage) {
                 $packagesByName[$package->getName()] = $package;
             }
         }
 
-        $canonicalPackages = array();
+        $canonicalPackages = [];
 
         // unfold aliased packages
         foreach ($packagesByName as $package) {

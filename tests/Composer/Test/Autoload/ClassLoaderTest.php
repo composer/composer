@@ -44,11 +44,11 @@ class ClassLoaderTest extends TestCase
      */
     public function getLoadClassTests(): array
     {
-        return array(
-            array('Namespaced\\Foo'),
-            array('Pearlike_Foo'),
-            array('ShinyVendor\\ShinyPackage\\SubNamespace\\Foo'),
-        );
+        return [
+            ['Namespaced\\Foo'],
+            ['Pearlike_Foo'],
+            ['ShinyVendor\\ShinyPackage\\SubNamespace\\Foo'],
+        ];
     }
 
     /**

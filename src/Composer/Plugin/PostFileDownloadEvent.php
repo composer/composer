@@ -78,8 +78,6 @@ class PostFileDownloadEvent extends Event
      * Retrieves the target file name location.
      *
      * If this download is of type metadata, null is returned.
-     *
-     * @return string|null
      */
     public function getFileName(): ?string
     {
@@ -88,8 +86,6 @@ class PostFileDownloadEvent extends Event
 
     /**
      * Gets the checksum.
-     *
-     * @return string|null
      */
     public function getChecksum(): ?string
     {
@@ -98,8 +94,6 @@ class PostFileDownloadEvent extends Event
 
     /**
      * Gets the processed URL.
-     *
-     * @return string
      */
     public function getUrl(): string
     {
@@ -137,8 +131,6 @@ class PostFileDownloadEvent extends Event
 
     /**
      * Returns the type of this download (package, metadata).
-     *
-     * @return string
      */
     public function getType(): string
     {

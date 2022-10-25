@@ -32,14 +32,14 @@ class JsonValidationExceptionTest extends TestCase
     public function testGetErrorsWhenNoErrorsProvided(): void
     {
         $object = new JsonValidationException('test message');
-        $this->assertEquals(array(), $object->getErrors());
+        $this->assertEquals([], $object->getErrors());
     }
 
     public function errorProvider(): array
     {
-        return array(
-            array('test message', array(), 'test message', []),
-            array('', ['foo'], '', ['foo']),
-        );
+        return [
+            ['test message', [], 'test message', []],
+            ['', ['foo'], '', ['foo']],
+        ];
     }
 }

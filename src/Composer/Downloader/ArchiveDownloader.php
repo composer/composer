@@ -30,22 +30,16 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * @var array<string, true>
      */
-    protected $cleanupExecuted = array();
+    protected $cleanupExecuted = [];
 
-    /**
-     * @return PromiseInterface
-     */
-    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    public function prepare(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         unset($this->cleanupExecuted[$package->getName()]);
 
         return parent::prepare($type, $package, $path, $prevPackage);
     }
 
-    /**
-     * @return PromiseInterface
-     */
-    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    public function cleanup(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         $this->cleanupExecuted[$package->getName()] = true;
 
@@ -54,10 +48,6 @@ abstract class ArchiveDownloader extends FileDownloader
 
     /**
      * @inheritDoc
-     *
-     * @param bool $output
-     *
-     * @return PromiseInterface
      *
      * @throws \RuntimeException
      * @throws \UnexpectedValueException
@@ -103,7 +93,10 @@ abstract class ArchiveDownloader extends FileDownloader
                 $filesystem->removeDirectory($path);
             }
             $this->removeCleanupPath($package, $temporaryDir);
-            $this->removeCleanupPath($package, realpath($path));
+            $realpath = realpath($path);
+            if ($realpath !== false) {
+                $this->removeCleanupPath($package, $realpath);
+            }
         };
 
         try {

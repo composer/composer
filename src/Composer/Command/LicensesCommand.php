@@ -17,8 +17,6 @@ use Composer\Json\JsonFile;
 use Composer\Package\CompletePackageInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Package\PackageInterface;
-use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryUtils;
 use Composer\Util\PackageInfo;
 use Composer\Util\PackageSorter;
@@ -33,18 +31,15 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 class LicensesCommand extends BaseCommand
 {
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this
             ->setName('licenses')
-            ->setDescription('Shows information about licenses of dependencies.')
-            ->setDefinition(array(
+            ->setDescription('Shows information about licenses of dependencies')
+            ->setDefinition([
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text, json or summary', 'text', ['text', 'json', 'summary']),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The license command displays detailed information about the licenses of
@@ -85,7 +80,7 @@ EOT
 
                 $table = new Table($output);
                 $table->setStyle('compact');
-                $table->setHeaders(array('Name', 'Version', 'Licenses'));
+                $table->setHeaders(['Name', 'Version', 'Licenses']);
                 foreach ($packages as $package) {
                     $link = PackageInfo::getViewSourceOrHomepageUrl($package);
                     if ($link !== null) {
@@ -94,36 +89,36 @@ EOT
                         $name = $package->getPrettyName();
                     }
 
-                    $table->addRow(array(
+                    $table->addRow([
                         $name,
                         $package->getFullPrettyVersion(),
-                        implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : array()) ?: 'none',
-                    ));
+                        implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : []) ?: 'none',
+                    ]);
                 }
                 $table->render();
                 break;
 
             case 'json':
-                $dependencies = array();
+                $dependencies = [];
                 foreach ($packages as $package) {
-                    $dependencies[$package->getPrettyName()] = array(
+                    $dependencies[$package->getPrettyName()] = [
                         'version' => $package->getFullPrettyVersion(),
-                        'license' => $package instanceof CompletePackageInterface ? $package->getLicense() : array(),
-                    );
+                        'license' => $package instanceof CompletePackageInterface ? $package->getLicense() : [],
+                    ];
                 }
 
-                $io->write(JsonFile::encode(array(
+                $io->write(JsonFile::encode([
                     'name' => $root->getPrettyName(),
                     'version' => $root->getFullPrettyVersion(),
                     'license' => $root->getLicense(),
                     'dependencies' => $dependencies,
-                )));
+                ]));
                 break;
 
             case 'summary':
-                $usedLicenses = array();
+                $usedLicenses = [];
                 foreach ($packages as $package) {
-                    $licenses = $package instanceof CompletePackageInterface ? $package->getLicense() : array();
+                    $licenses = $package instanceof CompletePackageInterface ? $package->getLicense() : [];
                     if (count($licenses) === 0) {
                         $licenses[] = 'none';
                     }
@@ -138,14 +133,14 @@ EOT
                 // Sort licenses so that the most used license will appear first
                 arsort($usedLicenses, SORT_NUMERIC);
 
-                $rows = array();
+                $rows = [];
                 foreach ($usedLicenses as $usedLicense => $numberOfDependencies) {
-                    $rows[] = array($usedLicense, $numberOfDependencies);
+                    $rows[] = [$usedLicense, $numberOfDependencies];
                 }
 
                 $symfonyIo = new SymfonyStyle($input, $output);
                 $symfonyIo->table(
-                    array('License', 'Number of dependencies'),
+                    ['License', 'Number of dependencies'],
                     $rows
                 );
                 break;

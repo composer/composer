@@ -54,13 +54,13 @@ class GitLabDriverTest extends TestCase
         $this->home = self::getUniqueTmpDirectory();
         $this->config = $this->getConfig([
             'home' => $this->home,
-            'gitlab-domains' => array(
+            'gitlab-domains' => [
                 'mycompany.com/gitlab',
                 'gitlab.mycompany.com',
                 'othercompany.com/nested/gitlab',
                 'gitlab.com',
                 'gitlab.mycompany.local',
-            ),
+            ],
         ]);
 
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->disableOriginalConstructor()->getMock();
@@ -77,18 +77,17 @@ class GitLabDriverTest extends TestCase
 
     public function provideInitializeUrls(): array
     {
-        return array(
-            array('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject'),
-            array('http://gitlab.com/mygroup/myproject', 'http://gitlab.com/api/v4/projects/mygroup%2Fmyproject'),
-            array('git@gitlab.com:mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject'),
-        );
+        return [
+            ['https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject'],
+            ['http://gitlab.com/mygroup/myproject', 'http://gitlab.com/api/v4/projects/mygroup%2Fmyproject'],
+            ['git@gitlab.com:mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject'],
+        ];
     }
 
     /**
      * @dataProvider provideInitializeUrls
-     *
-     * @param string $url
-     * @param string $apiUrl
+     * @param non-empty-string $url
+     * @param non-empty-string $apiUrl
      */
     public function testInitialize(string $url, string $apiUrl): GitLabDriver
     {
@@ -116,7 +115,7 @@ JSON;
             true
         );
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io, $this->config, $this->httpDownloader, $this->process);
+        $driver = new GitLabDriver(['url' => $url], $this->io, $this->config, $this->httpDownloader, $this->process);
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -129,9 +128,8 @@ JSON;
 
     /**
      * @dataProvider provideInitializeUrls
-     *
-     * @param string $url
-     * @param string $apiUrl
+     * @param non-empty-string $url
+     * @param non-empty-string $apiUrl
      */
     public function testInitializePublicProject(string $url, string $apiUrl): GitLabDriver
     {
@@ -157,7 +155,7 @@ JSON;
             true
         );
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io, $this->config, $this->httpDownloader, $this->process);
+        $driver = new GitLabDriver(['url' => $url], $this->io, $this->config, $this->httpDownloader, $this->process);
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -170,9 +168,8 @@ JSON;
 
     /**
      * @dataProvider provideInitializeUrls
-     *
-     * @param string $url
-     * @param string $apiUrl
+     * @param non-empty-string $url
+     * @param non-empty-string $apiUrl
      */
     public function testInitializePublicProjectAsAnonymous(string $url, string $apiUrl): GitLabDriver
     {
@@ -197,7 +194,7 @@ JSON;
             true
         );
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io, $this->config, $this->httpDownloader, $this->process);
+        $driver = new GitLabDriver(['url' => $url], $this->io, $this->config, $this->httpDownloader, $this->process);
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -238,7 +235,7 @@ JSON;
             true
         );
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io, $this->config, $this->httpDownloader, $this->process);
+        $driver = new GitLabDriver(['url' => $url], $this->io, $this->config, $this->httpDownloader, $this->process);
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -252,12 +249,12 @@ JSON;
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
         $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
-        $expected = array(
+        $expected = [
             'type' => 'zip',
             'url' => 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/archive.zip?sha='.$reference,
             'reference' => $reference,
             'shasum' => '',
-        );
+        ];
 
         $this->assertEquals($expected, $driver->getDist($reference));
     }
@@ -267,11 +264,11 @@ JSON;
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
         $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
-        $expected = array(
+        $expected = [
             'type' => 'git',
             'url' => 'git@gitlab.com:mygroup/myproject.git',
             'reference' => $reference,
-        );
+        ];
 
         $this->assertEquals($expected, $driver->getSource($reference));
     }
@@ -281,11 +278,11 @@ JSON;
         $driver = $this->testInitializePublicProject('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
         $reference = 'c3ebdbf9cceddb82cd2089aaef8c7b992e536363';
-        $expected = array(
+        $expected = [
             'type' => 'git',
             'url' => 'https://gitlab.com/mygroup/myproject.git',
             'reference' => $reference,
-        );
+        ];
 
         $this->assertEquals($expected, $driver->getSource($reference));
     }
@@ -322,10 +319,10 @@ JSON;
         );
         $driver->setHttpDownloader($this->httpDownloader);
 
-        $expected = array(
+        $expected = [
             'v1.0.0' => '092ed2c762bbae331e3f51d4a17f67310bf99a81',
             'v2.0.0' => '8e8f60b3ec86d63733db3bd6371117a758027ec6',
-        );
+        ];
 
         $this->assertEquals($expected, $driver->getTags());
         $this->assertEquals($expected, $driver->getTags(), 'Tags are cached');
@@ -336,31 +333,31 @@ JSON;
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
         // @link http://doc.gitlab.com/ce/api/repositories.html#list-project-repository-branches
-        $branchData = array(
-            array(
+        $branchData = [
+            [
                "name" => "mymaster",
-                "commit" => array(
+                "commit" => [
                     "id" => "97eda36b5c1dd953a3792865c222d4e85e5f302e",
                     "committed_date" => "2013-01-03T21:04:07.000+01:00",
-                ),
-            ),
-            array(
+                ],
+            ],
+            [
                 "name" => "staging",
-                "commit" => array(
+                "commit" => [
                     "id" => "502cffe49f136443f2059803f2e7192d1ac066cd",
                     "committed_date" => "2013-03-09T16:35:23.000+01:00",
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
 
         for ($i = 0; $i < 98; $i++) {
-            $branchData[] = array(
+            $branchData[] = [
                 "name" => "stagingdupe",
-                "commit" => array(
+                "commit" => [
                     "id" => "502cffe49f136443f2059803f2e7192d1ac066cd",
                     "committed_date" => "2013-03-09T16:35:23.000+01:00",
-                ),
-            );
+                ],
+            ];
         }
 
         $branchData = JsonFile::encode($branchData);
@@ -370,12 +367,12 @@ JSON;
                 [
                     'url' => 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/branches?per_page=100',
                     'body' => $branchData,
-                    'headers' => array('Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="next", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"'),
+                    'headers' => ['Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="next", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"'],
                 ],
                 [
                     'url' => "http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20",
                     'body' => $branchData,
-                    'headers' => array('Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="prev", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"'),
+                    'headers' => ['Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="prev", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"'],
                 ],
             ],
             true
@@ -383,11 +380,11 @@ JSON;
 
         $driver->setHttpDownloader($this->httpDownloader);
 
-        $expected = array(
+        $expected = [
             'mymaster' => '97eda36b5c1dd953a3792865c222d4e85e5f302e',
             'staging' => '502cffe49f136443f2059803f2e7192d1ac066cd',
             'stagingdupe' => '502cffe49f136443f2059803f2e7192d1ac066cd',
-        );
+        ];
 
         $this->assertEquals($expected, $driver->getBranches());
         $this->assertEquals($expected, $driver->getBranches(), 'Branches are cached');
@@ -426,10 +423,10 @@ JSON;
 
         $driver->setHttpDownloader($this->httpDownloader);
 
-        $expected = array(
+        $expected = [
             'mymaster' => '97eda36b5c1dd953a3792865c222d4e85e5f302e',
             'staging' => '502cffe49f136443f2059803f2e7192d1ac066cd',
-        );
+        ];
 
         $this->assertEquals($expected, $driver->getBranches());
         $this->assertEquals($expected, $driver->getBranches(), 'Branches are cached');
@@ -438,9 +435,6 @@ JSON;
     /**
      * @group gitlabHttpPort
      * @dataProvider dataForTestSupports
-     *
-     * @param string $url
-     * @param bool   $expected
      */
     public function testSupports(string $url, bool $expected): void
     {
@@ -449,26 +443,26 @@ JSON;
 
     public function dataForTestSupports(): array
     {
-        return array(
-            array('http://gitlab.com/foo/bar', true),
-            array('http://gitlab.mycompany.com:5443/foo/bar', true),
-            array('http://gitlab.com/foo/bar/', true),
-            array('http://gitlab.com/foo/bar/', true),
-            array('http://gitlab.com/foo/bar.git', true),
-            array('http://gitlab.com/foo/bar.git', true),
-            array('http://gitlab.com/foo/bar.baz.git', true),
-            array('https://gitlab.com/foo/bar', extension_loaded('openssl')), // Platform requirement
-            array('https://gitlab.mycompany.com:5443/foo/bar', extension_loaded('openssl')), // Platform requirement
-            array('git@gitlab.com:foo/bar.git', extension_loaded('openssl')),
-            array('git@example.com:foo/bar.git', false),
-            array('http://example.com/foo/bar', false),
-            array('http://mycompany.com/gitlab/mygroup/myproject', true),
-            array('https://mycompany.com/gitlab/mygroup/myproject', extension_loaded('openssl')),
-            array('http://othercompany.com/nested/gitlab/mygroup/myproject', true),
-            array('https://othercompany.com/nested/gitlab/mygroup/myproject', extension_loaded('openssl')),
-            array('http://gitlab.com/mygroup/mysubgroup/mysubsubgroup/myproject', true),
-            array('https://gitlab.com/mygroup/mysubgroup/mysubsubgroup/myproject', extension_loaded('openssl')),
-        );
+        return [
+            ['http://gitlab.com/foo/bar', true],
+            ['http://gitlab.mycompany.com:5443/foo/bar', true],
+            ['http://gitlab.com/foo/bar/', true],
+            ['http://gitlab.com/foo/bar/', true],
+            ['http://gitlab.com/foo/bar.git', true],
+            ['http://gitlab.com/foo/bar.git', true],
+            ['http://gitlab.com/foo/bar.baz.git', true],
+            ['https://gitlab.com/foo/bar', extension_loaded('openssl')], // Platform requirement
+            ['https://gitlab.mycompany.com:5443/foo/bar', extension_loaded('openssl')], // Platform requirement
+            ['git@gitlab.com:foo/bar.git', extension_loaded('openssl')],
+            ['git@example.com:foo/bar.git', false],
+            ['http://example.com/foo/bar', false],
+            ['http://mycompany.com/gitlab/mygroup/myproject', true],
+            ['https://mycompany.com/gitlab/mygroup/myproject', extension_loaded('openssl')],
+            ['http://othercompany.com/nested/gitlab/mygroup/myproject', true],
+            ['https://othercompany.com/nested/gitlab/mygroup/myproject', extension_loaded('openssl')],
+            ['http://gitlab.com/mygroup/mysubgroup/mysubsubgroup/myproject', true],
+            ['https://gitlab.com/mygroup/mysubgroup/mysubsubgroup/myproject', extension_loaded('openssl')],
+        ];
     }
 
     public function testGitlabSubDirectory(): void
@@ -497,7 +491,7 @@ JSON;
             true
         );
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io, $this->config, $this->httpDownloader, $this->process);
+        $driver = new GitLabDriver(['url' => $url], $this->io, $this->config, $this->httpDownloader, $this->process);
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -529,7 +523,7 @@ JSON;
             true
         );
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io, $this->config, $this->httpDownloader, $this->process);
+        $driver = new GitLabDriver(['url' => $url], $this->io, $this->config, $this->httpDownloader, $this->process);
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -561,7 +555,7 @@ JSON;
             true
         );
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io, $this->config, $this->httpDownloader, $this->process);
+        $driver = new GitLabDriver(['url' => $url], $this->io, $this->config, $this->httpDownloader, $this->process);
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -569,11 +563,11 @@ JSON;
 
     public function testForwardsOptions(): void
     {
-        $options = array(
-            'ssl' => array(
+        $options = [
+            'ssl' => [
                 'verify_peer' => false,
-            ),
-        );
+            ],
+        ];
         $projectData = <<<JSON
 {
     "id": 17,
@@ -596,7 +590,7 @@ JSON;
         );
 
         $driver = new GitLabDriver(
-            array('url' => 'https://gitlab.mycompany.local/mygroup/myproject', 'options' => $options),
+            ['url' => 'https://gitlab.mycompany.local/mygroup/myproject', 'options' => $options],
             $this->io,
             $this->config,
             $this->httpDownloader,
@@ -632,8 +626,8 @@ JSON;
         );
 
         $config = clone $this->config;
-        $config->merge(array('config' => array('gitlab-protocol' => 'http')));
-        $driver = new GitLabDriver(array('url' => $url), $this->io, $config, $this->httpDownloader, $this->process);
+        $config->merge(['config' => ['gitlab-protocol' => 'http']]);
+        $driver = new GitLabDriver(['url' => $url], $this->io, $config, $this->httpDownloader, $this->process);
         $driver->initialize();
         $this->assertEquals('https://gitlab.com/mygroup/myproject.git', $driver->getRepositoryUrl(), 'Repository URL matches config request for http not git');
     }

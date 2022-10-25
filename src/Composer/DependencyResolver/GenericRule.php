@@ -64,9 +64,6 @@ class GenericRule extends Rule
         return $this->literals === $rule->getLiterals();
     }
 
-    /**
-     * @return bool
-     */
     public function isAssertion(): bool
     {
         return 1 === \count($this->literals);
@@ -74,8 +71,6 @@ class GenericRule extends Rule
 
     /**
      * Formats a rule as a string of the format (Literal1|Literal2|...)
-     *
-     * @return string
      */
     public function __toString(): string
     {

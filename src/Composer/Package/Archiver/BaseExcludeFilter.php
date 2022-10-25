@@ -36,7 +36,7 @@ abstract class BaseExcludeFilter
     public function __construct(string $sourcePath)
     {
         $this->sourcePath = $sourcePath;
-        $this->excludePatterns = array();
+        $this->excludePatterns = [];
     }
 
     /**
@@ -52,7 +52,7 @@ abstract class BaseExcludeFilter
     public function filter(string $relativePath, bool $exclude): bool
     {
         foreach ($this->excludePatterns as $patternData) {
-            list($pattern, $negate, $stripLeadingSlash) = $patternData;
+            [$pattern, $negate, $stripLeadingSlash] = $patternData;
 
             if ($stripLeadingSlash) {
                 $path = substr($relativePath, 1);
@@ -91,7 +91,7 @@ abstract class BaseExcludeFilter
                         return null;
                     }
 
-                    return call_user_func($lineParser, $line);
+                    return $lineParser($line);
                 },
                 $lines
             ),
@@ -110,7 +110,7 @@ abstract class BaseExcludeFilter
      */
     protected function generatePatterns(array $rules): array
     {
-        $patterns = array();
+        $patterns = [];
         foreach ($rules as $rule) {
             $patterns[] = $this->generatePattern($rule);
         }
@@ -147,6 +147,6 @@ abstract class BaseExcludeFilter
         // remove delimiters as well as caret (^) and dollar sign ($) from the regex
         $rule = substr(Finder\Glob::toRegex($rule), 2, -2);
 
-        return array('{'.$pattern.$rule.'(?=$|/)}', $negate, false);
+        return ['{'.$pattern.$rule.'(?=$|/)}', $negate, false];
     }
 }

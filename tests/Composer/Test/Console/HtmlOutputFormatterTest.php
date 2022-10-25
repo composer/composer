@@ -20,9 +20,9 @@ class HtmlOutputFormatterTest extends TestCase
 {
     public function testFormatting(): void
     {
-        $formatter = new HtmlOutputFormatter(array(
+        $formatter = new HtmlOutputFormatter([
             'warning' => new OutputFormatterStyle('black', 'yellow'),
-        ));
+        ]);
 
         $this->assertEquals(
             'text <span style="color:green;">green</span> <span style="color:yellow;">yellow</span> <span style="color:black;background-color:yellow;">black w/ yello bg</span>',

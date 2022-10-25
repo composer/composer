@@ -1,5 +1,5 @@
 --TEST--
-Solver Bug Exception caused by analyze on mutli conflict rule reported in GitHub issue 7051 https://github.com/composer/composer/issues/7051
+Solver Bug Exception caused by analyze on multi conflict rule reported in GitHub issue 7051 https://github.com/composer/composer/issues/7051
 --COMPOSER--
 {
     "require": {

@@ -8,14 +8,14 @@ Updating a dev package selects its newest version but no providers
             "package": [
                 {
                     "name": "a/replacer", "version": "dev-master",
-                    "source": { "reference": "wrong", "url": "", "type": "git" },
+                    "source": { "reference": "wrong", "url": "https://example.org", "type": "git" },
                     "replace": {
                         "a/installed": "dev-master"
                     }
                 },
                 {
                     "name": "a/installed", "version": "dev-master",
-                    "source": { "reference": "newref", "url": "", "type": "git" }
+                    "source": { "reference": "newref", "url": "https://example.org", "type": "git" }
                 }
             ]
         }
@@ -29,7 +29,7 @@ Updating a dev package selects its newest version but no providers
 [
     {
         "name": "a/installed", "version": "dev-master",
-        "source": { "reference": "oldref", "url": "", "type": "git" }
+        "source": { "reference": "oldref", "url": "https://example.org", "type": "git" }
     }
 ]
 --RUN--

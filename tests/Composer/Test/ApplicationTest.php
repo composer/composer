@@ -14,7 +14,6 @@ namespace Composer\Test;
 
 use Composer\Console\Application;
 use Composer\Util\Platform;
-use Composer\XdebugHandler\XdebugHandler;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 

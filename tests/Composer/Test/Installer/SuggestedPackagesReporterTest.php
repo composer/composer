@@ -72,7 +72,7 @@ class SuggestedPackagesReporterTest extends TestCase
             $suggestedPackage['reason']
         );
         $this->assertSame(
-            array($suggestedPackage),
+            [$suggestedPackage],
             $this->suggestedPackagesReporter->getPackages()
         );
     }
@@ -100,7 +100,7 @@ class SuggestedPackagesReporterTest extends TestCase
             $suggestedPackageB['reason']
         );
         $this->assertSame(
-            array($suggestedPackageA, $suggestedPackageB),
+            [$suggestedPackageA, $suggestedPackageB],
             $this->suggestedPackagesReporter->getPackages()
         );
     }
@@ -113,27 +113,27 @@ class SuggestedPackagesReporterTest extends TestCase
         $package = $this->createPackageMock();
         $package->expects($this->once())
             ->method('getSuggests')
-            ->will($this->returnValue(array(
+            ->will($this->returnValue([
                 'target-a' => 'reason-a',
                 'target-b' => 'reason-b',
-            )));
+            ]));
         $package->expects($this->once())
             ->method('getPrettyName')
             ->will($this->returnValue('package-pretty-name'));
 
         $this->suggestedPackagesReporter->addSuggestionsFromPackage($package);
-        $this->assertSame(array(
-            array(
+        $this->assertSame([
+            [
                 'source' => 'package-pretty-name',
                 'target' => 'target-a',
                 'reason' => 'reason-a',
-            ),
-            array(
+            ],
+            [
                 'source' => 'package-pretty-name',
                 'target' => 'target-b',
                 'reason' => 'reason-b',
-            ),
-        ), $this->suggestedPackagesReporter->getPackages());
+            ],
+        ], $this->suggestedPackagesReporter->getPackages());
     }
 
     /**
@@ -229,18 +229,18 @@ class SuggestedPackagesReporterTest extends TestCase
 
         $package1->expects($this->once())
             ->method('getNames')
-            ->will($this->returnValue(array('x', 'y')));
+            ->will($this->returnValue(['x', 'y']));
 
         $package2->expects($this->once())
             ->method('getNames')
-            ->will($this->returnValue(array('b')));
+            ->will($this->returnValue(['b']));
 
         $repository->expects($this->once())
             ->method('getPackages')
-            ->will($this->returnValue(array(
+            ->will($this->returnValue([
                 $package1,
                 $package2,
-            )));
+            ]));
 
         $this->suggestedPackagesReporter->addPackage('a', 'b', 'c');
         $this->suggestedPackagesReporter->addPackage('source package', 'target', 'because reasons');
@@ -273,11 +273,11 @@ class SuggestedPackagesReporterTest extends TestCase
      */
     private function getSuggestedPackageArray(): array
     {
-        return array(
+        return [
             'source' => 'a',
             'target' => 'b',
             'reason' => 'c',
-        );
+        ];
     }
 
     /**
@@ -286,7 +286,7 @@ class SuggestedPackagesReporterTest extends TestCase
     private function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')
-            ->setConstructorArgs(array(md5((string) mt_rand()), '1.0.0.0', '1.0.0'))
+            ->setConstructorArgs([md5((string) mt_rand()), '1.0.0.0', '1.0.0'])
             ->getMock();
     }
 }

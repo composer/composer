@@ -58,13 +58,7 @@ class PackageEvent extends Event
     /**
      * Constructor.
      *
-     * @param string               $eventName
-     * @param Composer             $composer
-     * @param IOInterface          $io
-     * @param bool                 $devMode
-     * @param RepositoryInterface  $localRepo
      * @param OperationInterface[] $operations
-     * @param OperationInterface   $operation
      */
     public function __construct(string $eventName, Composer $composer, IOInterface $io, bool $devMode, RepositoryInterface $localRepo, array $operations, OperationInterface $operation)
     {
@@ -78,33 +72,21 @@ class PackageEvent extends Event
         $this->operation = $operation;
     }
 
-    /**
-     * @return Composer
-     */
     public function getComposer(): Composer
     {
         return $this->composer;
     }
 
-    /**
-     * @return IOInterface
-     */
     public function getIO(): IOInterface
     {
         return $this->io;
     }
 
-    /**
-     * @return bool
-     */
     public function isDevMode(): bool
     {
         return $this->devMode;
     }
 
-    /**
-     * @return RepositoryInterface
-     */
     public function getLocalRepo(): RepositoryInterface
     {
         return $this->localRepo;
@@ -120,8 +102,6 @@ class PackageEvent extends Event
 
     /**
      * Returns the package instance.
-     *
-     * @return OperationInterface
      */
     public function getOperation(): OperationInterface
     {

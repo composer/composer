@@ -13,6 +13,7 @@
 namespace Composer\Json;
 
 use Composer\Pcre\Preg;
+use Composer\Util\Filesystem;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
@@ -56,7 +57,7 @@ class JsonFile
      * @param  ?IOInterface              $io
      * @throws \InvalidArgumentException
      */
-    public function __construct(string $path, HttpDownloader $httpDownloader = null, IOInterface $io = null)
+    public function __construct(string $path, ?HttpDownloader $httpDownloader = null, ?IOInterface $io = null)
     {
         $this->path = $path;
 
@@ -67,9 +68,6 @@ class JsonFile
         $this->io = $io;
     }
 
-    /**
-     * @return string
-     */
     public function getPath(): string
     {
         return $this->path;
@@ -77,8 +75,6 @@ class JsonFile
 
     /**
      * Checks whether json file exists.
-     *
-     * @return bool
      */
     public function exists(): bool
     {
@@ -98,6 +94,9 @@ class JsonFile
             if ($this->httpDownloader) {
                 $json = $this->httpDownloader->get($this->path)->getBody();
             } else {
+                if (!Filesystem::isReadable($this->path)) {
+                    throw new \RuntimeException('The file "'.$this->path.'" is not readable.');
+                }
                 if ($this->io && $this->io->isDebug()) {
                     $realpathInfo = '';
                     $realpath = realpath($this->path);
@@ -170,8 +169,6 @@ class JsonFile
     /**
      * Modify file properties only if content modified
      *
-     * @param string $path
-     * @param string $content
      * @return int|false
      */
     private function filePutContentsIfModified(string $path, string $content)
@@ -197,6 +194,9 @@ class JsonFile
      */
     public function validateSchema(int $schema = self::STRICT_SCHEMA, ?string $schemaFile = null): bool
     {
+        if (!Filesystem::isReadable($this->path)) {
+            throw new \RuntimeException('The file "'.$this->path.'" is not readable.');
+        }
         $content = file_get_contents($this->path);
         $data = json_decode($content);
 
@@ -231,23 +231,23 @@ class JsonFile
             $schemaFile = 'file://' . $schemaFile;
         }
 
-        $schemaData = (object) array('$ref' => $schemaFile);
+        $schemaData = (object) ['$ref' => $schemaFile];
 
         if ($schema === self::LAX_SCHEMA) {
             $schemaData->additionalProperties = true;
-            $schemaData->required = array();
+            $schemaData->required = [];
         } elseif ($schema === self::STRICT_SCHEMA && $isComposerSchemaFile) {
             $schemaData->additionalProperties = false;
-            $schemaData->required = array('name', 'description');
+            $schemaData->required = ['name', 'description'];
         } elseif ($schema === self::AUTH_SCHEMA && $isComposerSchemaFile) {
-            $schemaData = (object) array('$ref' => $schemaFile.'#/properties/config', '$schema'=> "https://json-schema.org/draft-04/schema#");
+            $schemaData = (object) ['$ref' => $schemaFile.'#/properties/config', '$schema' => "https://json-schema.org/draft-04/schema#"];
         }
 
         $validator = new Validator();
         $validator->check($data, $schemaData);
 
         if (!$validator->isValid()) {
-            $errors = array();
+            $errors = [];
             foreach ((array) $validator->getErrors() as $error) {
                 $errors[] = ($error['property'] ? $error['property'].' : ' : '').$error['message'];
             }
@@ -279,7 +279,6 @@ class JsonFile
      *
      * @param  int               $code return code of json_last_error function
      * @throws \RuntimeException
-     * @return void
      */
     private static function throwEncodeError(int $code): void
     {
@@ -312,7 +311,7 @@ class JsonFile
      * @throws ParsingException
      * @return mixed
      */
-    public static function parseJson(?string $json, string $file = null)
+    public static function parseJson(?string $json, ?string $file = null)
     {
         if (null === $json) {
             return null;
@@ -328,13 +327,12 @@ class JsonFile
     /**
      * Validates the syntax of a JSON string
      *
-     * @param  string                    $json
      * @param  string                    $file
      * @throws \UnexpectedValueException
      * @throws ParsingException
      * @return bool                      true on success
      */
-    protected static function validateSyntax(string $json, string $file = null): bool
+    protected static function validateSyntax(string $json, ?string $file = null): bool
     {
         $parser = new JsonParser();
         $result = $parser->lint($json);

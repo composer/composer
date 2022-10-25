@@ -22,14 +22,8 @@ use Composer\Pcre\Preg;
 class ComposerMirror
 {
     /**
-     * @param string      $mirrorUrl
-     * @param string      $packageName
-     * @param string      $version
-     * @param string|null $reference
-     * @param string|null $type
-     * @param string|null $prettyVersion
-     *
-     * @return string
+     * @param non-empty-string $mirrorUrl
+     * @return non-empty-string
      */
     public static function processUrl(string $mirrorUrl, string $packageName, string $version, ?string $reference, ?string $type, ?string $prettyVersion = null): string
     {
@@ -38,22 +32,21 @@ class ComposerMirror
         }
         $version = strpos($version, '/') === false ? $version : md5($version);
 
-        $from = array('%package%', '%version%', '%reference%', '%type%');
-        $to = array($packageName, $version, $reference, $type);
+        $from = ['%package%', '%version%', '%reference%', '%type%'];
+        $to = [$packageName, $version, $reference, $type];
         if (null !== $prettyVersion) {
             $from[] = '%prettyVersion%';
             $to[] = $prettyVersion;
         }
 
-        return str_replace($from, $to, $mirrorUrl);
+        $url = str_replace($from, $to, $mirrorUrl);
+        assert($url !== '');
+
+        return $url;
     }
 
     /**
-     * @param string      $mirrorUrl
-     * @param string      $packageName
-     * @param string      $url
-     * @param string|null $type
-     *
+     * @param non-empty-string $mirrorUrl
      * @return string
      */
     public static function processGitUrl(string $mirrorUrl, string $packageName, string $url, ?string $type): string
@@ -67,18 +60,14 @@ class ComposerMirror
         }
 
         return str_replace(
-            array('%package%', '%normalizedUrl%', '%type%'),
-            array($packageName, $url, $type),
+            ['%package%', '%normalizedUrl%', '%type%'],
+            [$packageName, $url, $type],
             $mirrorUrl
         );
     }
 
     /**
-     * @param string $mirrorUrl
-     * @param string $packageName
-     * @param string $url
-     * @param string $type
-     *
+     * @param non-empty-string $mirrorUrl
      * @return string
      */
     public static function processHgUrl(string $mirrorUrl, string $packageName, string $url, string $type): string

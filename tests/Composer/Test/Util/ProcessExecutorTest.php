@@ -69,9 +69,6 @@ class ProcessExecutorTest extends TestCase
 
     /**
      * @dataProvider hidePasswordProvider
-     *
-     * @param string $command
-     * @param string $expectedCommandOutput
      */
     public function testHidePasswords(string $command, string $expectedCommandOutput): void
     {
@@ -82,13 +79,13 @@ class ProcessExecutorTest extends TestCase
 
     public function hidePasswordProvider(): array
     {
-        return array(
-            array('echo https://foo:bar@example.org/', 'echo https://foo:***@example.org/'),
-            array('echo http://foo@example.org', 'echo http://foo@example.org'),
-            array('echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://***:***@github.com/'),
-            array("svn ls --verbose --non-interactive  --username 'foo' --password 'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"),
-            array("svn ls --verbose --non-interactive  --username 'foo' --password 'bar \'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"),
-        );
+        return [
+            ['echo https://foo:bar@example.org/', 'echo https://foo:***@example.org/'],
+            ['echo http://foo@example.org', 'echo http://foo@example.org'],
+            ['echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://***:***@github.com/'],
+            ["svn ls --verbose --non-interactive  --username 'foo' --password 'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"],
+            ["svn ls --verbose --non-interactive  --username 'foo' --password 'bar \'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"],
+        ];
     }
 
     public function testDoesntHidePorts(): void
@@ -101,18 +98,18 @@ class ProcessExecutorTest extends TestCase
     public function testSplitLines(): void
     {
         $process = new ProcessExecutor;
-        $this->assertEquals(array(), $process->splitLines(''));
-        $this->assertEquals(array(), $process->splitLines(null));
-        $this->assertEquals(array('foo'), $process->splitLines('foo'));
-        $this->assertEquals(array('foo', 'bar'), $process->splitLines("foo\nbar"));
-        $this->assertEquals(array('foo', 'bar'), $process->splitLines("foo\r\nbar"));
-        $this->assertEquals(array('foo', 'bar'), $process->splitLines("foo\r\nbar\n"));
+        $this->assertEquals([], $process->splitLines(''));
+        $this->assertEquals([], $process->splitLines(null));
+        $this->assertEquals(['foo'], $process->splitLines('foo'));
+        $this->assertEquals(['foo', 'bar'], $process->splitLines("foo\nbar"));
+        $this->assertEquals(['foo', 'bar'], $process->splitLines("foo\r\nbar"));
+        $this->assertEquals(['foo', 'bar'], $process->splitLines("foo\r\nbar\n"));
     }
 
     public function testConsoleIODoesNotFormatSymfonyConsoleStyle(): void
     {
         $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
-        $process = new ProcessExecutor(new ConsoleIO(new ArrayInput(array()), $output, new HelperSet(array())));
+        $process = new ProcessExecutor(new ConsoleIO(new ArrayInput([]), $output, new HelperSet([])));
 
         $process->execute('php -ddisplay_errors=0 -derror_reporting=0 -r "echo \'<error>foo</error>\'.PHP_EOL;"');
         $this->assertSame('<error>foo</error>'.PHP_EOL, $output->fetch());
@@ -139,8 +136,6 @@ class ProcessExecutorTest extends TestCase
      * @dataProvider dataEscapeArguments
      *
      * @param string|false|null $argument
-     * @param string            $win
-     * @param string            $unix
      */
     public function testEscapeArgument($argument, string $win, string $unix): void
     {
@@ -154,75 +149,75 @@ class ProcessExecutorTest extends TestCase
      */
     public function dataEscapeArguments(): array
     {
-        return array(
+        return [
             // empty argument - must be quoted
-            'empty' => array('', '""', "''"),
+            'empty' => ['', '""', "''"],
 
             // null argument - must be quoted
-            'empty null' => array(null, '""', "''"),
+            'empty null' => [null, '""', "''"],
 
             // false argument - must be quoted
-            'empty false' => array(false, '""', "''"),
+            'empty false' => [false, '""', "''"],
 
             // unix single-quote must be escaped
-            'unix-sq' => array("a'bc", "a'bc", "'a'\\''bc'"),
+            'unix-sq' => ["a'bc", "a'bc", "'a'\\''bc'"],
 
             // new lines must be replaced
-            'new lines' => array("a\nb\nc", '"a b c"', "'a\nb\nc'"),
+            'new lines' => ["a\nb\nc", '"a b c"', "'a\nb\nc'"],
 
             // whitespace <space> must be quoted
-            'ws space' => array('a b c', '"a b c"', "'a b c'"),
+            'ws space' => ['a b c', '"a b c"', "'a b c'"],
 
             // whitespace <tab> must be quoted
-            'ws tab' => array("a\tb\tc", "\"a\tb\tc\"", "'a\tb\tc'"),
+            'ws tab' => ["a\tb\tc", "\"a\tb\tc\"", "'a\tb\tc'"],
 
             // no whitespace must not be quoted
-            'no-ws' => array('abc', 'abc', "'abc'"),
+            'no-ws' => ['abc', 'abc', "'abc'"],
 
             // commas must be quoted
-            'comma' => array('a,bc', '"a,bc"', "'a,bc'"),
+            'comma' => ['a,bc', '"a,bc"', "'a,bc'"],
 
             // double-quotes must be backslash-escaped
-            'dq' => array('a"bc', 'a\^"bc', "'a\"bc'"),
+            'dq' => ['a"bc', 'a\^"bc', "'a\"bc'"],
 
-            // double-quotes must be backslash-escaped with preceeding backslashes doubled
-            'dq-bslash' => array('a\\"bc', 'a\\\\\^"bc', "'a\\\"bc'"),
+            // double-quotes must be backslash-escaped with preceding backslashes doubled
+            'dq-bslash' => ['a\\"bc', 'a\\\\\^"bc', "'a\\\"bc'"],
 
-            // backslashes not preceeding a double-quote are treated as literal
-            'bslash' => array('ab\\\\c\\', 'ab\\\\c\\', "'ab\\\\c\\'"),
+            // backslashes not preceding a double-quote are treated as literal
+            'bslash' => ['ab\\\\c\\', 'ab\\\\c\\', "'ab\\\\c\\'"],
 
             // trailing backslashes must be doubled up when the argument is quoted
-            'bslash dq' => array('a b c\\\\', '"a b c\\\\\\\\"', "'a b c\\\\'"),
+            'bslash dq' => ['a b c\\\\', '"a b c\\\\\\\\"', "'a b c\\\\'"],
 
             // meta: outer double-quotes must be caret-escaped as well
-            'meta dq' => array('a "b" c', '^"a \^"b\^" c^"', "'a \"b\" c'"),
+            'meta dq' => ['a "b" c', '^"a \^"b\^" c^"', "'a \"b\" c'"],
 
             // meta: percent expansion must be caret-escaped
-            'meta-pc1' => array('%path%', '^%path^%', "'%path%'"),
+            'meta-pc1' => ['%path%', '^%path^%', "'%path%'"],
 
             // meta: expansion must have two percent characters
-            'meta-pc2' => array('%path', '%path', "'%path'"),
+            'meta-pc2' => ['%path', '%path', "'%path'"],
 
             // meta: expansion must have have two surrounding percent characters
-            'meta-pc3' => array('%%path', '%%path', "'%%path'"),
+            'meta-pc3' => ['%%path', '%%path', "'%%path'"],
 
             // meta: bang expansion must be double caret-escaped
-            'meta-bang1' => array('!path!', '^^!path^^!', "'!path!'"),
+            'meta-bang1' => ['!path!', '^^!path^^!', "'!path!'"],
 
             // meta: bang expansion must have two bang characters
-            'meta-bang2' => array('!path', '!path', "'!path'"),
+            'meta-bang2' => ['!path', '!path', "'!path'"],
 
             // meta: bang expansion must have two surrounding ang characters
-            'meta-bang3' => array('!!path', '!!path', "'!!path'"),
+            'meta-bang3' => ['!!path', '!!path', "'!!path'"],
 
             // meta: caret-escaping must escape all other meta chars (triggered by double-quote)
-            'meta-all-dq' => array('<>"&|()^', '^<^>\^"^&^|^(^)^^', "'<>\"&|()^'"),
+            'meta-all-dq' => ['<>"&|()^', '^<^>\^"^&^|^(^)^^', "'<>\"&|()^'"],
 
             // other meta: no caret-escaping when whitespace in argument
-            'other meta' => array('<> &| ()^', '"<> &| ()^"', "'<> &| ()^'"),
+            'other meta' => ['<> &| ()^', '"<> &| ()^"', "'<> &| ()^'"],
 
             // other meta: quote escape chars when no whitespace in argument
-            'other-meta' => array('<>&|()^', '"<>&|()^"', "'<>&|()^'"),
-        );
+            'other-meta' => ['<>&|()^', '"<>&|()^"', "'<>&|()^'"],
+        ];
     }
 }

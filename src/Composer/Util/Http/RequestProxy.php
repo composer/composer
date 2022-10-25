@@ -30,9 +30,7 @@ class RequestProxy
     private $url;
 
     /**
-     * @param string  $url
      * @param mixed[] $contextOptions
-     * @param string  $formattedUrl
      */
     public function __construct(string $url, array $contextOptions, string $formattedUrl)
     {

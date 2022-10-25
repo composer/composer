@@ -12,7 +12,6 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\AliasPackage;
 use Composer\Installer\InstallationManager;
 
 /**
@@ -27,7 +26,7 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
     /**
      * @var string[]
      */
-    protected $devPackageNames = array();
+    protected $devPackageNames = [];
 
     /** @var bool|null */
     private $devMode = null;

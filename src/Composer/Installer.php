@@ -148,6 +148,8 @@ class Installer
     /** @var bool */
     protected $dryRun = false;
     /** @var bool */
+    protected $downloadOnly = false;
+    /** @var bool */
     protected $verbose = false;
     /** @var bool */
     protected $update = false;
@@ -202,15 +204,7 @@ class Installer
     /**
      * Constructor
      *
-     * @param IOInterface          $io
-     * @param Config               $config
      * @param RootPackageInterface&BasePackage $package
-     * @param DownloadManager      $downloadManager
-     * @param RepositoryManager    $repositoryManager
-     * @param Locker               $locker
-     * @param InstallationManager  $installationManager
-     * @param EventDispatcher      $eventDispatcher
-     * @param AutoloadGenerator    $autoloadGenerator
      */
     public function __construct(IOInterface $io, Config $config, RootPackageInterface $package, DownloadManager $downloadManager, RepositoryManager $repositoryManager, Locker $locker, InstallationManager $installationManager, EventDispatcher $eventDispatcher, AutoloadGenerator $autoloadGenerator)
     {
@@ -266,6 +260,10 @@ class Installer
             $this->mockLocalRepositories($this->repositoryManager);
         }
 
+        if ($this->downloadOnly) {
+            $this->dumpAutoloader = false;
+        }
+
         if ($this->update && !$this->install) {
             $this->dumpAutoloader = false;
         }
@@ -305,11 +303,11 @@ class Installer
         }
 
         if ($this->update) {
-            $installedRepo = new InstalledRepository(array(
+            $installedRepo = new InstalledRepository([
                 $this->locker->getLockedRepository($this->devMode),
                 $this->createPlatformRepo(false),
                 new RootPackageRepository(clone $this->package),
-            ));
+            ]);
             if ($isFreshInstall) {
                 $this->suggestedPackagesReporter->addSuggestionsFromPackage($this->package);
             }
@@ -365,7 +363,7 @@ class Installer
             }
         }
         if ($fundingCount > 0) {
-            $this->io->writeError(array(
+            $this->io->writeError([
                 sprintf(
                     "<info>%d package%s you are using %s looking for funding.</info>",
                     $fundingCount,
@@ -373,7 +371,7 @@ class Installer
                     1 === $fundingCount ? 'is' : 'are'
                 ),
                 '<info>Use the `composer fund` command to find out more!</info>',
-            ));
+            ]);
         }
 
         if ($this->runScripts) {
@@ -418,9 +416,6 @@ class Installer
     }
 
     /**
-     * @param bool $doInstall
-     *
-     * @return int
      * @phpstan-return self::ERROR_*
      */
     protected function doUpdate(InstalledRepositoryInterface $localRepo, bool $doInstall): int
@@ -519,9 +514,9 @@ class Installer
         $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
         $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
 
-        $installsUpdates = $uninstalls = array();
+        $installsUpdates = $uninstalls = [];
         if ($lockTransaction->getOperations()) {
-            $installNames = $updateNames = $uninstallNames = array();
+            $installNames = $updateNames = $uninstallNames = [];
             foreach ($lockTransaction->getOperations() as $operation) {
                 if ($operation instanceof InstallOperation) {
                     $installsUpdates[] = $operation;
@@ -605,7 +600,7 @@ class Installer
             $this->package->getStabilityFlags(),
             $this->preferStable || $this->package->getPreferStable(),
             $this->preferLowest,
-            $this->config->get('platform') ?: array(),
+            $this->config->get('platform') ?: [],
             $this->writeLock && $this->executeOperations
         );
         if ($updatedLock && $this->writeLock && $this->executeOperations) {
@@ -636,18 +631,16 @@ class Installer
      *
      * @param array<int, array<string, string>> $aliases
      *
-     * @return int
-     *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      * @phpstan-return self::ERROR_*
      */
-    protected function extractDevPackages(LockTransaction $lockTransaction, PlatformRepository $platformRepo, array $aliases, PolicyInterface $policy, LockArrayRepository $lockedRepository = null): int
+    protected function extractDevPackages(LockTransaction $lockTransaction, PlatformRepository $platformRepo, array $aliases, PolicyInterface $policy, ?LockArrayRepository $lockedRepository = null): int
     {
         if (!$this->package->getDevRequires()) {
             return 0;
         }
 
-        $resultRepo = new ArrayRepository(array());
+        $resultRepo = new ArrayRepository([]);
         $loader = new ArrayLoader(null, true);
         $dumper = new ArrayDumper();
         foreach ($lockTransaction->getNewLockPackages(false) as $pkg) {
@@ -687,7 +680,6 @@ class Installer
     }
 
     /**
-     * @param  InstalledRepositoryInterface $localRepo
      * @param  bool                         $alreadySolved Whether the function is called as part of an update command or independently
      * @return int                          exit code
      * @phpstan-return self::ERROR_*
@@ -709,7 +701,7 @@ class Installer
             // creating repository set
             $policy = $this->createPolicy(false);
             // use aliases from lock file only, so empty root aliases here
-            $repositorySet = $this->createRepositorySet(false, $platformRepo, array(), $lockedRepository);
+            $repositorySet = $this->createRepositorySet(false, $platformRepo, [], $lockedRepository);
             $repositorySet->addRepository($lockedRepository);
 
             // creating requirements request
@@ -764,7 +756,7 @@ class Installer
         }
 
         if ($localRepoTransaction->getOperations()) {
-            $installs = $updates = $uninstalls = array();
+            $installs = $updates = $uninstalls = [];
             foreach ($localRepoTransaction->getOperations() as $operation) {
                 if ($operation instanceof InstallOperation) {
                     $installs[] = $operation->getPackage()->getPrettyName().':'.$operation->getPackage()->getFullPrettyVersion();
@@ -797,7 +789,7 @@ class Installer
 
         if ($this->executeOperations) {
             $localRepo->setDevPackageNames($this->locker->getDevPackageNames());
-            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts);
+            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts, $this->downloadOnly);
         } else {
             foreach ($localRepoTransaction->getOperations() as $operation) {
                 // output op, but alias op only in debug verbosity
@@ -810,32 +802,23 @@ class Installer
         return 0;
     }
 
-    /**
-     * @param bool $forUpdate
-     *
-     * @return PlatformRepository
-     */
     protected function createPlatformRepo(bool $forUpdate): PlatformRepository
     {
         if ($forUpdate) {
-            $platformOverrides = $this->config->get('platform') ?: array();
+            $platformOverrides = $this->config->get('platform') ?: [];
         } else {
             $platformOverrides = $this->locker->getPlatformOverrides();
         }
 
-        return new PlatformRepository(array(), $platformOverrides);
+        return new PlatformRepository([], $platformOverrides);
     }
 
     /**
-     * @param  bool                              $forUpdate
      * @param  array<int, array<string, string>> $rootAliases
-     * @param  RepositoryInterface|null          $lockedRepository
-     *
-     * @return RepositorySet
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $rootAliases
      */
-    private function createRepositorySet(bool $forUpdate, PlatformRepository $platformRepo, array $rootAliases = array(), ?RepositoryInterface $lockedRepository = null): RepositorySet
+    private function createRepositorySet(bool $forUpdate, PlatformRepository $platformRepo, array $rootAliases = [], ?RepositoryInterface $lockedRepository = null): RepositorySet
     {
         if ($forUpdate) {
             $minimumStability = $this->package->getMinimumStability();
@@ -846,7 +829,7 @@ class Installer
             $minimumStability = $this->locker->getMinimumStability();
             $stabilityFlags = $this->locker->getStabilityFlags();
 
-            $requires = array();
+            $requires = [];
             foreach ($lockedRepository->getPackages() as $package) {
                 $constraint = new Constraint('=', $package->getVersion());
                 $constraint->setPrettyString($package->getPrettyVersion());
@@ -854,7 +837,7 @@ class Installer
             }
         }
 
-        $rootRequires = array();
+        $rootRequires = [];
         foreach ($requires as $req => $constraint) {
             if ($constraint instanceof Link) {
                 $constraint = $constraint->getConstraint();
@@ -869,8 +852,8 @@ class Installer
         }
 
         $this->fixedRootPackage = clone $this->package;
-        $this->fixedRootPackage->setRequires(array());
-        $this->fixedRootPackage->setDevRequires(array());
+        $this->fixedRootPackage->setRequires([]);
+        $this->fixedRootPackage->setDevRequires([]);
 
         $stabilityFlags[$this->package->getName()] = BasePackage::$stabilities[VersionParser::parseStability($this->package->getVersion())];
 
@@ -884,7 +867,7 @@ class Installer
             if ($additionalFixedRepositories instanceof CompositeRepository) {
                 $additionalFixedRepositories = $additionalFixedRepositories->getRepositories();
             } else {
-                $additionalFixedRepositories = array($additionalFixedRepositories);
+                $additionalFixedRepositories = [$additionalFixedRepositories];
             }
             foreach ($additionalFixedRepositories as $additionalFixedRepository) {
                 if ($additionalFixedRepository instanceof InstalledRepository || $additionalFixedRepository instanceof InstalledRepositoryInterface) {
@@ -899,11 +882,6 @@ class Installer
         return $repositorySet;
     }
 
-    /**
-     * @param bool $forUpdate
-     *
-     * @return DefaultPolicy
-     */
     private function createPolicy(bool $forUpdate): DefaultPolicy
     {
         $preferStable = null;
@@ -926,9 +904,8 @@ class Installer
 
     /**
      * @param RootPackageInterface&BasePackage $rootPackage
-     * @return Request
      */
-    private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo, LockArrayRepository $lockedRepository = null): Request
+    private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo, ?LockArrayRepository $lockedRepository = null): Request
     {
         $request = new Request($lockedRepository);
 
@@ -959,17 +936,11 @@ class Installer
         return $request;
     }
 
-    /**
-     * @param LockArrayRepository|null $lockedRepository
-     * @param bool                     $includeDevRequires
-     *
-     * @return void
-     */
-    private function requirePackagesForUpdate(Request $request, LockArrayRepository $lockedRepository = null, bool $includeDevRequires = true): void
+    private function requirePackagesForUpdate(Request $request, ?LockArrayRepository $lockedRepository = null, bool $includeDevRequires = true): void
     {
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
         if ($this->updateMirrors) {
-            $excludedPackages = array();
+            $excludedPackages = [];
             if (!$includeDevRequires) {
                 $excludedPackages = array_flip($this->locker->getDevPackageNames());
             }
@@ -993,8 +964,6 @@ class Installer
     }
 
     /**
-     * @param bool $forUpdate
-     *
      * @return array<int, array<string, string>>
      *
      * @phpstan-return list<array{package: string, version: string, alias: string, alias_normalized: string}>
@@ -1017,7 +986,7 @@ class Installer
      */
     private function extractPlatformRequirements(array $links): array
     {
-        $platformReqs = array();
+        $platformReqs = [];
         foreach ($links as $link) {
             if (PlatformRepository::isPlatformPackage($link->getTarget())) {
                 $platformReqs[$link->getTarget()] = $link->getPrettyConstraint();
@@ -1031,12 +1000,10 @@ class Installer
      * Replace local repositories with InstalledArrayRepository instances
      *
      * This is to prevent any accidental modification of the existing repos on disk
-     *
-     * @return void
      */
     private function mockLocalRepositories(RepositoryManager $rm): void
     {
-        $packages = array();
+        $packages = [];
         foreach ($rm->getLocalRepository()->getPackages() as $package) {
             $packages[(string) $package] = clone $package;
         }
@@ -1052,9 +1019,6 @@ class Installer
         );
     }
 
-    /**
-     * @return PoolOptimizer|null
-     */
     private function createPoolOptimizer(PolicyInterface $policy): ?PoolOptimizer
     {
         // Not the best architectural decision here, would need to be able
@@ -1072,8 +1036,6 @@ class Installer
     /**
      * Create Installer
      *
-     * @param  IOInterface $io
-     * @param  Composer    $composer
      * @return Installer
      */
     public static function create(IOInterface $io, Composer $composer): self
@@ -1092,7 +1054,6 @@ class Installer
     }
 
     /**
-     * @param  RepositoryInterface $additionalFixedRepository
      * @return $this
      */
     public function setAdditionalFixedRepository(RepositoryInterface $additionalFixedRepository): self
@@ -1116,7 +1077,6 @@ class Installer
     /**
      * Whether to run in drymode or not
      *
-     * @param  bool      $dryRun
      * @return Installer
      */
     public function setDryRun(bool $dryRun = true): self
@@ -1128,8 +1088,6 @@ class Installer
 
     /**
      * Checks, if this is a dry run (simulation mode).
-     *
-     * @return bool
      */
     public function isDryRun(): bool
     {
@@ -1137,9 +1095,20 @@ class Installer
     }
 
     /**
+     * Whether to download only or not.
+     *
+     * @return Installer
+     */
+    public function setDownloadOnly(bool $downloadOnly = true): self
+    {
+        $this->downloadOnly = $downloadOnly;
+
+        return $this;
+    }
+
+    /**
      * prefer source installation
      *
-     * @param  bool      $preferSource
      * @return Installer
      */
     public function setPreferSource(bool $preferSource = true): self
@@ -1152,7 +1121,6 @@ class Installer
     /**
      * prefer dist installation
      *
-     * @param  bool      $preferDist
      * @return Installer
      */
     public function setPreferDist(bool $preferDist = true): self
@@ -1165,7 +1133,6 @@ class Installer
     /**
      * Whether or not generated autoloader are optimized
      *
-     * @param  bool      $optimizeAutoloader
      * @return Installer
      */
     public function setOptimizeAutoloader(bool $optimizeAutoloader): self
@@ -1184,7 +1151,6 @@ class Installer
      * Whether or not generated autoloader considers the class map
      * authoritative.
      *
-     * @param  bool      $classMapAuthoritative
      * @return Installer
      */
     public function setClassMapAuthoritative(bool $classMapAuthoritative): self
@@ -1201,8 +1167,6 @@ class Installer
     /**
      * Whether or not generated autoloader considers APCu caching.
      *
-     * @param  bool        $apcuAutoloader
-     * @param  string|null $apcuAutoloaderPrefix
      * @return Installer
      */
     public function setApcuAutoloader(bool $apcuAutoloader, ?string $apcuAutoloaderPrefix = null): self
@@ -1216,7 +1180,6 @@ class Installer
     /**
      * update packages
      *
-     * @param  bool      $update
      * @return Installer
      */
     public function setUpdate(bool $update): self
@@ -1229,7 +1192,6 @@ class Installer
     /**
      * Allows disabling the install step after an update
      *
-     * @param  bool      $install
      * @return Installer
      */
     public function setInstall(bool $install): self
@@ -1242,7 +1204,6 @@ class Installer
     /**
      * enables dev packages
      *
-     * @param  bool      $devMode
      * @return Installer
      */
     public function setDevMode(bool $devMode = true): self
@@ -1257,7 +1218,6 @@ class Installer
      *
      * This is disabled implicitly when enabling dryRun
      *
-     * @param  bool      $dumpAutoloader
      * @return Installer
      */
     public function setDumpAutoloader(bool $dumpAutoloader = true): self
@@ -1272,7 +1232,6 @@ class Installer
      *
      * This is disabled implicitly when enabling dryRun
      *
-     * @param  bool      $runScripts
      * @return Installer
      * @deprecated Use setRunScripts(false) on the EventDispatcher instance being injected instead
      */
@@ -1286,7 +1245,6 @@ class Installer
     /**
      * set the config instance
      *
-     * @param  Config    $config
      * @return Installer
      */
     public function setConfig(Config $config): self
@@ -1299,7 +1257,6 @@ class Installer
     /**
      * run in verbose mode
      *
-     * @param  bool      $verbose
      * @return Installer
      */
     public function setVerbose(bool $verbose = true): self
@@ -1311,8 +1268,6 @@ class Installer
 
     /**
      * Checks, if running in verbose mode.
-     *
-     * @return bool
      */
     public function isVerbose(): bool
     {
@@ -1340,7 +1295,6 @@ class Installer
     }
 
     /**
-     * @param PlatformRequirementFilterInterface $platformRequirementFilter
      * @return Installer
      */
     public function setPlatformRequirementFilter(PlatformRequirementFilterInterface $platformRequirementFilter): self
@@ -1353,7 +1307,6 @@ class Installer
     /**
      * Update the lock file to the exact same versions and references but use current remote metadata like URLs and mirror info
      *
-     * @param  bool      $updateMirrors
      * @return Installer
      */
     public function setUpdateMirrors(bool $updateMirrors): self
@@ -1389,7 +1342,7 @@ class Installer
      */
     public function setUpdateAllowTransitiveDependencies(int $updateAllowTransitiveDependencies): self
     {
-        if (!in_array($updateAllowTransitiveDependencies, array(Request::UPDATE_ONLY_LISTED, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS), true)) {
+        if (!in_array($updateAllowTransitiveDependencies, [Request::UPDATE_ONLY_LISTED, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS], true)) {
             throw new \RuntimeException("Invalid value for updateAllowTransitiveDependencies supplied");
         }
 
@@ -1401,7 +1354,6 @@ class Installer
     /**
      * Should packages be preferred in a stable version when updating?
      *
-     * @param  bool      $preferStable
      * @return Installer
      */
     public function setPreferStable(bool $preferStable = true): self
@@ -1414,7 +1366,6 @@ class Installer
     /**
      * Should packages be preferred in a lowest version when updating?
      *
-     * @param  bool      $preferLowest
      * @return Installer
      */
     public function setPreferLowest(bool $preferLowest = true): self
@@ -1429,7 +1380,6 @@ class Installer
      *
      * This is disabled implicitly when enabling dryRun
      *
-     * @param  bool      $writeLock
      * @return Installer
      */
     public function setWriteLock(bool $writeLock = true): self
@@ -1444,7 +1394,6 @@ class Installer
      *
      * This is disabled implicitly when enabling dryRun
      *
-     * @param  bool      $executeOperations
      * @return Installer
      */
     public function setExecuteOperations(bool $executeOperations = true): self
@@ -1457,7 +1406,6 @@ class Installer
     /**
      * Should an audit be run after installation is complete?
      *
-     * @param boolean $audit
      * @return Installer
      */
     public function setAudit(bool $audit): self
@@ -1497,7 +1445,6 @@ class Installer
     }
 
     /**
-     * @param  SuggestedPackagesReporter $suggestedPackagesReporter
      * @return Installer
      */
     public function setSuggestedPackagesReporter(SuggestedPackagesReporter $suggestedPackagesReporter): self
