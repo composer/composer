@@ -63,6 +63,23 @@ OUTPUT;
         $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
+    /**
+     * @requires OSFAMILY Windows
+     */
+    public function testUnaccessibleFile(): void 
+    {
+        $directory = $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
+        chmod($directory.'/composer.json', 0200);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'validate']);
+        $expected = './composer.json is not readable.';
+
+        $this->assertSame($expected, trim($appTester->getDisplay(true)));
+        $this->assertSame(3, $appTester->getStatusCode());
+        chmod($directory.'/composer.json', 0700);
+    }
+
     private const MINIMAL_VALID_CONFIGURATION = [
         'name' => 'test/suite',
         'type' => 'library',
