@@ -600,19 +600,19 @@ EOT
                         }
                     }
 
-                    $io->write('');
-                    $io->write('<info>Direct dependencies required in composer.json:</>');
+                    $io->writeError('');
+                    $io->writeError('<info>Direct dependencies required in composer.json:</>');
                     if (\count($directDeps) > 0) {
                         $this->printPackages($io, $directDeps, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     } else {
-                        $io->write('Everything up to date');
+                        $io->writeError('Everything up to date');
                     }
-                    $io->write('');
-                    $io->write('<info>Transitive dependencies not required in composer.json:</>');
+                    $io->writeError('');
+                    $io->writeError('<info>Transitive dependencies not required in composer.json:</>');
                     if (\count($transitiveDeps) > 0) {
                         $this->printPackages($io, $transitiveDeps, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     } else {
-                        $io->write('Everything up to date');
+                        $io->writeError('Everything up to date');
                     }
                 } else {
                     $this->printPackages($io, $packages, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
