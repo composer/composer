@@ -14,6 +14,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 
 class ValidateCommandTest extends TestCase
 {
@@ -63,11 +64,12 @@ OUTPUT;
         $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
-    /**
-     * @requires OSFAMILY Windows
-     */
     public function testUnaccessibleFile(): void 
     {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('Does not run on windows');
+        }
+        
         $directory = $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
         chmod($directory.'/composer.json', 0200);
 
