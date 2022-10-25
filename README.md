@@ -1,10 +1,9 @@
 <p align="center">
-<a href="https://getcomposer.org" target="_blank">
-    <img src="https://getcomposer.org/img/logo-composer-transparent.png" alt="Composer">
-</a>
-<h1 align="center">Dependency Management for PHP</h1>
-<br/>
+    <a href="https://getcomposer.org">
+        <img src="https://getcomposer.org/img/logo-composer-transparent.png" alt="Composer">
+    </a>
 </p>
+<h1 align="center">Dependency Management for PHP</h1>
 
 Composer helps you declare, manage, and install dependencies of PHP projects.
 
