@@ -112,7 +112,7 @@ OUTPUT;
 
         $publishDataStripped= array_diff_key(
             self::MINIMAL_VALID_CONFIGURATION,
-            ['name' => true, 'type' => true, 'description' => true, 'license' => true],
+            ['name' => true, 'type' => true, 'description' => true, 'license' => true]
         );
 
         yield 'passing but with warnings' => [
