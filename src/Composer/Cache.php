@@ -137,6 +137,8 @@ class Cache
      */
     public function write(string $file, string $contents)
     {
+        $wasEnabled = $this->enabled === true;
+
         if ($this->isEnabled() && !$this->readOnly) {
             $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
 
@@ -146,6 +148,14 @@ class Cache
             try {
                 return file_put_contents($tempFileName, $contents) !== false && rename($tempFileName, $this->root . $file);
             } catch (\ErrorException $e) {
+                // If the write failed despite isEnabled checks passing earlier, rerun the isEnabled checks to
+                // see if they are still current and recreate the cache dir if needed. Refs https://github.com/composer/composer/issues/11076
+                if ($wasEnabled) {
+                    clearstatcache();
+                    $this->enabled = null;
+                    return $this->write($file, $contents);
+                }
+
                 $this->io->writeError('<warning>Failed to write into cache: '.$e->getMessage().'</warning>', true, IOInterface::DEBUG);
                 if (Preg::isMatch('{^file_put_contents\(\): Only ([0-9]+) of ([0-9]+) bytes written}', $e->getMessage(), $m)) {
                     // Remove partial file.
