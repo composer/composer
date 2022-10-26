@@ -27,6 +27,10 @@ use Composer\Installer\BinaryInstaller;
 use Composer\Util\ProcessExecutor;
 use Composer\Script\Event as ScriptEvent;
 use Composer\Autoload\ClassLoader;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\ExecutableFinder;
 
@@ -244,6 +248,31 @@ class EventDispatcher
 
                     try {
                         $return = false === $this->executeEventPhpScript($className, $methodName, $event) ? 1 : 0;
+                    } catch (\Exception $e) {
+                        $message = "Script %s handling the %s event terminated with an exception";
+                        $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
+                        throw $e;
+                    }
+                } elseif ($this->isCommandClass($callable)) {
+                    $className = $callable;
+                    if (!class_exists($className)) {
+                        $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
+                        continue;
+                    }
+                    if (!is_a($className, Command::class, true)) {
+                        $this->io->writeError('<warning>Class '.$className.' does not extend '.Command::class.', can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
+                        continue;
+                    }
+                    if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($event->getName())))) {
+                        $this->io->writeError('<warning>You cannot bind '.$event->getName().' to a Command class, use your own script name.</warning>', true, IOInterface::QUIET);
+                        continue;
+                    }
+
+                    $app = new Application();
+                    $cmd = new $callable($event->getName());
+                    $app->add($cmd);
+                    try {
+                        $return = 0 === $app->run(new StringInput($event->getName().' '.implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $event->getArguments()))), new ConsoleOutput());
                     } catch (\Exception $e) {
                         $message = "Script %s handling the %s event terminated with an exception";
                         $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
@@ -505,6 +534,14 @@ class EventDispatcher
     protected function isPhpScript(string $callable): bool
     {
         return false === strpos($callable, ' ') && false !== strpos($callable, '::');
+    }
+
+    /**
+     * Checks if string given references a command class
+     */
+    protected function isCommandClass(string $callable): bool
+    {
+        return str_contains($callable, '\\') && !str_contains($callable, ' ') && str_ends_with($callable, 'Command');
     }
 
     /**
