@@ -211,6 +211,7 @@ class EventDispatcher
 
                     $args = array_merge($script, $event->getArguments());
                     $flags = $event->getFlags();
+                    unset($flags['script-alias-input']);
                     if (strpos($callable, '@composer ') === 0) {
                         $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
                         if (0 !== ($exitCode = $this->executeTty($exec))) {
@@ -272,7 +273,8 @@ class EventDispatcher
                     $cmd = new $callable($event->getName());
                     $app->add($cmd);
                     try {
-                        $return = 0 === $app->run(new StringInput($event->getName().' '.implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $event->getArguments()))), new ConsoleOutput());
+                        $args = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $event->getArguments()));
+                        $return = 0 === $app->run(new StringInput($event->getName().' '.($event->getFlags()['script-alias-input'] ?? $args)), new ConsoleOutput());
                     } catch (\Exception $e) {
                         $message = "Script %s handling the %s event terminated with an exception";
                         $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
