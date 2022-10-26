@@ -339,6 +339,7 @@ uninstalled.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu-autoloader`.
+* **--unused** Remove unused packages that are not a direct or indirect dependency (anymore)
 
 ## bump
 

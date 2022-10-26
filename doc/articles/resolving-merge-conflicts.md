@@ -43,8 +43,8 @@ Before committing, make sure the resulting `composer.json` and `composer.lock` f
 To do this, run the following commands:
 
 ```shell
-php composer.phar validate
-php composer.phar install [--dry-run]
+composer validate
+composer install [--dry-run]
 ```
 
 ## Automating merge conflict resolving with git
@@ -66,3 +66,83 @@ Choosing the correct [version constraints](../articles/versions.md) and making s
 to [semantic versioning](https://semver.org/) when using
 [next significant release operators](versions.md#next-significant-release-operators) should make sure
 that merging branches does not break anything by accidentally updating a dependency.
+
+# Recovering from incorrectly resolved merge conflicts
+
+If the above steps aren't followed and text based merges have been done anyway, your Composer project might be in a state where unexpected behaviour is observed because the `composer.lock` file is not (fully) in sync with the `composer.json` file. There are two things that can happen here:
+
+1. There are packages in the `require` or `require-dev` section of the `composer.json` file that are not in the lock file and as a result never installed
+
+2. There are packages in the `composer.lock` file that are not a direct or indirect dependency of any of the packages required. As a result, a package is installed, even though running `composer why vendor/package` says it is not required.
+
+There are several ways to fix these issues;
+
+## A. Start from scratch
+
+The easiest but most impactful option is run a `composer update` to resolve to a correct state from scratch.
+
+A drawback to this is that previously locked package versions are now updated, as the information about previous package versions has been lost. If all your dependencies follow [semantic versioning](https://semver.org/) and your [version constraints](../articles/versions.md) are using [next significant release operators](versions.md#next-significant-release-operators) this should not be an issue, otherwise you might inadvertently break your application.
+
+## B. Reconstruct from the git history
+
+An option that is probably not very feasible in a lot of situations but that deserves an honorable mention;
+
+It might be possible to reconstruct the correct package state by going back into the git history and finding the most recent valid `composer.lock` file, and re-requiring the new dependencies from there.
+
+## C. Resolve issues manually
+
+There is an option to recover from a discrepancy between the `composer.json` and `composer.lock` file without having to dig through the git history or starting from scratch. For that, we need to solve issue 1 and 2 separately.
+
+### 1. Detecting and fixing missing required packages
+
+To detect any package that is required but not installed, you can simply run:
+
+```shell
+composer validate
+```
+
+If there are packages that are required but not installed, you should get output similar to this:
+
+```shell
+./composer.json is valid but your composer.lock has some errors
+# Lock file errors
+- Required package "vendor/package-name" is not present in the lock file.
+This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.
+Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md
+and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require
+```
+
+To recover from this, simply run `composer update vendor/package-name` for each package listed here. After doing this for each package listed here, running `composer validate` again should result in no lock file errors:
+
+```shell
+./composer.json is valid
+```
+
+### 2. Detecting and fixing superfluous packages
+
+To detect and fix packages that are locked but not a direct/indirect dependency, you can run the following command:
+
+```shell
+composer remove --unused
+```
+
+If there are no packages locked that are not a dependency, the command will have the following output:
+
+```shell
+No unused packages to remove
+```
+
+If there are packages to be cleaned up, the output will be as follows:
+
+```shell
+vendor/package-name is not required in your composer.json and has not been removed
+./composer.json has been updated
+Running composer update vendor/package-name
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 0 updates, 1 removal
+  - Removing vendor/package-name (1.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Nothing to install, update or remove
+```
