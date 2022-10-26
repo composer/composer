@@ -32,15 +32,22 @@ class FundCommandTest extends TestCase
         $this->initTempComposer($composerJson);
 
         $packages = [
-            $this->getPackage('first/pkg', '2.3.4'),
+            'first/pkg' => $this->getPackage('first/pkg', '2.3.4'),
+            'stable/pkg' => $this->getPackage('stable/pkg', '1.0.0'),
         ];
         $devPackages = [
-            $this->getPackage('dev/pkg', '2.3.4.5')
+            'dev/pkg' => $this->getPackage('dev/pkg', '2.3.4.5')
         ];
 
         if (count($funding) !== 0) {
-            $packages[0]->setFunding([$funding['first']]);
-            $devPackages[0]->setFunding([$funding['dev']]);
+            foreach ($funding as $pkg => $fundingInfo) {
+                if (isset($packages[$pkg])) {
+                    $packages[$pkg]->setFunding([$fundingInfo]);
+                }
+                if (isset($devPackages[$pkg])) {
+                    $devPackages[$pkg]->setFunding([$fundingInfo]);
+                }
+            }
         }
 
         $this->createInstalledJson($packages, $devPackages);
@@ -54,8 +61,9 @@ class FundCommandTest extends TestCase
 
     public function useCaseProvider(): Generator
     {
-        yield 'no funding links set' => [
+        yield 'no funding links present, locally or remotely' => [
             [
+                'repositories' => [],
                 'require' => [
                     'first/pkg' => '^2.0',
                 ],
@@ -65,11 +73,12 @@ class FundCommandTest extends TestCase
             ],
             [],
             [],
-            "Info from https://repo.packagist.org: #StandWithUkraine
-No funding links were found in your package dependencies. This doesn't mean they don't need your support!"
+            "No funding links were found in your package dependencies. This doesn't mean they don't need your support!"
         ];
-        yield 'funding links set' => [
+
+        yield 'funding links set locally are used as fallback if not found remotely' => [
             [
+                'repositories' => [],
                 'require' => [
                     'first/pkg' => '^2.0',
                 ],
@@ -79,17 +88,16 @@ No funding links were found in your package dependencies. This doesn't mean they
             ],
             [],
             [
-                'first' => [
+                'first/pkg' => [
                     'type' => 'github',
                     'url' => 'https://github.com/composer-test-data'
                 ],
-                'dev' => [
+                'dev/pkg' => [
                     'type' => 'github',
                     'url' => 'https://github.com/composer-test-data-dev'
                 ]
             ],
-            "Info from https://repo.packagist.org: #StandWithUkraine
-The following packages were found in your dependencies which publish funding information:
+            "The following packages were found in your dependencies which publish funding information:
 
 dev
   pkg
@@ -101,8 +109,66 @@ first
 Please consider following these links and sponsoring the work of package authors!
 Thank you!"
         ];
+
+        yield 'funding links set remotely are used as primary if found' => [
+            [
+                'repositories' => [
+                    [
+                        'type' => 'package',
+                        'package' => [
+                            // should not be used as there is a default branch version of this package available
+                            ['name' => 'first/pkg', 'version' => 'dev-foo', 'funding' => [['type' => 'github', 'url' => 'https://github.com/test-should-not-be-used']]],
+                            // should be used as default branch from remote repo takes precedence
+                            ['name' => 'first/pkg', 'version' => 'dev-main', 'default-branch' => true, 'funding' => [['type' => 'custom', 'url' => 'https://example.org']]],
+                            // should be used as default branch from remote repo takes precedence
+                            ['name' => 'dev/pkg', 'version' => 'dev-foo', 'default-branch' => true,  'funding' => [['type' => 'github', 'url' => 'https://github.com/org']]],
+                            // no default branch available so falling back to locally installed data
+                            ['name' => 'stable/pkg', 'version' => '1.0.0', 'funding' => [['type' => 'github', 'url' => 'org2']]],
+                        ],
+                    ]
+                ],
+                'require' => [
+                    'first/pkg' => '^2.0',
+                    'stable/pkg' => '^1.0',
+                ],
+                'require-dev' => [
+                    'dev/pkg' => '~4.0',
+                ]
+            ],
+            [],
+            [
+                'first/pkg' => [
+                    'type' => 'github',
+                    'url' => 'https://github.com/composer-test-data'
+                ],
+                'dev/pkg' => [
+                    'type' => 'github',
+                    'url' => 'https://github.com/composer-test-data-dev'
+                ],
+                'stable/pkg' => [
+                    'type' => 'github',
+                    'url' => 'https://github.com/composer-test-data-stable'
+                ]
+            ],
+            "The following packages were found in your dependencies which publish funding information:
+
+dev
+  pkg
+    https://github.com/sponsors/org
+
+first
+    https://example.org
+
+stable
+    https://github.com/sponsors/composer-test-data-stable
+
+Please consider following these links and sponsoring the work of package authors!
+Thank you!"
+        ];
+
         yield 'format funding links as JSON' => [
             [
+                'repositories' => [],
                 'require' => [
                     'first/pkg' => '^2.0',
                 ],
@@ -112,17 +178,16 @@ Thank you!"
             ],
             ['--format' => 'json'],
             [
-                'first' => [
+                'first/pkg' => [
                     'type' => 'github',
                     'url' => 'https://github.com/composer-test-data'
                 ],
-                'dev' => [
+                'dev/pkg' => [
                     'type' => 'github',
                     'url' => 'https://github.com/composer-test-data-dev'
                 ]
             ],
-            'Info from https://repo.packagist.org: #StandWithUkraine
-{
+            '{
     "dev": {
         "https://github.com/sponsors/composer-test-data-dev": [
             "pkg"
