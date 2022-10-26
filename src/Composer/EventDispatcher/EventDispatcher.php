@@ -270,15 +270,14 @@ class EventDispatcher
                     }
 
                     $app = new Application();
+                    $app->setCatchExceptions(false);
+                    $app->setAutoExit(false);
                     $cmd = new $className($event->getName());
-                    if ($cmd->getName() !== $event->getName()) {
-                        $this->io->writeError('<warning>Class '.$className.' must have '.$event->getName().' as Command name (or skip defining a name altogether)</warning>');
-                        continue;
-                    }
                     $app->add($cmd);
+                    $app->setDefaultCommand((string) $cmd->getName(), true);
                     try {
                         $args = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $event->getArguments()));
-                        $return = $app->run(new StringInput($event->getName().' '.($event->getFlags()['script-alias-input'] ?? $args)), new ConsoleOutput());
+                        $return = $app->run(new StringInput($event->getFlags()['script-alias-input'] ?? $args), new ConsoleOutput());
                     } catch (\Exception $e) {
                         $message = "Script %s handling the %s event terminated with an exception";
                         $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
