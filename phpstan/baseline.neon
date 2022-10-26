@@ -5837,6 +5837,11 @@ parameters:
 			path: ../tests/Composer/Test/Repository/Vcs/PerforceDriverTest.php
 
 		-
+			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertEmpty\\(\\) with array\\<'0\\.6\\.0'\\|'1\\.0\\.0'\\|'1\\.0\\.x\\-dev'\\|'1\\.1\\.x\\-dev'\\|'9999999\\-dev'\\|'dev\\-feature\\-b'\\|'dev\\-feature/a\\-1\\.0\\-B'\\|'dev\\-master', true\\> and literal\\-string&non\\-falsy\\-string will always evaluate to false\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Repository/VcsRepositoryTest.php
+
+		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/VcsRepositoryTest.php
