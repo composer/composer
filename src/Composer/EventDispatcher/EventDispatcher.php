@@ -265,12 +265,16 @@ class EventDispatcher
                         continue;
                     }
                     if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($event->getName())))) {
-                        $this->io->writeError('<warning>You cannot bind '.$event->getName().' to a Command class, use your own script name.</warning>', true, IOInterface::QUIET);
+                        $this->io->writeError('<warning>You cannot bind '.$event->getName().' to a Command class, use a non-reserved name</warning>', true, IOInterface::QUIET);
                         continue;
                     }
 
                     $app = new Application();
                     $cmd = new $className($event->getName());
+                    if ($cmd->getName() !== $event->getName()) {
+                        $this->io->writeError('<warning>Class '.$className.' must have '.$event->getName().' as Command name (or skip defining a name altogether)</warning>');
+                        continue;
+                    }
                     $app->add($cmd);
                     try {
                         $args = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $event->getArguments()));
