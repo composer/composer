@@ -60,5 +60,6 @@ class VersionBumperTest extends TestCase
         yield 'leave patch wildcard alone' => ['2.4.3.*', '2.4.3.2', '2.4.3.*'];
         yield 'upgrade tilde to caret when compatible' => ['~2.2', '2.4.3', '^2.4.3'];
         yield 'leave patch-only-tilde alone' => ['~2.2.3', '2.2.6', '~2.2.3'];
+        yield 'upgrade match all constraint' => ['*', '1.2.1', '>= 1.2.1'];
     }
 }

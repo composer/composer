@@ -18,6 +18,7 @@ use Composer\Package\Dumper\ArrayDumper;
 use Composer\Pcre\Preg;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\Intervals;
 use Composer\Util\Platform;
 
@@ -34,6 +35,7 @@ class VersionBumper
      * For example:
      *  * ^1.0 + 1.2.1            -> ^1.2.1
      *  * ^1.2 + 1.2.0            -> ^1.2
+     *  * * + 1.2.0               -> >= 1.2
      *  * ^1.2 || ^2.3 + 1.3.0    -> ^1.3 || ^2.3
      *  * ^1.2 || ^2.3 + 2.4.0    -> ^1.2 || ^2.4
      *  * ^3@dev + 3.2.99999-dev  -> ^3.2@dev
@@ -70,12 +72,18 @@ class VersionBumper
         }
 
         $major = Preg::replace('{^(\d+).*}', '$1', $version);
-        $newPrettyConstraint = '^'.Preg::replace('{(?:\.(?:0|9999999))+(-dev)?$}', '', $version);
+        $newPrettyConstraint = Preg::replace('{(?:\.(?:0|9999999))+(-dev)?$}', '', $version);
 
         // not a simple stable version, abort
-        if (!Preg::isMatch('{^\^\d+(\.\d+)*$}', $newPrettyConstraint)) {
+        if (!Preg::isMatch('{^\d+(\.\d+)*$}', $newPrettyConstraint)) {
             return $prettyConstraint;
         }
+
+        if ($constraint instanceof MatchAllConstraint) {
+            return '>= ' . $newPrettyConstraint;
+        }
+
+        $newPrettyConstraint = '^'.$newPrettyConstraint;
 
         $pattern = '{
             (?<=,|\ |\||^) # leading separator
