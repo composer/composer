@@ -751,22 +751,20 @@ class Installer
         $localRepoTransaction = new LocalRepoTransaction($lockedRepository, $localRepo);
         $this->eventDispatcher->dispatchInstallerEvent(InstallerEvents::PRE_OPERATIONS_EXEC, $this->devMode, $this->executeOperations, $localRepoTransaction);
 
-        if (!$localRepoTransaction->getOperations()) {
-            $this->io->writeError('Nothing to install, update or remove');
+        $installs = $updates = $uninstalls = [];
+        foreach ($localRepoTransaction->getOperations() as $operation) {
+            if ($operation instanceof InstallOperation) {
+                $installs[] = $operation->getPackage()->getPrettyName().':'.$operation->getPackage()->getFullPrettyVersion();
+            } elseif ($operation instanceof UpdateOperation) {
+                $updates[] = $operation->getTargetPackage()->getPrettyName().':'.$operation->getTargetPackage()->getFullPrettyVersion();
+            } elseif ($operation instanceof UninstallOperation) {
+                $uninstalls[] = $operation->getPackage()->getPrettyName();
+            }
         }
 
-        if ($localRepoTransaction->getOperations()) {
-            $installs = $updates = $uninstalls = [];
-            foreach ($localRepoTransaction->getOperations() as $operation) {
-                if ($operation instanceof InstallOperation) {
-                    $installs[] = $operation->getPackage()->getPrettyName().':'.$operation->getPackage()->getFullPrettyVersion();
-                } elseif ($operation instanceof UpdateOperation) {
-                    $updates[] = $operation->getTargetPackage()->getPrettyName().':'.$operation->getTargetPackage()->getFullPrettyVersion();
-                } elseif ($operation instanceof UninstallOperation) {
-                    $uninstalls[] = $operation->getPackage()->getPrettyName();
-                }
-            }
-
+        if ($installs === [] && $updates === [] && $uninstalls === []) {
+            $this->io->writeError('Nothing to install, update or remove');
+        } else {
             $this->io->writeError(sprintf(
                 "<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
                 count($installs),
