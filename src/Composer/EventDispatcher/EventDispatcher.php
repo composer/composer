@@ -14,6 +14,8 @@ namespace Composer\EventDispatcher;
 
 use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
+use Composer\IO\BufferIO;
+use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\PartialComposer;
@@ -211,7 +213,11 @@ class EventDispatcher
 
                     $args = array_merge($script, $event->getArguments());
                     $flags = $event->getFlags();
-                    unset($flags['script-alias-input']);
+                    if (isset($flags['script-alias-input'])) {
+                        $argsString = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $script));
+                        $flags['script-alias-input'] = $argsString . ' ' . $flags['script-alias-input'];
+                        unset($argsString);
+                    }
                     if (strpos($callable, '@composer ') === 0) {
                         $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
                         if (0 !== ($exitCode = $this->executeTty($exec))) {
@@ -277,7 +283,18 @@ class EventDispatcher
                     $app->setDefaultCommand((string) $cmd->getName(), true);
                     try {
                         $args = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $event->getArguments()));
-                        $return = $app->run(new StringInput($event->getFlags()['script-alias-input'] ?? $args), new ConsoleOutput());
+                        // reusing the output from $this->io is mostly needed for tests, but generally speaking
+                        // it does not hurt to keep the same stream as the current Application
+                        if ($this->io instanceof ConsoleIO) {
+                            $reflProp = new \ReflectionProperty($this->io, 'output');
+                            if (PHP_VERSION_ID < 80100) {
+                                $reflProp->setAccessible(true);
+                            }
+                            $output = $reflProp->getValue($this->io);
+                        } else {
+                            $output = new ConsoleOutput();
+                        }
+                        $return = $app->run(new StringInput($event->getFlags()['script-alias-input'] ?? $args), $output);
                     } catch (\Exception $e) {
                         $message = "Script %s handling the %s event terminated with an exception";
                         $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
