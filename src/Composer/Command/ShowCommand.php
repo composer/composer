@@ -615,7 +615,11 @@ EOT
                         $io->writeError('Everything up to date');
                     }
                 } else {
-                    $this->printPackages($io, $packages, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
+                    if ($writeLatest && \count($packages) === 0) {
+                        $io->writeError('All your direct dependencies are up to date');
+                    } else {
+                        $this->printPackages($io, $packages, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
+                    }
                 }
 
                 if ($showAllTypes) {
