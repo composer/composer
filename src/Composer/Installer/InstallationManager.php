@@ -267,7 +267,7 @@ class InstallationManager
                 // avoid calling cleanup if the download was not even initialized for a package
                 // as without installation source configured nothing will work
                 if (!$package->getInstallationSource()) {
-                    return \React\Promise\resolve();
+                    return \React\Promise\resolve(null);
                 }
 
                 return $installer->cleanup($opType, $package, $initialPackage);
