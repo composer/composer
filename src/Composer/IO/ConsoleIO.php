@@ -310,6 +310,11 @@ class ConsoleIO extends BaseIO
 
         $result = $helper->ask($this->input, $this->getErrorOutput(), $question);
 
+        $isAssoc = (bool) \count(array_filter(array_keys($choices), 'is_string'));
+        if ($isAssoc) {
+            return $result;
+        }
+
         if (!is_array($result)) {
             return (string) array_search($result, $choices, true);
         }
