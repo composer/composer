@@ -5,8 +5,8 @@
   * Fixed 2.4.3 regression in loading Composer on SMB/network shares (#11077)
   * Fixed `--dry-run` flag missing from `bump` command (#11047)
   * Fixed `status` command reporting differences when the source ref is a tag (#11155)
-  * Fixed outdated command outputting legend on stdout instead of stderr, and ensured it always outputs some status even when no dependencies are outdated (#11148)
-  * Fixed URL sanitizer to handle new GitHub personal access tokens format
+  * Fixed outdated command outputting legend on stdout instead of stderr
+  * Fixed URL sanitizer to handle new GitHub personal access tokens format (#11137)
 
 ### [2.4.3] 2022-10-14
 
