@@ -123,6 +123,14 @@ outdated/major 1.0.0 ~ 2.0.0',
             ],
         ];
 
+        yield 'outdated deps with --direct show msg if all up to date' => [
+            ['command' => 'outdated', '--direct' => true],
+            'All your direct dependencies are up to date',
+            [
+                'vendor/package' => '*',
+            ],
+        ];
+
         yield 'outdated deps with --major-only only shows major updates' => [
             ['command' => 'outdated', '--major-only' => true],
 'Legend:
