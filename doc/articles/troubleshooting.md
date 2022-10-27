@@ -78,6 +78,19 @@ indirectly) back on the root package itself, issues can occur in two cases:
    CI env vars.
 
 
+## Network timeout issues, curl error
+
+If you see something along the lines of:
+
+```
+Failed to download * curl error 28 while downloading * Operation timed out after 300000 milliseconds
+```
+
+It means your network is probably so slow that a request took over 300seconds to complete. This is the
+minimum timeout Composer will use, but you can increase it by increasing the `default_socket_timeout`
+value in your php.ini to something higher.
+
+
 ## Package not found in a Jenkins-build
 
 1. Check the ["Package not found"](#package-not-found) item above.
