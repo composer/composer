@@ -1,3 +1,13 @@
+### [2.4.4] 2022-10-27
+
+  * Added extra debug output when a zip extraction fails while on GitHub Actions (#11148)
+  * Fixed cache write failures when the cache dir gets removed during a composer run (#11076)
+  * Fixed 2.4.3 regression in loading Composer on SMB/network shares (#11077)
+  * Fixed `--dry-run` flag missing from `bump` command (#11047)
+  * Fixed `status` command reporting differences when the source ref is a tag (#11155)
+  * Fixed outdated command outputting legend on stdout instead of stderr, and ensured it always outputs some status even when no dependencies are outdated (#11148)
+  * Fixed URL sanitizer to handle new GitHub personal access tokens format
+
 ### [2.4.3] 2022-10-14
 
   * BC Break: The json format of `audit` command now has `reportedAt` as an RFC3339 string instead of an object which was a mistake (#11120)
@@ -1647,6 +1657,7 @@
 
   * Initial release
 
+[2.4.4]: https://github.com/composer/composer/compare/2.4.3...2.4.4
 [2.4.3]: https://github.com/composer/composer/compare/2.4.2...2.4.3
 [2.4.2]: https://github.com/composer/composer/compare/2.4.1...2.4.2
 [2.4.1]: https://github.com/composer/composer/compare/2.4.0...2.4.1
