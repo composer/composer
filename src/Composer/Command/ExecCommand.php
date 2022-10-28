@@ -51,6 +51,26 @@ EOT
         ;
     }
 
+    protected function interact(InputInterface $input, OutputInterface $output): void
+    {
+        $binaries = $this->getBinaries(false);
+        if (count($binaries) === 0) {
+            return;
+        }
+
+        $io = $this->getIO();
+        /** @var string $binary */
+        $binary = $io->select(
+            'Binary to run: ',
+            $binaries,
+            '',
+            1,
+            'Invalid binary name "%s"'
+        );
+
+        $input->setArgument('binary', $binaries[$binary]);
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->requireComposer();

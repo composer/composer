@@ -52,7 +52,7 @@ class RunScriptCommand extends BaseCommand
             ->setDescription('Runs the scripts defined in composer.json')
             ->setDefinition([
                 new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run.', null, function () {
-                    return array_keys($this->requireComposer()->getPackage()->getScripts());
+                    return array_map(static function ($script) { return $script['name']; }, $this->getScripts());
                 }),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
                 new InputOption('timeout', null, InputOption::VALUE_REQUIRED, 'Sets script timeout in seconds, or 0 for never.'),
@@ -70,6 +70,29 @@ Read more at https://getcomposer.org/doc/03-cli.md#run-script
 EOT
             )
         ;
+    }
+
+    protected function interact(InputInterface $input, OutputInterface $output): void
+    {
+        $scripts = $this->getScripts();
+        if (count($scripts) === 0) {
+            return;
+        }
+
+        $options = [];
+        foreach ($scripts as $script) {
+            $options[$script['name']] = $script['description'];
+        }
+        $io = $this->getIO();
+        $script = $io->select(
+            'Script to run: ',
+            $options,
+            '',
+            1,
+            'Invalid script name "%s"'
+        );
+
+        $input->setArgument('script', $script);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -114,15 +137,34 @@ EOT
 
     protected function listScripts(OutputInterface $output): int
     {
-        $scripts = $this->requireComposer()->getPackage()->getScripts();
-
-        if (!count($scripts)) {
+        $scripts = $this->getScripts();
+        if (count($scripts) === 0) {
             return 0;
         }
 
         $io = $this->getIO();
         $io->writeError('<info>scripts:</info>');
         $table = [];
+        foreach ($scripts as $script) {
+            $table[] = ['  '.$script['name'], $script['description']];
+        }
+
+        $this->renderTable($table, $output);
+
+        return 0;
+    }
+
+    /**
+     * @return list<array{name: string, description: string}>
+     */
+    private function getScripts(): array
+    {
+        $scripts = $this->requireComposer()->getPackage()->getScripts();
+        if (count($scripts) === 0) {
+            return [];
+        }
+
+        $result = [];
         foreach ($scripts as $name => $script) {
             $description = '';
             try {
@@ -133,11 +175,9 @@ EOT
             } catch (\Symfony\Component\Console\Exception\CommandNotFoundException $e) {
                 // ignore scripts that have no command associated, like native Composer script listeners
             }
-            $table[] = ['  '.$name, $description];
+            $result[] = ['name' => $name, 'description' => $description];
         }
 
-        $this->renderTable($table, $output);
-
-        return 0;
+        return $result;
     }
 }
