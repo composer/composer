@@ -13,8 +13,15 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Request;
+use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Loader\RootPackageLoader;
+use Composer\Package\Locker;
+use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionBumper;
+use Composer\Package\Version\VersionSelector;
+use Composer\Pcre\Preg;
+use Composer\Repository\RepositorySet;
 use Composer\Util\Filesystem;
 use Composer\Util\PackageSorter;
 use Seld\Signal\SignalHandler;
@@ -208,7 +215,7 @@ EOT
                 $input->getArgument('packages'),
                 $platformRepo,
                 $preferredStability,
-                !$input->getOption('no-update'),
+                $input->getOption('no-update'), // if there is no update, we need to use the best possible version constraint directly as we cannot rely on the solver to guess the best constraint
                 $input->getOption('fixed')
             );
         } catch (\Exception $e) {
@@ -259,6 +266,15 @@ EOT
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
 
+        // check which requirements need the version guessed
+        $requirementsToGuess = [];
+        foreach ($requirements as $package => $constraint) {
+            if ($constraint === 'guess') {
+                $requirements[$package] = '*';
+                $requirementsToGuess[] = $package;
+            }
+        }
+
         // validate requirements format
         $versionParser = new VersionParser();
         foreach ($requirements as $package => $constraint) {
@@ -307,16 +323,8 @@ EOT
             }
         }
 
-        if (!$input->getOption('dry-run') && !$this->updateFileCleanly($this->json, $requirements, $requireKey, $removeKey, $sortPackages)) {
-            $composerDefinition = $this->json->read();
-            foreach ($requirements as $package => $version) {
-                $composerDefinition[$requireKey][$package] = $version;
-                unset($composerDefinition[$removeKey][$package]);
-                if (isset($composerDefinition[$removeKey]) && count($composerDefinition[$removeKey]) === 0) {
-                    unset($composerDefinition[$removeKey]);
-                }
-            }
-            $this->json->write($composerDefinition);
+        if (!$input->getOption('dry-run')) {
+            $this->updateFile($this->json, $requirements, $requireKey, $removeKey, $sortPackages);
         }
 
         $io->writeError('<info>'.$this->file.' has been '.($this->newlyCreated ? 'created' : 'updated').'</info>');
@@ -328,7 +336,12 @@ EOT
         $composer->getPluginManager()->deactivateInstalledPlugins();
 
         try {
-            return $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
+            $result = $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
+            if ($result === 0 && count($requirementsToGuess) > 0) {
+                $this->updateRequirementsAfterResolution($requirementsToGuess, $requireKey, $removeKey, $sortPackages, $input->getOption('dry-run'));
+            }
+
+            return $result;
         } catch (\Exception $e) {
             if (!$this->dependencyResolutionCompleted) {
                 $this->revertComposerFile();
@@ -488,6 +501,69 @@ EOT
         }
 
         return $status;
+    }
+
+    /**
+     * @param list<string> $requirementsToUpdate
+     */
+    private function updateRequirementsAfterResolution(array $requirementsToUpdate, string $requireKey, string $removeKey, bool $sortPackages, bool $dryRun): void
+    {
+        $composer = $this->requireComposer();
+        $locker = $composer->getLocker();
+        $requirements = [];
+        $versionSelector = new VersionSelector(new RepositorySet());
+        $repo = $locker->isLocked() ? $composer->getLocker()->getLockedRepository(true) : $composer->getRepositoryManager()->getLocalRepository();
+        foreach ($requirementsToUpdate as $packageName) {
+            $package = $repo->findPackage($packageName, '*');
+            while ($package instanceof AliasPackage) {
+                $package = $package->getAliasOf();
+            }
+
+            if (!$package instanceof PackageInterface) {
+                continue;
+            }
+
+            $requirements[$packageName] = $versionSelector->findRecommendedRequireVersion($package);
+            $this->getIO()->writeError(sprintf(
+                'Using version <info>%s</info> for <info>%s</info>',
+                $requirements[$packageName],
+                $packageName
+            ));
+        }
+
+        if (!$dryRun) {
+            $this->updateFile($this->json, $requirements, $requireKey, $removeKey, $sortPackages);
+            if ($locker->isLocked()) {
+                $contents = file_get_contents($this->json->getPath());
+                if (false === $contents) {
+                    throw new \RuntimeException('Unable to read '.$this->json->getPath().' contents to update the lock file hash.');
+                }
+                $lock = new JsonFile(Factory::getLockFile($this->json->getPath()));
+                $lockData = $lock->read();
+                $lockData['content-hash'] = Locker::getContentHash($contents);
+                $lock->write($lockData);
+            }
+        }
+    }
+
+    /**
+     * @param array<string, string> $new
+     */
+    private function updateFile(JsonFile $json, array $new, string $requireKey, string $removeKey, bool $sortPackages): void
+    {
+        if ($this->updateFileCleanly($json, $new, $requireKey, $removeKey, $sortPackages)) {
+            return;
+        }
+
+        $composerDefinition = $this->json->read();
+        foreach ($new as $package => $version) {
+            $composerDefinition[$requireKey][$package] = $version;
+            unset($composerDefinition[$removeKey][$package]);
+            if (isset($composerDefinition[$removeKey]) && count($composerDefinition[$removeKey]) === 0) {
+                unset($composerDefinition[$removeKey]);
+            }
+        }
+        $this->json->write($composerDefinition);
     }
 
     /**
