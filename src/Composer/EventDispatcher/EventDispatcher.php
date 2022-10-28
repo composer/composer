@@ -14,6 +14,8 @@ namespace Composer\EventDispatcher;
 
 use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
+use Composer\IO\BufferIO;
+use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\PartialComposer;
@@ -27,6 +29,10 @@ use Composer\Installer\BinaryInstaller;
 use Composer\Util\ProcessExecutor;
 use Composer\Script\Event as ScriptEvent;
 use Composer\Autoload\ClassLoader;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\ExecutableFinder;
 
@@ -207,6 +213,11 @@ class EventDispatcher
 
                     $args = array_merge($script, $event->getArguments());
                     $flags = $event->getFlags();
+                    if (isset($flags['script-alias-input'])) {
+                        $argsString = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $script));
+                        $flags['script-alias-input'] = $argsString . ' ' . $flags['script-alias-input'];
+                        unset($argsString);
+                    }
                     if (strpos($callable, '@composer ') === 0) {
                         $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(Platform::getEnv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
                         if (0 !== ($exitCode = $this->executeTty($exec))) {
@@ -244,6 +255,46 @@ class EventDispatcher
 
                     try {
                         $return = false === $this->executeEventPhpScript($className, $methodName, $event) ? 1 : 0;
+                    } catch (\Exception $e) {
+                        $message = "Script %s handling the %s event terminated with an exception";
+                        $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
+                        throw $e;
+                    }
+                } elseif ($this->isCommandClass($callable)) {
+                    $className = $callable;
+                    if (!class_exists($className)) {
+                        $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
+                        continue;
+                    }
+                    if (!is_a($className, Command::class, true)) {
+                        $this->io->writeError('<warning>Class '.$className.' does not extend '.Command::class.', can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
+                        continue;
+                    }
+                    if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($event->getName())))) {
+                        $this->io->writeError('<warning>You cannot bind '.$event->getName().' to a Command class, use a non-reserved name</warning>', true, IOInterface::QUIET);
+                        continue;
+                    }
+
+                    $app = new Application();
+                    $app->setCatchExceptions(false);
+                    $app->setAutoExit(false);
+                    $cmd = new $className($event->getName());
+                    $app->add($cmd);
+                    $app->setDefaultCommand((string) $cmd->getName(), true);
+                    try {
+                        $args = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $event->getArguments()));
+                        // reusing the output from $this->io is mostly needed for tests, but generally speaking
+                        // it does not hurt to keep the same stream as the current Application
+                        if ($this->io instanceof ConsoleIO) {
+                            $reflProp = new \ReflectionProperty($this->io, 'output');
+                            if (PHP_VERSION_ID < 80100) {
+                                $reflProp->setAccessible(true);
+                            }
+                            $output = $reflProp->getValue($this->io);
+                        } else {
+                            $output = new ConsoleOutput();
+                        }
+                        $return = $app->run(new StringInput($event->getFlags()['script-alias-input'] ?? $args), $output);
                     } catch (\Exception $e) {
                         $message = "Script %s handling the %s event terminated with an exception";
                         $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
@@ -505,6 +556,14 @@ class EventDispatcher
     protected function isPhpScript(string $callable): bool
     {
         return false === strpos($callable, ' ') && false !== strpos($callable, '::');
+    }
+
+    /**
+     * Checks if string given references a command class
+     */
+    protected function isCommandClass(string $callable): bool
+    {
+        return str_contains($callable, '\\') && !str_contains($callable, ' ') && str_ends_with($callable, 'Command');
     }
 
     /**
