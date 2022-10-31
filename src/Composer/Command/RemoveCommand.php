@@ -20,6 +20,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Json\JsonFile;
 use Composer\Factory;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
 use Composer\Console\Input\InputArgument;
@@ -44,7 +45,7 @@ class RemoveCommand extends BaseCommand
             ->setName('remove')
             ->setDescription('Removes a package from the require or require-dev')
             ->setDefinition([
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Packages that should be removed.', null, $this->suggestRootRequirement()),
+                new InputArgument('packages', InputArgument::IS_ARRAY, 'Packages that should be removed.', null, $this->suggestRootRequirement()),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
@@ -79,10 +80,17 @@ EOT
     }
 
     /**
-     * @return void
+     * @throws \Seld\JsonLint\ParsingException
      */
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
+        if ($input->getArgument('packages') === [] && !$input->getOption('unused')) {
+            throw new InvalidArgumentException('Not enough arguments (missing: "packages")');
+        }
+
+        $packages = $input->getArgument('packages');
+        $packages = array_map('strtolower', $packages);
+
         if ($input->getOption('unused')) {
             $composer = $this->requireComposer();
             $locker = $composer->getLocker();
@@ -117,24 +125,15 @@ EOT
             foreach ($lockedPackages as $package) {
                 $unused[] = $package->getName();
             }
-            $input->setArgument('packages', array_merge($input->getArgument('packages'), $unused));
+            $packages = array_merge($packages, $unused);
 
-            if (count($input->getArgument('packages')) === 0) {
+            if (count($packages) === 0) {
                 $this->getIO()->writeError('<info>No unused packages to remove</info>');
                 $this->setCode(static function (): int {
                     return 0;
                 });
             }
         }
-    }
-
-    /**
-     * @throws \Seld\JsonLint\ParsingException
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        $packages = $input->getArgument('packages');
-        $packages = array_map('strtolower', $packages);
 
         $file = Factory::getComposerFile();
 
