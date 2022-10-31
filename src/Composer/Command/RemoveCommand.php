@@ -85,7 +85,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($input->getArgument('packages') === [] && !$input->getOption('unused')) {
-            throw new InvalidArgumentException('Not enough arguments (missing: "packages")');
+            throw new InvalidArgumentException('Not enough arguments (missing: "packages").');
         }
 
         $packages = $input->getArgument('packages');
