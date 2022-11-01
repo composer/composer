@@ -86,7 +86,7 @@ trait PackageDiscoveryTrait
      * @return array<string>
      * @throws \Exception
      */
-    final protected function determineRequirements(InputInterface $input, OutputInterface $output, array $requires = [], ?PlatformRepository $platformRepo = null, string $preferredStability = 'stable', bool $checkProvidedVersions = true, bool $fixed = false): array
+    final protected function determineRequirements(InputInterface $input, OutputInterface $output, array $requires = [], ?PlatformRepository $platformRepo = null, string $preferredStability = 'stable', bool $useBestVersionConstraint = true, bool $fixed = false): array
     {
         if (count($requires) > 0) {
             $requires = $this->normalizeRequirements($requires);
@@ -101,16 +101,20 @@ trait PackageDiscoveryTrait
                 if (!isset($requirement['version'])) {
                     // determine the best version automatically
                     [$name, $version] = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $platformRepo, $preferredStability, $fixed);
-                    $requirement['version'] = $version;
 
                     // replace package name from packagist.org
                     $requirement['name'] = $name;
 
-                    $io->writeError(sprintf(
-                        'Using version <info>%s</info> for <info>%s</info>',
-                        $requirement['version'],
-                        $requirement['name']
-                    ));
+                    if ($useBestVersionConstraint) {
+                        $requirement['version'] = $version;
+                        $io->writeError(sprintf(
+                            'Using version <info>%s</info> for <info>%s</info>',
+                            $requirement['version'],
+                            $requirement['name']
+                        ));
+                    } else {
+                        $requirement['version'] = 'guess';
+                    }
                 }
 
                 $result[] = $requirement['name'] . ' ' . $requirement['version'];

@@ -78,7 +78,6 @@ class RequireCommandTest extends TestCase
             ['packages' => ['required/pkg']],
             <<<OUTPUT
 <warning>Cannot use required/pkg's latest version 1.2.0 as it requires ext-foobar ^1 which is missing from your platform.
-Using version ^1.0 for required/pkg
 ./composer.json has been updated
 Running composer update required/pkg
 Loading composer repositories with package information
@@ -88,6 +87,7 @@ Lock file operations: 1 install, 0 updates, 0 removals
 Installing dependencies from lock file (including require-dev)
 Package operations: 1 install, 0 updates, 0 removals
   - Installing required/pkg (1.0.0)
+Using version ^1.0 for required/pkg
 OUTPUT
         ];
 
@@ -108,7 +108,6 @@ OUTPUT
             <<<OUTPUT
 <warning>Cannot use required/pkg's latest version 1.2.0 as it requires ext-foobar ^1 which is missing from your platform.
 <warning>Cannot use required/pkg 1.1.0 as it requires ext-foobar ^1 which is missing from your platform.
-Using version ^1.0 for required/pkg
 ./composer.json has been updated
 Running composer update required/pkg
 Loading composer repositories with package information
@@ -119,6 +118,7 @@ Analyzed %d rules to resolve dependencies
 Lock file operations: 1 install, 0 updates, 0 removals
 Installs: required/pkg:1.0.0
   - Locking required/pkg (1.0.0)
+Using version ^1.0 for required/pkg
 OUTPUT
         ];
 
@@ -137,13 +137,63 @@ OUTPUT
             ['packages' => ['required/pkg'], '--no-install' => true],
             <<<OUTPUT
 <warning>Cannot use required/pkg's latest version 1.1.0 as it requires php ^20 which is not satisfied by your platform.
-Using version ^1.0 for required/pkg
 ./composer.json has been updated
 Running composer update required/pkg
 Loading composer repositories with package information
 Updating dependencies
 Lock file operations: 1 install, 0 updates, 0 removals
   - Locking required/pkg (1.0.0)
+Using version ^1.0 for required/pkg
+OUTPUT
+        ];
+
+        yield 'version selection happens early even if not completely accurate if no update is requested' => [
+            [
+                'repositories' => [
+                    'packages' => [
+                        'type' => 'package',
+                        'package' => [
+                            ['name' => 'required/pkg', 'version' => '1.1.0', 'require' => ['php' => '^20']],
+                            ['name' => 'required/pkg', 'version' => '1.0.0', 'require' => ['php' => '>=7']],
+                        ],
+                    ],
+                ],
+            ],
+            ['packages' => ['required/pkg'], '--no-update' => true],
+            <<<OUTPUT
+<warning>Cannot use required/pkg's latest version 1.1.0 as it requires php ^20 which is not satisfied by your platform.
+Using version ^1.0 for required/pkg
+./composer.json has been updated
+OUTPUT
+        ];
+
+        yield 'pick best matching version when not provided' => [
+            [
+                'repositories' => [
+                    'packages' => [
+                        'type' => 'package',
+                        'package' => [
+                            ['name' => 'existing/dep', 'version' => '1.1.0', 'require' => ['required/pkg' => '^1']],
+                            ['name' => 'required/pkg', 'version' => '2.0.0'],
+                            ['name' => 'required/pkg', 'version' => '1.1.0'],
+                            ['name' => 'required/pkg', 'version' => '1.0.0'],
+                        ],
+                    ],
+                ],
+                'require' => [
+                    'existing/dep' => '^1'
+                ],
+            ],
+            ['packages' => ['required/pkg'], '--no-install' => true],
+            <<<OUTPUT
+./composer.json has been updated
+Running composer update required/pkg
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 2 installs, 0 updates, 0 removals
+  - Locking existing/dep (1.1.0)
+  - Locking required/pkg (1.1.0)
+Using version ^1.1 for required/pkg
 OUTPUT
         ];
     }
