@@ -58,6 +58,10 @@ EOT
             return;
         }
 
+        if ($input->getArgument('binary') !== null) {
+            return;
+        }
+
         $io = $this->getIO();
         /** @var string $binary */
         $binary = $io->select(

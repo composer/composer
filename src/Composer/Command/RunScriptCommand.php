@@ -79,6 +79,10 @@ EOT
             return;
         }
 
+        if ($input->getArgument('script') !== null) {
+            return;
+        }
+
         $options = [];
         foreach ($scripts as $script) {
             $options[$script['name']] = $script['description'];
