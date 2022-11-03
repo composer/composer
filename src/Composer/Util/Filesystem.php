@@ -440,13 +440,19 @@ class Filesystem
             $commonPath = strtr(\dirname($commonPath), '\\', '/');
         }
 
-        if (0 !== strpos($from, $commonPath) || '/' === $commonPath) {
+        // no commonality at all
+        if (0 !== strpos($from, $commonPath)) {
             return $to;
         }
 
         $commonPath = rtrim($commonPath, '/') . '/';
         $sourcePathDepth = substr_count((string) substr($from, \strlen($commonPath)), '/');
         $commonPathCode = str_repeat('../', $sourcePathDepth);
+
+        // allow top level /foo & /bar dirs to be addressed relatively as this is common in Docker setups
+        if ('/' === $commonPath && $sourcePathDepth > 1) {
+            return $to;
+        }
 
         $result = $commonPathCode . substr($to, \strlen($commonPath));
         if (\strlen($result) === 0) {
@@ -481,15 +487,22 @@ class Filesystem
             $commonPath = strtr(\dirname($commonPath), '\\', '/');
         }
 
-        if (0 !== strpos($from, $commonPath) || '/' === $commonPath || '.' === $commonPath) {
+        // no commonality at all
+        if (0 !== strpos($from, $commonPath) || '.' === $commonPath) {
             return var_export($to, true);
         }
 
         $commonPath = rtrim($commonPath, '/') . '/';
-        if (strpos($to, $from.'/') === 0) {
+        if (str_starts_with($to, $from.'/')) {
             return '__DIR__ . '.var_export((string) substr($to, \strlen($from)), true);
         }
         $sourcePathDepth = substr_count((string) substr($from, \strlen($commonPath)), '/') + (int) $directories;
+
+        // allow top level /foo & /bar dirs to be addressed relatively as this is common in Docker setups
+        if ('/' === $commonPath && $sourcePathDepth > 1) {
+            return var_export($to, true);
+        }
+
         if ($staticCode) {
             $commonPathCode = "__DIR__ . '".str_repeat('/..', $sourcePathDepth)."'";
         } else {
