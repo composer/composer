@@ -58,7 +58,7 @@ EOT
             return;
         }
 
-        if ($input->getArgument('binary') !== null) {
+        if ($input->getArgument('binary') !== null || $input->getOption('list')) {
             return;
         }
 

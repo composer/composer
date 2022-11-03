@@ -79,7 +79,7 @@ EOT
             return;
         }
 
-        if ($input->getArgument('script') !== null) {
+        if ($input->getArgument('script') !== null || $input->getOption('list')) {
             return;
         }
 
