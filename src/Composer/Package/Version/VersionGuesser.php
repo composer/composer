@@ -31,7 +31,7 @@ use Symfony\Component\Process\Process;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Samuel Roze <samuel.roze@gmail.com>
  *
- * @phpstan-type Version array{version: string, commit: string|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}
+ * @phpstan-type Version array{version: string, commit: string|null, pretty_version: string|null}|array{version: string, commit: string|null, pretty_version: string|null, feature_version: string|null, feature_pretty_version: string|null}
  */
 class VersionGuesser
 {

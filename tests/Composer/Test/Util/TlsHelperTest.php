@@ -73,6 +73,7 @@ class TlsHelperTest extends TestCase
         // @phpstan-ignore-next-line
         $names = TlsHelper::getCertificateNames($certificate);
 
+        self::assertIsArray($names);
         $this->assertSame('example.net', $names['cn']);
         $this->assertSame([
             'example.com',

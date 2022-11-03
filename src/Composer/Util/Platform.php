@@ -98,6 +98,8 @@ class Platform
         }
 
         return Preg::replaceCallback('#^(\$|(?P<percent>%))(?P<var>\w++)(?(percent)%)(?P<path>.*)#', static function ($matches): string {
+            assert(is_string($matches['var']));
+
             // Treat HOME as an alias for USERPROFILE on Windows for legacy reasons
             if (Platform::isWindows() && $matches['var'] === 'HOME') {
                 return (Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE')) . $matches['path'];

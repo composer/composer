@@ -63,7 +63,7 @@ EOT
         }
 
         $io = $this->getIO();
-        /** @var string $binary */
+        /** @var int $binary */
         $binary = $io->select(
             'Binary to run: ',
             $binaries,
@@ -123,7 +123,7 @@ EOT
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     private function getBinaries(bool $forDisplay): array
     {

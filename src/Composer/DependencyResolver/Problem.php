@@ -452,13 +452,13 @@ class Problem
     }
 
     /**
-     * @param string[] $versions an array of pretty versions, with normalized versions as keys
+     * @param array<string, string> $versions an array of pretty versions, with normalized versions as keys
      * @return list<string> a list of pretty versions and '...' where versions were removed
      */
     private static function condenseVersionList(array $versions, int $max, int $maxDev = 16): array
     {
         if (count($versions) <= $max) {
-            return $versions;
+            return array_values($versions);
         }
 
         $filtered = [];

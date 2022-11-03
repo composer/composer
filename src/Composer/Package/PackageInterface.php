@@ -127,7 +127,7 @@ interface PackageInterface
     /**
      * Returns the repository urls of this package including mirrors, e.g. git://github.com/naderman/composer.git
      *
-     * @return string[]
+     * @return list<string>
      */
     public function getSourceUrls(): array;
 
@@ -141,12 +141,12 @@ interface PackageInterface
     /**
      * Returns the source mirrors of this package
      *
-     * @return ?array<int, array{url: non-empty-string, preferred: bool}>
+     * @return ?list<array{url: non-empty-string, preferred: bool}>
      */
     public function getSourceMirrors(): ?array;
 
     /**
-     * @param  null|array<int, array{url: non-empty-string, preferred: bool}> $mirrors
+     * @param  null|list<array{url: non-empty-string, preferred: bool}> $mirrors
      */
     public function setSourceMirrors(?array $mirrors): void;
 
@@ -188,12 +188,12 @@ interface PackageInterface
     /**
      * Returns the dist mirrors of this package
      *
-     * @return ?array<int, array{url: non-empty-string, preferred: bool}>
+     * @return ?list<array{url: non-empty-string, preferred: bool}>
      */
     public function getDistMirrors(): ?array;
 
     /**
-     * @param  null|array<int, array{url: non-empty-string, preferred: bool}> $mirrors
+     * @param  null|list<array{url: non-empty-string, preferred: bool}> $mirrors
      */
     public function setDistMirrors(?array $mirrors): void;
 

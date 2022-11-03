@@ -496,6 +496,7 @@ class Config
         }
 
         return Preg::replaceCallback('#\{\$(.+)\}#', function ($match) use ($flags) {
+            assert(is_string($match[1]));
             return $this->get($match[1], $flags);
         }, $value);
     }

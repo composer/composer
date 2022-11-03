@@ -574,6 +574,7 @@ class Filesystem
 
         // ensure c: is normalized to C:
         $prefix = Preg::replaceCallback('{(^|://)[a-z]:$}i', static function (array $m) {
+            assert(is_string($m[0]));
             return strtoupper($m[0]);
         }, $prefix);
 

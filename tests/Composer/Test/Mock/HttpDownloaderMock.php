@@ -32,7 +32,7 @@ class HttpDownloaderMock extends HttpDownloader
      */
     private $strict = false;
     /**
-     * @var array{status: int, body: string, headers: array<string>}
+     * @var array{status: int, body: string, headers: list<string>}
      */
     private $defaultHandler = ['status' => 200, 'body' => '', 'headers' => []];
     /**
@@ -52,9 +52,9 @@ class HttpDownloaderMock extends HttpDownloader
     }
 
     /**
-     * @param array<array{url: non-empty-string, options?: array<mixed>, status?: int, body?: string, headers?: array<string>}> $expectations
+     * @param array<array{url: non-empty-string, options?: array<mixed>, status?: int, body?: string, headers?: list<string>}> $expectations
      * @param bool                                                                                                    $strict         set to true if you want to provide *all* expected http requests, and not just a subset you are interested in testing
-     * @param array{status?: int, body?: string, headers?: array<string>}                                             $defaultHandler default URL handler for undefined requests if not in strict mode
+     * @param array{status?: int, body?: string, headers?: list<string>}                                             $defaultHandler default URL handler for undefined requests if not in strict mode
      */
     public function expects(array $expectations, bool $strict = false, array $defaultHandler = ['status' => 200, 'body' => '', 'headers' => []]): void
     {
@@ -119,7 +119,7 @@ class HttpDownloaderMock extends HttpDownloader
     }
 
     /**
-     * @param string[] $headers
+     * @param list<string> $headers
      * @param non-empty-string $url
      */
     private function respond(string $url, int $status, array $headers, string $body): Response

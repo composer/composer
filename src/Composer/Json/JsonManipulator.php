@@ -261,7 +261,7 @@ class JsonManipulator
         $childRegex = '{'.self::$DEFINES.'(?P<start>"'.preg_quote($name).'"\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
         if (Preg::isMatch($childRegex, $children, $matches)) {
             $children = Preg::replaceCallback($childRegex, function ($matches) use ($subName, $value): string {
-                if ($subName !== null) {
+                if ($subName !== null && is_string($matches['content'])) {
                     $curVal = json_decode($matches['content'], true);
                     if (!is_array($curVal)) {
                         $curVal = [];
@@ -410,6 +410,7 @@ class JsonManipulator
         }
 
         $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($name, $subName, $childrenClean): string {
+            assert(is_string($matches['content']));
             if ($subName !== null) {
                 $curVal = json_decode($matches['content'], true);
                 unset($curVal[$name][$subName]);

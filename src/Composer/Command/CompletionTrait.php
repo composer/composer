@@ -38,7 +38,7 @@ trait CompletionTrait
     /**
      * Suggestion values for "prefer-install" option
      *
-     * @return string[]
+     * @return list<string>
      */
     private function suggestPreferInstall(): array
     {

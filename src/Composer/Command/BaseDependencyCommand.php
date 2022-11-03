@@ -41,7 +41,7 @@ abstract class BaseDependencyCommand extends BaseCommand
     protected const OPTION_RECURSIVE = 'recursive';
     protected const OPTION_TREE = 'tree';
 
-    /** @var ?string[] */
+    /** @var string[] */
     protected $colors;
 
     /**

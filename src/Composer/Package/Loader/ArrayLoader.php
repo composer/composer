@@ -75,7 +75,7 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param list<array<mixed>> $versions
+     * @param array<array<mixed>> $versions
      *
      * @return list<CompletePackage|CompleteAliasPackage>
      */

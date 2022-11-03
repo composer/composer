@@ -133,7 +133,7 @@ class CompositeRepository implements RepositoryInterface
             $matches[] = $repository->search($query, $mode, $type);
         }
 
-        return $matches ? array_merge(...$matches) : [];
+        return \count($matches) > 0 ? array_merge(...$matches) : [];
     }
 
     /**

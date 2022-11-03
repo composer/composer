@@ -28,7 +28,7 @@ class RepositoryUtils
      *
      * @template T of PackageInterface
      * @param  array<T> $packages
-     * @param  array<T> $bucket Do not pass this in, only used to avoid recursion with circular deps
+     * @param  list<T> $bucket Do not pass this in, only used to avoid recursion with circular deps
      * @return list<T>
      */
     public static function filterRequiredPackages(array $packages, PackageInterface $requirer, array $bucket = []): array

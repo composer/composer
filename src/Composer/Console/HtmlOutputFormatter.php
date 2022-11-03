@@ -75,10 +75,11 @@ class HtmlOutputFormatter extends OutputFormatter
     }
 
     /**
-     * @param string[] $matches
+     * @param array<string|null> $matches
      */
     private function formatHtml(array $matches): string
     {
+        assert(is_string($matches[1]));
         $out = '<span style="';
         foreach (explode(';', $matches[1]) as $code) {
             if (isset(self::$availableForegroundColors[(int) $code])) {

@@ -49,6 +49,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionArray = $guesser->guessVersion([], 'dummy/path');
 
+        self::assertIsArray($versionArray);
         $this->assertEquals("dev-".$branch, $versionArray['version']);
         $this->assertEquals("dev-".$branch, $versionArray['pretty_version']);
         $this->assertEmpty($versionArray['commit']);
@@ -72,6 +73,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionArray = $guesser->guessVersion([], 'dummy/path');
 
+        self::assertIsArray($versionArray);
         $this->assertEquals("dev-master", $versionArray['version']);
         $this->assertEquals("dev-master", $versionArray['pretty_version']);
         $this->assertArrayNotHasKey('feature_version', $versionArray);
@@ -98,6 +100,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionArray = $guesser->guessVersion(['version' => 'self.version'], 'dummy/path');
 
+        self::assertIsArray($versionArray);
         $this->assertEquals("dev-current", $versionArray['version']);
         $this->assertEquals($anotherCommitHash, $versionArray['commit']);
     }
@@ -124,8 +127,10 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionArray = $guesser->guessVersion(['version' => 'self.version', 'non-feature-branches' => ['arbitrary']], 'dummy/path');
 
+        self::assertIsArray($versionArray);
         $this->assertEquals("dev-arbitrary", $versionArray['version']);
         $this->assertEquals($anotherCommitHash, $versionArray['commit']);
+        self::assertArrayHasKey('feature_version', $versionArray);
         $this->assertEquals("dev-feature", $versionArray['feature_version']);
         $this->assertEquals("dev-feature", $versionArray['feature_pretty_version']);
     }
@@ -152,8 +157,10 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionArray = $guesser->guessVersion(['version' => 'self.version', 'non-feature-branches' => ['latest-.*']], 'dummy/path');
 
+        self::assertIsArray($versionArray);
         $this->assertEquals("dev-latest-testing", $versionArray['version']);
         $this->assertEquals($anotherCommitHash, $versionArray['commit']);
+        self::assertArrayHasKey('feature_version', $versionArray);
         $this->assertEquals("dev-feature", $versionArray['feature_version']);
         $this->assertEquals("dev-feature", $versionArray['feature_pretty_version']);
     }
@@ -176,6 +183,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionArray = $guesser->guessVersion(['version' => 'self.version', 'non-feature-branches' => ['latest-.*']], 'dummy/path');
 
+        self::assertIsArray($versionArray);
         $this->assertEquals("dev-latest-testing", $versionArray['version']);
         $this->assertEquals($commitHash, $versionArray['commit']);
         $this->assertArrayNotHasKey('feature_version', $versionArray);
@@ -200,6 +208,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionData = $guesser->guessVersion([], 'dummy/path');
 
+        self::assertIsArray($versionData);
         $this->assertEquals("dev-$commitHash", $versionData['version']);
     }
 
@@ -221,6 +230,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionData = $guesser->guessVersion([], 'dummy/path');
 
+        self::assertIsArray($versionData);
         $this->assertEquals("dev-$commitHash", $versionData['version']);
     }
 
@@ -242,6 +252,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionData = $guesser->guessVersion([], 'dummy/path');
 
+        self::assertIsArray($versionData);
         $this->assertEquals("dev-$commitHash", $versionData['version']);
     }
 
@@ -264,6 +275,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionData = $guesser->guessVersion([], 'dummy/path');
 
+        self::assertIsArray($versionData);
         $this->assertEquals("2.0.5.0-alpha2", $versionData['version']);
     }
 
@@ -286,6 +298,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionData = $guesser->guessVersion([], 'dummy/path');
 
+        self::assertIsArray($versionData);
         $this->assertEquals('1.0.0.0', $versionData['version']);
         $this->assertEquals('1.0.0', $versionData['pretty_version']);
     }
@@ -305,6 +318,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionData = $guesser->guessVersion([], 'dummy/path');
 
+        self::assertIsArray($versionData);
         $this->assertEquals("dev-foo", $versionData['version']);
     }
 
@@ -323,6 +337,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionData = $guesser->guessVersion([], 'dummy/path');
 
+        self::assertIsArray($versionData);
         $this->assertEquals("1.5.x-dev", $versionData['pretty_version']);
         $this->assertEquals("1.5.9999999.9999999-dev", $versionData['version']);
     }
@@ -346,6 +361,7 @@ class VersionGuesserTest extends TestCase
         $config->merge(['repositories' => ['packagist' => false]]);
         $guesser = new VersionGuesser($config, $process, new VersionParser());
         $versionData = $guesser->guessVersion(['version' => 'self.version'], 'dummy/path');
+        self::assertIsArray($versionData);
         $this->assertEquals("1.5.x-dev", $versionData['pretty_version']);
         $this->assertEquals("1.5.9999999.9999999-dev", $versionData['version']);
     }

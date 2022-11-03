@@ -17,6 +17,8 @@ use Composer\Repository\RepositorySet;
 /**
  * @author Nils Adermann <naderman@naderman.de>
  * @implements \IteratorAggregate<Rule>
+ * @internal
+ * @final
  */
 class RuleSet implements \IteratorAggregate, \Countable
 {
@@ -32,8 +34,7 @@ class RuleSet implements \IteratorAggregate, \Countable
      */
     public $ruleById = [];
 
-    /** @var array<0|1|4, string> */
-    protected static $types = [
+    const TYPES = [
         self::TYPE_PACKAGE => 'PACKAGE',
         self::TYPE_REQUEST => 'REQUEST',
         self::TYPE_LEARNED => 'LEARNED',
@@ -60,7 +61,7 @@ class RuleSet implements \IteratorAggregate, \Countable
      */
     public function add(Rule $rule, $type): void
     {
-        if (!isset(self::$types[$type])) {
+        if (!isset(self::TYPES[$type])) {
             throw new \OutOfBoundsException('Unknown rule type: ' . $type);
         }
 
@@ -162,10 +163,12 @@ class RuleSet implements \IteratorAggregate, \Countable
         return new RuleSetIterator($rules);
     }
 
-    /** @return array{0: 0, 1: 1, 2: 4} */
+    /**
+     * @return array{self::TYPE_PACKAGE, self::TYPE_REQUEST, self::TYPE_LEARNED}
+     */
     public function getTypes(): array
     {
-        $types = self::$types;
+        $types = self::TYPES;
 
         return array_keys($types);
     }
@@ -174,7 +177,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     {
         $string = "\n";
         foreach ($this->rules as $type => $rules) {
-            $string .= str_pad(self::$types[$type], 8, ' ') . ": ";
+            $string .= str_pad(self::TYPES[$type], 8, ' ') . ": ";
             foreach ($rules as $rule) {
                 $string .= ($repositorySet && $request && $pool ? $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose) : $rule)."\n";
             }

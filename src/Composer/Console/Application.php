@@ -403,17 +403,7 @@ class Application extends BaseApplication
                     $this->renderThrowable($e, $output);
                 }
 
-                $exitCode = $e->getCode();
-                if (is_numeric($exitCode)) {
-                    $exitCode = (int) $exitCode;
-                    if (0 === $exitCode) {
-                        $exitCode = 1;
-                    }
-                } else {
-                    $exitCode = 1;
-                }
-
-                return $exitCode;
+                return max(1, $e->getCode());
             }
 
             throw $e;

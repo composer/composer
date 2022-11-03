@@ -475,7 +475,7 @@ class Solver
 
         $why = \count($this->learnedPool) - 1;
 
-        if (!$learnedLiterals[0]) {
+        if (null === $learnedLiterals[0]) {
             throw new SolverBugException(
                 "Did not find a learnable literal in analyzed rule $analyzedRule."
             );

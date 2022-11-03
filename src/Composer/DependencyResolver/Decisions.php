@@ -137,6 +137,9 @@ class Decisions implements \Iterator, \Countable
         }
     }
 
+    /**
+     * @param int<-1, max> $offset
+     */
     public function resetToOffset(int $offset): void
     {
         while (\count($this->decisionQueue) > $offset + 1) {

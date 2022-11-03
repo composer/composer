@@ -52,7 +52,7 @@ class RemoteFilesystem
     private $options = [];
     /** @var bool */
     private $disableTls = false;
-    /** @var string[] */
+    /** @var list<string> */
     private $lastHeaders;
     /** @var bool */
     private $storeAuth = false;
@@ -159,7 +159,7 @@ class RemoteFilesystem
     /**
      * Returns the headers of the last request
      *
-     * @return string[]
+     * @return list<string>
      */
     public function getLastHeaders()
     {

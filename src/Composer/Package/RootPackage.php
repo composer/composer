@@ -31,7 +31,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     protected $config = [];
     /** @var array<string, string> Map of package name to reference/commit hash */
     protected $references = [];
-    /** @var array<array{package: string, version: string, alias: string, alias_normalized: string}> */
+    /** @var list<array{package: string, version: string, alias: string, alias_normalized: string}> */
     protected $aliases = [];
 
     /**

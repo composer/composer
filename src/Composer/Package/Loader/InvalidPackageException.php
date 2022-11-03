@@ -17,16 +17,16 @@ namespace Composer\Package\Loader;
  */
 class InvalidPackageException extends \Exception
 {
-    /** @var string[] */
+    /** @var list<string> */
     private $errors;
-    /** @var string[] */
+    /** @var list<string> */
     private $warnings;
     /** @var mixed[] package config */
     private $data;
 
     /**
-     * @param string[] $errors
-     * @param string[] $warnings
+     * @param list<string> $errors
+     * @param list<string> $warnings
      * @param mixed[]  $data
      */
     public function __construct(array $errors, array $warnings, array $data)
@@ -46,7 +46,7 @@ class InvalidPackageException extends \Exception
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function getErrors(): array
     {
@@ -54,7 +54,7 @@ class InvalidPackageException extends \Exception
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function getWarnings(): array
     {

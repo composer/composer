@@ -95,7 +95,7 @@ EOT
 
         $results = $repos->search($query, $mode, $type);
 
-        if ($results && $format === 'text') {
+        if (\count($results) > 0 && $format === 'text') {
             $width = $this->getTerminalWidth();
 
             $nameLength = 0;

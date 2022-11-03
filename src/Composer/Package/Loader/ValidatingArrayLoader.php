@@ -32,9 +32,9 @@ class ValidatingArrayLoader implements LoaderInterface
     private $loader;
     /** @var VersionParser */
     private $versionParser;
-    /** @var string[] */
+    /** @var list<string> */
     private $errors;
-    /** @var string[] */
+    /** @var list<string> */
     private $warnings;
     /** @var mixed[] */
     private $config;
@@ -428,7 +428,7 @@ class ValidatingArrayLoader implements LoaderInterface
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function getWarnings(): array
     {
@@ -436,7 +436,7 @@ class ValidatingArrayLoader implements LoaderInterface
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function getErrors(): array
     {

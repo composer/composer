@@ -27,7 +27,7 @@ interface RootPackageInterface extends CompletePackageInterface
     /**
      * Returns a set of package names and their aliases
      *
-     * @return array<array{package: string, version: string, alias: string, alias_normalized: string}>
+     * @return list<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
     public function getAliases(): array;
 
@@ -151,7 +151,7 @@ interface RootPackageInterface extends CompletePackageInterface
     /**
      * Set the aliases
      *
-     * @param array<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
+     * @param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      */
     public function setAliases(array $aliases): void;
 

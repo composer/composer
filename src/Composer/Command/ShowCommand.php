@@ -55,6 +55,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Jérémy Romey <jeremyFreeAgent>
  * @author Mihai Plasoianu <mihai@plasoianu.de>
+ *
+ * @phpstan-import-type AutoloadRules from PackageInterface
+ * @phpstan-type JsonStructure array<string, null|string|array<string|null>|AutoloadRules>
  */
 class ShowCommand extends BaseCommand
 {
@@ -820,7 +823,7 @@ EOT
             }
         }
 
-        if ($package->getAutoload()) {
+        if (\count($package->getAutoload()) > 0) {
             $io->write("\n<info>autoload</info>");
             $autoloadConfig = $package->getAutoload();
             foreach ($autoloadConfig as $type => $autoloads) {
@@ -955,9 +958,9 @@ EOT
         }
 
         if ($installedRepo->hasPackage($package)) {
-            $json['path'] = realpath($this->requireComposer()->getInstallationManager()->getInstallPath($package));
-            if ($json['path'] === false) {
-                unset($json['path']);
+            $path = realpath($this->requireComposer()->getInstallationManager()->getInstallPath($package));
+            if ($path !== false) {
+                $json['path'] = $path;
             }
         }
 
@@ -985,9 +988,9 @@ EOT
     }
 
     /**
-     * @param array<string, string|string[]|null> $json
+     * @param JsonStructure $json
      * @param array<string, string> $versions
-     * @return array<string, string|string[]|null>
+     * @return JsonStructure
      */
     private function appendVersions(array $json, array $versions): array
     {
@@ -999,8 +1002,8 @@ EOT
     }
 
     /**
-     * @param array<string, string|string[]|null> $json
-     * @return array<string, string|string[]|null>
+     * @param JsonStructure $json
+     * @return JsonStructure
      */
     private function appendLicenses(array $json, CompletePackageInterface $package): array
     {
@@ -1026,12 +1029,12 @@ EOT
     }
 
     /**
-     * @param array<string, string|string[]|null> $json
-     * @return array<string, string|string[]|null>
+     * @param JsonStructure $json
+     * @return JsonStructure
      */
     private function appendAutoload(array $json, CompletePackageInterface $package): array
     {
-        if ($package->getAutoload()) {
+        if (\count($package->getAutoload()) > 0) {
             $autoload = [];
 
             foreach ($package->getAutoload() as $type => $autoloads) {
@@ -1059,8 +1062,8 @@ EOT
     }
 
     /**
-     * @param array<string, string|string[]|null> $json
-     * @return array<string, string|string[]|null>
+     * @param JsonStructure $json
+     * @return JsonStructure
      */
     private function appendLinks(array $json, CompletePackageInterface $package): array
     {
@@ -1072,8 +1075,8 @@ EOT
     }
 
     /**
-     * @param array<string, string|string[]|null> $json
-     * @return array<string, string|string[]|null>
+     * @param JsonStructure $json
+     * @return JsonStructure
      */
     private function appendLink(array $json, CompletePackageInterface $package, string $linkType): array
     {

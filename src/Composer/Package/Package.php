@@ -38,7 +38,7 @@ class Package extends BasePackage
     protected $sourceUrl;
     /** @var ?string */
     protected $sourceReference;
-    /** @var ?array<int, array{url: non-empty-string, preferred: bool}> */
+    /** @var ?list<array{url: non-empty-string, preferred: bool}> */
     protected $sourceMirrors;
     /** @var ?non-empty-string */
     protected $distType;
@@ -48,7 +48,7 @@ class Package extends BasePackage
     protected $distReference;
     /** @var ?string */
     protected $distSha1Checksum;
-    /** @var ?array<int, array{url: non-empty-string, preferred: bool}> */
+    /** @var ?list<array{url: non-empty-string, preferred: bool}> */
     protected $distMirrors;
     /** @var string */
     protected $version;
@@ -658,7 +658,7 @@ class Package extends BasePackage
     /**
      * @param mixed[]|null $mirrors
      *
-     * @return non-empty-string[]
+     * @return list<non-empty-string>
      *
      * @phpstan-param list<array{url: non-empty-string, preferred: bool}>|null $mirrors
      */

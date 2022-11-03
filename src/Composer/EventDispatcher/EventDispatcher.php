@@ -342,7 +342,7 @@ class EventDispatcher
                         $pathAndArgs = substr($exec, 5);
                         if (Platform::isWindows()) {
                             $pathAndArgs = Preg::replaceCallback('{^\S+}', static function ($path) {
-                                return str_replace('/', '\\', $path[0]);
+                                return str_replace('/', '\\', (string) $path[0]);
                             }, $pathAndArgs);
                         }
                         // match somename (not in quote, and not a qualified path) and if it is not a valid path from CWD then try to find it
@@ -364,6 +364,8 @@ class EventDispatcher
 
                         if (Platform::isWindows()) {
                             $exec = Preg::replaceCallback('{^\S+}', static function ($path) {
+                                assert(is_string($path[0]));
+
                                 return str_replace('/', '\\', $path[0]);
                             }, $exec);
                         }

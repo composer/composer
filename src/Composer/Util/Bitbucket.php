@@ -226,6 +226,9 @@ class Bitbucket
         $this->config->getAuthConfigSource()->addConfigSetting('bitbucket-oauth.'.$originUrl, $consumer);
     }
 
+    /**
+     * @phpstan-assert-if-true array{access_token: string} $this->token
+     */
     private function getTokenFromConfig(string $originUrl): bool
     {
         $authConfig = $this->config->get('bitbucket-oauth');

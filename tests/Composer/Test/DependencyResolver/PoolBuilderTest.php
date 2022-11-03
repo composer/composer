@@ -148,7 +148,7 @@ class PoolBuilderTest extends TestCase
 
     /**
      * @param array<int, BasePackage> $packageIds
-     * @return string[]
+     * @return list<string|int>
      */
     private function getPackageResultSet(Pool $pool, array $packageIds): array
     {

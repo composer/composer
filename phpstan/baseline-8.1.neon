@@ -11,11 +11,6 @@ parameters:
 			path: ../src/Composer/Autoload/ClassLoader.php
 
 		-
-			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\<string\\>\\|null given\\.$#"
-			count: 2
-			path: ../src/Composer/Command/BaseDependencyCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ConfigCommand.php

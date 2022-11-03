@@ -6,11 +6,6 @@ parameters:
 			path: ../src/Composer/Advisory/Auditor.php
 
 		-
-			message: "#^Binary operation \"\\.\" between non\\-falsy\\-string and array\\|string\\|null results in an error\\.$#"
-			count: 1
-			path: ../src/Composer/Autoload/AutoloadGenerator.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 10
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
@@ -216,11 +211,6 @@ parameters:
 			path: ../src/Composer/Command/BaseDependencyCommand.php
 
 		-
-			message: "#^Offset int does not exist on array\\<string\\>\\|null\\.$#"
-			count: 2
-			path: ../src/Composer/Command/BaseDependencyCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Package\\\\BasePackage\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/BaseDependencyCommand.php
@@ -243,11 +233,6 @@ parameters:
 		-
 			message: "#^Parameter \\#1 \\$results of method Composer\\\\Command\\\\BaseDependencyCommand\\:\\:printTree\\(\\) expects array\\<array\\{Composer\\\\Package\\\\PackageInterface, Composer\\\\Package\\\\Link, array\\|bool\\}\\>, non\\-empty\\-array\\|true given\\.$#"
 			count: 1
-			path: ../src/Composer/Command/BaseDependencyCommand.php
-
-		-
-			message: "#^Parameter \\#1 \\$var of function count expects array\\|Countable, array\\<string\\>\\|null given\\.$#"
-			count: 2
 			path: ../src/Composer/Command/BaseDependencyCommand.php
 
 		-
@@ -641,11 +626,6 @@ parameters:
 			path: ../src/Composer/Command/RunScriptCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, int\\<0, max\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RunScriptCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ScriptAliasCommand.php
@@ -667,11 +647,6 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 1
-			path: ../src/Composer/Command/SearchCommand.php
-
-		-
-			message: "#^Only booleans are allowed in &&, array\\<int, array\\<string, string\\|true\\|null\\>\\> given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Command/SearchCommand.php
 
@@ -752,16 +727,6 @@ parameters:
 
 		-
 			message: "#^Method Composer\\\\Command\\\\ShowCommand\\:\\:addTree\\(\\) should return array\\<int, array\\<string, array\\<int, array\\<string, string\\>\\>\\|string\\>\\> but returns array\\<int, array\\<string, array\\<int, array\\<string, array\\<int, array\\<string, string\\>\\>\\|string\\>\\>\\|string\\>\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Method Composer\\\\Command\\\\ShowCommand\\:\\:appendAutoload\\(\\) should return array\\<string, array\\<string\\>\\|string\\|null\\> but returns array\\<string, array\\<array\\<int\\|string, array\\<string\\>\\|string\\>\\|string\\>\\|string\\|null\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Method Composer\\\\Command\\\\ShowCommand\\:\\:appendLicenses\\(\\) should return array\\<string, array\\<string\\>\\|string\\|null\\> but returns array\\<string, array\\<array\\<string, string\\>\\|string\\>\\|string\\|null\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
@@ -866,11 +831,6 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, array\\<string, array\\<int\\|string, array\\<string\\>\\|string\\>\\> given\\.$#"
-			count: 2
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, array\\<string, string\\> given\\.$#"
 			count: 4
 			path: ../src/Composer/Command/ShowCommand.php
@@ -898,11 +858,6 @@ parameters:
 		-
 			message: "#^Parameter \\#1 \\$arrayTree of method Composer\\\\Command\\\\ShowCommand\\:\\:displayPackageTree\\(\\) expects array\\<int, array\\<string, array\\|string\\>\\>, array\\<int, array\\<string, array\\<int, array\\<string, array\\|string\\>\\>\\|string\\|null\\>\\> given\\.$#"
 			count: 2
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of method Composer\\\\Command\\\\ShowCommand\\:\\:appendAutoload\\(\\) expects array\\<string, array\\<string\\>\\|string\\|null\\>, array\\<string, array\\<string\\|null\\>\\|string\\|false\\|null\\> given\\.$#"
-			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
@@ -1276,11 +1231,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Decisions.php
 
 		-
-			message: "#^Offset 0 does not exist on array\\{int, Composer\\\\DependencyResolver\\\\Rule\\}\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Decisions.php
-
-		-
 			message: "#^Only booleans are allowed in a ternary operator condition, Composer\\\\DependencyResolver\\\\Pool\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Decisions.php
@@ -1491,11 +1441,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Rule.php
 
 		-
-			message: "#^Method Composer\\\\DependencyResolver\\\\RuleSet\\:\\:getTypes\\(\\) should return array\\{0, 1, 4\\} but returns array\\<int, 0\\|1\\|4\\>\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/RuleSet.php
-
-		-
 			message: "#^Only booleans are allowed in &&, Composer\\\\DependencyResolver\\\\Pool\\|null given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/RuleSet.php
@@ -1576,11 +1521,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Solver.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, int\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Solver.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\DependencyResolver\\\\Rule\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Solver.php
@@ -1611,7 +1551,7 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Solver.php
 
 		-
-			message: "#^Parameter \\#1 \\$literals of class Composer\\\\DependencyResolver\\\\GenericRule constructor expects array\\<int, int\\>, array\\<int, int\\|null\\> given\\.$#"
+			message: "#^Parameter \\#1 \\$literals of class Composer\\\\DependencyResolver\\\\GenericRule constructor expects list\\<int\\>, non\\-empty\\-list\\<int\\|null\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Solver.php
 
@@ -2382,7 +2322,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, array\\<Composer\\\\DependencyResolver\\\\Operation\\\\OperationInterface\\> given\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Installer.php
 
 		-
@@ -2402,7 +2342,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, array\\<Composer\\\\DependencyResolver\\\\Operation\\\\OperationInterface\\> given\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Installer.php
 
 		-
@@ -2556,22 +2496,7 @@ parameters:
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
-			message: "#^Parameter \\#1 \\$onFulfilled of method React\\\\Promise\\\\PromiseInterface\\:\\:then\\(\\) expects \\(callable\\(\\)\\: mixed\\)\\|null, React\\\\Promise\\\\PromiseInterface given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
 			message: "#^Parameter \\#2 \\$offset of function array_splice expects int, int\\|string given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Parameter \\#3 \\$cleanupPromises of method Composer\\\\Installer\\\\InstallationManager\\:\\:executeBatch\\(\\) expects array\\<React\\\\Promise\\\\PromiseInterface\\>, array\\<\\(Closure\\)\\|React\\\\Promise\\\\PromiseInterface\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Trying to invoke React\\\\Promise\\\\PromiseInterface but it might not be a callable\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/InstallationManager.php
 
@@ -2956,11 +2881,6 @@ parameters:
 			path: ../src/Composer/Package/Loader/JsonLoader.php
 
 		-
-			message: "#^Instanceof between Composer\\\\Package\\\\RootPackage and Composer\\\\Package\\\\RootPackage will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Loader/RootPackageLoader.php
-
-		-
 			message: "#^Only booleans are allowed in an elseif condition, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Loader/RootPackageLoader.php
@@ -3148,11 +3068,6 @@ parameters:
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 3
-			path: ../src/Composer/Package/Version/VersionGuesser.php
-
-		-
-			message: "#^Offset 'feature_pretty…' does not exist on array\\{version\\: non\\-falsy\\-string, commit\\: string\\|null, pretty_version\\: string\\|null, feature_version\\: non\\-falsy\\-string, feature_pretty_version\\?\\: string\\|null\\}\\.$#"
-			count: 1
 			path: ../src/Composer/Package/Version/VersionGuesser.php
 
 		-
@@ -3513,11 +3428,6 @@ parameters:
 		-
 			message: "#^Only booleans are allowed in a ternary operator condition, array\\<int, array\\<Composer\\\\Package\\\\BasePackage\\>\\> given\\.$#"
 			count: 3
-			path: ../src/Composer/Repository/CompositeRepository.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, array\\<int, array\\<int, array\\<string, string\\|true\\|null\\>\\>\\> given\\.$#"
-			count: 1
 			path: ../src/Composer/Repository/CompositeRepository.php
 
 		-
@@ -4164,11 +4074,6 @@ parameters:
 			path: ../src/Composer/Repository/VcsRepository.php
 
 		-
-			message: "#^Only booleans are allowed in &&, array\\<string\\> given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/VcsRepository.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Package\\\\Loader\\\\LoaderInterface\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/VcsRepository.php
@@ -4300,11 +4205,6 @@ parameters:
 
 		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Bitbucket.php
-
-		-
-			message: "#^Offset 'access_token' does not exist on array\\{access_token\\: string, expires_in\\?\\: int\\}\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Bitbucket.php
 
@@ -5364,11 +5264,6 @@ parameters:
 			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
 
 		-
-			message: "#^Method Composer\\\\Test\\\\DependencyResolver\\\\PoolBuilderTest\\:\\:getPackageResultSet\\(\\) should return array\\<string\\> but returns array\\<int, int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string\\>\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, int\\|false given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
@@ -5687,36 +5582,6 @@ parameters:
 			path: ../tests/Composer/Test/Package/Loader/ValidatingArrayLoaderTest.php
 
 		-
-			message: "#^Offset 'commit' does not exist on array\\{version\\: string, commit\\: string\\|null, pretty_version\\: string\\|null, feature_version\\?\\: string\\|null, feature_pretty_version\\?\\: string\\|null\\}\\|null\\.$#"
-			count: 6
-			path: ../tests/Composer/Test/Package/Version/VersionGuesserTest.php
-
-		-
-			message: "#^Offset 'feature_pretty…' does not exist on array\\{version\\: string, commit\\: string\\|null, pretty_version\\: string\\|null, feature_version\\?\\: string\\|null, feature_pretty_version\\?\\: string\\|null\\}\\|null\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Package/Version/VersionGuesserTest.php
-
-		-
-			message: "#^Offset 'feature_version' does not exist on array\\{version\\: string, commit\\: string\\|null, pretty_version\\: string\\|null, feature_version\\?\\: string\\|null, feature_pretty_version\\?\\: string\\|null\\}\\|null\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Package/Version/VersionGuesserTest.php
-
-		-
-			message: "#^Offset 'pretty_version' does not exist on array\\{version\\: string, commit\\: string\\|null, pretty_version\\: string\\|null, feature_version\\?\\: string\\|null, feature_pretty_version\\?\\: string\\|null\\}\\|null\\.$#"
-			count: 5
-			path: ../tests/Composer/Test/Package/Version/VersionGuesserTest.php
-
-		-
-			message: "#^Offset 'version' does not exist on array\\{version\\: string, commit\\: string\\|null, pretty_version\\: string\\|null, feature_version\\?\\: string\\|null, feature_pretty_version\\?\\: string\\|null\\}\\|null\\.$#"
-			count: 14
-			path: ../tests/Composer/Test/Package/Version/VersionGuesserTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayNotHasKey\\(\\) expects array\\|ArrayAccess, array\\<string, string\\|null\\>\\|null given\\.$#"
-			count: 4
-			path: ../tests/Composer/Test/Package/Version/VersionGuesserTest.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Package/Version/VersionSelectorTest.php
@@ -5733,21 +5598,6 @@ parameters:
 
 		-
 			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Command…' and Composer\\\\Command\\\\BaseCommand will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
-
-		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Plugin…' and Composer\\\\Plugin\\\\Capability\\\\CommandProvider will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
-
-		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Plugin…' and Composer\\\\Test\\\\Plugin\\\\Mock\\\\Capability will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
-
-		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Test…' and Composer\\\\Test\\\\Plugin\\\\Mock\\\\Capability will always evaluate to true\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
 
@@ -5802,29 +5652,9 @@ parameters:
 			path: ../tests/Composer/Test/Repository/PathRepositoryTest.php
 
 		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Repository…' and Composer\\\\Repository\\\\FilterRepository will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/RepositoryManagerTest.php
-
-		-
 			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Repository…' and Composer\\\\Repository\\\\RepositoryInterface will always evaluate to true\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/RepositoryManagerTest.php
-
-		-
-			message: "#^Offset 'reference' does not exist on array\\{type\\: string, url\\: string, reference\\: string, shasum\\: string\\}\\|null\\.$#"
-			count: 4
-			path: ../tests/Composer/Test/Repository/Vcs/GitHubDriverTest.php
-
-		-
-			message: "#^Offset 'type' does not exist on array\\{type\\: string, url\\: string, reference\\: string, shasum\\: string\\}\\|null\\.$#"
-			count: 4
-			path: ../tests/Composer/Test/Repository/Vcs/GitHubDriverTest.php
-
-		-
-			message: "#^Offset 'url' does not exist on array\\{type\\: string, url\\: string, reference\\: string, shasum\\: string\\}\\|null\\.$#"
-			count: 4
-			path: ../tests/Composer/Test/Repository/Vcs/GitHubDriverTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$objectOrValue of method ReflectionProperty\\:\\:setValue\\(\\) expects object\\|null, object\\|string given\\.$#"
@@ -5835,11 +5665,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$repoConfig of class Composer\\\\Repository\\\\Vcs\\\\PerforceDriver constructor expects array\\{url\\: string\\}, array\\<string, string\\> given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/Vcs/PerforceDriverTest.php
-
-		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertEmpty\\(\\) with array\\<'0\\.6\\.0'\\|'1\\.0\\.0'\\|'1\\.0\\.x\\-dev'\\|'1\\.1\\.x\\-dev'\\|'9999999\\-dev'\\|'dev\\-feature\\-b'\\|'dev\\-feature/a\\-1\\.0\\-B'\\|'dev\\-master', true\\> and literal\\-string&non\\-falsy\\-string will always evaluate to false\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/VcsRepositoryTest.php
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
@@ -5875,6 +5700,11 @@ parameters:
 			message: "#^Variable method call on Composer\\\\Package\\\\PackageInterface\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/TestCase.php
+
+		-
+			message: "#^Cannot access an offset on array\\<int, array\\<string, int\\|string\\>\\>\\|false\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Util/GitTest.php
 
 		-
 			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Util\\\\\\\\Http…' and Composer\\\\Util\\\\Http\\\\ProxyManager will always evaluate to true\\.$#"
@@ -5969,11 +5799,6 @@ parameters:
 		-
 			message: "#^Implicit array creation is not allowed \\- variable \\$certificate does not exist\\.$#"
 			count: 2
-			path: ../tests/Composer/Test/Util/TlsHelperTest.php
-
-		-
-			message: "#^Offset 'cn' does not exist on array\\{cn\\: string, san\\: array\\<string\\>\\}\\|null\\.$#"
-			count: 1
 			path: ../tests/Composer/Test/Util/TlsHelperTest.php
 
 		-
