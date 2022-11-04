@@ -574,7 +574,7 @@ EOT
         phpinfo(INFO_GENERAL);
         $phpinfo = ob_get_clean();
         if (Preg::isMatch('{Configure Command(?: *</td><td class="v">| *=> *)(.*?)(?:</td>|$)}m', $phpinfo, $match)) {
-            $configure = $match[1];
+            $configure = (string) $match[1];
 
             if (false !== strpos($configure, '--enable-sigchild')) {
                 $warnings['sigchild'] = true;

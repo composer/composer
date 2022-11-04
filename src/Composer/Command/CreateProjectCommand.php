@@ -376,7 +376,7 @@ EOT
             if (null === $packageVersion) {
                 $stability = 'stable';
             } elseif (Preg::isMatch('{^[^,\s]*?@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $packageVersion, $match)) {
-                $stability = $match[1];
+                $stability = (string) $match[1];
             } else {
                 $stability = VersionParser::parseStability($packageVersion);
             }

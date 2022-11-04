@@ -665,14 +665,15 @@ EOT
 
         // handle repositories
         if (Preg::isMatch('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
+            $repository = (string) $matches[1];
             if ($input->getOption('unset')) {
-                $this->configSource->removeRepository($matches[1]);
+                $this->configSource->removeRepository($repository);
 
                 return 0;
             }
 
             if (2 === count($values)) {
-                $this->configSource->addRepository($matches[1], [
+                $this->configSource->addRepository($repository, [
                     'type' => $values[0],
                     'url' => $values[1],
                 ], $input->getOption('append'));
@@ -684,13 +685,13 @@ EOT
                 $value = strtolower($values[0]);
                 if (true === $booleanValidator($value)) {
                     if (false === $booleanNormalizer($value)) {
-                        $this->configSource->addRepository($matches[1], false, $input->getOption('append'));
+                        $this->configSource->addRepository($repository, false, $input->getOption('append'));
 
                         return 0;
                     }
                 } else {
                     $value = JsonFile::parseJson($values[0]);
-                    $this->configSource->addRepository($matches[1], $value, $input->getOption('append'));
+                    $this->configSource->addRepository($repository, $value, $input->getOption('append'));
 
                     return 0;
                 }

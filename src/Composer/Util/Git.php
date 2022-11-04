@@ -62,8 +62,13 @@ class Git
         if (!$initialClone) {
             // capture username/password from URL if there is one and we have no auth configured yet
             $this->process->execute('git remote -v', $output, $cwd);
-            if (Preg::isMatch('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)}im', $output, $match) && !$this->io->hasAuthentication($match[3])) {
-                $this->io->setAuthentication($match[3], rawurldecode($match[1]), rawurldecode($match[2]));
+            if (Preg::isMatch('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)}im', $output, $match)) {
+                $hostname = (string) $match[3];
+                if (!$this->io->hasAuthentication($hostname)) {
+                    $username = (string) $match[1];
+                    $password = (string) $match[2];
+                    $this->io->setAuthentication($hostname, rawurldecode($username), rawurldecode($password));
+                }
             }
         }
 

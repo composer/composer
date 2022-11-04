@@ -552,7 +552,7 @@ class Filesystem
 
         // extract a prefix being a protocol://, protocol:, protocol://drive: or simply drive:
         if (Preg::isMatch('{^( [0-9a-z]{2,}+: (?: // (?: [a-z]: )? )? | [a-z]: )}ix', $path, $match)) {
-            $prefix = $match[1];
+            $prefix = (string) $match[1];
             $path = substr($path, \strlen($prefix));
         }
 

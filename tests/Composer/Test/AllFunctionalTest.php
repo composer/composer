@@ -136,7 +136,7 @@ class AllFunctionalTest extends TestCase
                 }
                 if ($expected[$i] === '%') {
                     Preg::isMatch('{%(.+?)%}', substr($expected, $i), $match);
-                    $regex = $match[1];
+                    $regex = (string) $match[1];
 
                     if (Preg::isMatch('{'.$regex.'}', substr($output, $j), $match)) {
                         $i += strlen($regex) + 2;
