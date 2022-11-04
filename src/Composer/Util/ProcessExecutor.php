@@ -147,7 +147,7 @@ class ProcessExecutor
             $signalHandler->unregister();
         }
 
-        return $process->getExitCode();
+        return (int) $process->getExitCode();
     }
 
     /**

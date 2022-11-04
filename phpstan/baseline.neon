@@ -4864,11 +4864,6 @@ parameters:
 			path: ../src/Composer/Util/Platform.php
 
 		-
-			message: "#^Method Composer\\\\Util\\\\ProcessExecutor\\:\\:doExecute\\(\\) should return int but returns int\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Util/ProcessExecutor.php
-
-		-
 			message: "#^Property Composer\\\\Util\\\\ProcessExecutor\\:\\:\\$jobs \\(array\\<int, array\\<string, mixed\\>\\>\\) does not accept array\\<int\\|string, array\\<string, mixed\\>\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Util/ProcessExecutor.php
