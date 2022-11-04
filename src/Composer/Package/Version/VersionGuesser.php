@@ -158,7 +158,7 @@ class VersionGuesser
                         $isFeatureBranch = $this->isFeatureBranch($packageConfig, $match[1]);
                     }
 
-                    if ($match[2]) {
+                    if (isset($match[2])) {
                         $commit = $match[2];
                     }
                 }
@@ -181,7 +181,7 @@ class VersionGuesser
             }
         }
 
-        if (!$version || $isDetached) {
+        if (!isset($version) || $isDetached) {
             $result = $this->versionFromGitTags($path);
             if ($result) {
                 $version = $result['version'];
@@ -191,14 +191,14 @@ class VersionGuesser
             }
         }
 
-        if (!$commit) {
+        if (!isset($commit)) {
             $command = 'git log --pretty="%H" -n1 HEAD'.GitUtil::getNoShowSignatureFlag($this->process);
             if (0 === $this->process->execute($command, $output, $path)) {
                 $commit = trim($output) ?: null;
             }
         }
 
-        if ($featureVersion) {
+        if (isset($featureVersion)) {
             return ['version' => $version, 'commit' => $commit, 'pretty_version' => $prettyVersion, 'feature_version' => $featureVersion, 'feature_pretty_version' => $featurePrettyVersion];
         }
 

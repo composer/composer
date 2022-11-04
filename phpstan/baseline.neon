@@ -3076,17 +3076,7 @@ parameters:
 			path: ../src/Composer/Package/Version/VersionGuesser.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Version/VersionGuesser.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, array\\<string, string\\>\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Version/VersionGuesser.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Version/VersionGuesser.php
 
