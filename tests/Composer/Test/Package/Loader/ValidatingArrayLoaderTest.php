@@ -33,6 +33,9 @@ class ValidatingArrayLoaderTest extends TestCase
 
         $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
         $loader->load($config);
+
+        // There should be no warnings shown with any of these tests.
+        $this->assertEquals([], $loader->getWarnings());
     }
 
     public function successProvider(): array
@@ -85,14 +88,17 @@ class ValidatingArrayLoaderTest extends TestCase
                         ],
                     ],
                     'require' => [
+                        'php' => '^7.2 || ^8.0',
+                        'ext-openssl' => '*',
                         'a/b' => '1.*',
                         'b/c' => '~2',
                         'example/pkg' => '>2.0-dev,<2.4-dev',
-                        'composer-runtime-api' => '*',
+                        'composer-runtime-api' => '^2.3',
                     ],
                     'require-dev' => [
+                        'ext-zip' => '*',
                         'a/b' => '1.*',
-                        'b/c' => '*',
+                        'b/c' => '~2',
                         'example/pkg' => '>2.0-dev,<2.4-dev',
                     ],
                     'conflict' => [
@@ -463,6 +469,8 @@ class ValidatingArrayLoaderTest extends TestCase
                 [
                     'name' => 'foo/bar',
                     'require' => [
+                        'php' => '>=5.6',
+                        'ext-name' => '*',
                         'foo/baz' => '*',
                         'bar/baz' => '>=1.0',
                         'bar/hacked' => '@stable',
@@ -470,6 +478,8 @@ class ValidatingArrayLoaderTest extends TestCase
                     ],
                 ],
                 [
+                    'require.php : unbound version constraints (>=5.6) should be avoided',
+                    // ext-name is correct / allowed to be unbounded.
                     'require.foo/baz : unbound version constraints (*) should be avoided',
                     'require.bar/baz : unbound version constraints (>=1.0) should be avoided',
                     'require.bar/hacked : unbound version constraints (@stable) should be avoided',

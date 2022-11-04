@@ -273,12 +273,12 @@ class ValidatingArrayLoader implements LoaderInterface
                             continue;
                         }
 
-                        // check requires for unbound constraints on non-platform packages
+                        // check requires for unbound constraints, but ignore 'ext-*' platform packages
                         if (
                             ($this->flags & self::CHECK_UNBOUND_CONSTRAINTS)
                             && 'require' === $linkType
                             && $linkConstraint->matches($unboundConstraint)
-                            && !PlatformRepository::isPlatformPackage($package)
+                            && strpos($package, 'ext-') !== 0
                         ) {
                             $this->warnings[] = $linkType.'.'.$package.' : unbound version constraints ('.$constraint.') should be avoided';
                         } elseif (
