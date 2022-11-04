@@ -31,6 +31,31 @@ parameters:
 			path: ../src/Composer/Command/ExecCommand.php
 
 		-
+			message: "#^Method Composer\\\\Command\\\\InitCommand\\:\\:getGitConfig\\(\\) should return array\\<string, string\\> but returns array\\<string, string\\|null\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Command/InitCommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$email of method Composer\\\\Command\\\\InitCommand\\:\\:isValidEmail\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Command/InitCommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Command/InitCommand.php
+
+		-
+			message: "#^Property Composer\\\\Command\\\\InitCommand\\:\\:\\$gitConfig \\(array\\<string, string\\>\\) does not accept array\\<string, string\\|null\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Command/InitCommand.php
+
+		-
+			message: "#^Binary operation \"\\+\" between string\\|null and 1 results in an error\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ShowCommand.php
+
+		-
 			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\<int, array\\<string, array\\|string\\>\\>\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
@@ -51,9 +76,29 @@ parameters:
 			path: ../src/Composer/Config/JsonConfigSource.php
 
 		-
+			message: "#^Parameter \\#1 \\$version of method Composer\\\\Semver\\\\VersionParser\\:\\:normalize\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/Problem.php
+
+		-
+			message: "#^Parameter \\#1 \\$versions of static method Composer\\\\DependencyResolver\\\\Problem\\:\\:condenseVersionList\\(\\) expects array\\<string, string\\>, array\\<string, string\\|null\\> given\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/Problem.php
+
+		-
 			message: "#^Parameter \\#2 \\$callback of function uksort expects callable\\(string, string\\)\\: int, 'version_compare' given\\.$#"
 			count: 2
 			path: ../src/Composer/DependencyResolver/Problem.php
+
+		-
+			message: "#^Only booleans are allowed in a negated boolean, array\\<int, string\\|null\\> given\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/GitDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$str of function preg_quote expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/GitDownloader.php
 
 		-
 			message: "#^Parameter \\#1 \\$stream of function fclose expects resource, resource\\|false given\\.$#"
@@ -81,9 +126,34 @@ parameters:
 			path: ../src/Composer/Downloader/GzipDownloader.php
 
 		-
+			message: "#^Parameter \\#1 \\$url of class Composer\\\\Util\\\\Svn constructor expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/SvnDownloader.php
+
+		-
 			message: "#^Parameter \\#1 \\$string of function rawurldecode expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/VcsDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$version1 of function version_compare expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/ZipDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$filename of function file_exists expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/EventDispatcher/EventDispatcher.php
+
+		-
+			message: "#^Parameter \\#1 \\$name of method Symfony\\\\Component\\\\Process\\\\ExecutableFinder\\:\\:find\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/EventDispatcher/EventDispatcher.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function strlen expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
 			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\<0, max\\>\\|false given\\.$#"
@@ -111,6 +181,61 @@ parameters:
 			path: ../src/Composer/Installer/BinaryInstaller.php
 
 		-
+			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Installer/BinaryInstaller.php
+
+		-
+			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|null given\\.$#"
+			count: 3
+			path: ../src/Composer/Json/JsonManipulator.php
+
+		-
+			message: "#^Parameter \\#1 \\$str of function preg_quote expects string, string\\|null given\\.$#"
+			count: 4
+			path: ../src/Composer/Json/JsonManipulator.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function strlen expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Json/JsonManipulator.php
+
+		-
+			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:isMatch\\(\\) expects string, string\\|null given\\.$#"
+			count: 6
+			path: ../src/Composer/Json/JsonManipulator.php
+
+		-
+			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:isMatchAll\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Json/JsonManipulator.php
+
+		-
+			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:match\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Json/JsonManipulator.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function str_replace expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Json/JsonManipulator.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:replace\\(\\) expects string, string\\|null given\\.$#"
+			count: 5
+			path: ../src/Composer/Json/JsonManipulator.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:replaceCallback\\(\\) expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Json/JsonManipulator.php
+
+		-
+			message: "#^Property Composer\\\\Json\\\\JsonManipulator\\:\\:\\$indent \\(string\\) does not accept string\\|null\\.$#"
+			count: 1
+			path: ../src/Composer/Json/JsonManipulator.php
+
+		-
 			message: "#^Only numeric types are allowed in \\-, int\\|false given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Archiver/PharArchiver.php
@@ -124,6 +249,86 @@ parameters:
 			message: "#^Parameter \\#1 \\$array of function ksort expects array, array\\<int\\|string, mixed\\>\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Dumper/ArrayDumper.php
+
+		-
+			message: "#^Method Composer\\\\Package\\\\Loader\\\\RootPackageLoader\\:\\:extractAliases\\(\\) should return list\\<array\\{package\\: string, version\\: string, alias\\: string, alias_normalized\\: string\\}\\> but returns list\\<array\\{package\\: string, version\\: string, alias\\: string\\|null, alias_normalized\\: string\\}\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Loader/RootPackageLoader.php
+
+		-
+			message: "#^Method Composer\\\\Package\\\\Loader\\\\RootPackageLoader\\:\\:extractReferences\\(\\) should return array\\<string, string\\> but returns array\\<string, string\\|null\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Loader/RootPackageLoader.php
+
+		-
+			message: "#^Parameter \\#1 \\$stability of static method Composer\\\\Semver\\\\VersionParser\\:\\:normalizeStability\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Loader/RootPackageLoader.php
+
+		-
+			message: "#^Parameter \\#1 \\$version of method Composer\\\\Semver\\\\VersionParser\\:\\:normalize\\(\\) expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Package/Loader/RootPackageLoader.php
+
+		-
+			message: "#^Parameter \\#1 \\$str of static method Composer\\\\Util\\\\Platform\\:\\:strlen\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Version/VersionBumper.php
+
+		-
+			message: "#^Only booleans are allowed in a negated boolean, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Version/VersionGuesser.php
+
+		-
+			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Version/VersionGuesser.php
+
+		-
+			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Package/Version/VersionGuesser.php
+
+		-
+			message: "#^Parameter \\#1 \\$name of method Composer\\\\Semver\\\\VersionParser\\:\\:normalizeBranch\\(\\) expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Package/Version/VersionGuesser.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Version/VersionGuesser.php
+
+		-
+			message: "#^Parameter \\#3 \\$branches of method Composer\\\\Package\\\\Version\\\\VersionGuesser\\:\\:guessFeatureVersion\\(\\) expects array\\<string\\>, array\\<int, string\\|null\\> given\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Version/VersionGuesser.php
+
+		-
+			message: "#^Only booleans are allowed in an if condition, int\\<0, max\\> given\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Version/VersionSelector.php
+
+		-
+			message: "#^Parameter \\#1 \\$alpha of static method Composer\\\\Platform\\\\Version\\:\\:convertAlphaVersionToIntVersion\\(\\) expects string, string\\|null given\\.$#"
+			count: 3
+			path: ../src/Composer/Platform/Version.php
+
+		-
+			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Platform/Version.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function ltrim expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Platform/Version.php
+
+		-
+			message: "#^Parameter \\#1 \\$version1 of function version_compare expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Platform/Version.php
 
 		-
 			message: "#^Only booleans are allowed in an if condition, int\\|false given\\.$#"
@@ -141,14 +346,184 @@ parameters:
 			path: ../src/Composer/Repository/ArrayRepository.php
 
 		-
+			message: "#^Parameter \\#1 \\$string of function urlencode expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/ComposerRepository.php
+
+		-
 			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\<string, int\\>\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
+			message: "#^Parameter \\#1 \\$libjpegVersion of static method Composer\\\\Platform\\\\Version\\:\\:parseLibjpeg\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/PlatformRepository.php
+
+		-
+			message: "#^Parameter \\#1 \\$opensslVersion of static method Composer\\\\Platform\\\\Version\\:\\:parseOpenssl\\(\\) expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Repository/PlatformRepository.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function strtolower expects string, string\\|null given\\.$#"
+			count: 3
+			path: ../src/Composer/Repository/PlatformRepository.php
+
+		-
+			message: "#^Parameter \\#1 \\$version of method Composer\\\\Semver\\\\VersionParser\\:\\:normalize\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/PlatformRepository.php
+
+		-
+			message: "#^Parameter \\#1 \\$zoneinfoVersion of static method Composer\\\\Platform\\\\Version\\:\\:parseZoneinfoVersion\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/PlatformRepository.php
+
+		-
+			message: "#^Parameter \\#3 \\$prettyVersion of class Composer\\\\Package\\\\CompletePackage constructor expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/PlatformRepository.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function str_replace expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/PlatformRepository.php
+
+		-
+			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitBitbucketDriver\\:\\:\\$owner \\(string\\) does not accept string\\|null\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
+
+		-
+			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitBitbucketDriver\\:\\:\\$repository \\(string\\) does not accept string\\|null\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
+
+		-
+			message: "#^Method Composer\\\\Repository\\\\Vcs\\\\GitDriver\\:\\:getBranches\\(\\) should return array\\<int\\|string, string\\> but returns array\\<int\\|string, string\\|null\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitDriver.php
+
+		-
+			message: "#^Method Composer\\\\Repository\\\\Vcs\\\\GitDriver\\:\\:getRootIdentifier\\(\\) should return string but returns string\\|null\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitDriver.php
+
+		-
+			message: "#^Offset 0 might not exist on string\\|null\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitDriver.php
+
+		-
+			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitDriver\\:\\:\\$branches \\(array\\<int\\|string, string\\>\\) does not accept array\\<string, string\\|null\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitDriver.php
+
+		-
+			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitDriver\\:\\:\\$rootIdentifier \\(string\\) does not accept string\\|null\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitDriver.php
+
+		-
+			message: "#^Method Composer\\\\Repository\\\\Vcs\\\\GitHubDriver\\:\\:getFundingInfo\\(\\) should return array\\<int, array\\{type\\: string, url\\: string\\}\\>\\|false but returns array\\<int\\<0, max\\>, array\\{type\\: string\\|null, url\\: string\\}\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
+
+		-
+			message: "#^Only booleans are allowed in &&, string\\|null given on the left side\\.$#"
+			count: 2
+			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function strtolower expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
+
+		-
+			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:isMatch\\(\\) expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
+
+		-
+			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:split\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:replace\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
+
+		-
+			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitHubDriver\\:\\:\\$fundingInfo \\(array\\<int, array\\{type\\: string, url\\: string\\}\\>\\|false\\|null\\) does not accept array\\<int\\<0, max\\>, array\\{type\\: string\\|null, url\\: string\\}\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
+
+		-
+			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitHubDriver\\:\\:\\$owner \\(string\\) does not accept string\\|null\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
+
+		-
+			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitHubDriver\\:\\:\\$repository \\(string\\) does not accept string\\|null\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
+
+		-
+			message: "#^Parameter \\#2 \\$guessedDomain of static method Composer\\\\Repository\\\\Vcs\\\\GitLabDriver\\:\\:determineOrigin\\(\\) expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
+
+		-
 			message: "#^Parameter \\#2 \\$string of function explode expects string, string\\|null given\\.$#"
+			count: 3
+			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:replace\\(\\) expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
+
+		-
+			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitLabDriver\\:\\:\\$scheme \\('http'\\|'https'\\) does not accept non\\-falsy\\-string\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
+
+		-
+			message: "#^Method Composer\\\\Repository\\\\Vcs\\\\HgDriver\\:\\:getBranches\\(\\) should return array\\<int\\|string, string\\> but returns array\\<int\\|string, string\\|null\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/HgDriver.php
+
+		-
+			message: "#^Method Composer\\\\Repository\\\\Vcs\\\\HgDriver\\:\\:getTags\\(\\) should return array\\<int\\|string, string\\> but returns array\\<int\\|string, string\\|null\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/HgDriver.php
+
+		-
+			message: "#^Offset 0 might not exist on string\\|null\\.$#"
+			count: 2
+			path: ../src/Composer/Repository/Vcs/HgDriver.php
+
+		-
+			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\HgDriver\\:\\:\\$branches \\(array\\<int\\|string, string\\>\\) does not accept array\\<string, string\\|null\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/HgDriver.php
+
+		-
+			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\HgDriver\\:\\:\\$tags \\(array\\<int\\|string, string\\>\\) does not accept array\\<string, string\\|null\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/HgDriver.php
+
+		-
+			message: "#^Parameter \\#1 \\$datetime of class DateTimeImmutable constructor expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/SvnDriver.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|false given\\.$#"
@@ -166,9 +541,74 @@ parameters:
 			path: ../src/Composer/Util/Filesystem.php
 
 		-
+			message: "#^Parameter \\#1 \\$originUrl of method Composer\\\\Util\\\\Bitbucket\\:\\:authorizeOAuth\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Git.php
+
+		-
+			message: "#^Parameter \\#1 \\$originUrl of method Composer\\\\Util\\\\Bitbucket\\:\\:authorizeOAuthInteractively\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Git.php
+
+		-
+			message: "#^Parameter \\#1 \\$originUrl of method Composer\\\\Util\\\\Bitbucket\\:\\:requestToken\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Git.php
+
+		-
+			message: "#^Parameter \\#1 \\$originUrl of method Composer\\\\Util\\\\GitHub\\:\\:authorizeOAuth\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Git.php
+
+		-
+			message: "#^Parameter \\#1 \\$originUrl of method Composer\\\\Util\\\\GitHub\\:\\:authorizeOAuthInteractively\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Git.php
+
+		-
+			message: "#^Parameter \\#1 \\$originUrl of method Composer\\\\Util\\\\GitLab\\:\\:authorizeOAuth\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Git.php
+
+		-
+			message: "#^Parameter \\#1 \\$repositoryName of method Composer\\\\IO\\\\IOInterface\\:\\:getAuthentication\\(\\) expects string, string\\|null given\\.$#"
+			count: 4
+			path: ../src/Composer/Util/Git.php
+
+		-
+			message: "#^Parameter \\#1 \\$repositoryName of method Composer\\\\IO\\\\IOInterface\\:\\:hasAuthentication\\(\\) expects string, string\\|null given\\.$#"
+			count: 7
+			path: ../src/Composer/Util/Git.php
+
+		-
+			message: "#^Parameter \\#1 \\$repositoryName of method Composer\\\\IO\\\\IOInterface\\:\\:setAuthentication\\(\\) expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Util/Git.php
+
+		-
+			message: "#^Parameter \\#1 \\$scheme of method Composer\\\\Util\\\\GitLab\\:\\:authorizeOAuthInteractively\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Git.php
+
+		-
 			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
 			count: 15
 			path: ../src/Composer/Util/Git.php
+
+		-
+			message: "#^Parameter \\#2 \\$originUrl of method Composer\\\\Util\\\\GitLab\\:\\:authorizeOAuthInteractively\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Git.php
+
+		-
+			message: "#^Parameter \\#1 \\$repositoryName of method Composer\\\\IO\\\\IOInterface\\:\\:getAuthentication\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Hg.php
+
+		-
+			message: "#^Parameter \\#1 \\$repositoryName of method Composer\\\\IO\\\\IOInterface\\:\\:hasAuthentication\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Hg.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
@@ -226,6 +666,11 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Parameter \\#1 \\$string of function rawurldecode expects string, string\\|null given\\.$#"
+			count: 2
+			path: ../src/Composer/Util/HttpDownloader.php
+
+		-
 			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/NoProxyPattern.php
@@ -264,6 +709,11 @@ parameters:
 			message: "#^Parameter \\#5 \\$length of function file_get_contents expects int\\<0, max\\>\\|null, int given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/RemoteFilesystem.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function strlen expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/AllFunctionalTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$include_path of function set_include_path expects string, string\\|false given\\.$#"
