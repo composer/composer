@@ -351,7 +351,7 @@ The necessary configuration files are automatically loaded, in case your plugin 
 
 To make use of it, your Composer plugin project needs a [PHPStan config file][12], which includes the `phpstan/rules.neon` file:
 
-```
+```neon
 includes:
 	- vendor/composer/composer/phpstan/rules.neon
 

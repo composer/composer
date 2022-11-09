@@ -35,7 +35,7 @@ class SilencerTest extends TestCase
         Silencer::restore();
 
         // Check all parameters and return values are passed correctly in a silenced call.
-        $result = Silencer::call(function ($a, $b, $c) {
+        $result = Silencer::call(static function ($a, $b, $c) {
             @trigger_error('Test', E_USER_WARNING);
 
             return $a * $b * $c;
@@ -54,7 +54,7 @@ class SilencerTest extends TestCase
         $verification = microtime();
         self::expectException('RuntimeException');
         self::expectExceptionMessage($verification);
-        Silencer::call(function () use ($verification): void {
+        Silencer::call(static function () use ($verification): void {
             throw new \RuntimeException($verification);
         });
     }

@@ -65,15 +65,12 @@ class CreateProjectCommand extends BaseCommand
      */
     protected $suggestedPackagesReporter;
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this
             ->setName('create-project')
-            ->setDescription('Creates new project from a package into given directory.')
-            ->setDefinition(array(
+            ->setDescription('Creates new project from a package into given directory')
+            ->setDefinition([
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package name to be installed', null, $this->suggestAvailablePackage()),
                 new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will default to latest'),
@@ -93,12 +90,12 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deleting the vcs folder.'),
                 new InputOption('remove-vcs', null, InputOption::VALUE_NONE, 'Whether to force deletion of the vcs folder without prompting.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
-                new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Whether to skip auditing of the installed package dependencies.'),
+                new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Whether to skip auditing of the installed package dependencies (can also be set via the COMPOSER_NO_AUDIT=1 env var).'),
                 new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", "json" or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('ask', null, InputOption::VALUE_NONE, 'Whether to ask for project directory.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>create-project</info> command creates a new project from a given
@@ -134,7 +131,7 @@ EOT
         $config = Factory::createConfig();
         $io = $this->getIO();
 
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input, true);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($config, $input, true);
 
         if ($input->getOption('dev')) {
             $io->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
@@ -176,25 +173,11 @@ EOT
     }
 
     /**
-     * @param string|null               $packageName
-     * @param string|null               $directory
-     * @param string|null               $packageVersion
-     * @param string|null               $stability
-     * @param bool                      $preferSource
-     * @param bool                      $preferDist
-     * @param bool                      $installDevPackages
      * @param string|array<string>|null $repositories
-     * @param bool                      $disablePlugins
-     * @param bool                      $disableScripts
-     * @param bool                      $noProgress
-     * @param bool                      $noInstall
-     * @param bool                      $secureHttp
-     * @param bool                      $addRepository
      *
-     * @return int
      * @throws \Exception
      */
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, ?string $packageName = null, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $noInstall = false, PlatformRequirementFilterInterface $platformRequirementFilter = null, bool $secureHttp = true, bool $addRepository = false): int
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, ?string $packageName = null, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $noInstall = false, ?PlatformRequirementFilterInterface $platformRequirementFilter = null, bool $secureHttp = true, bool $addRepository = false): int
     {
         $oldCwd = Platform::getCwd();
 
@@ -230,8 +213,8 @@ EOT
                 $configSource = new JsonConfigSource(new JsonFile('composer.json'));
 
                 if (
-                    (isset($repoConfig['packagist']) && $repoConfig === array('packagist' => false))
-                    || (isset($repoConfig['packagist.org']) && $repoConfig === array('packagist.org' => false))
+                    (isset($repoConfig['packagist']) && $repoConfig === ['packagist' => false])
+                    || (isset($repoConfig['packagist.org']) && $repoConfig === ['packagist.org' => false])
                 ) {
                     $configSource->addRepository('packagist.org', false);
                 } else {
@@ -250,7 +233,7 @@ EOT
 
         // use the new config including the newly installed project
         $config = $composer->getConfig();
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($config, $input);
 
         // install dependencies of the created project
         if ($noInstall === false) {
@@ -300,7 +283,7 @@ EOT
         ) {
             $finder = new Finder();
             $finder->depth(0)->directories()->in(Platform::getCwd())->ignoreVCS(false)->ignoreDotFiles(false);
-            foreach (array('.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg', '.fslckout', '_FOSSIL_') as $vcsName) {
+            foreach (['.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg', '.fslckout', '_FOSSIL_'] as $vcsName) {
                 $finder->name($vcsName);
             }
 
@@ -349,30 +332,18 @@ EOT
     }
 
     /**
-     * @param string             $packageName
-     * @param string|null        $directory
-     * @param string|null        $packageVersion
-     * @param string|null        $stability
-     * @param bool               $preferSource
-     * @param bool               $preferDist
-     * @param bool               $installDevPackages
      * @param array<string>|null $repositories
-     * @param bool               $disablePlugins
-     * @param bool               $disableScripts
-     * @param bool               $noProgress
-     * @param bool               $secureHttp
      *
-     * @return bool
      * @throws \Exception
      */
-    protected function installRootPackage(IOInterface $io, Config $config, string $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, array $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $secureHttp = true): bool
+    protected function installRootPackage(IOInterface $io, Config $config, string $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, ?array $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $secureHttp = true): bool
     {
         if (!$secureHttp) {
-            $config->merge(array('config' => array('secure-http' => false)), Config::SOURCE_COMMAND);
+            $config->merge(['config' => ['secure-http' => false]], Config::SOURCE_COMMAND);
         }
 
         $parser = new VersionParser();
-        $requirements = $parser->parseNameVersionPairs(array($packageName));
+        $requirements = $parser->parseNameVersionPairs([$packageName]);
         $name = strtolower($requirements[0]['name']);
         if (!$packageVersion && isset($requirements[0]['version'])) {
             $packageVersion = $requirements[0]['version'];
@@ -428,8 +399,8 @@ EOT
             foreach ($repositories as $repo) {
                 $repoConfig = RepositoryFactory::configFromString($io, $config, $repo, true);
                 if (
-                    (isset($repoConfig['packagist']) && $repoConfig === array('packagist' => false))
-                    || (isset($repoConfig['packagist.org']) && $repoConfig === array('packagist.org' => false))
+                    (isset($repoConfig['packagist']) && $repoConfig === ['packagist' => false])
+                    || (isset($repoConfig['packagist.org']) && $repoConfig === ['packagist.org' => false])
                 ) {
                     continue;
                 }
@@ -438,7 +409,7 @@ EOT
         }
 
         $platformOverrides = $config->get('platform');
-        $platformRepo = new PlatformRepository(array(), $platformOverrides);
+        $platformRepo = new PlatformRepository([], $platformOverrides);
 
         // find the latest version if there are multiple
         $versionSelector = new VersionSelector($repositorySet, $platformRepo);
@@ -487,7 +458,7 @@ EOT
         $im = $composer->getInstallationManager();
         $im->setOutputProgress(!$noProgress);
         $im->addInstaller($projectInstaller);
-        $im->execute(new InstalledArrayRepository(), array(new InstallOperation($package)));
+        $im->execute(new InstalledArrayRepository(), [new InstallOperation($package)]);
         $im->notifyInstalls($io);
 
         // collect suggestions

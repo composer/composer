@@ -50,8 +50,6 @@ class StrictConfirmationQuestion extends Question
 
     /**
      * Returns the default answer normalizer.
-     *
-     * @return callable
      */
     private function getDefaultNormalizer(): callable
     {
@@ -81,8 +79,6 @@ class StrictConfirmationQuestion extends Question
 
     /**
      * Returns the default answer validator.
-     *
-     * @return callable
      */
     private function getDefaultValidator(): callable
     {

@@ -58,18 +58,16 @@ class ConsoleIO extends BaseIO
         $this->input = $input;
         $this->output = $output;
         $this->helperSet = $helperSet;
-        $this->verbosityMap = array(
+        $this->verbosityMap = [
             self::QUIET => OutputInterface::VERBOSITY_QUIET,
             self::NORMAL => OutputInterface::VERBOSITY_NORMAL,
             self::VERBOSE => OutputInterface::VERBOSITY_VERBOSE,
             self::VERY_VERBOSE => OutputInterface::VERBOSITY_VERY_VERBOSE,
             self::DEBUG => OutputInterface::VERBOSITY_DEBUG,
-        );
+        ];
     }
 
     /**
-     * @param float $startTime
-     *
      * @return void
      */
     public function enableDebugging(float $startTime)
@@ -151,12 +149,6 @@ class ConsoleIO extends BaseIO
 
     /**
      * @param string[]|string $messages
-     * @param bool                 $newline
-     * @param bool                 $stderr
-     * @param int                  $verbosity
-     * @param bool                 $raw
-     *
-     * @return void
      */
     private function doWrite($messages, bool $newline, bool $stderr, int $verbosity, bool $raw = false): void
     {
@@ -206,12 +198,6 @@ class ConsoleIO extends BaseIO
 
     /**
      * @param string[]|string $messages
-     * @param bool         $newline
-     * @param int|null     $size
-     * @param bool         $stderr
-     * @param int          $verbosity
-     *
-     * @return void
      */
     private function doOverwrite($messages, bool $newline, ?int $size, bool $stderr, int $verbosity): void
     {
@@ -252,7 +238,6 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * @param  int         $max
      * @return ProgressBar
      */
     public function getProgressBar(int $max = 0)
@@ -325,11 +310,16 @@ class ConsoleIO extends BaseIO
 
         $result = $helper->ask($this->input, $this->getErrorOutput(), $question);
 
+        $isAssoc = (bool) \count(array_filter(array_keys($choices), 'is_string'));
+        if ($isAssoc) {
+            return $result;
+        }
+
         if (!is_array($result)) {
             return (string) array_search($result, $choices, true);
         }
 
-        $results = array();
+        $results = [];
         foreach ($choices as $index => $choice) {
             if (in_array($choice, $result, true)) {
                 $results[] = (string) $index;
@@ -339,17 +329,11 @@ class ConsoleIO extends BaseIO
         return $results;
     }
 
-    /**
-     * @return Table
-     */
     public function getTable(): Table
     {
         return new Table($this->output);
     }
 
-    /**
-     * @return OutputInterface
-     */
     private function getErrorOutput(): OutputInterface
     {
         if ($this->output instanceof ConsoleOutputInterface) {

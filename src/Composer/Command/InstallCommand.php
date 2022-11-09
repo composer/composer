@@ -39,13 +39,14 @@ class InstallCommand extends BaseCommand
     {
         $this
             ->setName('install')
-            ->setAliases(array('i'))
-            ->setDescription('Installs the project dependencies from the composer.lock file if present, or falls back on the composer.json.')
-            ->setDefinition(array(
+            ->setAliases(['i'])
+            ->setDescription('Installs the project dependencies from the composer.lock file if present, or falls back on the composer.json')
+            ->setDefinition([
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),
                 new InputOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).', null, $this->suggestPreferInstall()),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
+                new InputOption('download-only', null, InputOption::VALUE_NONE, 'Download only, do not install packages.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'DEPRECATED: Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
@@ -62,7 +63,7 @@ class InstallCommand extends BaseCommand
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Should not be provided, use composer require instead to add a given package to composer.json.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>install</info> command reads the composer.lock file from
@@ -113,7 +114,7 @@ EOT
         $install = Installer::create($io, $composer);
 
         $config = $composer->getConfig();
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($config, $input);
 
         $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
@@ -124,6 +125,7 @@ EOT
 
         $install
             ->setDryRun($input->getOption('dry-run'))
+            ->setDownloadOnly($input->getOption('download-only'))
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)

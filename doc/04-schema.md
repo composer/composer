@@ -182,8 +182,8 @@ An Example for disjunctive licenses:
 ```json
 {
     "license": [
-       "LGPL-2.1-only",
-       "GPL-3.0-or-later"
+        "LGPL-2.1-only",
+        "GPL-3.0-or-later"
     ]
 }
 ```
@@ -385,8 +385,8 @@ Example:
 
 ```json
 {
-    "require" : {
-        "php" : ">=7.4",
+    "require": {
+        "php": ">=7.4",
         "ext-mbstring": "*"
     }
 }
@@ -861,16 +861,16 @@ override packages from it.
 Using JSON object notation is also possible. However, JSON key/value pairs
 are to be considered unordered so consistent behaviour cannot be guaranteed.
 
- ```json
+```json
 {
     "repositories": {
-         "foo": {
-             "type": "composer",
-             "url": "http://packages.foo.com"
-         }
+        "foo": {
+            "type": "composer",
+            "url": "http://packages.foo.com"
+        }
     }
 }
- ```
+```
 
 ### config <span>([root-only](04-schema.md#root-package))</span>
 

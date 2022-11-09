@@ -8,7 +8,7 @@ to see the complete list of commands, then `--help` combined with any of those
 can give you more information.
 
 As Composer uses [symfony/console](https://github.com/symfony/console) you can call commands by short name if it's not ambiguous.
-```sh
+```shell
 php composer.phar dump
 ```
 calls `composer dump-autoload`.
@@ -55,7 +55,7 @@ In the [Libraries](02-libraries.md) chapter we looked at how to create a
 When you run the command it will interactively ask you to fill in the fields,
 while using some smart defaults.
 
-```sh
+```shell
 php composer.phar init
 ```
 
@@ -83,7 +83,7 @@ php composer.phar init
 The `install` command reads the `composer.json` file from the current
 directory, resolves the dependencies, and installs them into `vendor`.
 
-```sh
+```shell
 php composer.phar install
 ```
 
@@ -107,9 +107,10 @@ resolution.
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
+* **--download-only:** Download only, do not install packages.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader
-  generation skips the `autoload-dev` rules.
+  generation skips the `autoload-dev` rules. Also see [COMPOSER_NO_DEV](#composer-no-dev).
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
@@ -134,14 +135,14 @@ resolution.
   requires `php: ^7`, then the option `--ignore-platform-req=php+` would allow installing on PHP 8,
   but installation on PHP 5.6 would still fail.
 
-## update / u
+## update / u / upgrade
 
 In order to get the latest versions of the dependencies and to update the
 `composer.lock` file, you should use the `update` command. This command is also
 aliased as `upgrade` as it does the same as `upgrade` does if you are thinking
 of `apt-get` or similar package managers.
 
-```sh
+```shell
 php composer.phar update
 ```
 
@@ -150,13 +151,13 @@ into `composer.lock`.
 
 If you only want to update a few packages and not all, you can list them as such:
 
-```sh
+```shell
 php composer.phar update vendor/package vendor/package2
 ```
 
 You can also use wildcards to update a bunch of packages at once:
 
-```sh
+```shell
 php composer.phar update "vendor/*"
 ```
 
@@ -164,7 +165,7 @@ php composer.phar update "vendor/*"
 If you want to downgrade a package to a specific version without changing your
 composer.json you can use `--with` and provide a custom version constraint:
 
-```sh
+```shell
 php composer.phar update --with vendor/package:2.0.1
 ```
 
@@ -172,12 +173,13 @@ Note that with the above all packages will be updated. If you only want to
 update the package(s) for which you provide custom constraints using `--with`,
 you can skip `--with` and instead use constraints with the partial update syntax:
 
-```sh
+```shell
 php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 ```
 
-The custom constraint has to be a subset of the existing constraint you have,
-and this feature is only available for your root package dependencies.
+> **Note:** For packages also required in your composer.json the custom constraint
+> must be a subset of the existing constraint. The composer.json constraints still
+> apply and the composer.json is not modified by these temporary update constraints.
 
 
 ### Options
@@ -192,9 +194,9 @@ and this feature is only available for your root package dependencies.
   Passing this flag will override the config value.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
-* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
+* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules. Also see [COMPOSER_NO_DEV](#composer-no-dev).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
-* **--no-audit:** Does not run the audit steps after updating the composer.lock file.
+* **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
@@ -237,7 +239,7 @@ Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has t
 The `require` command adds new packages to the `composer.json` file from
 the current directory. If no file exists one will be created on the fly.
 
-```sh
+```shell
 php composer.phar require
 ```
 
@@ -247,7 +249,7 @@ installed or updated.
 If you do not want to choose requirements interactively, you can pass them
 to the command.
 
-```sh
+```shell
 php composer.phar require "vendor/package:2.*" vendor/package2:dev-master
 ```
 
@@ -269,9 +271,9 @@ If you do not specify a package, Composer will prompt you to search for a packag
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
-* **--no-audit:** Does not run the audit steps after updating the composer.lock file.
+* **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--update-no-dev:** Run the dependency update with the `--no-dev` option.
+* **--update-no-dev:** Run the dependency update with the `--no-dev` option. Also see [COMPOSER_NO_DEV](#composer-no-dev).
 * **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements.
 * **--update-with-all-dependencies (-W):** Also update dependencies of the newly required packages, including those that are root requirements.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
@@ -301,7 +303,7 @@ If you do not specify a package, Composer will prompt you to search for a packag
 The `remove` command removes packages from the `composer.json` file from
 the current directory.
 
-```sh
+```shell
 php composer.phar remove vendor/package vendor/package2
 ```
 
@@ -315,9 +317,9 @@ uninstalled.
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
-* **--no-audit:** Does not run the audit steps after installation is complete.
+* **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--update-no-dev:** Run the dependency update with the --no-dev option.
+* **--update-no-dev:** Run the dependency update with the --no-dev option. Also see [COMPOSER_NO_DEV](#composer-no-dev).
 * **--update-with-dependencies (-w):** Also update dependencies of the removed packages.
   (Deprecated, is now default behavior)
 * **--update-with-all-dependencies (-W):** Allows all inherited dependencies to be updated,
@@ -355,6 +357,7 @@ are local to the library and do not affect consumers of the package.
 
 * **--dev-only:** Only bump requirements in "require-dev".
 * **--no-dev-only:** Only bump requirements in "require".
+* **--dry-run:** Outputs the packages to bump, but will not execute anything.
 
 ## reinstall
 
@@ -363,14 +366,14 @@ uninstalls them and reinstalls them. This lets you do a clean install
 of a package if you messed with its files, or if you wish to change
 the installation type using --prefer-install.
 
-```sh
+```shell
 php composer.phar reinstall acme/foo acme/bar
 ```
 
 You can specify more than one package name to reinstall, or use a
 wildcard to select several packages at once:
 
-```sh
+```shell
 php composer.phar reinstall "acme/*"
 ```
 
@@ -413,6 +416,12 @@ Unlike update/install, this command will ignore config.platform settings and
 check the real platform packages so you can be certain you have the required
 platform dependencies.
 
+### Options
+
+* **--lock:** Checks requirements only from the lock file, not from installed packages.
+* **--no-dev:** Disables checking of require-dev packages requirements.
+* **--format (-f):** Format of the output: text (default) or json
+
 ## global
 
 The global command allows you to run other commands like `install`, `remove`, `require`
@@ -424,7 +433,7 @@ can hold CLI tools or Composer plugins that you want to have available everywher
 
 This can be used to install CLI utilities globally. Here is an example:
 
-```sh
+```shell
 php composer.phar global require friendsofphp/php-cs-fixer
 ```
 
@@ -432,13 +441,13 @@ Now the `php-cs-fixer` binary is available globally. Make sure your global
 [vendor binaries](articles/vendor-binaries.md) directory is in your `$PATH`
 environment variable, you can get its location with the following command :
 
-```sh
+```shell
 php composer.phar global config bin-dir --absolute
 ```
 
 If you wish to update the binary later on you can run a global update:
 
-```sh
+```shell
 php composer.phar global update
 ```
 
@@ -448,7 +457,7 @@ The search command allows you to search through the current project's package
 repositories. Usually this will be packagist. You pass it the terms you want
 to search for.
 
-```sh
+```shell
 php composer.phar search monolog
 ```
 
@@ -466,48 +475,58 @@ You can also search for more than one term by passing multiple arguments.
   for Packagist.org search results and other repositories may return more or less
   data.
 
-## show
+## show / info
 
 To list all of the available packages, you can use the `show` command.
 
-```sh
+```shell
 php composer.phar show
 ```
 
 To filter the list you can pass a package mask using wildcards.
 
-```sh
-php composer.phar show monolog/*
-
-monolog/monolog 1.19.0 Sends your logs to files, sockets, inboxes, databases and various web services
+```shell
+php composer.phar show "monolog/*"
+```
+```text
+monolog/monolog 2.4.0 Sends your logs to files, sockets, inboxes, databases and various web services
 ```
 
 If you want to see the details of a certain package, you can pass the package
 name.
 
-```sh
+```shell
 php composer.phar show monolog/monolog
-
+```
+```text
 name     : monolog/monolog
-versions : master-dev, 1.0.2, 1.0.1, 1.0.0, 1.0.0-RC1
+descrip. : Sends your logs to files, sockets, inboxes, databases and various web services
+keywords : log, logging, psr-3
+versions : * 1.27.1
 type     : library
-names    : monolog/monolog
-source   : [git] https://github.com/Seldaek/monolog.git 3d4e60d0cbc4b888fe5ad223d77964428b1978da
-dist     : [zip] https://github.com/Seldaek/monolog/zipball/3d4e60d0cbc4b888fe5ad223d77964428b1978da 3d4e60d0cbc4b888fe5ad223d77964428b1978da
-license  : MIT
+license  : MIT License (MIT) (OSI approved) https://spdx.org/licenses/MIT.html#licenseText
+homepage : http://github.com/Seldaek/monolog
+source   : [git] https://github.com/Seldaek/monolog.git 904713c5929655dc9b97288b69cfeedad610c9a1
+dist     : [zip] https://api.github.com/repos/Seldaek/monolog/zipball/904713c5929655dc9b97288b69cfeedad610c9a1 904713c5929655dc9b97288b69cfeedad610c9a1
+names    : monolog/monolog, psr/log-implementation
+
+support
+issues : https://github.com/Seldaek/monolog/issues
+source : https://github.com/Seldaek/monolog/tree/1.27.1
 
 autoload
-psr-0
-Monolog : src/
+psr-4
+Monolog\ => src/Monolog
 
 requires
 php >=5.3.0
+psr/log ~1.0
 ```
 
 You can even pass the package version, which will tell you the details of that
 specific version.
 
-```sh
+```shell
 php composer.phar show monolog/monolog 1.0.2
 ```
 
@@ -612,16 +631,18 @@ get machine-readable output.
 
 * **--format (-f):** Lets you pick between text (default) or json output format.
 
-## depends (why)
+## depends / why
 
 The `depends` command tells you which other packages depend on a certain
 package. As with installation `require-dev` relationships are only considered
 for the root package.
 
-```sh
+```shell
 php composer.phar depends doctrine/lexer
- doctrine/annotations v1.2.7 requires doctrine/lexer (1.*)
- doctrine/common      v2.6.1 requires doctrine/lexer (1.*)
+```
+```text
+doctrine/annotations  1.13.3 requires doctrine/lexer (1.*)
+doctrine/common       2.13.3 requires doctrine/lexer (^1.0)
 ```
 
 You can optionally specify a version constraint after the package to limit the
@@ -630,16 +651,17 @@ search.
 Add the `--tree` or `-t` flag to show a recursive tree of why the package is
 depended upon, for example:
 
-```sh
+```shell
 php composer.phar depends psr/log -t
-psr/log 1.0.0 Common interface for logging libraries
-|- aboutyou/app-sdk 2.6.11 (requires psr/log 1.0.*)
-|  `- __root__ (requires aboutyou/app-sdk ^2.6)
-|- monolog/monolog 1.17.2 (requires psr/log ~1.0)
-|  `- laravel/framework v5.2.16 (requires monolog/monolog ~1.11)
-|     `- __root__ (requires laravel/framework ^5.2)
-`- symfony/symfony v3.0.2 (requires psr/log ~1.0)
-   `- __root__ (requires symfony/symfony ^3.0)
+```
+```text
+psr/log 1.1.4 Common interface for logging libraries
+├──composer/composer 2.4.x-dev (requires psr/log ^1.0 || ^2.0 || ^3.0)
+├──composer/composer dev-main (requires psr/log ^1.0 || ^2.0 || ^3.0)
+├──composer/xdebug-handler 3.0.3 (requires psr/log ^1 || ^2 || ^3)
+│  ├──composer/composer 2.4.x-dev (requires composer/xdebug-handler ^2.0.2 || ^3.0.3)
+│  └──composer/composer dev-main (requires composer/xdebug-handler ^2.0.2 || ^3.0.3)
+└──symfony/console v5.4.11 (conflicts psr/log >=3) (circular dependency aborted here)
 ```
 
 ### Options
@@ -647,26 +669,30 @@ psr/log 1.0.0 Common interface for logging libraries
 * **--recursive (-r):** Recursively resolves up to the root package.
 * **--tree (-t):** Prints the results as a nested tree, implies -r.
 
-## prohibits (why-not)
+## prohibits / why-not
 
 The `prohibits` command tells you which packages are blocking a given package
 from being installed. Specify a version constraint to verify whether upgrades
 can be performed in your project, and if not why not. See the following
 example:
 
-```sh
+```shell
 php composer.phar prohibits symfony/symfony 3.1
- laravel/framework v5.2.16 requires symfony/var-dumper (2.8.*|3.0.*)
+```
+```text
+laravel/framework v5.2.16 requires symfony/var-dumper (2.8.*|3.0.*)
 ```
 
 Note that you can also specify platform requirements, for example to check
 whether you can upgrade your server to PHP 8.0:
 
-```sh
-php composer.phar prohibits php:8
- doctrine/cache        v1.6.0 requires php (~5.5|~7.0)
- doctrine/common       v2.6.1 requires php (~5.5|~7.0)
- doctrine/instantiator 1.0.5  requires php (>=5.3,<8.0-DEV)
+```shell
+php composer.phar prohibits php 8
+```
+```text
+doctrine/cache        v1.6.0 requires php (~5.5|~7.0)
+doctrine/common       v2.6.1 requires php (~5.5|~7.0)
+doctrine/instantiator 1.0.5  requires php (>=5.3,<8.0-DEV)
 ```
 
 As with `depends` you can request a recursive lookup, which will list all
@@ -683,7 +709,7 @@ You should always run the `validate` command before you commit your
 `composer.json` file, and before you tag a release. It will check if your
 `composer.json` is valid.
 
-```sh
+```shell
 php composer.phar validate
 ```
 
@@ -701,40 +727,41 @@ If you often need to modify the code of your dependencies and they are
 installed from source, the `status` command allows you to check if you have
 local changes in any of them.
 
-```sh
+```shell
 php composer.phar status
 ```
 
 With the `--verbose` option you get some more information about what was
 changed:
 
-```sh
+```shell
 php composer.phar status -v
-
+```
+```text
 You have changes in the following dependencies:
 vendor/seld/jsonlint:
     M README.mdown
 ```
 
-## self-update (selfupdate)
+## self-update / selfupdate
 
 To update Composer itself to the latest version, run the `self-update`
 command. It will replace your `composer.phar` with the latest version.
 
-```sh
+```shell
 php composer.phar self-update
 ```
 
 If you would like to instead update to a specific release specify it:
 
-```sh
-php composer.phar self-update 1.0.0-alpha7
+```shell
+php composer.phar self-update 2.4.0-RC1
 ```
 
 If you have installed Composer for your entire system (see [global installation](00-intro.md#globally)),
 you may have to run the command with `root` privileges
 
-```sh
+```shell
 sudo -H composer self-update
 ```
 
@@ -762,7 +789,7 @@ in either the local `composer.json` file or the global `config.json` file.
 
 Additionally it lets you edit most properties in the local `composer.json`.
 
-```sh
+```shell
 php composer.phar config --list
 ```
 
@@ -807,13 +834,13 @@ See the [Config](06-config.md) chapter for valid configuration options.
 In addition to modifying the config section, the `config` command also supports making
 changes to the repositories section by using it the following way:
 
-```sh
+```shell
 php composer.phar config repositories.foo vcs https://github.com/foo/bar
 ```
 
 If your repository requires more configuration options, you can instead pass its JSON representation :
 
-```sh
+```shell
 php composer.phar config repositories.foo '{"type": "vcs", "url": "http://svn.example.org/my-project/", "trunk-path": "master"}'
 ```
 
@@ -822,7 +849,7 @@ php composer.phar config repositories.foo '{"type": "vcs", "url": "http://svn.ex
 In addition to modifying the config section, the `config` command also supports making
 changes to the extra section by using it the following way:
 
-```sh
+```shell
 php composer.phar config extra.foo.bar value
 ```
 
@@ -832,7 +859,7 @@ would set `"extra": { "foo": { "bar": "value" } }`.
 If you have a complex value to add/modify, you can use the `--json` and `--merge` flags
 to edit extra fields as json:
 
-```sh
+```shell
 php composer.phar config --json extra.foo.bar '{"baz": true, "qux": []}'
 ```
 
@@ -855,7 +882,7 @@ provide a version as a third argument, otherwise the latest version is used.
 
 If the directory does not currently exist, it will be created during installation.
 
-```sh
+```shell
 php composer.phar create-project doctrine/orm path "2.2.*"
 ```
 
@@ -896,7 +923,7 @@ By default the command checks for the packages on packagist.org.
   mode.
 * **--remove-vcs:** Force-remove the VCS metadata without prompting.
 * **--no-install:** Disables installation of the vendors.
-* **--no-audit:** Does not run the audit steps after installation is complete.
+* **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
@@ -907,7 +934,7 @@ By default the command checks for the packages on packagist.org.
   does not fulfill it. Multiple requirements can be ignored via wildcard.
 * **--ask:** Ask the user to provide a target directory for the new project.
 
-## dump-autoload (dumpautoload)
+## dump-autoload / dumpautoload
 
 If you need to update the autoloader because of new classes in a classmap
 package for example, you can use `dump-autoload` to do that without having to
@@ -960,7 +987,7 @@ Lists the name, version and license of every package installed. Use
 * **--format:** Format of the output: text, json or summary (default: "text")
 * **--no-dev:** Remove dev dependencies from the output
 
-## run-script
+## run-script / run
 
 ### Options
 
@@ -988,7 +1015,7 @@ If you think you found a bug, or something is behaving strangely, you might
 want to run the `diagnose` command to perform automated checks for many common
 problems.
 
-```sh
+```shell
 php composer.phar diagnose
 ```
 
@@ -998,7 +1025,7 @@ This command is used to generate a zip/tar archive for a given package in a
 given version. It can also be used to archive your entire project without
 excluded/ignored files.
 
-```sh
+```shell
 php composer.phar archive vendor/package 2.0.21 --format=zip
 ```
 
@@ -1016,7 +1043,9 @@ for possible security issues. It checks for and
 lists security vulnerability advisories according to the
 [Packagist.org api](https://packagist.org/apidoc#list-security-advisories).
 
-```sh
+The audit command returns the amount of vulnerabilities found. `0` if successful, and up to `255` otherwise.
+
+```shell
 php composer.phar audit
 ```
 
@@ -1030,7 +1059,7 @@ php composer.phar audit
 
 To get more information about a certain command, you can use `help`.
 
-```sh
+```shell
 php composer.phar help install
 ```
 
@@ -1053,7 +1082,7 @@ By setting the `COMPOSER` env variable it is possible to set the filename of
 
 For example:
 
-```sh
+```shell
 COMPOSER=composer-other.json php composer.phar install
 ```
 
@@ -1238,6 +1267,10 @@ fully offline with `1`.
 
 If set to `1`, outputs information about events being dispatched, which can be
 useful for plugin authors to identify what is firing when exactly.
+
+### COMPOSER_NO_AUDIT
+
+If set to `1`, it is the equivalent of passing the `--no-audit` option to `require`, `update`, `remove` or `create-project` command.
 
 ### COMPOSER_NO_DEV
 

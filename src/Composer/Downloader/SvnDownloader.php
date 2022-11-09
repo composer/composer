@@ -31,7 +31,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
+    protected function doDownload(PackageInterface $package, string $path, string $url, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         SvnUtil::cleanEnv();
         $util = new SvnUtil($url, $this->io, $this->config, $this->process);
@@ -112,9 +112,8 @@ class SvnDownloader extends VcsDownloader
      * @param  string            $cwd     Working directory
      * @param  string            $path    Target for a checkout
      * @throws \RuntimeException
-     * @return string
      */
-    protected function execute(PackageInterface $package, string $baseUrl, string $command, string $url, string $cwd = null, string $path = null): string
+    protected function execute(PackageInterface $package, string $baseUrl, string $command, string $url, ?string $cwd = null, ?string $path = null): string
     {
         $util = new SvnUtil($baseUrl, $this->io, $this->config, $this->process);
         $util->setCacheCredentials($this->cacheCredentials);
@@ -175,12 +174,12 @@ class SvnDownloader extends VcsDownloader
 
                 case '?':
                 default:
-                    $this->io->writeError(array(
+                    $this->io->writeError([
                         '    y - discard changes and apply the '.($update ? 'update' : 'uninstall'),
                         '    n - abort the '.($update ? 'update' : 'uninstall').' and let you manually clean things up',
                         '    v - view modified files',
                         '    ? - print help',
-                    ));
+                    ]);
                     break;
             }
         }
@@ -231,11 +230,6 @@ class SvnDownloader extends VcsDownloader
         return "Could not retrieve changes between $fromReference and $toReference due to missing revision information";
     }
 
-    /**
-     * @param string $path
-     *
-     * @return PromiseInterface
-     */
     protected function discardChanges(string $path): PromiseInterface
     {
         if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {

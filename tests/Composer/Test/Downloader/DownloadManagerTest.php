@@ -76,8 +76,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue('dist'));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloader'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloader'])
             ->getMock();
 
         $manager
@@ -108,8 +108,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue('source'));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloader'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloader'])
             ->getMock();
 
         $manager
@@ -142,8 +142,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue('source'));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloader'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloader'])
             ->getMock();
 
         $manager
@@ -174,8 +174,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue('dist'));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloader'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloader'])
             ->getMock();
 
         $manager
@@ -227,8 +227,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
@@ -278,8 +278,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->exactly(2))
@@ -336,8 +336,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
@@ -373,8 +373,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
@@ -403,8 +403,8 @@ class DownloadManagerTest extends TestCase
           ->with('source');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-          ->setConstructorArgs(array($this->io, false, $this->filesystem))
-          ->onlyMethods(array('getDownloaderForPackage'))
+          ->setConstructorArgs([$this->io, false, $this->filesystem])
+          ->onlyMethods(['getDownloaderForPackage'])
           ->getMock();
         $manager
           ->expects($this->once())
@@ -440,8 +440,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
@@ -478,8 +478,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
@@ -516,8 +516,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
@@ -640,10 +640,7 @@ class DownloadManagerTest extends TestCase
 
     /**
      * @dataProvider updatesProvider
-     * @param null|string $prevPkgSource
-     * @param null|bool $prevPkgIsDev
      * @param string[] $targetAvailable
-     * @param bool $targetIsDev
      * @param string[] $expected
      */
     public function testGetAvailableSourcesUpdateSticksToSameSource(?string $prevPkgSource, ?bool $prevPkgIsDev, array $targetAvailable, bool $targetIsDev, array $expected): void
@@ -678,25 +675,25 @@ class DownloadManagerTest extends TestCase
 
     public static function updatesProvider(): array
     {
-        return array(
+        return [
             //    prevPkg source,  prevPkg isDev, pkg available,           pkg isDev,  expected
             // updates keep previous source as preference
-            array('source',        false,         array('source', 'dist'), false,      array('source', 'dist')),
-            array('dist',          false,         array('source', 'dist'), false,      array('dist', 'source')),
+            ['source',        false,         ['source', 'dist'], false,      ['source', 'dist']],
+            ['dist',          false,         ['source', 'dist'], false,      ['dist', 'source']],
             // updates do not keep previous source if target package does not have it
-            array('source',        false,         array('dist'),           false,      array('dist')),
-            array('dist',          false,         array('source'),         false,      array('source')),
+            ['source',        false,         ['dist'],           false,      ['dist']],
+            ['dist',          false,         ['source'],         false,      ['source']],
             // updates do not keep previous source if target is dev and prev wasn't dev and installed from dist
-            array('source',        false,         array('source', 'dist'), true,       array('source', 'dist')),
-            array('dist',          false,         array('source', 'dist'), true,       array('source', 'dist')),
+            ['source',        false,         ['source', 'dist'], true,       ['source', 'dist']],
+            ['dist',          false,         ['source', 'dist'], true,       ['source', 'dist']],
             // install picks the right default
-            array(null,            null,          array('source', 'dist'), true,       array('source', 'dist')),
-            array(null,            null,          array('dist'),           true,       array('dist')),
-            array(null,            null,          array('source'),         true,       array('source')),
-            array(null,            null,          array('source', 'dist'), false,      array('dist', 'source')),
-            array(null,            null,          array('dist'),           false,      array('dist')),
-            array(null,            null,          array('source'),         false,      array('source')),
-        );
+            [null,            null,          ['source', 'dist'], true,       ['source', 'dist']],
+            [null,            null,          ['dist'],           true,       ['dist']],
+            [null,            null,          ['source'],         true,       ['source']],
+            [null,            null,          ['source', 'dist'], false,      ['dist', 'source']],
+            [null,            null,          ['dist'],           false,      ['dist']],
+            [null,            null,          ['source'],         false,      ['source']],
+        ];
     }
 
     public function testUpdateMetapackage(): void
@@ -705,8 +702,8 @@ class DownloadManagerTest extends TestCase
         $target = $this->createPackageMock();
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-          ->setConstructorArgs(array($this->io, false, $this->filesystem))
-          ->onlyMethods(array('getDownloaderForPackage'))
+          ->setConstructorArgs([$this->io, false, $this->filesystem])
+          ->onlyMethods(['getDownloaderForPackage'])
           ->getMock();
         $manager
           ->expects($this->exactly(2))
@@ -728,8 +725,8 @@ class DownloadManagerTest extends TestCase
             ->with($package, 'vendor/bundles/FOS/UserBundle');
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
@@ -745,8 +742,8 @@ class DownloadManagerTest extends TestCase
         $package = $this->createPackageMock();
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-          ->setConstructorArgs(array($this->io, false, $this->filesystem))
-          ->onlyMethods(array('getDownloaderForPackage'))
+          ->setConstructorArgs([$this->io, false, $this->filesystem])
+          ->onlyMethods(['getDownloaderForPackage'])
           ->getMock();
         $manager
           ->expects($this->once())
@@ -789,8 +786,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
@@ -833,8 +830,8 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
@@ -880,15 +877,15 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
             ->method('getDownloaderForPackage')
             ->with($package)
             ->will($this->returnValue($downloader));
-        $manager->setPreferences(array('foo/*' => 'source'));
+        $manager->setPreferences(['foo/*' => 'source']);
 
         $manager->download($package, 'target_dir');
     }
@@ -928,15 +925,15 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
             ->method('getDownloaderForPackage')
             ->with($package)
             ->will($this->returnValue($downloader));
-        $manager->setPreferences(array('foo/*' => 'source'));
+        $manager->setPreferences(['foo/*' => 'source']);
 
         $manager->download($package, 'target_dir');
     }
@@ -976,15 +973,15 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
             ->method('getDownloaderForPackage')
             ->with($package)
             ->will($this->returnValue($downloader));
-        $manager->setPreferences(array('foo/*' => 'auto'));
+        $manager->setPreferences(['foo/*' => 'auto']);
 
         $manager->download($package, 'target_dir');
     }
@@ -1024,15 +1021,15 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
             ->method('getDownloaderForPackage')
             ->with($package)
             ->will($this->returnValue($downloader));
-        $manager->setPreferences(array('foo/*' => 'auto'));
+        $manager->setPreferences(['foo/*' => 'auto']);
 
         $manager->download($package, 'target_dir');
     }
@@ -1068,15 +1065,15 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
             ->method('getDownloaderForPackage')
             ->with($package)
             ->will($this->returnValue($downloader));
-        $manager->setPreferences(array('foo/*' => 'source'));
+        $manager->setPreferences(['foo/*' => 'source']);
 
         $manager->download($package, 'target_dir');
     }
@@ -1112,15 +1109,15 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs(array($this->io, false, $this->filesystem))
-            ->onlyMethods(array('getDownloaderForPackage'))
+            ->setConstructorArgs([$this->io, false, $this->filesystem])
+            ->onlyMethods(['getDownloaderForPackage'])
             ->getMock();
         $manager
             ->expects($this->once())
             ->method('getDownloaderForPackage')
             ->with($package)
             ->will($this->returnValue($downloader));
-        $manager->setPreferences(array('foo/*' => 'dist'));
+        $manager->setPreferences(['foo/*' => 'dist']);
 
         $manager->download($package, 'target_dir');
     }

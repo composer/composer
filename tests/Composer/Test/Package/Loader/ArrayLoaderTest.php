@@ -31,13 +31,13 @@ class ArrayLoaderTest extends TestCase
 
     public function testSelfVersion(): void
     {
-        $config = array(
+        $config = [
             'name' => 'A',
             'version' => '1.2.3.4',
-            'replace' => array(
+            'replace' => [
                 'foo' => 'self.version',
-            ),
-        );
+            ],
+        ];
 
         $package = $this->loader->load($config);
         $replaces = $package->getReplaces();
@@ -46,19 +46,19 @@ class ArrayLoaderTest extends TestCase
 
     public function testTypeDefault(): void
     {
-        $config = array(
+        $config = [
             'name' => 'A',
             'version' => '1.0',
-        );
+        ];
 
         $package = $this->loader->load($config);
         $this->assertEquals('library', $package->getType());
 
-        $config = array(
+        $config = [
             'name' => 'A',
             'version' => '1.0',
             'type' => 'foo',
-        );
+        ];
 
         $package = $this->loader->load($config);
         $this->assertEquals('foo', $package->getType());
@@ -66,19 +66,19 @@ class ArrayLoaderTest extends TestCase
 
     public function testNormalizedVersionOptimization(): void
     {
-        $config = array(
+        $config = [
             'name' => 'A',
             'version' => '1.2.3',
-        );
+        ];
 
         $package = $this->loader->load($config);
         $this->assertEquals('1.2.3.0', $package->getVersion());
 
-        $config = array(
+        $config = [
             'name' => 'A',
             'version' => '1.2.3',
             'version_normalized' => '1.2.3.4',
-        );
+        ];
 
         $package = $this->loader->load($config);
         $this->assertEquals('1.2.3.4', $package->getVersion());
@@ -86,52 +86,52 @@ class ArrayLoaderTest extends TestCase
 
     public function parseDumpProvider(): array
     {
-        $validConfig = array(
+        $validConfig = [
             'name' => 'A/B',
             'version' => '1.2.3',
             'version_normalized' => '1.2.3.0',
             'description' => 'Foo bar',
             'type' => 'library',
-            'keywords' => array('a', 'b', 'c'),
+            'keywords' => ['a', 'b', 'c'],
             'homepage' => 'http://example.com',
-            'license' => array('MIT', 'GPLv3'),
-            'authors' => array(
-                array('name' => 'Bob', 'email' => 'bob@example.org', 'homepage' => 'example.org', 'role' => 'Developer'),
-            ),
-            'funding' => array(
-                array('type' => 'example', 'url' => 'https://example.org/fund'),
-            ),
-            'require' => array(
+            'license' => ['MIT', 'GPLv3'],
+            'authors' => [
+                ['name' => 'Bob', 'email' => 'bob@example.org', 'homepage' => 'example.org', 'role' => 'Developer'],
+            ],
+            'funding' => [
+                ['type' => 'example', 'url' => 'https://example.org/fund'],
+            ],
+            'require' => [
                 'foo/bar' => '1.0',
-            ),
-            'require-dev' => array(
+            ],
+            'require-dev' => [
                 'foo/baz' => '1.0',
-            ),
-            'replace' => array(
+            ],
+            'replace' => [
                 'foo/qux' => '1.0',
-            ),
-            'conflict' => array(
+            ],
+            'conflict' => [
                 'foo/quux' => '1.0',
-            ),
-            'provide' => array(
+            ],
+            'provide' => [
                 'foo/quuux' => '1.0',
-            ),
-            'autoload' => array(
-                'psr-0' => array('Ns\Prefix' => 'path'),
-                'classmap' => array('path', 'path2'),
-            ),
-            'include-path' => array('path3', 'path4'),
+            ],
+            'autoload' => [
+                'psr-0' => ['Ns\Prefix' => 'path'],
+                'classmap' => ['path', 'path2'],
+            ],
+            'include-path' => ['path3', 'path4'],
             'target-dir' => 'some/prefix',
-            'extra' => array('random' => array('things' => 'of', 'any' => 'shape')),
-            'bin' => array('bin1', 'bin/foo'),
-            'archive' => array(
-                'exclude' => array('/foo/bar', 'baz', '!/foo/bar/baz'),
-            ),
-            'transport-options' => array('ssl' => array('local_cert' => '/opt/certs/test.pem')),
+            'extra' => ['random' => ['things' => 'of', 'any' => 'shape']],
+            'bin' => ['bin1', 'bin/foo'],
+            'archive' => [
+                'exclude' => ['/foo/bar', 'baz', '!/foo/bar/baz'],
+            ],
+            'transport-options' => ['ssl' => ['local_cert' => '/opt/certs/test.pem']],
             'abandoned' => 'foo/bar',
-        );
+        ];
 
-        return array(array($validConfig));
+        return [[$validConfig]];
     }
 
     /**
@@ -193,55 +193,55 @@ class ArrayLoaderTest extends TestCase
 
     public function testPackageWithBranchAlias(): void
     {
-        $config = array(
+        $config = [
             'name' => 'A',
             'version' => 'dev-master',
-            'extra' => array('branch-alias' => array('dev-master' => '1.0.x-dev')),
-        );
+            'extra' => ['branch-alias' => ['dev-master' => '1.0.x-dev']],
+        ];
 
         $package = $this->loader->load($config);
 
         $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
         $this->assertEquals('1.0.x-dev', $package->getPrettyVersion());
 
-        $config = array(
+        $config = [
             'name' => 'A',
             'version' => 'dev-master',
-            'extra' => array('branch-alias' => array('dev-master' => '1.0-dev')),
-        );
+            'extra' => ['branch-alias' => ['dev-master' => '1.0-dev']],
+        ];
 
         $package = $this->loader->load($config);
 
         $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
         $this->assertEquals('1.0.x-dev', $package->getPrettyVersion());
 
-        $config = array(
+        $config = [
             'name' => 'B',
             'version' => '4.x-dev',
-            'extra' => array('branch-alias' => array('4.x-dev' => '4.0.x-dev')),
-        );
+            'extra' => ['branch-alias' => ['4.x-dev' => '4.0.x-dev']],
+        ];
 
         $package = $this->loader->load($config);
 
         $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
         $this->assertEquals('4.0.x-dev', $package->getPrettyVersion());
 
-        $config = array(
+        $config = [
             'name' => 'B',
             'version' => '4.x-dev',
-            'extra' => array('branch-alias' => array('4.x-dev' => '4.0-dev')),
-        );
+            'extra' => ['branch-alias' => ['4.x-dev' => '4.0-dev']],
+        ];
 
         $package = $this->loader->load($config);
 
         $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
         $this->assertEquals('4.0.x-dev', $package->getPrettyVersion());
 
-        $config = array(
+        $config = [
             'name' => 'C',
             'version' => '4.x-dev',
-            'extra' => array('branch-alias' => array('4.x-dev' => '3.4.x-dev')),
-        );
+            'extra' => ['branch-alias' => ['4.x-dev' => '3.4.x-dev']],
+        ];
 
         $package = $this->loader->load($config);
 
@@ -251,11 +251,11 @@ class ArrayLoaderTest extends TestCase
 
     public function testAbandoned(): void
     {
-        $config = array(
+        $config = [
             'name' => 'A',
             'version' => '1.2.3.4',
             'abandoned' => 'foo/bar',
-        );
+        ];
 
         $package = $this->loader->load($config);
         $this->assertTrue($package->isAbandoned());
@@ -264,10 +264,10 @@ class ArrayLoaderTest extends TestCase
 
     public function testNotAbandoned(): void
     {
-        $config = array(
+        $config = [
             'name' => 'A',
             'version' => '1.2.3.4',
-        );
+        ];
 
         $package = $this->loader->load($config);
         $this->assertFalse($package->isAbandoned());
@@ -275,33 +275,31 @@ class ArrayLoaderTest extends TestCase
 
     public function providePluginApiVersions(): array
     {
-        return array(
-            array('1.0'),
-            array('1.0.0'),
-            array('1.0.0.0'),
-            array('1'),
-            array('=1.0.0'),
-            array('==1.0'),
-            array('~1.0.0'),
-            array('*'),
-            array('3.0.*'),
-            array('@stable'),
-            array('1.0.0@stable'),
-            array('^5.1'),
-            array('>=1.0.0 <2.5'),
-            array('x'),
-            array('1.0.0-dev'),
-        );
+        return [
+            ['1.0'],
+            ['1.0.0'],
+            ['1.0.0.0'],
+            ['1'],
+            ['=1.0.0'],
+            ['==1.0'],
+            ['~1.0.0'],
+            ['*'],
+            ['3.0.*'],
+            ['@stable'],
+            ['1.0.0@stable'],
+            ['^5.1'],
+            ['>=1.0.0 <2.5'],
+            ['x'],
+            ['1.0.0-dev'],
+        ];
     }
 
     /**
      * @dataProvider providePluginApiVersions
-     *
-     * @param string $apiVersion
      */
     public function testPluginApiVersionAreKeptAsDeclared(string $apiVersion): void
     {
-        $links = $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, array('composer-plugin-api' => $apiVersion));
+        $links = $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, ['composer-plugin-api' => $apiVersion]);
 
         $this->assertArrayHasKey('composer-plugin-api', $links);
         $this->assertSame($apiVersion, $links['composer-plugin-api']->getConstraint()->getPrettyString());
@@ -309,7 +307,7 @@ class ArrayLoaderTest extends TestCase
 
     public function testPluginApiVersionDoesSupportSelfVersion(): void
     {
-        $links = $this->loader->parseLinks('Plugin', '6.6.6', Link::TYPE_REQUIRE, array('composer-plugin-api' => 'self.version'));
+        $links = $this->loader->parseLinks('Plugin', '6.6.6', Link::TYPE_REQUIRE, ['composer-plugin-api' => 'self.version']);
 
         $this->assertArrayHasKey('composer-plugin-api', $links);
         $this->assertSame('6.6.6', $links['composer-plugin-api']->getConstraint()->getPrettyString());
@@ -317,17 +315,17 @@ class ArrayLoaderTest extends TestCase
 
     public function testParseLinksIntegerTarget(): void
     {
-        $links = $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, array('1' => 'dev-main'));
+        $links = $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, ['1' => 'dev-main']);
 
         $this->assertArrayHasKey('1', $links);
     }
 
     public function testNoneStringVersion(): void
     {
-        $config = array(
+        $config = [
             'name' => 'acme/package',
             'version' => 1,
-        );
+        ];
 
         $package = $this->loader->load($config);
         $this->assertSame('1', $package->getPrettyVersion());
@@ -335,7 +333,7 @@ class ArrayLoaderTest extends TestCase
 
     public function testNoneStringSourceDistReference(): void
     {
-        $config = array(
+        $config = [
             'name' => 'acme/package',
             'version' => 'dev-main',
             'source' => [
@@ -348,7 +346,7 @@ class ArrayLoaderTest extends TestCase
                 'url' => 'https://example.org/',
                 'reference' => 2019,
             ],
-        );
+        ];
 
         $package = $this->loader->load($config);
         $this->assertSame('2019', $package->getSourceReference());
@@ -357,7 +355,7 @@ class ArrayLoaderTest extends TestCase
 
     public function testBranchAliasIntegerIndex(): void
     {
-        $config = array(
+        $config = [
             'name' => 'acme/package',
             'version' => 'dev-1',
             'extra' => [
@@ -369,8 +367,66 @@ class ArrayLoaderTest extends TestCase
                 'type' => 'zip',
                 'url' => 'https://example.org/',
             ],
-        );
+        ];
 
         $this->assertNull($this->loader->getBranchAlias($config));
+    }
+
+    public function testPackageLinksRequire(): void
+    {
+        $config = array(
+            'name' => 'acme/package',
+            'version' => 'dev-1',
+            'require' => [
+                'foo/bar' => '1.0',
+            ],
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertArrayHasKey('foo/bar', $package->getRequires());
+        $this->assertSame('1.0', $package->getRequires()['foo/bar']->getConstraint()->getPrettyString());
+    }
+
+    public function testPackageLinksRequireInvalid(): void
+    {
+        $config = array(
+            'name' => 'acme/package',
+            'version' => 'dev-1',
+            'require' => [
+                'foo/bar' => [
+                    'random-string' => '1.0',
+                ],
+            ],
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertCount(0, $package->getRequires());
+    }
+
+    public function testPackageLinksReplace(): void
+    {
+        $config = array(
+            'name' => 'acme/package',
+            'version' => 'dev-1',
+            'replace' => [
+                'coyote/package' => 'self.version',
+            ],
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertArrayHasKey('coyote/package', $package->getReplaces());
+        $this->assertSame('dev-1', $package->getReplaces()['coyote/package']->getConstraint()->getPrettyString());
+    }
+
+    public function testPackageLinksReplaceInvalid(): void
+    {
+        $config = array(
+            'name' => 'acme/package',
+            'version' => 'dev-1',
+            'replace' => 'coyote/package',
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertCount(0, $package->getReplaces());
     }
 }

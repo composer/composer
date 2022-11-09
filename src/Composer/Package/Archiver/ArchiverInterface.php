@@ -30,7 +30,7 @@ interface ArchiverInterface
      *
      * @return string The path to the written archive file
      */
-    public function archive(string $sources, string $target, string $format, array $excludes = array(), bool $ignoreFilters = false): string;
+    public function archive(string $sources, string $target, string $format, array $excludes = [], bool $ignoreFilters = false): string;
 
     /**
      * Format supported by the archiver.

@@ -59,12 +59,10 @@ class LockTransaction extends Transaction
     }
 
     // TODO make this a bit prettier instead of the two text indexes?
-    /**
-     * @return void
-     */
+
     public function setResultPackages(Pool $pool, Decisions $decisions): void
     {
-        $this->resultPackages = array('all' => array(), 'non-dev' => array(), 'dev' => array());
+        $this->resultPackages = ['all' => [], 'non-dev' => [], 'dev' => []];
         foreach ($decisions as $i => $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
 
@@ -79,15 +77,12 @@ class LockTransaction extends Transaction
         }
     }
 
-    /**
-     * @return void
-     */
     public function setNonDevPackages(LockTransaction $extractionResult): void
     {
         $packages = $extractionResult->getNewLockPackages(false);
 
         $this->resultPackages['dev'] = $this->resultPackages['non-dev'];
-        $this->resultPackages['non-dev'] = array();
+        $this->resultPackages['non-dev'] = [];
 
         foreach ($packages as $package) {
             foreach ($this->resultPackages['dev'] as $i => $resultPackage) {
@@ -102,13 +97,11 @@ class LockTransaction extends Transaction
 
     // TODO additionalFixedRepository needs to be looked at here as well?
     /**
-     * @param bool $devMode
-     * @param bool $updateMirrors
      * @return BasePackage[]
      */
     public function getNewLockPackages(bool $devMode, bool $updateMirrors = false): array
     {
-        $packages = array();
+        $packages = [];
         foreach ($this->resultPackages[$devMode ? 'dev' : 'non-dev'] as $package) {
             if (!$package instanceof AliasPackage) {
                 // if we're just updating mirrors we need to reset references to the same as currently "present" packages' references to keep the lock file as-is
@@ -134,12 +127,12 @@ class LockTransaction extends Transaction
 
     /**
      * Checks which of the given aliases from composer.json are actually in use for the lock file
-     * @param array<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
-     * @return array<array{package: string, version: string, alias: string, alias_normalized: string}>
+     * @param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
+     * @return list<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
     public function getAliases(array $aliases): array
     {
-        $usedAliases = array();
+        $usedAliases = [];
 
         foreach ($this->resultPackages['all'] as $package) {
             if ($package instanceof AliasPackage) {

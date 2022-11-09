@@ -82,20 +82,18 @@ class PerforceDownloaderTest extends TestCase
      */
     protected function getRepoConfig(): array
     {
-        return array('url' => 'TEST_URL', 'p4user' => 'TEST_USER');
+        return ['url' => 'TEST_URL', 'p4user' => 'TEST_USER'];
     }
 
     /**
      * @param string[] $repoConfig
-     * @param \Composer\IO\IOInterface $io
-     * @param \Composer\Config $config
      * @return \Composer\Repository\VcsRepository&\PHPUnit\Framework\MockObject\MockObject
      */
     protected function getMockRepository(array $repoConfig, IOInterface $io, Config $config)
     {
         $repository = $this->getMockBuilder('Composer\Repository\VcsRepository')
-            ->onlyMethods(array('getRepoConfig'))
-            ->setConstructorArgs(array($repoConfig, $io, $config, Factory::createHttpDownloader($io, $config)))
+            ->onlyMethods(['getRepoConfig'])
+            ->setConstructorArgs([$repoConfig, $io, $config, Factory::createHttpDownloader($io, $config)])
             ->getMock();
         $repository->expects($this->any())->method('getRepoConfig')->will($this->returnValue($repoConfig));
 
@@ -129,7 +127,7 @@ class PerforceDownloaderTest extends TestCase
         $label = 123;
         $this->package->expects($this->once())->method('getSourceReference')->will($this->returnValue($ref));
         $this->io->expects($this->once())->method('writeError')->with($this->stringContains('Cloning '.$ref));
-        $perforceMethods = array('setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec');
+        $perforceMethods = ['setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec'];
         $perforce = $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
         $perforce->expects($this->once())->method('initializePath')->with($this->equalTo($this->testPath));
         $perforce->expects($this->once())->method('setStream')->with($this->equalTo($ref));
@@ -152,7 +150,7 @@ class PerforceDownloaderTest extends TestCase
         $label = null;
         $this->package->expects($this->once())->method('getSourceReference')->will($this->returnValue($ref));
         $this->io->expects($this->once())->method('writeError')->with($this->stringContains('Cloning '.$ref));
-        $perforceMethods = array('setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec');
+        $perforceMethods = ['setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec'];
         $perforce = $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
         $perforce->expects($this->once())->method('initializePath')->with($this->equalTo($this->testPath));
         $perforce->expects($this->once())->method('setStream')->with($this->equalTo($ref));

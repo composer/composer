@@ -1,11 +1,22 @@
 <?php declare(strict_types=1);
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Advisory;
 
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\VersionParser;
+use JsonSerializable;
 
-class PartialSecurityAdvisory
+class PartialSecurityAdvisory implements JsonSerializable
 {
     /**
      * @var string
@@ -44,5 +55,17 @@ class PartialSecurityAdvisory
         $this->advisoryId = $advisoryId;
         $this->packageName = $packageName;
         $this->affectedVersions = $affectedVersions;
+    }
+
+    /**
+     * @return mixed
+     */
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        $data = (array) $this;
+        $data['affectedVersions'] = $data['affectedVersions']->getPrettyString();
+
+        return $data;
     }
 }

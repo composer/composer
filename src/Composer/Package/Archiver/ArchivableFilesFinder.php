@@ -47,12 +47,12 @@ class ArchivableFilesFinder extends \FilterIterator
         $sources = $fs->normalizePath(realpath($sources));
 
         if ($ignoreFilters) {
-            $filters = array();
+            $filters = [];
         } else {
-            $filters = array(
+            $filters = [
                 new GitExcludeFilter($sources),
                 new ComposerExcludeFilter($sources, $excludes),
-            );
+            ];
         }
 
         $this->finder = new Finder();

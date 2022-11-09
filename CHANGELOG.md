@@ -1,3 +1,49 @@
+### [2.4.4] 2022-10-27
+
+  * Added extra debug output when a zip extraction fails while on GitHub Actions (#11148)
+  * Fixed cache write failures when the cache dir gets removed during a composer run (#11076)
+  * Fixed 2.4.3 regression in loading Composer on SMB/network shares (#11077)
+  * Fixed `--dry-run` flag missing from `bump` command (#11047)
+  * Fixed `status` command reporting differences when the source ref is a tag (#11155)
+  * Fixed outdated command outputting legend on stdout instead of stderr
+  * Fixed URL sanitizer to handle new GitHub personal access tokens format (#11137)
+
+### [2.4.3] 2022-10-14
+
+  * BC Break: The json format of `audit` command now has `reportedAt` as an RFC3339 string instead of an object which was a mistake (#11120)
+  * Fixed json format of `audit` command which was missing affectedVersions (#11120)
+  * Fixed plugin commands not being loaded during bash completions (#11074)
+  * Fixed parsing of inline aliases within complex constraints with `||` or `,` (#11086)
+  * Fixed min-php version check in autoload.php to avoid crashing sites running on PHP 5.5 or below silently with a 200 (#11091)
+  * Fixed JsonFile reading files without checking if they are readable first (#11077)
+  * Fixed `require` command with `--dry-run` failing when requiring a package requiring stability flag extraction (#11112)
+
+### [2.4.2] 2022-09-14
+
+  * Fixed bash completion hanging when running as root without `COMPOSER_ALLOW_SUPERUSER` set (#11024)
+  * Fixed handling of plugin activation when running as root without `COMPOSER_ALLOW_SUPERUSER` set so it always happens after prompting, or does not happen if input is non-interactive
+  * Fixed package filter on `bump` command (#11053)
+  * Fixed handling of --ignore-platform-req with upper-bound ignores to not apply to conflict rules (#11037)
+  * Fixed handling of `COMPOSER_DISCARD_CHANGES` when set to `0`
+  * Fixed handling of zero-major versions in `outdated` command with `--major-only` (#11032)
+  * Fixed `show --platform` regression since 2.4.0 when running in a directory without composer.json (#11046)
+  * Fixed a few strict type errors
+
+### [2.4.1] 2022-08-20
+
+  * Added a `COMPOSER_NO_AUDIT` env var to easily apply the new --no-audit flag in CI (#10998)
+  * Fixed `show` command showing packages in two sections, this was only meant for the `outdated` command (#11000)
+  * Fixed local git repos being copied to cache unnecessarily (#11001)
+  * Fixed git cache invalidation issue when a git tag gets created after the cache has loaded a given reference (#11004)
+
+### [2.4.0] 2022-08-16
+
+  * Added `json` format output to the new `audit` command (#10965)
+  * Added `json` format output to the `check-platform-reqs` command (#10979)
+  * Added GitLab 15+ token refresh support (#10988)
+  * Fixed `COMPOSER_NO_DEV` so it also works with `require` and `remove`'s `--update-no-dev` (#10995)
+  * Fixed various bash completion issues
+
 ### [2.4.0-RC1] 2022-07-21
 
   * Added bash completions for Composer commands, package names, etc (see [how to setup](https://getcomposer.org/doc/03-cli.md#bash-completions)) (#10320)
@@ -1611,6 +1657,11 @@
 
   * Initial release
 
+[2.4.4]: https://github.com/composer/composer/compare/2.4.3...2.4.4
+[2.4.3]: https://github.com/composer/composer/compare/2.4.2...2.4.3
+[2.4.2]: https://github.com/composer/composer/compare/2.4.1...2.4.2
+[2.4.1]: https://github.com/composer/composer/compare/2.4.0...2.4.1
+[2.4.0]: https://github.com/composer/composer/compare/2.4.0-RC1...2.4.0
 [2.4.0-RC1]: https://github.com/composer/composer/compare/2.3.10...2.4.0-RC1
 [2.3.10]: https://github.com/composer/composer/compare/2.3.9...2.3.10
 [2.3.9]: https://github.com/composer/composer/compare/2.3.8...2.3.9

@@ -33,11 +33,11 @@ class DownloadManager
     /** @var bool */
     private $preferSource;
     /** @var array<string, string> */
-    private $packagePreferences = array();
+    private $packagePreferences = [];
     /** @var Filesystem */
     private $filesystem;
     /** @var array<string, DownloaderInterface> */
-    private $downloaders = array();
+    private $downloaders = [];
 
     /**
      * Initializes download manager.
@@ -46,7 +46,7 @@ class DownloadManager
      * @param bool            $preferSource prefer downloading from source
      * @param Filesystem|null $filesystem   custom Filesystem object
      */
-    public function __construct(IOInterface $io, bool $preferSource = false, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, bool $preferSource = false, ?Filesystem $filesystem = null)
     {
         $this->io = $io;
         $this->preferSource = $preferSource;
@@ -113,7 +113,6 @@ class DownloadManager
      *
      * @param  string                    $type installation type
      * @throws \InvalidArgumentException if downloader for provided type is not registered
-     * @return DownloaderInterface
      */
     public function getDownloader(string $type): DownloaderInterface
     {
@@ -132,7 +131,6 @@ class DownloadManager
      * @throws \InvalidArgumentException if package has no installation source specified
      * @throws \LogicException           if specific downloader used to load package with
      *                                           wrong type
-     * @return DownloaderInterface|null
      */
     public function getDownloaderForPackage(PackageInterface $package): ?DownloaderInterface
     {
@@ -165,9 +163,6 @@ class DownloadManager
         return $downloader;
     }
 
-    /**
-     * @return string
-     */
     public function getDownloaderType(DownloaderInterface $downloader): string
     {
         return array_search($downloader, $this->downloaders);
@@ -182,9 +177,8 @@ class DownloadManager
      *
      * @throws \InvalidArgumentException if package have no urls to download from
      * @throws \RuntimeException
-     * @return PromiseInterface
      */
-    public function download(PackageInterface $package, string $targetDir, PackageInterface $prevPackage = null): PromiseInterface
+    public function download(PackageInterface $package, string $targetDir, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $this->filesystem->ensureDirectoryExists(dirname($targetDir));
@@ -247,10 +241,8 @@ class DownloadManager
      * @param PackageInterface      $package     package instance
      * @param string                $targetDir   target dir
      * @param PackageInterface|null $prevPackage previous package instance in case of updates
-     *
-     * @return PromiseInterface
      */
-    public function prepare(string $type, PackageInterface $package, string $targetDir, PackageInterface $prevPackage = null): PromiseInterface
+    public function prepare(string $type, PackageInterface $package, string $targetDir, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
@@ -269,7 +261,6 @@ class DownloadManager
      *
      * @throws \InvalidArgumentException if package have no urls to download from
      * @throws \RuntimeException
-     * @return PromiseInterface
      */
     public function install(PackageInterface $package, string $targetDir): PromiseInterface
     {
@@ -290,7 +281,6 @@ class DownloadManager
      * @param string           $targetDir target dir
      *
      * @throws \InvalidArgumentException if initial package is not installed
-     * @return PromiseInterface
      */
     public function update(PackageInterface $initial, PackageInterface $target, string $targetDir): PromiseInterface
     {
@@ -338,8 +328,6 @@ class DownloadManager
      *
      * @param PackageInterface $package   package instance
      * @param string           $targetDir target dir
-     *
-     * @return PromiseInterface
      */
     public function remove(PackageInterface $package, string $targetDir): PromiseInterface
     {
@@ -359,10 +347,8 @@ class DownloadManager
      * @param PackageInterface      $package     package instance
      * @param string                $targetDir   target dir
      * @param PackageInterface|null $prevPackage previous package instance in case of updates
-     *
-     * @return PromiseInterface
      */
-    public function cleanup(string $type, PackageInterface $package, string $targetDir, PackageInterface $prevPackage = null): PromiseInterface
+    public function cleanup(string $type, PackageInterface $package, string $targetDir, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
@@ -377,8 +363,6 @@ class DownloadManager
      * Determines the install preference of a package
      *
      * @param PackageInterface $package package instance
-     *
-     * @return string
      */
     protected function resolvePackageInstallPreference(PackageInterface $package): string
     {
@@ -400,13 +384,13 @@ class DownloadManager
      * @return string[]
      * @phpstan-return array<'dist'|'source'>&non-empty-array
      */
-    private function getAvailableSources(PackageInterface $package, PackageInterface $prevPackage = null): array
+    private function getAvailableSources(PackageInterface $package, ?PackageInterface $prevPackage = null): array
     {
         $sourceType = $package->getSourceType();
         $distType = $package->getDistType();
 
         // add source before dist by default
-        $sources = array();
+        $sources = [];
         if ($sourceType) {
             $sources[] = 'source';
         }
@@ -445,10 +429,6 @@ class DownloadManager
      * Downloaders expect a /path/to/dir without trailing slash
      *
      * If any Installer provides a path with a trailing slash, this can cause bugs so make sure we remove them
-     *
-     * @param string $dir
-     *
-     * @return string
      */
     private function normalizeTargetDir(string $dir): string
     {

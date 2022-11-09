@@ -29,8 +29,8 @@ class ExecCommand extends BaseCommand
     {
         $this
             ->setName('exec')
-            ->setDescription('Executes a vendored binary/script.')
-            ->setDefinition(array(
+            ->setDescription('Executes a vendored binary/script')
+            ->setDefinition([
                 new InputOption('list', 'l', InputOption::VALUE_NONE),
                 new InputArgument('binary', InputArgument::OPTIONAL, 'The binary to run, e.g. phpunit', null, function () {
                     return $this->getBinaries(false);
@@ -40,7 +40,7 @@ class ExecCommand extends BaseCommand
                     InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
                     'Arguments to pass to the binary. Use <info>--</info> to separate from composer arguments'
                 ),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 Executes a vendored binary/script.
@@ -49,6 +49,30 @@ Read more at https://getcomposer.org/doc/03-cli.md#exec
 EOT
             )
         ;
+    }
+
+    protected function interact(InputInterface $input, OutputInterface $output): void
+    {
+        $binaries = $this->getBinaries(false);
+        if (count($binaries) === 0) {
+            return;
+        }
+
+        if ($input->getArgument('binary') !== null || $input->getOption('list')) {
+            return;
+        }
+
+        $io = $this->getIO();
+        /** @var int $binary */
+        $binary = $io->select(
+            'Binary to run: ',
+            $binaries,
+            '',
+            1,
+            'Invalid binary name "%s"'
+        );
+
+        $input->setArgument('binary', $binaries[$binary]);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -99,8 +123,7 @@ EOT
     }
 
     /**
-     * @param bool $forDisplay
-     * @return string[]
+     * @return list<string>
      */
     private function getBinaries(bool $forDisplay): array
     {

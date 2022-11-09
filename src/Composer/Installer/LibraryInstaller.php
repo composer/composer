@@ -50,13 +50,10 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     /**
      * Initializes library installer.
      *
-     * @param IOInterface     $io
-     * @param PartialComposer $composer
-     * @param string|null     $type
      * @param Filesystem      $filesystem
      * @param BinaryInstaller $binaryInstaller
      */
-    public function __construct(IOInterface $io, PartialComposer $composer, ?string $type = 'library', Filesystem $filesystem = null, BinaryInstaller $binaryInstaller = null)
+    public function __construct(IOInterface $io, PartialComposer $composer, ?string $type = 'library', ?Filesystem $filesystem = null, ?BinaryInstaller $binaryInstaller = null)
     {
         $this->composer = $composer;
         $this->downloadManager = $composer instanceof Composer ? $composer->getDownloadManager() : null;
@@ -109,7 +106,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, PackageInterface $prevPackage = null)
+    public function download(PackageInterface $package, ?PackageInterface $prevPackage = null)
     {
         $this->initializeVendorDir();
         $downloadPath = $this->getInstallPath($package);
@@ -120,7 +117,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     /**
      * @inheritDoc
      */
-    public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    public function prepare($type, PackageInterface $package, ?PackageInterface $prevPackage = null)
     {
         $this->initializeVendorDir();
         $downloadPath = $this->getInstallPath($package);
@@ -131,7 +128,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     /**
      * @inheritDoc
      */
-    public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    public function cleanup($type, PackageInterface $package, ?PackageInterface $prevPackage = null)
     {
         $this->initializeVendorDir();
         $downloadPath = $this->getInstallPath($package);
@@ -257,7 +254,6 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
      * It is used for BC as getInstallPath tends to be overridden by
      * installer plugins but not getPackageBasePath
      *
-     * @param  PackageInterface $package
      * @return string
      */
     protected function getPackageBasePath(PackageInterface $package)

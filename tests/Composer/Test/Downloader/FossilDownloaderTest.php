@@ -40,9 +40,8 @@ class FossilDownloaderTest extends TestCase
      * @param \Composer\Config $config
      * @param \Composer\Test\Mock\ProcessExecutorMock $executor
      * @param \Composer\Util\Filesystem $filesystem
-     * @return FossilDownloader
      */
-    protected function getDownloaderMock(\Composer\IO\IOInterface $io = null, \Composer\Config $config = null, \Composer\Test\Mock\ProcessExecutorMock $executor = null, Filesystem $filesystem = null): FossilDownloader
+    protected function getDownloaderMock(?\Composer\IO\IOInterface $io = null, ?\Composer\Config $config = null, ?\Composer\Test\Mock\ProcessExecutorMock $executor = null, ?Filesystem $filesystem = null): FossilDownloader
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $config = $config ?: $this->getConfig(['secure-http' => false]);
@@ -73,14 +72,14 @@ class FossilDownloaderTest extends TestCase
             ->will($this->returnValue('trunk'));
         $packageMock->expects($this->once())
             ->method('getSourceUrls')
-            ->will($this->returnValue(array('http://fossil.kd2.org/kd2fw/')));
+            ->will($this->returnValue(['http://fossil.kd2.org/kd2fw/']));
 
         $process = $this->getProcessExecutorMock();
-        $process->expects(array(
+        $process->expects([
             $this->getCmd('fossil clone -- \'http://fossil.kd2.org/kd2fw/\' \''.$this->workingDir.'.fossil\''),
             $this->getCmd('fossil open --nested -- \''.$this->workingDir.'.fossil\''),
             $this->getCmd('fossil update -- \'trunk\''),
-        ), true);
+        ], true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
         $downloader->install($packageMock, $this->workingDir);
@@ -117,16 +116,16 @@ class FossilDownloaderTest extends TestCase
             ->will($this->returnValue('trunk'));
         $packageMock->expects($this->any())
             ->method('getSourceUrls')
-            ->will($this->returnValue(array('http://fossil.kd2.org/kd2fw/')));
+            ->will($this->returnValue(['http://fossil.kd2.org/kd2fw/']));
         $packageMock->expects($this->any())
             ->method('getVersion')
             ->will($this->returnValue('1.0.0.0'));
 
         $process = $this->getProcessExecutorMock();
-        $process->expects(array(
+        $process->expects([
             $this->getCmd("fossil changes"),
             $this->getCmd("fossil pull && fossil up 'trunk'"),
-        ), true);
+        ], true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
         $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
@@ -143,9 +142,9 @@ class FossilDownloaderTest extends TestCase
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
 
         $process = $this->getProcessExecutorMock();
-        $process->expects(array(
+        $process->expects([
             $this->getCmd('fossil changes'),
-        ), true);
+        ], true);
 
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $filesystem->expects($this->once())

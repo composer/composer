@@ -44,13 +44,13 @@ class Solver
     /** @var int */
     protected $propagateIndex;
     /** @var mixed[] */
-    protected $branches = array();
+    protected $branches = [];
     /** @var Problem[] */
-    protected $problems = array();
+    protected $problems = [];
     /** @var array<Rule[]> */
-    protected $learnedPool = array();
+    protected $learnedPool = [];
     /** @var array<string, int> */
-    protected $learnedWhy = array();
+    protected $learnedWhy = [];
 
     /** @var bool */
     public $testFlagLearnedPositiveLiteral = false;
@@ -65,17 +65,11 @@ class Solver
         $this->pool = $pool;
     }
 
-    /**
-     * @return int
-     */
     public function getRuleSetSize(): int
     {
         return \count($this->rules);
     }
 
-    /**
-     * @return Pool
-     */
     public function getPool(): Pool
     {
         return $this->pool;
@@ -83,9 +77,6 @@ class Solver
 
     // aka solver_makeruledecisions
 
-    /**
-     * @return void
-     */
     private function makeAssertionRuleDecisions(): void
     {
         $decisionStart = \count($this->decisions) - 1;
@@ -156,20 +147,14 @@ class Solver
         }
     }
 
-    /**
-     * @return void
-     */
     protected function setupFixedMap(Request $request): void
     {
-        $this->fixedMap = array();
+        $this->fixedMap = [];
         foreach ($request->getFixedPackages() as $package) {
             $this->fixedMap[$package->id] = $package;
         }
     }
 
-    /**
-     * @return void
-     */
     protected function checkForRootRequireProblems(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         foreach ($request->getRequires() as $packageName => $constraint) {
@@ -181,16 +166,13 @@ class Solver
 
             if (!$this->pool->whatProvides($packageName, $constraint)) {
                 $problem = new Problem();
-                $problem->addRule(new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => $packageName, 'constraint' => $constraint)));
+                $problem->addRule(new GenericRule([], Rule::RULE_ROOT_REQUIRE, ['packageName' => $packageName, 'constraint' => $constraint]));
                 $this->problems[] = $problem;
             }
         }
     }
 
-    /**
-     * @return LockTransaction
-     */
-    public function solve(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null): LockTransaction
+    public function solve(Request $request, ?PlatformRequirementFilterInterface $platformRequirementFilter = null): LockTransaction
     {
         $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
 
@@ -230,7 +212,6 @@ class Solver
      * Evaluates each term affected by the decision (linked through watches)
      * If we find unit rules we make new decisions based on them
      *
-     * @param  int       $level
      * @return Rule|null A rule on conflict, otherwise null.
      */
     protected function propagate(int $level): ?Rule
@@ -256,10 +237,6 @@ class Solver
 
     /**
      * Reverts a decision at the given level.
-     *
-     * @param int $level
-     *
-     * @return void
      */
     private function revert(int $level): void
     {
@@ -298,9 +275,7 @@ class Solver
      *
      * returns the new solver level or 0 if unsolvable
      *
-     * @param  int        $level
      * @param  string|int $literal
-     * @return int
      */
     private function setPropagateLearn(int $level, $literal, Rule $rule): int
     {
@@ -320,7 +295,7 @@ class Solver
             }
 
             // conflict
-            list($learnLiteral, $newLevel, $newRule, $why) = $this->analyze($level, $rule);
+            [$learnLiteral, $newLevel, $newRule, $why] = $this->analyze($level, $rule);
 
             if ($newLevel <= 0 || $newLevel >= $level) {
                 throw new SolverBugException(
@@ -347,9 +322,7 @@ class Solver
     }
 
     /**
-     * @param  int   $level
      * @param  int[] $decisionQueue
-     * @return int
      */
     private function selectAndInstall(int $level, array $decisionQueue, Rule $rule): int
     {
@@ -360,14 +333,13 @@ class Solver
 
         // if there are multiple candidates, then branch
         if (\count($literals)) {
-            $this->branches[] = array($literals, $level);
+            $this->branches[] = [$literals, $level];
         }
 
         return $this->setPropagateLearn($level, $selectedLiteral, $rule);
     }
 
     /**
-     * @param  int   $level
      * @return array{int, int, GenericRule, int}
      */
     protected function analyze(int $level, Rule $rule): array
@@ -376,12 +348,12 @@ class Solver
         $ruleLevel = 1;
         $num = 0;
         $l1num = 0;
-        $seen = array();
-        $learnedLiterals = array(null);
+        $seen = [];
+        $learnedLiterals = [null];
 
         $decisionId = \count($this->decisions);
 
-        $this->learnedPool[] = array();
+        $this->learnedPool[] = [];
 
         while (true) {
             $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
@@ -503,7 +475,7 @@ class Solver
 
         $why = \count($this->learnedPool) - 1;
 
-        if (!$learnedLiterals[0]) {
+        if (null === $learnedLiterals[0]) {
             throw new SolverBugException(
                 "Did not find a learnable literal in analyzed rule $analyzedRule."
             );
@@ -511,12 +483,11 @@ class Solver
 
         $newRule = new GenericRule($learnedLiterals, Rule::RULE_LEARNED, $why);
 
-        return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
+        return [$learnedLiterals[0], $ruleLevel, $newRule, $why];
     }
 
     /**
      * @param array<string, true> $ruleSeen
-     * @return void
      */
     private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen): void
     {
@@ -545,21 +516,18 @@ class Solver
         $problem->addRule($conflictRule);
     }
 
-    /**
-     * @return int
-     */
     private function analyzeUnsolvable(Rule $conflictRule): int
     {
         $problem = new Problem();
         $problem->addRule($conflictRule);
 
-        $ruleSeen = array();
+        $ruleSeen = [];
 
         $this->analyzeUnsolvableRule($problem, $conflictRule, $ruleSeen);
 
         $this->problems[] = $problem;
 
-        $seen = array();
+        $seen = [];
         $literals = $conflictRule->getLiterals();
 
         foreach ($literals as $literal) {
@@ -603,8 +571,6 @@ class Solver
      * we have enabled or disabled some of our rules. We now re-enable all
      * of our learnt rules except the ones that were learnt from rules that
      * are now disabled.
-     *
-     * @return void
      */
     private function enableDisableLearnedRules(): void
     {
@@ -628,9 +594,6 @@ class Solver
         }
     }
 
-    /**
-     * @return void
-     */
     private function runSat(): void
     {
         $this->propagateIndex = 0;
@@ -665,7 +628,7 @@ class Solver
                 $iterator = $this->rules->getIteratorFor(RuleSet::TYPE_REQUEST);
                 foreach ($iterator as $rule) {
                     if ($rule->isEnabled()) {
-                        $decisionQueue = array();
+                        $decisionQueue = [];
                         $noneSatisfied = true;
 
                         foreach ($rule->getLiterals() as $literal) {
@@ -680,7 +643,7 @@ class Solver
 
                         if ($noneSatisfied && \count($decisionQueue)) {
                             // if any of the options in the decision queue are fixed, only use those
-                            $prunedQueue = array();
+                            $prunedQueue = [];
                             foreach ($decisionQueue as $literal) {
                                 if (isset($this->fixedMap[abs($literal)])) {
                                     $prunedQueue[] = $literal;
@@ -741,7 +704,7 @@ class Solver
                     continue;
                 }
 
-                $decisionQueue = array();
+                $decisionQueue = [];
 
                 // make sure that
                 // * all negative literals are installed
@@ -792,7 +755,7 @@ class Solver
                 $lastBranchOffset = 0;
 
                 for ($i = \count($this->branches) - 1; $i >= 0; $i--) {
-                    list($literals, $l) = $this->branches[$i];
+                    [$literals, $l] = $this->branches[$i];
 
                     foreach ($literals as $offset => $literal) {
                         if ($literal && $literal > 0 && $this->decisions->decisionLevel($literal) > $l + 1) {

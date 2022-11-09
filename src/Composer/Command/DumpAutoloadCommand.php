@@ -30,9 +30,9 @@ class DumpAutoloadCommand extends BaseCommand
     {
         $this
             ->setName('dump-autoload')
-            ->setAliases(array('dumpautoload'))
-            ->setDescription('Dumps the autoloader.')
-            ->setDefinition(array(
+            ->setAliases(['dumpautoload'])
+            ->setDescription('Dumps the autoloader')
+            ->setDefinition([
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.'),
                 new InputOption('apcu', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
@@ -42,7 +42,7 @@ class DumpAutoloadCommand extends BaseCommand
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('strict-psr', null, InputOption::VALUE_NONE, 'Return a failed status code (1) if PSR-4 or PSR-0 mapping errors are present. Requires --optimize to work.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 <info>php composer.phar dump-autoload</info>

@@ -31,7 +31,7 @@ use Symfony\Component\Console\Input\InputOption as BaseInputOption;
 class InputOption extends BaseInputOption
 {
     /**
-     * @var string[]|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion>
+     * @var list<string>|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion>
      */
     private $suggestedValues;
 
@@ -39,11 +39,11 @@ class InputOption extends BaseInputOption
      * @param string|string[]|null                $shortcut The shortcuts, can be null, a string of shortcuts delimited by | or an array of shortcuts
      * @param int|null                            $mode     The option mode: One of the VALUE_* constants
      * @param string|bool|int|float|string[]|null $default  The default value (must be null for self::VALUE_NONE)
-     * @param string[]|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion> $suggestedValues The values used for input completionnull for self::VALUE_NONE)
+     * @param list<string>|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion> $suggestedValues The values used for input completionnull for self::VALUE_NONE)
      *
      * @throws InvalidArgumentException If option mode is invalid or incompatible
      */
-    public function __construct(string $name, $shortcut = null, int $mode = null, string $description = '', $default = null, $suggestedValues = [])
+    public function __construct(string $name, $shortcut = null, ?int $mode = null, string $description = '', $default = null, $suggestedValues = [])
     {
         parent::__construct($name, $shortcut, $mode, $description, $default);
 

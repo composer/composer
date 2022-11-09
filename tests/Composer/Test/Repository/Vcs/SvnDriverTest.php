@@ -33,11 +33,11 @@ class SvnDriverTest extends TestCase
     {
         $this->home = self::getUniqueTmpDirectory();
         $this->config = new Config();
-        $this->config->merge(array(
-            'config' => array(
+        $this->config->merge([
+            'config' => [
                 'home' => $this->home,
-            ),
-        ));
+            ],
+        ]);
     }
 
     protected function tearDown(): void
@@ -66,19 +66,19 @@ class SvnDriverTest extends TestCase
             ProcessExecutor::escape('secret'),
             ProcessExecutor::escape('https://till:secret@corp.svn.local/repo/trunk')
         );
-        $process->expects(array(
-            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
-            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
-            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
-            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
-            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
-            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
-            array('cmd' => 'svn --version', 'return' => 0, 'stdout' => '1.2.3'),
-        ), true);
+        $process->expects([
+            ['cmd' => $authedCommand, 'return' => 1, 'stderr' => $output],
+            ['cmd' => $authedCommand, 'return' => 1, 'stderr' => $output],
+            ['cmd' => $authedCommand, 'return' => 1, 'stderr' => $output],
+            ['cmd' => $authedCommand, 'return' => 1, 'stderr' => $output],
+            ['cmd' => $authedCommand, 'return' => 1, 'stderr' => $output],
+            ['cmd' => $authedCommand, 'return' => 1, 'stderr' => $output],
+            ['cmd' => 'svn --version', 'return' => 0, 'stdout' => '1.2.3'],
+        ], true);
 
-        $repoConfig = array(
+        $repoConfig = [
             'url' => 'https://till:secret@corp.svn.local/repo',
-        );
+        ];
 
         $svn = new SvnDriver($repoConfig, $console, $this->config, $httpDownloader, $process);
         $svn->initialize();
@@ -86,19 +86,16 @@ class SvnDriverTest extends TestCase
 
     public static function supportProvider(): array
     {
-        return array(
-            array('http://svn.apache.org', true),
-            array('https://svn.sf.net', true),
-            array('svn://example.org', true),
-            array('svn+ssh://example.org', true),
-        );
+        return [
+            ['http://svn.apache.org', true],
+            ['https://svn.sf.net', true],
+            ['svn://example.org', true],
+            ['svn+ssh://example.org', true],
+        ];
     }
 
     /**
      * @dataProvider supportProvider
-     *
-     * @param string $url
-     * @param bool   $assertion
      */
     public function testSupport(string $url, bool $assertion): void
     {

@@ -31,7 +31,7 @@ use Symfony\Component\Console\Input\InputArgument as BaseInputArgument;
 class InputArgument extends BaseInputArgument
 {
     /**
-     * @var string[]|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion>
+     * @var list<string>|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion>
      */
     private $suggestedValues;
 
@@ -40,11 +40,11 @@ class InputArgument extends BaseInputArgument
      * @param int|null                            $mode        The argument mode: self::REQUIRED or self::OPTIONAL
      * @param string                              $description A description text
      * @param string|bool|int|float|string[]|null $default     The default value (for self::OPTIONAL mode only)
-     * @param string[]|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion> $suggestedValues The values used for input completion
+     * @param list<string>|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion> $suggestedValues The values used for input completion
      *
      * @throws InvalidArgumentException When argument mode is not valid
      */
-    public function __construct(string $name, int $mode = null, string $description = '', $default = null, $suggestedValues = [])
+    public function __construct(string $name, ?int $mode = null, string $description = '', $default = null, $suggestedValues = [])
     {
         parent::__construct($name, $mode, $description, $default);
 

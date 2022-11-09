@@ -33,9 +33,9 @@ class GlobalCommand extends BaseCommand
     {
         $application = $this->getApplication();
         if ($input->mustSuggestArgumentValuesFor('command-name')) {
-            $suggestions->suggestValues(array_filter(array_map(static function (Command $command) {
+            $suggestions->suggestValues(array_values(array_filter(array_map(static function (Command $command) {
                 return $command->isHidden() ? null : $command->getName();
-            }, $application->all())));
+            }, $application->all()))));
 
             return;
         }
@@ -51,18 +51,15 @@ class GlobalCommand extends BaseCommand
         }
     }
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this
             ->setName('global')
-            ->setDescription('Allows running commands in the global composer dir ($COMPOSER_HOME).')
-            ->setDefinition(array(
+            ->setDescription('Allows running commands in the global composer dir ($COMPOSER_HOME)')
+            ->setDefinition([
                 new InputArgument('command-name', InputArgument::REQUIRED, ''),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 Use this command as a wrapper to run other Composer commands
@@ -98,7 +95,7 @@ EOT
 
         // extract real command name
         $tokens = Preg::split('{\s+}', $input->__toString());
-        $args = array();
+        $args = [];
         foreach ($tokens as $token) {
             if ($token && $token[0] !== '-') {
                 $args[] = $token;

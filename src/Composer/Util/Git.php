@@ -42,14 +42,8 @@ class Git
     }
 
     /**
-     * @param callable    $commandCallable
-     * @param string      $url
-     * @param string|null $cwd
-     * @param bool        $initialClone
      * @param mixed       $commandOutput  the output will be written into this var if passed by ref
      *                                    if a callable is passed it will be used as output handler
-     *
-     * @return void
      */
     public function runCommand(callable $commandCallable, string $url, ?string $cwd, bool $initialClone = false, &$commandOutput = null): void
     {
@@ -76,7 +70,7 @@ class Git
         $protocols = $this->config->get('github-protocols');
         // public github, autoswitch protocols
         if (Preg::isMatch('{^(?:https?|git)://' . self::getGitHubDomainsRegex($this->config) . '/(.*)}', $url, $match)) {
-            $messages = array();
+            $messages = [];
             foreach ($protocols as $protocol) {
                 if ('ssh' === $protocol) {
                     $protoUrl = "git@" . $match[1] . ":" . $match[2];
@@ -84,7 +78,7 @@ class Git
                     $protoUrl = $protocol . "://" . $match[1] . "/" . $match[2];
                 }
 
-                if (0 === $this->process->execute(call_user_func($commandCallable, $protoUrl), $commandOutput, $cwd)) {
+                if (0 === $this->process->execute($commandCallable($protoUrl), $commandOutput, $cwd)) {
                     return;
                 }
                 $messages[] = '- ' . $protoUrl . "\n" . Preg::replace('#^#m', '  ', $this->process->getErrorOutput());
@@ -103,10 +97,10 @@ class Git
         // if we have a private github url and the ssh protocol is disabled then we skip it and directly fallback to https
         $bypassSshForGitHub = Preg::isMatch('{^git@' . self::getGitHubDomainsRegex($this->config) . ':(.+?)\.git$}i', $url) && !in_array('ssh', $protocols, true);
 
-        $command = call_user_func($commandCallable, $url);
+        $command = $commandCallable($url);
 
         $auth = null;
-        $credentials = array();
+        $credentials = [];
         if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $commandOutput, $cwd)) {
             $errorMsg = $this->process->getErrorOutput();
             // private github repository without ssh key access, try https with auth
@@ -125,12 +119,12 @@ class Git
                 if ($this->io->hasAuthentication($match[1])) {
                     $auth = $this->io->getAuthentication($match[1]);
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
-                    $command = call_user_func($commandCallable, $authUrl);
+                    $command = $commandCallable($authUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
 
-                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
+                    $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
                     $errorMsg = $this->process->getErrorOutput();
                 }
             } elseif (Preg::isMatch('{^https://(bitbucket\.org)/(.*?)(?:\.git)?$}i', $url, $match)) { //bitbucket oauth
@@ -160,17 +154,17 @@ class Git
                     $auth = $this->io->getAuthentication($match[1]);
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
 
-                    $command = call_user_func($commandCallable, $authUrl);
+                    $command = $commandCallable($authUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
 
-                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
+                    $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
                     $errorMsg = $this->process->getErrorOutput();
                 } else { // Falling back to ssh
                     $sshUrl = 'git@bitbucket.org:' . $match[2] . '.git';
                     $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
-                    $command = call_user_func($commandCallable, $sshUrl);
+                    $command = $commandCallable($sshUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
@@ -202,17 +196,17 @@ class Git
                         $authUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . '/' . $match[3];
                     }
 
-                    $command = call_user_func($commandCallable, $authUrl);
+                    $command = $commandCallable($authUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
 
-                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
+                    $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
                     $errorMsg = $this->process->getErrorOutput();
                 }
             } elseif ($this->isAuthenticationFailure($url, $match)) { // private non-github/gitlab/bitbucket repo that failed to authenticate
                 if (strpos($match[2], '@')) {
-                    list($authParts, $match[2]) = explode('@', $match[2], 2);
+                    [$authParts, $match[2]] = explode('@', $match[2], 2);
                 }
 
                 $storeAuth = false;
@@ -222,17 +216,17 @@ class Git
                     $defaultUsername = null;
                     if (isset($authParts) && $authParts) {
                         if (false !== strpos($authParts, ':')) {
-                            list($defaultUsername, ) = explode(':', $authParts, 2);
+                            [$defaultUsername, ] = explode(':', $authParts, 2);
                         } else {
                             $defaultUsername = $authParts;
                         }
                     }
 
                     $this->io->writeError('    Authentication required (<info>' . $match[2] . '</info>):');
-                    $auth = array(
+                    $auth = [
                         'username' => $this->io->ask('      Username: ', $defaultUsername),
                         'password' => $this->io->askAndHideAnswer('      Password: '),
-                    );
+                    ];
                     $storeAuth = $this->config->get('store-auths');
                 }
 
@@ -251,7 +245,7 @@ class Git
                         return;
                     }
 
-                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
+                    $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
                     $errorMsg = $this->process->getErrorOutput();
                 }
             }
@@ -268,12 +262,6 @@ class Git
         }
     }
 
-    /**
-     * @param string $url
-     * @param string $dir
-     *
-     * @return bool
-     */
     public function syncMirror(string $url, string $dir): bool
     {
         if (Platform::getEnv('COMPOSER_DISABLE_NETWORK') && Platform::getEnv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
@@ -312,16 +300,31 @@ class Git
         return true;
     }
 
-    /**
-     * @param string $url
-     * @param string $dir
-     * @param string $ref
-     *
-     * @return bool
-     */
-    public function fetchRefOrSyncMirror(string $url, string $dir, string $ref): bool
+    public function fetchRefOrSyncMirror(string $url, string $dir, string $ref, string $prettyVersion = null): bool
     {
         if ($this->checkRefIsInMirror($dir, $ref)) {
+            if (Preg::isMatch('{^[a-f0-9]{40}$}', $ref) && $prettyVersion !== null) {
+                $branch = Preg::replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $prettyVersion);
+                $branches = null;
+                $tags = null;
+                if (0 === $this->process->execute('git branch', $output, $dir)) {
+                    $branches = $output;
+                }
+                if (0 === $this->process->execute('git tag', $output, $dir)) {
+                    $tags = $output;
+                }
+
+                // if the pretty version cannot be found as a branch (nor branch with 'v' in front of the branch as it may have been stripped when generating pretty name),
+                // nor as a tag, then we sync the mirror as otherwise it will likely fail during install.
+                // this can occur if a git tag gets created *after* the reference is already put into the cache, as the ref check above will then not sync the new tags
+                // see https://github.com/composer/composer/discussions/11002
+                if (null !== $branches && !Preg::isMatch('{^[\s*]*v?'.preg_quote($branch).'$}m', $branches)
+                    && null !== $tags && !Preg::isMatch('{^[\s*]*'.preg_quote($branch).'$}m', $tags)
+                ) {
+                    $this->syncMirror($url, $dir);
+                }
+            }
+
             return true;
         }
 
@@ -332,9 +335,6 @@ class Git
         return false;
     }
 
-    /**
-     * @return string
-     */
     public static function getNoShowSignatureFlag(ProcessExecutor $process): string
     {
         $gitVersion = self::getVersion($process);
@@ -345,12 +345,6 @@ class Git
         return '';
     }
 
-    /**
-     * @param string $dir
-     * @param string $ref
-     *
-     * @return bool
-     */
     private function checkRefIsInMirror(string $dir, string $ref): bool
     {
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
@@ -365,10 +359,7 @@ class Git
     }
 
     /**
-     * @param string   $url
      * @param string[] $match
-     *
-     * @return bool
      */
     private function isAuthenticationFailure(string $url, array &$match): bool
     {
@@ -376,13 +367,13 @@ class Git
             return false;
         }
 
-        $authFailures = array(
+        $authFailures = [
             'fatal: Authentication failed',
             'remote error: Invalid username or password.',
             'error: 401 Unauthorized',
             'fatal: unable to access',
             'fatal: could not read Username',
-        );
+        ];
 
         $errorOutput = $this->process->getErrorOutput();
         foreach ($authFailures as $authFailure) {
@@ -426,9 +417,6 @@ class Git
         return null;
     }
 
-    /**
-     * @return void
-     */
     public static function cleanEnv(): void
     {
         // added in git 1.7.1, prevents prompting the user for username/password
@@ -471,7 +459,6 @@ class Git
 
     /**
      * @param non-empty-string $message
-     * @param string           $url
      *
      * @return never
      */
@@ -505,17 +492,14 @@ class Git
     }
 
     /**
-     * @param string   $error
      * @param string[] $credentials
-     *
-     * @return string
      */
     private function maskCredentials(string $error, array $credentials): string
     {
-        $maskedCredentials = array();
+        $maskedCredentials = [];
 
         foreach ($credentials as $credential) {
-            if (in_array($credential, array('private-token', 'x-token-auth', 'oauth2', 'gitlab-ci-token', 'x-oauth-basic'))) {
+            if (in_array($credential, ['private-token', 'x-token-auth', 'oauth2', 'gitlab-ci-token', 'x-oauth-basic'])) {
                 $maskedCredentials[] = $credential;
             } elseif (strlen($credential) > 6) {
                 $maskedCredentials[] = substr($credential, 0, 3) . '...' . substr($credential, -3);

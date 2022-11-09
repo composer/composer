@@ -12,7 +12,6 @@
 
 namespace Composer\Test\Mock;
 
-use Composer\Test\TestCase;
 use PHPUnit\Framework\MockObject\MockBuilder;
 use React\Promise\PromiseInterface;
 use Composer\Util\ProcessExecutor;
@@ -38,11 +37,11 @@ class ProcessExecutorMock extends ProcessExecutor
     /**
      * @var array{return: int, stdout: string, stderr: string}
      */
-    private $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => '');
+    private $defaultHandler = ['return' => 0, 'stdout' => '', 'stderr' => ''];
     /**
      * @var string[]
      */
-    private $log = array();
+    private $log = [];
     /**
      * @var MockBuilder<Process>
      */
@@ -61,14 +60,12 @@ class ProcessExecutorMock extends ProcessExecutor
      * @param array<string|array{cmd: string|list<string>, return?: int, stdout?: string, stderr?: string, callback?: callable}> $expectations
      * @param bool                                                                                                               $strict         set to true if you want to provide *all* expected commands, and not just a subset you are interested in testing
      * @param array{return: int, stdout?: string, stderr?: string}                                                               $defaultHandler default command handler for undefined commands if not in strict mode
-     *
-     * @return void
      */
-    public function expects(array $expectations, bool $strict = false, array $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => '')): void
+    public function expects(array $expectations, bool $strict = false, array $defaultHandler = ['return' => 0, 'stdout' => '', 'stderr' => '']): void
     {
         /** @var array{cmd: string|list<string>, return: int, stdout: string, stderr: string, callback: callable} $default */
-        $default = array('cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null);
-        $this->expectations = array_map(function ($expect) use ($default): array {
+        $default = ['cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null];
+        $this->expectations = array_map(static function ($expect) use ($default): array {
             if (is_string($expect)) {
                 $command = $expect;
                 $expect = $default;
@@ -77,23 +74,11 @@ class ProcessExecutorMock extends ProcessExecutor
                 throw new \UnexpectedValueException('Unexpected keys in process execution step: '.implode(', ', array_keys($diff)));
             }
 
-            // set defaults in a PHPStan-happy way (array_merge is not well supported)
-            $expect['cmd'] = $expect['cmd'] ?? $default['cmd'];
-            $expect['return'] = $expect['return'] ?? $default['return'];
-            $expect['stdout'] = $expect['stdout'] ?? $default['stdout'];
-            $expect['stderr'] = $expect['stderr'] ?? $default['stderr'];
-            $expect['callback'] = $expect['callback'] ?? $default['callback'];
-
-            return $expect;
+            return array_merge($default, $expect);
         }, $expectations);
         $this->strict = $strict;
 
-        // set defaults in a PHPStan-happy way (array_merge is not well supported)
-        $defaultHandler['return'] = $defaultHandler['return'] ?? $this->defaultHandler['return'];
-        $defaultHandler['stdout'] = $defaultHandler['stdout'] ?? $this->defaultHandler['stdout'];
-        $defaultHandler['stderr'] = $defaultHandler['stderr'] ?? $this->defaultHandler['stderr'];
-
-        $this->defaultHandler = $defaultHandler;
+        $this->defaultHandler = array_merge($this->defaultHandler, $defaultHandler);
     }
 
     public function assertComplete(): void
@@ -104,7 +89,7 @@ class ProcessExecutorMock extends ProcessExecutor
         }
 
         if (count($this->expectations) > 0) {
-            $expectations = array_map(function ($expect): string {
+            $expectations = array_map(static function ($expect): string {
                 return is_array($expect['cmd']) ? implode(' ', $expect['cmd']) : $expect['cmd'];
             }, $this->expectations);
             throw new AssertionFailedError(
@@ -140,8 +125,6 @@ class ProcessExecutorMock extends ProcessExecutor
 
     /**
      * @param string|list<string> $command
-     * @param string $cwd
-     * @param bool $tty
      * @param callable|string|null $output
      * @return mixed
      */
@@ -163,7 +146,7 @@ class ProcessExecutorMock extends ProcessExecutor
             $stderr = $expect['stderr'];
             $return = $expect['return'];
             if (isset($expect['callback'])) {
-                call_user_func($expect['callback']);
+                $expect['callback']();
             }
         } elseif (!$this->strict) {
             $stdout = $this->defaultHandler['stdout'];
@@ -178,10 +161,10 @@ class ProcessExecutorMock extends ProcessExecutor
         }
 
         if ($stdout) {
-            call_user_func($callback, Process::STDOUT, $stdout);
+            $callback(Process::OUT, $stdout);
         }
         if ($stderr) {
-            call_user_func($callback, Process::ERR, $stderr);
+            $callback(Process::ERR, $stderr);
         }
 
         if ($this->captureOutput && !is_callable($output)) {
@@ -207,7 +190,7 @@ class ProcessExecutorMock extends ProcessExecutor
             $resolve($procMock);
         };
 
-        $canceler = function (): void {
+        $canceler = static function (): void {
             throw new \RuntimeException('Aborted process');
         };
 

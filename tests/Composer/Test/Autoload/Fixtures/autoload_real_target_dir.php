@@ -33,9 +33,16 @@ class ComposerAutoloaderInitTargetDir
 
         $loader->register(true);
 
-        $includeFiles = \Composer\Autoload\ComposerStaticInitTargetDir::$files;
-        foreach ($includeFiles as $fileIdentifier => $file) {
-            composerRequireTargetDir($fileIdentifier, $file);
+        $filesToLoad = \Composer\Autoload\ComposerStaticInitTargetDir::$files;
+        $requireFile = static function ($fileIdentifier, $file) {
+            if (empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
+                $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;
+
+                require $file;
+            }
+        };
+        foreach ($filesToLoad as $fileIdentifier => $file) {
+            ($requireFile)($fileIdentifier, $file);
         }
 
         return $loader;
@@ -57,19 +64,5 @@ class ComposerAutoloaderInitTargetDir
 
             return true;
         }
-    }
-}
-
-/**
- * @param string $fileIdentifier
- * @param string $file
- * @return void
- */
-function composerRequireTargetDir($fileIdentifier, $file)
-{
-    if (empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
-        $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;
-
-        require $file;
     }
 }

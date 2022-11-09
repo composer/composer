@@ -24,11 +24,6 @@ class JsonConfigSourceTest extends TestCase
     /** @var string */
     private $workingDir;
 
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
     protected function fixturePath(string $name): string
     {
         return __DIR__.'/Fixtures/'.$name;
@@ -53,7 +48,7 @@ class JsonConfigSourceTest extends TestCase
         $config = $this->workingDir.'/composer.json';
         copy($this->fixturePath('composer-repositories.json'), $config);
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
-        $jsonConfigSource->addRepository('example_tld', array('type' => 'git', 'url' => 'example.tld'));
+        $jsonConfigSource->addRepository('example_tld', ['type' => 'git', 'url' => 'example.tld']);
 
         $this->assertFileEquals($this->fixturePath('config/config-with-exampletld-repository.json'), $config);
     }
@@ -63,15 +58,15 @@ class JsonConfigSourceTest extends TestCase
         $config = $this->workingDir.'/composer.json';
         copy($this->fixturePath('composer-repositories.json'), $config);
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
-        $jsonConfigSource->addRepository('example_tld', array(
+        $jsonConfigSource->addRepository('example_tld', [
             'type' => 'composer',
             'url' => 'https://example.tld',
-            'options' => array(
-                'ssl' => array(
+            'options' => [
+                'ssl' => [
                     'local_cert' => '/home/composer/.ssl/composer.pem',
-                ),
-            ),
-        ));
+                ],
+            ],
+        ]);
 
         $this->assertFileEquals($this->fixturePath('config/config-with-exampletld-repository-and-options.json'), $config);
     }
@@ -150,25 +145,19 @@ class JsonConfigSourceTest extends TestCase
     }
 
     /**
-     * @param string $type
-     * @param string $name
-     * @param string $value
-     * @param string $fixtureBasename
-     * @param string $before
-     *
      * @return string[]
      *
      * @phpstan-return array{string, string, string, string, string}
      */
     protected function addLinkDataArguments(string $type, string $name, string $value, string $fixtureBasename, string $before): array
     {
-        return array(
+        return [
             $before,
             $type,
             $name,
             $value,
             $this->fixturePath('addLink/'.$fixtureBasename.'.json'),
-        );
+        ];
     }
 
     /**
@@ -180,7 +169,7 @@ class JsonConfigSourceTest extends TestCase
         $oneOfEverything = $this->fixturePath('composer-one-of-everything.json');
         $twoOfEverything = $this->fixturePath('composer-two-of-everything.json');
 
-        return array(
+        return [
             $this->addLinkDataArguments('require', 'my-vend/my-lib', '1.*', 'require-from-empty', $empty),
             $this->addLinkDataArguments('require', 'my-vend/my-lib', '1.*', 'require-from-oneOfEverything', $oneOfEverything),
             $this->addLinkDataArguments('require', 'my-vend/my-lib', '1.*', 'require-from-twoOfEverything', $twoOfEverything),
@@ -204,27 +193,22 @@ class JsonConfigSourceTest extends TestCase
             $this->addLinkDataArguments('conflict', 'my-vend/my-old-app', '1.*', 'conflict-from-empty', $empty),
             $this->addLinkDataArguments('conflict', 'my-vend/my-old-app', '1.*', 'conflict-from-oneOfEverything', $oneOfEverything),
             $this->addLinkDataArguments('conflict', 'my-vend/my-old-app', '1.*', 'conflict-from-twoOfEverything', $twoOfEverything),
-        );
+        ];
     }
 
     /**
-     * @param string      $type
-     * @param string      $name
-     * @param string      $fixtureBasename
-     * @param string|null $after
-     *
      * @return string[]
      *
      * @phpstan-return array{string, string, string, string}
      */
     protected function removeLinkDataArguments(string $type, string $name, string $fixtureBasename, ?string $after = null): array
     {
-        return array(
+        return [
             $this->fixturePath('removeLink/'.$fixtureBasename.'.json'),
             $type,
             $name,
             $after ?: $this->fixturePath('removeLink/'.$fixtureBasename.'-after.json'),
-        );
+        ];
     }
 
     /**
@@ -235,7 +219,7 @@ class JsonConfigSourceTest extends TestCase
         $oneOfEverything = $this->fixturePath('composer-one-of-everything.json');
         $twoOfEverything = $this->fixturePath('composer-two-of-everything.json');
 
-        return array(
+        return [
             $this->removeLinkDataArguments('require', 'my-vend/my-lib', 'require-to-empty'),
             $this->removeLinkDataArguments('require', 'my-vend/my-lib', 'require-to-oneOfEverything', $oneOfEverything),
             $this->removeLinkDataArguments('require', 'my-vend/my-lib', 'require-to-twoOfEverything', $twoOfEverything),
@@ -259,6 +243,6 @@ class JsonConfigSourceTest extends TestCase
             $this->removeLinkDataArguments('conflict', 'my-vend/my-old-app', 'conflict-to-empty'),
             $this->removeLinkDataArguments('conflict', 'my-vend/my-old-app', 'conflict-to-oneOfEverything', $oneOfEverything),
             $this->removeLinkDataArguments('conflict', 'my-vend/my-old-app', 'conflict-to-twoOfEverything', $twoOfEverything),
-        );
+        ];
     }
 }

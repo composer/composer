@@ -33,7 +33,7 @@
         "psr/log": "^1.0 || ^2.0 || ^3.0",
         "seld/jsonlint": "^1.4",
         "seld/phar-utils": "^1.2",
-        "symfony/console": "^5.4.7@dev || ^6.0.7@dev",
+        "symfony/console": "^5.4.11 || ^6.0.11",
         "symfony/filesystem": "^5.4 || ^6.0",
         "symfony/finder": "^5.4 || ^6.0",
         "symfony/process": "^5.4 || ^6.0",
@@ -41,6 +41,7 @@
         "composer/pcre": "^2 || ^3",
         "symfony/polyfill-php73": "^1.24",
         "symfony/polyfill-php80": "^1.24",
+        "symfony/polyfill-php81": "^1.24",
         "seld/signal-handler": "^2.0"
     },
     "require-dev": {
@@ -49,7 +50,7 @@
         "phpstan/phpstan-phpunit": "^1.0",
         "phpstan/phpstan-deprecation-rules": "^1",
         "phpstan/phpstan-strict-rules": "^1",
-        "phpstan/phpstan-symfony": "^1.1"
+        "phpstan/phpstan-symfony": "^1.2.10"
     },
     "suggest": {
         "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages",
@@ -64,7 +65,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.4-dev"
+            "dev-main": "2.5-dev"
         },
         "phpstan": {
             "includes": [

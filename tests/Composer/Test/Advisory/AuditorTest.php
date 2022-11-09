@@ -1,22 +1,27 @@
 <?php declare(strict_types=1);
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Test\Advisory;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
-use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
-use Composer\Json\JsonFile;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 use Composer\Advisory\Auditor;
-use Composer\Util\Http\Response;
-use Composer\Util\HttpDownloader;
 use InvalidArgumentException;
-use PHPUnit\Framework\MockObject\MockObject;
 
 class AuditorTest extends TestCase
 {
@@ -83,7 +88,7 @@ class AuditorTest extends TestCase
 
         $repo
             ->method('getSecurityAdvisories')
-            ->willReturnCallback(function (array $packageConstraintMap, bool $allowPartialAdvisories) {
+            ->willReturnCallback(static function (array $packageConstraintMap, bool $allowPartialAdvisories) {
                 $advisories = [];
 
                 $parser = new VersionParser();
@@ -92,16 +97,16 @@ class AuditorTest extends TestCase
                  * @param string $name
                  * @return ($allowPartialAdvisories is false ? SecurityAdvisory|null : PartialSecurityAdvisory|SecurityAdvisory|null)
                  */
-                $create = function (array $data, string $name) use ($parser, $allowPartialAdvisories, $packageConstraintMap): ?PartialSecurityAdvisory {
-                     $advisory = PartialSecurityAdvisory::create($name, $data, $parser);
-                     if (!$allowPartialAdvisories && !$advisory instanceof SecurityAdvisory) {
-                         throw new \RuntimeException('Advisory for '.$name.' could not be loaded as a full advisory from test repo');
-                     }
-                     if (!$advisory->affectedVersions->matches($packageConstraintMap[$name])) {
-                         return null;
-                     }
+                $create = static function (array $data, string $name) use ($parser, $allowPartialAdvisories, $packageConstraintMap): ?PartialSecurityAdvisory {
+                    $advisory = PartialSecurityAdvisory::create($name, $data, $parser);
+                    if (!$allowPartialAdvisories && !$advisory instanceof SecurityAdvisory) {
+                        throw new \RuntimeException('Advisory for '.$name.' could not be loaded as a full advisory from test repo');
+                    }
+                    if (!$advisory->affectedVersions->matches($packageConstraintMap[$name])) {
+                        return null;
+                    }
 
-                     return $advisory;
+                    return $advisory;
                 };
 
                 foreach (self::getMockAdvisories() as $package => $list) {
@@ -109,7 +114,9 @@ class AuditorTest extends TestCase
                         continue;
                     }
                     $advisories[$package] = array_filter(array_map(
-                        function ($data) use ($package, $create) { return $create($data, $package); },
+                        static function ($data) use ($package, $create) {
+                            return $create($data, $package);
+                        },
                         $list
                     ));
                 }
@@ -174,7 +181,7 @@ class AuditorTest extends TestCase
                     ],
                     'reportedAt' => '',
                     'composerRepository' => 'https://packagist.org',
-                ]
+                ],
             ],
             'vendor1/package2' => [
                 [
@@ -244,7 +251,7 @@ class AuditorTest extends TestCase
                     ],
                     'reportedAt' => '2015-05-25 13:21:00',
                     'composerRepository' => 'https://packagist.org',
-                ]
+                ],
             ],
             'vendory/packagey' => [
                 [

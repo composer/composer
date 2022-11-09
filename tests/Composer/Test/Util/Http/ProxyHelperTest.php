@@ -46,8 +46,6 @@ class ProxyHelperTest extends TestCase
 
     /**
      * @dataProvider dataMalformed
-     *
-     * @param string $url
      */
     public function testThrowsOnMalformedUrl(string $url): void
     {
@@ -59,42 +57,37 @@ class ProxyHelperTest extends TestCase
 
     public function dataMalformed(): array
     {
-        return array(
-            'no-host' => array('localhost'),
-            'no-port' => array('scheme://localhost'),
-        );
+        return [
+            'no-host' => ['localhost'],
+            'no-port' => ['scheme://localhost'],
+        ];
     }
 
     /**
      * @dataProvider dataFormatting
-     *
-     * @param string $url
-     * @param string $expected
      */
     public function testUrlFormatting(string $url, string $expected): void
     {
         $_SERVER['http_proxy'] = $url;
 
-        list($httpProxy, $httpsProxy, $noProxy) = ProxyHelper::getProxyData();
+        [$httpProxy, $httpsProxy, $noProxy] = ProxyHelper::getProxyData();
         $this->assertSame($expected, $httpProxy);
     }
 
     public function dataFormatting(): array
     {
         // url, expected
-        return array(
-            'lowercases-scheme' => array('HTTP://proxy.com:8888', 'http://proxy.com:8888'),
-            'adds-http-port' => array('http://proxy.com', 'http://proxy.com:80'),
-            'adds-https-port' => array('https://proxy.com', 'https://proxy.com:443'),
-        );
+        return [
+            'lowercases-scheme' => ['HTTP://proxy.com:8888', 'http://proxy.com:8888'],
+            'adds-http-port' => ['http://proxy.com', 'http://proxy.com:80'],
+            'adds-https-port' => ['https://proxy.com', 'https://proxy.com:443'],
+        ];
     }
 
     /**
      * @dataProvider dataCaseOverrides
      *
      * @param array<string, mixed> $server
-     * @param string               $expected
-     * @param int                  $index
      */
     public function testLowercaseOverridesUppercase(array $server, string $expected, int $index): void
     {
@@ -107,19 +100,17 @@ class ProxyHelperTest extends TestCase
     public function dataCaseOverrides(): array
     {
         // server, expected, list index
-        return array(
-            array(array('HTTP_PROXY' => 'http://upper.com', 'http_proxy' => 'http://lower.com'), 'http://lower.com:80', 0),
-            array(array('HTTPS_PROXY' => 'http://upper.com', 'https_proxy' => 'http://lower.com'), 'http://lower.com:80', 1),
-            array(array('NO_PROXY' => 'upper.com', 'no_proxy' => 'lower.com'), 'lower.com', 2),
-        );
+        return [
+            [['HTTP_PROXY' => 'http://upper.com', 'http_proxy' => 'http://lower.com'], 'http://lower.com:80', 0],
+            [['HTTPS_PROXY' => 'http://upper.com', 'https_proxy' => 'http://lower.com'], 'http://lower.com:80', 1],
+            [['NO_PROXY' => 'upper.com', 'no_proxy' => 'lower.com'], 'lower.com', 2],
+        ];
     }
 
     /**
      * @dataProvider dataCGIOverrides
      *
      * @param array<string, mixed> $server
-     * @param string               $expected
-     * @param int                  $index
      */
     public function testCGIUpperCaseOverridesHttp(array $server, string $expected, int $index): void
     {
@@ -132,17 +123,17 @@ class ProxyHelperTest extends TestCase
     public function dataCGIOverrides(): array
     {
         // server, expected, list index
-        return array(
-            array(array('http_proxy' => 'http://http.com', 'CGI_HTTP_PROXY' => 'http://cgi.com'), 'http://cgi.com:80', 0),
-            array(array('http_proxy' => 'http://http.com', 'cgi_http_proxy' => 'http://cgi.com'), 'http://http.com:80', 0),
-        );
+        return [
+            [['http_proxy' => 'http://http.com', 'CGI_HTTP_PROXY' => 'http://cgi.com'], 'http://cgi.com:80', 0],
+            [['http_proxy' => 'http://http.com', 'cgi_http_proxy' => 'http://cgi.com'], 'http://http.com:80', 0],
+        ];
     }
 
     public function testNoHttpsProxyUsesHttpProxy(): void
     {
         $_SERVER['http_proxy'] = 'http://http.com';
 
-        list($httpProxy, $httpsProxy, $noProxy) = ProxyHelper::getProxyData();
+        [$httpProxy, $httpsProxy, $noProxy] = ProxyHelper::getProxyData();
         $this->assertSame('http://http.com:80', $httpsProxy);
     }
 
@@ -150,14 +141,13 @@ class ProxyHelperTest extends TestCase
     {
         $_SERVER['https_proxy'] = 'http://https.com';
 
-        list($httpProxy, $httpsProxy, $noProxy) = ProxyHelper::getProxyData();
+        [$httpProxy, $httpsProxy, $noProxy] = ProxyHelper::getProxyData();
         $this->assertSame(null, $httpProxy);
     }
 
     /**
      * @dataProvider dataContextOptions
      *
-     * @param string                $url
      * @param array<string, string> $expected
      *
      * @phpstan-param array{http: array{proxy: string, header?: string}} $expected
@@ -170,29 +160,28 @@ class ProxyHelperTest extends TestCase
     public function dataContextOptions(): array
     {
         // url, expected
-        return array(
-            array('http://proxy.com', array('http' => array(
+        return [
+            ['http://proxy.com', ['http' => [
                 'proxy' => 'tcp://proxy.com:80',
-            ))),
-            array('https://proxy.com', array('http' => array(
+            ]]],
+            ['https://proxy.com', ['http' => [
                 'proxy' => 'ssl://proxy.com:443',
-            ))),
-            array('http://user:p%40ss@proxy.com', array('http' => array(
+            ]]],
+            ['http://user:p%40ss@proxy.com', ['http' => [
                 'proxy' => 'tcp://proxy.com:80',
                 'header' => 'Proxy-Authorization: Basic dXNlcjpwQHNz',
-            ))),
-        );
+            ]]],
+        ];
     }
 
     /**
      * @dataProvider dataRequestFullUri
      *
-     * @param string  $requestUrl
      * @param mixed[] $expected
      */
     public function testSetRequestFullUri(string $requestUrl, array $expected): void
     {
-        $options = array();
+        $options = [];
         ProxyHelper::setRequestFullUri($requestUrl, $options);
 
         $this->assertEquals($expected, $options);
@@ -200,13 +189,13 @@ class ProxyHelperTest extends TestCase
 
     public function dataRequestFullUri(): array
     {
-        $options = array('http' => array('request_fulluri' => true));
+        $options = ['http' => ['request_fulluri' => true]];
 
         // $requestUrl, expected
-        return array(
-            'http' => array('http://repo.org', $options),
-            'https' => array('https://repo.org', array()),
-            'no-scheme' => array('repo.org', array()),
-        );
+        return [
+            'http' => ['http://repo.org', $options],
+            'https' => ['https://repo.org', []],
+            'no-scheme' => ['repo.org', []],
+        ];
     }
 }

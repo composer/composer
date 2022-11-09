@@ -28,7 +28,7 @@ class ArrayDumper
      */
     public function dump(PackageInterface $package): array
     {
-        $keys = array(
+        $keys = [
             'binaries' => 'bin',
             'type',
             'extra',
@@ -37,9 +37,9 @@ class ArrayDumper
             'devAutoload' => 'autoload-dev',
             'notificationUrl' => 'notification-url',
             'includePaths' => 'include-path',
-        );
+        ];
 
-        $data = array();
+        $data = [];
         $data['name'] = $package->getPrettyName();
         $data['version'] = $package->getPrettyVersion();
         $data['version_normalized'] = $package->getVersion();
@@ -105,7 +105,7 @@ class ArrayDumper
                 $data['archive']['exclude'] = $package->getArchiveExcludes();
             }
 
-            $keys = array(
+            $keys = [
                 'scripts',
                 'license',
                 'authors',
@@ -115,7 +115,7 @@ class ArrayDumper
                 'repositories',
                 'support',
                 'funding',
-            );
+            ];
 
             $data = $this->dumpValues($package, $keys, $data);
 
@@ -156,7 +156,7 @@ class ArrayDumper
             }
 
             $getter = 'get'.ucfirst($method);
-            $value = $package->$getter();
+            $value = $package->{$getter}();
 
             if (null !== $value && !(\is_array($value) && 0 === \count($value))) {
                 $data[$key] = $value;

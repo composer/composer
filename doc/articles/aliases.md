@@ -91,7 +91,7 @@ Add this to your project's root `composer.json`:
 
 Or let Composer add it for you with:
 
-```
+```shell
 php composer.phar require "monolog/monolog:dev-bugfix as 1.0.x-dev"
 ```
 

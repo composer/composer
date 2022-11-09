@@ -83,7 +83,7 @@ class ConsoleIOTest extends TestCase
         $outputMock->expects($this->once())
             ->method('write')
             ->with(
-                $this->callback(function ($messages): bool {
+                $this->callback(static function ($messages): bool {
                     $result = Preg::isMatch("[(.*)/(.*) First line]", $messages[0]);
                     $result = $result && Preg::isMatch("[(.*)/(.*) Second line]", $messages[1]);
 
@@ -209,7 +209,7 @@ class ConsoleIOTest extends TestCase
             ->will($this->returnValue($helperMock))
         ;
 
-        $validator = function ($value): bool {
+        $validator = static function ($value): bool {
             return true;
         };
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);
@@ -231,7 +231,7 @@ class ConsoleIOTest extends TestCase
                 $this->isInstanceOf('Symfony\Component\Console\Output\OutputInterface'),
                 $this->isInstanceOf('Symfony\Component\Console\Question\Question')
             )
-            ->will($this->returnValue(array('item2')));
+            ->will($this->returnValue(['item2']));
 
         $setMock
             ->expects($this->once())
@@ -241,8 +241,8 @@ class ConsoleIOTest extends TestCase
         ;
 
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);
-        $result = $consoleIO->select('Select item', array("item1", "item2"), 'item1', false, "Error message", true);
-        $this->assertEquals(array('1'), $result);
+        $result = $consoleIO->select('Select item', ["item1", "item2"], 'item1', false, "Error message", true);
+        $this->assertEquals(['1'], $result);
     }
 
     public function testSetAndgetAuthentication(): void
@@ -255,7 +255,7 @@ class ConsoleIOTest extends TestCase
         $consoleIO->setAuthentication('repoName', 'l3l0', 'passwd');
 
         $this->assertEquals(
-            array('username' => 'l3l0', 'password' => 'passwd'),
+            ['username' => 'l3l0', 'password' => 'passwd'],
             $consoleIO->getAuthentication('repoName')
         );
     }
@@ -269,7 +269,7 @@ class ConsoleIOTest extends TestCase
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
 
         $this->assertEquals(
-            array('username' => null, 'password' => null),
+            ['username' => null, 'password' => null],
             $consoleIO->getAuthentication('repoName')
         );
     }

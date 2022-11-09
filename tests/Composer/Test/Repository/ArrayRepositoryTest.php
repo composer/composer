@@ -39,7 +39,7 @@ class ArrayRepositoryTest extends TestCase
         $repo->removePackage($this->getPackage('foo', '1'));
 
         $this->assertCount(1, $repo);
-        $this->assertEquals(array($package), $repo->getPackages());
+        $this->assertEquals([$package], $repo->getPackages());
     }
 
     public function testHasPackage(): void
@@ -94,12 +94,12 @@ class ArrayRepositoryTest extends TestCase
         $repo->addPackage($this->getPackage('bar', '1'));
 
         $this->assertSame(
-            array(array('name' => 'foo', 'description' => null)),
+            [['name' => 'foo', 'description' => null]],
             $repo->search('foo', RepositoryInterface::SEARCH_FULLTEXT)
         );
 
         $this->assertSame(
-            array(array('name' => 'bar', 'description' => null)),
+            [['name' => 'bar', 'description' => null]],
             $repo->search('bar')
         );
 
@@ -120,14 +120,14 @@ class ArrayRepositoryTest extends TestCase
         $repo->addPackage($package);
 
         $this->assertSame(
-            array(array('name' => 'foo', 'description' => null)),
+            [['name' => 'foo', 'description' => null]],
             $repo->search('foo', RepositoryInterface::SEARCH_FULLTEXT, 'library')
         );
 
         $this->assertEmpty($repo->search('bar', RepositoryInterface::SEARCH_FULLTEXT, 'package'));
 
         $this->assertSame(
-            array(array('name' => 'foobar', 'description' => null)),
+            [['name' => 'foobar', 'description' => null]],
             $repo->search('foo', 0, 'composer-plugin')
         );
     }
@@ -144,10 +144,10 @@ class ArrayRepositoryTest extends TestCase
         $repo->addPackage($package2);
 
         $this->assertSame(
-            array(
-                array('name' => 'foo1', 'description' => null, 'abandoned' => true),
-                array('name' => 'foo2', 'description' => null, 'abandoned' => 'bar'),
-            ),
+            [
+                ['name' => 'foo1', 'description' => null, 'abandoned' => true],
+                ['name' => 'foo2', 'description' => null, 'abandoned' => 'bar'],
+            ],
             $repo->search('foo')
         );
     }

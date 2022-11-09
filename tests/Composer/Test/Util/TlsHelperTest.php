@@ -20,8 +20,6 @@ class TlsHelperTest extends TestCase
     /**
      * @dataProvider dataCheckCertificateHost
      *
-     * @param bool     $expectedResult
-     * @param string   $hostname
      * @param string[] $certNames
      */
     public function testCheckCertificateHost(bool $expectedResult, string $hostname, array $certNames): void
@@ -43,28 +41,28 @@ class TlsHelperTest extends TestCase
 
     public function dataCheckCertificateHost(): array
     {
-        return array(
-            array(true, 'getcomposer.org', array('getcomposer.org')),
-            array(true, 'getcomposer.org', array('getcomposer.org', 'packagist.org')),
-            array(true, 'getcomposer.org', array('packagist.org', 'getcomposer.org')),
-            array(true, 'foo.getcomposer.org', array('*.getcomposer.org')),
-            array(false, 'xyz.foo.getcomposer.org', array('*.getcomposer.org')),
-            array(true, 'foo.getcomposer.org', array('getcomposer.org', '*.getcomposer.org')),
-            array(true, 'foo.getcomposer.org', array('foo.getcomposer.org', 'foo*.getcomposer.org')),
-            array(true, 'foo1.getcomposer.org', array('foo.getcomposer.org', 'foo*.getcomposer.org')),
-            array(true, 'foo2.getcomposer.org', array('foo.getcomposer.org', 'foo*.getcomposer.org')),
-            array(false, 'foo2.another.getcomposer.org', array('foo.getcomposer.org', 'foo*.getcomposer.org')),
-            array(false, 'test.example.net', array('**.example.net', '**.example.net')),
-            array(false, 'test.example.net', array('t*t.example.net', 't*t.example.net')),
-            array(false, 'xyz.example.org', array('*z.example.org', '*z.example.org')),
-            array(false, 'foo.bar.example.com', array('foo.*.example.com', 'foo.*.example.com')),
-            array(false, 'example.com', array('example.*', 'example.*')),
-            array(true, 'localhost', array('localhost')),
-            array(false, 'localhost', array('*')),
-            array(false, 'localhost', array('local*')),
-            array(false, 'example.net', array('*.net', '*.org', 'ex*.net')),
-            array(true, 'example.net', array('*.net', '*.org', 'example.net')),
-        );
+        return [
+            [true, 'getcomposer.org', ['getcomposer.org']],
+            [true, 'getcomposer.org', ['getcomposer.org', 'packagist.org']],
+            [true, 'getcomposer.org', ['packagist.org', 'getcomposer.org']],
+            [true, 'foo.getcomposer.org', ['*.getcomposer.org']],
+            [false, 'xyz.foo.getcomposer.org', ['*.getcomposer.org']],
+            [true, 'foo.getcomposer.org', ['getcomposer.org', '*.getcomposer.org']],
+            [true, 'foo.getcomposer.org', ['foo.getcomposer.org', 'foo*.getcomposer.org']],
+            [true, 'foo1.getcomposer.org', ['foo.getcomposer.org', 'foo*.getcomposer.org']],
+            [true, 'foo2.getcomposer.org', ['foo.getcomposer.org', 'foo*.getcomposer.org']],
+            [false, 'foo2.another.getcomposer.org', ['foo.getcomposer.org', 'foo*.getcomposer.org']],
+            [false, 'test.example.net', ['**.example.net', '**.example.net']],
+            [false, 'test.example.net', ['t*t.example.net', 't*t.example.net']],
+            [false, 'xyz.example.org', ['*z.example.org', '*z.example.org']],
+            [false, 'foo.bar.example.com', ['foo.*.example.com', 'foo.*.example.com']],
+            [false, 'example.com', ['example.*', 'example.*']],
+            [true, 'localhost', ['localhost']],
+            [false, 'localhost', ['*']],
+            [false, 'localhost', ['local*']],
+            [false, 'example.net', ['*.net', '*.org', 'ex*.net']],
+            [true, 'example.net', ['*.net', '*.org', 'example.net']],
+        ];
     }
 
     public function testGetCertificateNames(): void
@@ -75,11 +73,12 @@ class TlsHelperTest extends TestCase
         // @phpstan-ignore-next-line
         $names = TlsHelper::getCertificateNames($certificate);
 
+        self::assertIsArray($names);
         $this->assertSame('example.net', $names['cn']);
-        $this->assertSame(array(
+        $this->assertSame([
             'example.com',
             'getcomposer.org',
             'composer.example.org',
-        ), $names['san']);
+        ], $names['san']);
     }
 }

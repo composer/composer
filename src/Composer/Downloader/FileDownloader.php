@@ -63,14 +63,23 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @private
      * @internal
      */
-    public static $downloadMetadata = array();
+    public static $downloadMetadata = [];
+    /**
+     * Collects response headers when running on GH Actions
+     *
+     * @see https://github.com/composer/composer/issues/11148
+     * @var array<string, array<string>>
+     * @private
+     * @internal
+     */
+    public static $responseHeaders = [];
 
     /**
      * @var array<string, string> Map of package name to cache key
      */
-    private $lastCacheWrites = array();
+    private $lastCacheWrites = [];
     /** @var array<string, string[]> Map of package name to list of paths */
-    private $additionalCleanupPaths = array();
+    private $additionalCleanupPaths = [];
 
     /**
      * Constructor.
@@ -82,7 +91,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @param Cache           $cache           Cache instance
      * @param Filesystem      $filesystem      The filesystem
      */
-    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, Filesystem $filesystem = null, ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, ?EventDispatcher $eventDispatcher = null, ?Cache $cache = null, ?Filesystem $filesystem = null, ?ProcessExecutor $process = null)
     {
         $this->io = $io;
         $this->config = $config;
@@ -108,10 +117,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
     /**
      * @inheritDoc
-     *
-     * @param bool $output
      */
-    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
+    public function download(PackageInterface $package, string $path, ?PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
     {
         if (!$package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
@@ -125,11 +132,11 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $retries = 3;
         $distUrls = $package->getDistUrls();
-        /** @var array<array{base: string, processed: string, cacheKey: string}> $urls */
-        $urls = array();
+        /** @var non-empty-array<array{base: non-empty-string, processed: non-empty-string, cacheKey: string}> $urls */
+        $urls = [];
         foreach ($distUrls as $index => $url) {
             $processedUrl = $this->processUrl($package, $url);
-            $urls[$index] = array(
+            $urls[$index] = [
                 'base' => $url,
                 'processed' => $processedUrl,
                 // we use the complete download url here to avoid conflicting entries
@@ -137,7 +144,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 // in a third party repo to pre-populate the cache for the same package in
                 // packagist for example.
                 'cacheKey' => $cacheKeyGenerator($package, $processedUrl),
-            );
+            ];
         }
 
         $fileName = $this->getFileName($package, $path);
@@ -153,7 +160,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $accept = null;
         $reject = null;
         $download = function () use ($io, $output, $httpDownloader, $cache, $cacheKeyGenerator, $eventDispatcher, $package, $fileName, &$urls, &$accept, &$reject) {
-            /** @var array{base: string, processed: string, cacheKey: string} $url */
             $url = reset($urls);
             $index = key($urls);
 
@@ -225,6 +231,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $cacheKey = $url['cacheKey'];
             FileDownloader::$downloadMetadata[$package->getName()] = @filesize($fileName) ?: $response->getHeader('Content-Length') ?: '?';
 
+            if (Platform::getEnv('GITHUB_ACTIONS') !== false && Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING') === false) {
+                FileDownloader::$responseHeaders[$package->getName()] = $response->getHeaders();
+            }
+
             if ($cache && !$cache->isReadOnly()) {
                 $this->lastCacheWrites[$package->getName()] = $cacheKey;
                 $cache->copyFrom($cacheKey, $fileName);
@@ -252,7 +262,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
             if ($e instanceof TransportException) {
                 // if we got an http response with a proper code, then requesting again will probably not help, abort
-                if ((0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
+                if ((0 !== $e->getCode() && !in_array($e->getCode(), [500, 502, 503, 504])) || !$retries) {
                     $retries = 0;
                 }
             }
@@ -260,7 +270,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             // special error code returned when network is being artificially disabled
             if ($e instanceof TransportException && $e->getStatusCode() === 499) {
                 $retries = 0;
-                $urls = array();
+                $urls = [];
             }
 
             if ($retries) {
@@ -294,7 +304,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @inheritDoc
      */
-    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    public function prepare(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         return \React\Promise\resolve(null);
     }
@@ -302,18 +312,19 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @inheritDoc
      */
-    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
+    public function cleanup(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
         $fileName = $this->getFileName($package, $path);
         if (file_exists($fileName)) {
             $this->filesystem->unlink($fileName);
         }
 
-        $dirsToCleanUp = array(
+        $dirsToCleanUp = [
+            $path,
+            $this->config->get('vendor-dir').'/'.explode('/', $package->getPrettyName())[0],
             $this->config->get('vendor-dir').'/composer/',
             $this->config->get('vendor-dir'),
-            $path,
-        );
+        ];
 
         if (isset($this->additionalCleanupPaths[$package->getName()])) {
             foreach ($this->additionalCleanupPaths[$package->getName()] as $path) {
@@ -332,8 +343,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
     /**
      * @inheritDoc
-     *
-     * @param bool $output
      */
     public function install(PackageInterface $package, string $path, bool $output = true): PromiseInterface
     {
@@ -358,9 +367,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         return \React\Promise\resolve(null);
     }
 
-    /**
-     * @return void
-     */
     protected function clearLastCacheWrite(PackageInterface $package): void
     {
         if ($this->cache && isset($this->lastCacheWrites[$package->getName()])) {
@@ -369,21 +375,11 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
     }
 
-    /**
-     * @param string $path
-     *
-     * @return void
-     */
     protected function addCleanupPath(PackageInterface $package, string $path): void
     {
         $this->additionalCleanupPaths[$package->getName()][] = $path;
     }
 
-    /**
-     * @param string $path
-     *
-     * @return void
-     */
     protected function removeCleanupPath(PackageInterface $package, string $path): void
     {
         if (isset($this->additionalCleanupPaths[$package->getName()])) {
@@ -410,8 +406,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
     /**
      * @inheritDoc
-     *
-     * @param bool $output
      */
     public function remove(PackageInterface $package, string $path, bool $output = true): PromiseInterface
     {
@@ -444,7 +438,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @param  PackageInterface $package package instance
      * @param  string           $path    download path
-     * @return string
      */
     protected function getInstallOperationAppendix(PackageInterface $package, string $path): string
     {
@@ -455,9 +448,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * Process the download url
      *
      * @param  PackageInterface  $package package the url is coming from
-     * @param  string            $url     download url
+     * @param  non-empty-string  $url     download url
      * @throws \RuntimeException If any problem with the url
-     * @return string            url
+     * @return non-empty-string  url
      */
     protected function processUrl(PackageInterface $package, string $url): string
     {

@@ -36,11 +36,10 @@ class ClassMapGenerator
      *
      * @param \Traversable<string>|array<string> $dirs Directories or a single path to search in
      * @param string                             $file The name of the class map file
-     * @return void
      */
     public static function dump(iterable $dirs, string $file): void
     {
-        $maps = array();
+        $maps = [];
 
         foreach ($dirs as $dir) {
             $maps = array_merge($maps, static::createMap($dir));
@@ -61,7 +60,7 @@ class ClassMapGenerator
      * @return array<class-string, non-empty-string> A class map array
      * @throws \RuntimeException When the path is neither an existing file nor directory
      */
-    public static function createMap($path, string $excluded = null, IOInterface $io = null, ?string $namespace = null, ?string $autoloadType = null, array &$scannedFiles = array()): array
+    public static function createMap($path, ?string $excluded = null, ?IOInterface $io = null, ?string $namespace = null, ?string $autoloadType = null, array &$scannedFiles = []): array
     {
         $generator = new \Composer\ClassMapGenerator\ClassMapGenerator(['php', 'inc', 'hh']);
         $fileList = new FileList();

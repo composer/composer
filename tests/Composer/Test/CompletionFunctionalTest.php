@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -78,6 +78,46 @@ class CompletionFunctionalTest extends TestCase
 
         yield ['update --prefer-install ', $preferInstall];
         yield ['update ', $installedPackages];
+
+        yield ['config --list ', null];
+        yield ['config --editor ', null];
+        yield ['config --auth ', null];
+
+        yield ['config ', ['bin-compat', 'extra', 'extra.branch-alias', 'home', 'name', 'repositories', 'repositories.packagist.org', 'suggest', 'suggest.ext-zip', 'type', 'version']];
+        yield ['config bin', ['bin-dir']]; // global setting
+        yield ['config nam', ['name']];    // existing package-property
+        yield ['config ver', ['version']]; // non-existing package-property
+        yield ['config repo', ['repositories', 'repositories.packagist.org']];
+        yield ['config repositories.', ['repositories.packagist.org']];
+        yield ['config sug', ['suggest', 'suggest.ext-zip']];
+        yield ['config suggest.ext-', ['suggest.ext-zip']];
+        yield ['config ext', ['extra', 'extra.branch-alias', 'extra.branch-alias.dev-main']];
+
+        // as this test does not use a fixture (yet?), the completion
+        // of setting authentication settings can have varying results
+        // yield ['config http-basic.', […]];
+
+        yield ['config --unset ', ['extra', 'extra.branch-alias', 'extra.branch-alias.dev-main', 'name', 'suggest', 'suggest.ext-zip', 'type']];
+        yield ['config --unset bin-dir', null]; // global setting
+        yield ['config --unset nam', ['name']]; // existing package-property
+        yield ['config --unset version', null]; // non-existing package-property
+        yield ['config --unset extra.', ['extra.branch-alias', 'extra.branch-alias.dev-main']];
+
+        // as this test does not use a fixture (yet?), the completion
+        // of unsetting authentication settings can have varying results
+        // yield ['config --unset http-basic.', […]];
+
+        yield ['config --global ', ['bin-compat', 'home', 'repositories', 'repositories.packagist.org']];
+        yield ['config --global repo', ['repositories', 'repositories.packagist.org']];
+        yield ['config --global repositories.', ['repositories.packagist.org']];
+
+        // as this test does not use a fixture (yet?), the completion
+        // of unsetting global settings can have varying results
+        // yield ['config --global --unset ', null];
+
+        // as this test does not use a fixture (yet?), the completion of
+        // unsetting global authentication settings can have varying results
+        // yield ['config --global --unset http-basic.', […]];
     }
 
     /**

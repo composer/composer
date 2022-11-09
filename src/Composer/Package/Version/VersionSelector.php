@@ -40,7 +40,7 @@ class VersionSelector
     private $repositorySet;
 
     /** @var array<string, ConstraintInterface[]> */
-    private $platformConstraints = array();
+    private $platformConstraints = [];
 
     /** @var VersionParser */
     private $parser;
@@ -48,7 +48,7 @@ class VersionSelector
     /**
      * @param PlatformRepository $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
      */
-    public function __construct(RepositorySet $repositorySet, PlatformRepository $platformRepo = null)
+    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null)
     {
         $this->repositorySet = $repositorySet;
         if ($platformRepo) {
@@ -62,15 +62,13 @@ class VersionSelector
      * Given a package name and optional version, returns the latest PackageInterface
      * that matches.
      *
-     * @param string                                           $packageName
      * @param string                                           $targetPackageVersion
-     * @param string                                           $preferredStability
      * @param PlatformRequirementFilterInterface|bool|string[] $platformRequirementFilter
-     * @param int                                              $repoSetFlags
      * @param IOInterface|null                                 $io                        If passed, warnings will be output there in case versions cannot be selected due to platform requirements
+     * @param callable(PackageInterface):bool|bool             $showWarnings
      * @return PackageInterface|false
      */
-    public function findBestCandidate(string $packageName, string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0, ?IOInterface $io = null)
+    public function findBestCandidate(string $packageName, ?string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0, ?IOInterface $io = null, $showWarnings = true)
     {
         if (!isset(BasePackage::$stabilities[$preferredStability])) {
             // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
@@ -88,7 +86,7 @@ class VersionSelector
         $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint, $repoSetFlags);
 
         $minPriority = BasePackage::$stabilities[$preferredStability];
-        usort($candidates, function (PackageInterface $a, PackageInterface $b) use ($minPriority) {
+        usort($candidates, static function (PackageInterface $a, PackageInterface $b) use ($minPriority) {
             $aPriority = $a->getStabilityPriority();
             $bPriority = $b->getStabilityPriority();
 
@@ -117,6 +115,8 @@ class VersionSelector
         if (count($this->platformConstraints) > 0 && !($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter)) {
             /** @var array<string, true> $alreadyWarnedNames */
             $alreadyWarnedNames = [];
+            /** @var array<string, true> $alreadySeenNames */
+            $alreadySeenNames = [];
 
             foreach ($candidates as $pkg) {
                 $reqs = $pkg->getRequires();
@@ -140,14 +140,16 @@ class VersionSelector
                         $reason = 'is missing from your platform';
                     }
 
-                    if ($io !== null) {
-                        $isFirst = !isset($alreadyWarnedNames[$pkg->getName()]);
+                    $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
+                    $alreadySeenNames[$pkg->getName()] = true;
+                    if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
+                        $isFirstWarning = !isset($alreadyWarnedNames[$pkg->getName()]);
                         $alreadyWarnedNames[$pkg->getName()] = true;
-                        $latest = $isFirst ? "'s latest version" : '';
+                        $latest = $isLatestVersion ? "'s latest version" : '';
                         $io->writeError(
                             '<warning>Cannot use '.$pkg->getPrettyName().$latest.' '.$pkg->getPrettyVersion().' as it '.$link->getDescription().' '.$link->getTarget().' '.$link->getPrettyConstraint().' which '.$reason.'.</>',
                             true,
-                            $isFirst ? IOInterface::NORMAL : IOInterface::VERBOSE
+                            $isFirstWarning ? IOInterface::NORMAL : IOInterface::VERBOSE
                         );
                     }
 
@@ -185,9 +187,6 @@ class VersionSelector
      *  * 2.0-beta.1    -> ^2.0@beta
      *  * dev-master    -> ^2.1@dev      (dev version with alias)
      *  * dev-master    -> dev-master    (dev versions are untouched)
-     *
-     * @param  PackageInterface $package
-     * @return string
      */
     public function findRecommendedRequireVersion(PackageInterface $package): string
     {
@@ -221,13 +220,6 @@ class VersionSelector
         return $package->getPrettyVersion();
     }
 
-    /**
-     * @param string $version
-     * @param string $prettyVersion
-     * @param string $stability
-     *
-     * @return string
-     */
     private function transformVersion(string $version, string $prettyVersion, string $stability): string
     {
         // attempt to transform 2.1.1 to 2.1
@@ -256,9 +248,6 @@ class VersionSelector
         return '^' . $version;
     }
 
-    /**
-     * @return VersionParser
-     */
     private function getParser(): VersionParser
     {
         if ($this->parser === null) {

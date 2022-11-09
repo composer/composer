@@ -54,12 +54,6 @@ class GzipDownloader extends ArchiveDownloader
         return \React\Promise\resolve(null);
     }
 
-    /**
-     * @param string $file
-     * @param string $targetFilepath
-     *
-     * @return void
-     */
     private function extractUsingExt(string $file, string $targetFilepath): void
     {
         $archiveFile = gzopen($file, 'rb');

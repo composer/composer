@@ -8,7 +8,7 @@ Installs a dev package forcing it's reference
             "package": [
                 {
                     "name": "a/a", "version": "dev-main",
-                    "source": { "reference": "abc123", "url": "", "type": "git" },
+                    "source": { "reference": "abc123", "url": "https://example.org", "type": "git" },
                     "default-branch": true
                 }
             ]

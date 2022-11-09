@@ -32,20 +32,18 @@ class HomeCommand extends BaseCommand
 
     /**
      * @inheritDoc
-     *
-     * @return void
      */
     protected function configure(): void
     {
         $this
             ->setName('browse')
-            ->setAliases(array('home'))
-            ->setDescription('Opens the package\'s repository URL or homepage in your browser.')
-            ->setDefinition(array(
+            ->setAliases(['home'])
+            ->setDescription('Opens the package\'s repository URL or homepage in your browser')
+            ->setDefinition([
                 new InputArgument('packages', InputArgument::IS_ARRAY, 'Package(s) to browse to.', null, $this->suggestInstalledPackage()),
                 new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL.'),
                 new InputOption('show', 's', InputOption::VALUE_NONE, 'Only show the homepage or repository URL.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The home command opens or shows a package's repository URL or
@@ -68,7 +66,7 @@ EOT
         $packages = $input->getArgument('packages');
         if (count($packages) === 0) {
             $io->writeError('No package specified, opening homepage for the root package');
-            $packages = array($this->requireComposer()->getPackage()->getName());
+            $packages = [$this->requireComposer()->getPackage()->getName()];
         }
 
         foreach ($packages as $packageName) {
@@ -98,11 +96,6 @@ EOT
         return $return;
     }
 
-    /**
-     * @param bool $showHomepage
-     * @param bool $showOnly
-     * @return bool
-     */
     private function handlePackage(CompletePackageInterface $package, bool $showHomepage, bool $showOnly): bool
     {
         $support = $package->getSupport();
@@ -126,9 +119,6 @@ EOT
 
     /**
      * opens a url in your system default browser
-     *
-     * @param string $url
-     * @return void
      */
     private function openBrowser(string $url): void
     {
@@ -166,8 +156,8 @@ EOT
 
         if ($composer) {
             return array_merge(
-                array(new RootPackageRepository(clone $composer->getPackage())), // root package
-                array($composer->getRepositoryManager()->getLocalRepository()), // installed packages
+                [new RootPackageRepository(clone $composer->getPackage())], // root package
+                [$composer->getRepositoryManager()->getLocalRepository()], // installed packages
                 $composer->getRepositoryManager()->getRepositories() // remotes
             );
         }

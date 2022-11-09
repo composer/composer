@@ -26,7 +26,7 @@ class PharArchiverTest extends ArchiverTest
 
         // Test archive
         $archiver = new PharArchiver();
-        $archiver->archive($package->getSourceUrl(), $target, 'tar', array('foo/bar', 'baz', '!/foo/bar/baz'));
+        $archiver->archive($package->getSourceUrl(), $target, 'tar', ['foo/bar', 'baz', '!/foo/bar/baz']);
         $this->assertFileExists($target);
 
         $this->filesystem->removeDirectory(dirname($target));
@@ -49,8 +49,6 @@ class PharArchiverTest extends ArchiverTest
 
     /**
      * Create a local dummy repository to run tests against!
-     *
-     * @return void
      */
     protected function setupDummyRepo(): void
     {
@@ -66,13 +64,6 @@ class PharArchiverTest extends ArchiverTest
         chdir($currentWorkDir);
     }
 
-    /**
-     * @param string $path
-     * @param string $content
-     * @param string $currentWorkDir
-     *
-     * @return void
-     */
     protected function writeFile(string $path, string $content, string $currentWorkDir): void
     {
         if (!file_exists(dirname($path))) {

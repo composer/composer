@@ -13,8 +13,15 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Request;
+use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\Loader\RootPackageLoader;
+use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionBumper;
+use Composer\Package\Version\VersionSelector;
+use Composer\Pcre\Preg;
+use Composer\Repository\RepositorySet;
 use Composer\Util\Filesystem;
 use Composer\Util\PackageSorter;
 use Seld\Signal\SignalHandler;
@@ -71,9 +78,9 @@ class RequireCommand extends BaseCommand
     {
         $this
             ->setName('require')
-            ->setAliases(array('r'))
-            ->setDescription('Adds required packages to your composer.json and installs them.')
-            ->setDefinition(array(
+            ->setAliases(['r'])
+            ->setDescription('Adds required packages to your composer.json and installs them')
+            ->setDefinition([
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Optional package name can also include a version constraint, e.g. foo/bar or foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"', null, $this->suggestAvailablePackageInclPlatform()),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
@@ -85,7 +92,7 @@ class RequireCommand extends BaseCommand
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies (implies --no-install).'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Skip the install step after updating the composer.lock file.'),
-                new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Skip the audit step after updating the composer.lock file.'),
+                new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Skip the audit step after updating the composer.lock file (can also be set via the COMPOSER_NO_AUDIT=1 env var).'),
                 new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', 'w', InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated, except those that are root requirements.'),
@@ -101,7 +108,7 @@ class RequireCommand extends BaseCommand
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
                 new InputOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The require command adds required packages to your composer.json and installs them.
@@ -174,8 +181,8 @@ EOT
             /**
              * @see https://github.com/composer/composer/pull/8313#issuecomment-532637955
              */
-            if ($packageType !== 'project') {
-                $io->writeError('<error>The "--fixed" option is only allowed for packages with a "project" type to prevent possible misuses.</error>');
+            if ($packageType !== 'project' && !$input->getOption('dev')) {
+                $io->writeError('<error>The "--fixed" option is only allowed for packages with a "project" type or for dev dependencies to prevent possible misuses.</error>');
 
                 if (!isset($config['type'])) {
                     $io->writeError('<error>If your package is not a library, you can explicitly specify the "type" by using "composer config type project".</error>');
@@ -191,7 +198,7 @@ EOT
         $platformOverrides = $composer->getConfig()->get('platform');
         // initialize $this->repos as it is used by the PackageDiscoveryTrait
         $this->repos = new CompositeRepository(array_merge(
-            array($platformRepo = new PlatformRepository(array(), $platformOverrides)),
+            [$platformRepo = new PlatformRepository([], $platformOverrides)],
             $repos
         ));
 
@@ -208,7 +215,7 @@ EOT
                 $input->getArgument('packages'),
                 $platformRepo,
                 $preferredStability,
-                !$input->getOption('no-update'),
+                $input->getOption('no-update'), // if there is no update, we need to use the best possible version constraint directly as we cannot rely on the solver to guess the best constraint
                 $input->getOption('fixed')
             );
         } catch (\Exception $e) {
@@ -234,23 +241,39 @@ EOT
                 }
 
                 $pkg = PackageSorter::getMostCurrentVersion($this->getRepos()->findPackages($name));
-                if ($pkg instanceof CompletePackageInterface && count(array_intersect($devTags, array_map('strtolower', $pkg->getKeywords()))) > 0) {
-                    $devPackages[] = $name;
+                if ($pkg instanceof CompletePackageInterface) {
+                    $pkgDevTags = array_intersect($devTags, array_map('strtolower', $pkg->getKeywords()));
+                    if (count($pkgDevTags) > 0) {
+                        $devPackages[] = $pkgDevTags;
+                    }
                 }
             }
 
             if (count($devPackages) === count($requirements)) {
                 $plural = count($requirements) > 1 ? 's' : '';
                 $plural2 = count($requirements) > 1 ? 'are' : 'is';
-                $io->warning('The package'.$plural.' you required '.$plural2.' recommended to be placed in require-dev but you did not use --dev.');
+                $plural3 = count($requirements) > 1 ? 'they are' : 'it is';
+                $pkgDevTags = array_unique(array_merge(...$devPackages));
+                $io->warning('The package'.$plural.' you required '.$plural2.' recommended to be placed in require-dev (because '.$plural3.' tagged as "'.implode('", "', $pkgDevTags).'") but you did not use --dev.');
                 if ($io->askConfirmation('<info>Do you want to re-run the command with --dev?</> [<comment>yes</>]? ')) {
                     $input->setOption('dev', true);
                 }
             }
+
+            unset($devPackages, $pkgDevTags);
         }
 
         $requireKey = $input->getOption('dev') ? 'require-dev' : 'require';
         $removeKey = $input->getOption('dev') ? 'require' : 'require-dev';
+
+        // check which requirements need the version guessed
+        $requirementsToGuess = [];
+        foreach ($requirements as $package => $constraint) {
+            if ($constraint === 'guess') {
+                $requirements[$package] = '*';
+                $requirementsToGuess[] = $package;
+            }
+        }
 
         // validate requirements format
         $versionParser = new VersionParser();
@@ -285,7 +308,7 @@ EOT
                     }
 
                     $input->setOption('dev', true);
-                    list($requireKey, $removeKey) = array($removeKey, $requireKey);
+                    [$requireKey, $removeKey] = [$removeKey, $requireKey];
                 }
             }
         }
@@ -300,16 +323,8 @@ EOT
             }
         }
 
-        if (!$input->getOption('dry-run') && !$this->updateFileCleanly($this->json, $requirements, $requireKey, $removeKey, $sortPackages)) {
-            $composerDefinition = $this->json->read();
-            foreach ($requirements as $package => $version) {
-                $composerDefinition[$requireKey][$package] = $version;
-                unset($composerDefinition[$removeKey][$package]);
-                if (isset($composerDefinition[$removeKey]) && count($composerDefinition[$removeKey]) === 0) {
-                    unset($composerDefinition[$removeKey]);
-                }
-            }
-            $this->json->write($composerDefinition);
+        if (!$input->getOption('dry-run')) {
+            $this->updateFile($this->json, $requirements, $requireKey, $removeKey, $sortPackages);
         }
 
         $io->writeError('<info>'.$this->file.' has been '.($this->newlyCreated ? 'created' : 'updated').'</info>');
@@ -321,7 +336,12 @@ EOT
         $composer->getPluginManager()->deactivateInstalledPlugins();
 
         try {
-            return $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
+            $result = $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
+            if ($result === 0 && count($requirementsToGuess) > 0) {
+                $this->updateRequirementsAfterResolution($requirementsToGuess, $requireKey, $removeKey, $sortPackages, $input->getOption('dry-run'));
+            }
+
+            return $result;
         } catch (\Exception $e) {
             if (!$this->dependencyResolutionCompleted) {
                 $this->revertComposerFile();
@@ -334,13 +354,12 @@ EOT
 
     /**
      * @param array<string, string> $newRequirements
-     * @param string $requireKey
      * @return string[]
      */
     private function getInconsistentRequireKeys(array $newRequirements, string $requireKey): array
     {
         $requireKeys = $this->getPackagesByRequireKey();
-        $inconsistentRequirements = array();
+        $inconsistentRequirements = [];
         foreach ($requireKeys as $package => $packageRequireKey) {
             if (!isset($newRequirements[$package])) {
                 continue;
@@ -359,8 +378,8 @@ EOT
     private function getPackagesByRequireKey(): array
     {
         $composerDefinition = $this->json->read();
-        $require = array();
-        $requireDev = array();
+        $require = [];
+        $requireDev = [];
 
         if (isset($composerDefinition['require'])) {
             $require = $composerDefinition['require'];
@@ -378,9 +397,6 @@ EOT
 
     /**
      * @param array<string, string> $requirements
-     * @param string $requireKey
-     * @param string $removeKey
-     * @return int
      * @throws \Exception
      */
     private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, string $requireKey, string $removeKey): int
@@ -396,10 +412,10 @@ EOT
 
         if ($input->getOption('dry-run')) {
             $rootPackage = $composer->getPackage();
-            $links = array(
+            $links = [
                 'require' => $rootPackage->getRequires(),
                 'require-dev' => $rootPackage->getDevRequires(),
-            );
+            ];
             $loader = new ArrayLoader();
             $newLinks = $loader->parseLinks($rootPackage->getName(), $rootPackage->getPrettyVersion(), BasePackage::$supportedLinkTypes[$requireKey]['method'], $requirements);
             $links[$requireKey] = array_merge($links[$requireKey], $newLinks);
@@ -408,6 +424,15 @@ EOT
             }
             $rootPackage->setRequires($links['require']);
             $rootPackage->setDevRequires($links['require-dev']);
+
+            // extract stability flags & references as they weren't present when loading the unmodified composer.json
+            $references = $rootPackage->getReferences();
+            $references = RootPackageLoader::extractReferences($requirements, $references);
+            $rootPackage->setReferences($references);
+            $stabilityFlags = $rootPackage->getStabilityFlags();
+            $stabilityFlags = RootPackageLoader::extractStabilityFlags($requirements, $rootPackage->getMinimumStability(), $stabilityFlags);
+            $rootPackage->setStabilityFlags($stabilityFlags);
+            unset($stabilityFlags, $references);
         }
 
         $updateDevMode = !$input->getOption('update-no-dev');
@@ -435,7 +460,7 @@ EOT
 
         $install = Installer::create($io, $composer);
 
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($composer->getConfig(), $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($composer->getConfig(), $input);
 
         $install
             ->setDryRun($input->getOption('dry-run'))
@@ -479,11 +504,70 @@ EOT
     }
 
     /**
+     * @param list<string> $requirementsToUpdate
+     */
+    private function updateRequirementsAfterResolution(array $requirementsToUpdate, string $requireKey, string $removeKey, bool $sortPackages, bool $dryRun): void
+    {
+        $composer = $this->requireComposer();
+        $locker = $composer->getLocker();
+        $requirements = [];
+        $versionSelector = new VersionSelector(new RepositorySet());
+        $repo = $locker->isLocked() ? $composer->getLocker()->getLockedRepository(true) : $composer->getRepositoryManager()->getLocalRepository();
+        foreach ($requirementsToUpdate as $packageName) {
+            $package = $repo->findPackage($packageName, '*');
+            while ($package instanceof AliasPackage) {
+                $package = $package->getAliasOf();
+            }
+
+            if (!$package instanceof PackageInterface) {
+                continue;
+            }
+
+            $requirements[$packageName] = $versionSelector->findRecommendedRequireVersion($package);
+            $this->getIO()->writeError(sprintf(
+                'Using version <info>%s</info> for <info>%s</info>',
+                $requirements[$packageName],
+                $packageName
+            ));
+        }
+
+        if (!$dryRun) {
+            $this->updateFile($this->json, $requirements, $requireKey, $removeKey, $sortPackages);
+            if ($locker->isLocked()) {
+                $contents = file_get_contents($this->json->getPath());
+                if (false === $contents) {
+                    throw new \RuntimeException('Unable to read '.$this->json->getPath().' contents to update the lock file hash.');
+                }
+                $lock = new JsonFile(Factory::getLockFile($this->json->getPath()));
+                $lockData = $lock->read();
+                $lockData['content-hash'] = Locker::getContentHash($contents);
+                $lock->write($lockData);
+            }
+        }
+    }
+
+    /**
      * @param array<string, string> $new
-     * @param string $requireKey
-     * @param string $removeKey
-     * @param bool $sortPackages
-     * @return bool
+     */
+    private function updateFile(JsonFile $json, array $new, string $requireKey, string $removeKey, bool $sortPackages): void
+    {
+        if ($this->updateFileCleanly($json, $new, $requireKey, $removeKey, $sortPackages)) {
+            return;
+        }
+
+        $composerDefinition = $this->json->read();
+        foreach ($new as $package => $version) {
+            $composerDefinition[$requireKey][$package] = $version;
+            unset($composerDefinition[$removeKey][$package]);
+            if (isset($composerDefinition[$removeKey]) && count($composerDefinition[$removeKey]) === 0) {
+                unset($composerDefinition[$removeKey]);
+            }
+        }
+        $this->json->write($composerDefinition);
+    }
+
+    /**
+     * @param array<string, string> $new
      */
     private function updateFileCleanly(JsonFile $json, array $new, string $requireKey, string $removeKey, bool $sortPackages): bool
     {
@@ -509,7 +593,6 @@ EOT
 
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-
     }
 
     private function revertComposerFile(): void

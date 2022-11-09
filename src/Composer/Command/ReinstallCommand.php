@@ -34,15 +34,12 @@ class ReinstallCommand extends BaseCommand
 {
     use CompletionTrait;
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this
             ->setName('reinstall')
             ->setDescription('Uninstalls and reinstalls the given package names')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),
                 new InputOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).', null, $this->suggestPreferInstall()),
@@ -55,7 +52,7 @@ class ReinstallCommand extends BaseCommand
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'List of package names to reinstall, can include a wildcard (*) to match any substring.', null, $this->suggestInstalledPackage(false)),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>reinstall</info> command looks up installed packages by name,
@@ -78,8 +75,8 @@ EOT
         $composer = $this->requireComposer();
 
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-        $packagesToReinstall = array();
-        $packageNamesToReinstall = array();
+        $packagesToReinstall = [];
+        $packageNamesToReinstall = [];
         foreach ($input->getArgument('packages') as $pattern) {
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
             $matched = false;
@@ -102,7 +99,7 @@ EOT
             return 1;
         }
 
-        $uninstallOperations = array();
+        $uninstallOperations = [];
         foreach ($packagesToReinstall as $package) {
             $uninstallOperations[] = new UninstallOperation($package);
         }
@@ -119,7 +116,7 @@ EOT
         $installOperations = $transaction->getOperations();
 
         // reverse-sort the uninstalls based on the install order
-        $installOrder = array();
+        $installOrder = [];
         foreach ($installOperations as $index => $op) {
             if ($op instanceof InstallOperation && !$op->getPackage() instanceof AliasPackage) {
                 $installOrder[$op->getPackage()->getName()] = $index;
@@ -134,7 +131,7 @@ EOT
         $eventDispatcher->dispatch($commandEvent->getName(), $commandEvent);
 
         $config = $composer->getConfig();
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($config, $input);
 
         $installationManager = $composer->getInstallationManager();
         $downloadManager = $composer->getDownloadManager();

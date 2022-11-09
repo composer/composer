@@ -54,7 +54,7 @@ class Event extends BaseEvent
      * @param array<string|int|float|bool|null> $args Arguments passed by the user
      * @param mixed[] $flags Optional flags to pass data not as argument
      */
-    public function __construct(string $name, Composer $composer, IOInterface $io, bool $devMode = false, array $args = array(), array $flags = array())
+    public function __construct(string $name, Composer $composer, IOInterface $io, bool $devMode = false, array $args = [], array $flags = [])
     {
         parent::__construct($name, $args, $flags);
         $this->composer = $composer;
@@ -64,8 +64,6 @@ class Event extends BaseEvent
 
     /**
      * Returns the composer instance.
-     *
-     * @return Composer
      */
     public function getComposer(): Composer
     {
@@ -74,8 +72,6 @@ class Event extends BaseEvent
 
     /**
      * Returns the IO instance.
-     *
-     * @return IOInterface
      */
     public function getIO(): IOInterface
     {
@@ -84,8 +80,6 @@ class Event extends BaseEvent
 
     /**
      * Return the dev mode flag
-     *
-     * @return bool
      */
     public function isDevMode(): bool
     {
@@ -105,7 +99,6 @@ class Event extends BaseEvent
     /**
      * Set the originating event.
      *
-     * @param  BaseEvent $event
      * @return $this
      */
     public function setOriginatingEvent(BaseEvent $event): self
@@ -117,9 +110,6 @@ class Event extends BaseEvent
 
     /**
      * Returns the upper-most event in chain.
-     *
-     * @param  BaseEvent $event
-     * @return BaseEvent
      */
     private function calculateOriginatingEvent(BaseEvent $event): BaseEvent
     {
