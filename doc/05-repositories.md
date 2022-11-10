@@ -394,7 +394,6 @@ GitHub and Bitbucket:
             "url":  "git@bitbucket.org:vendor/my-private-repo.git"
         }
     ],
-    
     "require": {
         "vendor/my-private-repo": "dev-master"
     }
