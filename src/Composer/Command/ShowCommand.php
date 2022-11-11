@@ -608,18 +608,18 @@ EOT
                     if (\count($directDeps) > 0) {
                         $this->printPackages($io, $directDeps, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     } else {
-                        $io->writeError('Everything up to date');
+                        $io->writeError('<info>Everything up to date</>');
                     }
                     $io->writeError('');
                     $io->writeError('<info>Transitive dependencies not required in composer.json:</>');
                     if (\count($transitiveDeps) > 0) {
                         $this->printPackages($io, $transitiveDeps, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     } else {
-                        $io->writeError('Everything up to date');
+                        $io->writeError('<info>Everything up to date</>');
                     }
                 } else {
                     if ($writeLatest && \count($packages) === 0) {
-                        $io->writeError('All your direct dependencies are up to date');
+                        $io->writeError('<info>All your direct dependencies are up to date</>');
                     } else {
                         $this->printPackages($io, $packages, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     }
