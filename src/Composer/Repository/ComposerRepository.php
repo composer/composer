@@ -690,14 +690,15 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if ($apiUrl !== null && count($packageConstraintMap) > 0) {
-            $options = [
-                'http' => [
-                    'method' => 'POST',
-                    'header' => ['Content-type: application/x-www-form-urlencoded'],
-                    'timeout' => 10,
-                    'content' => http_build_query(['packages' => array_keys($packageConstraintMap)]),
-                ],
-            ];
+            $options = $this->options;
+            $options['http']['method'] = 'POST';
+            if (isset($options['http']['header'])) {
+                $options['http']['header'] = (array) $options['http']['header'];
+            }
+            $options['http']['header'][] = 'Content-type: application/x-www-form-urlencoded';
+            $options['http']['timeout'] = 10;
+            $options['http']['content'] = http_build_query(['packages' => array_keys($packageConstraintMap)]);
+
             $response = $this->httpDownloader->get($apiUrl, $options);
             /** @var string $name */
             foreach ($response->decodeJson()['advisories'] as $name => $list) {
