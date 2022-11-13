@@ -112,8 +112,10 @@ class HttpDownloaderMock extends HttpDownloader
         }
 
         throw new AssertionFailedError(
-            'Received unexpected request for "'.$fileUrl.'"'.PHP_EOL.
-            (is_array($this->expectations) && count($this->expectations) > 0 ? 'Expected "'.$this->expectations[0]['url'].'" at this point.' : 'Expected no more calls at this point.').PHP_EOL.
+            'Received unexpected request for "'.$fileUrl.'" with options "'.json_encode($options).'"'.PHP_EOL.
+            (is_array($this->expectations) && count($this->expectations) > 0
+                ? 'Expected "'.$this->expectations[0]['url'].($this->expectations[0]['options'] !== null ? '" with options "'.json_encode($this->expectations[0]['options']) : '').'" at this point.'
+                : 'Expected no more calls at this point.').PHP_EOL.
             'Received calls:'.PHP_EOL.implode(PHP_EOL, array_slice($this->log, 0, -1))
         );
     }

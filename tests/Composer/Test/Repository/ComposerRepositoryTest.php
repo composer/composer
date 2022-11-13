@@ -16,6 +16,7 @@ use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryInterface;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Test\Mock\FactoryMock;
 use Composer\Test\TestCase;
 use Composer\Package\Loader\ArrayLoader;
@@ -366,5 +367,54 @@ class ComposerRepositoryTest extends TestCase
         );
 
         $this->assertEquals(['foo/bar'], $repository->getPackageNames());
+    }
+
+    public function testGetSecurityAdvisoriesAssertRepositoryHttpOptionsAreUsed(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'packages' => ['foo/bar' => [
+                            'dev-branch' => ['name' => 'foo/bar'],
+                            'v1.0.0' => ['name' => 'foo/bar'],
+                        ]],
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'security-advisories' => [
+                            'api-url' => 'https://example.org/security-advisories',
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+                [
+                    'url' => 'https://example.org/security-advisories',
+                    'body' => JsonFile::encode(['advisories' => []]),
+                    'options' => ['http' => [
+                        'verify_peer' => false,
+                        'method' => 'POST',
+                        'header' => [
+                            'Content-type: application/x-www-form-urlencoded',
+                        ],
+                        'timeout' => 10,
+                        'content' => http_build_query(['packages' => ['foo/bar']]),
+                    ]],
+                ]
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $this->assertSame([
+            'namesFound' => [],
+            'advisories' => [],
+        ], $repository->getSecurityAdvisories(['foo/bar' => new Constraint('=', '1.0.0.0')]));
     }
 }
