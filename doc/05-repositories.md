@@ -388,15 +388,15 @@ GitHub and Bitbucket:
 
 ```json
 {
-    "require": {
-        "vendor/my-private-repo": "dev-master"
-    },
     "repositories": [
         {
             "type": "vcs",
             "url":  "git@bitbucket.org:vendor/my-private-repo.git"
         }
-    ]
+    ],
+    "require": {
+        "vendor/my-private-repo": "dev-master"
+    }
 }
 ```
 
