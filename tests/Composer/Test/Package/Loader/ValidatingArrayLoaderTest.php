@@ -90,6 +90,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     'require' => [
                         'php' => '^7.2 || ^8.0',
                         'ext-openssl' => '*',
+                        'lib-curl' => '*',
                         'a/b' => '1.*',
                         'b/c' => '~2',
                         'example/pkg' => '>2.0-dev,<2.4-dev',
@@ -471,6 +472,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     'require' => [
                         'php' => '>=5.6',
                         'ext-name' => '*',
+                        'lib-name' => '*',
                         'foo/baz' => '*',
                         'bar/baz' => '>=1.0',
                         'bar/hacked' => '@stable',
@@ -480,6 +482,7 @@ class ValidatingArrayLoaderTest extends TestCase
                 [
                     'require.php : unbound version constraints (>=5.6) should be avoided',
                     // ext-name is correct / allowed to be unbounded.
+                    // lib-name is correct / allowed to be unbounded.
                     'require.foo/baz : unbound version constraints (*) should be avoided',
                     'require.bar/baz : unbound version constraints (>=1.0) should be avoided',
                     'require.bar/hacked : unbound version constraints (@stable) should be avoided',
