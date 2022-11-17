@@ -89,7 +89,7 @@ class VersionBumper
         if (Preg::isMatchAllWithOffsets($pattern, $prettyConstraint, $matches)) {
             $modified = $prettyConstraint;
             foreach (array_reverse($matches['constraint']) as $match) {
-                $modified = substr_replace($modified, $newPrettyConstraint, $match[1], Platform::strlen($match[0]));
+                $modified = substr_replace($modified, $newPrettyConstraint, $match[1], Platform::strlen((string) $match[0]));
             }
 
             // if it is strictly equal to the previous one then no need to change anything

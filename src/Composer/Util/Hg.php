@@ -58,9 +58,9 @@ class Hg
         }
 
         // Try with the authentication information available
-        if (Preg::isMatch('{^(https?)://((.+)(?:\:(.+))?@)?([^/]+)(/.*)?}mi', $url, $match) && $this->io->hasAuthentication($match[5])) {
-            $auth = $this->io->getAuthentication($match[5]);
-            $authenticatedUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[5] . (!empty($match[6]) ? $match[6] : null);
+        if (Preg::isMatch('{^(https?)://((.+)(?:\:(.+))?@)?([^/]+)(/.*)?}mi', $url, $match) && $this->io->hasAuthentication((string) $match[5])) {
+            $auth = $this->io->getAuthentication((string) $match[5]);
+            $authenticatedUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[5] . $match[6];
 
             $command = $commandCallable($authenticatedUrl);
 

@@ -207,7 +207,7 @@ class SvnDriver extends VcsDriver
         $identifier = '/' . trim($identifier, '/') . '/';
 
         Preg::match('{^(.+?)(@\d+)?/$}', $identifier, $match);
-        if (!empty($match[2])) {
+        if (null !== $match[2] && null !== $match[1]) {
             $path = $match[1];
             $rev = $match[2];
         } else {
@@ -217,7 +217,7 @@ class SvnDriver extends VcsDriver
 
         $output = $this->execute('svn info', $this->baseUrl . $path . $rev);
         foreach ($this->process->splitLines($output) as $line) {
-            if ($line && Preg::isMatch('{^Last Changed Date: ([^(]+)}', $line, $match)) {
+            if ($line && Preg::isMatchStrictGroups('{^Last Changed Date: ([^(]+)}', $line, $match)) {
                 return new \DateTimeImmutable($match[1], new \DateTimeZone('UTC'));
             }
         }
