@@ -135,12 +135,12 @@ class AllFunctionalTest extends TestCase
                     $line++;
                 }
                 if ($expected[$i] === '%') {
-                    Preg::isMatch('{%(.+?)%}', substr($expected, $i), $match);
+                    Preg::isMatchStrictGroups('{%(.+?)%}', substr($expected, $i), $match);
                     $regex = $match[1];
 
                     if (Preg::isMatch('{'.$regex.'}', substr($output, $j), $match)) {
                         $i += strlen($regex) + 2;
-                        $j += strlen($match[0]);
+                        $j += strlen((string) $match[0]);
                         continue;
                     } else {
                         $this->fail(

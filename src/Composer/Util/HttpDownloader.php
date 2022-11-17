@@ -218,7 +218,7 @@ class HttpDownloader
         }
 
         // capture username/password from URL if there is one
-        if (Preg::isMatch('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $request['url'], $match)) {
+        if (Preg::isMatchStrictGroups('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $request['url'], $match)) {
             $this->io->setAuthentication($job['origin'], rawurldecode($match[1]), rawurldecode($match[2]));
         }
 

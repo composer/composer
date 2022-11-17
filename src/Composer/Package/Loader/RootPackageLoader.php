@@ -193,7 +193,7 @@ class RootPackageLoader extends ArrayLoader
     private function extractAliases(array $requires, array $aliases): array
     {
         foreach ($requires as $reqName => $reqVersion) {
-            if (Preg::isMatch('{(?:^|\| *|, *)([^,\s#|]+)(?:#[^ ]+)? +as +([^,\s|]+)(?:$| *\|| *,)}', $reqVersion, $match)) {
+            if (Preg::isMatchStrictGroups('{(?:^|\| *|, *)([^,\s#|]+)(?:#[^ ]+)? +as +([^,\s|]+)(?:$| *\|| *,)}', $reqVersion, $match)) {
                 $aliases[] = [
                     'package' => strtolower($reqName),
                     'version' => $this->versionParser->normalize($match[1], $reqVersion),
@@ -239,7 +239,7 @@ class RootPackageLoader extends ArrayLoader
             // parse explicit stability flags to the most unstable
             $matched = false;
             foreach ($constraints as $constraint) {
-                if (Preg::isMatch('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $constraint, $match)) {
+                if (Preg::isMatchStrictGroups('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $constraint, $match)) {
                     $name = strtolower($reqName);
                     $stability = $stabilities[VersionParser::normalizeStability($match[1])];
 
@@ -285,7 +285,7 @@ class RootPackageLoader extends ArrayLoader
     {
         foreach ($requires as $reqName => $reqVersion) {
             $reqVersion = Preg::replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
-            if (Preg::isMatch('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === VersionParser::parseStability($reqVersion)) {
+            if (Preg::isMatchStrictGroups('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === VersionParser::parseStability($reqVersion)) {
                 $name = strtolower($reqName);
                 $references[$name] = $match[1];
             }

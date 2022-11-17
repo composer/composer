@@ -465,14 +465,15 @@ EOT
     private function parseAuthorString(string $author): array
     {
         if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+)(?:\s+<(?P<email>.+?)>)?$/u', $author, $match)) {
-            $hasEmail = isset($match['email']) && '' !== $match['email'];
-            if ($hasEmail && !$this->isValidEmail($match['email'])) {
+            assert(is_string($match['name']));
+
+            if (null !== $match['email'] && !$this->isValidEmail($match['email'])) {
                 throw new \InvalidArgumentException('Invalid email "'.$match['email'].'"');
             }
 
             return [
                 'name' => trim($match['name']),
-                'email' => $hasEmail ? $match['email'] : null,
+                'email' => $match['email'],
             ];
         }
 
@@ -536,7 +537,7 @@ EOT
 
         if ($cmd->isSuccessful()) {
             $this->gitConfig = [];
-            Preg::matchAll('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches);
+            Preg::matchAllStrictGroups('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches);
             foreach ($matches[1] as $key => $match) {
                 $this->gitConfig[$match] = $matches[2][$key];
             }

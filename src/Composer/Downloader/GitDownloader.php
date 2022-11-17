@@ -249,13 +249,13 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         $refs = trim($output);
-        if (!Preg::isMatch('{^([a-f0-9]+) HEAD$}mi', $refs, $match)) {
+        if (!Preg::isMatchStrictGroups('{^([a-f0-9]+) HEAD$}mi', $refs, $match)) {
             // could not match the HEAD for some reason
             return null;
         }
 
         $headRef = $match[1];
-        if (!Preg::isMatchAll('{^'.$headRef.' refs/heads/(.+)$}mi', $refs, $matches)) {
+        if (!Preg::isMatchAllStrictGroups('{^'.$headRef.' refs/heads/(.+)$}mi', $refs, $matches)) {
             // not on a branch, we are either on a not-modified tag or some sort of detached head, so skip this
             return null;
         }
@@ -272,7 +272,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
             // try to find matching branch names in remote repos
             foreach ($candidateBranches as $candidate) {
-                if (Preg::isMatchAll('{^[a-f0-9]+ refs/remotes/((?:[^/]+)/'.preg_quote($candidate).')$}mi', $refs, $matches)) {
+                if (Preg::isMatchAllStrictGroups('{^[a-f0-9]+ refs/remotes/((?:[^/]+)/'.preg_quote($candidate).')$}mi', $refs, $matches)) {
                     foreach ($matches[1] as $match) {
                         $branch = $candidate;
                         $remoteBranches[] = $match;
@@ -284,7 +284,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             // if it doesn't exist, then we assume it is an unpushed branch
             // this is bad as we have no reference point to do a diff so we just bail listing
             // the branch as being unpushed
-            if (!$remoteBranches) {
+            if (count($remoteBranches) === 0) {
                 $unpushedChanges = 'Branch ' . $branch . ' could not be found on any remote and appears to be unpushed';
                 $branchNotFoundError = true;
             } else {

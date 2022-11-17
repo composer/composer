@@ -63,7 +63,7 @@ class GitBitbucketDriver extends VcsDriver
      */
     public function initialize(): void
     {
-        if (!Preg::isMatch('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)?$#i', $this->url, $match)) {
+        if (!Preg::isMatchStrictGroups('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(?:\.git|/?)?$#i', $this->url, $match)) {
             throw new \InvalidArgumentException(sprintf('The Bitbucket repository URL %s is invalid. It must be the HTTPS URL of a Bitbucket repository.', $this->url));
         }
 

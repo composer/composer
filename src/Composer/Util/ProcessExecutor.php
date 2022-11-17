@@ -460,7 +460,7 @@ class ProcessExecutor
         // In addition to whitespace, commas need quoting to preserve paths
         $quote = strpbrk($argument, " \t,") !== false;
         $argument = Preg::replace('/(\\\\*)"/', '$1$1\\"', $argument, -1, $dquotes);
-        $meta = $dquotes || Preg::isMatch('/%[^%]+%|![^!]+!/', $argument);
+        $meta = $dquotes > 0 || Preg::isMatch('/%[^%]+%|![^!]+!/', $argument);
 
         if (!$meta && !$quote) {
             $quote = strpbrk($argument, '^&|<>()') !== false;

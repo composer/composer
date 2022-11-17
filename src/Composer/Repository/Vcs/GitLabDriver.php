@@ -97,11 +97,13 @@ class GitLabDriver extends VcsDriver
             throw new \InvalidArgumentException(sprintf('The GitLab repository URL %s is invalid. It must be the HTTP URL of a GitLab project.', $this->url));
         }
 
-        $guessedDomain = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
+        assert(is_string($match['parts']));
+        assert(is_string($match['repo']));
+        $guessedDomain = $match['domain'] ?? (string) $match['domain2'];
         $configuredDomains = $this->config->get('gitlab-domains');
         $urlParts = explode('/', $match['parts']);
 
-        $this->scheme = !empty($match['scheme'])
+        $this->scheme = in_array($match['scheme'], ['https', 'http'], true)
             ? $match['scheme']
             : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https')
         ;
@@ -557,8 +559,10 @@ class GitLabDriver extends VcsDriver
             return false;
         }
 
-        $scheme = !empty($match['scheme']) ? $match['scheme'] : null;
-        $guessedDomain = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
+        assert(is_string($match['parts']));
+        assert(is_string($match['repo']));
+        $scheme = $match['scheme'];
+        $guessedDomain = $match['domain'] ?? (string) $match['domain2'];
         $urlParts = explode('/', $match['parts']);
 
         if (false === self::determineOrigin($config->get('gitlab-domains'), $guessedDomain, $urlParts, $match['port'])) {
@@ -580,7 +584,7 @@ class GitLabDriver extends VcsDriver
 
         $links = explode(',', $header);
         foreach ($links as $link) {
-            if (Preg::isMatch('{<(.+?)>; *rel="next"}', $link, $match)) {
+            if (Preg::isMatchStrictGroups('{<(.+?)>; *rel="next"}', $link, $match)) {
                 return $match[1];
             }
         }

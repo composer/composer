@@ -140,7 +140,7 @@ class BinaryInstaller
         $handle = fopen($bin, 'r');
         $line = fgets($handle);
         fclose($handle);
-        if (Preg::isMatch('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
+        if (Preg::isMatchStrictGroups('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', (string) $line, $match)) {
             return trim($match[1]);
         }
 
@@ -218,7 +218,7 @@ class BinaryInstaller
         // which allows calling the proxy with a custom php process
         if (Preg::isMatch('{^(#!.*\r?\n)?[\r\n\t ]*<\?php}', $binContents, $match)) {
             // carry over the existing shebang if present, otherwise add our own
-            $proxyCode = empty($match[1]) ? '#!/usr/bin/env php' : trim($match[1]);
+            $proxyCode = $match[1] === null ? '#!/usr/bin/env php' : trim($match[1]);
             $binPathExported = $this->filesystem->findShortestPathCode($link, $bin, false, true);
             $streamProxyCode = $streamHint = '';
             $globalsCode = '$GLOBALS[\'_composer_bin_dir\'] = __DIR__;'."\n";
@@ -237,7 +237,7 @@ class BinaryInstaller
                 $data = str_replace(\'__DIR__\', var_export(dirname($this->realpath), true), $data);
                 $data = str_replace(\'__FILE__\', var_export($this->realpath, true), $data);';
             }
-            if (trim($match[0]) !== '<?php') {
+            if (trim((string) $match[0]) !== '<?php') {
                 $streamHint = ' using a stream wrapper to prevent the shebang from being output on PHP<8'."\n *";
                 $streamProxyCode = <<<STREAMPROXY
 if (PHP_VERSION_ID < 80000) {

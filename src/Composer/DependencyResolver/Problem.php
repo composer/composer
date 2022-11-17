@@ -114,7 +114,7 @@ class Problem
         $deduplicatableRuleTypes = [Rule::RULE_PACKAGE_REQUIRES, Rule::RULE_PACKAGE_CONFLICT];
         foreach ($rules as $rule) {
             $message = $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
-            if (in_array($rule->getReason(), $deduplicatableRuleTypes, true) && Preg::isMatch('{^(?P<package>\S+) (?P<version>\S+) (?P<type>requires|conflicts)}', $message, $m)) {
+            if (in_array($rule->getReason(), $deduplicatableRuleTypes, true) && Preg::isMatchStrictGroups('{^(?P<package>\S+) (?P<version>\S+) (?P<type>requires|conflicts)}', $message, $m)) {
                 $template = Preg::replace('{^\S+ \S+ }', '%s%s ', $message);
                 $messages[] = $template;
                 $templates[$template][$m[1]][$parser->normalize($m[2])] = $m[2];
