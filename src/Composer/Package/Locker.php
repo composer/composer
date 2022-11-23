@@ -15,7 +15,9 @@ namespace Composer\Package;
 use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
 use Composer\Pcre\Preg;
+use Composer\Repository\InstalledRepository;
 use Composer\Repository\LockArrayRepository;
+use Composer\Repository\PlatformRepository;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
@@ -495,5 +497,42 @@ class Locker
         }
 
         return $datetime ? $datetime->format(DATE_RFC3339) : null;
+    }
+
+    public function getMissingRequirementInfo(RootPackageInterface $package, bool $includeDev): array
+    {
+        $missingRequirementInfo = [];
+        $missingRequirements = false;
+        $sets = [['repo' => $this->getLockedRepository(false), 'method' => 'getRequires', 'description' => 'Required']];
+        if ($includeDev === true) {
+            $sets[] = ['repo' => $this->getLockedRepository(true), 'method' => 'getDevRequires', 'description' => 'Required (in require-dev)'];
+        }
+
+        foreach ($sets as $set) {
+            $installedRepo = new InstalledRepository([$set['repo']]);
+
+            foreach (call_user_func([$package, $set['method']]) as $link) {
+                if (PlatformRepository::isPlatformPackage($link->getTarget())) {
+                    continue;
+                }
+                if (!$installedRepo->findPackagesWithReplacersAndProviders($link->getTarget(), $link->getConstraint())) {
+                    if ($results = $installedRepo->findPackagesWithReplacersAndProviders($link->getTarget())) {
+                        $provider = reset($results);
+                        $missingRequirementInfo[] = '- ' . $set['description'].' package "' . $link->getTarget() . '" is in the lock file as "'.$provider->getPrettyVersion().'" but that does not satisfy your constraint "'.$link->getPrettyConstraint().'".';
+                    } else {
+                        $missingRequirementInfo[] = '- ' . $set['description'].' package "' . $link->getTarget() . '" is not present in the lock file.';
+                    }
+                    $missingRequirements = true;
+                }
+            }
+        }
+
+        if ($missingRequirements) {
+            $missingRequirementInfo[] = 'This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.';
+            $missingRequirementInfo[] = 'Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md';
+            $missingRequirementInfo[] = 'and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require';
+        }
+
+        return $missingRequirementInfo;
     }
 }
