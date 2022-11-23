@@ -499,6 +499,9 @@ class Locker
         return $datetime ? $datetime->format(DATE_RFC3339) : null;
     }
 
+    /**
+     * @return array<string>
+     */
     public function getMissingRequirementInfo(RootPackageInterface $package, bool $includeDev): array
     {
         $missingRequirementInfo = [];
@@ -515,8 +518,9 @@ class Locker
                 if (PlatformRepository::isPlatformPackage($link->getTarget())) {
                     continue;
                 }
-                if (!$installedRepo->findPackagesWithReplacersAndProviders($link->getTarget(), $link->getConstraint())) {
-                    if ($results = $installedRepo->findPackagesWithReplacersAndProviders($link->getTarget())) {
+                if ($installedRepo->findPackagesWithReplacersAndProviders($link->getTarget(), $link->getConstraint()) === []) {
+                    $results = $installedRepo->findPackagesWithReplacersAndProviders($link->getTarget());
+                    if ($results !== []) {
                         $provider = reset($results);
                         $missingRequirementInfo[] = '- ' . $set['description'].' package "' . $link->getTarget() . '" is in the lock file as "'.$provider->getPrettyVersion().'" but that does not satisfy your constraint "'.$link->getPrettyConstraint().'".';
                     } else {

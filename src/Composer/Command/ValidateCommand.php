@@ -100,7 +100,7 @@ EOT
         }
 
         if ($locker->isLocked()) {
-            $lockErrors[] = array_merge($lockErrors, $locker->getMissingRequirementInfo($composer->getPackage(), true));
+            $lockErrors = array_merge($lockErrors, $locker->getMissingRequirementInfo($composer->getPackage(), true));
         }
 
         $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true);
