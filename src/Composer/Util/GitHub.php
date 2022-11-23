@@ -154,15 +154,15 @@ class GitHub
 
         foreach ($headers as $header) {
             $header = trim($header);
-            if (false === strpos($header, 'X-RateLimit-')) {
+            if (false === strpos($header, 'x-ratelimit-')) {
                 continue;
             }
             [$type, $value] = explode(':', $header, 2);
             switch ($type) {
-                case 'X-RateLimit-Limit':
+                case 'x-ratelimit-limit':
                     $rateLimit['limit'] = (int) trim($value);
                     break;
-                case 'X-RateLimit-Reset':
+                case 'x-ratelimit-reset':
                     $rateLimit['reset'] = date('Y-m-d H:i:s', (int) trim($value));
                     break;
             }
