@@ -21,22 +21,22 @@ class ArrayRepositoryTest extends TestCase
     public function testAddPackage(): void
     {
         $repo = new ArrayRepository;
-        $repo->addPackage($this->getPackage('foo', '1'));
+        $repo->addPackage(self::getPackage('foo', '1'));
 
         $this->assertCount(1, $repo);
     }
 
     public function testRemovePackage(): void
     {
-        $package = $this->getPackage('bar', '2');
+        $package = self::getPackage('bar', '2');
 
         $repo = new ArrayRepository;
-        $repo->addPackage($this->getPackage('foo', '1'));
+        $repo->addPackage(self::getPackage('foo', '1'));
         $repo->addPackage($package);
 
         $this->assertCount(2, $repo);
 
-        $repo->removePackage($this->getPackage('foo', '1'));
+        $repo->removePackage(self::getPackage('foo', '1'));
 
         $this->assertCount(1, $repo);
         $this->assertEquals([$package], $repo->getPackages());
@@ -45,19 +45,19 @@ class ArrayRepositoryTest extends TestCase
     public function testHasPackage(): void
     {
         $repo = new ArrayRepository;
-        $repo->addPackage($this->getPackage('foo', '1'));
-        $repo->addPackage($this->getPackage('bar', '2'));
+        $repo->addPackage(self::getPackage('foo', '1'));
+        $repo->addPackage(self::getPackage('bar', '2'));
 
-        $this->assertTrue($repo->hasPackage($this->getPackage('foo', '1')));
-        $this->assertFalse($repo->hasPackage($this->getPackage('bar', '1')));
+        $this->assertTrue($repo->hasPackage(self::getPackage('foo', '1')));
+        $this->assertFalse($repo->hasPackage(self::getPackage('bar', '1')));
     }
 
     public function testFindPackages(): void
     {
         $repo = new ArrayRepository();
-        $repo->addPackage($this->getPackage('foo', '1'));
-        $repo->addPackage($this->getPackage('bar', '2'));
-        $repo->addPackage($this->getPackage('bar', '3'));
+        $repo->addPackage(self::getPackage('foo', '1'));
+        $repo->addPackage(self::getPackage('bar', '2'));
+        $repo->addPackage(self::getPackage('bar', '3'));
 
         $foo = $repo->findPackages('foo');
         $this->assertCount(1, $foo);
@@ -72,14 +72,14 @@ class ArrayRepositoryTest extends TestCase
     {
         $repo = new ArrayRepository();
 
-        $package = $this->getPackage('foo', '1');
-        $alias = $this->getAliasPackage($package, '2');
+        $package = self::getPackage('foo', '1');
+        $alias = self::getAliasPackage($package, '2');
 
         $repo->addPackage($alias);
 
         $this->assertCount(2, $repo);
-        $this->assertTrue($repo->hasPackage($this->getPackage('foo', '1')));
-        $this->assertTrue($repo->hasPackage($this->getPackage('foo', '2')));
+        $this->assertTrue($repo->hasPackage(self::getPackage('foo', '1')));
+        $this->assertTrue($repo->hasPackage(self::getPackage('foo', '2')));
 
         $repo->removePackage($alias);
 
@@ -90,8 +90,8 @@ class ArrayRepositoryTest extends TestCase
     {
         $repo = new ArrayRepository();
 
-        $repo->addPackage($this->getPackage('foo', '1'));
-        $repo->addPackage($this->getPackage('bar', '1'));
+        $repo->addPackage(self::getPackage('foo', '1'));
+        $repo->addPackage(self::getPackage('bar', '1'));
 
         $this->assertSame(
             [['name' => 'foo', 'description' => null]],
@@ -112,10 +112,10 @@ class ArrayRepositoryTest extends TestCase
     {
         $repo = new ArrayRepository();
 
-        $repo->addPackage($this->getPackage('foo', '1', 'Composer\Package\CompletePackage'));
-        $repo->addPackage($this->getPackage('bar', '1', 'Composer\Package\CompletePackage'));
+        $repo->addPackage(self::getPackage('foo', '1', 'Composer\Package\CompletePackage'));
+        $repo->addPackage(self::getPackage('bar', '1', 'Composer\Package\CompletePackage'));
 
-        $package = $this->getPackage('foobar', '1', 'Composer\Package\CompletePackage');
+        $package = self::getPackage('foobar', '1', 'Composer\Package\CompletePackage');
         $package->setType('composer-plugin');
         $repo->addPackage($package);
 
@@ -136,10 +136,10 @@ class ArrayRepositoryTest extends TestCase
     {
         $repo = new ArrayRepository();
 
-        $package1 = $this->getPackage('foo1', '1');
+        $package1 = self::getPackage('foo1', '1');
         $package1->setAbandoned(true);
         $repo->addPackage($package1);
-        $package2 = $this->getPackage('foo2', '1');
+        $package2 = self::getPackage('foo2', '1');
         $package2->setAbandoned('bar');
         $repo->addPackage($package2);
 

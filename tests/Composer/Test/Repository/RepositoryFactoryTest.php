@@ -63,7 +63,7 @@ class RepositoryFactoryTest extends TestCase
         $this->assertSame($expected, RepositoryFactory::generateRepositoryName($index, $config, $existingRepos));
     }
 
-    public function generateRepositoryNameProvider(): array
+    public static function generateRepositoryNameProvider(): array
     {
         return [
             [0, [], [], '0'],

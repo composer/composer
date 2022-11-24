@@ -31,7 +31,7 @@ final class PlatformRequirementFilterFactoryTest extends TestCase
     /**
      * @return array<string, mixed[]>
      */
-    public function dataFromBoolOrList(): array
+    public static function dataFromBoolOrList(): array
     {
         return [
             'true creates IgnoreAllFilter' => [true, 'Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter'],

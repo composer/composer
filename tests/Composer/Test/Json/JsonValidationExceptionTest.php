@@ -35,7 +35,7 @@ class JsonValidationExceptionTest extends TestCase
         $this->assertEquals([], $object->getErrors());
     }
 
-    public function errorProvider(): array
+    public static function errorProvider(): array
     {
         return [
             ['test message', [], 'test message', []],

@@ -61,7 +61,7 @@ class ComposerRepositoryTest extends TestCase
         }
     }
 
-    public function loadDataProvider(): array
+    public static function loadDataProvider(): array
     {
         return [
             // Old repository format
@@ -301,7 +301,7 @@ class ComposerRepositoryTest extends TestCase
         $this->assertSame($expected, $method->invoke($repository, $url));
     }
 
-    public function provideCanonicalizeUrlTestCases(): array
+    public static function provideCanonicalizeUrlTestCases(): array
     {
         return [
             [

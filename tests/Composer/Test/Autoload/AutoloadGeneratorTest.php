@@ -1830,7 +1830,7 @@ EOF;
     /**
      * @return array<string, mixed[]>
      */
-    public function platformCheckProvider(): array
+    public static function platformCheckProvider(): array
     {
         $versionParser = new VersionParser();
 

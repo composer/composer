@@ -32,11 +32,11 @@ class FundCommandTest extends TestCase
         $this->initTempComposer($composerJson);
 
         $packages = [
-            'first/pkg' => $this->getPackage('first/pkg', '2.3.4'),
-            'stable/pkg' => $this->getPackage('stable/pkg', '1.0.0'),
+            'first/pkg' => self::getPackage('first/pkg', '2.3.4'),
+            'stable/pkg' => self::getPackage('stable/pkg', '1.0.0'),
         ];
         $devPackages = [
-            'dev/pkg' => $this->getPackage('dev/pkg', '2.3.4.5')
+            'dev/pkg' => self::getPackage('dev/pkg', '2.3.4.5')
         ];
 
         if (count($funding) !== 0) {
@@ -59,7 +59,7 @@ class FundCommandTest extends TestCase
         $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
-    public function useCaseProvider(): Generator
+    public static function useCaseProvider(): Generator
     {
         yield 'no funding links present, locally or remotely' => [
             [

@@ -34,7 +34,7 @@ class ConfigCommandTest extends TestCase
         $this->assertSame($expected, json_decode((string) file_get_contents('composer.json'), true));
     }
 
-    public function provideConfigUpdates(): \Generator
+    public static function provideConfigUpdates(): \Generator
     {
         yield 'set scripts' => [
             [],
@@ -101,7 +101,7 @@ class ConfigCommandTest extends TestCase
         $this->assertSame($composerJson, json_decode((string) file_get_contents('composer.json'), true), 'The composer.json should not be modified by config reads');
     }
 
-    public function provideConfigReads(): \Generator
+    public static function provideConfigReads(): \Generator
     {
         yield 'read description' => [
             ['description' => 'foo bar'],

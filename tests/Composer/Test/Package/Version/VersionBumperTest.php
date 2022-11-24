@@ -40,7 +40,7 @@ class VersionBumperTest extends TestCase
         $this->assertSame($expectedRequirement, $newConstraint);
     }
 
-    public function provideBumpRequirementTests(): Generator
+    public static function provideBumpRequirementTests(): Generator
     {
         // constraint, version, expected recommendation, [branch-alias]
         yield 'upgrade caret' => ['^1.0', '1.2.1', '^1.2.1'];

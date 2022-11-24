@@ -49,7 +49,7 @@ class DocumentationTest extends TestCase
         return $name;
     }
 
-    public function provideCommandCases(): \Generator
+    public static function provideCommandCases(): \Generator
     {
         $application = new Application();
         $application->setAutoExit(false);

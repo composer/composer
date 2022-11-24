@@ -29,7 +29,7 @@ class GitExcludeFilterTest extends TestCase
         $this->assertEquals($expected, $filter->parseGitAttributesLine($ignore));
     }
 
-    public function providePatterns(): array
+    public static function providePatterns(): array
     {
         return [
             ['app/config/parameters.yml export-ignore', ['{(?=[^\.])app/(?=[^\.])config/(?=[^\.])parameters\.yml(?=$|/)}', false, false]],

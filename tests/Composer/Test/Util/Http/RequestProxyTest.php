@@ -27,7 +27,7 @@ class RequestProxyTest extends TestCase
         $this->assertSame($expectedSecure, $proxy->isSecure());
     }
 
-    public function dataSecure(): array
+    public static function dataSecure(): array
     {
         // url, secure
         return [
@@ -48,7 +48,7 @@ class RequestProxyTest extends TestCase
         $this->assertSame($expected, $message);
     }
 
-    public function dataProxyUrl(): array
+    public static function dataProxyUrl(): array
     {
         $format = 'proxy (%s)';
 

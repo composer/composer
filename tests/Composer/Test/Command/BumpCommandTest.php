@@ -28,11 +28,11 @@ class BumpCommandTest extends TestCase
         $this->initTempComposer($composerJson);
 
         $packages = [
-            $this->getPackage('first/pkg', '2.3.4'),
-            $this->getPackage('second/pkg', '3.4.0'),
+            self::getPackage('first/pkg', '2.3.4'),
+            self::getPackage('second/pkg', '3.4.0'),
         ];
         $devPackages = [
-            $this->getPackage('dev/pkg', '2.3.4.5'),
+            self::getPackage('dev/pkg', '2.3.4.5'),
         ];
 
         $this->createInstalledJson($packages, $devPackages);
@@ -71,7 +71,7 @@ class BumpCommandTest extends TestCase
         $this->assertStringContainsString("./composer.json is not writable.", $appTester->getErrorOutput());
     }
 
-    public function provideTests(): \Generator
+    public static function provideTests(): \Generator
     {
         yield 'bump all by default' => [
             [

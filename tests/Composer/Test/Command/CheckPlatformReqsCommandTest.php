@@ -31,10 +31,10 @@ class CheckPlatformReqsCommandTest extends TestCase
         $this->initTempComposer($composerJson);
 
         $packages = [
-            $this->getPackage('ext-foobar', '2.3.4'),
+            self::getPackage('ext-foobar', '2.3.4'),
         ];
         $devPackages = [
-            $this->getPackage('ext-barbaz', '2.3.4.5')
+            self::getPackage('ext-barbaz', '2.3.4.5')
         ];
 
         $this->createInstalledJson($packages, $devPackages);
@@ -59,7 +59,7 @@ class CheckPlatformReqsCommandTest extends TestCase
         $appTester->run(['command' => 'check-platform-reqs']);
     }
 
-    public function caseProvider(): \Generator
+    public static function caseProvider(): \Generator
     {
         yield 'Disables checking of require-dev packages requirements.' => [
             [
@@ -85,9 +85,7 @@ ext-foobar 2.3.4   success'
                 ]
             ],
             ['--lock' => true],
-            'Checking platform requirements using the lock file
-ext-barbaz 2.3.4.5   success 
-ext-foobar 2.3.4     success'
+            "Checking platform requirements using the lock file\next-barbaz 2.3.4.5   success \next-foobar 2.3.4     success"
         ];
     }
 }

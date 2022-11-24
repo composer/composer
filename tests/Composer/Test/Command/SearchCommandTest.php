@@ -70,7 +70,7 @@ class SearchCommandTest extends TestCase
         $appTester->run(['command' => 'search', '--only-vendor' => true, '--only-name' => true, 'tokens' => ['test']]);
     }
 
-    public function provideSearch(): \Generator
+    public static function provideSearch(): \Generator
     {
         yield 'by name and description' => [
             ['tokens' => ['fancy']],

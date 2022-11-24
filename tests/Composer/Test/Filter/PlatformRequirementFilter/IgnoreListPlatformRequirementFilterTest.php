@@ -32,7 +32,7 @@ final class IgnoreListPlatformRequirementFilterTest extends TestCase
     /**
      * @return array<string, mixed[]>
      */
-    public function dataIsIgnored(): array
+    public static function dataIsIgnored(): array
     {
         return [
             'ext-json is ignored if listed' => [['ext-json', 'monolog/monolog'], 'ext-json', true],

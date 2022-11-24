@@ -119,8 +119,8 @@ class FilesystemRepositoryTest extends TestCase
             ]);
 
         $repository->setDevPackageNames(['mypkg2']);
-        $repository->addPackage($this->getPackage('mypkg2', '1.2.3'));
-        $repository->addPackage($this->getPackage('mypkg', '0.1.10'));
+        $repository->addPackage(self::getPackage('mypkg2', '1.2.3'));
+        $repository->addPackage(self::getPackage('mypkg', '0.1.10'));
         $repository->write(true, $im);
     }
 
@@ -131,36 +131,36 @@ class FilesystemRepositoryTest extends TestCase
 
         $json = new JsonFile($dir.'/installed.json');
 
-        $rootPackage = $this->getRootPackage('__root__', 'dev-master');
+        $rootPackage = self::getRootPackage('__root__', 'dev-master');
         $rootPackage->setSourceReference('sourceref-by-default');
         $rootPackage->setDistReference('distref');
-        $this->configureLinks($rootPackage, ['provide' => ['foo/impl' => '2.0']]);
-        $rootPackage = $this->getAliasPackage($rootPackage, '1.10.x-dev');
+        self::configureLinks($rootPackage, ['provide' => ['foo/impl' => '2.0']]);
+        $rootPackage = self::getAliasPackage($rootPackage, '1.10.x-dev');
 
         $repository = new FilesystemRepository($json, true, $rootPackage);
         $repository->setDevPackageNames(['c/c']);
-        $pkg = $this->getPackage('a/provider', '1.1');
-        $this->configureLinks($pkg, ['provide' => ['foo/impl' => '^1.1', 'foo/impl2' => '2.0']]);
+        $pkg = self::getPackage('a/provider', '1.1');
+        self::configureLinks($pkg, ['provide' => ['foo/impl' => '^1.1', 'foo/impl2' => '2.0']]);
         $pkg->setDistReference('distref-as-no-source');
         $repository->addPackage($pkg);
 
-        $pkg = $this->getPackage('a/provider2', '1.2');
-        $this->configureLinks($pkg, ['provide' => ['foo/impl' => 'self.version', 'foo/impl2' => '2.0']]);
+        $pkg = self::getPackage('a/provider2', '1.2');
+        self::configureLinks($pkg, ['provide' => ['foo/impl' => 'self.version', 'foo/impl2' => '2.0']]);
         $pkg->setSourceReference('sourceref');
         $pkg->setDistReference('distref-as-installed-from-dist');
         $pkg->setInstallationSource('dist');
         $repository->addPackage($pkg);
 
-        $repository->addPackage($this->getAliasPackage($pkg, '1.4'));
+        $repository->addPackage(self::getAliasPackage($pkg, '1.4'));
 
-        $pkg = $this->getPackage('b/replacer', '2.2');
-        $this->configureLinks($pkg, ['replace' => ['foo/impl2' => 'self.version', 'foo/replaced' => '^3.0']]);
+        $pkg = self::getPackage('b/replacer', '2.2');
+        self::configureLinks($pkg, ['replace' => ['foo/impl2' => 'self.version', 'foo/replaced' => '^3.0']]);
         $repository->addPackage($pkg);
 
-        $pkg = $this->getPackage('c/c', '3.0');
+        $pkg = self::getPackage('c/c', '3.0');
         $repository->addPackage($pkg);
 
-        $pkg = $this->getPackage('meta/package', '3.0');
+        $pkg = self::getPackage('meta/package', '3.0');
         $pkg->setType('metapackage');
         $repository->addPackage($pkg);
 

@@ -265,7 +265,7 @@ class RemoteFilesystemTest extends TestCase
      *
      * @return string[][]
      */
-    public function provideBitbucketPublicDownloadUrls(): array
+    public static function provideBitbucketPublicDownloadUrls(): array
     {
         return [
             ['https://bitbucket.org/seldaek/composer-live-test-repo/downloads/composer-unit-test-download-me.txt', '1234'],

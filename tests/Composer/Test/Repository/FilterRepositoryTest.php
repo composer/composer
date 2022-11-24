@@ -28,10 +28,10 @@ class FilterRepositoryTest extends TestCase
     public function setUp(): void
     {
         $this->arrayRepo = new ArrayRepository();
-        $this->arrayRepo->addPackage($this->getPackage('foo/aaa', '1.0.0'));
-        $this->arrayRepo->addPackage($this->getPackage('foo/bbb', '1.0.0'));
-        $this->arrayRepo->addPackage($this->getPackage('bar/xxx', '1.0.0'));
-        $this->arrayRepo->addPackage($this->getPackage('baz/yyy', '1.0.0'));
+        $this->arrayRepo->addPackage(self::getPackage('foo/aaa', '1.0.0'));
+        $this->arrayRepo->addPackage(self::getPackage('foo/bbb', '1.0.0'));
+        $this->arrayRepo->addPackage(self::getPackage('bar/xxx', '1.0.0'));
+        $this->arrayRepo->addPackage(self::getPackage('baz/yyy', '1.0.0'));
     }
 
     /**

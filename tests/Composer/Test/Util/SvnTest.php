@@ -36,12 +36,12 @@ class SvnTest extends TestCase
         $this->assertEquals($expect, $reflMethod->invoke($svn));
     }
 
-    public function urlProvider(): array
+    public static function urlProvider(): array
     {
         return [
-            ['http://till:test@svn.example.org/', $this->getCmd(" --username 'till' --password 'test' ")],
+            ['http://till:test@svn.example.org/', self::getCmd(" --username 'till' --password 'test' ")],
             ['http://svn.apache.org/', ''],
-            ['svn://johndoe@example.org', $this->getCmd(" --username 'johndoe' --password '' ")],
+            ['svn://johndoe@example.org', self::getCmd(" --username 'johndoe' --password '' ")],
         ];
     }
 
@@ -54,7 +54,7 @@ class SvnTest extends TestCase
         $reflMethod->setAccessible(true);
 
         $this->assertEquals(
-            $this->getCmd("svn ls --non-interactive  -- 'http://svn.example.org'"),
+            self::getCmd("svn ls --non-interactive  -- 'http://svn.example.org'"),
             $reflMethod->invokeArgs($svn, ['svn ls', $url])
         );
     }
@@ -76,7 +76,7 @@ class SvnTest extends TestCase
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
         $reflMethod->setAccessible(true);
 
-        $this->assertEquals($this->getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
+        $this->assertEquals(self::getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 
     public function testCredentialsFromConfigWithCacheCredentialsTrue(): void
@@ -99,7 +99,7 @@ class SvnTest extends TestCase
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
         $reflMethod->setAccessible(true);
 
-        $this->assertEquals($this->getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
+        $this->assertEquals(self::getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 
     public function testCredentialsFromConfigWithCacheCredentialsFalse(): void
@@ -122,6 +122,6 @@ class SvnTest extends TestCase
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
         $reflMethod->setAccessible(true);
 
-        $this->assertEquals($this->getCmd(" --no-auth-cache --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
+        $this->assertEquals(self::getCmd(" --no-auth-cache --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 }

@@ -52,14 +52,14 @@ class ShowCommandTest extends TestCase
             'require' => $requires === [] ? new \stdClass : $requires,
         ]);
 
-        $pkg = $this->getPackage('vendor/package', '1.0.0');
+        $pkg = self::getPackage('vendor/package', '1.0.0');
         $pkg->setDescription('description of installed package');
 
         $this->createInstalledJson([
             $pkg,
-            $this->getPackage('outdated/major', '1.0.0'),
-            $this->getPackage('outdated/minor', '1.0.0'),
-            $this->getPackage('outdated/patch', '1.0.0'),
+            self::getPackage('outdated/major', '1.0.0'),
+            self::getPackage('outdated/minor', '1.0.0'),
+            self::getPackage('outdated/patch', '1.0.0'),
         ]);
 
         $appTester = $this->getApplicationTester();
@@ -67,7 +67,7 @@ class ShowCommandTest extends TestCase
         self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
-    public function provideShow(): \Generator
+    public static function provideShow(): \Generator
     {
         yield 'default shows installed with version and description' => [
             [],
@@ -192,7 +192,7 @@ outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
         ]);
 
         $this->createInstalledJson([
-            $this->getPackage('vendor/package', '1.1.0'),
+            self::getPackage('vendor/package', '1.1.0'),
         ]);
 
         $appTester = $this->getApplicationTester();
@@ -241,7 +241,7 @@ vendor/package 1.1.0 ~ 1.0.0", trim($appTester->getDisplay(true)));
         ]);
 
         $this->createInstalledJson([
-            $this->getPackage('vendor/package', '1.1.0'),
+            self::getPackage('vendor/package', '1.1.0'),
         ]);
 
         $appTester = $this->getApplicationTester();
@@ -271,7 +271,7 @@ vendor/package 1.1.0 <highlight>! 1.2.0</highlight>", trim($appTester->getDispla
         ]);
 
         $this->createInstalledJson([
-            $this->getPackage('vendor/package', '1.0.0'),
+            self::getPackage('vendor/package', '1.0.0'),
         ]);
 
         $appTester = $this->getApplicationTester();
@@ -323,10 +323,10 @@ vendor/package 1.1.0 <highlight>! 1.2.0</highlight>", trim($appTester->getDispla
         ]);
 
         $this->createInstalledJson([
-            $this->getPackage('zerozero/major', '0.0.1'),
-            $this->getPackage('zero/major', '0.1.0'),
-            $this->getPackage('zero/minor', '0.1.0'),
-            $this->getPackage('zero/patch', '0.1.2'),
+            self::getPackage('zerozero/major', '0.0.1'),
+            self::getPackage('zero/major', '0.1.0'),
+            self::getPackage('zero/minor', '0.1.0'),
+            self::getPackage('zero/patch', '0.1.2'),
         ]);
 
         $appTester = $this->getApplicationTester();
@@ -369,13 +369,13 @@ zerozero/major 0.0.1 ~ 0.0.2', trim($appTester->getDisplay(true)));
             ],
         ]);
 
-        $pkg = $this->getPackage('vendor/installed', '2.0.0');
+        $pkg = self::getPackage('vendor/installed', '2.0.0');
         $pkg->setDescription('description of installed package');
         $this->createInstalledJson([
             $pkg,
         ]);
 
-        $pkg = $this->getPackage('vendor/locked', '3.0.0');
+        $pkg = self::getPackage('vendor/locked', '3.0.0');
         $pkg->setDescription('description of locked package');
         $this->createComposerLock([
             $pkg,
