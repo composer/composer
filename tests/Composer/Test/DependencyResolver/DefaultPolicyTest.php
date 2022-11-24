@@ -43,7 +43,7 @@ class DefaultPolicyTest extends TestCase
 
     public function testSelectSingle(): void
     {
-        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageA = self::getPackage('A', '1.0'));
         $this->repositorySet->addRepository($this->repo);
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
@@ -58,8 +58,8 @@ class DefaultPolicyTest extends TestCase
 
     public function testSelectNewest(): void
     {
-        $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0'));
-        $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
+        $this->repo->addPackage($packageA1 = self::getPackage('A', '1.0'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', '2.0'));
         $this->repositorySet->addRepository($this->repo);
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
@@ -74,8 +74,8 @@ class DefaultPolicyTest extends TestCase
 
     public function testSelectNewestPicksLatest(): void
     {
-        $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0.0'));
-        $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.1-alpha'));
+        $this->repo->addPackage($packageA1 = self::getPackage('A', '1.0.0'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', '1.0.1-alpha'));
         $this->repositorySet->addRepository($this->repo);
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
@@ -90,8 +90,8 @@ class DefaultPolicyTest extends TestCase
 
     public function testSelectNewestPicksLatestStableWithPreferStable(): void
     {
-        $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0.0'));
-        $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.1-alpha'));
+        $this->repo->addPackage($packageA1 = self::getPackage('A', '1.0.0'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', '1.0.1-alpha'));
         $this->repositorySet->addRepository($this->repo);
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
@@ -107,8 +107,8 @@ class DefaultPolicyTest extends TestCase
 
     public function testSelectNewestWithDevPicksNonDev(): void
     {
-        $this->repo->addPackage($packageA1 = $this->getPackage('A', 'dev-foo'));
-        $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.0'));
+        $this->repo->addPackage($packageA1 = self::getPackage('A', 'dev-foo'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', '1.0.0'));
         $this->repositorySet->addRepository($this->repo);
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
@@ -126,10 +126,10 @@ class DefaultPolicyTest extends TestCase
         $repo1 = new ArrayRepository;
         $repo2 = new ArrayRepository;
 
-        $repo1->addPackage($package1 = $this->getPackage('A', '1.0'));
-        $repo1->addPackage($package2 = $this->getPackage('A', '1.1'));
-        $repo2->addPackage($package3 = $this->getPackage('A', '1.1'));
-        $repo2->addPackage($package4 = $this->getPackage('A', '1.2'));
+        $repo1->addPackage($package1 = self::getPackage('A', '1.0'));
+        $repo1->addPackage($package2 = self::getPackage('A', '1.1'));
+        $repo2->addPackage($package3 = self::getPackage('A', '1.1'));
+        $repo2->addPackage($package4 = self::getPackage('A', '1.2'));
 
         $this->repositorySet->addRepository($repo1);
         $this->repositorySet->addRepository($repo2);
@@ -158,11 +158,11 @@ class DefaultPolicyTest extends TestCase
     {
         $repoImportant = new ArrayRepository;
 
-        $this->repo->addPackage($packageA = $this->getPackage('A', 'dev-master'));
+        $this->repo->addPackage($packageA = self::getPackage('A', 'dev-master'));
         $this->repo->addPackage($packageAAlias = new AliasPackage($packageA, '2.1.9999999.9999999-dev', '2.1.x-dev'));
-        $repoImportant->addPackage($packageAImportant = $this->getPackage('A', 'dev-feature-a'));
+        $repoImportant->addPackage($packageAImportant = self::getPackage('A', 'dev-feature-a'));
         $repoImportant->addPackage($packageAAliasImportant = new AliasPackage($packageAImportant, '2.1.9999999.9999999-dev', '2.1.x-dev'));
-        $repoImportant->addPackage($packageA2Important = $this->getPackage('A', 'dev-master'));
+        $repoImportant->addPackage($packageA2Important = self::getPackage('A', 'dev-master'));
         $repoImportant->addPackage($packageA2AliasImportant = new AliasPackage($packageA2Important, '2.1.9999999.9999999-dev', '2.1.x-dev'));
         $packageAAliasImportant->setRootPackageAlias(true);
 
@@ -187,8 +187,8 @@ class DefaultPolicyTest extends TestCase
 
     public function testSelectAllProviders(): void
     {
-        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
-        $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
+        $this->repo->addPackage($packageA = self::getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = self::getPackage('B', '2.0'));
 
         $packageA->setProvides(['x' => new Link('A', 'X', new Constraint('==', '1.0'), Link::TYPE_PROVIDE)]);
         $packageB->setProvides(['x' => new Link('B', 'X', new Constraint('==', '1.0'), Link::TYPE_PROVIDE)]);
@@ -207,8 +207,8 @@ class DefaultPolicyTest extends TestCase
 
     public function testPreferNonReplacingFromSameRepo(): void
     {
-        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
-        $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
+        $this->repo->addPackage($packageA = self::getPackage('A', '1.0'));
+        $this->repo->addPackage($packageB = self::getPackage('B', '2.0'));
 
         $packageB->setReplaces(['a' => new Link('B', 'A', new Constraint('==', '1.0'), Link::TYPE_REPLACE)]);
 
@@ -227,8 +227,8 @@ class DefaultPolicyTest extends TestCase
     public function testPreferReplacingPackageFromSameVendor(): void
     {
         // test with default order
-        $this->repo->addPackage($packageB = $this->getPackage('vendor-b/replacer', '1.0'));
-        $this->repo->addPackage($packageA = $this->getPackage('vendor-a/replacer', '1.0'));
+        $this->repo->addPackage($packageB = self::getPackage('vendor-b/replacer', '1.0'));
+        $this->repo->addPackage($packageA = self::getPackage('vendor-a/replacer', '1.0'));
 
         $packageA->setReplaces(['vendor-a/package' => new Link('vendor-a/replacer', 'vendor-a/package', new Constraint('==', '1.0'), Link::TYPE_REPLACE)]);
         $packageB->setReplaces(['vendor-a/package' => new Link('vendor-b/replacer', 'vendor-a/package', new Constraint('==', '1.0'), Link::TYPE_REPLACE)]);
@@ -264,8 +264,8 @@ class DefaultPolicyTest extends TestCase
     {
         $policy = new DefaultPolicy(false, true);
 
-        $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0'));
-        $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
+        $this->repo->addPackage($packageA1 = self::getPackage('A', '1.0'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', '2.0'));
         $this->repositorySet->addRepository($this->repo);
 
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);

@@ -42,7 +42,7 @@ class ClassLoaderTest extends TestCase
      *
      * @return array<array<string>> Array of parameter sets to test with.
      */
-    public function getLoadClassTests(): array
+    public static function getLoadClassTests(): array
     {
         return [
             ['Namespaced\\Foo'],

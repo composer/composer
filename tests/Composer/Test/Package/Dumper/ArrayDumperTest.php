@@ -31,7 +31,7 @@ class ArrayDumperTest extends TestCase
 
     public function testRequiredInformation(): void
     {
-        $config = $this->dumper->dump($this->getPackage());
+        $config = $this->dumper->dump(self::getPackage());
         $this->assertEquals(
             [
                 'name' => 'dummy/pkg',
@@ -45,7 +45,7 @@ class ArrayDumperTest extends TestCase
 
     public function testRootPackage(): void
     {
-        $package = $this->getRootPackage();
+        $package = self::getRootPackage();
         $package->setMinimumStability('dev');
 
         $config = $this->dumper->dump($package);
@@ -54,7 +54,7 @@ class ArrayDumperTest extends TestCase
 
     public function testDumpAbandoned(): void
     {
-        $package = $this->getPackage();
+        $package = self::getPackage();
         $package->setAbandoned(true);
         $config = $this->dumper->dump($package);
 
@@ -63,7 +63,7 @@ class ArrayDumperTest extends TestCase
 
     public function testDumpAbandonedReplacement(): void
     {
-        $package = $this->getPackage();
+        $package = self::getPackage();
         $package->setAbandoned('foo/bar');
         $config = $this->dumper->dump($package);
 
@@ -79,7 +79,7 @@ class ArrayDumperTest extends TestCase
      */
     public function testKeys(string $key, $value, ?string $method = null, $expectedValue = null): void
     {
-        $package = $this->getRootPackage();
+        $package = self::getRootPackage();
 
         // @phpstan-ignore-next-line
         $package->{'set'.ucfirst($method ?: $key)}($value);
@@ -89,7 +89,7 @@ class ArrayDumperTest extends TestCase
         $this->assertSame($expectedValue ?: $value, $config[$key]);
     }
 
-    public function provideKeys(): array
+    public static function provideKeys(): array
     {
         return [
             [

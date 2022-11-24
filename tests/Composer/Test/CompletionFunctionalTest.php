@@ -25,7 +25,7 @@ class CompletionFunctionalTest extends TestCase
     /**
      * @return iterable<array<string|string[]|null>>
      */
-    public function getCommandSuggestions(): iterable
+    public static function getCommandSuggestions(): iterable
     {
         $randomVendor = 'a/';
         $installedPackages = ['composer/semver', 'psr/log'];

@@ -94,8 +94,8 @@ class RuleTest extends TestCase
     public function testPrettyString(): void
     {
         $pool = new Pool([
-            $p1 = $this->getPackage('foo', '2.1'),
-            $p2 = $this->getPackage('baz', '1.1'),
+            $p1 = self::getPackage('foo', '2.1'),
+            $p2 = self::getPackage('baz', '1.1'),
         ]);
 
         $repositorySetMock = $this->getMockBuilder('Composer\Repository\RepositorySet')->disableOriginalConstructor()->getMock();

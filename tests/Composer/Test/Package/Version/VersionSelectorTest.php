@@ -33,9 +33,9 @@ class VersionSelectorTest extends TestCase
     {
         $packageName = 'foo/bar';
 
-        $package1 = $this->getPackage('foo/bar', '1.2.1');
-        $package2 = $this->getPackage('foo/bar', '1.2.2');
-        $package3 = $this->getPackage('foo/bar', '1.2.0');
+        $package1 = self::getPackage('foo/bar', '1.2.1');
+        $package2 = self::getPackage('foo/bar', '1.2.2');
+        $package3 = self::getPackage('foo/bar', '1.2.0');
         $packages = [$package1, $package2, $package3];
 
         $repositorySet = $this->createMockRepositorySet();
@@ -60,13 +60,13 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet, $platform);
 
         $parser = new VersionParser;
-        $package0 = $this->getPackage('foo/bar', '0.9.0');
+        $package0 = self::getPackage('foo/bar', '0.9.0');
         $package0->setRequires(['php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), Link::TYPE_REQUIRE, '>=5.6')]);
-        $package1 = $this->getPackage('foo/bar', '1.0.0');
+        $package1 = self::getPackage('foo/bar', '1.0.0');
         $package1->setRequires(['php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.4'), Link::TYPE_REQUIRE, '>=5.4')]);
-        $package2 = $this->getPackage('foo/bar', '2.0.0');
+        $package2 = self::getPackage('foo/bar', '2.0.0');
         $package2->setRequires(['php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), Link::TYPE_REQUIRE, '>=5.6')]);
-        $package3 = $this->getPackage('foo/bar', '2.1.0');
+        $package3 = self::getPackage('foo/bar', '2.1.0');
         $package3->setRequires(['php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), Link::TYPE_REQUIRE, '>=5.6')]);
         $packages = [$package0, $package1, $package2, $package3];
 
@@ -102,9 +102,9 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet, $platform);
 
         $parser = new VersionParser;
-        $package1 = $this->getPackage('foo/bar', '1.0.0');
+        $package1 = self::getPackage('foo/bar', '1.0.0');
         $package1->setRequires(['ext-zip' => new Link($packageName, 'ext-zip', $parser->parseConstraints('^5.2'), Link::TYPE_REQUIRE, '^5.2')]);
-        $package2 = $this->getPackage('foo/bar', '2.0.0');
+        $package2 = self::getPackage('foo/bar', '2.0.0');
         $package2->setRequires(['ext-zip' => new Link($packageName, 'ext-zip', $parser->parseConstraints('^5.4'), Link::TYPE_REQUIRE, '^5.4')]);
         $packages = [$package1, $package2];
 
@@ -128,8 +128,8 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet, $platform);
 
         $parser = new VersionParser;
-        $package1 = $this->getPackage('foo/bar', '1.0.0');
-        $package2 = $this->getPackage('foo/bar', '2.0.0');
+        $package1 = self::getPackage('foo/bar', '1.0.0');
+        $package2 = self::getPackage('foo/bar', '2.0.0');
         $package2->setRequires(['ext-barfoo' => new Link($packageName, 'ext-barfoo', $parser->parseConstraints('*'), Link::TYPE_REQUIRE, '*')]);
         $packages = [$package1, $package2];
 
@@ -153,9 +153,9 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet, $platform);
 
         $parser = new VersionParser;
-        $package1 = $this->getPackage('foo/bar', '1.0.0');
+        $package1 = self::getPackage('foo/bar', '1.0.0');
         $package1->setRequires(['composer-runtime-api' => new Link($packageName, 'composer-runtime-api', $parser->parseConstraints('^1.0'), Link::TYPE_REQUIRE, '^1.0')]);
-        $package2 = $this->getPackage('foo/bar', '1.1.0');
+        $package2 = self::getPackage('foo/bar', '1.1.0');
         $package2->setRequires(['composer-runtime-api' => new Link($packageName, 'composer-runtime-api', $parser->parseConstraints('^2.0'), Link::TYPE_REQUIRE, '^2.0')]);
         $packages = [$package1, $package2];
 
@@ -174,8 +174,8 @@ class VersionSelectorTest extends TestCase
     {
         $packageName = 'foo/bar';
 
-        $package1 = $this->getPackage('foo/bar', '1.0.0');
-        $package2 = $this->getPackage('foo/bar', '1.1.0-beta');
+        $package1 = self::getPackage('foo/bar', '1.0.0');
+        $package2 = self::getPackage('foo/bar', '1.1.0-beta');
         $packages = [$package1, $package2];
 
         $repositorySet = $this->createMockRepositorySet();
@@ -194,8 +194,8 @@ class VersionSelectorTest extends TestCase
     {
         $packageName = 'foo/bar';
 
-        $package1 = $this->getPackage('foo/bar', '2.x-dev');
-        $package2 = $this->getPackage('foo/bar', '2.0.0-beta3');
+        $package1 = self::getPackage('foo/bar', '2.x-dev');
+        $package2 = self::getPackage('foo/bar', '2.0.0-beta3');
         $packages = [$package1, $package2];
 
         $repositorySet = $this->createMockRepositorySet();
@@ -219,8 +219,8 @@ class VersionSelectorTest extends TestCase
     {
         $packageName = 'foo/bar';
 
-        $package1 = $this->getPackage('foo/bar', '1.0.0');
-        $package2 = $this->getPackage('foo/bar', '1.1.0-beta');
+        $package1 = self::getPackage('foo/bar', '1.0.0');
+        $package2 = self::getPackage('foo/bar', '1.1.0-beta');
         $packages = [$package1, $package2];
 
         $repositorySet = $this->createMockRepositorySet();
@@ -239,9 +239,9 @@ class VersionSelectorTest extends TestCase
     {
         $packageName = 'foo/bar';
 
-        $package1 = $this->getPackage('foo/bar', '1.0.0');
-        $package2 = $this->getPackage('foo/bar', '1.1.0-beta');
-        $package3 = $this->getPackage('foo/bar', '1.2.0-alpha');
+        $package1 = self::getPackage('foo/bar', '1.0.0');
+        $package2 = self::getPackage('foo/bar', '1.1.0-beta');
+        $package3 = self::getPackage('foo/bar', '1.2.0-alpha');
         $packages = [$package1, $package2, $package3];
 
         $repositorySet = $this->createMockRepositorySet();
@@ -260,8 +260,8 @@ class VersionSelectorTest extends TestCase
     {
         $packageName = 'foo/bar';
 
-        $package2 = $this->getPackage('foo/bar', '1.1.0-beta');
-        $package3 = $this->getPackage('foo/bar', '1.2.0-alpha');
+        $package2 = self::getPackage('foo/bar', '1.1.0-beta');
+        $package3 = self::getPackage('foo/bar', '1.2.0-alpha');
         $packages = [$package2, $package3];
 
         $repositorySet = $this->createMockRepositorySet();
@@ -280,8 +280,8 @@ class VersionSelectorTest extends TestCase
     {
         $packageName = 'foo/bar';
 
-        $package = $this->getPackage('foo/bar', '1.1.0-beta');
-        $package2 = $this->getPackage('foo/bar', 'dev-main');
+        $package = self::getPackage('foo/bar', '1.1.0-beta');
+        $package2 = self::getPackage('foo/bar', 'dev-main');
         $package2Alias = new AliasPackage($package2, VersionParser::DEFAULT_BRANCH_ALIAS, VersionParser::DEFAULT_BRANCH_ALIAS);
         $packages = [$package, $package2Alias];
 
@@ -330,7 +330,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($expectedVersion, $recommended);
     }
 
-    public function provideRecommendedRequireVersionPackages(): array
+    public static function provideRecommendedRequireVersionPackages(): array
     {
         return [
             // real version, expected recommendation, [branch-alias], [pkg name]

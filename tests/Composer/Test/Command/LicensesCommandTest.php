@@ -34,16 +34,16 @@ class LicensesCommandTest extends TestCase
             ],
         ]);
 
-        $first = $this->getPackage('first/pkg', '2.3.4');
+        $first = self::getPackage('first/pkg', '2.3.4');
         $first->setLicense(['MIT']);
 
-        $second = $this->getPackage('second/pkg', '3.4.0');
+        $second = self::getPackage('second/pkg', '3.4.0');
         $second->setLicense(['LGPL-2.0-only']);
         $second->setHomepage('https://example.org');
 
-        $third = $this->getPackage('third/pkg', '1.5.4');
+        $third = self::getPackage('third/pkg', '1.5.4');
 
-        $dev = $this->getPackage('dev/pkg', '2.3.4.5');
+        $dev = self::getPackage('dev/pkg', '2.3.4.5');
         $dev->setLicense(['MIT']);
 
         $this->createInstalledJson([$first, $second, $third], [$dev]);

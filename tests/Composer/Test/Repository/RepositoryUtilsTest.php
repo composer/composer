@@ -36,22 +36,22 @@ class RepositoryUtilsTest extends TestCase
     /**
      * @return array<PackageInterface>
      */
-    private function getPackages(): array
+    private static function getPackages(): array
     {
-        $packageA = $this->getPackage('required/a');
-        $packageB = $this->getPackage('required/b');
-        $this->configureLinks($packageB, ['require' => ['required/c' => '*']]);
-        $packageC = $this->getPackage('required/c');
-        $packageCAlias = $this->getAliasPackage($packageC, '2.0.0');
+        $packageA = self::getPackage('required/a');
+        $packageB = self::getPackage('required/b');
+        self::configureLinks($packageB, ['require' => ['required/c' => '*']]);
+        $packageC = self::getPackage('required/c');
+        $packageCAlias = self::getAliasPackage($packageC, '2.0.0');
 
-        $packageCircular = $this->getPackage('required/circular');
-        $this->configureLinks($packageCircular, ['require' => ['required/circular-b' => '*']]);
-        $packageCircularB = $this->getPackage('required/circular-b');
-        $this->configureLinks($packageCircularB, ['require' => ['required/circular' => '*']]);
+        $packageCircular = self::getPackage('required/circular');
+        self::configureLinks($packageCircular, ['require' => ['required/circular-b' => '*']]);
+        $packageCircularB = self::getPackage('required/circular-b');
+        self::configureLinks($packageCircularB, ['require' => ['required/circular' => '*']]);
 
         return [
-            $this->getPackage('dummy/pkg'),
-            $this->getPackage('dummy/pkg2', '2.0.0'),
+            self::getPackage('dummy/pkg'),
+            self::getPackage('dummy/pkg2', '2.0.0'),
             'a' => $packageA,
             'b' => $packageB,
             'c' => $packageC,
@@ -61,31 +61,31 @@ class RepositoryUtilsTest extends TestCase
         ];
     }
 
-    public function provideFilterRequireTests(): Generator
+    public static function provideFilterRequireTests(): Generator
     {
-        $pkgs = $this->getPackages();
+        $pkgs = self::getPackages();
 
-        $requirer = $this->getPackage('requirer/pkg');
+        $requirer = self::getPackage('requirer/pkg');
         yield 'no require' => [$pkgs, $requirer, []];
 
-        $requirer = $this->getPackage('requirer/pkg');
-        $this->configureLinks($requirer, ['require-dev' => ['required/a' => '*']]);
+        $requirer = self::getPackage('requirer/pkg');
+        self::configureLinks($requirer, ['require-dev' => ['required/a' => '*']]);
         yield 'require-dev has no effect' => [$pkgs, $requirer, []];
 
-        $requirer = $this->getPackage('requirer/pkg');
-        $this->configureLinks($requirer, ['require' => ['required/a' => '*']]);
+        $requirer = self::getPackage('requirer/pkg');
+        self::configureLinks($requirer, ['require' => ['required/a' => '*']]);
         yield 'simple require' => [$pkgs, $requirer, ['a']];
 
-        $requirer = $this->getPackage('requirer/pkg');
-        $this->configureLinks($requirer, ['require' => ['required/a' => 'dev-lala']]);
+        $requirer = self::getPackage('requirer/pkg');
+        self::configureLinks($requirer, ['require' => ['required/a' => 'dev-lala']]);
         yield 'require constraint is irrelevant' => [$pkgs, $requirer, ['a']];
 
-        $requirer = $this->getPackage('requirer/pkg');
-        $this->configureLinks($requirer, ['require' => ['required/b' => '*']]);
+        $requirer = self::getPackage('requirer/pkg');
+        self::configureLinks($requirer, ['require' => ['required/b' => '*']]);
         yield 'require transitive deps and aliases are included' => [$pkgs, $requirer, ['b', 'c', 'c-alias']];
 
-        $requirer = $this->getPackage('requirer/pkg');
-        $this->configureLinks($requirer, ['require' => ['required/circular' => '*']]);
+        $requirer = self::getPackage('requirer/pkg');
+        self::configureLinks($requirer, ['require' => ['required/circular' => '*']]);
         yield 'circular deps are no problem' => [$pkgs, $requirer, ['circular', 'circular-b']];
     }
 }

@@ -182,7 +182,7 @@ outeropt: set
     }
 
     /** @return bool[][] **/
-    public function getDevOptions(): array
+    public static function getDevOptions(): array
     {
         return [
             [true, true],

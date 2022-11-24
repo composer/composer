@@ -179,7 +179,7 @@ class AllFunctionalTest extends TestCase
     /**
      * @return array<string, array<string>>
      */
-    public function getTestFiles(): array
+    public static function getTestFiles(): array
     {
         $tests = [];
         foreach (Finder::create()->in(__DIR__.'/Fixtures/functional')->name('*.test')->files() as $file) {

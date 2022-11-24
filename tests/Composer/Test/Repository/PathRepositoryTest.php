@@ -37,7 +37,7 @@ class PathRepositoryTest extends TestCase
         $repository->getPackages();
 
         $this->assertSame(1, $repository->count());
-        $this->assertTrue($repository->hasPackage($this->getPackage('test/path-versioned', '0.0.2')));
+        $this->assertTrue($repository->hasPackage(self::getPackage('test/path-versioned', '0.0.2')));
     }
 
     public function testLoadPackageFromFileSystemWithoutVersion(): void

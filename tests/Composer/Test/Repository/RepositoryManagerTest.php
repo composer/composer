@@ -89,7 +89,7 @@ class RepositoryManagerTest extends TestCase
         $this->assertInstanceOf('Composer\Repository\RepositoryInterface', $rm->createRepository($type, $options));
     }
 
-    public function provideRepoCreationTestCases(): array
+    public static function provideRepoCreationTestCases(): array
     {
         $cases = [
             ['composer', ['url' => 'http://example.org']],

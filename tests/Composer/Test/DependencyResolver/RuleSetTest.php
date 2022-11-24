@@ -139,7 +139,7 @@ class RuleSetTest extends TestCase
     public function testPrettyString(): void
     {
         $pool = new Pool([
-            $p = $this->getPackage('foo', '2.1'),
+            $p = self::getPackage('foo', '2.1'),
         ]);
 
         $repositorySetMock = $this->getMockBuilder('Composer\Repository\RepositorySet')->disableOriginalConstructor()->getMock();

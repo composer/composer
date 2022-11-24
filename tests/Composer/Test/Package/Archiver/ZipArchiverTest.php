@@ -29,7 +29,7 @@ class ZipArchiverTest extends ArchiverTest
         ]);
     }
 
-    public function provideGitignoreExcludeNegationTestCases(): array
+    public static function provideGitignoreExcludeNegationTestCases(): array
     {
         return [
             ['!/docs'],

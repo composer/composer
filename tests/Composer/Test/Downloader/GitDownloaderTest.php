@@ -217,7 +217,7 @@ class GitDownloaderTest extends TestCase
         $downloader->cleanup('install', $packageMock, 'composerPath');
     }
 
-    public function pushUrlProvider(): array
+    public static function pushUrlProvider(): array
     {
         return [
             // ssh proto should use git@ all along
@@ -644,7 +644,7 @@ composer https://github.com/old/url (push)
             $cmd = str_replace('cd ', 'cd /D ', $cmd);
             $cmd = str_replace('composerPath', Platform::getCwd().'/composerPath', $cmd);
 
-            return $this->getCmd($cmd);
+            return self::getCmd($cmd);
         }
 
         return $cmd;

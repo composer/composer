@@ -206,7 +206,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @param Constraint::STR_OP_* $operator
      */
-    protected function getVersionConstraint($operator, string $version): Constraint
+    protected static function getVersionConstraint($operator, string $version): Constraint
     {
         $constraint = new Constraint(
             $operator,
@@ -228,14 +228,14 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @phpstan-param class-string<PackageClass> $class
      * @phpstan-return PackageClass
      */
-    protected function getPackage(string $name = 'dummy/pkg', string $version = '1.0.0', string $class = 'Composer\Package\CompletePackage'): BasePackage
+    protected static function getPackage(string $name = 'dummy/pkg', string $version = '1.0.0', string $class = 'Composer\Package\CompletePackage'): BasePackage
     {
         $normVersion = self::getVersionParser()->normalize($version);
 
         return new $class($name, $normVersion, $version);
     }
 
-    protected function getRootPackage(string $name = '__root__', string $version = '1.0.0'): RootPackage
+    protected static function getRootPackage(string $name = '__root__', string $version = '1.0.0'): RootPackage
     {
         $normVersion = self::getVersionParser()->normalize($version);
 
@@ -245,7 +245,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @return ($package is RootPackage ? RootAliasPackage : ($package is CompletePackage ? CompleteAliasPackage : AliasPackage))
      */
-    protected function getAliasPackage(Package $package, string $version): AliasPackage
+    protected static function getAliasPackage(Package $package, string $version): AliasPackage
     {
         $normVersion = self::getVersionParser()->normalize($version);
 
@@ -262,7 +262,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @param array<string, array<string, string>> $config
      */
-    protected function configureLinks(PackageInterface $package, array $config): void
+    protected static function configureLinks(PackageInterface $package, array $config): void
     {
         $arrayLoader = new ArrayLoader();
 
@@ -327,7 +327,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      *
      * @return string The transformed command
      */
-    protected function getCmd(string $cmd): string
+    protected static function getCmd(string $cmd): string
     {
         if (Platform::isWindows()) {
             $cmd = Preg::replaceCallback("/('[^']*')/", static function ($m) {

@@ -145,7 +145,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function gitlabPrivateTokenProvider(): array
+    public static function gitlabPrivateTokenProvider(): array
     {
         return [
           ['private-token'],
@@ -220,7 +220,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function bitbucketPublicUrlProvider(): array
+    public static function bitbucketPublicUrlProvider(): array
     {
         return [
             ['https://bitbucket.org/user/repo/downloads/whatever'],
@@ -256,7 +256,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function basicHttpAuthenticationProvider(): array
+    public static function basicHttpAuthenticationProvider(): array
     {
         return [
             [

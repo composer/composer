@@ -60,7 +60,7 @@ class RequireCommandTest extends TestCase
         }
     }
 
-    public function provideRequire(): \Generator
+    public static function provideRequire(): \Generator
     {
         yield 'warn once for missing ext but a lower package matches' => [
             [

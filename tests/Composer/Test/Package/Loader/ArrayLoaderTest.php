@@ -84,7 +84,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertEquals('1.2.3.4', $package->getVersion());
     }
 
-    public function parseDumpProvider(): array
+    public static function parseDumpProvider(): array
     {
         $validConfig = [
             'name' => 'A/B',
@@ -273,7 +273,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertFalse($package->isAbandoned());
     }
 
-    public function providePluginApiVersions(): array
+    public static function providePluginApiVersions(): array
     {
         return [
             ['1.0'],

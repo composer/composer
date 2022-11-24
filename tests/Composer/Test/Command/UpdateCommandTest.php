@@ -31,7 +31,7 @@ class UpdateCommandTest extends TestCase
         $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
-    public function provideUpdates(): \Generator
+    public static function provideUpdates(): \Generator
     {
         $rootDepAndTransitiveDep = [
             'repositories' => [

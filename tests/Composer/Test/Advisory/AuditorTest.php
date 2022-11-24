@@ -25,7 +25,7 @@ use InvalidArgumentException;
 
 class AuditorTest extends TestCase
 {
-    public function auditProvider()
+    public static function auditProvider()
     {
         return [
             // Test no advisories returns 0

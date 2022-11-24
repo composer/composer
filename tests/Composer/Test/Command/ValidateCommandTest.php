@@ -103,7 +103,7 @@ OUTPUT;
         ],
     ];
 
-    public function provideValidateTests(): \Generator
+    public static function provideValidateTests(): \Generator
     {
     
         yield 'validation passing' => [
