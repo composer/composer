@@ -125,9 +125,15 @@ class GitLab
             $this->io->writeError($message);
         }
 
-        $this->io->writeError(sprintf('A token will be created and stored in "%s", your password will never be stored', $this->config->getAuthConfigSource()->getName()));
+        $localAuthConfig = $this->config->getLocalAuthConfigSource();
+        $this->io->writeError(sprintf('A token will be created and stored in "%s", your password will never be stored', ($localAuthConfig !== null ? $localAuthConfig->getName() . ' OR ' : '') . $this->config->getAuthConfigSource()->getName()));
         $this->io->writeError('To revoke access to this token you can visit '.$scheme.'://'.$originUrl.'/-/profile/applications');
         $this->io->writeError('Alternatively you can setup an personal access token on  '.$scheme.'://'.$originUrl.'/-/profile/personal_access_tokens and store it under "gitlab-token" see https://getcomposer.org/doc/articles/authentication-for-private-packages.md#gitlab-token for more details.');
+
+        $storeInLocalAuthConfig = false;
+        if ($localAuthConfig !== null) {
+            $storeInLocalAuthConfig = $this->io->askConfirmation('A local auth config source was found, do you want to store the token there?', true);
+        }
 
         $attemptCounter = 0;
 
@@ -160,9 +166,10 @@ class GitLab
 
             $this->io->setAuthentication($originUrl, $response['access_token'], 'oauth2');
 
+            $authConfigSource = $storeInLocalAuthConfig && $localAuthConfig !== null ? $localAuthConfig : $this->config->getAuthConfigSource();
             // store value in user config in auth file
             if (isset($response['expires_in'])) {
-                $this->config->getAuthConfigSource()->addConfigSetting(
+                $authConfigSource->addConfigSetting(
                     'gitlab-oauth.'.$originUrl,
                     [
                         'expires-at' => intval($response['created_at']) + intval($response['expires_in']),
@@ -171,7 +178,7 @@ class GitLab
                     ]
                 );
             } else {
-                $this->config->getAuthConfigSource()->addConfigSetting('gitlab-oauth.'.$originUrl, $response['access_token']);
+                $authConfigSource->addConfigSetting('gitlab-oauth.'.$originUrl, $response['access_token']);
             }
 
             return true;

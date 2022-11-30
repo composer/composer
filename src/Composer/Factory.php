@@ -336,7 +336,7 @@ class Factory
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 self::validateJsonSchema($io, $localAuthFile, JsonFile::AUTH_SCHEMA);
                 $config->merge(['config' => $localAuthFile->read()], $localAuthFile->getPath());
-                $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
+                $config->setLocalAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
         }
 

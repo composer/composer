@@ -141,10 +141,16 @@ class Bitbucket
             $this->io->writeError($message);
         }
 
+        $localAuthConfig = $this->config->getLocalAuthConfigSource();
         $url = 'https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/';
         $this->io->writeError(sprintf('Follow the instructions on %s', $url));
-        $this->io->writeError(sprintf('to create a consumer. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
+        $this->io->writeError(sprintf('to create a consumer. It will be stored in "%s" for future use by Composer.', ($localAuthConfig !== null ? $localAuthConfig->getName() . ' OR ' : '') . $this->config->getAuthConfigSource()->getName()));
         $this->io->writeError('Ensure you enter a "Callback URL" (http://example.com is fine) or it will not be possible to create an Access Token (this callback url will not be used by composer)');
+
+        $storeInLocalAuthConfig = false;
+        if ($localAuthConfig !== null) {
+            $storeInLocalAuthConfig = $this->io->askConfirmation('A local auth config source was found, do you want to store the token there?', true);
+        }
 
         $consumerKey = trim((string) $this->io->askAndHideAnswer('Consumer Key (hidden): '));
 
@@ -171,7 +177,8 @@ class Bitbucket
         }
 
         // store value in user config
-        $this->storeInAuthConfig($originUrl, $consumerKey, $consumerSecret);
+        $authConfigSource = $storeInLocalAuthConfig && $localAuthConfig !== null ? $localAuthConfig : $this->config->getAuthConfigSource();
+        $this->storeInAuthConfig($authConfigSource, $originUrl, $consumerKey, $consumerSecret);
 
         // Remove conflicting basic auth credentials (if available)
         $this->config->getAuthConfigSource()->removeConfigSetting('http-basic.' . $originUrl);
@@ -195,7 +202,7 @@ class Bitbucket
             return '';
         }
 
-        $this->storeInAuthConfig($originUrl, $consumerKey, $consumerSecret);
+        $this->storeInAuthConfig($this->config->getLocalAuthConfigSource() ?? $this->config->getAuthConfigSource(), $originUrl, $consumerKey, $consumerSecret);
 
         if (!isset($this->token['access_token'])) {
             throw new \LogicException('Failed to initialize token above');
@@ -207,7 +214,7 @@ class Bitbucket
     /**
      * Store the new/updated credentials to the configuration
      */
-    private function storeInAuthConfig(string $originUrl, string $consumerKey, string $consumerSecret): void
+    private function storeInAuthConfig(Config\ConfigSourceInterface $authConfigSource, string $originUrl, string $consumerKey, string $consumerSecret): void
     {
         $this->config->getConfigSource()->removeConfigSetting('bitbucket-oauth.'.$originUrl);
 
