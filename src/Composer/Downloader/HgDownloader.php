@@ -29,7 +29,7 @@ class HgDownloader extends VcsDownloader
         $hgUtils = new HgUtils($this->io, $this->config, $this->process);
 
         $cloneCommand = function ($url) use ($path) {
-            return sprintf('hg clone -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($path));
+            return sprintf('hg clone -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape(realpath($path)));
         };
 
         $hgUtils->runCommand($cloneCommand, $url, $path);
