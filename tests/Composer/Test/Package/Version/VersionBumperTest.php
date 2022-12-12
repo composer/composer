@@ -46,6 +46,8 @@ class VersionBumperTest extends TestCase
         yield 'upgrade caret' => ['^1.0', '1.2.1', '^1.2.1'];
         yield 'skip trailing .0s' => ['^1.0', '1.0.0', '^1.0'];
         yield 'skip trailing .0s/2' => ['^1.2', '1.2.0', '^1.2'];
+        yield 'preserve major.minor.patch format when installed minor is 0' => ['^1.0.0', '1.2.0', '^1.2.0'];
+        yield 'preserve major.minor.patch format when installed minor is 1' => ['^1.0.0', '1.2.1', '^1.2.1'];
         yield 'preserve multi constraints' => ['^1.2 || ^2.3', '1.3.2', '^1.3.2 || ^2.3'];
         yield 'preserve multi constraints/2' => ['^1.2 || ^2.3', '2.4.0', '^1.2 || ^2.4'];
         yield 'preserve multi constraints/3' => ['^1.2 || ^2.3 || ^2', '2.4.0', '^1.2 || ^2.4 || ^2.4'];
