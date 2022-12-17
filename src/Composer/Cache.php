@@ -48,7 +48,7 @@ class Cache
      * @param Filesystem  $filesystem optional filesystem instance
      * @param bool        $readOnly   whether the cache is in readOnly mode
      */
-    public function __construct(IOInterface $io, $cacheDir, $allowlist = 'a-z0-9.', Filesystem $filesystem = null, $readOnly = false)
+    public function __construct(IOInterface $io, $cacheDir, $allowlist = 'a-z0-9._', Filesystem $filesystem = null, $readOnly = false)
     {
         $this->io = $io;
         $this->root = rtrim($cacheDir, '/\\') . '/';
