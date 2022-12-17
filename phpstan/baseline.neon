@@ -181,11 +181,6 @@ parameters:
 			path: ../src/Composer/Command/ArchiveCommand.php
 
 		-
-			message: "#^Only booleans are allowed in an elseif condition, array\\<Composer\\\\Package\\\\BasePackage\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ArchiveCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\Composer\\|null given\\.$#"
 			count: 3
 			path: ../src/Composer/Command/ArchiveCommand.php
