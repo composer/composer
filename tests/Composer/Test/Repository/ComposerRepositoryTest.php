@@ -89,6 +89,19 @@ class ComposerRepositoryTest extends TestCase
                     ],
                 ]],
             ],
+            // New repository format but without versions as keys should also be supported
+            [
+                [
+                    ['name' => 'bar/foo', 'version' => '3.14'],
+                    ['name' => 'bar/foo', 'version' => '3.145'],
+                ],
+                ['packages' => [
+                    'bar/foo' => [
+                        ['name' => 'bar/foo', 'version' => '3.14'],
+                        ['name' => 'bar/foo', 'version' => '3.145'],
+                    ],
+                ]],
+            ],
         ];
     }
 
