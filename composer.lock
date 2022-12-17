@@ -941,16 +941,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v5.4.15",
+            "version": "v5.4.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "ea59bb0edfaf9f28d18d8791410ee0355f317669"
+                "reference": "8e9b9c8dfb33af6057c94e1b44846bee700dc5ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/ea59bb0edfaf9f28d18d8791410ee0355f317669",
-                "reference": "ea59bb0edfaf9f28d18d8791410ee0355f317669",
+                "url": "https://api.github.com/repos/symfony/console/zipball/8e9b9c8dfb33af6057c94e1b44846bee700dc5ef",
+                "reference": "8e9b9c8dfb33af6057c94e1b44846bee700dc5ef",
                 "shasum": ""
             },
             "require": {
@@ -1020,7 +1020,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v5.4.15"
+                "source": "https://github.com/symfony/console/tree/v5.4.16"
             },
             "funding": [
                 {
@@ -1036,7 +1036,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-10-26T21:41:52+00:00"
+            "time": "2022-11-25T14:09:27+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -2038,16 +2038,16 @@
     "packages-dev": [
         {
             "name": "phpstan/phpstan",
-            "version": "1.9.3",
+            "version": "1.9.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "709999b91448d4f2bb07daffffedc889b33e461c"
+                "reference": "d03bccee595e2146b7c9d174486b84f4dc61b0f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/709999b91448d4f2bb07daffffedc889b33e461c",
-                "reference": "709999b91448d4f2bb07daffffedc889b33e461c",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/d03bccee595e2146b7c9d174486b84f4dc61b0f2",
+                "reference": "d03bccee595e2146b7c9d174486b84f4dc61b0f2",
                 "shasum": ""
             },
             "require": {
@@ -2077,7 +2077,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/1.9.3"
+                "source": "https://github.com/phpstan/phpstan/tree/1.9.4"
             },
             "funding": [
                 {
@@ -2093,20 +2093,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-12-13T10:28:10+00:00"
+            "time": "2022-12-17T13:33:52+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
-            "version": "1.1.0",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-deprecation-rules.git",
-                "reference": "f6e02de43f10c3f7c5ef86c125d9eedef94558cf"
+                "reference": "2c6792eda026d9c474c14aa018aed312686714db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-deprecation-rules/zipball/f6e02de43f10c3f7c5ef86c125d9eedef94558cf",
-                "reference": "f6e02de43f10c3f7c5ef86c125d9eedef94558cf",
+                "url": "https://api.github.com/repos/phpstan/phpstan-deprecation-rules/zipball/2c6792eda026d9c474c14aa018aed312686714db",
+                "reference": "2c6792eda026d9c474c14aa018aed312686714db",
                 "shasum": ""
             },
             "require": {
@@ -2139,22 +2139,22 @@
             "description": "PHPStan rules for detecting usage of deprecated classes, methods, properties, constants and traits.",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-deprecation-rules/issues",
-                "source": "https://github.com/phpstan/phpstan-deprecation-rules/tree/1.1.0"
+                "source": "https://github.com/phpstan/phpstan-deprecation-rules/tree/1.1.1"
             },
-            "time": "2022-12-07T16:49:11+00:00"
+            "time": "2022-12-13T14:26:20+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
-            "version": "1.3.1",
+            "version": "1.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-phpunit.git",
-                "reference": "b9827cf8df2bd97c7c07b1bb27c694ee41052754"
+                "reference": "cd9c6938f8bbfcb6da3ed5a3c7ea60873825d088"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/b9827cf8df2bd97c7c07b1bb27c694ee41052754",
-                "reference": "b9827cf8df2bd97c7c07b1bb27c694ee41052754",
+                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/cd9c6938f8bbfcb6da3ed5a3c7ea60873825d088",
+                "reference": "cd9c6938f8bbfcb6da3ed5a3c7ea60873825d088",
                 "shasum": ""
             },
             "require": {
@@ -2191,9 +2191,9 @@
             "description": "PHPUnit extensions and rules for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
-                "source": "https://github.com/phpstan/phpstan-phpunit/tree/1.3.1"
+                "source": "https://github.com/phpstan/phpstan-phpunit/tree/1.3.2"
             },
-            "time": "2022-12-12T21:02:25+00:00"
+            "time": "2022-12-13T15:08:22+00:00"
         },
         {
             "name": "phpstan/phpstan-strict-rules",
@@ -2245,16 +2245,16 @@
         },
         {
             "name": "phpstan/phpstan-symfony",
-            "version": "1.2.16",
+            "version": "1.2.18",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-symfony.git",
-                "reference": "d6ea16206b1b645ded5b43736d8ef5ae1168eb55"
+                "reference": "3178f15a60b62df21ddd202f6a668851eeb138c7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-symfony/zipball/d6ea16206b1b645ded5b43736d8ef5ae1168eb55",
-                "reference": "d6ea16206b1b645ded5b43736d8ef5ae1168eb55",
+                "url": "https://api.github.com/repos/phpstan/phpstan-symfony/zipball/3178f15a60b62df21ddd202f6a668851eeb138c7",
+                "reference": "3178f15a60b62df21ddd202f6a668851eeb138c7",
                 "shasum": ""
             },
             "require": {
@@ -2310,22 +2310,22 @@
             "description": "Symfony Framework extensions and rules for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-symfony/issues",
-                "source": "https://github.com/phpstan/phpstan-symfony/tree/1.2.16"
+                "source": "https://github.com/phpstan/phpstan-symfony/tree/1.2.18"
             },
-            "time": "2022-11-04T13:16:15+00:00"
+            "time": "2022-12-16T09:43:26+00:00"
         },
         {
             "name": "symfony/phpunit-bridge",
-            "version": "v6.1.6",
+            "version": "v6.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/phpunit-bridge.git",
-                "reference": "07cf788ac9ae83b59d46599bb5098c3add88c68b"
+                "reference": "1bd3b17db6d2ec284efbdc916600e880d6d858df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/phpunit-bridge/zipball/07cf788ac9ae83b59d46599bb5098c3add88c68b",
-                "reference": "07cf788ac9ae83b59d46599bb5098c3add88c68b",
+                "url": "https://api.github.com/repos/symfony/phpunit-bridge/zipball/1bd3b17db6d2ec284efbdc916600e880d6d858df",
+                "reference": "1bd3b17db6d2ec284efbdc916600e880d6d858df",
                 "shasum": ""
             },
             "require": {
@@ -2379,7 +2379,7 @@
             "description": "Provides utilities for PHPUnit, especially user deprecation notices management",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/phpunit-bridge/tree/v6.1.6"
+                "source": "https://github.com/symfony/phpunit-bridge/tree/v6.2.0"
             },
             "funding": [
                 {
@@ -2395,7 +2395,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-10-07T08:04:03+00:00"
+            "time": "2022-11-18T19:08:09+00:00"
         }
     ],
     "aliases": [],
