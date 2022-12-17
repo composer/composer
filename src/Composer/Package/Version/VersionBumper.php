@@ -71,7 +71,8 @@ class VersionBumper
         }
 
         $major = Preg::replace('{^(\d+).*}', '$1', $version);
-        $newPrettyConstraint = '^'.Preg::replace('{(?:\.(?:0|9999999))+(-dev)?$}', '', $version);
+        $versionWithoutSuffix = Preg::replace('{(?:\.(?:0|9999999))+(-dev)?$}', '', $version);
+        $newPrettyConstraint = '^'.$versionWithoutSuffix;
 
         // not a simple stable version, abort
         if (!Preg::isMatch('{^\^\d+(\.\d+)*$}', $newPrettyConstraint)) {
@@ -84,17 +85,24 @@ class VersionBumper
                 \^'.$major.'(?:\.\d+)* # e.g. ^2.anything
                 | ~'.$major.'(?:\.\d+)? # e.g. ~2 or ~2.2 but no more
                 | '.$major.'(?:\.[*x])+ # e.g. 2.* or 2.*.* or 2.x.x.x etc
+                | >=\d(?:\.\d+)* # e.g. >=2 or >=1.2 etc
             )
             (?=,|$|\ |\||@) # trailing separator
         }x';
         if (Preg::isMatchAllWithOffsets($pattern, $prettyConstraint, $matches)) {
             $modified = $prettyConstraint;
             foreach (array_reverse($matches['constraint']) as $match) {
+                assert(is_string($match[0]));
                 $suffix = '';
-                if (substr_count($match[0], '.') === 2 && substr_count($newPrettyConstraint, '.') === 1) {
+                if (substr_count($match[0], '.') === 2 && substr_count($versionWithoutSuffix, '.') === 1) {
                     $suffix = '.0';
                 }
-                $modified = substr_replace($modified, $newPrettyConstraint.$suffix, $match[1], Platform::strlen((string) $match[0]));
+                if (str_starts_with($match[0], '>=')) {
+                    $replacement = '>='.$versionWithoutSuffix.$suffix;
+                } else {
+                    $replacement = $newPrettyConstraint.$suffix;
+                }
+                $modified = substr_replace($modified, $replacement, $match[1], Platform::strlen($match[0]));
             }
 
             // if it is strictly equal to the previous one then no need to change anything
