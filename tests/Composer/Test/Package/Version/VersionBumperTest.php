@@ -51,13 +51,15 @@ class VersionBumperTest extends TestCase
         yield 'preserve multi constraints' => ['^1.2 || ^2.3', '1.3.2', '^1.3.2 || ^2.3'];
         yield 'preserve multi constraints/2' => ['^1.2 || ^2.3', '2.4.0', '^1.2 || ^2.4'];
         yield 'preserve multi constraints/3' => ['^1.2 || ^2.3 || ^2', '2.4.0', '^1.2 || ^2.4 || ^2.4'];
+        yield 'preserve multi constraints/4' => ['^1.2 || ^2.3.3 || ^2', '2.4.0', '^1.2 || ^2.4.0 || ^2.4'];
         yield '@dev is preserved' => ['^3@dev', '3.2.x-dev', '^3.2@dev'];
         yield 'non-stable versions abort upgrades' => ['~2', '2.1-beta.1', '~2'];
         yield 'dev reqs are skipped' => ['dev-main', 'dev-foo', 'dev-main'];
         yield 'dev version does not upgrade' => ['^3.2', 'dev-main', '^3.2'];
         yield 'upgrade dev version if aliased' => ['^3.2', 'dev-main', '^3.3', '3.3.x-dev'];
         yield 'upgrade major wildcard to caret' => ['2.*', '2.4.0', '^2.4'];
-        yield 'upgrade major wildcard as x to caret' => ['2.x.x', '2.4.0', '^2.4'];
+        yield 'upgrade major wildcard as x to caret' => ['2.x', '2.4.0', '^2.4'];
+        yield 'upgrade major wildcard as x to caret/2' => ['2.x.x', '2.4.0', '^2.4.0'];
         yield 'leave minor wildcard alone' => ['2.4.*', '2.4.3', '2.4.*'];
         yield 'leave patch wildcard alone' => ['2.4.3.*', '2.4.3.2', '2.4.3.*'];
         yield 'upgrade tilde to caret when compatible' => ['~2.2', '2.4.3', '^2.4.3'];

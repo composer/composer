@@ -34,6 +34,7 @@ class VersionBumper
      * For example:
      *  * ^1.0 + 1.2.1            -> ^1.2.1
      *  * ^1.2 + 1.2.0            -> ^1.2
+     *  * ^1.2.0 + 1.3.0          -> ^1.3.0
      *  * ^1.2 || ^2.3 + 1.3.0    -> ^1.3 || ^2.3
      *  * ^1.2 || ^2.3 + 2.4.0    -> ^1.2 || ^2.4
      *  * ^3@dev + 3.2.99999-dev  -> ^3.2@dev
@@ -89,7 +90,11 @@ class VersionBumper
         if (Preg::isMatchAllWithOffsets($pattern, $prettyConstraint, $matches)) {
             $modified = $prettyConstraint;
             foreach (array_reverse($matches['constraint']) as $match) {
-                $modified = substr_replace($modified, $newPrettyConstraint, $match[1], Platform::strlen((string) $match[0]));
+                $suffix = '';
+                if (substr_count($match[0], '.') === 2 && substr_count($newPrettyConstraint, '.') === 1) {
+                    $suffix = '.0';
+                }
+                $modified = substr_replace($modified, $newPrettyConstraint.$suffix, $match[1], Platform::strlen((string) $match[0]));
             }
 
             // if it is strictly equal to the previous one then no need to change anything
