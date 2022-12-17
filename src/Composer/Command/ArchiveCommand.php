@@ -18,8 +18,12 @@ use Composer\Config;
 use Composer\Composer;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\Version\VersionParser;
+use Composer\Package\Version\VersionSelector;
+use Composer\Pcre\Preg;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryFactory;
+use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -156,22 +160,38 @@ EOT
         if ($composer = $this->tryComposer()) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $repo = new CompositeRepository(array_merge([$localRepo], $composer->getRepositoryManager()->getRepositories()));
+            $minStability = $composer->getPackage()->getMinimumStability();
         } else {
             $defaultRepos = RepositoryFactory::defaultReposWithDefaultManager($io);
             $io->writeError('No composer.json found in the current directory, searching packages from ' . implode(', ', array_keys($defaultRepos)));
             $repo = new CompositeRepository($defaultRepos);
+            $minStability = 'stable';
         }
 
-        $packages = $repo->findPackages($packageName, $version);
+        if ($version !== null && Preg::isMatchStrictGroups('{@(stable|RC|beta|alpha|dev)$}i', $version, $match)) {
+            $minStability = $match[1];
+            $version = (string) substr($version, 0, -strlen($match[0]));
+        }
+
+        $repoSet = new RepositorySet($minStability);
+        $repoSet->addRepository($repo);
+        $parser = new VersionParser();
+        $constraint = $version !== null ? $parser->parseConstraints($version) : null;
+        $packages = $repoSet->findPackages(strtolower($packageName), $constraint);
 
         if (count($packages) > 1) {
-            $package = reset($packages);
+            $versionSelector = new VersionSelector($repoSet);
+            $package = $versionSelector->findBestCandidate(strtolower($packageName), $version, $minStability);
+            if ($package === false) {
+                $package = reset($packages);
+            }
+
             $io->writeError('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
             $io->writeError('Alternatives were '.implode(', ', array_map(static function ($p): string {
                 return $p->getPrettyString();
             }, $packages)).'.');
             $io->writeError('<comment>Please use a more specific constraint to pick a different package.</comment>');
-        } elseif ($packages) {
+        } elseif (count($packages) === 1) {
             $package = reset($packages);
             $io->writeError('<info>Found an exact match '.$package->getPrettyString().'.</info>');
         } else {
@@ -182,6 +202,9 @@ EOT
 
         if (!$package instanceof CompletePackageInterface) {
             throw new \LogicException('Expected a CompletePackageInterface instance but found '.get_class($package));
+        }
+        if (!$package instanceof BasePackage) {
+            throw new \LogicException('Expected a BasePackage instance but found '.get_class($package));
         }
 
         return $package;
