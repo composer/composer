@@ -1,3 +1,22 @@
+### [2.5.0] 2022-12-20
+
+  * BC Warning: To prevent abuse of our includeFile() function it is now gone, it was not part of the official API but may still cause issues if some code incorrectly relied on it (#11015)
+  * Improved version guessing of `require` command to use the dependency resolution result instead of using the latest available version (except if you run with --no-update) (#11160)
+  * Improved version selection in `archive` command (#11230)
+  * Added autocompletion of config option names in the `config` command (#11130)
+  * Added support for writing [custom commands as Command classes](https://getcomposer.org/doc/articles/scripts.md#writing-custom-commands) (#11151)
+  * Added hard failure when installing from a lock file which does not satisfy the composer.json requirements (#11195)
+  * Added warning when the outdated command rejects a new package due to unmet platform requirements (#11113)
+  * Added support for `bump` command to bump `>=x` to `>=installed-version` (#11179)
+  * Added `--download-only` flag to `install` command to only download and prime the cache with the package archives (#11041)
+  * Added autoconfiguration of `github-domains`/`gitlab-domains` when GitHub/GitLab credentials are configured for a custom domain (#11062)
+  * Added hard failure (throw) if COMPOSER_AUTH is present and malformed JSON (#11085)
+  * Added interactive prompt to `run-script` and `exec` commands if run without any argument (#11157)
+  * Added interactive prompt where to store credentials when a project-local auth.json exists (#11188)
+  * Fixed full disk warning to be shown when less than 100MiB is available (#11190)
+  * Fixed cache keys to allow `_` to avoid conflicts between package names like `a-b` and `a_b` (#11229)
+  * Fixed docker compatibility by making paths more portable even if the project is installed at `/` (#11169)
+
 ### [2.4.4] 2022-10-27
 
   * Added extra debug output when a zip extraction fails while on GitHub Actions (#11148)
@@ -1657,6 +1676,7 @@
 
   * Initial release
 
+[2.5.0]: https://github.com/composer/composer/compare/2.4.4...2.5.0
 [2.4.4]: https://github.com/composer/composer/compare/2.4.3...2.4.4
 [2.4.3]: https://github.com/composer/composer/compare/2.4.2...2.4.3
 [2.4.2]: https://github.com/composer/composer/compare/2.4.1...2.4.2
