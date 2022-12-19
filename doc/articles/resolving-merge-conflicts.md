@@ -73,6 +73,8 @@ If the above steps aren't followed and text based merges have been done anyway, 
 
 1. There are packages in the `require` or `require-dev` section of the `composer.json` file that are not in the lock file and as a result never installed
 
+> **Note:** Starting from Composer release 2.5, packages that are required but not locked will result in an error when running ```composer install```
+
 2. There are packages in the `composer.lock` file that are not a direct or indirect dependency of any of the packages required. As a result, a package is installed, even though running `composer why vendor/package` says it is not required.
 
 There are several ways to fix these issues;
