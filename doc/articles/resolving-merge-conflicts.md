@@ -69,7 +69,11 @@ that merging branches does not break anything by accidentally updating a depende
 
 # Recovering from incorrectly resolved merge conflicts
 
-If the above steps aren't followed and text based merges have been done anyway, your Composer project might be in a state where unexpected behaviour is observed because the `composer.lock` file is not (fully) in sync with the `composer.json` file. There are two things that can happen here:
+If the above steps aren't followed and text based merges have been done anyway,
+your Composer project might be in a state where unexpected behaviour is observed
+because the `composer.lock` file is not (fully) in sync with the `composer.json` file.
+
+There are two things that can happen here:
 
 1. There are packages in the `require` or `require-dev` section of the `composer.json` file that are not in the lock file and as a result never installed
 
