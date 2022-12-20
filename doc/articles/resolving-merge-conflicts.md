@@ -43,8 +43,8 @@ Before committing, make sure the resulting `composer.json` and `composer.lock` f
 To do this, run the following commands:
 
 ```shell
-composer validate
-composer install [--dry-run]
+php composer.phar validate
+php composer.phar install [--dry-run]
 ```
 
 ## Automating merge conflict resolving with git
@@ -104,7 +104,7 @@ There is an option to recover from a discrepancy between the `composer.json` and
 To detect any package that is required but not installed, you can simply run:
 
 ```shell
-composer validate
+php composer.phar validate
 ```
 
 If there are packages that are required but not installed, you should get output similar to this:
@@ -129,7 +129,7 @@ To recover from this, simply run `composer update vendor/package-name` for each 
 To detect and fix packages that are locked but not a direct/indirect dependency, you can run the following command:
 
 ```shell
-composer remove --unused
+php composer.phar remove --unused
 ```
 
 If there are no packages locked that are not a dependency, the command will have the following output:
