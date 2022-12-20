@@ -311,6 +311,8 @@ After removing the requirements, the modified requirements will be
 uninstalled.
 
 ### Options
+
+* **--unused** Remove unused packages that are not a direct or indirect dependency (anymore)
 * **--dev:** Remove packages from `require-dev`.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -339,7 +341,6 @@ uninstalled.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu-autoloader`.
-* **--unused** Remove unused packages that are not a direct or indirect dependency (anymore)
 
 ## bump
 
