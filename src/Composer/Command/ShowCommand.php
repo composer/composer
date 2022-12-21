@@ -110,7 +110,7 @@ class ShowCommand extends BaseCommand
 The show command displays detailed information about a package, or
 lists all packages available.
 
-Read more at https://getcomposer.org/doc/03-cli.md#show
+Read more at https://getcomposer.org/doc/03-cli.md#show-info
 EOT
             )
         ;

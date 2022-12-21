@@ -106,7 +106,7 @@ To run a partial update with more restrictive constraints you can use the shorth
 
 To select packages names interactively with auto-completion use <info>-i</info>.
 
-Read more at https://getcomposer.org/doc/03-cli.md#update-u
+Read more at https://getcomposer.org/doc/03-cli.md#update-u-upgrade
 EOT
             )
         ;
