@@ -47,7 +47,7 @@ class DumpAutoloadCommand extends BaseCommand
                 <<<EOT
 <info>php composer.phar dump-autoload</info>
 
-Read more at https://getcomposer.org/doc/03-cli.md#dump-autoload-dumpautoload-
+Read more at https://getcomposer.org/doc/03-cli.md#dump-autoload-dumpautoload
 EOT
             )
         ;

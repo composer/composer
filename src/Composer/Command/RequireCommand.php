@@ -120,7 +120,7 @@ If you do not specify a version constraint, composer will choose a suitable one 
 
 If you do not want to install the new dependencies immediately you can call it with --no-update
 
-Read more at https://getcomposer.org/doc/03-cli.md#require
+Read more at https://getcomposer.org/doc/03-cli.md#require-r
 EOT
             )
         ;
