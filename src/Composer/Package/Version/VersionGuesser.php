@@ -397,8 +397,8 @@ class VersionGuesser
 
             $urlPattern = '#<url>.*/(' . $trunkPath . '|(' . $branchesPath . '|' . $tagsPath . ')/(.*))</url>#';
 
-            if (Preg::isMatchStrictGroups($urlPattern, $output, $matches)) {
-                if (isset($matches[2]) && ($branchesPath === $matches[2] || $tagsPath === $matches[2])) {
+            if (Preg::isMatch($urlPattern, $output, $matches)) {
+                if (isset($matches[2], $matches[3]) && ($branchesPath === $matches[2] || $tagsPath === $matches[2])) {
                     // we are in a branches path
                     $version = $this->versionParser->normalizeBranch($matches[3]);
                     $prettyVersion = 'dev-' . $matches[3];
@@ -406,6 +406,7 @@ class VersionGuesser
                     return ['version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion];
                 }
 
+                assert(is_string($matches[1]));
                 $prettyVersion = trim($matches[1]);
                 if ($prettyVersion === 'trunk') {
                     $version = 'dev-trunk';
