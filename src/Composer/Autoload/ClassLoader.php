@@ -109,18 +109,7 @@ class ClassLoader
     public function __construct($vendorDir = null)
     {
         $this->vendorDir = $vendorDir;
-
-        /**
-         * Scope isolated include.
-         *
-         * Prevents access to $this/self from included files.
-         *
-         * @param  string $file
-         * @return void
-         */
-        $this->includeFile = static function($file) {
-            include $file;
-        };
+        $this->initializeIncludeClosure();
     }
 
     /**
@@ -569,5 +558,37 @@ class ClassLoader
         }
 
         return false;
+    }
+
+    /**
+     * @return list<string>
+     * @internal
+     */
+    public function __sleep(): array
+    {
+        return ['vendorDir', 'prefixLengthsPsr4', 'prefixDirsPsr4', 'fallbackDirsPsr4', 'prefixesPsr0', 'fallbackDirsPsr0', 'useIncludePath', 'classMap', 'classMapAuthoritative', 'missingClasses', 'apcuPrefix'];
+    }
+
+    /**
+     * @internal
+     */
+    public function __wakeup(): void
+    {
+        $this->initializeIncludeClosure();
+    }
+
+    private function initializeIncludeClosure(): void
+    {
+        /**
+         * Scope isolated include.
+         *
+         * Prevents access to $this/self from included files.
+         *
+         * @param  string $file
+         * @return void
+         */
+        $this->includeFile = static function($file) {
+            include $file;
+        };
     }
 }
