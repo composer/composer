@@ -103,6 +103,21 @@ jobs:
       - name: "Run install again using composer binary from source"
         run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
 
+      - name: "Make source binary the one used by default (Linux / macOS)"
+        if: "!contains(matrix.os, 'windows')"
+        run: |
+          echo -e "$(pwd)/bin\n$(cat $GITHUB_PATH)" > $GITHUB_PATH
+          echo -e "COMPOSER_BINARY=$(pwd)/bin/composer" >> $GITHUB_ENV
+
+      - name: "Make source binary the one used by default (Windows)"
+        if: "contains(matrix.os, 'windows')"
+        run: |
+          $(
+              (echo "$(Get-Location)\bin")
+              (Get-Content $env:GITHUB_PATH -Raw)
+          ) | Set-Content $env:GITHUB_PATH
+          echo "COMPOSER_BINARY=$(Get-Location)\bin\composer" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: "Prepare git environment"
         run: "git config --global user.name composer && git config --global user.email composer@example.com"
 
