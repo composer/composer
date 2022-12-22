@@ -43,7 +43,7 @@ namespace Composer\Autoload;
 class ClassLoader
 {
     /** @var \Closure(string):void */
-    private $includeFile;
+    private static $includeFile;
 
     /** @var ?string */
     private $vendorDir;
@@ -109,7 +109,7 @@ class ClassLoader
     public function __construct($vendorDir = null)
     {
         $this->vendorDir = $vendorDir;
-        $this->initializeIncludeClosure();
+        self::initializeIncludeClosure();
     }
 
     /**
@@ -429,7 +429,7 @@ class ClassLoader
     public function loadClass($class)
     {
         if ($file = $this->findFile($class)) {
-            ($this->includeFile)($file);
+            (self::$includeFile)($file);
 
             return true;
         }
@@ -560,25 +560,12 @@ class ClassLoader
         return false;
     }
 
-    /**
-     * @return list<string>
-     * @internal
-     */
-    public function __sleep(): array
+    private static function initializeIncludeClosure(): void
     {
-        return ['vendorDir', 'prefixLengthsPsr4', 'prefixDirsPsr4', 'fallbackDirsPsr4', 'prefixesPsr0', 'fallbackDirsPsr0', 'useIncludePath', 'classMap', 'classMapAuthoritative', 'missingClasses', 'apcuPrefix'];
-    }
+        if (self::$includeFile !== null) {
+            return;
+        }
 
-    /**
-     * @internal
-     */
-    public function __wakeup(): void
-    {
-        $this->initializeIncludeClosure();
-    }
-
-    private function initializeIncludeClosure(): void
-    {
         /**
          * Scope isolated include.
          *
@@ -587,7 +574,7 @@ class ClassLoader
          * @param  string $file
          * @return void
          */
-        $this->includeFile = static function($file) {
+        self::$includeFile = static function($file) {
             include $file;
         };
     }
