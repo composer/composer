@@ -1,3 +1,8 @@
+### [2.5.1] 2022-12-22
+
+  * Fixed ClassLoader regression which made it fail if serialized (e.g. within PHPUnit process isolation) (#11237)
+  * Fixed preg type error in svn version guessing (#11231)
+
 ### [2.5.0] 2022-12-20
 
   * BC Warning: To prevent abuse of our includeFile() function it is now gone, it was not part of the official API but may still cause issues if some code incorrectly relied on it (#11015)
@@ -1676,6 +1681,7 @@
 
   * Initial release
 
+[2.5.1]: https://github.com/composer/composer/compare/2.5.0...2.5.1
 [2.5.0]: https://github.com/composer/composer/compare/2.4.4...2.5.0
 [2.4.4]: https://github.com/composer/composer/compare/2.4.3...2.4.4
 [2.4.3]: https://github.com/composer/composer/compare/2.4.2...2.4.3
