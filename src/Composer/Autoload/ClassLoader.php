@@ -574,8 +574,8 @@ class ClassLoader
          * @param  string $file
          * @return void
          */
-        self::$includeFile = static function($file) {
+        self::$includeFile = \Closure::bind(static function($file) {
             include $file;
-        };
+        }, null, null);
     }
 }
