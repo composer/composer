@@ -21,27 +21,27 @@ class CompositeRepositoryTest extends TestCase
     public function testHasPackage(): void
     {
         $arrayRepoOne = new ArrayRepository;
-        $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
+        $arrayRepoOne->addPackage(self::getPackage('foo', '1'));
 
         $arrayRepoTwo = new ArrayRepository;
-        $arrayRepoTwo->addPackage($this->getPackage('bar', '1'));
+        $arrayRepoTwo->addPackage(self::getPackage('bar', '1'));
 
         $repo = new CompositeRepository([$arrayRepoOne, $arrayRepoTwo]);
 
-        $this->assertTrue($repo->hasPackage($this->getPackage('foo', '1')), "Should have package 'foo/1'");
-        $this->assertTrue($repo->hasPackage($this->getPackage('bar', '1')), "Should have package 'bar/1'");
+        $this->assertTrue($repo->hasPackage(self::getPackage('foo', '1')), "Should have package 'foo/1'");
+        $this->assertTrue($repo->hasPackage(self::getPackage('bar', '1')), "Should have package 'bar/1'");
 
-        $this->assertFalse($repo->hasPackage($this->getPackage('foo', '2')), "Should not have package 'foo/2'");
-        $this->assertFalse($repo->hasPackage($this->getPackage('bar', '2')), "Should not have package 'bar/2'");
+        $this->assertFalse($repo->hasPackage(self::getPackage('foo', '2')), "Should not have package 'foo/2'");
+        $this->assertFalse($repo->hasPackage(self::getPackage('bar', '2')), "Should not have package 'bar/2'");
     }
 
     public function testFindPackage(): void
     {
         $arrayRepoOne = new ArrayRepository;
-        $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
+        $arrayRepoOne->addPackage(self::getPackage('foo', '1'));
 
         $arrayRepoTwo = new ArrayRepository;
-        $arrayRepoTwo->addPackage($this->getPackage('bar', '1'));
+        $arrayRepoTwo->addPackage(self::getPackage('bar', '1'));
 
         $repo = new CompositeRepository([$arrayRepoOne, $arrayRepoTwo]);
 
@@ -55,14 +55,14 @@ class CompositeRepositoryTest extends TestCase
     public function testFindPackages(): void
     {
         $arrayRepoOne = new ArrayRepository;
-        $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
-        $arrayRepoOne->addPackage($this->getPackage('foo', '2'));
-        $arrayRepoOne->addPackage($this->getPackage('bat', '1'));
+        $arrayRepoOne->addPackage(self::getPackage('foo', '1'));
+        $arrayRepoOne->addPackage(self::getPackage('foo', '2'));
+        $arrayRepoOne->addPackage(self::getPackage('bat', '1'));
 
         $arrayRepoTwo = new ArrayRepository;
-        $arrayRepoTwo->addPackage($this->getPackage('bar', '1'));
-        $arrayRepoTwo->addPackage($this->getPackage('bar', '2'));
-        $arrayRepoTwo->addPackage($this->getPackage('foo', '3'));
+        $arrayRepoTwo->addPackage(self::getPackage('bar', '1'));
+        $arrayRepoTwo->addPackage(self::getPackage('bar', '2'));
+        $arrayRepoTwo->addPackage(self::getPackage('foo', '3'));
 
         $repo = new CompositeRepository([$arrayRepoOne, $arrayRepoTwo]);
 
@@ -82,10 +82,10 @@ class CompositeRepositoryTest extends TestCase
     public function testGetPackages(): void
     {
         $arrayRepoOne = new ArrayRepository;
-        $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
+        $arrayRepoOne->addPackage(self::getPackage('foo', '1'));
 
         $arrayRepoTwo = new ArrayRepository;
-        $arrayRepoTwo->addPackage($this->getPackage('bar', '1'));
+        $arrayRepoTwo->addPackage(self::getPackage('bar', '1'));
 
         $repo = new CompositeRepository([$arrayRepoOne, $arrayRepoTwo]);
 
@@ -100,12 +100,12 @@ class CompositeRepositoryTest extends TestCase
     public function testAddRepository(): void
     {
         $arrayRepoOne = new ArrayRepository;
-        $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
+        $arrayRepoOne->addPackage(self::getPackage('foo', '1'));
 
         $arrayRepoTwo = new ArrayRepository;
-        $arrayRepoTwo->addPackage($this->getPackage('bar', '1'));
-        $arrayRepoTwo->addPackage($this->getPackage('bar', '2'));
-        $arrayRepoTwo->addPackage($this->getPackage('bar', '3'));
+        $arrayRepoTwo->addPackage(self::getPackage('bar', '1'));
+        $arrayRepoTwo->addPackage(self::getPackage('bar', '2'));
+        $arrayRepoTwo->addPackage(self::getPackage('bar', '3'));
 
         $repo = new CompositeRepository([$arrayRepoOne]);
         $this->assertCount(1, $repo, "Composite repository should have just one package before addRepository() is called");
@@ -116,10 +116,10 @@ class CompositeRepositoryTest extends TestCase
     public function testCount(): void
     {
         $arrayRepoOne = new ArrayRepository;
-        $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
+        $arrayRepoOne->addPackage(self::getPackage('foo', '1'));
 
         $arrayRepoTwo = new ArrayRepository;
-        $arrayRepoTwo->addPackage($this->getPackage('bar', '1'));
+        $arrayRepoTwo->addPackage(self::getPackage('bar', '1'));
 
         $repo = new CompositeRepository([$arrayRepoOne, $arrayRepoTwo]);
 
@@ -137,7 +137,7 @@ class CompositeRepositoryTest extends TestCase
         $this->assertEquals([], call_user_func_array([$repo, $method], $args));
     }
 
-    public function provideMethodCalls(): array
+    public static function provideMethodCalls(): array
     {
         return [
             ['findPackages', ['foo']],

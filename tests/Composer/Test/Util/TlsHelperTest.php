@@ -39,7 +39,7 @@ class TlsHelperTest extends TestCase
         }
     }
 
-    public function dataCheckCertificateHost(): array
+    public static function dataCheckCertificateHost(): array
     {
         return [
             [true, 'getcomposer.org', ['getcomposer.org']],

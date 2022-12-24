@@ -711,6 +711,13 @@ class Installer
                 $this->io->writeError('<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. It is recommended that you run `composer update` or `composer update <package name>`.</warning>', true, IOInterface::QUIET);
             }
 
+            $missingRequirementInfo = $this->locker->getMissingRequirementInfo($this->package, $this->devMode);
+            if ($missingRequirementInfo !== []) {
+                $this->io->writeError($missingRequirementInfo);
+
+                return self::ERROR_LOCK_FILE_INVALID;
+            }
+
             foreach ($lockedRepository->getPackages() as $package) {
                 $request->fixLockedPackage($package);
             }

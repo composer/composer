@@ -210,7 +210,7 @@ class VersionSelector
         $extra = $loader->getBranchAlias($dumper->dump($package));
         if ($extra && $extra !== VersionParser::DEFAULT_BRANCH_ALIAS) {
             $extra = Preg::replace('{^(\d+\.\d+\.\d+)(\.9999999)-dev$}', '$1.0', $extra, -1, $count);
-            if ($count) {
+            if ($count > 0) {
                 $extra = str_replace('.9999999', '.0', $extra);
 
                 return $this->transformVersion($extra, $extra, 'dev');

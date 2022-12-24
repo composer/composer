@@ -36,7 +36,7 @@ class PlatformRepositoryTest extends TestCase
         self::assertSame('2.1.0', $hhvm->getPrettyVersion());
     }
 
-    public function providePhpFlavorTestCases(): array
+    public static function providePhpFlavorTestCases(): array
     {
         return [
             [
@@ -1202,7 +1202,7 @@ Linked Version => 1.2.11',
         foreach ($links as $link) {
             self::assertSame($sourcePackage->getName(), $link->getSource());
             self::assertContains($link->getTarget(), $expectedLinks, sprintf('%s: package %s not in %s', $context, $link->getTarget(), var_export($expectedLinks, true)));
-            self::assertTrue($link->getConstraint()->matches($this->getVersionConstraint('=', $sourcePackage->getVersion())));
+            self::assertTrue($link->getConstraint()->matches(self::getVersionConstraint('=', $sourcePackage->getVersion())));
         }
     }
 

@@ -116,7 +116,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher->hasEventListeners($event);
     }
 
-    public function provideDevModes(): array
+    public static function provideDevModes(): array
     {
         return [
             [true],
@@ -428,7 +428,7 @@ class EventDispatcherTest extends TestCase
 
         $dispatcher->dispatch('helloWorld', new ScriptEvent('helloWorld', $composer, $io));
         $expected = "> helloWorld: @hello World".PHP_EOL.
-            "> hello: echo Hello " .$this->getCmd("'World'").PHP_EOL;
+            "> hello: echo Hello " .self::getCmd("'World'").PHP_EOL;
 
         $this->assertEquals($expected, $io->getOutput());
     }
@@ -487,7 +487,7 @@ class EventDispatcherTest extends TestCase
         return $dispatcher;
     }
 
-    public function provideValidCommands(): array
+    public static function provideValidCommands(): array
     {
         return [
             ['phpunit'],

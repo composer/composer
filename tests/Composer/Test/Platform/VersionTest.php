@@ -88,7 +88,7 @@ class VersionTest extends TestCase
         self::assertSame($normalizedVersion, $this->getVersionParser()->normalize($parsedVersion));
     }
 
-    public function provideLibJpegVersions(): array
+    public static function provideLibJpegVersions(): array
     {
         return [
             ['9', '9.0'],
@@ -107,7 +107,7 @@ class VersionTest extends TestCase
         self::assertSame($parsedVersion, Version::parseLibjpeg($input));
     }
 
-    public function provideZoneinfoVersions(): array
+    public static function provideZoneinfoVersions(): array
     {
         return [
             ['2019c', '2019.3'],

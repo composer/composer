@@ -55,7 +55,7 @@ class FileDownloaderTest extends TestCase
 
     public function testDownloadForPackageWithoutDistReference(): void
     {
-        $package = $this->getPackage();
+        $package = self::getPackage();
 
         self::expectException('InvalidArgumentException');
 
@@ -65,7 +65,7 @@ class FileDownloaderTest extends TestCase
 
     public function testDownloadToExistingFile(): void
     {
-        $package = $this->getPackage();
+        $package = self::getPackage();
         $package->setDistUrl('url');
 
         $path = $this->createTempFile(self::getUniqueTmpDirectory());
@@ -88,7 +88,7 @@ class FileDownloaderTest extends TestCase
 
     public function testGetFileName(): void
     {
-        $package = $this->getPackage();
+        $package = self::getPackage();
         $package->setDistUrl('http://example.com/script.js');
 
         $config = $this->getConfig(['vendor-dir' => '/vendor']);
@@ -101,7 +101,7 @@ class FileDownloaderTest extends TestCase
 
     public function testDownloadButFileIsUnsaved(): void
     {
-        $package = $this->getPackage();
+        $package = self::getPackage();
         $package->setDistUrl('http://example.com/script.js');
 
         $path = self::getUniqueTmpDirectory();
@@ -143,10 +143,10 @@ class FileDownloaderTest extends TestCase
     {
         $path = self::getUniqueTmpDirectory();
 
-        $package = $this->getPackage();
+        $package = self::getPackage();
         $package->setDistUrl('url');
 
-        $rootPackage = $this->getRootPackage();
+        $rootPackage = self::getRootPackage();
 
         $config = $this->getConfig([
             'vendor-dir' => $path.'/vendor',
@@ -226,10 +226,10 @@ class FileDownloaderTest extends TestCase
     {
         $path = self::getUniqueTmpDirectory();
 
-        $package = $this->getPackage();
+        $package = self::getPackage();
         $package->setDistUrl('url');
 
-        $rootPackage = $this->getRootPackage();
+        $rootPackage = self::getRootPackage();
 
         $config = $this->getConfig([
             'vendor-dir' => $path.'/vendor',
@@ -332,7 +332,7 @@ class FileDownloaderTest extends TestCase
 
     public function testDownloadFileWithInvalidChecksum(): void
     {
-        $package = $this->getPackage();
+        $package = self::getPackage();
         $package->setDistUrl($distUrl = 'http://example.com/script.js');
         $package->setDistSha1Checksum('invalid');
 
@@ -371,8 +371,8 @@ class FileDownloaderTest extends TestCase
 
     public function testDowngradeShowsAppropriateMessage(): void
     {
-        $oldPackage = $this->getPackage('dummy/pkg', '1.2.0');
-        $newPackage = $this->getPackage('dummy/pkg', '1.0.0');
+        $oldPackage = self::getPackage('dummy/pkg', '1.2.0');
+        $newPackage = self::getPackage('dummy/pkg', '1.0.0');
         $newPackage->setDistUrl($distUrl = 'http://example.com/script.js');
 
         $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();

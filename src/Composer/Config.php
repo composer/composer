@@ -102,6 +102,8 @@ class Config
     private $configSource;
     /** @var ConfigSourceInterface */
     private $authConfigSource;
+    /** @var ConfigSourceInterface|null */
+    private $localAuthConfigSource = null;
     /** @var bool */
     private $useEnvironment;
     /** @var array<string, true> */
@@ -151,6 +153,16 @@ class Config
     public function getAuthConfigSource(): ConfigSourceInterface
     {
         return $this->authConfigSource;
+    }
+
+    public function setLocalAuthConfigSource(ConfigSourceInterface $source): void
+    {
+        $this->localAuthConfigSource = $source;
+    }
+
+    public function getLocalAuthConfigSource(): ?ConfigSourceInterface
+    {
+        return $this->localAuthConfigSource;
     }
 
     /**

@@ -122,7 +122,7 @@ class LibraryInstallerTest extends TestCase
     public function testIsInstalled(): void
     {
         $library = new LibraryInstaller($this->io, $this->composer);
-        $package = $this->getPackage('test/pkg', '1.0.0');
+        $package = self::getPackage('test/pkg', '1.0.0');
 
         $repository = new InstalledArrayRepository();
         $this->assertFalse($library->isInstalled($repository, $package));
@@ -146,7 +146,7 @@ class LibraryInstallerTest extends TestCase
     public function testInstall(): void
     {
         $library = new LibraryInstaller($this->io, $this->composer);
-        $package = $this->getPackage('some/package', '1.0.0');
+        $package = self::getPackage('some/package', '1.0.0');
 
         $this->dm
             ->expects($this->once())
@@ -177,8 +177,8 @@ class LibraryInstallerTest extends TestCase
           ->method('rename')
           ->with($this->vendorDir.'/vendor/package1/oldtarget', $this->vendorDir.'/vendor/package1/newtarget');
 
-        $initial = $this->getPackage('vendor/package1', '1.0.0');
-        $target = $this->getPackage('vendor/package1', '2.0.0');
+        $initial = self::getPackage('vendor/package1', '1.0.0');
+        $target = self::getPackage('vendor/package1', '2.0.0');
 
         $initial->setTargetDir('oldtarget');
         $target->setTargetDir('newtarget');
@@ -217,7 +217,7 @@ class LibraryInstallerTest extends TestCase
     public function testUninstall(): void
     {
         $library = new LibraryInstaller($this->io, $this->composer);
-        $package = $this->getPackage('vendor/pkg', '1.0.0');
+        $package = self::getPackage('vendor/pkg', '1.0.0');
 
         $this->repository
             ->expects($this->exactly(2))
@@ -246,7 +246,7 @@ class LibraryInstallerTest extends TestCase
     public function testGetInstallPathWithoutTargetDir(): void
     {
         $library = new LibraryInstaller($this->io, $this->composer);
-        $package = $this->getPackage('Vendor/Pkg', '1.0.0');
+        $package = self::getPackage('Vendor/Pkg', '1.0.0');
 
         $this->assertEquals($this->vendorDir.'/'.$package->getPrettyName(), $library->getInstallPath($package));
     }
@@ -254,7 +254,7 @@ class LibraryInstallerTest extends TestCase
     public function testGetInstallPathWithTargetDir(): void
     {
         $library = new LibraryInstaller($this->io, $this->composer);
-        $package = $this->getPackage('Foo/Bar', '1.0.0');
+        $package = self::getPackage('Foo/Bar', '1.0.0');
         $package->setTargetDir('Some/Namespace');
 
         $this->assertEquals($this->vendorDir.'/'.$package->getPrettyName().'/Some/Namespace', $library->getInstallPath($package));
@@ -271,7 +271,7 @@ class LibraryInstallerTest extends TestCase
             ->getMock();
 
         $library = new LibraryInstaller($this->io, $this->composer, 'library', null, $binaryInstallerMock);
-        $package = $this->getPackage('foo/bar', '1.0.0');
+        $package = self::getPackage('foo/bar', '1.0.0');
 
         $binaryInstallerMock
             ->expects($this->never())

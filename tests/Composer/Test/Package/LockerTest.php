@@ -93,8 +93,8 @@ class LockerTest extends TestCase
         $jsonContent = $this->getJsonContent() . '  ';
         $locker = new Locker(new NullIO, $json, $inst, $jsonContent);
 
-        $package1 = $this->getPackage('pkg1', '1.0.0-beta');
-        $package2 = $this->getPackage('pkg2', '0.1.10');
+        $package1 = self::getPackage('pkg1', '1.0.0-beta');
+        $package2 = self::getPackage('pkg2', '0.1.10');
 
         $contentHash = md5(trim($jsonContent));
 

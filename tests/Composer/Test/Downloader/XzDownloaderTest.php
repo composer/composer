@@ -51,7 +51,7 @@ class XzDownloaderTest extends TestCase
 
     public function testErrorMessages(): void
     {
-        $package = $this->getPackage();
+        $package = self::getPackage();
         $package->setDistUrl($distUrl = 'file://'.__FILE__);
 
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();

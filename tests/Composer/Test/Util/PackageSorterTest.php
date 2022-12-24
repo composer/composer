@@ -22,25 +22,25 @@ class PackageSorterTest extends TestCase
 {
     public function testSortingDoesNothingWithNoDependencies(): void
     {
-        $packages[] = $this->createPackage('foo/bar1', []);
-        $packages[] = $this->createPackage('foo/bar2', []);
-        $packages[] = $this->createPackage('foo/bar3', []);
-        $packages[] = $this->createPackage('foo/bar4', []);
+        $packages[] = self::createPackage('foo/bar1', []);
+        $packages[] = self::createPackage('foo/bar2', []);
+        $packages[] = self::createPackage('foo/bar3', []);
+        $packages[] = self::createPackage('foo/bar4', []);
 
         $sortedPackages = PackageSorter::sortPackages($packages);
 
         self::assertSame($packages, $sortedPackages);
     }
 
-    public function sortingOrdersDependenciesHigherThanPackageDataProvider(): array
+    public static function sortingOrdersDependenciesHigherThanPackageDataProvider(): array
     {
         return [
             'one package is dep' => [
                 [
-                    $this->createPackage('foo/bar1', ['foo/bar4']),
-                    $this->createPackage('foo/bar2', ['foo/bar4']),
-                    $this->createPackage('foo/bar3', ['foo/bar4']),
-                    $this->createPackage('foo/bar4', []),
+                    self::createPackage('foo/bar1', ['foo/bar4']),
+                    self::createPackage('foo/bar2', ['foo/bar4']),
+                    self::createPackage('foo/bar3', ['foo/bar4']),
+                    self::createPackage('foo/bar4', []),
                 ],
                 [
                     'foo/bar4',
@@ -51,10 +51,10 @@ class PackageSorterTest extends TestCase
             ],
             'one package has more deps' => [
                 [
-                    $this->createPackage('foo/bar1', ['foo/bar2']),
-                    $this->createPackage('foo/bar2', ['foo/bar4']),
-                    $this->createPackage('foo/bar3', ['foo/bar4']),
-                    $this->createPackage('foo/bar4', []),
+                    self::createPackage('foo/bar1', ['foo/bar2']),
+                    self::createPackage('foo/bar2', ['foo/bar4']),
+                    self::createPackage('foo/bar3', ['foo/bar4']),
+                    self::createPackage('foo/bar4', []),
                 ],
                 [
                     'foo/bar4',
@@ -65,12 +65,12 @@ class PackageSorterTest extends TestCase
             ],
             'package is required by many, but requires one other' => [
                 [
-                    $this->createPackage('foo/bar1', ['foo/bar3']),
-                    $this->createPackage('foo/bar2', ['foo/bar3']),
-                    $this->createPackage('foo/bar3', ['foo/bar4']),
-                    $this->createPackage('foo/bar4', []),
-                    $this->createPackage('foo/bar5', ['foo/bar3']),
-                    $this->createPackage('foo/bar6', ['foo/bar3']),
+                    self::createPackage('foo/bar1', ['foo/bar3']),
+                    self::createPackage('foo/bar2', ['foo/bar3']),
+                    self::createPackage('foo/bar3', ['foo/bar4']),
+                    self::createPackage('foo/bar4', []),
+                    self::createPackage('foo/bar5', ['foo/bar3']),
+                    self::createPackage('foo/bar6', ['foo/bar3']),
                 ],
                 [
                     'foo/bar4',
@@ -83,12 +83,12 @@ class PackageSorterTest extends TestCase
             ],
             'one package has many requires' => [
                 [
-                    $this->createPackage('foo/bar1', ['foo/bar2']),
-                    $this->createPackage('foo/bar2', []),
-                    $this->createPackage('foo/bar3', ['foo/bar4']),
-                    $this->createPackage('foo/bar4', []),
-                    $this->createPackage('foo/bar5', ['foo/bar2']),
-                    $this->createPackage('foo/bar6', ['foo/bar2']),
+                    self::createPackage('foo/bar1', ['foo/bar2']),
+                    self::createPackage('foo/bar2', []),
+                    self::createPackage('foo/bar3', ['foo/bar4']),
+                    self::createPackage('foo/bar4', []),
+                    self::createPackage('foo/bar5', ['foo/bar2']),
+                    self::createPackage('foo/bar6', ['foo/bar2']),
                 ],
                 [
                     'foo/bar2',
@@ -101,10 +101,10 @@ class PackageSorterTest extends TestCase
             ],
             'circular deps sorted alphabetically if weighted equally' => [
                 [
-                    $this->createPackage('foo/bar1', ['circular/part1']),
-                    $this->createPackage('foo/bar2', ['circular/part2']),
-                    $this->createPackage('circular/part1', ['circular/part2']),
-                    $this->createPackage('circular/part2', ['circular/part1']),
+                    self::createPackage('foo/bar1', ['circular/part1']),
+                    self::createPackage('foo/bar2', ['circular/part2']),
+                    self::createPackage('circular/part1', ['circular/part2']),
+                    self::createPackage('circular/part2', ['circular/part1']),
                 ],
                 [
                     'circular/part1',
@@ -115,10 +115,10 @@ class PackageSorterTest extends TestCase
             ],
             'equal weight sorted alphabetically' => [
                 [
-                    $this->createPackage('foo/bar10', ['foo/dep']),
-                    $this->createPackage('foo/bar2', ['foo/dep']),
-                    $this->createPackage('foo/baz', ['foo/dep']),
-                    $this->createPackage('foo/dep', []),
+                    self::createPackage('foo/bar10', ['foo/dep']),
+                    self::createPackage('foo/bar2', ['foo/dep']),
+                    self::createPackage('foo/baz', ['foo/dep']),
+                    self::createPackage('foo/dep', []),
                 ],
                 [
                     'foo/dep',
@@ -129,10 +129,10 @@ class PackageSorterTest extends TestCase
             ],
             'pre-weighted packages bumped to top incl their deps' => [
                 [
-                    $this->createPackage('foo/bar', ['foo/dep']),
-                    $this->createPackage('foo/bar2', ['foo/dep2']),
-                    $this->createPackage('foo/dep', []),
-                    $this->createPackage('foo/dep2', []),
+                    self::createPackage('foo/bar', ['foo/dep']),
+                    self::createPackage('foo/bar2', ['foo/dep2']),
+                    self::createPackage('foo/dep', []),
+                    self::createPackage('foo/dep2', []),
                 ],
                 [
                     'foo/dep',
@@ -167,7 +167,7 @@ class PackageSorterTest extends TestCase
     /**
      * @param string[] $requires
      */
-    private function createPackage(string $name, array $requires): Package
+    private static function createPackage(string $name, array $requires): Package
     {
         $package = new Package($name, '1.0.0.0', '1.0.0');
 

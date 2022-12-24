@@ -110,7 +110,7 @@ class ShowCommand extends BaseCommand
 The show command displays detailed information about a package, or
 lists all packages available.
 
-Read more at https://getcomposer.org/doc/03-cli.md#show
+Read more at https://getcomposer.org/doc/03-cli.md#show-info
 EOT
             )
         ;
@@ -1369,7 +1369,7 @@ EOT
 
         if ($targetVersion === null) {
             if ($majorOnly && Preg::isMatch('{^(?P<zero_major>(?:0\.)+)?(?P<first_meaningful>\d+)\.}', $package->getVersion(), $match)) {
-                $targetVersion = '>='.$match['zero_major'].($match['first_meaningful'] + 1).',<9999999-dev';
+                $targetVersion = '>='.$match['zero_major'].(((int) $match['first_meaningful']) + 1).',<9999999-dev';
             }
 
             if ($minorOnly) {

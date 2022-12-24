@@ -23,7 +23,7 @@ class CompletePackageTest extends TestCase
      *
      * demonstrates several versioning schemes
      */
-    public function providerVersioningSchemes(): array
+    public static function providerVersioningSchemes(): array
     {
         $provider[] = ['foo',              '1-beta'];
         $provider[] = ['node',             '0.5.6'];

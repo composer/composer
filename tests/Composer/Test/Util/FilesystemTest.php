@@ -59,7 +59,7 @@ class FilesystemTest extends TestCase
         $this->assertEquals($expected, $fs->findShortestPathCode($a, $b, $directory, $static));
     }
 
-    public function providePathCouplesAsCode(): array
+    public static function providePathCouplesAsCode(): array
     {
         return [
             ['/foo/bar', '/foo/bar', false, "__FILE__"],
@@ -72,6 +72,7 @@ class FilesystemTest extends TestCase
             ['c:\\bin\\run', 'd:/vendor/acme/bin/run', false, "'D:/vendor/acme/bin/run'"],
             ['/foo/bar', '/foo/bar', true, "__DIR__"],
             ['/foo/bar/', '/foo/bar', true, "__DIR__"],
+            ['/foo', '/baz', true, "dirname(__DIR__).'/baz'"],
             ['/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"],
             ['/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"],
             ['/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"],
@@ -117,7 +118,7 @@ class FilesystemTest extends TestCase
         $this->assertEquals($expected, $fs->findShortestPath($a, $b, $directory));
     }
 
-    public function providePathCouples(): array
+    public static function providePathCouples(): array
     {
         return [
             ['/foo/bar', '/foo/bar', "./bar"],
@@ -150,7 +151,8 @@ class FilesystemTest extends TestCase
             ['C:/Temp', 'c:\Temp\..\..\test', "../test", true],
             ['C:/Temp/../..', 'c:\Temp\..\..\test', "./test", true],
             ['C:/Temp/../..', 'D:\Temp\..\..\test', "D:/test", true],
-            ['/tmp', '/tmp/../../test', '/test', true],
+            ['/tmp', '/tmp/../../test', '../test', true],
+            ['/tmp', '/test', '../test', true],
             ['/foo/bar', '/foo/bar_vendor', '../bar_vendor', true],
             ['/foo/bar_vendor', '/foo/bar', '../bar', true],
             ['/foo/bar_vendor', '/foo/bar/src', '../bar/src', true],
@@ -199,7 +201,7 @@ class FilesystemTest extends TestCase
         $this->assertEquals($expected, $fs->normalizePath($actual));
     }
 
-    public function provideNormalizedPaths(): array
+    public static function provideNormalizedPaths(): array
     {
         return [
             ['../foo', '../foo'],

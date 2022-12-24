@@ -142,7 +142,7 @@ class VersionGuesser
 
             // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && Preg::isMatch('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\(HEAD detached at \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                if ($branch && Preg::isMatchStrictGroups('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\(HEAD detached at \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if (
                         $match[1] === '(no branch)'
                         || strpos($match[1], '(detached ') === 0
@@ -158,13 +158,11 @@ class VersionGuesser
                         $isFeatureBranch = $this->isFeatureBranch($packageConfig, $match[1]);
                     }
 
-                    if ($match[2]) {
-                        $commit = $match[2];
-                    }
+                    $commit = $match[2];
                 }
 
-                if ($branch && !Preg::isMatch('{^ *.+/HEAD }', $branch)) {
-                    if (Preg::isMatch('{^(?:\* )? *((?:remotes/(?:origin|upstream)/)?[^\s/]+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                if ($branch && !Preg::isMatchStrictGroups('{^ *.+/HEAD }', $branch)) {
+                    if (Preg::isMatchStrictGroups('{^(?:\* )? *((?:remotes/(?:origin|upstream)/)?[^\s/]+) *([a-f0-9]+) .*$}', $branch, $match)) {
                         $branches[] = $match[1];
                     }
                 }
@@ -191,7 +189,7 @@ class VersionGuesser
             }
         }
 
-        if (!$commit) {
+        if (null === $commit) {
             $command = 'git log --pretty="%H" -n1 HEAD'.GitUtil::getNoShowSignatureFlag($this->process);
             if (0 === $this->process->execute($command, $output, $path)) {
                 $commit = trim($output) ?: null;
@@ -400,7 +398,7 @@ class VersionGuesser
             $urlPattern = '#<url>.*/(' . $trunkPath . '|(' . $branchesPath . '|' . $tagsPath . ')/(.*))</url>#';
 
             if (Preg::isMatch($urlPattern, $output, $matches)) {
-                if (isset($matches[2]) && ($branchesPath === $matches[2] || $tagsPath === $matches[2])) {
+                if (isset($matches[2], $matches[3]) && ($branchesPath === $matches[2] || $tagsPath === $matches[2])) {
                     // we are in a branches path
                     $version = $this->versionParser->normalizeBranch($matches[3]);
                     $prettyVersion = 'dev-' . $matches[3];
@@ -408,6 +406,7 @@ class VersionGuesser
                     return ['version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion];
                 }
 
+                assert(is_string($matches[1]));
                 $prettyVersion = trim($matches[1]);
                 if ($prettyVersion === 'trunk') {
                     $version = 'dev-trunk';

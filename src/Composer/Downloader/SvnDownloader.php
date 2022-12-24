@@ -202,7 +202,7 @@ class SvnDownloader extends VcsDownloader
             }
 
             $urlPattern = '#<url>(.*)</url>#';
-            if (Preg::isMatch($urlPattern, $output, $matches)) {
+            if (Preg::isMatchStrictGroups($urlPattern, $output, $matches)) {
                 $baseUrl = $matches[1];
             } else {
                 throw new \RuntimeException(

@@ -191,7 +191,9 @@ interface IOInterface extends LoggerInterface
      * @param bool        $multiselect  Select more than one value separated by comma
      *
      * @throws \InvalidArgumentException
-     * @return int|string|string[]|bool     The selected value or values (the key of the choices array)
+     *
+     * @return int|string|list<string>|bool     The selected value or values (the key of the choices array)
+     * @phpstan-return ($multiselect is true ? list<string> : string|int|bool)
      */
     public function select(string $question, array $choices, $default, $attempts = false, string $errorMessage = 'Value "%s" is invalid', bool $multiselect = false);
 

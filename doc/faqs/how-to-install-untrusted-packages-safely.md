@@ -9,7 +9,7 @@ there is no sign that the user is consciously doing this. There are two ways thi
 can be given:
 
 - If you run interactively, Composer will prompt if you are sure that you want to continue
-  running as root. If non-interactive plugins will be disabled, unless..
+  running as root. If you run non-interactively, plugins will be disabled, unless..
 - If you set the [COMPOSER_ALLOW_SUPERUSER](../03-cli.md#composer-allow-superuser) environment
   variable to `1`, this also indicates that you intended to run Composer as root and are accepting
   the risks of doing so.

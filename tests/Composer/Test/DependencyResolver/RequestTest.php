@@ -22,9 +22,9 @@ class RequestTest extends TestCase
     public function testRequestInstall(): void
     {
         $repo = new ArrayRepository;
-        $foo = $this->getPackage('foo', '1');
-        $bar = $this->getPackage('bar', '1');
-        $foobar = $this->getPackage('foobar', '1');
+        $foo = self::getPackage('foo', '1');
+        $bar = self::getPackage('bar', '1');
+        $foobar = self::getPackage('foobar', '1');
 
         $repo->addPackage($foo);
         $repo->addPackage($bar);
@@ -46,14 +46,14 @@ class RequestTest extends TestCase
         $repo1 = new ArrayRepository;
         $repo2 = new ArrayRepository;
 
-        $foo1 = $this->getPackage('foo', '1');
-        $foo2 = $this->getPackage('foo', '1');
+        $foo1 = self::getPackage('foo', '1');
+        $foo2 = self::getPackage('foo', '1');
 
         $repo1->addPackage($foo1);
         $repo2->addPackage($foo2);
 
         $request = new Request();
-        $request->requireName('foo', $constraint = $this->getVersionConstraint('=', '1'));
+        $request->requireName('foo', $constraint = self::getVersionConstraint('=', '1'));
 
         $this->assertEquals(
             [

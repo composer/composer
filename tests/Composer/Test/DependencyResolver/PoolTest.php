@@ -19,7 +19,7 @@ class PoolTest extends TestCase
 {
     public function testPool(): void
     {
-        $package = $this->getPackage('foo', '1');
+        $package = self::getPackage('foo', '1');
 
         $pool = $this->createPool([$package]);
 
@@ -29,8 +29,8 @@ class PoolTest extends TestCase
 
     public function testWhatProvidesPackageWithConstraint(): void
     {
-        $firstPackage = $this->getPackage('foo', '1');
-        $secondPackage = $this->getPackage('foo', '2');
+        $firstPackage = self::getPackage('foo', '1');
+        $secondPackage = self::getPackage('foo', '2');
 
         $pool = $this->createPool([
             $firstPackage,
@@ -38,12 +38,12 @@ class PoolTest extends TestCase
         ]);
 
         $this->assertEquals([$firstPackage, $secondPackage], $pool->whatProvides('foo'));
-        $this->assertEquals([$secondPackage], $pool->whatProvides('foo', $this->getVersionConstraint('==', '2')));
+        $this->assertEquals([$secondPackage], $pool->whatProvides('foo', self::getVersionConstraint('==', '2')));
     }
 
     public function testPackageById(): void
     {
-        $package = $this->getPackage('foo', '1');
+        $package = self::getPackage('foo', '1');
 
         $pool = $this->createPool([$package]);
 

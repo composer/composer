@@ -59,7 +59,7 @@ class GitTest extends TestCase
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
     }
 
-    public function publicGithubNoCredentialsProvider(): array
+    public static function publicGithubNoCredentialsProvider(): array
     {
         return [
             ['ssh', 'git@github.com:acme/repo'],
@@ -126,7 +126,7 @@ class GitTest extends TestCase
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 
-    public function privateGithubWithCredentialsProvider(): array
+    public static function privateGithubWithCredentialsProvider(): array
     {
         return [
             ['git@github.com:acme/repo.git', 'ssh', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git', 1],

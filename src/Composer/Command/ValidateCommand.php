@@ -100,35 +100,7 @@ EOT
         }
 
         if ($locker->isLocked()) {
-            $missingRequirements = false;
-            $sets = [
-                ['repo' => $locker->getLockedRepository(false), 'method' => 'getRequires', 'description' => 'Required'],
-                ['repo' => $locker->getLockedRepository(true), 'method' => 'getDevRequires', 'description' => 'Required (in require-dev)'],
-            ];
-            foreach ($sets as $set) {
-                $installedRepo = new InstalledRepository([$set['repo']]);
-
-                foreach (call_user_func([$composer->getPackage(), $set['method']]) as $link) {
-                    if (PlatformRepository::isPlatformPackage($link->getTarget())) {
-                        continue;
-                    }
-                    if (!$installedRepo->findPackagesWithReplacersAndProviders($link->getTarget(), $link->getConstraint())) {
-                        if ($results = $installedRepo->findPackagesWithReplacersAndProviders($link->getTarget())) {
-                            $provider = reset($results);
-                            $lockErrors[] = '- ' . $set['description'].' package "' . $link->getTarget() . '" is in the lock file as "'.$provider->getPrettyVersion().'" but that does not satisfy your constraint "'.$link->getPrettyConstraint().'".';
-                        } else {
-                            $lockErrors[] = '- ' . $set['description'].' package "' . $link->getTarget() . '" is not present in the lock file.';
-                        }
-                        $missingRequirements = true;
-                    }
-                }
-            }
-
-            if ($missingRequirements) {
-                $lockErrors[] = 'This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.';
-                $lockErrors[] = 'Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md';
-                $lockErrors[] = 'and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require';
-            }
+            $lockErrors = array_merge($lockErrors, $locker->getMissingRequirementInfo($composer->getPackage(), true));
         }
 
         $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true);

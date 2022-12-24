@@ -303,7 +303,7 @@ class PluginInstallerTest extends TestCase
                  ->method('getPluginApiVersion')
                  ->will($this->returnValue($newPluginApiVersion));
 
-        $plugApiInternalPackage = $this->getPackage(
+        $plugApiInternalPackage = self::getPackage(
             'composer-plugin-api',
             $newPluginApiVersion,
             'Composer\Package\CompletePackage'
@@ -417,7 +417,7 @@ class PluginInstallerTest extends TestCase
     }
 
     /** @return mixed[] */
-    public function invalidImplementationClassNames(): array
+    public static function invalidImplementationClassNames(): array
     {
         return [
             [null],
@@ -471,7 +471,7 @@ class PluginInstallerTest extends TestCase
     }
 
     /** @return mixed[] */
-    public function nonExistingOrInvalidImplementationClassTypes(): array
+    public static function nonExistingOrInvalidImplementationClassTypes(): array
     {
         return [
             ['\stdClass'],

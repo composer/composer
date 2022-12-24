@@ -45,7 +45,6 @@ parameters:
         - '~Dynamic call to static method PHPUnit\\Framework\\TestCase::(once|atLeast|exactly|will|exactly|returnValue|returnCallback|any|atLeastOnce|throwException|onConsecutiveCalls|never|returnValueMap)\(\)~'
 
     bootstrapFiles:
-        - ./locate-phpunit-autoloader.php
         - ../tests/bootstrap.php
 
     paths:

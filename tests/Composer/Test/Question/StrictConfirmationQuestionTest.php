@@ -30,7 +30,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @phpstan-return list<array{non-empty-string}>
      */
-    public function getAskConfirmationBadData(): array
+    public static function getAskConfirmationBadData(): array
     {
         return [
             ['not correct'],
@@ -71,7 +71,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @phpstan-return list<array{string, bool}>|list<array{string, bool, bool}>
      */
-    public function getAskConfirmationData(): array
+    public static function getAskConfirmationData(): array
     {
         return [
             ['', true],

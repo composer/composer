@@ -175,7 +175,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         assert($baseUrl !== '');
         $this->baseUrl = $baseUrl;
         $this->io = $io;
-        $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($this->url)), 'a-z0-9.$~');
+        $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($this->url)), 'a-z0-9.$~_');
         $this->cache->setReadOnly($config->get('cache-read-only'));
         $this->versionParser = new VersionParser();
         $this->loader = new ArrayLoader($this->versionParser);
@@ -584,7 +584,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if ($this->hasProviders() || $this->lazyProvidersUrl) {
             // optimize search for "^foo/bar" where at least "^foo/" is present by loading this directly from the listUrl if present
-            if (Preg::isMatch('{^\^(?P<query>(?P<vendor>[a-z0-9_.-]+)/[a-z0-9_.-]*)\*?$}i', $query, $match) && $this->listUrl !== null) {
+            if (Preg::isMatchStrictGroups('{^\^(?P<query>(?P<vendor>[a-z0-9_.-]+)/[a-z0-9_.-]*)\*?$}i', $query, $match) && $this->listUrl !== null) {
                 $url = $this->listUrl . '?vendor='.urlencode($match['vendor']).'&filter='.urlencode($match['query'].'*');
                 $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
 

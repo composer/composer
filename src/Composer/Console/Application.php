@@ -441,12 +441,12 @@ class Application extends BaseApplication
             if (null !== $composer && function_exists('disk_free_space')) {
                 $config = $composer->getConfig();
 
-                $minSpaceFree = 1024 * 1024;
+                $minSpaceFree = 100 * 1024 * 1024;
                 if ((($df = disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
                     || (($df = disk_free_space($dir = $config->get('vendor-dir'))) !== false && $df < $minSpaceFree)
                     || (($df = disk_free_space($dir = sys_get_temp_dir())) !== false && $df < $minSpaceFree)
                 ) {
-                    $io->writeError('<error>The disk hosting '.$dir.' is full, this may be the cause of the following exception</error>', true, IOInterface::QUIET);
+                    $io->writeError('<error>The disk hosting '.$dir.' has less than 100MiB of free space, this may be the cause of the following exception</error>', true, IOInterface::QUIET);
                 }
             }
         } catch (\Exception $e) {

@@ -185,9 +185,9 @@ class PoolBuilderTest extends TestCase
     /**
      * @return array<string, array<string>>
      */
-    public function getIntegrationTests(): array
+    public static function getIntegrationTests(): array
     {
-        $fixturesDir = realpath(__DIR__.'/Fixtures/poolbuilder/');
+        $fixturesDir = (string) realpath(__DIR__.'/Fixtures/poolbuilder/');
         $tests = [];
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($fixturesDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
             $file = (string) $file;
@@ -197,7 +197,7 @@ class PoolBuilderTest extends TestCase
             }
 
             try {
-                $testData = $this->readTestFile($file, $fixturesDir);
+                $testData = self::readTestFile($file, $fixturesDir);
 
                 $message = $testData['TEST'];
 
@@ -224,7 +224,7 @@ class PoolBuilderTest extends TestCase
     /**
      * @return array<string, string>
      */
-    protected function readTestFile(string $file, string $fixturesDir): array
+    protected static function readTestFile(string $file, string $fixturesDir): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
 

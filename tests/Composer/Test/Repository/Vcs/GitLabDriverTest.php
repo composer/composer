@@ -75,7 +75,7 @@ class GitLabDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    public function provideInitializeUrls(): array
+    public static function provideInitializeUrls(): array
     {
         return [
             ['https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject'],
@@ -441,7 +441,7 @@ JSON;
         $this->assertSame($expected, GitLabDriver::supports($this->io, $this->config, $url));
     }
 
-    public function dataForTestSupports(): array
+    public static function dataForTestSupports(): array
     {
         return [
             ['http://gitlab.com/foo/bar', true],

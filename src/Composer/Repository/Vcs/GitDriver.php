@@ -106,7 +106,7 @@ class GitDriver extends VcsDriver
             $branches = $this->process->splitLines($output);
             if (!in_array('* master', $branches)) {
                 foreach ($branches as $branch) {
-                    if ($branch && Preg::isMatch('{^\* +(\S+)}', $branch, $match)) {
+                    if ($branch && Preg::isMatchStrictGroups('{^\* +(\S+)}', $branch, $match)) {
                         $this->rootIdentifier = $match[1];
                         break;
                     }
@@ -203,7 +203,7 @@ class GitDriver extends VcsDriver
             $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && !Preg::isMatch('{^ *[^/]+/HEAD }', $branch)) {
-                    if (Preg::isMatch('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match) && $match[1][0] !== '-') {
+                    if (Preg::isMatchStrictGroups('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match) && $match[1][0] !== '-') {
                         $branches[$match[1]] = $match[2];
                     }
                 }

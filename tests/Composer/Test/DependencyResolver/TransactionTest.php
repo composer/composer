@@ -31,29 +31,29 @@ class TransactionTest extends TestCase
     public function testTransactionGenerationAndSorting(): void
     {
         $presentPackages = [
-            $packageA = $this->getPackage('a/a', 'dev-master'),
-            $packageAalias = $this->getAliasPackage($packageA, '1.0.x-dev'),
-            $packageB = $this->getPackage('b/b', '1.0.0'),
-            $packageE = $this->getPackage('e/e', 'dev-foo'),
-            $packageEalias = $this->getAliasPackage($packageE, '1.0.x-dev'),
-            $packageC = $this->getPackage('c/c', '1.0.0'),
+            $packageA = self::getPackage('a/a', 'dev-master'),
+            $packageAalias = self::getAliasPackage($packageA, '1.0.x-dev'),
+            $packageB = self::getPackage('b/b', '1.0.0'),
+            $packageE = self::getPackage('e/e', 'dev-foo'),
+            $packageEalias = self::getAliasPackage($packageE, '1.0.x-dev'),
+            $packageC = self::getPackage('c/c', '1.0.0'),
         ];
         $resultPackages = [
             $packageA,
             $packageAalias,
-            $packageBnew = $this->getPackage('b/b', '2.1.3'),
-            $packageD = $this->getPackage('d/d', '1.2.3'),
-            $packageF = $this->getPackage('f/f', '1.0.0'),
-            $packageFalias1 = $this->getAliasPackage($packageF, 'dev-foo'),
-            $packageG = $this->getPackage('g/g', '1.0.0'),
-            $packageA0first = $this->getPackage('a0/first', '1.2.3'),
-            $packageFalias2 = $this->getAliasPackage($packageF, 'dev-bar'),
-            $plugin = $this->getPackage('x/plugin', '1.0.0'),
-            $plugin2Dep = $this->getPackage('x/plugin2-dep', '1.0.0'),
-            $plugin2 = $this->getPackage('x/plugin2', '1.0.0'),
-            $dlModifyingPlugin = $this->getPackage('x/downloads-modifying', '1.0.0'),
-            $dlModifyingPlugin2Dep = $this->getPackage('x/downloads-modifying2-dep', '1.0.0'),
-            $dlModifyingPlugin2 = $this->getPackage('x/downloads-modifying2', '1.0.0'),
+            $packageBnew = self::getPackage('b/b', '2.1.3'),
+            $packageD = self::getPackage('d/d', '1.2.3'),
+            $packageF = self::getPackage('f/f', '1.0.0'),
+            $packageFalias1 = self::getAliasPackage($packageF, 'dev-foo'),
+            $packageG = self::getPackage('g/g', '1.0.0'),
+            $packageA0first = self::getPackage('a0/first', '1.2.3'),
+            $packageFalias2 = self::getAliasPackage($packageF, 'dev-bar'),
+            $plugin = self::getPackage('x/plugin', '1.0.0'),
+            $plugin2Dep = self::getPackage('x/plugin2-dep', '1.0.0'),
+            $plugin2 = self::getPackage('x/plugin2', '1.0.0'),
+            $dlModifyingPlugin = self::getPackage('x/downloads-modifying', '1.0.0'),
+            $dlModifyingPlugin2Dep = self::getPackage('x/downloads-modifying2-dep', '1.0.0'),
+            $dlModifyingPlugin2 = self::getPackage('x/downloads-modifying2', '1.0.0'),
         ];
 
         $plugin->setType('composer-installer');
@@ -62,19 +62,19 @@ class TransactionTest extends TestCase
         }
 
         $plugin2->setRequires([
-            'x/plugin2-dep' => new Link('x/plugin2', 'x/plugin2-dep', $this->getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE),
+            'x/plugin2-dep' => new Link('x/plugin2', 'x/plugin2-dep', self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE),
         ]);
         $dlModifyingPlugin2->setRequires([
-            'x/downloads-modifying2-dep' => new Link('x/downloads-modifying2', 'x/downloads-modifying2-dep', $this->getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE),
+            'x/downloads-modifying2-dep' => new Link('x/downloads-modifying2', 'x/downloads-modifying2-dep', self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE),
         ]);
         $dlModifyingPlugin->setExtra(['plugin-modifies-downloads' => true]);
         $dlModifyingPlugin2->setExtra(['plugin-modifies-downloads' => true]);
 
         $packageD->setRequires([
-            'f/f' => new Link('d/d', 'f/f', $this->getVersionConstraint('>', '0.2'), Link::TYPE_REQUIRE),
-            'g/provider' => new Link('d/d', 'g/provider', $this->getVersionConstraint('>', '0.2'), Link::TYPE_REQUIRE),
+            'f/f' => new Link('d/d', 'f/f', self::getVersionConstraint('>', '0.2'), Link::TYPE_REQUIRE),
+            'g/provider' => new Link('d/d', 'g/provider', self::getVersionConstraint('>', '0.2'), Link::TYPE_REQUIRE),
         ]);
-        $packageG->setProvides(['g/provider' => new Link('g/g', 'g/provider', $this->getVersionConstraint('==', '1.0.0'), Link::TYPE_PROVIDE)]);
+        $packageG->setProvides(['g/provider' => new Link('g/g', 'g/provider', self::getVersionConstraint('==', '1.0.0'), Link::TYPE_PROVIDE)]);
 
         $expectedOperations = [
             ['job' => 'uninstall', 'package' => $packageC],

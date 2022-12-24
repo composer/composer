@@ -163,7 +163,7 @@ EOT
         $platformRepo = new PlatformRepository([], $platformOverrides);
         $phpPkg = $platformRepo->findPackage('php', '*');
         $phpVersion = $phpPkg->getPrettyVersion();
-        if ($phpPkg instanceof CompletePackageInterface && false !== strpos($phpPkg->getDescription(), 'overridden')) {
+        if ($phpPkg instanceof CompletePackageInterface && str_contains((string) $phpPkg->getDescription(), 'overridden')) {
             $phpVersion .= ' - ' . $phpPkg->getDescription();
         }
 
@@ -573,14 +573,14 @@ EOT
         ob_start();
         phpinfo(INFO_GENERAL);
         $phpinfo = ob_get_clean();
-        if (Preg::isMatch('{Configure Command(?: *</td><td class="v">| *=> *)(.*?)(?:</td>|$)}m', $phpinfo, $match)) {
+        if (is_string($phpinfo) && Preg::isMatchStrictGroups('{Configure Command(?: *</td><td class="v">| *=> *)(.*?)(?:</td>|$)}m', $phpinfo, $match)) {
             $configure = $match[1];
 
-            if (false !== strpos($configure, '--enable-sigchild')) {
+            if (str_contains($configure, '--enable-sigchild')) {
                 $warnings['sigchild'] = true;
             }
 
-            if (false !== strpos($configure, '--with-curlwrappers')) {
+            if (str_contains($configure, '--with-curlwrappers')) {
                 $warnings['curlwrappers'] = true;
             }
         }

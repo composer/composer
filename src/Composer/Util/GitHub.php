@@ -95,11 +95,17 @@ class GitHub
         $this->io->writeError(sprintf('When working with _public_ GitHub repositories only, head to %s to retrieve a token.', $url));
         $this->io->writeError('This token will have read-only permission for public information only.');
 
+        $localAuthConfig = $this->config->getLocalAuthConfigSource();
         $url = 'https://'.$originUrl.'/settings/tokens/new?scopes=repo&description=' . str_replace('%20', '+', rawurlencode($note));
         $this->io->writeError(sprintf('When you need to access _private_ GitHub repositories as well, go to %s', $url));
         $this->io->writeError('Note that such tokens have broad read/write permissions on your behalf, even if not needed by Composer.');
-        $this->io->writeError(sprintf('Tokens will be stored in plain text in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
+        $this->io->writeError(sprintf('Tokens will be stored in plain text in "%s" for future use by Composer.', ($localAuthConfig !== null ? $localAuthConfig->getName() . ' OR ' : '') . $this->config->getAuthConfigSource()->getName()));
         $this->io->writeError('For additional information, check https://getcomposer.org/doc/articles/authentication-for-private-packages.md#github-oauth');
+
+        $storeInLocalAuthConfig = false;
+        if ($localAuthConfig !== null) {
+            $storeInLocalAuthConfig = $this->io->askConfirmation('A local auth config source was found, do you want to store the token there?', true);
+        }
 
         $token = trim((string) $this->io->askAndHideAnswer('Token (hidden): '));
 
@@ -129,9 +135,10 @@ class GitHub
             throw $e;
         }
 
-        // store value in user config
+        // store value in local/user config
+        $authConfigSource = $storeInLocalAuthConfig && $localAuthConfig !== null ? $localAuthConfig : $this->config->getAuthConfigSource();
         $this->config->getConfigSource()->removeConfigSetting('github-oauth.'.$originUrl);
-        $this->config->getAuthConfigSource()->addConfigSetting('github-oauth.'.$originUrl, $token);
+        $authConfigSource->addConfigSetting('github-oauth.'.$originUrl, $token);
 
         $this->io->writeError('<info>Token stored successfully.</info>');
 

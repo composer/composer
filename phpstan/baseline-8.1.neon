@@ -11,6 +11,11 @@ parameters:
 			path: ../src/Composer/Autoload/ClassLoader.php
 
 		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ArchiveCommand.php
+
+		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ConfigCommand.php

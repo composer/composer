@@ -172,20 +172,20 @@ class InstallerTest extends TestCase
         return $comparable;
     }
 
-    public function provideInstaller(): array
+    public static function provideInstaller(): array
     {
         $cases = [];
 
         // when A requires B and B requires A, and A is a non-published root package
         // the install of B should succeed
 
-        $a = $this->getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
+        $a = self::getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
         $a->setRequires([
-            'b' => new Link('A', 'B', $v = $this->getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'b' => new Link('A', 'B', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
-        $b = $this->getPackage('B', '1.0.0');
+        $b = self::getPackage('B', '1.0.0');
         $b->setRequires([
-            'a' => new Link('B', 'A', $v = $this->getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'a' => new Link('B', 'A', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
 
         $cases[] = [
@@ -199,13 +199,13 @@ class InstallerTest extends TestCase
         // #480: when A requires B and B requires A, and A is a published root package
         // only B should be installed, as A is the root
 
-        $a = $this->getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
+        $a = self::getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
         $a->setRequires([
-            'b' => new Link('A', 'B', $v = $this->getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'b' => new Link('A', 'B', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
-        $b = $this->getPackage('B', '1.0.0');
+        $b = self::getPackage('B', '1.0.0');
         $b->setRequires([
-            'a' => new Link('B', 'A', $v = $this->getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'a' => new Link('B', 'A', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
 
         $cases[] = [
@@ -476,22 +476,22 @@ class InstallerTest extends TestCase
         }
     }
 
-    public function provideSlowIntegrationTests(): array
+    public static function provideSlowIntegrationTests(): array
     {
-        return $this->loadIntegrationTests('installer-slow/');
+        return self::loadIntegrationTests('installer-slow/');
     }
 
-    public function provideIntegrationTests(): array
+    public static function provideIntegrationTests(): array
     {
-        return $this->loadIntegrationTests('installer/');
+        return self::loadIntegrationTests('installer/');
     }
 
     /**
      * @return mixed[]
      */
-    public function loadIntegrationTests(string $path): array
+    public static function loadIntegrationTests(string $path): array
     {
-        $fixturesDir = realpath(__DIR__.'/Fixtures/'.$path);
+        $fixturesDir = (string) realpath(__DIR__.'/Fixtures/'.$path);
         $tests = [];
 
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($fixturesDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
@@ -502,7 +502,7 @@ class InstallerTest extends TestCase
             }
 
             try {
-                $testData = $this->readTestFile($file, $fixturesDir);
+                $testData = self::readTestFile($file, $fixturesDir);
 
                 $installed = [];
                 $installedDev = [];
@@ -576,7 +576,7 @@ class InstallerTest extends TestCase
     /**
      * @return mixed[]
      */
-    protected function readTestFile(string $file, string $fixturesDir): array
+    protected static function readTestFile(string $file, string $fixturesDir): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
 
