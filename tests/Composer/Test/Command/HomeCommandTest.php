@@ -63,5 +63,15 @@ class HomeCommandTest extends TestCase
 <warning>Invalid or missing repository URL for vendor/package</warning>
 OUTPUT
         ];
+
+        yield 'No Packages Provided' => [
+            [],
+            [],
+            <<<OUTPUT
+No package specified, opening homepage for the root package
+Info from https://repo.packagist.org: #StandWithUkraine
+<warning>Invalid or missing repository URL for __root__</warning>
+OUTPUT
+        ];
     }
 }
