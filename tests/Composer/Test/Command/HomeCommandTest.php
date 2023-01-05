@@ -73,5 +73,15 @@ Info from https://repo.packagist.org: #StandWithUkraine
 <warning>Invalid or missing repository URL for __root__</warning>
 OUTPUT
         ];
+
+        yield 'Package not found' => [
+            [],
+            ['packages' => ['vendor/anotherpackage']],
+            <<<OUTPUT
+Info from https://repo.packagist.org: #StandWithUkraine
+<warning>Package vendor/anotherpackage not found</warning>
+<warning>Invalid or missing repository URL for vendor/anotherpackage</warning>
+OUTPUT
+        ];
     }
 }
