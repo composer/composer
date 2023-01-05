@@ -25,7 +25,8 @@ class HomeCommandTest extends TestCase
     public function testHomeCommandWithShowFlag(
         array $composerJson,
         array $command,
-        string $expected
+        string $expected,
+        string $url = '',
     ): void {
         $this->initTempComposer($composerJson);
 
@@ -33,6 +34,12 @@ class HomeCommandTest extends TestCase
             self::getPackage('vendor/package', '1.2.3'),
         ];
         $devPackages = [];
+
+        if ($url) {
+            foreach ($packages as $package) {
+                $package->setHomepage($url);
+            }
+        }
 
         $this->createInstalledJson($packages, $devPackages);
 
@@ -82,6 +89,15 @@ Info from https://repo.packagist.org: #StandWithUkraine
 <warning>Package vendor/anotherpackage not found</warning>
 <warning>Invalid or missing repository URL for vendor/anotherpackage</warning>
 OUTPUT
+        ];
+
+        yield 'A valid package URL' => [
+            [],
+            ['packages' => ['vendor/package']],
+            <<<OUTPUT
+https://example.org
+OUTPUT,
+            'https://example.org',
         ];
     }
 }
