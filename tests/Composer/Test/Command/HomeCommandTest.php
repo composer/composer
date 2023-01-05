@@ -13,11 +13,55 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use Generator;
 
 class HomeCommandTest extends TestCase
 {
-    public function testHomeCommandWithShowFlag(): void
-    {
+    /**
+     * @dataProvider useCaseProvider
+     * @param array<mixed> $composerJson
+     * @param array<mixed> $command
+     */
+    public function testHomeCommandWithShowFlag(
+        array $composerJson,
+        array $command,
+        string $expected
+    ): void {
+        $this->initTempComposer($composerJson);
 
+        $packages = [
+            self::getPackage('vendor/package', '1.2.3'),
+        ];
+        $devPackages = [];
+
+        $this->createInstalledJson($packages, $devPackages);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge(['command' => 'home', '--show' => true], $command));
+
+        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+    }
+
+    public function useCaseProvider(): Generator
+    {
+        yield 'Invalid or missing repository URL' => [
+            [
+                'repositories' => [
+                    'packages' => [
+                        'type' => 'package',
+                        'package' => [
+                            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0'],
+                        ]
+                    ]
+                ],
+                'require' => [
+                    'vendor/package' => '^1.0'
+                ]
+            ],
+            ['packages' => ['vendor/package']],
+            <<<OUTPUT
+<warning>Invalid or missing repository URL for vendor/package</warning>
+OUTPUT
+        ];
     }
 }
