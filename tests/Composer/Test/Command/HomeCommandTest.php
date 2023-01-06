@@ -26,7 +26,7 @@ class HomeCommandTest extends TestCase
         array $composerJson,
         array $command,
         string $expected,
-        string $url = '',
+        string $url = ''
     ): void {
         $this->initTempComposer($composerJson);
 
