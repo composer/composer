@@ -37,7 +37,7 @@ class HomeCommandTest extends TestCase
             self::getPackage('vendor/devpackage', '2.3.4'),
         ];
 
-        if ($url) {
+        if (! empty($url)) {
             foreach ($packages as $package) {
                 $package->setHomepage($url);
             }
