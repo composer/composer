@@ -33,11 +33,17 @@ class HomeCommandTest extends TestCase
         $packages = [
             self::getPackage('vendor/package', '1.2.3'),
         ];
-        $devPackages = [];
+        $devPackages = [
+            self::getPackage('vendor/devpackage', '2.3.4'),
+        ];
 
         if ($url) {
             foreach ($packages as $package) {
                 $package->setHomepage($url);
+            }
+
+            foreach ($devPackages as $devPackage) {
+                $devPackage->setHomepage($url);
             }
         }
 
@@ -98,6 +104,15 @@ OUTPUT
 https://example.org
 OUTPUT,
             'https://example.org',
+        ];
+
+        yield 'A valid dev package URL' => [
+            [],
+            ['packages' => ['vendor/devpackage']],
+            <<<OUTPUT
+https://example.org/dev
+OUTPUT,
+            'https://example.org/dev',
         ];
     }
 }
