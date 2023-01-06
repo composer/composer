@@ -102,7 +102,8 @@ OUTPUT
             ['packages' => ['vendor/package']],
             <<<OUTPUT
 https://example.org
-OUTPUT,
+OUTPUT
+        ,
             'https://example.org',
         ];
 
@@ -111,7 +112,8 @@ OUTPUT,
             ['packages' => ['vendor/devpackage']],
             <<<OUTPUT
 https://example.org/dev
-OUTPUT,
+OUTPUT
+        ,
             'https://example.org/dev',
         ];
     }
