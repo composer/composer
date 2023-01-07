@@ -1017,7 +1017,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $promises[] = $this->startCachedAsyncDownload($name, $realName)
                 ->then(function (array $spec) use (&$packages, &$namesFound, $realName, $constraint, $acceptableStabilities, $stabilityFlags, $alreadyLoaded): void {
                     [$response, $packagesSource] = $spec;
-                    if (null === $response) {
+                    if (null === $response || !isset($response['packages'][$realName])) {
                         return;
                     }
 
@@ -1092,7 +1092,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $response = $contents;
                 }
 
-                if (!isset($response['packages'][$packageName])) {
+                if (!isset($response['packages'][$packageName]) && !isset($response['security-advisories'])) {
                     return [null, $packagesSource];
                 }
 
