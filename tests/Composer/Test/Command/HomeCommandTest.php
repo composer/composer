@@ -21,29 +21,31 @@ class HomeCommandTest extends TestCase
      * @dataProvider useCaseProvider
      * @param array<mixed> $composerJson
      * @param array<mixed> $command
+     * @param array<mixed> $urls
      */
     public function testHomeCommandWithShowFlag(
         array $composerJson,
         array $command,
         string $expected,
-        string $url = ''
+        array $urls = []
     ): void {
         $this->initTempComposer($composerJson);
 
         $packages = [
-            self::getPackage('vendor/package', '1.2.3'),
+            'vendor/package' => self::getPackage('vendor/package', '1.2.3'),
         ];
         $devPackages = [
-            self::getPackage('vendor/devpackage', '2.3.4'),
+            'vendor/devpackage' => self::getPackage('vendor/devpackage', '2.3.4'),
         ];
 
-        if ($url !== '') {
-            foreach ($packages as $package) {
-                $package->setHomepage($url);
-            }
-
-            foreach ($devPackages as $devPackage) {
-                $devPackage->setHomepage($url);
+        if (count($urls) !== 0) {
+            foreach ($urls as $pkg => $url) {
+                if (isset($packages[$pkg])) {
+                    $packages[$pkg]->setHomepage($url);
+                }
+                if (isset($devPackages[$pkg])) {
+                    $devPackages[$pkg]->setHomepage($url);
+                }
             }
         }
 
@@ -104,7 +106,7 @@ OUTPUT
 https://example.org
 OUTPUT
         ,
-            'https://example.org',
+            ['vendor/package' => 'https://example.org'],
         ];
 
         yield 'A valid dev package URL' => [
@@ -114,7 +116,7 @@ OUTPUT
 https://example.org/dev
 OUTPUT
         ,
-            'https://example.org/dev',
+            ['vendor/devpackage' => 'https://example.org/dev'],
         ];
     }
 }
