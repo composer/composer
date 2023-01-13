@@ -85,7 +85,7 @@ OUTPUT
             true
         ];
 
-        yield 'it writes and error when no-suggest flag passed' => [
+        yield 'it writes an error when no-suggest flag passed' => [
             [
                 'repositories' => [
                     'packages' => [
@@ -114,6 +114,36 @@ Installing dependencies from lock file (including require-dev)
 Verifying lock file contents can be installed on current platform.
 Nothing to install, update or remove
 Generating autoload files
+OUTPUT
+            ,
+            true
+        ];
+
+        yield 'it writes an error when packages passed' => [
+            [
+                'repositories' => [
+                    'packages' => [
+                        'type' => 'package',
+                        'package' => [
+                            [
+                                'name' => 'vendor/package',
+                                'description' => 'generic description',
+                                'version' => '1.0.0',
+                                'dist' => [
+                                    'url' =>  'https://example.org',
+                                    'type' => 'zip'
+                                ]
+                            ],
+                        ]
+                    ]
+                ],
+                'require' => [
+                    'vendor/package' => '^1.0'
+                ]
+            ],
+            ['packages' => ['vendor/package']],
+            <<<OUTPUT
+Invalid argument vendor/package. Use "composer require vendor/package" instead to add packages to your composer.json.
 OUTPUT
             ,
             true
