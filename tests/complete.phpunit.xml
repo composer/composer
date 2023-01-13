@@ -35,6 +35,7 @@
         </include>
         <exclude>
             <file>../src/Composer/Autoload/ClassLoader.php</file>
+            <directory>../src/Composer/PHPStan/</directory>
         </exclude>
     </coverage>
 </phpunit>
