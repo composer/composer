@@ -98,7 +98,7 @@ OUTPUT
         ];
 
         yield 'A valid package URL' => [
-            ['repositories' => []],,
+            ['repositories' => []],
             ['packages' => ['vendor/package']],
             <<<OUTPUT
 https://example.org
@@ -108,7 +108,7 @@ OUTPUT
         ];
 
         yield 'A valid dev package URL' => [
-            ['repositories' => []],,
+            ['repositories' => []],
             ['packages' => ['vendor/devpackage']],
             <<<OUTPUT
 https://example.org/dev
