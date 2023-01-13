@@ -13,8 +13,13 @@
 namespace Composer\Package\Archiver;
 
 use FilterIterator;
+use Iterator;
 use PharData;
+use SplFileInfo;
 
+/**
+ * @phpstan-extends FilterIterator<string, SplFileInfo, Iterator<string, SplFileInfo>>
+ */
 class ArchivableFilesFilter extends FilterIterator
 {
     /** @var string[] */
