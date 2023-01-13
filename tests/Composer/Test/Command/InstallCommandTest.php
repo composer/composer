@@ -57,7 +57,10 @@ class InstallCommandTest extends TestCase
                     'packages' => [
                         'type' => 'package',
                         'package' => [
-                            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0',
+                            [
+                                'name' => 'vendor/package',
+                                'description' => 'generic description',
+                                'version' => '1.0.0',
                                 'dist' => [
                                     'url' =>  'https://example.org',
                                     'type' => 'zip'
@@ -73,6 +76,40 @@ class InstallCommandTest extends TestCase
             ['--dev' => true],
             <<<OUTPUT
 <warning>You are using the deprecated option "--dev". It has no effect and will break in Composer 3.</warning>
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Nothing to install, update or remove
+Generating autoload files
+OUTPUT
+            ,
+            true
+        ];
+
+        yield 'it writes and error when no-suggest flag passed' => [
+            [
+                'repositories' => [
+                    'packages' => [
+                        'type' => 'package',
+                        'package' => [
+                            [
+                                'name' => 'vendor/package',
+                                'description' => 'generic description',
+                                'version' => '1.0.0',
+                                'dist' => [
+                                    'url' =>  'https://example.org',
+                                    'type' => 'zip'
+                                ]
+                            ],
+                        ]
+                    ]
+                ],
+                'require' => [
+                    'vendor/package' => '^1.0'
+                ]
+            ],
+            ['--no-suggest' => true],
+            <<<OUTPUT
+<warning>You are using the deprecated option "--no-suggest". It has no effect and will break in Composer 3.</warning>
 Installing dependencies from lock file (including require-dev)
 Verifying lock file contents can be installed on current platform.
 Nothing to install, update or remove
