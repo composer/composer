@@ -13,8 +13,73 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use Generator;
 
 class InstallCommandTest extends TestCase
 {
+    /**
+     * @dataProvider useCaseProvider
+     * @param array<mixed> $composerJson
+     * @param array<mixed> $command
+     */
+    public function testInstallCommand(
+        array $composerJson,
+        array $command,
+        string $expected,
+        bool $lock = false
+    ): void {
+        $this->initTempComposer($composerJson);
 
+        $packages = [
+            self::getPackage('vendor/package', '1.2.3'),
+        ];
+        $devPackages = [
+            self::getPackage('vendor/devpackage', '2.3.4'),
+        ];
+
+        if ($lock) {
+            $this->createComposerLock($packages, $devPackages);
+        }
+
+        $this->createInstalledJson($packages, $devPackages);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge(['command' => 'install'], $command));
+
+        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+    }
+
+    public function useCaseProvider(): Generator
+    {
+        yield 'it writes an error when the dev flag is passed' => [
+            [
+                'repositories' => [
+                    'packages' => [
+                        'type' => 'package',
+                        'package' => [
+                            ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0',
+                                'dist' => [
+                                    'url' =>  'https://example.org',
+                                    'type' => 'zip'
+                                ]
+                            ],
+                        ]
+                    ]
+                ],
+                'require' => [
+                    'vendor/package' => '^1.0'
+                ]
+            ],
+            ['--dev' => true],
+            <<<OUTPUT
+<warning>You are using the deprecated option "--dev". It has no effect and will break in Composer 3.</warning>
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Nothing to install, update or remove
+Generating autoload files
+OUTPUT
+            ,
+            true
+        ];
+    }
 }
