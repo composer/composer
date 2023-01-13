@@ -80,27 +80,25 @@ OUTPUT
         ];
 
         yield 'No Packages Provided' => [
-            [],
+            ['repositories' => []],
             [],
             <<<OUTPUT
 No package specified, opening homepage for the root package
-Info from https://repo.packagist.org: #StandWithUkraine
 <warning>Invalid or missing repository URL for __root__</warning>
 OUTPUT
         ];
 
         yield 'Package not found' => [
-            [],
+            ['repositories' => []],
             ['packages' => ['vendor/anotherpackage']],
             <<<OUTPUT
-Info from https://repo.packagist.org: #StandWithUkraine
 <warning>Package vendor/anotherpackage not found</warning>
 <warning>Invalid or missing repository URL for vendor/anotherpackage</warning>
 OUTPUT
         ];
 
         yield 'A valid package URL' => [
-            [],
+            ['repositories' => []],,
             ['packages' => ['vendor/package']],
             <<<OUTPUT
 https://example.org
@@ -110,7 +108,7 @@ OUTPUT
         ];
 
         yield 'A valid dev package URL' => [
-            [],
+            ['repositories' => []],,
             ['packages' => ['vendor/devpackage']],
             <<<OUTPUT
 https://example.org/dev
