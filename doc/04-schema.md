@@ -248,6 +248,7 @@ Support information includes the following:
 * **docs:** URL to the documentation.
 * **rss:** URL to the RSS feed.
 * **chat:** URL to the chat channel.
+* **security:** URL to the vulnerability disclosure policy (VDP).
 
 An example:
 
