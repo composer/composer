@@ -148,5 +148,35 @@ OUTPUT
             ,
             true
         ];
+
+        yield 'it writes an error when no-install flag is passed' => [
+            [
+                'repositories' => [
+                    'packages' => [
+                        'type' => 'package',
+                        'package' => [
+                            [
+                                'name' => 'vendor/package',
+                                'description' => 'generic description',
+                                'version' => '1.0.0',
+                                'dist' => [
+                                    'url' =>  'https://example.org',
+                                    'type' => 'zip'
+                                ]
+                            ],
+                        ]
+                    ]
+                ],
+                'require' => [
+                    'vendor/package' => '^1.0'
+                ]
+            ],
+            ['--no-install' => true],
+            <<<OUTPUT
+Invalid option "--no-install". Use "composer update --no-install" instead if you are trying to update the composer.lock file.
+OUTPUT
+            ,
+            true
+        ];
     }
 }
