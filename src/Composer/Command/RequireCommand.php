@@ -338,7 +338,7 @@ EOT
         try {
             $result = $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
             if ($result === 0 && count($requirementsToGuess) > 0) {
-                $result = $this->updateRequirementsAfterResolution($requirementsToGuess, $requireKey, $removeKey, $sortPackages, $input->getOption('dry-run'));
+                $result = $this->updateRequirementsAfterResolution($requirementsToGuess, $requireKey, $removeKey, $sortPackages, $input->getOption('dry-run'), $input->getOption('fixed'));
             }
 
             return $result;
@@ -506,7 +506,7 @@ EOT
     /**
      * @param list<string> $requirementsToUpdate
      */
-    private function updateRequirementsAfterResolution(array $requirementsToUpdate, string $requireKey, string $removeKey, bool $sortPackages, bool $dryRun): int
+    private function updateRequirementsAfterResolution(array $requirementsToUpdate, string $requireKey, string $removeKey, bool $sortPackages, bool $dryRun, bool $fixed): int
     {
         $composer = $this->requireComposer();
         $locker = $composer->getLocker();
@@ -523,7 +523,11 @@ EOT
                 continue;
             }
 
-            $requirements[$packageName] = $versionSelector->findRecommendedRequireVersion($package);
+            if ($fixed) {
+                $requirements[$packageName] = $package->getPrettyVersion();
+            } else {
+                $requirements[$packageName] = $versionSelector->findRecommendedRequireVersion($package);
+            }
             $this->getIO()->writeError(sprintf(
                 'Using version <info>%s</info> for <info>%s</info>',
                 $requirements[$packageName],

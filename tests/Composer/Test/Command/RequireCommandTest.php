@@ -238,5 +238,29 @@ Lock file operations: 2 installs, 0 updates, 0 removals
 Using version ^1.1 for required/pkg
 OUTPUT
         ];
+
+        yield 'use exact constraint with --fixed' => [
+            [
+                'type' => 'project',
+                'repositories' => [
+                    'packages' => [
+                        'type' => 'package',
+                        'package' => [
+                            ['name' => 'required/pkg', 'version' => '1.1.0'],
+                        ],
+                    ],
+                ],
+            ],
+            ['packages' => ['required/pkg'], '--no-install' => true, '--fixed' => true],
+            <<<OUTPUT
+./composer.json has been updated
+Running composer update required/pkg
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 1 install, 0 updates, 0 removals
+  - Locking required/pkg (1.1.0)
+Using version 1.1.0 for required/pkg
+OUTPUT
+        ];
     }
 }
