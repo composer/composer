@@ -40,6 +40,48 @@ class RequireCommandTest extends TestCase
         $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']]);
     }
 
+    public function testRequireWarnsIfResolvedToFeatureBranch(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'required/pkg', 'version' => '2.0.0', 'require' => ['common/dep' => '^1']],
+                        ['name' => 'required/pkg', 'version' => 'dev-foo-bar', 'require' => ['common/dep' => '^2']],
+                        ['name' => 'common/dep', 'version' => '2.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'common/dep' => '^2.0',
+            ],
+            'minimum-stability' => 'dev',
+            'prefer-stable' => true,
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->setInputs(['n']);
+        $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']], ['interactive' => true]);
+        self::assertSame(
+'./composer.json has been updated
+Running composer update required/pkg
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 2 installs, 0 updates, 0 removals
+  - Locking common/dep (2.0.0)
+  - Locking required/pkg (dev-foo-bar)
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
+  - Installing common/dep (2.0.0)
+  - Installing required/pkg (dev-foo-bar)
+Using version dev-foo-bar for required/pkg
+<warning>Version dev-foo-bar looks like it may be a feature branch which is unlikely to keep working in the long run and may be in an unstable state</warning>
+Are you sure you want to use this constraint (Y) or would you rather abort (n) the whole operation [Y,n]? '.'
+Installation failed, reverting ./composer.json to its original content.
+', $appTester->getDisplay(true));
+    }
+
     /**
      * @dataProvider provideRequire
      * @param array<mixed> $composerJson
