@@ -72,6 +72,7 @@ class ArchiveManager
 
     /**
      * @return array<string, string>
+     * @internal
      */
     public function getPackageFilenameParts(CompletePackageInterface $package): array
     {
@@ -110,6 +111,7 @@ class ArchiveManager
      * @param array<string, string> $parts
      *
      * @return string
+     * @internal
      */
     public function getPackageFilenameFromParts(array $parts): string
     {
@@ -239,7 +241,7 @@ class ArchiveManager
      *
      * @return string[]
      */
-    public function buildExcludePatterns(array $parts, array $formats): array
+    private function buildExcludePatterns(array $parts, array $formats): array
     {
         $base = $parts['base'];
         if (count($parts) > 1) {
@@ -254,10 +256,10 @@ class ArchiveManager
         return $patterns;
     }
 
-  /**
-   * @return string[]
-   */
-    public function getSupportedFormats(): array
+    /**
+     * @return string[]
+     */
+    private function getSupportedFormats(): array
     {
         // The problem is that the \Composer\Package\Archiver\ArchiverInterface
         // doesn't provide method to get the supported formats.
