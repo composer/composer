@@ -2,26 +2,30 @@
 The locked version will not get overwritten by an install but fails on invalid packages
 --COMPOSER--
 {
+    "version": "1.2.3",
     "repositories": [
         {
             "type": "package",
             "package": [
                 { "name": "foo/bar", "version": "1.0.0" },
                 { "name": "foo/baz", "version": "1.0.0" },
-                { "name": "foo/baz", "version": "2.0.0" }
+                { "name": "foo/baz", "version": "2.0.0" },
+                { "name": "foo/self", "version": "1.2.3" }
             ]
         }
     ],
     "require": {
         "foo/bar": "2.0.0",
-        "foo/baz": "2.0.0"
+        "foo/baz": "2.0.0",
+        "foo/self": "self.version"
     }
 }
 --LOCK--
 {
     "packages": [
         { "name": "foo/bar", "version": "1.0.0" },
-        { "name": "foo/baz", "version": "2.0.0" }
+        { "name": "foo/baz", "version": "2.0.0" },
+        { "name": "foo/self", "version": "1.2.2" }
     ],
     "packages-dev": [],
     "aliases": [],
