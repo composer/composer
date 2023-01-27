@@ -62,6 +62,14 @@ class FilterRepositoryTest extends TestCase
         ];
     }
 
+    public function testSecurityAdvisoriesDisabledInChild(): void
+    {
+        $repo = new FilterRepository($this->arrayRepo, ['only' => ['foo/*']]);
+
+        self::assertFalse($repo->hasSecurityAdvisories());
+        self::assertSame(['namesFound' => [], 'advisories' => []], $repo->getSecurityAdvisories(['foo/aaa' => new MatchAllConstraint()], true));
+    }
+
     public function testCanonicalDefaultTrue(): void
     {
         $repo = new FilterRepository($this->arrayRepo, []);

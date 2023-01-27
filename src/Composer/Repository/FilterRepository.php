@@ -21,7 +21,7 @@ use Composer\Pcre\Preg;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class FilterRepository implements RepositoryInterface
+class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
 {
     /** @var ?string */
     private $only = null;
@@ -186,6 +186,33 @@ class FilterRepository implements RepositoryInterface
         }
 
         return 0;
+    }
+
+    public function hasSecurityAdvisories(): bool
+    {
+        if (!$this->repo instanceof AdvisoryProviderInterface) {
+            return false;
+        }
+
+        return $this->repo->hasSecurityAdvisories();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSecurityAdvisories(array $packageConstraintMap, bool $allowPartialAdvisories = false): array
+    {
+        if (!$this->repo instanceof AdvisoryProviderInterface) {
+            return ['namesFound' => [], 'advisories' => []];
+        }
+
+        foreach ($packageConstraintMap as $name => $constraint) {
+            if (!$this->isAllowed($name)) {
+                unset($packageConstraintMap[$name]);
+            }
+        }
+
+        return $this->repo->getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories);
     }
 
     private function isAllowed(string $name): bool
