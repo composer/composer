@@ -4,8 +4,11 @@ namespace Test;
 
 class Foo
 {
-	public static function test()
-	{
-		echo 'OK'.PHP_EOL;
-	}
+    /**
+     * @return void
+     */
+    public static function test()
+    {
+        echo 'psr-4 autoloading: OK'.PHP_EOL;
+    }
 }

@@ -1029,7 +1029,7 @@ REGISTER_LOADER;
             }
         }, null, null);
         foreach (\$filesToLoad as \$fileIdentifier => \$file) {
-            (\$requireFile)(\$fileIdentifier, \$file);
+            \$requireFile(\$fileIdentifier, \$file);
         }
 
 
