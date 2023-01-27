@@ -1,0 +1,10 @@
+{
+	"autoload": {
+		"files": [
+			"test.php"
+		],
+		"psr-3": {
+			"Test\\": "."
+		}
+	}
+}
