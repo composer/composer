@@ -1,0 +1,11 @@
+{
+    "name": "root/pkg",
+    "autoload": {
+        "files": [
+            "test.php"
+        ],
+        "psr-4": {
+            "Test\\": "."
+        }
+    }
+}

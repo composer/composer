@@ -42,7 +42,7 @@ class ComposerAutoloaderInitTargetDir
             }
         }, null, null);
         foreach ($filesToLoad as $fileIdentifier => $file) {
-            ($requireFile)($fileIdentifier, $file);
+            $requireFile($fileIdentifier, $file);
         }
 
         return $loader;

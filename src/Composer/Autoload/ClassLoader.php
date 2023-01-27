@@ -429,7 +429,8 @@ class ClassLoader
     public function loadClass($class)
     {
         if ($file = $this->findFile($class)) {
-            (self::$includeFile)($file);
+            $includeFile = self::$includeFile;
+            $includeFile($file);
 
             return true;
         }
@@ -560,7 +561,10 @@ class ClassLoader
         return false;
     }
 
-    private static function initializeIncludeClosure(): void
+    /**
+     * @return void
+     */
+    private static function initializeIncludeClosure()
     {
         if (self::$includeFile !== null) {
             return;
