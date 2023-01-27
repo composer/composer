@@ -108,15 +108,16 @@ class ArchiveManagerTest extends ArchiverTest
         ];
         $package = $this->setupPackage();
 
-        $this->assertSame(
+        self::assertSame(
             $expected,
             $this->manager->getPackageFilenameParts($package)
         );
     }
 
-    public function testGetPackageFilename(): void {
+    public function testGetPackageFilename(): void
+    {
         $package = $this->setupPackage();
-        $this->assertSame(
+        self::assertSame(
             'archivertest-archivertest-master-4f26ae',
             $this->manager->getPackageFilename($package)
         );
