@@ -99,6 +99,30 @@ class ArchiveManagerTest extends ArchiverTest
         unlink($target);
     }
 
+    public function testGetPackageFilenameParts(): void
+    {
+        $expected = [
+            'base' => 'archivertest-archivertest',
+            'version' => 'master',
+            'source_reference' => '4f26ae',
+        ];
+        $package = $this->setupPackage();
+
+        self::assertSame(
+            $expected,
+            $this->manager->getPackageFilenameParts($package)
+        );
+    }
+
+    public function testGetPackageFilename(): void
+    {
+        $package = $this->setupPackage();
+        self::assertSame(
+            'archivertest-archivertest-master-4f26ae',
+            $this->manager->getPackageFilename($package)
+        );
+    }
+
     protected function getTargetName(CompletePackage $package, string $format, ?string $fileName = null): string
     {
         if (null === $fileName) {
