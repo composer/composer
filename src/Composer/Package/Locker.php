@@ -518,6 +518,9 @@ class Locker
                 if (PlatformRepository::isPlatformPackage($link->getTarget())) {
                     continue;
                 }
+                if ($link->getPrettyConstraint() === 'self.version') {
+                    continue;
+                }
                 if ($installedRepo->findPackagesWithReplacersAndProviders($link->getTarget(), $link->getConstraint()) === []) {
                     $results = $installedRepo->findPackagesWithReplacersAndProviders($link->getTarget());
                     if ($results !== []) {
