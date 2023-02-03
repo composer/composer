@@ -28,21 +28,22 @@ class PackageSorter
      */
     public static function getMostCurrentVersion(array $packages): ?PackageInterface
     {
-        return array_reduce($packages, static function ($carry, $pkg) {
-            if ($carry === null) {
-                return $pkg;
+        if (count($packages) === 0) {
+            return null;
+        }
+
+        $highest = reset($packages);
+        foreach ($packages as $candidate) {
+            if ($candidate->isDefaultBranch()) {
+                return $candidate;
             }
 
-            if ($pkg->isDefaultBranch()) {
-                return $pkg;
+            if (version_compare($highest->getVersion(), $candidate->getVersion(), '<')) {
+                $highest = $candidate;
             }
+        }
 
-            if (!$carry->isDefaultBranch() && version_compare($carry->getVersion(), $pkg->getVersion(), '<')) {
-                return $pkg;
-            }
-
-            return $carry;
-        });
+        return $highest;
     }
 
     /**
