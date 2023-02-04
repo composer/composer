@@ -1,3 +1,10 @@
+### [2.2.19] 2023-02-04
+
+  * Fixed URL sanitizer to handle new GitHub personal access tokens format (#11137)
+  * Fixed cache keys to allow `_` to avoid conflicts between package names like `a-b` and `a_b` (#11229)
+  * Fixed handling of --ignore-platform-req with upper-bound ignores to not apply to conflict rules (#11037)
+  * Fixed handling of `COMPOSER_DISCARD_CHANGES` when set to `0`
+
 ### [2.2.18] 2022-08-20
 
   * Fixed `COMPOSER_NO_DEV` so it also works with `require` and `remove`'s `--update-no-dev` (#10995)
@@ -1476,6 +1483,7 @@
 
   * Initial release
 
+[2.2.19]: https://github.com/composer/composer/compare/2.2.18...2.2.19
 [2.2.18]: https://github.com/composer/composer/compare/2.2.17...2.2.18
 [2.2.17]: https://github.com/composer/composer/compare/2.2.16...2.2.17
 [2.2.16]: https://github.com/composer/composer/compare/2.2.15...2.2.16
