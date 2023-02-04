@@ -234,7 +234,7 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 
 Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has the same effect as specifying the option `--lock`, for example `composer update mirrors` is exactly the same as `composer update --lock`.
 
-## require / r
+## require / req
 
 The `require` command adds new packages to the `composer.json` file from
 the current directory. If no file exists one will be created on the fly.
@@ -298,7 +298,7 @@ If you do not specify a package, Composer will prompt you to search for a packag
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu-autoloader`.
 
-## remove
+## remove / rem
 
 The `remove` command removes packages from the `composer.json` file from
 the current directory.
