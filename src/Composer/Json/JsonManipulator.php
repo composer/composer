@@ -59,7 +59,7 @@ class JsonManipulator
 
     public function addLink(string $type, string $package, string $constraint, bool $sortPackages = false): bool
     {
-        $decoded = JsonFile::parseJson($this->contents);
+        $decoded = JsonFile::parseJson($this->contents, null, JsonFile::ALLOW_COMMENTS);
 
         // no link of that type yet
         if (!isset($decoded[$type])) {

@@ -33,6 +33,8 @@ class JsonFile
     public const STRICT_SCHEMA = 2;
     public const AUTH_SCHEMA = 3;
 
+    public const ALLOW_COMMENTS = 1;
+
     /** @deprecated Use \JSON_UNESCAPED_SLASHES */
     public const JSON_UNESCAPED_SLASHES = 64;
     /** @deprecated Use \JSON_PRETTY_PRINT */
@@ -42,6 +44,8 @@ class JsonFile
 
     public const COMPOSER_SCHEMA_PATH = __DIR__ . '/../../../res/composer-schema.json';
 
+    /** @var int */
+    private $flags;
     /** @var string */
     private $path;
     /** @var ?HttpDownloader */
@@ -55,9 +59,10 @@ class JsonFile
      * @param  string                    $path           path to a lockfile
      * @param  ?HttpDownloader           $httpDownloader required for loading http/https json files
      * @param  ?IOInterface              $io
+     * @param  int                       $flags          read json files flags
      * @throws \InvalidArgumentException
      */
-    public function __construct(string $path, ?HttpDownloader $httpDownloader = null, ?IOInterface $io = null)
+    public function __construct(string $path, ?HttpDownloader $httpDownloader = null, ?IOInterface $io = null, int $flags = 0)
     {
         $this->path = $path;
 
@@ -66,6 +71,7 @@ class JsonFile
         }
         $this->httpDownloader = $httpDownloader;
         $this->io = $io;
+        $this->flags = $flags;
     }
 
     public function getPath(): string
@@ -117,7 +123,7 @@ class JsonFile
             throw new \RuntimeException('Could not read '.$this->path);
         }
 
-        return static::parseJson($json, $this->path);
+        return static::parseJson($json, $this->path, $this->flags);
     }
 
     /**
@@ -194,14 +200,19 @@ class JsonFile
      */
     public function validateSchema(int $schema = self::STRICT_SCHEMA, ?string $schemaFile = null): bool
     {
-        if (!Filesystem::isReadable($this->path)) {
+        if (!Filesystem::isReadable($this->path) || false === ($content = file_get_contents($this->path))) {
             throw new \RuntimeException('The file "'.$this->path.'" is not readable.');
         }
-        $content = file_get_contents($this->path);
+
         $data = json_decode($content);
 
         if (null === $data && 'null' !== $content) {
-            self::validateSyntax($content, $this->path);
+            self::validateSyntax($content, $this->path, 0 !== ($this->flags & self::ALLOW_COMMENTS) ? 8 : 0);
+
+            if (0 !== ($this->flags & self::ALLOW_COMMENTS)) {
+                $parser = new JsonParser();
+                $data = $parser->parse($content, /*JsonParser::ALLOW_COMMENTS*/ 8);
+            }
         }
 
         return self::validateJsonSchema($this->path, $data, $schema, $schemaFile);
@@ -311,13 +322,21 @@ class JsonFile
      * @throws ParsingException
      * @return mixed
      */
-    public static function parseJson(?string $json, ?string $file = null)
+    public static function parseJson(?string $json, ?string $file = null/*, int $flags = 0*/)
     {
         if (null === $json) {
             return null;
         }
         $data = json_decode($json, true);
         if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
+            // Try to remove comments
+            if (func_num_args() === 3 && 0 !== (func_get_arg(2) & self::ALLOW_COMMENTS)) {
+                $parser = new JsonParser();
+                try {
+                    $result = $parser->parse($json, /*JsonParser::ALLOW_COMMENTS*/ 8);
+                    return json_decode(json_encode($result), true);
+                } catch (ParsingException $e) {}
+            }
             self::validateSyntax($json, $file);
         }
 
@@ -332,10 +351,10 @@ class JsonFile
      * @throws ParsingException
      * @return bool                      true on success
      */
-    protected static function validateSyntax(string $json, ?string $file = null): bool
+    protected static function validateSyntax(string $json, ?string $file = null/*, int $lintFlags = 0*/): bool
     {
         $parser = new JsonParser();
-        $result = $parser->lint($json);
+        $result = $parser->lint($json, func_num_args() === 3 ? func_get_arg(2) : 0);
         if (null === $result) {
             if (defined('JSON_ERROR_UTF8') && JSON_ERROR_UTF8 === json_last_error()) {
                 throw new \UnexpectedValueException('"'.$file.'" is not UTF-8, could not parse as JSON');

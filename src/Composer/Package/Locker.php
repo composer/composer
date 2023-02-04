@@ -79,7 +79,7 @@ class Locker
      */
     public static function getContentHash(string $composerFileContents): string
     {
-        $content = JsonFile::parseJson($composerFileContents, 'composer.json');
+        $content = JsonFile::parseJson($composerFileContents, 'composer.json', JsonFile::ALLOW_COMMENTS);
 
         $relevantKeys = [
             'name',

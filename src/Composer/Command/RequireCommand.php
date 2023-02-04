@@ -154,7 +154,7 @@ EOT
             file_put_contents($this->file, "{\n}\n");
         }
 
-        $this->json = new JsonFile($this->file);
+        $this->json = new JsonFile($this->file, null, null, JsonFile::ALLOW_COMMENTS);
         $this->lock = Factory::getLockFile($this->file);
         $this->composerBackup = file_get_contents($this->json->getPath());
         $this->lockBackup = file_exists($this->lock) ? file_get_contents($this->lock) : null;

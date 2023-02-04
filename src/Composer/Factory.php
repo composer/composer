@@ -298,7 +298,7 @@ class Factory
         if (is_string($localConfig)) {
             $composerFile = $localConfig;
 
-            $file = new JsonFile($localConfig, null, $io);
+            $file = new JsonFile($localConfig, null, $io, JsonFile::ALLOW_COMMENTS);
 
             if (!$file->exists()) {
                 if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
