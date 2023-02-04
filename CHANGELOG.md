@@ -1,3 +1,13 @@
+### [2.5.2] 2023-02-04
+
+  * Added warning when `require` auto-selects a feature branch as that is probably not desired (#11270)
+  * Fixed `self.version` requirements reporting lock file integrity errors when changing branches (#11283)
+  * Fixed `require` regression which broke the --fixed flag (#11247)
+  * Fixed security audit reports loading when exclude/only filter rules are used on a repository (#11281)
+  * Fixed autoloading regression on PHP 5.6 (#11285)
+  * Fixed archive command including an existing archive into itself if run repeatedly (#11239)
+  * Fixed dev package prompt in `require` not appearing in some conditions (#11287)
+
 ### [2.5.1] 2022-12-22
 
   * Fixed ClassLoader regression which made it fail if serialized (e.g. within PHPUnit process isolation) (#11237)
@@ -1681,6 +1691,7 @@
 
   * Initial release
 
+[2.5.2]: https://github.com/composer/composer/compare/2.5.1...2.5.2
 [2.5.1]: https://github.com/composer/composer/compare/2.5.0...2.5.1
 [2.5.0]: https://github.com/composer/composer/compare/2.4.4...2.5.0
 [2.4.4]: https://github.com/composer/composer/compare/2.4.3...2.4.4
