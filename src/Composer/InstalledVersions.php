@@ -53,7 +53,8 @@ class InstalledVersions
     {
         $packages = array();
         foreach (self::getInstalled() as $installed) {
-            $packages[] = array_keys($installed['versions']);
+            if (isset($installed['versions']))
+                $packages[] = array_keys($installed['versions']);
         }
 
         if (1 === \count($packages)) {
