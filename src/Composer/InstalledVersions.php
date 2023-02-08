@@ -52,11 +52,8 @@ class InstalledVersions
     public static function getInstalledPackages()
     {
         $packages = array();
-        $installed = self::getInstalled();
-        if ((0 < \count($installed) && (\count(\array_keys($installed[0])) > 0))) {
-            foreach ($installed as $one) {
-                $packages[] = array_keys($one['versions']);
-            }
+        foreach (self::getInstalled() as $installed) {
+            $packages[] = array_keys($installed['versions']);
         }
 
         if (1 === \count($packages)) {
@@ -344,11 +341,11 @@ class InstalledVersions
             // and not from its source location in the composer/composer package, see https://github.com/composer/composer/issues/9937
             if (substr(__DIR__, -8, 1) !== 'C') {
                 self::$installed = require __DIR__ . '/installed.php';
-            } else {
-                self::$installed = array();
             }
+            // don't set as empty array on 'else' to prevent 'Undefined index: versions'
+            // exception in `self::getInstalledPackages()` (see https://github.com/composer/composer/pull/11304)
         }
-        $installed[] = self::$installed;
+        if(null !== self::$installed) $installed[] = self::$installed;
 
         return $installed;
     }
