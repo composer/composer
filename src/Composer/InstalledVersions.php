@@ -52,9 +52,11 @@ class InstalledVersions
     public static function getInstalledPackages()
     {
         $packages = array();
-        foreach (self::getInstalled() as $installed) {
-            if (isset($installed['versions']))
-                $packages[] = array_keys($installed['versions']);
+        $installed = self::getInstalled();
+        if (0 < \count($installed)) {
+            foreach ($installed as $one) {
+                $packages[] = array_keys($one['versions']);
+            }
         }
 
         if (1 === \count($packages)) {
