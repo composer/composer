@@ -342,10 +342,12 @@ class InstalledVersions
             if (substr(__DIR__, -8, 1) !== 'C') {
                 self::$installed = require __DIR__ . '/installed.php';
             }
-            // don't set as empty array on 'else' to prevent 'Undefined index: versions'
-            // exception in `self::getInstalledPackages()` (see https://github.com/composer/composer/pull/11304)
+            // don't set as empty array on 'else' to prevent 'Undefined index: versions' exception in `self::getInstalledPackages()`
+            // (see https://github.com/composer/composer/pull/11304)
         }
-        if(null !== self::$installed) $installed[] = self::$installed;
+        if (null !== self::$installed) {
+            $installed[] = self::$installed;
+        }
 
         return $installed;
     }
