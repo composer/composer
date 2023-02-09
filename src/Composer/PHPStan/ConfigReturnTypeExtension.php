@@ -30,6 +30,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 
 final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtension
@@ -69,9 +70,18 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
         }
 
         $keyType = $scope->getType($args[0]->value);
-        if ($keyType instanceof ConstantStringType) {
-            if (isset($this->properties[$keyType->getValue()])) {
-                return $this->properties[$keyType->getValue()];
+        // for compat with old phpstan versions, we use a deprecated phpstan method.
+        $strings = TypeUtils::getConstantStrings($keyType);
+        if ($strings !== []) {
+            $types = [];
+            foreach($strings as $string) {
+                if (isset($this->properties[$string->getValue()])) {
+                    $types[] = $this->properties[$string->getValue()];
+                }
+            }
+            
+            if ($types !== []) {
+                return TypeCombinator::union(...$types);
             }
         }
 
