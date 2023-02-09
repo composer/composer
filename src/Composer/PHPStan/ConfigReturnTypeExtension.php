@@ -65,27 +65,32 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
     {
         $args = $methodCall->getArgs();
 
+        $defaultReturn = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+
         if (count($args) < 1) {
-            return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+            return $defaultReturn;
         }
 
         $keyType = $scope->getType($args[0]->value);
-        // for compat with old phpstan versions, we use a deprecated phpstan method.
-        $strings = TypeUtils::getConstantStrings($keyType);
+        if (method_exists($keyType, 'getConstantStrings')) {
+            $strings = $keyType->getConstantStrings();
+        } else {
+            // for compat with old phpstan versions, we use a deprecated phpstan method.
+            $strings = TypeUtils::getConstantStrings($keyType);
+        }
         if ($strings !== []) {
             $types = [];
             foreach($strings as $string) {
-                if (isset($this->properties[$string->getValue()])) {
-                    $types[] = $this->properties[$string->getValue()];
+                if (!isset($this->properties[$string->getValue()])) {
+                    return $defaultReturn;
                 }
+                $types[] = $this->properties[$string->getValue()];
             }
-            
-            if ($types !== []) {
-                return TypeCombinator::union(...$types);
-            }
+
+            return TypeCombinator::union(...$types);
         }
 
-        return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+        return $defaultReturn;
     }
 
     /**
