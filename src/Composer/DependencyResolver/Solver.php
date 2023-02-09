@@ -565,35 +565,6 @@ class Solver
         return 0;
     }
 
-    /**
-     * enable/disable learnt rules
-     *
-     * we have enabled or disabled some of our rules. We now re-enable all
-     * of our learnt rules except the ones that were learnt from rules that
-     * are now disabled.
-     */
-    private function enableDisableLearnedRules(): void
-    {
-        foreach ($this->rules->getIteratorFor(RuleSet::TYPE_LEARNED) as $rule) {
-            $why = $this->learnedWhy[spl_object_hash($rule)];
-            $problemRules = $this->learnedPool[$why];
-
-            $foundDisabled = false;
-            foreach ($problemRules as $problemRule) {
-                if ($problemRule->isDisabled()) {
-                    $foundDisabled = true;
-                    break;
-                }
-            }
-
-            if ($foundDisabled && $rule->isEnabled()) {
-                $rule->disable();
-            } elseif (!$foundDisabled && $rule->isDisabled()) {
-                $rule->enable();
-            }
-        }
-    }
-
     private function runSat(): void
     {
         $this->propagateIndex = 0;
