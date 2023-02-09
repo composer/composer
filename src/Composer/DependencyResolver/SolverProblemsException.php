@@ -77,8 +77,11 @@ class SolverProblemsException extends \RuntimeException
     {
         foreach ($reasonSets as $reasonSet) {
             foreach ($reasonSet as $reason) {
-                if (isset($reason["rule"]) && 0 === strpos($reason["rule"]->getRequiredPackage(), 'ext-')) {
-                    return true;
+                if (isset($reason["rule"])) {
+                    $requiredPackage = $reason["rule"]->getRequiredPackage();
+                    if ($requiredPackage !== null && 0 === strpos($requiredPackage, 'ext-')) {
+                        return true;
+                    }
                 }
             }
         }
