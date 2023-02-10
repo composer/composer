@@ -72,11 +72,11 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
         }
 
         $keyType = $scope->getType($args[0]->value);
-        if (method_exists($keyType, 'getConstantStrings')) {
+        if (method_exists($keyType, 'getConstantStrings')) { // @phpstan-ignore-line - depending on PHPStan version, this method will always exist, or not.
             $strings = $keyType->getConstantStrings();
         } else {
             // for compat with old phpstan versions, we use a deprecated phpstan method.
-            $strings = TypeUtils::getConstantStrings($keyType);
+            $strings = TypeUtils::getConstantStrings($keyType); // @phpstan-ignore-line ignore deprecation
         }
         if ($strings !== []) {
             $types = [];

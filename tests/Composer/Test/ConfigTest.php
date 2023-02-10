@@ -398,7 +398,7 @@ class ConfigTest extends TestCase
         ];
         foreach ($keys as $key) {
             $value = $config->get($key);
-            $this->assertIsArray($value);
+            $this->assertIsArray($value); // @phpstan-ignore-line - PHPStan knows that its an array for all given keys
             $this->assertCount(0, $value);
         }
     }
