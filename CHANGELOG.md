@@ -1,3 +1,7 @@
+### [2.5.3] 2023-02-10
+
+  * Added extra.plugin-optional support for allow auto-disabling unknown plugins which are not critical when running non-interactive (#11315)
+
 ### [2.5.2] 2023-02-04
 
   * Added warning when `require` auto-selects a feature branch as that is probably not desired (#11270)
@@ -1691,6 +1695,7 @@
 
   * Initial release
 
+[2.5.3]: https://github.com/composer/composer/compare/2.5.2...2.5.3
 [2.5.2]: https://github.com/composer/composer/compare/2.5.1...2.5.2
 [2.5.1]: https://github.com/composer/composer/compare/2.5.0...2.5.1
 [2.5.0]: https://github.com/composer/composer/compare/2.4.4...2.5.0
