@@ -30,6 +30,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 
 final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtension
@@ -64,18 +65,32 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
     {
         $args = $methodCall->getArgs();
 
+        $defaultReturn = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+
         if (count($args) < 1) {
-            return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+            return $defaultReturn;
         }
 
         $keyType = $scope->getType($args[0]->value);
-        if ($keyType instanceof ConstantStringType) {
-            if (isset($this->properties[$keyType->getValue()])) {
-                return $this->properties[$keyType->getValue()];
+        if (method_exists($keyType, 'getConstantStrings')) { // @phpstan-ignore-line - depending on PHPStan version, this method will always exist, or not.
+            $strings = $keyType->getConstantStrings();
+        } else {
+            // for compat with old phpstan versions, we use a deprecated phpstan method.
+            $strings = TypeUtils::getConstantStrings($keyType); // @phpstan-ignore-line ignore deprecation
+        }
+        if ($strings !== []) {
+            $types = [];
+            foreach($strings as $string) {
+                if (!isset($this->properties[$string->getValue()])) {
+                    return $defaultReturn;
+                }
+                $types[] = $this->properties[$string->getValue()];
             }
+
+            return TypeCombinator::union(...$types);
         }
 
-        return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+        return $defaultReturn;
     }
 
     /**
