@@ -187,7 +187,7 @@ class PluginManager
             }
         }
 
-        if (!$this->isPluginAllowed($package->getName(), $isGlobalPlugin, $package->getExtra()['plugin-optional'] ?? false)) {
+        if (!$this->isPluginAllowed($package->getName(), $isGlobalPlugin, (bool) ($package->getExtra()['plugin-optional'] ?? false))) {
             $this->io->writeError('Skipped loading "'.$package->getName() . '" '.($isGlobalPlugin || $this->runningInGlobalDir ? '(installed globally) ' : '').'as it is not in config.allow-plugins', true, IOInterface::DEBUG);
 
             return;
@@ -370,7 +370,7 @@ class PluginManager
 
         if ($sourcePackage === null) {
             trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);
-        } elseif (!$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin, $sourcePackage->getExtra()['plugin-optional'] ?? false)) {
+        } elseif (!$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin, (bool) ($sourcePackage->getExtra()['plugin-optional'] ?? false))) {
             $this->io->writeError('Skipped loading "'.get_class($plugin).' from '.$sourcePackage->getName() . '" '.($isGlobalPlugin || $this->runningInGlobalDir ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
 
             return;
