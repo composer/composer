@@ -1,3 +1,7 @@
+### [2.2.20] 2023-02-10
+
+  * Added extra.plugin-optional support for allow auto-disabling unknown plugins which are not critical when running non-interactive (#11315)
+
 ### [2.2.19] 2023-02-04
 
   * Fixed URL sanitizer to handle new GitHub personal access tokens format (#11137)
@@ -1483,6 +1487,7 @@
 
   * Initial release
 
+[2.2.20]: https://github.com/composer/composer/compare/2.2.19...2.2.20
 [2.2.19]: https://github.com/composer/composer/compare/2.2.18...2.2.19
 [2.2.18]: https://github.com/composer/composer/compare/2.2.17...2.2.18
 [2.2.17]: https://github.com/composer/composer/compare/2.2.16...2.2.17
