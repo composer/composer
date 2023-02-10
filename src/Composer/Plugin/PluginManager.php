@@ -198,7 +198,8 @@ class PluginManager
             }
         }
 
-        if (!$this->isPluginAllowed($package->getName(), $isGlobalPlugin)) {
+        $extra = $package->getExtra();
+        if (!$this->isPluginAllowed($package->getName(), $isGlobalPlugin, isset($extra['plugin-optional']) && true === $extra['plugin-optional'])) {
             $this->io->writeError('Skipped loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').'as it is not in config.allow-plugins', true, IOInterface::DEBUG);
 
             return;
@@ -394,9 +395,12 @@ class PluginManager
 
         if ($sourcePackage === null) {
             trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);
-        } elseif (!$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin)) {
-            $this->io->writeError('Skipped loading "'.get_class($plugin).' from '.$sourcePackage->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
-            return;
+        } else {
+            $extra = $sourcePackage->getExtra();
+            if (!$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin, isset($extra['plugin-optional']) && true === $extra['plugin-optional'])) {
+                $this->io->writeError('Skipped loading "'.get_class($plugin).' from '.$sourcePackage->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
+                return;
+            }
         }
 
         $details = array();
@@ -693,9 +697,10 @@ class PluginManager
      *
      * @param string $package
      * @param bool $isGlobalPlugin
+     * @param bool $optional
      * @return bool
      */
-    public function isPluginAllowed($package, $isGlobalPlugin)
+    public function isPluginAllowed($package, $isGlobalPlugin, $optional = false)
     {
         if ($isGlobalPlugin) {
             $rules = &$this->allowGlobalPluginRules;
@@ -763,6 +768,8 @@ class PluginManager
                         break;
                 }
             }
+        } elseif ($optional) {
+            return false;
         }
 
         throw new PluginBlockedException(

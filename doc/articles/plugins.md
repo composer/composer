@@ -332,6 +332,20 @@ in your composer.json to hint to Composer that the plugin should be activated as
 as possible to prevent any bad side-effects from Composer assuming packages are installed
 in another location than they actually are.
 
+### plugin-optional
+
+Because Composer plugins can be used to perform actions which are necessary for installing
+a working application, like modifying which path files get stored in, skipping required
+plugins unintentionally can result in broken applications. So, in non-interactive mode,
+Composer will fail if a new plugin is not listed in ["allow-plugins"](../06-config.md#allow-plugins)
+to force users to decide if they want to execute the plugin, to avoid silent failures.
+
+As of Composer 2.5.3, you can use the setting `{"extra": {"plugin-optional": true}}` on
+your plugin, to tell Composer that skipping the plugin has no catastrophic consequences,
+and it can safely be disabled in non-interactive mode if it is not yet listed in
+"allow-plugins". The next interactive run of Composer will still prompt users to choose if
+they want to enable or disable the plugin.
+
 ## Plugin Autoloading
 
 Due to plugins being loaded by Composer at runtime, and to ensure that plugins which
