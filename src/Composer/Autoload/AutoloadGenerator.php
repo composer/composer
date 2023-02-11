@@ -457,7 +457,7 @@ EOF;
         // if $dir does not exist, it should anyway not find anything there so no trouble
         if (file_exists($dir)) {
             // transform $dir in the same way that exclude-from-classmap patterns are transformed so we can match them against each other
-            $dirMatch = preg_quote(strtr(realpath($dir), '\\', '/'));
+            $dirMatch = preg_quote(str_replace('\\', '/', realpath($dir)));
             foreach ($excluded as $index => $pattern) {
                 // extract the constant string prefix of the pattern here, until we reach a non-escaped regex special character
                 $pattern = Preg::replace('{^(([^.+*?\[^\]$(){}=!<>|:\\\\#-]+|\\\\[.+*?\[^\]$(){}=!<>|:#-])*).*}', '$1', $pattern);
@@ -472,10 +472,12 @@ EOF;
     }
 
     /**
+     * @param InstallationManager $installationManager
+     * @param PackageInterface $rootPackage
      * @param PackageInterface[] $packages
      * @return array<int, array{0: PackageInterface, 1: string}>
      */
-    public function buildPackageMap(InstallationManager $installationManager, PackageInterface $rootPackage, array $packages)
+    public function buildPackageMap(InstallationManager $installationManager, PackageInterface $rootPackage, array $packages): array
     {
         // build package => install path map
         $packageMap = [[$rootPackage, '']];
@@ -496,10 +498,10 @@ EOF;
     }
 
     /**
+     * @param PackageInterface $package
      * @return void
-     * @throws \InvalidArgumentException Throws an exception, if the package has illegal settings.
      */
-    protected function validatePackage(PackageInterface $package)
+    protected function validatePackage(PackageInterface $package): void
     {
         $autoload = $package->getAutoload();
         if (!empty($autoload['psr-4']) && null !== $package->getTargetDir()) {
@@ -520,7 +522,7 @@ EOF;
      * Compiles an ordered list of namespace => path mappings
      *
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap array of array(package, installDir-relative-to-composer.json)
-     * @param RootPackageInterface $rootPackage root package instance
+     * @param PackageInterface $rootPackage root package instance
      * @param bool|string[] $filteredDevPackages If an array, the list of packages that must be removed. If bool, whether to filter out require-dev packages
      * @return array
      * @phpstan-return array{
@@ -531,7 +533,7 @@ EOF;
      *     'exclude-from-classmap': array<int, string>,
      * }
      */
-    public function parseAutoloads(array $packageMap, PackageInterface $rootPackage, $filteredDevPackages = false)
+    public function parseAutoloads(array $packageMap, PackageInterface $rootPackage, $filteredDevPackages = false): array
     {
         $rootPackageMap = array_shift($packageMap);
         if (is_array($filteredDevPackages)) {
@@ -569,7 +571,7 @@ EOF;
      * @param array<string, mixed[]> $autoloads see parseAutoloads return value
      * @return ClassLoader
      */
-    public function createLoader(array $autoloads, ?string $vendorDir = null)
+    public function createLoader(array $autoloads, ?string $vendorDir = null): ClassLoader
     {
         $loader = new ClassLoader($vendorDir);
 
@@ -610,9 +612,14 @@ EOF;
 
     /**
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
+     * @param Filesystem $filesystem
+     * @param string $basePath
+     * @param string $vendorPath
+     * @param string $vendorPathCode
+     * @param string $appBaseDirCode
      * @return ?string
      */
-    protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, string $basePath, string $vendorPath, string $vendorPathCode, string $appBaseDirCode)
+    protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, string $basePath, string $vendorPath, string $vendorPathCode, string $appBaseDirCode): ?string
     {
         $includePaths = [];
 
@@ -654,9 +661,14 @@ EOF;
 
     /**
      * @param array<string, string> $files
+     * @param Filesystem $filesystem
+     * @param string $basePath
+     * @param string $vendorPath
+     * @param string $vendorPathCode
+     * @param string $appBaseDirCode
      * @return ?string
      */
-    protected function getIncludeFilesFile(array $files, Filesystem $filesystem, string $basePath, string $vendorPath, string $vendorPathCode, string $appBaseDirCode)
+    protected function getIncludeFilesFile(array $files, Filesystem $filesystem, string $basePath, string $vendorPath, string $vendorPathCode, string $appBaseDirCode): ?string
     {
         $filesCode = '';
         foreach ($files as $fileIdentifier => $functionFile) {
@@ -683,9 +695,13 @@ EOF;
     }
 
     /**
+     * @param Filesystem $filesystem
+     * @param string $basePath
+     * @param string $vendorPath
+     * @param string $path
      * @return string
      */
-    protected function getPathCode(Filesystem $filesystem, string $basePath, string $vendorPath, string $path)
+    protected function getPathCode(Filesystem $filesystem, string $basePath, string $vendorPath, string $path): string
     {
         if (!$filesystem->isAbsolutePath($path)) {
             $path = $basePath . '/' . $path;
@@ -717,7 +733,7 @@ EOF;
      * @param string[] $devPackageNames
      * @return ?string
      */
-    protected function getPlatformCheck(array $packageMap, $checkPlatform, array $devPackageNames)
+    protected function getPlatformCheck(array $packageMap, $checkPlatform, array $devPackageNames): ?string
     {
         $lowestPhpVersion = Bound::zero();
         $requiredExtensions = [];
@@ -871,9 +887,11 @@ PLATFORM_CHECK;
     }
 
     /**
+     * @param string $vendorPathToTargetDirCode
+     * @param string $suffix
      * @return string
      */
-    protected function getAutoloadFile(string $vendorPathToTargetDirCode, string $suffix)
+    protected function getAutoloadFile(string $vendorPathToTargetDirCode, string $suffix): string
     {
         $lastChar = $vendorPathToTargetDirCode[strlen($vendorPathToTargetDirCode) - 1];
         if ("'" === $lastChar || '"' === $lastChar) {
@@ -918,7 +936,7 @@ AUTOLOAD;
      * @param string $prependAutoloader 'true'|'false'
      * @return string
      */
-    protected function getAutoloadRealFile(bool $useClassMap, bool $useIncludePath, ?string $targetDirLoader, bool $useIncludeFiles, string $vendorPathCode, string $appBaseDirCode, string $suffix, bool $useGlobalIncludePath, string $prependAutoloader, bool $checkPlatform)
+    protected function getAutoloadRealFile(bool $useClassMap, bool $useIncludePath, ?string $targetDirLoader, bool $useIncludeFiles, string $vendorPathCode, string $appBaseDirCode, string $suffix, bool $useGlobalIncludePath, string $prependAutoloader, bool $checkPlatform): string
     {
         $file = <<<HEADER
 <?php
@@ -1051,11 +1069,13 @@ FOOTER;
     }
 
     /**
+     * @param string $suffix
+     * @param string $targetDir
      * @param string $vendorPath input for findShortestPathCode
      * @param string $basePath input for findShortestPathCode
      * @return string
      */
-    protected function getStaticFile(string $suffix, string $targetDir, string $vendorPath, string $basePath)
+    protected function getStaticFile(string $suffix, string $targetDir, string $vendorPath, string $basePath): string
     {
         $file = <<<HEADER
 <?php
@@ -1147,9 +1167,10 @@ INITIALIZER;
     /**
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
      * @param string $type one of: 'psr-0'|'psr-4'|'classmap'|'files'
+     * @param RootPackageInterface $rootPackage
      * @return array<int, string>|array<string, array<string>>|array<string, string>
      */
-    protected function parseAutoloadsType(array $packageMap, string $type, RootPackageInterface $rootPackage)
+    protected function parseAutoloadsType(array $packageMap, string $type, RootPackageInterface $rootPackage): array
     {
         $autoloads = [];
 
@@ -1235,9 +1256,11 @@ INITIALIZER;
     }
 
     /**
+     * @param PackageInterface $package
+     * @param string $path
      * @return string
      */
-    protected function getFileIdentifier(PackageInterface $package, string $path)
+    protected function getFileIdentifier(PackageInterface $package, string $path): string
     {
         return md5($package->getName() . ':' . $path);
     }
@@ -1246,11 +1269,12 @@ INITIALIZER;
      * Filters out dev-dependencies
      *
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
+     * @param RootPackageInterface $rootPackage
      * @return array<int, array{0: PackageInterface, 1: string}>
      *
      * @phpstan-param array<int, array{0: PackageInterface, 1: string}> $packageMap
      */
-    protected function filterPackageMap(array $packageMap, RootPackageInterface $rootPackage)
+    protected function filterPackageMap(array $packageMap, RootPackageInterface $rootPackage): array
     {
         $packages = [];
         $include = [];
@@ -1304,7 +1328,7 @@ INITIALIZER;
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
      * @return array<int, array{0: PackageInterface, 1: string}>
      */
-    protected function sortPackageMap(array $packageMap)
+    protected function sortPackageMap(array $packageMap): array
     {
         $packages = [];
         $paths = [];
