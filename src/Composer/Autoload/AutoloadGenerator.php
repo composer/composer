@@ -457,7 +457,7 @@ EOF;
         // if $dir does not exist, it should anyway not find anything there so no trouble
         if (file_exists($dir)) {
             // transform $dir in the same way that exclude-from-classmap patterns are transformed so we can match them against each other
-            $dirMatch = preg_quote(str_replace('\\', '/', realpath($dir)));
+            $dirMatch = preg_quote(strtr(realpath($dir), '\\', '/'));
             foreach ($excluded as $index => $pattern) {
                 // extract the constant string prefix of the pattern here, until we reach a non-escaped regex special character
                 $pattern = Preg::replace('{^(([^.+*?\[^\]$(){}=!<>|:\\\\#-]+|\\\\[.+*?\[^\]$(){}=!<>|:#-])*).*}', '$1', $pattern);
