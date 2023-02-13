@@ -54,7 +54,8 @@ class PluginInstaller extends LibraryInstaller
     {
         // fail install process early if it is going to fail due to a plugin not being allowed
         if (($type === 'install' || $type === 'update') && !$this->composer->getPluginManager()->arePluginsDisabled('local')) {
-            $this->composer->getPluginManager()->isPluginAllowed($package->getName(), false);
+            $extra = $package->getExtra();
+            $this->composer->getPluginManager()->isPluginAllowed($package->getName(), false, isset($extra['plugin-optional']) && true === $extra['plugin-optional']);
         }
 
         return parent::prepare($type, $package, $prevPackage);
