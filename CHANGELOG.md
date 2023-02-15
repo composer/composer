@@ -1,3 +1,7 @@
+### [2.2.21] 2023-02-15
+
+  * Fixed extra.plugin-optional support in PluginInstaller when doing pre-install checks (#11326)
+
 ### [2.2.20] 2023-02-10
 
   * Added extra.plugin-optional support for allow auto-disabling unknown plugins which are not critical when running non-interactive (#11315)
@@ -1487,6 +1491,7 @@
 
   * Initial release
 
+[2.2.21]: https://github.com/composer/composer/compare/2.2.20...2.2.21
 [2.2.20]: https://github.com/composer/composer/compare/2.2.19...2.2.20
 [2.2.19]: https://github.com/composer/composer/compare/2.2.18...2.2.19
 [2.2.18]: https://github.com/composer/composer/compare/2.2.17...2.2.18
