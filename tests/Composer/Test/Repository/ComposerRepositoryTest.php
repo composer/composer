@@ -380,4 +380,29 @@ class ComposerRepositoryTest extends TestCase
 
         $this->assertEquals(['foo/bar'], $repository->getPackageNames());
     }
+
+    public function testLoadDataInvalidPackages(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'http://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'packages' => ['foo/bar' => null],
+                    ]),
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'http://example.org'],
+            new NullIO,
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $this->assertCount(0, $repository->getPackages());
+    }
 }

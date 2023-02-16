@@ -1361,6 +1361,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (isset($data['packages'])) {
             foreach ($data['packages'] as $package => $versions) {
+                if (!\is_array($versions)) {
+                    $this->io->writeError(sprintf("<warning>Warning: the packages key '%s' doesn't contain a valid value in repository %s</warning>", $package, $this->baseUrl));
+                    continue;
+                }
+
                 $packageName = strtolower((string) $package);
                 foreach ($versions as $version => $metadata) {
                     $packages[] = $metadata;
