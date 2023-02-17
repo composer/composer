@@ -486,6 +486,7 @@ EOT
                         }
 
                         $packageViewData['name'] = $package->getPrettyName();
+                        $packageViewData['type'] = $package->getType();
                         $packageViewData['direct-dependency'] = in_array($package->getName(), $this->getRootRequires(), true);
                         if ($format !== 'json' || true !== $input->getOption('name-only')) {
                             $packageViewData['homepage'] = $package instanceof CompletePackageInterface ? $package->getHomepage() : null;
