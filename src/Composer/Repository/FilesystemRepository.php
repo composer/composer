@@ -163,9 +163,13 @@ class FilesystemRepository extends WritableArrayRepository
 
             $this->filesystem->filePutContentsIfModified($repoDir.'/installed.php', '<?php return ' . $this->dumpToPhpCode($versions) . ';'."\n");
             $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
-            $this->filesystem->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
 
-            \Composer\InstalledVersions::reload($versions);
+            // this normally should not happen but during upgrades of Composer when it is installed in the project it is a possibility
+            if ($installedVersionsClass !== false) {
+                $this->filesystem->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
+
+                \Composer\InstalledVersions::reload($versions);
+            }
         }
     }
 
