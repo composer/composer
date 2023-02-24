@@ -369,6 +369,7 @@ TAGSPUBKEY
         $io->write('Open <info>https://composer.github.io/pubkeys.html</info> to find the latest keys');
 
         $validator = static function ($value): string {
+            $value = (string) $value;
             if (!Preg::isMatch('{^-----BEGIN PUBLIC KEY-----$}', trim($value))) {
                 throw new \UnexpectedValueException('Invalid input');
             }
@@ -379,7 +380,7 @@ TAGSPUBKEY
         $devKey = '';
         while (!Preg::isMatch('{(-----BEGIN PUBLIC KEY-----.+?-----END PUBLIC KEY-----)}s', $devKey, $match)) {
             $devKey = $io->askAndValidate('Enter Dev / Snapshot Public Key (including lines with -----): ', $validator);
-            while ($line = $io->ask('')) {
+            while ($line = $io->ask('', '')) {
                 $devKey .= trim($line)."\n";
                 if (trim($line) === '-----END PUBLIC KEY-----') {
                     break;
@@ -392,7 +393,7 @@ TAGSPUBKEY
         $tagsKey = '';
         while (!Preg::isMatch('{(-----BEGIN PUBLIC KEY-----.+?-----END PUBLIC KEY-----)}s', $tagsKey, $match)) {
             $tagsKey = $io->askAndValidate('Enter Tags Public Key (including lines with -----): ', $validator);
-            while ($line = $io->ask('')) {
+            while ($line = $io->ask('', '')) {
                 $tagsKey .= trim($line)."\n";
                 if (trim($line) === '-----END PUBLIC KEY-----') {
                     break;
