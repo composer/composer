@@ -194,6 +194,10 @@ library code.
 
 Example: `^1.2.3`
 
+> **Note:** If you are using the PowerShell on Windows, make sure you enter four
+> subsequent caret operators, e.g. `^^^^1.2.3`, to ensure the caret operator gets
+> passed to Composer correctly.
+
 ## Stability Constraints
 
 If you are using a constraint that does not explicitly define a stability,
