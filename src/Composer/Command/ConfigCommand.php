@@ -413,7 +413,7 @@ EOT
             ],
             'bin-compat' => [
                 static function ($val): bool {
-                    return in_array($val, ['auto', 'full', 'symlink']);
+                    return in_array($val, ['auto', 'full', 'proxy', 'symlink']);
                 },
                 static function ($val) {
                     return $val;
