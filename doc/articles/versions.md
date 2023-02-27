@@ -194,10 +194,11 @@ library code.
 
 Example: `^1.2.3`
 
-> **Note:** If you are using the PowerShell on Windows, make sure you enter four
+> **Note:** If you are using PowerShell on Windows, you have to escape
+> carets when using them as argument on the CLI for example when using the
+> `composer require` command. You have to use four
 > subsequent caret operators, e.g. `^^^^1.2.3`, to ensure the caret operator gets
 > passed to Composer correctly.
-
 ## Stability Constraints
 
 If you are using a constraint that does not explicitly define a stability,
