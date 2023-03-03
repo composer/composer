@@ -199,6 +199,7 @@ Example: `^1.2.3`
 > `composer require` command. You have to use four
 > subsequent caret operators, e.g. `^^^^1.2.3`, to ensure the caret operator gets
 > passed to Composer correctly.
+
 ## Stability Constraints
 
 If you are using a constraint that does not explicitly define a stability,
