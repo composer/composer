@@ -98,6 +98,7 @@
     },
     "support": {
         "issues": "https://github.com/composer/composer/issues",
-        "irc": "ircs://irc.libera.chat:6697/composer"
+        "irc": "ircs://irc.libera.chat:6697/composer",
+        "security": "https://github.com/composer/composer/security/policy"
     }
 }

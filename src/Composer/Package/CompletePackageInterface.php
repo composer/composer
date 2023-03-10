@@ -118,14 +118,14 @@ interface CompletePackageInterface extends PackageInterface
     /**
      * Returns the support information
      *
-     * @return array{issues?: string, forum?: string, wiki?: string, source?: string, email?: string, irc?: string, docs?: string, rss?: string, chat?: string}
+     * @return array{issues?: string, forum?: string, wiki?: string, source?: string, email?: string, irc?: string, docs?: string, rss?: string, chat?: string, security?: string}
      */
     public function getSupport(): array;
 
     /**
      * Set the support information
      *
-     * @param  array{issues?: string, forum?: string, wiki?: string, source?: string, email?: string, irc?: string, docs?: string, rss?: string, chat?: string} $support
+     * @param  array{issues?: string, forum?: string, wiki?: string, source?: string, email?: string, irc?: string, docs?: string, rss?: string, chat?: string, security?: string} $support
      */
     public function setSupport(array $support): void;
 

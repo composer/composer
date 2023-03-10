@@ -33,7 +33,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     protected $homepage = null;
     /** @var array<string, string[]> Map of script name to array of handlers */
     protected $scripts = [];
-    /** @var array{issues?: string, forum?: string, wiki?: string, source?: string, email?: string, irc?: string, docs?: string, rss?: string, chat?: string} */
+    /** @var array{issues?: string, forum?: string, wiki?: string, source?: string, email?: string, irc?: string, docs?: string, rss?: string, chat?: string, security?: string} */
     protected $support = [];
     /** @var array<array{url?: string, type?: string}> */
     protected $funding = [];

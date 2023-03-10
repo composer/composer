@@ -74,6 +74,7 @@ class ValidatingArrayLoaderTest extends TestCase
                         'irc' => 'irc://example.org/example',
                         'rss' => 'http://example.org/rss',
                         'chat' => 'http://example.org/chat',
+                        'security' => 'https://example.org/security',
                     ],
                     'funding' => [
                         [
@@ -449,6 +450,7 @@ class ValidatingArrayLoaderTest extends TestCase
                         'issues' => 'foo:bar',
                         'wiki' => 'foo:bar',
                         'chat' => 'foo:bar',
+                        'security' => 'foo:bar',
                     ],
                 ],
                 [
@@ -457,6 +459,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     'support.issues : invalid value (foo:bar), must be an http/https URL',
                     'support.wiki : invalid value (foo:bar), must be an http/https URL',
                     'support.chat : invalid value (foo:bar), must be an http/https URL',
+                    'support.security : invalid value (foo:bar), must be an http/https URL',
                 ],
             ],
             [

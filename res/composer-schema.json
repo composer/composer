@@ -111,6 +111,11 @@
                     "type": "string",
                     "description": "URL to the RSS feed.",
                     "format": "uri"
+                },
+                "security": {
+                    "type": "string",
+                    "description": "URL to the vulnerability disclosure policy (VDP).",
+                    "format": "uri"
                 }
             }
         },
