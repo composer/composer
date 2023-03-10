@@ -298,7 +298,7 @@ If you do not specify a package, Composer will prompt you to search for a packag
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu-autoloader`.
 
-## remove
+## remove / rm
 
 The `remove` command removes packages from the `composer.json` file from
 the current directory.

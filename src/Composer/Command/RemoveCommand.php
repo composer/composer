@@ -43,6 +43,7 @@ class RemoveCommand extends BaseCommand
     {
         $this
             ->setName('remove')
+            ->setAliases(['rm'])
             ->setDescription('Removes a package from the require or require-dev')
             ->setDefinition([
                 new InputArgument('packages', InputArgument::IS_ARRAY, 'Packages that should be removed.', null, $this->suggestRootRequirement()),
@@ -73,7 +74,7 @@ list of installed packages
 
 <info>php composer.phar remove</info>
 
-Read more at https://getcomposer.org/doc/03-cli.md#remove
+Read more at https://getcomposer.org/doc/03-cli.md#remove-rm
 EOT
             )
         ;
