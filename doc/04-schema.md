@@ -133,7 +133,9 @@ Optional.
 
 ### readme
 
-A relative path to the readme document.
+A relative path to the readme document. Defaults to `README.md`.
+
+This is mainly useful for packages not on GitHub, as for GitHub packages Packagist.org will use the readme API to fetch the one detected by GitHub.
 
 Optional.
 
