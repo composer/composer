@@ -28,8 +28,8 @@ for credentials and save them (or a token if Composer is able to retrieve one).
 Sometimes automatic authentication is not possible, or you may want to predefine
 authentication credentials.
 
-Credentials can be stored on 3 different places; in an `auth.json` for the project, a global
-`auth.json` or in the `composer.json` itself.
+Credentials can be stored on 4 different places; in an `auth.json` for the project, a global
+`auth.json`, in the `composer.json` itself or in the `COMPOSER_AUTH` environment variable.
 
 ## Authentication in auth.json per project
 
