@@ -89,9 +89,11 @@ class LockerTest extends TestCase
     {
         $json = $this->createJsonFileMock();
         $inst = $this->createInstallationManagerMock();
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
 
         $jsonContent = $this->getJsonContent() . '  ';
         $locker = new Locker(new NullIO, $json, $inst, $jsonContent);
+        $locker->setNow($now);
 
         $package1 = self::getPackage('pkg1', '1.0.0-beta');
         $package2 = self::getPackage('pkg2', '0.1.10');
@@ -105,6 +107,7 @@ class LockerTest extends TestCase
                 '_readme' => ['This file locks the dependencies of your project to a known state',
                                    'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies',
                                    'This file is @gener'.'ated automatically', ],
+                '_time' => $now->format(\DateTimeInterface::ATOM),
                 'content-hash' => $contentHash,
                 'packages' => [
                     ['name' => 'pkg1', 'version' => '1.0.0-beta', 'type' => 'library'],

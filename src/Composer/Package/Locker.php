@@ -53,6 +53,8 @@ class Locker
     private $lockDataCache = null;
     /** @var bool */
     private $virtualFileWritten = false;
+    /** @var \DateTimeImmutable */
+    private $now;
 
     /**
      * Initializes packages locker.
@@ -70,6 +72,7 @@ class Locker
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
         $this->process = $process ?? new ProcessExecutor($io);
+        $this->now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
     }
 
     /**
@@ -291,6 +294,13 @@ class Locker
         return $lockData['platform-overrides'] ?? [];
     }
 
+    public function setNow(\DateTimeImmutable $now): self
+    {
+        $this->now = $now;
+
+        return $this;
+    }
+
     /**
      * @return string[][]
      *
@@ -359,6 +369,7 @@ class Locker
             '_readme' => ['This file locks the dependencies of your project to a known state',
                                'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies',
                                'This file is @gener'.'ated automatically', ],
+            '_time' => $this->now->format(\DateTimeInterface::ATOM),
             'content-hash' => $this->contentHash,
             'packages' => null,
             'packages-dev' => null,
