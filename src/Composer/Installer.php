@@ -79,6 +79,7 @@ class Installer
     public const ERROR_LOCK_FILE_INVALID = 4;
     // used/declared in SolverProblemsException, carried over here for completeness
     public const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
+    public const ERROR_AUDIT_FAILED = 5;
 
     /**
      * @var IOInterface
@@ -400,7 +401,8 @@ class Installer
                     foreach ($this->repositoryManager->getRepositories() as $repo) {
                         $repoSet->addRepository($repo);
                     }
-                    $auditor->audit($this->io, $repoSet, $packages, $this->auditFormat);
+
+                    return $auditor->audit($this->io, $repoSet, $packages, $this->auditFormat) > 0 ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {
