@@ -126,6 +126,7 @@ class Problem
         foreach ($rules as $rule) {
             $message = $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
             if (in_array($rule->getReason(), $deduplicatableRuleTypes, true) && Preg::isMatch('{^(?P<package>\S+) (?P<version>\S+) (?P<type>requires|conflicts)}', $message, $m)) {
+                $message = str_replace('%', '%%', $message);
                 $template = Preg::replace('{^\S+ \S+ }', '%s%s ', $message);
                 $messages[] = $template;
                 $templates[$template][$m[1]][$parser->normalize($m[2])] = $m[2];
