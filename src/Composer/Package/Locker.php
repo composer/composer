@@ -365,11 +365,17 @@ class Locker
             return $alias;
         }, $aliases);
 
+        try {
+            $time = $this->getLockData()['_time'] ?? $this->now->format(\DateTimeInterface::ATOM);
+        } catch (\Exception $e) {
+            $time = $this->now->format(\DateTimeInterface::ATOM);
+        }
+
         $lock = [
             '_readme' => ['This file locks the dependencies of your project to a known state',
                                'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies',
                                'This file is @gener'.'ated automatically', ],
-            '_time' => $this->getLockData()['_time'] ?? $this->now->format(\DateTimeInterface::ATOM),
+            '_time' => $time,
             'content-hash' => $this->contentHash,
             'packages' => null,
             'packages-dev' => null,
