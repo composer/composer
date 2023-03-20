@@ -1861,6 +1861,18 @@ EOF;
                 ],
                 'specific_php_release',
             ],
+            'Specific 64-bit PHP version' => [
+                [
+                    'php-64bit' => new Link('a', 'php-64bit', $versionParser->parseConstraints('^7.2.8')),
+                ],
+                'specific_php_64bit_required',
+            ],
+            '64-bit PHP required' => [
+                [
+                    'php-64bit' => new Link('a', 'php-64bit', $versionParser->parseConstraints('*')),
+                ],
+                'php_64bit_required',
+            ],
             'No PHP required' => [
                 [
                     'ext-xml' => new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
