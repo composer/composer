@@ -167,6 +167,9 @@ class GitLabDriver extends VcsDriver
 
             if (null !== $composer) {
                 // specials for gitlab (this data is only available if authentication is provided)
+                if (isset($composer['support']) && !is_array($composer['support'])) {
+                    $composer['support'] = [];
+                }
                 if (!isset($composer['support']['source']) && isset($this->project['web_url'])) {
                     $label = array_search($identifier, $this->getTags(), true) ?: array_search($identifier, $this->getBranches(), true) ?: $identifier;
                     $composer['support']['source'] = sprintf('%s/-/tree/%s', $this->project['web_url'], $label);

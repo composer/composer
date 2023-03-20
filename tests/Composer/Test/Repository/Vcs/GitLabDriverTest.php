@@ -244,6 +244,22 @@ JSON;
         $this->assertEquals($url, $driver->getUrl());
     }
 
+    public function testInvalidSupportData(): void
+    {
+        $driver = $this->testInitialize($repoUrl = 'https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
+        $this->setAttribute($driver, 'branches', ['main' => 'SOMESHA']);
+        $this->setAttribute($driver, 'tags', []);
+
+        $this->httpDownloader->expects([
+            ['url' => 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/files/composer%2Ejson/raw?ref=SOMESHA', 'body' => '{"support": "'.$repoUrl.'" }'],
+        ], true);
+
+        $data = $driver->getComposerInformation('main');
+
+        $this->assertIsArray($data);
+        $this->assertSame('https://gitlab.com/mygroup/myproject/-/tree/main', $data['support']['source']);
+    }
+
     public function testGetDist(): void
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
@@ -630,5 +646,16 @@ JSON;
         $driver = new GitLabDriver(['url' => $url], $this->io, $config, $this->httpDownloader, $this->process);
         $driver->initialize();
         $this->assertEquals('https://gitlab.com/mygroup/myproject.git', $driver->getRepositoryUrl(), 'Repository URL matches config request for http not git');
+    }
+
+    /**
+     * @param string|object $object
+     * @param mixed         $value
+     */
+    protected function setAttribute($object, string $attribute, $value): void
+    {
+        $attr = new \ReflectionProperty($object, $attribute);
+        $attr->setAccessible(true);
+        $attr->setValue($object, $value);
     }
 }
