@@ -649,8 +649,8 @@ JSON;
     }
 
     /**
-     * @param string|object $object
-     * @param mixed         $value
+     * @param object $object
+     * @param mixed  $value
      */
     protected function setAttribute($object, string $attribute, $value): void
     {
