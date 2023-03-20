@@ -161,15 +161,15 @@ class GitHub
 
         foreach ($headers as $header) {
             $header = trim($header);
-            if (false === strpos($header, 'X-RateLimit-')) {
+            if (false === stripos($header, 'x-ratelimit-')) {
                 continue;
             }
             [$type, $value] = explode(':', $header, 2);
-            switch ($type) {
-                case 'X-RateLimit-Limit':
+            switch (strtolower($type)) {
+                case 'x-ratelimit-limit':
                     $rateLimit['limit'] = (int) trim($value);
                     break;
-                case 'X-RateLimit-Reset':
+                case 'x-ratelimit-reset':
                     $rateLimit['reset'] = date('Y-m-d H:i:s', (int) trim($value));
                     break;
             }
@@ -206,7 +206,7 @@ class GitHub
     public function isRateLimited(array $headers): bool
     {
         foreach ($headers as $header) {
-            if (Preg::isMatch('{^X-RateLimit-Remaining: *0$}i', trim($header))) {
+            if (Preg::isMatch('{^x-ratelimit-remaining: *0$}i', trim($header))) {
                 return true;
             }
         }
@@ -224,7 +224,7 @@ class GitHub
     public function requiresSso(array $headers): bool
     {
         foreach ($headers as $header) {
-            if (Preg::isMatch('{^X-GitHub-SSO: required}i', trim($header))) {
+            if (Preg::isMatch('{^x-github-sso: required}i', trim($header))) {
                 return true;
             }
         }
