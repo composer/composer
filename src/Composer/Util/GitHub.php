@@ -203,7 +203,7 @@ class GitHub
     public function isRateLimited(array $headers)
     {
         foreach ($headers as $header) {
-            if (Preg::isMatch('{^X-RateLimit-Remaining: *0$}i', trim($header))) {
+            if (Preg::isMatch('{^x-ratelimit-remaining: *0$}i', trim($header))) {
                 return true;
             }
         }
@@ -223,7 +223,7 @@ class GitHub
     public function requiresSso(array $headers)
     {
         foreach ($headers as $header) {
-            if (Preg::isMatch('{^X-GitHub-SSO: required}i', trim($header))) {
+            if (Preg::isMatch('{^x-github-sso: required}i', trim($header))) {
                 return true;
             }
         }
