@@ -685,7 +685,7 @@ Then, to add the package `my/package` as a dependency, in your
     "repositories": [
         {
             "type": "path",
-            "url": "../../packages/my-package"
+            "url": "../../packages/my-package/*"
         }
     ],
     "require": {
@@ -708,7 +708,7 @@ the repository:
     "repositories": [
         {
             "type": "path",
-            "url": "../../packages/my-package",
+            "url": "../../packages/my-package/*",
             "options": {
                 "versions": {
                     "my/package": "4.2-dev"
@@ -738,7 +738,7 @@ monolithic repository.
     "repositories": [
         {
             "type": "path",
-            "url": "../../packages/my-package",
+            "url": "../../packages/my-package/*",
             "options": {
                 "symlink": false
             }
@@ -772,7 +772,7 @@ The following modes exist:
     "repositories": [
         {
             "type": "path",
-            "url": "../../packages/my-package",
+            "url": "../../packages/my-package/*",
             "options": {
                 "reference": "config"
             }
