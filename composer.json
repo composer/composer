@@ -75,12 +75,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Composer\\": "src/Composer"
+            "Composer\\": "src/Composer/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Composer\\Test\\": "tests/Composer/Test"
+            "Composer\\Test\\": "tests/Composer/Test/"
         }
     },
     "bin": [
