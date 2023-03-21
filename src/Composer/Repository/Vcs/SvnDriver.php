@@ -236,17 +236,17 @@ class SvnDriver extends VcsDriver
             if ($this->tagsPath !== false) {
                 $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->tagsPath);
                 if ($output) {
-                    $lastRev = null;
+                    $lastRev = 0;
                     foreach ($this->process->splitLines($output) as $line) {
                         $line = trim($line);
                         if ($line && Preg::isMatch('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                             if (isset($match[1], $match[2])) {
                                 if ($match[2] === './') {
-                                    $lastRev = $match[1];
+                                    $lastRev = (int) $match[1];
                                 } else {
                                     $tags[rtrim($match[2], '/')] = $this->buildIdentifier(
                                         '/' . $this->tagsPath . '/' . $match[2],
-                                        max($lastRev, $match[1])
+                                        max($lastRev, (int) $match[1])
                                     );
                                 }
                             }
@@ -283,7 +283,7 @@ class SvnDriver extends VcsDriver
                         if (isset($match[1], $match[2]) && $match[2] === './') {
                             $branches['trunk'] = $this->buildIdentifier(
                                 '/' . $this->trunkPath,
-                                $match[1]
+                                (int) $match[1]
                             );
                             $this->rootIdentifier = $branches['trunk'];
                             break;
@@ -296,17 +296,17 @@ class SvnDriver extends VcsDriver
             if ($this->branchesPath !== false) {
                 $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->branchesPath);
                 if ($output) {
-                    $lastRev = null;
+                    $lastRev = 0;
                     foreach ($this->process->splitLines(trim($output)) as $line) {
                         $line = trim($line);
                         if ($line && Preg::isMatch('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                             if (isset($match[1], $match[2])) {
                                 if ($match[2] === './') {
-                                    $lastRev = $match[1];
+                                    $lastRev = (int) $match[1];
                                 } else {
                                     $branches[rtrim($match[2], '/')] = $this->buildIdentifier(
                                         '/' . $this->branchesPath . '/' . $match[2],
-                                        max($lastRev, $match[1])
+                                        max($lastRev, (int) $match[1])
                                     );
                                 }
                             }
@@ -409,9 +409,9 @@ class SvnDriver extends VcsDriver
      * Build the identifier respecting "package-path" config option
      *
      * @param string $baseDir  The path to trunk/branch/tag
-     * @param string $revision The revision mark to add to identifier
+     * @param int $revision The revision mark to add to identifier
      */
-    protected function buildIdentifier(string $baseDir, string $revision): string
+    protected function buildIdentifier(string $baseDir, int $revision): string
     {
         return rtrim($baseDir, '/') . $this->packagePath . '/@' . $revision;
     }
