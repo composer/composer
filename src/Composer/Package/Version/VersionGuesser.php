@@ -76,7 +76,7 @@ class VersionGuesser
         }
 
         $versionData = $this->guessGitVersion($packageConfig, $path);
-        if (null !== $versionData && null !== $versionData['version']) {
+        if (null !== $versionData['version']) {
             return $this->postprocess($versionData);
         }
 
@@ -86,7 +86,7 @@ class VersionGuesser
         }
 
         $versionData = $this->guessFossilVersion($path);
-        if (null !== $versionData && null !== $versionData['version']) {
+        if (null !== $versionData['version']) {
             return $this->postprocess($versionData);
         }
 

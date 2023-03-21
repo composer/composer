@@ -72,7 +72,7 @@ trait PackageDiscoveryTrait
         // @phpstan-ignore-next-line as RequireCommand does not have the option above so this code is reachable there
         $file = Factory::getComposerFile();
         if (is_file($file) && Filesystem::isReadable($file) && is_array($composer = json_decode((string) file_get_contents($file), true))) {
-            if (!empty($composer['minimum-stability'])) {
+            if (isset($composer['minimum-stability'])) {
                 return VersionParser::normalizeStability($composer['minimum-stability']);
             }
         }

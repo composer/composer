@@ -69,9 +69,11 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
         }
 
         $keyType = $scope->getType($args[0]->value);
-        if ($keyType instanceof ConstantStringType) {
-            if (isset($this->properties[$keyType->getValue()])) {
-                return $this->properties[$keyType->getValue()];
+        if (count($keyType->getConstantStrings()) > 0) {
+            foreach ($keyType->getConstantStrings() as $constantString) {
+                if (isset($this->properties[$constantString->getValue()])) {
+                    return $this->properties[$constantString->getValue()];
+                }
             }
         }
 

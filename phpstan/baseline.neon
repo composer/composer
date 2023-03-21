@@ -241,11 +241,6 @@ parameters:
 			path: ../src/Composer/Command/BaseDependencyCommand.php
 
 		-
-			message: "#^Cannot access an offset on array\\<int, array\\<int, array\\<int, array\\<int, Composer\\\\Package\\\\Link\\>\\|Composer\\\\Package\\\\Link\\>\\|Composer\\\\Package\\\\Link\\>\\|Composer\\\\Package\\\\Link\\>\\|Composer\\\\Package\\\\Link\\.$#"
-			count: 1
-			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
@@ -476,11 +471,6 @@ parameters:
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
-			message: "#^Left side of && is always false\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
@@ -507,11 +497,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$path of function basename expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Right side of && is always false\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
 
@@ -552,11 +537,6 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 2
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
-			message: "#^Left side of && is always true\\.$#"
 			count: 1
 			path: ../src/Composer/Command/RequireCommand.php
 
@@ -587,11 +567,6 @@ parameters:
 
 		-
 			message: "#^Property Composer\\\\Command\\\\RequireCommand\\:\\:\\$lockBackup \\(string\\|null\\) does not accept string\\|false\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
-			message: "#^Right side of && is always true\\.$#"
 			count: 1
 			path: ../src/Composer/Command/RequireCommand.php
 
@@ -1086,16 +1061,6 @@ parameters:
 			path: ../src/Composer/Config/JsonConfigSource.php
 
 		-
-			message: "#^Call to function is_array\\(\\) with array\\<Composer\\\\Command\\\\BaseCommand\\> will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/Console/Application.php
-
-		-
-			message: "#^Instanceof between Composer\\\\Command\\\\BaseCommand and Composer\\\\Command\\\\BaseCommand will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/Console/Application.php
-
-		-
 			message: "#^Only booleans are allowed in &&, array\\<string, array\\<int\\|string\\>\\|int\\|string\\> given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Console/Application.php
@@ -1458,6 +1423,11 @@ parameters:
 		-
 			message: "#^Foreach overwrites \\$literal with its value variable\\.$#"
 			count: 2
+			path: ../src/Composer/DependencyResolver/Solver.php
+
+		-
+			message: "#^Method Composer\\\\DependencyResolver\\\\Solver\\:\\:enableDisableLearnedRules\\(\\) is unused\\.$#"
+			count: 1
 			path: ../src/Composer/DependencyResolver/Solver.php
 
 		-
@@ -2031,11 +2001,6 @@ parameters:
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
-			message: "#^Call to function is_callable\\(\\) with callable\\(\\)\\: mixed will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/EventDispatcher/EventDispatcher.php
-
-		-
 			message: "#^Cannot access offset 0 on array\\{0\\: string, 1\\?\\: int\\}\\|int\\|string\\.$#"
 			count: 1
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
@@ -2181,11 +2146,6 @@ parameters:
 			path: ../src/Composer/IO/BaseIO.php
 
 		-
-			message: "#^Instanceof between Symfony\\\\Component\\\\Console\\\\Input\\\\StringInput and Symfony\\\\Component\\\\Console\\\\Input\\\\StreamableInputInterface will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
 			message: "#^Only booleans are allowed in a ternary operator condition, Symfony\\\\Component\\\\Console\\\\Formatter\\\\OutputFormatterInterface\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/IO/BufferIO.php
@@ -2237,16 +2197,6 @@ parameters:
 
 		-
 			message: "#^Call to function method_exists\\(\\) with 'Composer\\\\\\\\Autoload…' and 'getRegisteredLoaders' will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/InstalledVersions.php
-
-		-
-			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 1
-			path: ../src/Composer/InstalledVersions.php
-
-		-
-			message: "#^Parameter \\#1 \\$constraints of method Composer\\\\Semver\\\\VersionParser\\:\\:parseConstraints\\(\\) expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/InstalledVersions.php
 
@@ -2647,12 +2597,7 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 4
-			path: ../src/Composer/Package/Archiver/ArchiveManager.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 2
+			count: 3
 			path: ../src/Composer/Package/Archiver/ArchiveManager.php
 
 		-
@@ -3071,21 +3016,6 @@ parameters:
 			path: ../src/Composer/Package/Version/VersionGuesser.php
 
 		-
-			message: "#^Strict comparison using \\!\\=\\= between null and array\\{version\\: string\\|null, commit\\: '', pretty_version\\: string\\|null\\} will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Version/VersionGuesser.php
-
-		-
-			message: "#^Strict comparison using \\!\\=\\= between null and array\\{version\\: string\\|null, commit\\: string\\|null, pretty_version\\: string\\|null, feature_version\\?\\: string\\|null, feature_pretty_version\\?\\: string\\|null\\} will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Version/VersionGuesser.php
-
-		-
-			message: "#^Strict comparison using \\!\\=\\= between null and string will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Version/VersionGuesser.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Version/VersionParser.php
@@ -3119,11 +3049,6 @@ parameters:
 			message: "#^Method Composer\\\\Platform\\\\Runtime\\:\\:getExtensionInfo\\(\\) should return string but returns string\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Platform/Runtime.php
-
-		-
-			message: "#^Casting to array\\<string\\> something that's already array\\<string\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Plugin/PluginManager.php
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
@@ -3204,11 +3129,6 @@ parameters:
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 2
 			path: ../src/Composer/Question/StrictConfirmationQuestion.php
-
-		-
-			message: "#^Casting to array\\<string\\> something that's already array\\<string\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ArrayRepository.php
 
 		-
 			message: "#^Method Composer\\\\Repository\\\\ArrayRepository\\:\\:getProviders\\(\\) should return array\\<string, array\\{name\\: string, description\\: string, type\\: string\\}\\> but returns array\\<string, array\\{name\\: string, description\\: string\\|null, type\\: string\\}\\>\\.$#"
@@ -3413,11 +3333,6 @@ parameters:
 		-
 			message: "#^Parameter \\#1 \\$path of method Composer\\\\Util\\\\Filesystem\\:\\:normalizePath\\(\\) expects string, string\\|false given\\.$#"
 			count: 2
-			path: ../src/Composer/Repository/FilesystemRepository.php
-
-		-
-			message: "#^Parameter \\#2 \\$content of method Composer\\\\Util\\\\Filesystem\\:\\:filePutContentsIfModified\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
 			path: ../src/Composer/Repository/FilesystemRepository.php
 
 		-
@@ -3979,11 +3894,6 @@ parameters:
 			path: ../src/Composer/Repository/Vcs/SvnDriver.php
 
 		-
-			message: "#^Strict comparison using \\!\\=\\= between string and false will always evaluate to true\\.$#"
-			count: 2
-			path: ../src/Composer/Repository/Vcs/SvnDriver.php
-
-		-
 			message: "#^Cannot call method read\\(\\) on Composer\\\\Cache\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/Vcs/VcsDriver.php
@@ -4301,11 +4211,6 @@ parameters:
 		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Call to function is_resource\\(\\) with resource will always evaluate to true\\.$#"
-			count: 2
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
@@ -4999,11 +4904,6 @@ parameters:
 			path: ../src/Composer/Util/StreamContextFactory.php
 
 		-
-			message: "#^Casting to bool something that's already \\*NEVER\\*\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Svn.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 2
 			path: ../src/Composer/Util/Svn.php
@@ -5357,11 +5257,6 @@ parameters:
 			path: ../tests/Composer/Test/Installer/InstallerEventTest.php
 
 		-
-			message: "#^Call to function is_array\\(\\) with array\\<Composer\\\\Repository\\\\RepositoryInterface\\> will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/InstallerTest.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 9
 			path: ../tests/Composer/Test/InstallerTest.php
@@ -5510,11 +5405,6 @@ parameters:
 			message: "#^Only booleans are allowed in a ternary operator condition, string\\|null given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Platform/VersionTest.php
-
-		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Command…' and Composer\\\\Command\\\\BaseCommand will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
 
 		-
 			message: "#^Parameter \\#2 \\$capabilityClassName of method Composer\\\\Plugin\\\\PluginManager\\:\\:getPluginCapability\\(\\) expects class\\-string\\<Composer\\\\Plugin\\\\Capability\\\\Capability\\>, string given\\.$#"
