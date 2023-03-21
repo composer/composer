@@ -42,12 +42,16 @@ class JsonFile
 
     public const COMPOSER_SCHEMA_PATH = __DIR__ . '/../../../res/composer-schema.json';
 
+    public const INDENT_DEFAULT = '    ';
+
     /** @var string */
     private $path;
     /** @var ?HttpDownloader */
     private $httpDownloader;
     /** @var ?IOInterface */
     private $io;
+    /** @var string */
+    private $indent = self::INDENT_DEFAULT;
 
     /**
      * Initializes json file reader/parser.
@@ -117,6 +121,8 @@ class JsonFile
             throw new \RuntimeException('Could not read '.$this->path);
         }
 
+        $this->indent = self::detectIndenting($json);
+
         return static::parseJson($json, $this->path);
     }
 
@@ -131,7 +137,7 @@ class JsonFile
     public function write(array $hash, int $options = JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
     {
         if ($this->path === 'php://memory') {
-            file_put_contents($this->path, static::encode($hash, $options));
+            file_put_contents($this->path, static::encode($hash, $options, $this->indent));
 
             return;
         }
@@ -153,7 +159,7 @@ class JsonFile
         $retries = 3;
         while ($retries--) {
             try {
-                $this->filePutContentsIfModified($this->path, static::encode($hash, $options). ($options & JSON_PRETTY_PRINT ? "\n" : ''));
+                $this->filePutContentsIfModified($this->path, static::encode($hash, $options, $this->indent). ($options & JSON_PRETTY_PRINT ? "\n" : ''));
                 break;
             } catch (\Exception $e) {
                 if ($retries > 0) {
@@ -262,13 +268,25 @@ class JsonFile
      *
      * @param  mixed  $data    Data to encode into a formatted JSON string
      * @param  int    $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+     * @param  string $indent  Indentation string
      * @return string Encoded json
      */
-    public static function encode($data, int $options = 448)
+    public static function encode($data, int $options = 448, string $indent = self::INDENT_DEFAULT)
     {
         $json = json_encode($data, $options);
         if (false === $json) {
             self::throwEncodeError(json_last_error());
+        }
+
+        if (($options & JSON_PRETTY_PRINT) && $indent !== self::INDENT_DEFAULT) {
+            // Pretty printing and not using default indentation
+            return Preg::replaceCallback(
+                '#^ {4,}#m',
+                static function ($match) use ($indent): string {
+                    return str_repeat($indent, strlen($match[0]) / 4);
+                },
+                $json
+            );
         }
 
         return $json;
@@ -345,5 +363,13 @@ class JsonFile
         }
 
         throw new ParsingException('"'.$file.'" does not contain valid JSON'."\n".$result->getMessage(), $result->getDetails());
+    }
+
+    public static function detectIndenting(?string $json): string
+    {
+        if (Preg::isMatchStrictGroups('#^([ \t]+)"#m', $json, $match)) {
+            return $match[1];
+        }
+        return self::INDENT_DEFAULT;
     }
 }
