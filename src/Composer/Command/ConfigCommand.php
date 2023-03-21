@@ -324,6 +324,16 @@ EOT
                 $value = $data;
             } elseif (isset($data['config'][$settingKey])) {
                 $value = $this->config->get($settingKey, $input->getOption('absolute') ? 0 : Config::RELATIVE_PATHS);
+                // ensure we get {} output for properties which are objects
+                if ($value === []) {
+                    $schema = JsonFile::parseJson((string) file_get_contents(JsonFile::COMPOSER_SCHEMA_PATH));
+                    if (
+                        isset($schema['properties']['config']['properties'][$settingKey]['type'])
+                        && in_array('object', (array) $schema['properties']['config']['properties'][$settingKey]['type'], true)
+                    ) {
+                        $value = new \stdClass;
+                    }
+                }
             } elseif (isset($rawData[$settingKey]) && in_array($settingKey, $properties, true)) {
                 $value = $rawData[$settingKey];
                 $source = $this->configFile->getPath();
@@ -334,7 +344,7 @@ EOT
                 throw new \RuntimeException($settingKey.' is not defined');
             }
 
-            if (is_array($value) || is_bool($value)) {
+            if (is_array($value) || is_object($value) || is_bool($value)) {
                 $value = JsonFile::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             }
 
