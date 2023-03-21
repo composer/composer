@@ -274,8 +274,21 @@ EOT
         // show the value if no value is provided
         if ([] === $input->getArgument('setting-value') && !$input->getOption('unset')) {
             $properties = self::CONFIGURABLE_PACKAGE_PROPERTIES;
+            $propertiesDefaults = [
+                'type' => 'library',
+                'description' => '',
+                'homepage' => '',
+                'minimum-stability' => 'stable',
+                'prefer-stable' => false,
+                'keywords' => [],
+                'license' => [],
+                'suggest' => [],
+                'extra' => [],
+            ];
             $rawData = $this->configFile->read();
             $data = $this->config->all();
+            $source = $this->config->getSourceOfValue($settingKey);
+
             if (Preg::isMatch('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
                 if (!isset($matches[1]) || $matches[1] === '') {
                     $value = $data['repositories'] ?? [];
@@ -311,19 +324,33 @@ EOT
                 $value = $data;
             } elseif (isset($data['config'][$settingKey])) {
                 $value = $this->config->get($settingKey, $input->getOption('absolute') ? 0 : Config::RELATIVE_PATHS);
+                // ensure we get {} output for properties which are objects
+                if ($value === []) {
+                    $schema = JsonFile::parseJson((string) file_get_contents(JsonFile::COMPOSER_SCHEMA_PATH));
+                    if (
+                        isset($schema['properties']['config']['properties'][$settingKey]['type'])
+                        && in_array('object', (array) $schema['properties']['config']['properties'][$settingKey]['type'], true)
+                    ) {
+                        $value = new \stdClass;
+                    }
+                }
             } elseif (isset($rawData[$settingKey]) && in_array($settingKey, $properties, true)) {
                 $value = $rawData[$settingKey];
+                $source = $this->configFile->getPath();
+            } elseif (isset($propertiesDefaults[$settingKey])) {
+                $value = $propertiesDefaults[$settingKey];
+                $source = 'defaults';
             } else {
                 throw new \RuntimeException($settingKey.' is not defined');
             }
 
-            if (is_array($value)) {
+            if (is_array($value) || is_object($value) || is_bool($value)) {
                 $value = JsonFile::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             }
 
             $sourceOfConfigValue = '';
             if ($input->getOption('source')) {
-                $sourceOfConfigValue = ' (' . $this->config->getSourceOfValue($settingKey) . ')';
+                $sourceOfConfigValue = ' (' . $source . ')';
             }
 
             $this->getIO()->write($value . $sourceOfConfigValue, true, IOInterface::QUIET);

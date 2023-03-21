@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Json;
 
+use Composer\Json\JsonFile;
 use JsonSchema\Validator;
 use Composer\Test\TestCase;
 
@@ -96,7 +97,7 @@ class ComposerSchemaTest extends TestCase
     private function check(string $json)
     {
         $validator = new Validator();
-        $validator->check(json_decode($json), (object) ['$ref' => 'file://' . __DIR__ . '/../../../../res/composer-schema.json']);
+        $validator->check(json_decode($json), (object) ['$ref' => 'file://' . JsonFile::COMPOSER_SCHEMA_PATH]);
 
         if (!$validator->isValid()) {
             $errors = $validator->getErrors();
