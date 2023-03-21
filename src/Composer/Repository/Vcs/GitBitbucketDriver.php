@@ -153,6 +153,9 @@ class GitBitbucketDriver extends VcsDriver
 
             if ($composer !== null) {
                 // specials for bitbucket
+                if (isset($composer['support']) && !is_array($composer['support'])) {
+                    $composer['support'] = [];
+                }
                 if (!isset($composer['support']['source'])) {
                     $label = array_search(
                         $identifier,

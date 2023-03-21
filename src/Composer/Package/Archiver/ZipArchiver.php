@@ -38,7 +38,7 @@ class ZipArchiver implements ArchiverInterface
         if ($res === true) {
             $files = new ArchivableFilesFinder($sources, $excludes, $ignoreFilters);
             foreach ($files as $file) {
-                /** @var \SplFileInfo $file */
+                /** @var \Symfony\Component\Finder\SplFileInfo $file */
                 $filepath = strtr($file->getPath()."/".$file->getFilename(), '\\', '/');
                 $localname = $filepath;
                 if (strpos($localname, $sources . '/') === 0) {

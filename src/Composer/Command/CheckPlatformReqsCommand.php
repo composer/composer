@@ -69,11 +69,9 @@ EOT
             }
         }
         if (!$input->getOption('no-dev')) {
-            $requires += $composer->getPackage()->getDevRequires();
-        }
-
-        foreach ($requires as $require => $link) {
-            $requires[$require] = [$link];
+            foreach ($composer->getPackage()->getDevRequires() as $require => $link) {
+                $requires[$require] = [$link];
+            }
         }
 
         $installedRepo = new InstalledRepository([$installedRepo, new RootPackageRepository(clone $composer->getPackage())]);

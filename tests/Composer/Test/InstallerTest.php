@@ -102,9 +102,6 @@ class InstallerTest extends TestCase
         $repositoryManager = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher);
         $repositoryManager->setLocalRepository(new InstalledArrayRepository());
 
-        if (!is_array($repositories)) {
-            $repositories = [$repositories];
-        }
         foreach ($repositories as $repository) {
             $repositoryManager->addRepository($repository);
         }

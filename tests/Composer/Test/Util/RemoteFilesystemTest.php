@@ -280,7 +280,6 @@ class RemoteFilesystemTest extends TestCase
      */
     public function testBitBucketPublicDownload(string $url, string $contents): void
     {
-        /** @var ConsoleIO $io */
         $io = $this
             ->getMockBuilder('Composer\IO\ConsoleIO')
             ->disableOriginalConstructor()

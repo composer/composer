@@ -64,8 +64,8 @@ class Versions
 
     public function setChannel(string $channel, ?IOInterface $io = null): void
     {
-        if (!in_array($channel, self::$channels, true)) {
-            throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: ' . implode(', ', self::$channels));
+        if (!in_array($channel, self::CHANNELS, true)) {
+            throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: ' . implode(', ', self::CHANNELS));
         }
 
         $channelFile = $this->config->get('home').'/update-channel';

@@ -407,7 +407,7 @@ class CurlDownloader
 
                 $result = $this->isAuthenticatedRetryNeeded($job, $response);
                 if ($result['retry']) {
-                    $this->restartJob($job, $job['url'], ['storeAuth' => $result['storeAuth']]);
+                    $this->restartJob($job, $job['url'], ['storeAuth' => $result['storeAuth'], 'retries' => $job['attributes']['retries'] + 1]);
                     continue;
                 }
 

@@ -132,7 +132,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $retries = 3;
         $distUrls = $package->getDistUrls();
-        /** @var non-empty-array<array{base: non-empty-string, processed: non-empty-string, cacheKey: string}> $urls */
+        /** @var array<array{base: non-empty-string, processed: non-empty-string, cacheKey: string}> $urls */
         $urls = [];
         foreach ($distUrls as $index => $url) {
             $processedUrl = $this->processUrl($package, $url);
@@ -146,6 +146,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 'cacheKey' => $cacheKeyGenerator($package, $processedUrl),
             ];
         }
+        assert(count($urls) > 0);
 
         $fileName = $this->getFileName($package, $path);
         $this->filesystem->ensureDirectoryExists($path);
