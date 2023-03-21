@@ -1,3 +1,12 @@
+### [2.5.5] 2023-03-21
+
+  * Fixed basic auth failures resulting in infinite retry loop (#11320)
+  * Fixed GitHub rate limit reporting (#11366)
+  * Fixed InstalledVersions error in Composer 1 compatibility edge case (#11304)
+  * Fixed issue displaying solver problems with branch names containing `%` signs (#11359)
+  * Fixed race condition in cache validity detection when running Composer highly concurrently (#11375)
+  * Fixed various minor config command issues (#11353, #11302)
+
 ### [2.5.4] 2023-02-15
 
   * Fixed extra.plugin-optional support in PluginInstaller when doing pre-install checks (#11318)
@@ -1699,6 +1708,7 @@
 
   * Initial release
 
+[2.5.5]: https://github.com/composer/composer/compare/2.5.4...2.5.5
 [2.5.4]: https://github.com/composer/composer/compare/2.5.3...2.5.4
 [2.5.3]: https://github.com/composer/composer/compare/2.5.2...2.5.3
 [2.5.2]: https://github.com/composer/composer/compare/2.5.1...2.5.2
