@@ -271,19 +271,20 @@ class JsonFile
      * @param  string $indent  Indentation string
      * @return string Encoded json
      */
-    public static function encode($data, int $options = 448, string $indent = self::INDENT_DEFAULT)
+    public static function encode($data, int $options = 448, string $indent = self::INDENT_DEFAULT): string
     {
         $json = json_encode($data, $options);
+
         if (false === $json) {
             self::throwEncodeError(json_last_error());
         }
 
-        if (($options & JSON_PRETTY_PRINT) && $indent !== self::INDENT_DEFAULT) {
+        if (($options & JSON_PRETTY_PRINT) > 0 && $indent !== self::INDENT_DEFAULT ) {
             // Pretty printing and not using default indentation
             return Preg::replaceCallback(
                 '#^ {4,}#m',
                 static function ($match) use ($indent): string {
-                    return str_repeat($indent, strlen($match[0]) / 4);
+                    return str_repeat($indent, (int)(strlen($match[0] ?? '') / 4));
                 },
                 $json
             );
@@ -297,6 +298,7 @@ class JsonFile
      *
      * @param  int               $code return code of json_last_error function
      * @throws \RuntimeException
+     * @return never
      */
     private static function throwEncodeError(int $code): void
     {
@@ -367,7 +369,7 @@ class JsonFile
 
     public static function detectIndenting(?string $json): string
     {
-        if (Preg::isMatchStrictGroups('#^([ \t]+)"#m', $json, $match)) {
+        if (Preg::isMatchStrictGroups('#^([ \t]+)"#m', $json ?? '', $match)) {
             return $match[1];
         }
         return self::INDENT_DEFAULT;
