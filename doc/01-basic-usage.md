@@ -21,9 +21,12 @@ to find the file at the top of your VCS repository.
 ### The `require` key
 
 The first thing you specify in `composer.json` is the
-[`require`](04-schema.md#require) key. You are telling Composer which
-packages your project depends on.
-
+[`require`](04-schema.md#require) key. The file contains at least an empty JSON object.
+```
+{
+}
+```
+Or you could telling Composer which packages your project depends on.
 ```json
 {
     "require": {
