@@ -450,6 +450,16 @@ class PlatformRepository extends ArrayRepository
                     }
                     break;
 
+                case 'pq':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    // Used Library => Compiled => Linked
+                    // libpq => 14.3 (Ubuntu 14.3-1.pgdg22.04+1) => 15.0.2
+                    if (Preg::isMatch('/^libpq => (?<compiled>.+) => (?<linked>.+)$/im', $info, $matches)) {
+                        $this->addLibrary($name.'-libpq', $matches['linked'], 'libpq for '.$name);
+                    }
+                    break;
+
                 case 'libsodium':
                 case 'sodium':
                     if ($this->runtime->hasConstant('SODIUM_LIBRARY_VERSION')) {
