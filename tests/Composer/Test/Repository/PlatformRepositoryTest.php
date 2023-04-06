@@ -972,6 +972,13 @@ libpq => 14.3 (Ubuntu 14.3-1.pgdg22.04+1) => 15.0.2
                 ',
                 ['lib-pq-libpq' => '15.0.2'],
             ],
+            'rdkafka' => [
+                'rdkafka',
+                null,
+                ['lib-rdkafka-librdkafka' => '1.9.2'],
+                [],
+                [['RD_KAFKA_VERSION', null, 17367807]],
+            ],
             'libsodium' => [
                 'libsodium',
                 null,
