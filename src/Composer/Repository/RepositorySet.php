@@ -263,15 +263,10 @@ class RepositorySet
                 continue;
             }
 
-            $result = $repository->getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories);
-            foreach ($result['namesFound'] as $nameFound) {
-                unset($packageConstraintMap[$nameFound]);
-            }
-
-            $advisories = array_merge($advisories, $result['advisories']);
+            $advisories[] = $repository->getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories)['advisories'];
         }
 
-        return $advisories;
+        return array_merge_recursive(...$advisories);
     }
 
     /**
