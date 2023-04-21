@@ -266,7 +266,10 @@ class RepositorySet
             $advisories[] = $repository->getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories)['advisories'];
         }
 
-        return array_merge_recursive(...$advisories);
+        $advisories = array_merge_recursive(...$advisories);
+        ksort($advisories);
+
+        return $advisories;
     }
 
     /**
