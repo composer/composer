@@ -266,7 +266,7 @@ class RepositorySet
             $advisories[] = $repository->getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories)['advisories'];
         }
 
-        $advisories = array_merge_recursive(...$advisories);
+        $advisories = array_merge_recursive([], ...$advisories);
         ksort($advisories);
 
         return $advisories;
