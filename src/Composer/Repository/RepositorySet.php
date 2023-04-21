@@ -257,16 +257,16 @@ class RepositorySet
      */
     private function getSecurityAdvisoriesForConstraints(array $packageConstraintMap, bool $allowPartialAdvisories): array
     {
-        $advisories = [];
+        $repoAdvisories = [];
         foreach ($this->repositories as $repository) {
             if (!$repository instanceof AdvisoryProviderInterface || !$repository->hasSecurityAdvisories()) {
                 continue;
             }
 
-            $advisories[] = $repository->getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories)['advisories'];
+            $repoAdvisories[] = $repository->getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories)['advisories'];
         }
 
-        $advisories = array_merge_recursive([], ...$advisories);
+        $advisories = array_merge_recursive([], ...$repoAdvisories);
         ksort($advisories);
 
         return $advisories;
