@@ -429,4 +429,16 @@ class ArrayLoaderTest extends TestCase
         $package = $this->loader->load($config);
         $this->assertCount(0, $package->getReplaces());
     }
+
+    public function testSupportStringValue(): void
+    {
+        $config = array(
+            'name' => 'acme/package',
+            'version' => 'dev-1',
+            'support' => 'https://example.org',
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertSame([], $package->getSupport());
+    }
 }

@@ -282,7 +282,7 @@ class ArrayLoader implements LoaderInterface
                 $package->setAuthors($config['authors']);
             }
 
-            if (isset($config['support'])) {
+            if (isset($config['support']) && \is_array($config['support'])) {
                 $package->setSupport($config['support']);
             }
 
