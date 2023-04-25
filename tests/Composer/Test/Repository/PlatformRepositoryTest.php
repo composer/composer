@@ -960,6 +960,25 @@ Module version => 7.1.33
 Revision =>  $Id: 9c5f356c77143981d2e905e276e439501fe0f419 $',
                 ['lib-pdo_pgsql-libpq' => '12.1'],
             ],
+            'pq' => [
+                'pq',
+                'pq
+
+PQ Support => enabled
+Extension Version => 2.2.0
+
+Used Library => Compiled => Linked
+libpq => 14.3 (Ubuntu 14.3-1.pgdg22.04+1) => 15.0.2
+                ',
+                ['lib-pq-libpq' => '15.0.2'],
+            ],
+            'rdkafka' => [
+                'rdkafka',
+                null,
+                ['lib-rdkafka-librdkafka' => '1.9.2'],
+                [],
+                [['RD_KAFKA_VERSION', null, 17367807]],
+            ],
             'libsodium' => [
                 'libsodium',
                 null,

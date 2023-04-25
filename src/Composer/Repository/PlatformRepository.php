@@ -450,6 +450,32 @@ class PlatformRepository extends ArrayRepository
                     }
                     break;
 
+                case 'pq':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    // Used Library => Compiled => Linked
+                    // libpq => 14.3 (Ubuntu 14.3-1.pgdg22.04+1) => 15.0.2
+                    if (Preg::isMatch('/^libpq => (?<compiled>.+) => (?<linked>.+)$/im', $info, $matches)) {
+                        $this->addLibrary($name.'-libpq', $matches['linked'], 'libpq for '.$name);
+                    }
+                    break;
+
+                case 'rdkafka':
+                    if ($this->runtime->hasConstant('RD_KAFKA_VERSION')) {
+                        /**
+                         * Interpreted as hex \c MM.mm.rr.xx:
+                         *  - MM = Major
+                         *  - mm = minor
+                         *  - rr = revision
+                         *  - xx = pre-release id (0xff is the final release)
+                         *
+                         * pre-release ID in practice is always 0xff even for RCs etc, so we ignore it
+                         */
+                        $libRdKafkaVersionInt = $this->runtime->getConstant('RD_KAFKA_VERSION');
+                        $this->addLibrary($name.'-librdkafka', sprintf('%d.%d.%d', ($libRdKafkaVersionInt & 0xFF000000) >> 24, ($libRdKafkaVersionInt & 0x00FF0000) >> 16, ($libRdKafkaVersionInt & 0x0000FF00) >> 8), 'librdkafka for '.$name);
+                    }
+                    break;
+
                 case 'libsodium':
                 case 'sodium':
                     if ($this->runtime->hasConstant('SODIUM_LIBRARY_VERSION')) {
