@@ -2,7 +2,7 @@
 
 ## Introduction
 
-For our basic usage introduction, we will be installing `monolog/monolog`,
+For our basic usage introduction, we will be installing `monolog/monolog`
 a logging library. If you have not yet installed Composer, refer to the
 [Intro](00-intro.md) chapter.
 
