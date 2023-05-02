@@ -1276,8 +1276,9 @@ If set to `1`, it is the equivalent of passing the `--no-audit` option to `requi
 
 ### COMPOSER_NO_DEV
 
-If set to `1`, it is the equivalent of passing the `--no-dev` option to `install` or
-`update`. You can override this for a single command by setting `COMPOSER_NO_DEV=0`.
+If set to `1`, it is the equivalent of passing the `--update-no-dev` option to `require`
+ or the `--no-dev` option to `install` or `update`.  You can override this for a single
+command by setting `COMPOSER_NO_DEV=0`.
 
 ### COMPOSER_PREFER_STABLE
 
