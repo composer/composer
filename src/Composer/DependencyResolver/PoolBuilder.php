@@ -95,6 +95,11 @@ class PoolBuilder
      */
     private $loadedPerRepo = [];
     /**
+     * @var array[]
+     * @phpstan-var array<string, bool>
+     */
+    private $optionalPackages = [];
+    /**
      * @var BasePackage[]
      */
     private $packages = [];
@@ -235,8 +240,9 @@ class PoolBuilder
             }
         }
 
-        while (!empty($this->packagesToLoad)) {
+        while ([] !== $this->packagesToLoad || [] !== $this->optionalPackages) {
             $this->loadPackagesMarkedForLoading($request, $repositories);
+            $this->loadOptionalPackages($request);
         }
 
         if (\count($this->temporaryConstraints) > 0) {
@@ -483,7 +489,8 @@ class PoolBuilder
 
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$skippedRootRequires) {
                         $this->unlockPackage($request, $repositories, $replace);
-                        $this->markPackageNameForLoading($request, $replace, $link->getConstraint());
+                        // Mark as optional - if no other package requires it, we don't need to load it
+                        $this->markPackageNameForOptionalLoading($replace);
                     } else {
                         foreach ($skippedRootRequires as $rootRequire) {
                             if (!isset($this->updateAllowWarned[$rootRequire])) {
@@ -651,10 +658,12 @@ class PoolBuilder
                             if (isset($requires[$lockedPackage->getName()])) {
                                 $this->markPackageNameForLoading($request, $lockedPackage->getName(), $requires[$lockedPackage->getName()]->getConstraint());
                             }
+
                             foreach ($lockedPackage->getReplaces() as $replace) {
                                 if (isset($requires[$replace->getTarget()], $this->skippedLoad[$replace->getTarget()])) {
                                     $this->unlockPackage($request, $repositories, $replace->getTarget());
-                                    $this->markPackageNameForLoading($request, $replace->getTarget(), $requires[$replace->getTarget()]->getConstraint());
+                                    // Mark as optional - if no other package requires it, we don't need to load it
+                                    $this->markPackageNameForOptionalLoading($replace->getTarget());
                                 }
                             }
                         }
@@ -662,6 +671,28 @@ class PoolBuilder
                 }
             }
         }
+    }
+
+    private function markPackageNameForOptionalLoading(string $name): void
+    {
+        $this->optionalPackages[$name] = true;
+    }
+
+    private function loadOptionalPackages(Request $request): void
+    {
+        if ([] === $this->optionalPackages) {
+            return;
+        }
+
+        foreach ($this->packages as $package) {
+            foreach ($package->getRequires() as $link) {
+                if (isset($this->optionalPackages[$link->getTarget()])) {
+                    $this->markPackageNameForLoading($request, $link->getTarget(), $link->getConstraint());
+                }
+            }
+        }
+
+        $this->optionalPackages = [];
     }
 
     /**

@@ -101,7 +101,6 @@ Check that replacers from additional repositories are loaded when doing a partia
     "indirect/replacer-1.0.0.0",
     "replacer/package-1.2.0.0",
     "replacer/package-1.0.0.0",
-    "base/package-1.0.0.0",
     "shared/dep-1.0.0.0",
     "shared/dep-1.2.0.0"
 ]
@@ -112,6 +111,5 @@ Check that replacers from additional repositories are loaded when doing a partia
     "indirect/replacer-1.0.0.0",
     "replacer/package-1.2.0.0",
     "replacer/package-1.0.0.0",
-    "base/package-1.0.0.0",
     "shared/dep-1.2.0.0"
 ]
