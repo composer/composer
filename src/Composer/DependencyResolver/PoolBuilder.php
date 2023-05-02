@@ -95,11 +95,6 @@ class PoolBuilder
      */
     private $loadedPerRepo = [];
     /**
-     * @var array[]
-     * @phpstan-var array<string, bool>
-     */
-    private $optionalPackages = [];
-    /**
      * @var BasePackage[]
      */
     private $packages = [];
@@ -240,9 +235,8 @@ class PoolBuilder
             }
         }
 
-        while ([] !== $this->packagesToLoad || [] !== $this->optionalPackages) {
+        while (!empty($this->packagesToLoad)) {
             $this->loadPackagesMarkedForLoading($request, $repositories);
-            $this->loadOptionalPackages($request);
         }
 
         if (\count($this->temporaryConstraints) > 0) {
@@ -489,8 +483,8 @@ class PoolBuilder
 
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$skippedRootRequires) {
                         $this->unlockPackage($request, $repositories, $replace);
-                        // Mark as optional - if no other package requires it, we don't need to load it
-                        $this->markPackageNameForOptionalLoading($replace);
+                        // the replaced package only needs to be loaded if something else requires it
+                        $this->markPackageNameForLoadingIfRequired($request, $replace);
                     } else {
                         foreach ($skippedRootRequires as $rootRequire) {
                             if (!isset($this->updateAllowWarned[$rootRequire])) {
@@ -662,9 +656,7 @@ class PoolBuilder
                             foreach ($lockedPackage->getReplaces() as $replace) {
                                 if (isset($requires[$replace->getTarget()], $this->skippedLoad[$replace->getTarget()])) {
                                     $this->unlockPackage($request, $repositories, $replace->getTarget());
-                                    // Do not call markPackageNameForOptionalLoading() here, we know that $lockedPackage is already
-                                    // part of $this->packages, and we check for $requires[$replace->getTarget()] so we're guaranteed
-                                    // to require this package.
+                                    // this package is in $requires so no need to call markPackageNameForLoadingIfRequired
                                     $this->markPackageNameForLoading($request, $replace->getTarget(), $replace->getConstraint());
                                 }
                             }
@@ -675,26 +667,15 @@ class PoolBuilder
         }
     }
 
-    private function markPackageNameForOptionalLoading(string $name): void
+    private function markPackageNameForLoadingIfRequired(Request $request, string $name): void
     {
-        $this->optionalPackages[$name] = true;
-    }
-
-    private function loadOptionalPackages(Request $request): void
-    {
-        if ([] === $this->optionalPackages) {
-            return;
-        }
-
         foreach ($this->packages as $package) {
             foreach ($package->getRequires() as $link) {
-                if (isset($this->optionalPackages[$link->getTarget()])) {
+                if ($name === $link->getTarget()) {
                     $this->markPackageNameForLoading($request, $link->getTarget(), $link->getConstraint());
                 }
             }
         }
-
-        $this->optionalPackages = [];
     }
 
     /**
