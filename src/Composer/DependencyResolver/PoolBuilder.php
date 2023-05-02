@@ -95,6 +95,11 @@ class PoolBuilder
      */
     private $loadedPerRepo = [];
     /**
+     * @var array[]
+     * @phpstan-var array<string, bool>
+     */
+    private $optionalPackages = [];
+    /**
      * @var BasePackage[]
      */
     private $packages = [];
@@ -235,8 +240,9 @@ class PoolBuilder
             }
         }
 
-        while (!empty($this->packagesToLoad)) {
+        while ([] !== $this->packagesToLoad || [] !== $this->optionalPackages) {
             $this->loadPackagesMarkedForLoading($request, $repositories);
+            $this->loadOptionalPackages($request);
         }
 
         if (\count($this->temporaryConstraints) > 0) {
@@ -483,7 +489,8 @@ class PoolBuilder
 
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$skippedRootRequires) {
                         $this->unlockPackage($request, $repositories, $replace);
-                        $this->markPackageNameForLoading($request, $replace, $link->getConstraint());
+                        // Mark as optional - if no other package requires it, we don't need to load it
+                        $this->markPackageNameForOptionalLoading($replace);
                     } else {
                         foreach ($skippedRootRequires as $rootRequire) {
                             if (!isset($this->updateAllowWarned[$rootRequire])) {
@@ -639,6 +646,8 @@ class PoolBuilder
                     // make sure that any requirements for this package by other locked or fixed packages are now
                     // also loaded, as they were previously ignored because the locked (now unlocked) package already
                     // satisfied their requirements
+                    // and if this package is replacing another that is required by a locked or fixed package, ensure
+                    // that we load that replaced package in case an update to this package removes the replacement
                     foreach ($request->getFixedOrLockedPackages() as $fixedOrLockedPackage) {
                         if ($fixedOrLockedPackage === $lockedPackage) {
                             continue;
@@ -649,11 +658,43 @@ class PoolBuilder
                             if (isset($requires[$lockedPackage->getName()])) {
                                 $this->markPackageNameForLoading($request, $lockedPackage->getName(), $requires[$lockedPackage->getName()]->getConstraint());
                             }
+
+                            foreach ($lockedPackage->getReplaces() as $replace) {
+                                if (isset($requires[$replace->getTarget()], $this->skippedLoad[$replace->getTarget()])) {
+                                    $this->unlockPackage($request, $repositories, $replace->getTarget());
+                                    // Do not call markPackageNameForOptionalLoading() here, we know that $lockedPackage is already
+                                    // part of $this->packages, and we check for $requires[$replace->getTarget()] so we're guaranteed
+                                    // to require this package.
+                                    $this->markPackageNameForLoading($request, $replace->getTarget(), $replace->getConstraint());
+                                }
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    private function markPackageNameForOptionalLoading(string $name): void
+    {
+        $this->optionalPackages[$name] = true;
+    }
+
+    private function loadOptionalPackages(Request $request): void
+    {
+        if ([] === $this->optionalPackages) {
+            return;
+        }
+
+        foreach ($this->packages as $package) {
+            foreach ($package->getRequires() as $link) {
+                if (isset($this->optionalPackages[$link->getTarget()])) {
+                    $this->markPackageNameForLoading($request, $link->getTarget(), $link->getConstraint());
+                }
+            }
+        }
+
+        $this->optionalPackages = [];
     }
 
     /**

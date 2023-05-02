@@ -1,0 +1,45 @@
+--TEST--
+Ensure that a package gets loaded which was previously skipped due to replacement
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {"name": "root/dep", "version": "1.2.0", "require": {"replacer/pkg": ">=1.1.0"}},
+                {"name": "replacer/pkg", "version": "1.0.0", "replace": {"replaced/pkg": "1.0.0"}},
+                {"name": "replacer/pkg", "version": "1.1.0"},
+                {"name": "replaced/pkg", "version": "1.0.0"},
+                {"name": "root/no-update", "version": "1.0.0", "require": {"replaced/pkg": "1.0.0"}}
+            ]
+        }
+    ],
+    "require": {
+        "root/dep": "*",
+        "root/no-update": "*"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        {"name": "root/dep", "version": "1.1.0", "require": {"replacer/pkg": "1.*"}},
+        {"name": "replacer/pkg", "version": "1.0.0", "replace": {"replaced/pkg": "1.0.0"}},
+        {"name": "root/no-update", "version": "1.0.0", "require": {"replaced/pkg": "1.0.0"}}
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update root/dep --with-all-dependencies
+--EXPECT--
+Installing replacer/pkg (1.1.0)
+Installing root/dep (1.2.0)
+Installing replaced/pkg (1.0.0)
+Installing root/no-update (1.0.0)
+
