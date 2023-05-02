@@ -662,8 +662,10 @@ class PoolBuilder
                             foreach ($lockedPackage->getReplaces() as $replace) {
                                 if (isset($requires[$replace->getTarget()], $this->skippedLoad[$replace->getTarget()])) {
                                     $this->unlockPackage($request, $repositories, $replace->getTarget());
-                                    // Mark as optional - if no other package requires it, we don't need to load it
-                                    $this->markPackageNameForOptionalLoading($replace->getTarget());
+                                    // Do not call markPackageNameForOptionalLoading() here, we know that $lockedPackage is already
+                                    // part of $this->packages, and we check for $requires[$replace->getTarget()] so we're guaranteed
+                                    // to require this package.
+                                    $this->markPackageNameForLoading($request, $replace->getTarget(), $replace->getConstraint());
                                 }
                             }
                         }
