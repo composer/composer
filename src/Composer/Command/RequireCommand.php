@@ -551,10 +551,15 @@ EOT
                 if (false === $contents) {
                     throw new \RuntimeException('Unable to read '.$this->json->getPath().' contents to update the lock file hash.');
                 }
-                $lock = new JsonFile(Factory::getLockFile($this->json->getPath()));
+                $lockFile = Factory::getLockFile($this->json->getPath());
+                $lockMtime = filemtime($lockFile);
+                $lock = new JsonFile($lockFile);
                 $lockData = $lock->read();
                 $lockData['content-hash'] = Locker::getContentHash($contents);
                 $lock->write($lockData);
+                if (is_int($lockMtime)) {
+                    @touch($lockFile, $lockMtime);
+                }
             }
         }
 
