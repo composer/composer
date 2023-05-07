@@ -339,7 +339,8 @@ class Application extends BaseApplication
 
             // Check system temp folder for usability as it can cause weird runtime issues otherwise
             Silencer::call(static function () use ($io): void {
-                $tempfile = sys_get_temp_dir() . '/temp-' . getmypid() . '-' . md5(microtime());
+                $pid = function_exists('getmypid') ? getmypid() . '-' : '';
+                $tempfile = sys_get_temp_dir() . '/temp-' . $pid . md5(microtime());
                 if (!(file_put_contents($tempfile, __FILE__) && (file_get_contents($tempfile) === __FILE__) && unlink($tempfile) && !file_exists($tempfile))) {
                     $io->writeError(sprintf('<error>PHP temp directory (%s) does not exist or is not writable to Composer. Set sys_temp_dir in your php.ini</error>', sys_get_temp_dir()));
                 }
