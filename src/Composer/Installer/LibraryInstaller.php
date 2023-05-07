@@ -227,6 +227,8 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
 
     /**
      * @inheritDoc
+     *
+     * @return string
      */
     public function getInstallPath(PackageInterface $package)
     {

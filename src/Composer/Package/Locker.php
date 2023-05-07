@@ -473,7 +473,11 @@ class Locker
             return null;
         }
 
-        $path = realpath($this->installationManager->getInstallPath($package));
+        $path = $this->installationManager->getInstallPath($package);
+        if ($path === null) {
+            return null;
+        }
+        $path = realpath($path);
         $sourceType = $package->getSourceType();
         $datetime = null;
 

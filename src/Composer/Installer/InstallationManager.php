@@ -549,9 +549,9 @@ class InstallationManager
     /**
      * Returns the installation path of a package
      *
-     * @return string           path
+     * @return string|null absolute path to install to, which does not end with a slash, or null if the package does not have anything installed on disk
      */
-    public function getInstallPath(PackageInterface $package): string
+    public function getInstallPath(PackageInterface $package): ?string
     {
         $installer = $this->getInstaller($package->getType());
 
