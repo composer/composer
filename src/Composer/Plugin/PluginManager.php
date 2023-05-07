@@ -264,7 +264,7 @@ class PluginManager
                 if ($separatorPos) {
                     $className = substr($class, $separatorPos + 1);
                 }
-                $code = Preg::replace('{^((?:(?:final|readonly)\s+)+(?:\s*))class\s+('.preg_quote($className).')}mi', '$1class $2_composer_tmp'.self::$classCounter, $code, 1);
+                $code = Preg::replace('{^((?:(?:final|readonly)\s+)*(?:\s*))class\s+('.preg_quote($className).')}mi', '$1class $2_composer_tmp'.self::$classCounter, $code, 1);
                 $code = strtr($code, [
                     '__FILE__' => var_export($path, true),
                     '__DIR__' => var_export(dirname($path), true),
