@@ -16,7 +16,7 @@ code, but in theory it could be anything. And it contains a package
 description which has a name and a version. The name and the version are used
 to identify the package.
 
-In fact, internally Composer sees every version as a separate package. While
+In fact, internally, Composer sees every version as a separate package. While
 this distinction does not matter when you are using Composer, it's quite
 important when you want to change it.
 
