@@ -60,6 +60,34 @@ interface RootPackageInterface extends CompletePackageInterface
     public function getPreferStable(): bool;
 
     /**
+     * Sets the list of trusted packages.
+     *
+     * @param string[] $trusted
+     */
+    public function setTrusted(array $trusted): void;
+
+    /**
+     * Returns the list of trusted packages (a wildcard can be used to trust all packages from a specific vendor).
+     *
+     * @return string[]
+     */
+    public function getTrusted(): array;
+
+    /**
+     * Sets the list of trusted packages in dev.
+     *
+     * @param string[] $devTrusted
+     */
+    public function setDevTrusted(array $devTrusted): void;
+
+    /**
+     * Returns the list of packages trusted in dev (a wildcard can be used to trust all packages from a specific vendor).
+     *
+     * @return string[]
+     */
+    public function getDevTrusted(): array;
+
+    /**
      * Returns the root package's configuration
      *
      * @return mixed[]

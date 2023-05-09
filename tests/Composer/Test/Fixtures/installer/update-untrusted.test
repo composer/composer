@@ -1,0 +1,29 @@
+--TEST--
+Install untrusted packages
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "dunglas/foo", "version": "1.0.0", "require": { "symfony/bar": "*" } },
+                { "name": "symfony/bar", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "dunglas/foo": "*"
+    },
+    "trusted": [
+        "dunglas/*"
+    ]
+}
+--RUN--
+update
+--EXPECT-EXIT-CODE--
+6
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+The installation of the following packages have been requested, but are untrusted: "symfony/bar".
+--EXPECT--

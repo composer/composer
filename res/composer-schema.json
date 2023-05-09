@@ -666,6 +666,20 @@
             "additionalProperties": {
                 "type": "string"
             }
+        },
+        "trusted": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "description": "A list of trusted packages (wildcard supported to trust an entire vendor)."
+            }
+        },
+        "trusted-dev": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "description": "A list of trusted packages in development (wildcard supported to trust an entire vendor)."
+            }
         }
     },
     "definitions": {

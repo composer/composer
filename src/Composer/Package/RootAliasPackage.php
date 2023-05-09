@@ -220,4 +220,36 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
         parent::__clone();
         $this->aliasOf = clone $this->aliasOf;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function setTrusted(array $trusted): void
+    {
+        $this->aliasOf->setTrusted($trusted);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getTrusted(): array
+    {
+        return $this->aliasOf->getTrusted();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setDevTrusted(array $devTrusted): void
+    {
+        $this->aliasOf->setTrusted($devTrusted);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDevTrusted(): array
+    {
+        return $this->aliasOf->getDevTrusted();
+    }
 }

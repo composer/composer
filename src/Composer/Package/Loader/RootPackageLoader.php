@@ -171,6 +171,14 @@ class RootPackageLoader extends ArrayLoader
             $realPackage->setPreferStable((bool) $config['prefer-stable']);
         }
 
+        if (isset($config['trusted'])) {
+            $realPackage->setTrusted($config['trusted']);
+        }
+
+        if (isset($config['trusted-dev'])) {
+            $realPackage->setDevTrusted($config['trusted-dev']);
+        }
+
         if (isset($config['config'])) {
             $realPackage->setConfig($config['config']);
         }

@@ -1,0 +1,34 @@
+--TEST--
+Install untrusted dev packages
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "dunglas/foo", "version": "1.0.0", "require": { "symfony/bar": "*" } },
+                { "name": "symfony/bar", "version": "1.0.0", "require": { "evil/pkg": "*", "symf0n1/evil": "*" } },
+                { "name": "evil/pkg", "version": "1.0.0" },
+                { "name": "symf0n1/evil", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require-dev": {
+        "dunglas/foo": "*"
+    },
+    "trusted": [
+        "dunglas/foo"
+    ],
+    "trusted-dev": [
+        "symfony/*"
+    ]
+}
+--RUN--
+update
+--EXPECT-EXIT-CODE--
+6
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+The installation of the following dev packages have been requested, but are untrusted: "evil/pkg", "symf0n1/evil".
+--EXPECT--

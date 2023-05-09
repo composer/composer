@@ -482,6 +482,41 @@ Example:
 }
 ```
 
+#### trusted <span>([root-only](04-schema.md#root-package))</span>
+
+The list of trusted packages that can be installed.
+If a required package (whether it is a direct or a transient dependency) is not in
+the "trusted" allow list, the installation will fail.
+
+This option is especially useful to prevent [supply chain attacks](https://dunglas.dev/2018/11/about-the-dependencies-of-symfony/).
+It allows detecting when dependencies coming from new, untrusted vendors are installed, for instance, when
+a dependency of the root package adds a new transient dependency.
+
+All packages from a specific vendor can be allowed by using the `vendor/*` special syntax.
+
+Example:
+
+```json
+{
+    "trusted": [
+        "api-platform/*",
+        "symfony/*",
+        "doctrine/*",
+        "psr/*",
+        "dunglas/doctrine-json-odm"
+    ]
+}
+```
+
+With the previous configuration, Composer will only allow installation of packages provided by the `api-platform`, `symfony`,
+`doctrine` and `psr` vendors as well as `dunglas/doctrine-json-odm` (but not other packages from `dunglas`).
+
+#### trusted-dev <span>([root-only](04-schema.md#root-package))</span>
+
+List of trusted packages that can be installed for developing.
+The syntax is the same as for the "trusted" property. Packages and vendors listed in the "trusted" can also always be
+installed for developing.
+
 ### autoload
 
 Autoload mapping for a PHP autoloader.

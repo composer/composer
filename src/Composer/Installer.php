@@ -37,6 +37,7 @@ use Composer\Installer\InstallerEvents;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\PackageInterface;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
@@ -46,6 +47,7 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Package;
+use Composer\Pcre\Preg;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\CompositeRepository;
@@ -80,6 +82,7 @@ class Installer
     // used/declared in SolverProblemsException, carried over here for completeness
     public const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
     public const ERROR_AUDIT_FAILED = 5;
+    public const ERROR_UNTRUSTED_PACKAGES = 6;
 
     /**
      * @var IOInterface
@@ -418,6 +421,31 @@ class Installer
     }
 
     /**
+     * Checks if a package is untrusted.
+     *
+     * @param PackageInterface[] $packages
+     * @param string[] $patterns
+     *
+     * @return string[]
+     */
+     private function getUntrustedPackages(array $packages, array $patterns): array {
+         if (count($patterns) === 0) {
+             return [];
+         }
+
+         $regexp = BasePackage::packageNamesToRegexp($patterns);
+
+         $untrustedPackages = [];
+         foreach ($packages as $package) {
+             if (!Preg::isMatch($regexp, $package->getPrettyName())) {
+                 $untrustedPackages[] = $package->getPrettyName();
+             }
+         }
+
+         return $untrustedPackages;
+     }
+
+    /**
      * @phpstan-return self::ERROR_*
      */
     protected function doUpdate(InstalledRepositoryInterface $localRepo, bool $doInstall): int
@@ -512,6 +540,34 @@ class Installer
             \Composer\Semver\CompilingMatcher::clear();
         }
 
+        $packages = $lockTransaction->getNewLockPackages(false, $this->updateMirrors);
+        $devPackages = $lockTransaction->getNewLockPackages(true, $this->updateMirrors);
+
+        $trusted = $this->package->getTrusted();
+        $untrustedPackages = $this->getUntrustedPackages($packages, $trusted);
+        $untrustedDevPackages = array_diff($this->getUntrustedPackages($devPackages, array_merge($trusted, $this->package->getDevTrusted())), $untrustedPackages);
+
+        $err = null;
+        if (count($untrustedPackages) > 0) {
+            $err = sprintf("The installation of the following packages have been requested, but are untrusted: \"%s\".", implode('", "', $untrustedPackages));
+        }
+        if (count($untrustedDevPackages) > 0) {
+            $err = sprintf(
+                "%she installation of the following dev packages have been requested, but are untrusted: \"%s\".",
+                $err === null ? 'T' : $err."\nAdditionally, t",
+                implode('", "', $untrustedDevPackages)
+            );
+        }
+
+        if ($err !== null) {
+            $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
+
+            $ghe = new GithubActionError($this->io);
+            $ghe->emit($err."\n");
+
+            return self::ERROR_UNTRUSTED_PACKAGES;
+        }
+
         // write lock
         $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
         $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
@@ -593,8 +649,8 @@ class Installer
         }
 
         $updatedLock = $this->locker->setLockData(
-            $lockTransaction->getNewLockPackages(false, $this->updateMirrors),
-            $lockTransaction->getNewLockPackages(true, $this->updateMirrors),
+            $packages,
+            $devPackages,
             $platformReqs,
             $platformDevReqs,
             $lockTransaction->getAliases($aliases),
