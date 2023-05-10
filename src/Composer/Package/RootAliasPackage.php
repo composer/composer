@@ -242,7 +242,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
      */
     public function setDevTrusted(array $devTrusted): void
     {
-        $this->aliasOf->setTrusted($devTrusted);
+        $this->aliasOf->setDevTrusted($devTrusted);
     }
 
     /**
