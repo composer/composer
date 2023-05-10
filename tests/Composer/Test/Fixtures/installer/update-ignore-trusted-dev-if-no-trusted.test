@@ -1,0 +1,25 @@
+--TEST--
+Install untrusted dev packages
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "dunglas/foo", "version": "1.0.0", "require": { "symfony/bar": "*" } },
+                { "name": "symfony/bar", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "dunglas/foo": "*"
+    },
+    "trusted-dev": [
+        "acme/*"
+    ]
+}
+--RUN--
+update
+--EXPECT--
+Installing symfony/bar (1.0.0)
+Installing dunglas/foo (1.0.0)

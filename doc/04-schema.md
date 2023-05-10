@@ -517,6 +517,8 @@ List of trusted packages that can be installed for developing.
 The syntax is the same as for the "trusted" property. Packages and vendors listed in the "trusted" can also always be
 installed for developing.
 
+Setting "trusted-dev" does nothing if "trusted" is not set.
+
 ### autoload
 
 Autoload mapping for a PHP autoloader.

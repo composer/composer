@@ -68,6 +68,7 @@ interface RootPackageInterface extends CompletePackageInterface
 
     /**
      * Returns the list of trusted packages (a wildcard can be used to trust all packages from a specific vendor).
+     * An empty array means that this feature is disabled, all packages can be installed.
      *
      * @return string[]
      */
@@ -82,6 +83,7 @@ interface RootPackageInterface extends CompletePackageInterface
 
     /**
      * Returns the list of packages trusted in dev (a wildcard can be used to trust all packages from a specific vendor).
+     * An empty array means that this feature is disabled, all packages can be installed.
      *
      * @return string[]
      */

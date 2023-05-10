@@ -10,18 +10,15 @@ Install untrusted dev packages
                 { "name": "symfony/bar", "version": "1.0.0", "require": { "evil/pkg": "*", "symf0n1/evil": "*" } },
                 { "name": "evil/pkg", "version": "1.0.0" },
                 { "name": "symf0n1/evil", "version": "1.0.0" }
+            ],
+            "only": [
+                "dunglas/foo"
             ]
         }
     ],
     "require-dev": {
         "dunglas/foo": "*"
-    },
-    "trusted": [
-        "dunglas/foo"
-    ],
-    "trusted-dev": [
-        "symfony/*"
-    ]
+    }
 }
 --RUN--
 update
