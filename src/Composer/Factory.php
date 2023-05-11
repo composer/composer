@@ -525,6 +525,10 @@ class Factory
             $dm->setPreferences($preferred);
         }
 
+        if (is_array($allowedUrls = $config->get('allowed-urls'))) {
+            $dm->setAllowedUrls($allowedUrls);
+        }
+
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config, $process, $fs));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config, $process, $fs));
         $dm->setDownloader('fossil', new Downloader\FossilDownloader($io, $config, $process, $fs));

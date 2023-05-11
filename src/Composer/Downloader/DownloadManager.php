@@ -38,6 +38,8 @@ class DownloadManager
     private $filesystem;
     /** @var array<string, DownloaderInterface> */
     private $downloaders = [];
+    /** @var array<string>|null */
+    private $allowedUrls = null;
 
     /**
      * Initializes download manager.
@@ -125,6 +127,30 @@ class DownloadManager
     }
 
     /**
+     * Set list of trusted url prefixes.
+     *
+     * @param array<string>|null $allowedUrls array of trusted url patterns
+     *
+     * @return DownloadManager
+     */
+    public function setAllowedUrls(array $allowedUrls = null): self
+    {
+        $this->allowedUrls = $allowedUrls;
+
+        return $this;
+    }
+
+    /**
+     * Return list of trusted url prefixes.
+     *
+     * @return array<string>|null
+     */
+    public function getAllowedUrls(): ?array
+    {
+        return $this->allowedUrls;
+    }
+
+    /**
      * Returns downloader for already installed package.
      *
      * @param  PackageInterface          $package package instance
@@ -192,6 +218,12 @@ class DownloadManager
             if ($retry) {
                 $io->writeError('    <warning>Now trying to download from ' . $source . '</warning>');
             }
+
+            if (null !== $this->allowedUrls) {
+                $requestedUrls = $source === 'dist' ? $package->getDistUrls() : $package->getSourceUrls();
+                $this->checkAllowedUrls($this->allowedUrls, $requestedUrls);
+            }
+
             $package->setInstallationSource($source);
 
             $downloader = $this->getDownloaderForPackage($package);
@@ -423,6 +455,26 @@ class DownloadManager
         }
 
         return $sources;
+    }
+
+    /**
+     * @param array<string> $allowedUrls
+     * @param array<string> $requestedUrls
+     *
+     * @throw IrrecoverableDownloadException
+     * @return void
+     */
+    private function checkAllowedUrls(array $allowedUrls, array $requestedUrls): void
+    {
+        foreach ($requestedUrls as $requested) {
+            foreach ($allowedUrls as $allowed) {
+                if (strpos($requested, $allowed) === 0) {
+                    continue 2;
+                }
+            }
+
+            throw new IrrecoverableDownloadException(sprintf('The downloading of the following url have been requested, but is untrusted: "%s"', $requested));
+        }
     }
 
     /**
