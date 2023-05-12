@@ -33,10 +33,10 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     protected $references = [];
     /** @var list<array{package: string, version: string, alias: string, alias_normalized: string}> */
     protected $aliases = [];
-    /** @var string[] */
-    protected $trusted = [];
-    /** @var string[] */
-    protected $devTrusted = [];
+    /** @var string[]|null */
+    protected $trusted = null;
+    /** @var string[]|null */
+    protected $devTrusted = null;
 
     /**
      * @inheritDoc
@@ -137,7 +137,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function setTrusted(array $trusted): void
+    public function setTrusted(?array $trusted = null): void
     {
         $this->trusted = $trusted;
     }
@@ -145,7 +145,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function getTrusted(): array
+    public function getTrusted(): ?array
     {
         return $this->trusted;
     }
@@ -153,7 +153,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function setDevTrusted(array $devTrusted): void
+    public function setDevTrusted(?array $devTrusted = null): void
     {
         $this->devTrusted = $devTrusted;
     }
@@ -161,7 +161,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function getDevTrusted(): array
+    public function getDevTrusted(): ?array
     {
         return $this->devTrusted;
     }

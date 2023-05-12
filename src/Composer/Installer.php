@@ -428,8 +428,8 @@ class Installer
      *
      * @return string[]
      */
-     private function getUntrustedPackages(array $packages, array $patterns): array {
-         if (count($patterns) === 0) {
+     private function getUntrustedPackages(array $packages, ?array $patterns): array {
+         if ($patterns === null) {
              return [];
          }
 
@@ -544,8 +544,10 @@ class Installer
         $devPackages = $lockTransaction->getNewLockPackages(true, $this->updateMirrors);
 
         $trusted = $this->package->getTrusted();
+        $devTrusted = $this->package->getDevTrusted();
+
         $untrustedPackages = $this->getUntrustedPackages($packages, $trusted);
-        $untrustedDevPackages = array_diff($this->getUntrustedPackages($devPackages, array_merge($trusted, $this->package->getDevTrusted())), $untrustedPackages);
+        $untrustedDevPackages = $trusted === null || $devTrusted === null ? [] : array_diff($this->getUntrustedPackages($devPackages, array_merge($trusted, $devTrusted)), $untrustedPackages);
 
         $err = null;
         if (count($untrustedPackages) > 0) {

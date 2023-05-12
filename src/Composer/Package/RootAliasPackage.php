@@ -224,7 +224,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setTrusted(array $trusted): void
+    public function setTrusted(?array $trusted = null): void
     {
         $this->aliasOf->setTrusted($trusted);
     }
@@ -232,7 +232,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getTrusted(): array
+    public function getTrusted(): ?array
     {
         return $this->aliasOf->getTrusted();
     }
@@ -240,7 +240,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setDevTrusted(array $devTrusted): void
+    public function setDevTrusted(?array $devTrusted = null): void
     {
         $this->aliasOf->setDevTrusted($devTrusted);
     }
@@ -248,7 +248,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getDevTrusted(): array
+    public function getDevTrusted(): ?array
     {
         return $this->aliasOf->getDevTrusted();
     }

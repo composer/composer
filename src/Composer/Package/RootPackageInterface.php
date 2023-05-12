@@ -62,32 +62,32 @@ interface RootPackageInterface extends CompletePackageInterface
     /**
      * Sets the list of trusted packages.
      *
-     * @param string[] $trusted
+     * @param string[]|null $trusted
      */
-    public function setTrusted(array $trusted): void;
+    public function setTrusted(?array $trusted = null): void;
 
     /**
      * Returns the list of trusted packages (a wildcard can be used to trust all packages from a specific vendor).
-     * An empty array means that this feature is disabled, all packages can be installed.
+     * A null value means that this feature is disabled, all packages can be installed.
      *
-     * @return string[]
+     * @return string[]|null
      */
-    public function getTrusted(): array;
+    public function getTrusted(): ?array;
 
     /**
      * Sets the list of trusted packages in dev.
      *
-     * @param string[] $devTrusted
+     * @param string[]|null $devTrusted
      */
-    public function setDevTrusted(array $devTrusted): void;
+    public function setDevTrusted(?array $devTrusted = null): void;
 
     /**
      * Returns the list of packages trusted in dev (a wildcard can be used to trust all packages from a specific vendor).
-     * An empty array means that this feature is disabled, all packages can be installed.
+     * A null value means that this feature is disabled, all packages can be installed.
      *
-     * @return string[]
+     * @return string[]|null
      */
-    public function getDevTrusted(): array;
+    public function getDevTrusted(): ?array;
 
     /**
      * Returns the root package's configuration
