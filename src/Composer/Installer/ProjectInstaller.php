@@ -115,7 +115,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * Returns the installation path of a package
      *
-     * @return string           path
+     * @return string configured install path
      */
     public function getInstallPath(PackageInterface $package): string
     {
