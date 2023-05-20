@@ -148,7 +148,7 @@ class Platform
             if (
                 !ini_get('open_basedir')
                 && is_readable('/proc/version')
-                && false !== stripos(Silencer::call('file_get_contents', '/proc/version'), 'microsoft')
+                && false !== stripos((string)Silencer::call('file_get_contents', '/proc/version'), 'microsoft')
                 && !file_exists('/.dockerenv') // docker running inside WSL should not be seen as WSL
             ) {
                 return self::$isWindowsSubsystemForLinux = true;
