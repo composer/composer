@@ -87,5 +87,34 @@ ext-foobar 2.3.4   success'
             ['--lock' => true],
             "Checking platform requirements using the lock file\next-barbaz 2.3.4.5   success \next-foobar 2.3.4     success"
         ];
+
+        yield 'Checks json format arg with no failed requirements' => [
+            [
+                'require' => [
+                    'ext-foobar' => '^2.3',
+                ],
+                'require-dev' => [
+                    'ext-barbaz' => '~2.0',
+                ]
+            ],
+            ['--format' => 'json'],
+            'Checking platform requirements for packages in the vendor dir
+[
+    {
+        "name": "ext-barbaz",
+        "version": "2.3.4.5",
+        "status": "success",
+        "failed_requirement": null,
+        "provider": null
+    },
+    {
+        "name": "ext-foobar",
+        "version": "2.3.4",
+        "status": "success",
+        "failed_requirement": null,
+        "provider": null
+    }
+]'
+        ];
     }
 }
