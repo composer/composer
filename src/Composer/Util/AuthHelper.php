@@ -28,6 +28,8 @@ class AuthHelper
     protected $config;
     /** @var array<string, string> Map of origins to message displayed */
     private $displayedOriginAuthentications = array();
+    /** @var array<string, int> */
+    private $bitbucketRetry = array();
 
     public function __construct(IOInterface $io, Config $config)
     {
@@ -169,6 +171,9 @@ class AuthHelper
                         $this->io->setAuthentication($origin, 'x-token-auth', $accessToken);
                         $askForOAuthToken = false;
                     }
+                } elseif (!isset($this->bitbucketRetry[$url])) {
+                    $askForOAuthToken = false;
+                    $this->bitbucketRetry[$url] = 1;
                 } else {
                     throw new TransportException('Could not authenticate against ' . $origin, 401);
                 }
