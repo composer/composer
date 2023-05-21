@@ -148,7 +148,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
         assert(count($urls) > 0);
 
-        $fileName = $this->getFileName($package, $path);
+        $fileName = $this->getFileName($package);
         $this->filesystem->ensureDirectoryExists($path);
         $this->filesystem->ensureDirectoryExists(dirname($fileName));
 
@@ -315,7 +315,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     public function cleanup(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface
     {
-        $fileName = $this->getFileName($package, $path);
+        $fileName = $this->getFileName($package);
         if (file_exists($fileName)) {
             $this->filesystem->unlink($fileName);
         }
@@ -353,7 +353,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $this->filesystem->emptyDirectory($path);
         $this->filesystem->ensureDirectoryExists($path);
-        $this->filesystem->rename($this->getFileName($package, $path), $path . '/' . pathinfo(parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), PATHINFO_BASENAME));
+        $this->filesystem->rename($this->getFileName($package), $path . '/' . $this->getDistPath($package, PATHINFO_BASENAME));
 
         if ($package->getBinaries()) {
             // Single files can not have a mode set like files in archives
@@ -366,6 +366,11 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
 
         return \React\Promise\resolve(null);
+    }
+
+    protected function getDistPath(PackageInterface $package, int $component): string
+    {
+        return pathinfo((string) parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), $component);
     }
 
     protected function clearLastCacheWrite(PackageInterface $package): void
@@ -426,12 +431,11 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * Gets file name for specific package
      *
      * @param  PackageInterface $package package instance
-     * @param  string           $path    download path
      * @return string           file name
      */
-    protected function getFileName(PackageInterface $package, string $path): string
+    protected function getFileName(PackageInterface $package): string
     {
-        return rtrim($this->config->get('vendor-dir').'/composer/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
+        return rtrim($this->config->get('vendor-dir') . '/composer/tmp-' . md5($package . spl_object_hash($package)) . '.' . $this->getDistPath($package, PATHINFO_EXTENSION), '.');
     }
 
     /**
