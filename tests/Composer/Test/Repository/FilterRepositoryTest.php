@@ -59,7 +59,20 @@ class FilterRepositoryTest extends TestCase
             // make sure sub-patterns are not matched without wildcard
             [['foo/aaa', 'foo/bbb', 'bar/xxx', 'baz/yyy'], ['exclude' => ['foo/aa', 'az/yyy']]],
             [[], ['only' => ['foo/aa', 'az/yyy']]],
+            // empty "only" means no packages allowed
+            [[], ['only' => []]],
+            // absent "only" means all packages allowed
+            [['foo/aaa', 'foo/bbb', 'bar/xxx', 'baz/yyy'], []],
+            // empty or absent "exclude" have the same effect: none
+            [['foo/aaa', 'foo/bbb', 'bar/xxx', 'baz/yyy'], ['exclude' => []]],
+            [['foo/aaa', 'foo/bbb', 'bar/xxx', 'baz/yyy'], []],
         ];
+    }
+
+    public function testBothFiltersDisallowed(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        new FilterRepository($this->arrayRepo, ['only' => [], 'exclude' => []]);
     }
 
     public function testSecurityAdvisoriesDisabledInChild(): void
