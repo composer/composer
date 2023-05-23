@@ -455,7 +455,7 @@ class ArrayLoader implements LoaderInterface
         if (
             isset($config['default-branch'])
             && $config['default-branch'] === true
-            && false === $this->versionParser->parseNumericAliasPrefix($config['version'])
+            && false === $this->versionParser->parseNumericAliasPrefix(Preg::replace('{^v}', '', $config['version']))
         ) {
             return VersionParser::DEFAULT_BRANCH_ALIAS;
         }
