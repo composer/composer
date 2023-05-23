@@ -555,6 +555,71 @@ class AuthHelperTest extends TestCase
         $this->authHelper->promptAuthIfNeeded('https://gitlab.com/acme/archive.zip', $origin, 404, 'GitLab requires authentication and it was not provided');
     }
 
+    public function testPromptAuthIfNeededMultipleBitbucketDownloads()
+    {
+        $origin = 'bitbucket.org';
+
+        $expectedResult = array(
+            'retry' => true,
+            'storeAuth' => false,
+        );
+
+        $authConfig = array(
+            'bitbucket.org' => array(
+                'access-token' => 'bitbucket_access_token',
+                'access-token-expiration' => time() + 1800,
+            )
+        );
+
+        $this->config
+            ->method('get')
+            ->willReturnMap(array(
+                array('github-domains', 0, array()),
+                array('gitlab-domains', 0, array()),
+                array('bitbucket-oauth', 0, $authConfig),
+                array('github-domains', 0, array()),
+                array('gitlab-domains', 0, array()),
+            ));
+
+        $this->io
+            ->expects($this->exactly(2))
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $getAuthenticationReturnValues = array(
+            array('username' => 'bitbucket_client_id', 'password' => 'bitbucket_client_secret'),
+            array('username' => 'x-token-auth', 'password' => 'bitbucket_access_token'),
+        );
+
+        $this->io
+            ->expects($this->exactly(2))
+            ->method('getAuthentication')
+            ->willReturnCallback(
+                function ($repositoryName) use (&$getAuthenticationReturnValues) {
+                    return array_shift($getAuthenticationReturnValues);
+                }
+            );
+
+        $this->io
+            ->expects($this->once())
+            ->method('setAuthentication')
+            ->with($origin, 'x-token-auth', 'bitbucket_access_token');
+
+        $result1 = $this->authHelper->promptAuthIfNeeded('https://bitbucket.org/workspace/repo1/get/hash1.zip', $origin, 401, 'HTTP/2 401 ');
+        $result2 = $this->authHelper->promptAuthIfNeeded('https://bitbucket.org/workspace/repo2/get/hash2.zip', $origin, 401, 'HTTP/2 401 ');
+
+        $this->assertSame(
+            $expectedResult,
+            $result1
+        );
+
+        $this->assertSame(
+            $expectedResult,
+            $result2
+        );
+    }
+
     /**
      * @param string                     $origin
      * @param array<string, string|null> $auth
