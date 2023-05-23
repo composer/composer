@@ -17,7 +17,15 @@ The locked version will not get overwritten by an install but fails on invalid p
     "require": {
         "foo/bar": "2.0.0",
         "foo/baz": "2.0.0",
-        "foo/self": "self.version"
+        "foo/self": "self.version",
+        "foo/provided": "1.0.0",
+        "foo/provided-wrong-version": "1.0.0",
+        "foo/root-replaced": "1.0.0",
+        "foo/root-replaced-wrong-version": "1.0.0"
+    },
+    "replace": {
+        "foo/root-replaced": "^1",
+        "foo/root-replaced-wrong-version": "^2"
     }
 }
 --LOCK--
@@ -25,7 +33,14 @@ The locked version will not get overwritten by an install but fails on invalid p
     "packages": [
         { "name": "foo/bar", "version": "1.0.0" },
         { "name": "foo/baz", "version": "2.0.0" },
-        { "name": "foo/self", "version": "1.2.2" }
+        {
+            "name": "foo/self",
+            "version": "1.2.2",
+            "provide": {
+                "foo/provided": "^1",
+                "foo/provided-wrong-version": "^3"
+            }
+        }
     ],
     "packages-dev": [],
     "aliases": [],
@@ -45,6 +60,8 @@ install
 Installing dependencies from lock file (including require-dev)
 Verifying lock file contents can be installed on current platform.
 - Required package "foo/bar" is in the lock file as "1.0.0" but that does not satisfy your constraint "2.0.0".
+- Required package "foo/provided-wrong-version" is in the lock file as "provided as ^3 by foo/self 1.2.2" but that does not satisfy your constraint "1.0.0".
+- Required package "foo/root-replaced-wrong-version" is in the lock file as "replaced as ^2 by __root__ 1.2.3" but that does not satisfy your constraint "1.0.0".
 This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.
 Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md
 and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require-r
