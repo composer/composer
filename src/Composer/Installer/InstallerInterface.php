@@ -112,7 +112,7 @@ interface InstallerInterface
     /**
      * Returns the absolute installation path of a package.
      *
-     * @return string           absolute path to install to, which MUST not end with a slash
+     * @return string|null absolute path to install to, which MUST not end with a slash, or null if the package does not have anything installed on disk
      */
     public function getInstallPath(PackageInterface $package);
 }

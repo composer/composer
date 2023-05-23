@@ -15,6 +15,7 @@ namespace Composer\Test\Package\Loader;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Link;
+use Composer\Package\Version\VersionParser;
 use Composer\Test\TestCase;
 
 class ArrayLoaderTest extends TestCase
@@ -247,6 +248,57 @@ class ArrayLoaderTest extends TestCase
 
         $this->assertInstanceOf('Composer\Package\CompletePackage', $package);
         $this->assertEquals('4.x-dev', $package->getPrettyVersion());
+    }
+
+    public function testPackageAliasingWithoutBranchAlias(): void
+    {
+        // non-numeric gets a default alias
+        $config = [
+            'name' => 'A',
+            'version' => 'dev-main',
+            'default-branch' => true,
+        ];
+
+        $package = $this->loader->load($config);
+
+        $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
+        $this->assertEquals(VersionParser::DEFAULT_BRANCH_ALIAS, $package->getPrettyVersion());
+
+        // non-default branch gets no alias even if non-numeric
+        $config = [
+            'name' => 'A',
+            'version' => 'dev-main',
+            'default-branch' => false,
+        ];
+
+        $package = $this->loader->load($config);
+
+        $this->assertInstanceOf('Composer\Package\CompletePackage', $package);
+        $this->assertEquals('dev-main', $package->getPrettyVersion());
+
+        // default branch gets no alias if already numeric
+        $config = [
+            'name' => 'A',
+            'version' => '2.x-dev',
+            'default-branch' => true,
+        ];
+
+        $package = $this->loader->load($config);
+
+        $this->assertInstanceOf('Composer\Package\CompletePackage', $package);
+        $this->assertEquals('2.9999999.9999999.9999999-dev', $package->getVersion());
+
+        // default branch gets no alias if already numeric, with v prefix
+        $config = [
+            'name' => 'A',
+            'version' => 'v2.x-dev',
+            'default-branch' => true,
+        ];
+
+        $package = $this->loader->load($config);
+
+        $this->assertInstanceOf('Composer\Package\CompletePackage', $package);
+        $this->assertEquals('2.9999999.9999999.9999999-dev', $package->getVersion());
     }
 
     public function testAbandoned(): void

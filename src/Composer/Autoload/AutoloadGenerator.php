@@ -485,10 +485,14 @@ EOF;
                 continue;
             }
             $this->validatePackage($package);
+            $installPath = $installationManager->getInstallPath($package);
+            if ($installPath === null) {
+                continue;
+            }
 
             $packageMap[] = [
                 $package,
-                $installationManager->getInstallPath($package),
+                $installPath,
             ];
         }
 

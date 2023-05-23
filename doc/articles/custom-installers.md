@@ -157,9 +157,8 @@ source for the exact signature):
   invoked with the update argument.
 * **uninstall()**, here you can determine the actions that need to be executed
   when the package needs to be removed.
-* **getInstallPath()**, this method should return the location where the
-  package is to be installed, _relative from the location of composer.json._
-  The path _must not end with a slash._
+* **getInstallPath()**, this method should return the absolute path where the
+  package is to be installed. The path _must not end with a slash._
 
 Example:
 

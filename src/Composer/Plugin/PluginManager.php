@@ -236,8 +236,11 @@ class PluginManager
                 continue;
             }
 
-            $downloadPath = $this->getInstallPath($autoloadPackage, $globalRepo && $globalRepo->hasPackage($autoloadPackage));
-            $autoloads[] = [$autoloadPackage, $downloadPath];
+            $installPath = $this->getInstallPath($autoloadPackage, $globalRepo && $globalRepo->hasPackage($autoloadPackage));
+            if ($installPath === null) {
+                continue;
+            }
+            $autoloads[] = [$autoloadPackage, $installPath];
         }
 
         $map = $generator->parseAutoloads($autoloads, $rootPackage);
@@ -524,9 +527,9 @@ class PluginManager
      *
      * @param bool             $global  Whether this is a global package
      *
-     * @return string Install path
+     * @return string|null Install path
      */
-    private function getInstallPath(PackageInterface $package, bool $global = false): string
+    private function getInstallPath(PackageInterface $package, bool $global = false): ?string
     {
         if (!$global) {
             return $this->composer->getInstallationManager()->getInstallPath($package);
