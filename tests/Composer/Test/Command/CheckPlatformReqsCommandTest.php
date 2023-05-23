@@ -167,6 +167,5 @@ ext-foobar 2.3.4   success'
 ]';
 
         $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
-        
     }
 }
