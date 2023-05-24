@@ -1,3 +1,7 @@
+### [2.5.7] 2023-05-24
+
+  * Fixed regression preventing autoloading the dependencies of metapackages when running --no-dev (#11481)
+
 ### [2.5.6] 2023-05-24
 
   * BC Warning: Installers and `InstallationManager::getInstallPath` will now return `null` instead of an empty string for metapackages' paths. This may have adverse effects on plugin code using this expecting always a string but it is unlikely (#11455)
@@ -1720,6 +1724,7 @@
 
   * Initial release
 
+[2.5.7]: https://github.com/composer/composer/compare/2.5.6...2.5.7
 [2.5.6]: https://github.com/composer/composer/compare/2.5.5...2.5.6
 [2.5.5]: https://github.com/composer/composer/compare/2.5.4...2.5.5
 [2.5.4]: https://github.com/composer/composer/compare/2.5.3...2.5.4
