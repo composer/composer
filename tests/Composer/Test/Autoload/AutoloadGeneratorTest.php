@@ -131,7 +131,11 @@ class AutoloadGeneratorTest extends TestCase
             ->getMock();
         $this->im->expects($this->any())
             ->method('getInstallPath')
-            ->will($this->returnCallback(function ($package): string {
+            ->will($this->returnCallback(function ($package): ?string {
+                if ($package->getType() === 'metapackage') {
+                    return null;
+                }
+
                 $targetDir = $package->getTargetDir();
 
                 return $this->vendorDir.'/'.$package->getName() . ($targetDir ? '/'.$targetDir : '');
@@ -395,6 +399,40 @@ class AutoloadGeneratorTest extends TestCase
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_5');
         $this->assertAutoloadFiles('vendors', $this->vendorDir.'/composer');
+        $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated, even if empty.");
+    }
+
+    public function testVendorsAutoloadingWithMetapackages(): void
+    {
+        $package = new RootPackage('root/a', '1.0', '1.0');
+        $package->setRequires([
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
+        ]);
+
+        $packages = [];
+        $packages[] = $a = new Package('a/a', '1.0', '1.0');
+        $packages[] = $b = new Package('b/b', '1.0', '1.0');
+        $packages[] = $c = new AliasPackage($b, '1.2', '1.2');
+        $a->setAutoload(['psr-0' => ['A' => 'src/', 'A\\B' => 'lib/']]);
+        $b->setAutoload(['psr-0' => ['B\\Sub\\Name' => 'src/']]);
+        $a->setType('metapackage');
+        $a->setRequires([
+            'b/b' => new Link('a/a', 'b/b', new MatchAllConstraint()),
+        ]);
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($packages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
+        // creating a/a files to make sure they would be found by autoloader even tho they are technically not
+        // needed as the package is a metapackage, but if it fails to be excluded it would find these
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/lib');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_5');
+        $this->assertAutoloadFiles('vendors_meta', $this->vendorDir.'/composer');
         $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated, even if empty.");
     }
 
