@@ -79,7 +79,7 @@ abstract class ArchiveDownloader extends FileDownloader
         }
 
         $this->filesystem->ensureDirectoryExists($temporaryDir);
-        $fileName = $this->getFileName($package);
+        $fileName = $this->getFileName($package, $path);
 
         $filesystem = $this->filesystem;
 
