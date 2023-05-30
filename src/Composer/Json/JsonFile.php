@@ -338,12 +338,12 @@ class JsonFile
         $result = $parser->lint($json);
         if (null === $result) {
             if (defined('JSON_ERROR_UTF8') && JSON_ERROR_UTF8 === json_last_error()) {
-                throw new \UnexpectedValueException('"'.$file.'" is not UTF-8, could not parse as JSON');
+                $file === null ? throw new \UnexpectedValueException('The input is not UTF-8, could not parse as JSON') : throw new \UnexpectedValueException('"'.$file.'" is not UTF-8, could not parse as JSON');
             }
 
             return true;
         }
 
-        throw new ParsingException('"'.$file.'" does not contain valid JSON'."\n".$result->getMessage(), $result->getDetails());
+        $file === null ? throw new ParsingException('The input does not contain valid JSON'."\n".$result->getMessage(), $result->getDetails()) : throw new ParsingException('"'.$file.'" does not contain valid JSON'."\n".$result->getMessage(), $result->getDetails());
     }
 }
