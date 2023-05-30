@@ -9,11 +9,18 @@
 *.yml   text eol=lf whitespace=blank-at-eol,blank-at-eof,space-before-tab,tab-in-indent,tabwidth=2
 
 # Exclude non-essential files from dist
-/tests export-ignore
-.github export-ignore
-.php_cs export-ignore
-.travis.yml export-ignore
-appveyor.yml export-ignore
-phpunit.xml.dist export-ignore
-/phpstan/* export-ignore
-/phpstan/rules.neon -export-ignore
+/.github/ export-ignore
+/doc export-ignore
+/phpstan/ export-ignore
+/tests/ export-ignore
+/.editorconfig export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.php-cs-fixer.php export-ignore
+/CHANGELOG.md export-ignore
+/CODE_OF_CONDUCT.md export-ignore
+/composer.lock export-ignore
+/phpunit.xml.dist export-ignore
+/PORTING_INFO export-ignore
+/README.md export-ignore
+/UPGRADE-2.0.md export-ignore
