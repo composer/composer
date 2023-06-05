@@ -44,7 +44,7 @@ install
 --EXPECT-OUTPUT--
 Installing dependencies from lock file (including require-dev)
 Verifying lock file contents can be installed on current platform.
-Your lock file does not contain a compatible set of packages. Please run composer update.
+Your lock file does not contain a compatible set of packages.
 
   Problem 1
     - conflictor/foo is locked to version 1.0.0 and an update of this package was not requested.

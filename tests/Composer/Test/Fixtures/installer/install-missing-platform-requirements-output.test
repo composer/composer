@@ -1,0 +1,51 @@
+--TEST--
+Test that installing with missing platform requirements outputs clear message
+--COMPOSER--
+{
+    "require": {
+        "ext-foo": "*"
+    }
+}
+
+--LOCK--
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "c1e318e68ba0e780e0e1bbb40059b8f4",
+    "packages": [],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "ext-foo": "*"
+    },
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
+}
+
+--RUN--
+install
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Your lock file does not contain a compatible set of packages.
+
+  Problem 1
+    - Root composer.json requires PHP extension ext-foo * but it is missing from your system. Install or enable PHP's foo extension.
+
+To enable extensions, verify that they are enabled in your .ini files:
+__inilist__
+You can also run `php --ini` in a terminal to see which files are used by PHP in CLI mode.
+Alternatively, you can run Composer with `--ignore-platform-req=ext-foo` to temporarily ignore these required extensions.
+
+--EXPECT--

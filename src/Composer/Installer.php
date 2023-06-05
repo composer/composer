@@ -741,7 +741,7 @@ class Installer
                     return self::ERROR_LOCK_FILE_INVALID;
                 }
             } catch (SolverProblemsException $e) {
-                $err = 'Your lock file does not contain a compatible set of packages. Please run composer update.';
+                $err = 'Your lock file does not contain a compatible set of packages.';
                 $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose());
 
                 $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
