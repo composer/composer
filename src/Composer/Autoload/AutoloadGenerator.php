@@ -114,7 +114,7 @@ class AutoloadGenerator
     public function setApcu(bool $apcu, ?string $apcuPrefix = null)
     {
         $this->apcu = $apcu;
-        $this->apcuPrefix = $apcuPrefix !== null ? $apcuPrefix : $apcuPrefix;
+        $this->apcuPrefix = $apcuPrefix;
     }
 
     /**
