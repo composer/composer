@@ -515,7 +515,7 @@ class Locker
         if ($includeDev === true) {
             $sets[] = ['repo' => $this->getLockedRepository(true), 'method' => 'getDevRequires', 'description' => 'Required (in require-dev)'];
         }
-        $rootRepo = new RootPackageRepository($package);
+        $rootRepo = new RootPackageRepository(clone $package);
 
         foreach ($sets as $set) {
             $installedRepo = new InstalledRepository([$set['repo'], $rootRepo]);
