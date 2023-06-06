@@ -353,7 +353,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $this->filesystem->emptyDirectory($path);
         $this->filesystem->ensureDirectoryExists($path);
-        $this->filesystem->rename($this->getFileName($package, $path), $path . '/' . pathinfo(parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), PATHINFO_BASENAME));
+        $this->filesystem->rename($this->getFileName($package, $path), $path . '/' . $this->getDistPath($package, PATHINFO_BASENAME));
 
         if ($package->getBinaries()) {
             // Single files can not have a mode set like files in archives
@@ -366,6 +366,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
 
         return \React\Promise\resolve(null);
+    }
+
+    protected function getDistPath(PackageInterface $package, int $component): string
+    {
+        // @phpstan-ignore-next-line
+        return pathinfo((string) parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), $component);
     }
 
     protected function clearLastCacheWrite(PackageInterface $package): void
@@ -431,7 +437,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     protected function getFileName(PackageInterface $package, string $path): string
     {
-        return rtrim($this->config->get('vendor-dir').'/composer/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
+        return rtrim($this->config->get('vendor-dir') . '/composer/tmp-' . md5($package . spl_object_hash($package)) . '.' . $this->getDistPath($package, PATHINFO_EXTENSION), '.');
     }
 
     /**
