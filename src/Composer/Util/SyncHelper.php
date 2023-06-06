@@ -31,14 +31,14 @@ class SyncHelper
      */
     public static function downloadAndInstallPackageSync(Loop $loop, DownloaderInterface $downloader, string $path, PackageInterface $package, ?PackageInterface $prevPackage = null): void
     {
-        $type = $prevPackage ? 'update' : 'install';
+        $type = $prevPackage !== null ? 'update' : 'install';
 
         try {
             self::await($loop, $downloader->download($package, $path, $prevPackage));
 
             self::await($loop, $downloader->prepare($type, $package, $path, $prevPackage));
 
-            if ($type === 'update') {
+            if ($type === 'update' && $prevPackage !== null) {
                 self::await($loop, $downloader->update($package, $prevPackage, $path));
             } else {
                 self::await($loop, $downloader->install($package, $path));
@@ -58,7 +58,7 @@ class SyncHelper
      */
     public static function await(Loop $loop, ?PromiseInterface $promise = null): void
     {
-        if ($promise) {
+        if ($promise !== null) {
             $loop->wait([$promise]);
         }
     }

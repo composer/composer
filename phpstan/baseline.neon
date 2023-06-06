@@ -4934,21 +4934,6 @@ parameters:
 			path: ../src/Composer/Util/Svn.php
 
 		-
-			message: "#^Only booleans are allowed in a ternary operator condition, Composer\\\\Package\\\\PackageInterface\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/SyncHelper.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, React\\\\Promise\\\\PromiseInterface\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/SyncHelper.php
-
-		-
-			message: "#^Parameter \\#2 \\$target of method Composer\\\\Downloader\\\\DownloaderInterface\\:\\:update\\(\\) expects Composer\\\\Package\\\\PackageInterface, Composer\\\\Package\\\\PackageInterface\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/SyncHelper.php
-
-		-
 			message: "#^Only booleans are allowed in &&, array\\<int\\|string, true\\> given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Tar.php
