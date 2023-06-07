@@ -469,6 +469,13 @@ EOT
         $io->writeError('<info>Created project in ' . $directory . '</info>');
         chdir($directory);
 
+        // ensure that the env var being set does not interfere with create-project
+        // as it is probably not meant to be used here, so we do not use it if a composer.json can be found
+        // in the project
+        if (file_exists($directory.'/composer.json')) {
+            Platform::putEnv('COMPOSER', $directory.'/composer.json');
+        }
+
         Platform::putEnv('COMPOSER_ROOT_VERSION', $package->getPrettyVersion());
 
         // once the root project is fully initialized, we do not need to wipe everything on user abort anymore even if it happens during deps install
