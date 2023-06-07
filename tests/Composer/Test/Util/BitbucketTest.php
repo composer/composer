@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Test\Mock\IOMock;
 use Composer\Util\Bitbucket;
 use Composer\Util\Http\Response;
 use Composer\Test\TestCase;
@@ -36,7 +37,7 @@ class BitbucketTest extends TestCase
     /** @var string */
     private $token = 'bitbuckettoken';
 
-    /** @var \Composer\IO\ConsoleIO&\PHPUnit\Framework\MockObject\MockObject */
+    /** @var IOMock */
     private $io;
     /** @var \Composer\Util\HttpDownloader&\PHPUnit\Framework\MockObject\MockObject */
     private $httpDownloader;
@@ -49,11 +50,7 @@ class BitbucketTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->io = $this
-            ->getMockBuilder('Composer\IO\ConsoleIO')
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $this->io = $this->getIOMock();
 
         $this->httpDownloader = $this
             ->getMockBuilder('Composer\Util\HttpDownloader')
@@ -70,9 +67,9 @@ class BitbucketTest extends TestCase
 
     public function testRequestAccessTokenWithValidOAuthConsumer(): void
     {
-        $this->io->expects($this->once())
-            ->method('setAuthentication')
-            ->with($this->origin, $this->consumer_key, $this->consumer_secret);
+        $this->io->expects([
+            ['auth' => [$this->origin, $this->consumer_key, $this->consumer_secret]],
+        ]);
 
         $this->httpDownloader->expects($this->once())
             ->method('get')
@@ -151,9 +148,9 @@ class BitbucketTest extends TestCase
                 ]
             );
 
-        $this->io->expects($this->once())
-            ->method('setAuthentication')
-            ->with($this->origin, $this->consumer_key, $this->consumer_secret);
+        $this->io->expects([
+            ['auth' => [$this->origin, $this->consumer_key, $this->consumer_secret]],
+        ]);
 
         $this->httpDownloader->expects($this->once())
             ->method('get')
@@ -189,19 +186,14 @@ class BitbucketTest extends TestCase
 
     public function testRequestAccessTokenWithUsernameAndPassword(): void
     {
-        $this->io->expects($this->once())
-            ->method('setAuthentication')
-            ->with($this->origin, $this->username, $this->password);
-
-        $this->io->expects($this->any())
-            ->method('writeError')
-            ->withConsecutive(
-                ['<error>Invalid OAuth consumer provided.</error>'],
-                ['This can have three reasons:'],
-                ['1. You are authenticating with a bitbucket username/password combination'],
-                ['2. You are using an OAuth consumer, but didn\'t configure a (dummy) callback url'],
-                ['3. You are using an OAuth consumer, but didn\'t configure it as private consumer']
-            );
+        $this->io->expects([
+            ['auth' => [$this->origin, $this->username, $this->password]],
+            ['text' => 'Invalid OAuth consumer provided.'],
+            ['text' => 'This can have three reasons:'],
+            ['text' => '1. You are authenticating with a bitbucket username/password combination'],
+            ['text' => '2. You are using an OAuth consumer, but didn\'t configure a (dummy) callback url'],
+            ['text' => '3. You are using an OAuth consumer, but didn\'t configure it as private consumer'],
+        ], true);
 
         $this->httpDownloader->expects($this->once())
             ->method('get')
@@ -240,16 +232,11 @@ class BitbucketTest extends TestCase
             ->with('bitbucket-oauth')
             ->willReturn(null);
 
-        $this->io->expects($this->once())
-            ->method('setAuthentication')
-            ->with($this->origin, $this->username, $this->password);
-
-        $this->io->expects($this->any())
-            ->method('writeError')
-            ->withConsecutive(
-                ['<error>Invalid OAuth consumer provided.</error>'],
-                ['You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"']
-            );
+        $this->io->expects([
+            ['auth' => [$this->origin, $this->username, $this->password]],
+            ['text' => 'Invalid OAuth consumer provided.'],
+            ['text' => 'You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"'],
+        ], true);
 
         $this->httpDownloader->expects($this->once())
             ->method('get')
@@ -276,9 +263,9 @@ class BitbucketTest extends TestCase
             ->with('bitbucket-oauth')
             ->willReturn(null);
 
-        $this->io->expects($this->once())
-            ->method('setAuthentication')
-            ->with($this->origin, $this->username, $this->password);
+        $this->io->expects([
+            ['auth' => [$this->origin, $this->username, $this->password]],
+        ]);
 
         $exception = new \Composer\Downloader\TransportException('HTTP/1.1 404 NOT FOUND', 404);
         $this->httpDownloader->expects($this->once())
@@ -300,19 +287,11 @@ class BitbucketTest extends TestCase
 
     public function testUsernamePasswordAuthenticationFlow(): void
     {
-        $this->io
-            ->expects($this->atLeastOnce())
-            ->method('writeError')
-            ->withConsecutive([$this->message])
-        ;
-
-        $this->io->expects($this->exactly(2))
-            ->method('askAndHideAnswer')
-            ->withConsecutive(
-                ['Consumer Key (hidden): '],
-                ['Consumer Secret (hidden): ']
-            )
-            ->willReturnOnConsecutiveCalls($this->consumer_key, $this->consumer_secret);
+        $this->io->expects([
+            ['text' => $this->message],
+            ['ask' => 'Consumer Key (hidden): ', 'reply' => $this->consumer_key],
+            ['ask' => 'Consumer Secret (hidden): ', 'reply' => $this->consumer_secret],
+        ]);
 
         $this->httpDownloader
             ->expects($this->once())
@@ -346,10 +325,9 @@ class BitbucketTest extends TestCase
             ->method('getAuthConfigSource')
             ->willReturn($authConfigSourceMock);
 
-        $this->io->expects($this->once())
-            ->method('askAndHideAnswer')
-            ->with('Consumer Key (hidden): ')
-            ->willReturnOnConsecutiveCalls(null);
+        $this->io->expects([
+            ['ask' => 'Consumer Key (hidden): ', 'reply' => ''],
+        ]);
 
         $this->assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
@@ -361,13 +339,11 @@ class BitbucketTest extends TestCase
             ->method('getAuthConfigSource')
             ->willReturn($authConfigSourceMock);
 
-        $this->io->expects($this->exactly(2))
-            ->method('askAndHideAnswer')
-            ->withConsecutive(
-                ['Consumer Key (hidden): '],
-                ['Consumer Secret (hidden): ']
-            )
-            ->willReturnOnConsecutiveCalls($this->consumer_key, null);
+        $this->io->expects([
+            ['text' => $this->message],
+            ['ask' => 'Consumer Key (hidden): ', 'reply' => $this->consumer_key],
+            ['ask' => 'Consumer Secret (hidden): ', 'reply' => ''],
+        ]);
 
         $this->assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
@@ -379,13 +355,11 @@ class BitbucketTest extends TestCase
             ->method('getAuthConfigSource')
             ->willReturn($authConfigSourceMock);
 
-        $this->io->expects($this->exactly(2))
-            ->method('askAndHideAnswer')
-            ->withConsecutive(
-                ['Consumer Key (hidden): '],
-                ['Consumer Secret (hidden): ']
-            )
-            ->willReturnOnConsecutiveCalls($this->consumer_key, $this->consumer_secret);
+        $this->io->expects([
+            ['text' => $this->message],
+            ['ask' => 'Consumer Key (hidden): ', 'reply' => $this->consumer_key],
+            ['ask' => 'Consumer Secret (hidden): ', 'reply' => $this->consumer_secret],
+        ]);
 
         $this->httpDownloader
             ->expects($this->once())

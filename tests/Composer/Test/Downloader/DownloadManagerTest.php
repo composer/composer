@@ -258,10 +258,14 @@ class DownloadManagerTest extends TestCase
         $package
             ->expects($this->exactly(2))
             ->method('setInstallationSource')
-            ->withConsecutive(
-                ['dist'],
-                ['source']
-            );
+            ->willReturnCallback(function ($type) {
+                static $series = [
+                    'dist',
+                    'source',
+                ];
+
+                $this->assertSame(array_shift($series), $type);
+            });
 
         $downloaderFail = $this->createDownloaderMock();
         $downloaderFail

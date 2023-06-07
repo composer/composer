@@ -24,6 +24,7 @@ use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Test\Mock\FactoryMock;
 use Composer\Test\Mock\HttpDownloaderMock;
+use Composer\Test\Mock\IOMock;
 use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
@@ -60,6 +61,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      */
     private $processExecutorMocks = [];
     /**
+     * @var list<IOMock>
+     */
+    private $ioMocks = [];
+    /**
      * @var list<string>
      */
     private $tempComposerDirs = [];
@@ -73,6 +78,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             $mock->assertComplete();
         }
         foreach ($this->processExecutorMocks as $mock) {
+            $mock->assertComplete();
+        }
+        foreach ($this->ioMocks as $mock) {
             $mock->assertComplete();
         }
 
@@ -181,7 +189,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         $factory = new FactoryMock();
 
-        $locker = new Locker($this->getMockBuilder(IOInterface::class)->getMock(), new JsonFile('./composer.lock'), $factory->createInstallationManager(), (string) file_get_contents('./composer.json'));
+        $locker = new Locker($this->getIOMock(), new JsonFile('./composer.lock'), $factory->createInstallationManager(), (string) file_get_contents('./composer.json'));
         $locker->setLockData($packages, $devPackages, [], [], [], 'dev', [], false, false, []);
     }
 
@@ -352,6 +360,16 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     protected function getProcessExecutorMock(): ProcessExecutorMock
     {
         $this->processExecutorMocks[] = $mock = new ProcessExecutorMock($this->getMockBuilder(Process::class));
+
+        return $mock;
+    }
+
+    /**
+     * @param IOInterface::* $verbosity
+     */
+    protected function getIOMock(int $verbosity = IOInterface::DEBUG): IOMock
+    {
+        $this->ioMocks[] = $mock = new IOMock($verbosity);
 
         return $mock;
     }
