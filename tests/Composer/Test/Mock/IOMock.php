@@ -65,8 +65,8 @@ class IOMock extends BufferIO
         $this->expectations = $expectations;
         $inputs = [];
         foreach ($expectations as $expect) {
-            if (isset($expect['ask'], $expect['reply'])) {
-                if (!is_string($expect['reply'])) {
+            if (isset($expect['ask'])) {
+                if (!array_key_exists('reply', $expect) || !is_string($expect['reply'])) {
                     throw new \LogicException('A question\'s reply must be a string, use empty string for null replies');
                 }
                 $inputs[] = $expect['reply'];
