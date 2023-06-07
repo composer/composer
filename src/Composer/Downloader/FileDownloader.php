@@ -370,7 +370,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
     protected function getDistPath(PackageInterface $package, int $component): string
     {
-        // @phpstan-ignore-next-line
         return pathinfo((string) parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), $component);
     }
 
