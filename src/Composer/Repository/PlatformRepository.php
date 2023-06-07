@@ -335,7 +335,7 @@ class PlatformRepository extends ArrayRepository
                     if ($this->runtime->hasClass('ResourceBundle')) {
                         $resourceBundle = $this->runtime->invoke(['ResourceBundle', 'create'], ['root', 'ICUDATA', false]);
                         if ($resourceBundle !== null) {
-                            $this->addLibrary('icu-cldr', $resourceBundle->get('Version');, 'ICU CLDR project version');
+                            $this->addLibrary('icu-cldr', $resourceBundle->get('Version'), 'ICU CLDR project version');
                         }
                     }
 
