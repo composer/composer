@@ -14,6 +14,7 @@ namespace Composer\Test\EventDispatcher;
 
 use Composer\EventDispatcher\Event;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Installer\InstallerEvents;
 use Composer\Config;
 use Composer\Composer;
@@ -32,21 +33,15 @@ class EventDispatcherTest extends TestCase
     {
         self::expectException('RuntimeException');
 
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io = $this->getIOMock(IOInterface::NORMAL);
         $dispatcher = $this->getDispatcherStubForListenersTest([
             'Composer\Test\EventDispatcher\EventDispatcherTest::call',
         ], $io);
 
-        $io->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(0);
-
-        $io->expects($this->atLeast(2))
-            ->method('writeError')
-            ->withConsecutive(
-                ['> Composer\Test\EventDispatcher\EventDispatcherTest::call'],
-                ['<error>Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>']
-            );
+        $io->expects([
+            ['text' => '> Composer\Test\EventDispatcher\EventDispatcherTest::call'],
+            ['text' => 'Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception'],
+        ], true);
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }
@@ -528,7 +523,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs([
                 $this->createComposerInstance(),
-                $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
+                $io = $this->getIOMock(IOInterface::NORMAL),
                 new ProcessExecutor,
             ])
             ->onlyMethods(['getListeners'])
@@ -540,22 +535,13 @@ class EventDispatcherTest extends TestCase
             ->method('getListeners')
             ->will($this->returnValue($listener));
 
-        $io->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(0);
+        $io->expects([
+            ['text' => '> exit 1'],
+            ['text' => 'Script '.$code.' handling the post-install-cmd event returned with error code 1'],
+        ], true);
 
-        $io->expects($this->atLeast(2))
-            ->method('writeError')
-            ->withConsecutive(
-                ['> exit 1'],
-                ['<error>Script '.$code.' handling the post-install-cmd event returned with error code 1</error>']
-            );
-
-        $io->expects($this->once())
-            ->method('isInteractive')
-            ->willReturn(1);
-
-        self::expectException('RuntimeException');
+        self::expectException(ScriptExecutionException::class);
+        self::expectExceptionMessage('Error Output: ');
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }
 

@@ -307,12 +307,9 @@ class ConfigTest extends TestCase
 
     public function testProhibitedUrlsWarningVerifyPeer(): void
     {
-        $io = $this->getMockBuilder(IOInterface::class)->disableOriginalConstructor()->getMock();
+        $io = $this->getIOMock();
 
-        $io
-            ->expects($this->once())
-            ->method('writeError')
-            ->with($this->equalTo('<warning>Warning: Accessing example.org with verify_peer and verify_peer_name disabled.</warning>'));
+        $io->expects([['text' => '<warning>Warning: Accessing example.org with verify_peer and verify_peer_name disabled.</warning>']], true);
 
         $config = new Config(false);
         $config->prohibitUrlByConfig('https://example.org', $io, [

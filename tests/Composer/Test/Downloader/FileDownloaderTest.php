@@ -375,13 +375,11 @@ class FileDownloaderTest extends TestCase
         $newPackage = self::getPackage('dummy/pkg', '1.0.0');
         $newPackage->setDistUrl($distUrl = 'http://example.com/script.js');
 
-        $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $ioMock->expects($this->atLeast(2))
-            ->method('writeError')
-            ->withConsecutive(
-                [$this->stringContains('Downloading')],
-                [$this->stringContains('Downgrading')]
-            );
+        $ioMock = $this->getIOMock();
+        $ioMock->expects([
+            ['text' => '{Downloading .*}', 'regex' => true],
+            ['text' => '{Downgrading .*}', 'regex' => true],
+        ]);
 
         $path = self::getUniqueTmpDirectory();
         $config = $this->getConfig(['vendor-dir' => $path.'/vendor']);

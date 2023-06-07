@@ -36,23 +36,11 @@ class GitLabTest extends TestCase
     public function testUsernamePasswordAuthenticationFlow(): void
     {
         $io = $this->getIOMock();
-        $io
-            ->expects($this->atLeastOnce())
-            ->method('writeError')
-            ->withConsecutive([$this->message])
-        ;
-        $io
-            ->expects($this->once())
-            ->method('ask')
-            ->with('Username: ')
-            ->willReturn($this->username)
-        ;
-        $io
-            ->expects($this->once())
-            ->method('askAndHideAnswer')
-            ->with('Password: ')
-            ->willReturn($this->password)
-        ;
+        $io->expects([
+            ['text' => $this->message],
+            ['ask' => 'Username: ', 'reply' => $this->username],
+            ['ask' => 'Password: ', 'reply' => $this->password],
+        ]);
 
         $httpDownloader = $this->getHttpDownloaderMock();
         $httpDownloader->expects(
@@ -77,18 +65,18 @@ class GitLabTest extends TestCase
         self::expectException('RuntimeException');
         self::expectExceptionMessage('Invalid GitLab credentials 5 times in a row, aborting.');
         $io = $this->getIOMock();
-        $io
-            ->expects($this->exactly(5))
-            ->method('ask')
-            ->with('Username: ')
-            ->willReturn($this->username)
-        ;
-        $io
-            ->expects($this->exactly(5))
-            ->method('askAndHideAnswer')
-            ->with('Password: ')
-            ->willReturn($this->password)
-        ;
+        $io->expects([
+            ['ask' => 'Username: ', 'reply' => $this->username],
+            ['ask' => 'Password: ', 'reply' => $this->password],
+            ['ask' => 'Username: ', 'reply' => $this->username],
+            ['ask' => 'Password: ', 'reply' => $this->password],
+            ['ask' => 'Username: ', 'reply' => $this->username],
+            ['ask' => 'Password: ', 'reply' => $this->password],
+            ['ask' => 'Username: ', 'reply' => $this->username],
+            ['ask' => 'Password: ', 'reply' => $this->password],
+            ['ask' => 'Username: ', 'reply' => $this->username],
+            ['ask' => 'Password: ', 'reply' => $this->password],
+        ]);
 
         $httpDownloader = $this->getHttpDownloaderMock();
         $httpDownloader->expects(
@@ -112,20 +100,6 @@ class GitLabTest extends TestCase
         $gitLab = new GitLab($io, $config, null, $httpDownloader);
 
         $gitLab->authorizeOAuthInteractively('https', $this->origin);
-    }
-
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\IO\ConsoleIO
-     */
-    private function getIOMock()
-    {
-        $io = $this
-            ->getMockBuilder('Composer\IO\ConsoleIO')
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-
-        return $io;
     }
 
     /**

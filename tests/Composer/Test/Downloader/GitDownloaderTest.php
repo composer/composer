@@ -547,12 +547,10 @@ composer https://github.com/old/url (push)
 
         $process = $this->getProcessExecutorMock();
 
-        $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $ioMock->expects($this->atLeastOnce())
-            ->method('writeError')
-            ->withConsecutive(
-                [$this->stringContains('Downgrading')]
-            );
+        $ioMock = $this->getIOMock();
+        $ioMock->expects([
+            ['text' => '{Downgrading .*}', 'regex' => true],
+        ]);
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
         $downloader = $this->getDownloaderMock($ioMock, null, $process);
@@ -591,12 +589,10 @@ composer https://github.com/old/url (push)
 
         $process = $this->getProcessExecutorMock();
 
-        $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $ioMock->expects($this->atLeastOnce())
-            ->method('writeError')
-            ->withConsecutive(
-                [$this->stringContains('Upgrading')]
-            );
+        $ioMock = $this->getIOMock();
+        $ioMock->expects([
+            ['text' => '{Upgrading .*}', 'regex' => true],
+        ]);
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
         $downloader = $this->getDownloaderMock($ioMock, null, $process);

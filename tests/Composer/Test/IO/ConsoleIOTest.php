@@ -111,15 +111,25 @@ class ConsoleIOTest extends TestCase
             ->willReturn(OutputInterface::VERBOSITY_NORMAL);
         $outputMock->expects($this->atLeast(7))
             ->method('write')
-            ->withConsecutive(
-                [$this->equalTo('something (<question>strlen = 23</question>)')],
-                [$this->equalTo(str_repeat("\x08", 23)), $this->equalTo(false)],
-                [$this->equalTo('shorter (<comment>12</comment>)'), $this->equalTo(false)],
-                [$this->equalTo(str_repeat(' ', 11)), $this->equalTo(false)],
-                [$this->equalTo(str_repeat("\x08", 11)), $this->equalTo(false)],
-                [$this->equalTo(str_repeat("\x08", 12)), $this->equalTo(false)],
-                [$this->equalTo('something longer than initial (<info>34</info>)')]
-            );
+            ->willReturnCallback(function (...$args) {
+                static $series = null;
+
+                if ($series === null) {
+                    $series = [
+                        ['something (<question>strlen = 23</question>)', true],
+                        [str_repeat("\x08", 23), false],
+                        ['shorter (<comment>12</comment>)', false],
+                        [str_repeat(' ', 11), false],
+                        [str_repeat("\x08", 11), false],
+                        [str_repeat("\x08", 12), false],
+                        ['something longer than initial (<info>34</info>)', false],
+                    ];
+                }
+
+                if (count($series) > 0) {
+                    $this->assertSame(array_shift($series), [$args[0], $args[1]]);
+                }
+            });
 
         $helperMock = $this->getMockBuilder('Symfony\Component\Console\Helper\HelperSet')->getMock();
 

@@ -5302,6 +5302,16 @@ parameters:
 			path: ../tests/Composer/Test/Json/JsonManipulatorTest.php
 
 		-
+			message: "#^Offset 'ask' might not exist on array\\{ask\\: string, reply\\?\\: string\\}\\|array\\{auth\\: array\\{string, string, string\\|null\\}\\}\\|array\\{text\\: string, verbosity\\?\\: 1\\|2\\|4\\|8\\|16\\}\\.$#"
+			count: 2
+			path: ../tests/Composer/Test/Mock/IOMock.php
+
+		-
+			message: "#^Offset 'text' might not exist on array\\{ask\\: string, reply\\?\\: string\\}\\|array\\{auth\\: array\\{string, string, string\\|null\\}\\}\\|array\\{text\\: string, verbosity\\?\\: 1\\|2\\|4\\|8\\|16\\}\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Mock/IOMock.php
+
+		-
 			message: "#^Composer\\\\Test\\\\Mock\\\\InstallationManagerMock\\:\\:__construct\\(\\) does not call parent constructor from Composer\\\\Installer\\\\InstallationManager\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Mock/InstallationManagerMock.php

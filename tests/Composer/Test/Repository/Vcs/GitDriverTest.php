@@ -55,7 +55,7 @@ class GitDriverTest extends TestCase
     public function testGetRootIdentifierFromRemoteLocalRepository(): void
     {
         $process = $this->getProcessExecutorMock();
-        $io = $this->getMockBuilder(IOInterface::class)->getMock();
+        $io = $this->getIOMock();
 
         $driver = new GitDriver(['url' => $this->home], $io, $this->config, $this->getHttpDownloaderMock(), $process);
         $this->setRepoDir($driver, $this->home);
@@ -82,11 +82,9 @@ GIT;
     public function testGetRootIdentifierFromRemote(): void
     {
         $process = $this->getProcessExecutorMock();
-        $io = $this->getMockBuilder(IOInterface::class)->getMock();
+        $io = $this->getIOMock();
 
-        $io
-            ->expects($this->never())
-            ->method('writeError');
+        $io->expects([], true);
 
         $driver = new GitDriver(['url' => 'https://example.org/acme.git'], $io, $this->config, $this->getHttpDownloaderMock(), $process);
         $this->setRepoDir($driver, $this->home);
@@ -119,7 +117,7 @@ GIT;
         Platform::putEnv('COMPOSER_DISABLE_NETWORK', '1');
 
         $process = $this->getProcessExecutorMock();
-        $io = $this->getMockBuilder(IOInterface::class)->getMock();
+        $io = $this->getIOMock();
 
         $driver = new GitDriver(['url' => 'https://example.org/acme.git'], $io, $this->config, $this->getHttpDownloaderMock(), $process);
         $this->setRepoDir($driver, $this->home);

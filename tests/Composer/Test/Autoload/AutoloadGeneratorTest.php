@@ -1328,10 +1328,16 @@ EOF;
         $this->eventDispatcher
             ->expects($this->exactly(2))
             ->method('dispatchScript')
-            ->withConsecutive(
-                [ScriptEvents::PRE_AUTOLOAD_DUMP, false],
-                [ScriptEvents::POST_AUTOLOAD_DUMP, false]
-            );
+            ->willReturnCallback(function ($type, $dev) {
+                static $series = [
+                    [ScriptEvents::PRE_AUTOLOAD_DUMP, false],
+                    [ScriptEvents::POST_AUTOLOAD_DUMP, false]
+                ];
+
+                $this->assertSame(array_shift($series), [$type, $dev]);
+
+                return 0;
+            });
 
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setAutoload(['psr-0' => ['Prefix' => 'foo/bar/non/existing/']]);
