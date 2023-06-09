@@ -13,10 +13,16 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use Generator;
 
 class ReinstallCommandTest extends TestCase
 {
-    public function testReinstallCommand(): void
+    /**
+     * @dataProvider caseProvider
+     * @param array<string> $packages
+     * @param string $expected
+     */
+    public function testReinstallCommand(array $packages, string $expected): void
     {
         $this->initTempComposer(['require' => ['root/req' => '1.*']]);
 
@@ -30,32 +36,24 @@ class ReinstallCommandTest extends TestCase
         $appTester->run([
             'command' => 'reinstall',
             '--no-progress' => true,
-            'packages' => ['root/req']
+            'packages' => $packages
         ]);
 
-        $this->assertSame('- Removing root/req (1.0.0)
-  - Installing root/req (1.0.0)', trim($appTester->getDisplay(true)));
+        $this->assertSame($expected, trim($appTester->getDisplay(true)));
     }
 
-    public function testReinstallCommandWherePackageNotCurrentlyInstalled(): void 
+    public function caseProvider(): Generator 
     {
-        
-        $this->initTempComposer(['require' => ['root/req' => '1.*']]);
+        yield 'reinstall a package' => [
+            ['root/req'],
+            '- Removing root/req (1.0.0)
+  - Installing root/req (1.0.0)'
+        ];
 
-        $rootReqPackage = self::getPackage('root/req');
-        $rootReqPackage->setType('metapackage');
-
-        $this->createComposerLock([$rootReqPackage], []);
-        $this->createInstalledJson([$rootReqPackage], []);
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'reinstall',
-            '--no-progress' => true,
-            'packages' => ['root/anotherreq']
-        ]);
-
-        $this->assertSame('<warning>Pattern "root/anotherreq" does not match any currently installed packages.</warning>
-<warning>Found no packages to reinstall, aborting.</warning>', trim($appTester->getDisplay(true)));
+        yield 'reinstall a package that is not installed' => [
+            ['root/anotherreq'],
+            '<warning>Pattern "root/anotherreq" does not match any currently installed packages.</warning>
+<warning>Found no packages to reinstall, aborting.</warning>'
+        ];
     }
 }
