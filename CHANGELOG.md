@@ -1,3 +1,10 @@
+### [2.5.8] 2023-06-09
+
+  * Fixed regression in edge cases where root package gets added to a repository already during the install process (#11495)
+  * Fixed EventDispatcher on windows picking bat files when using "@php binary" (#11490)
+  * Fixed ICU CDLR version parsing failing the whole process when ICU cannot initialize the resource bundle (#11492)
+  * Fixed type declarations on ClassLoader (#11500)
+
 ### [2.5.7] 2023-05-24
 
   * Fixed regression preventing autoloading the dependencies of metapackages when running --no-dev (#11481)
@@ -1724,6 +1731,7 @@
 
   * Initial release
 
+[2.5.8]: https://github.com/composer/composer/compare/2.5.7...2.5.8
 [2.5.7]: https://github.com/composer/composer/compare/2.5.6...2.5.7
 [2.5.6]: https://github.com/composer/composer/compare/2.5.5...2.5.6
 [2.5.5]: https://github.com/composer/composer/compare/2.5.4...2.5.5
