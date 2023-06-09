@@ -54,7 +54,7 @@ class ClassLoader
      */
     private $prefixLengthsPsr4 = array();
     /**
-     * @var array<string, array<int, string>>
+     * @var array<string, list<string>>
      */
     private $prefixDirsPsr4 = array();
     /**
@@ -68,7 +68,7 @@ class ClassLoader
      *
      * Structured as array('F (first letter)' => array('Foo\Bar (full prefix)' => array('path', 'path2')))
      *
-     * @var array<string, array<string, string[]>>
+     * @var array<string, array<string, list<string>>>
      */
     private $prefixesPsr0 = array();
     /**
@@ -122,7 +122,7 @@ class ClassLoader
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, list<string>>
      */
     public function getPrefixesPsr4()
     {
