@@ -24,18 +24,27 @@ class ReinstallCommandTest extends TestCase
      */
     public function testReinstallCommand(array $packages, string $expected): void
     {
-        $this->initTempComposer(['require' => ['root/req' => '1.*']]);
+        $this->initTempComposer(
+            [
+                'require' => [
+                    'root/req' => '1.*',
+                    'root/anotherreq' => '2.*'
+            ]
+        ]);
 
         $rootReqPackage = self::getPackage('root/req');
+        $anotherReqPackage = self::getPackage('root/anotherreq');
         $rootReqPackage->setType('metapackage');
+        $anotherReqPackage->setType('metapackage');
 
-        $this->createComposerLock([$rootReqPackage], []);
-        $this->createInstalledJson([$rootReqPackage], []);
+        $this->createComposerLock([$rootReqPackage], [$anotherReqPackage]);
+        $this->createInstalledJson([$rootReqPackage], [$anotherReqPackage]);
 
         $appTester = $this->getApplicationTester();
         $appTester->run([
             'command' => 'reinstall',
             '--no-progress' => true,
+            '--no-plugins' => true,
             'packages' => $packages
         ]);
 
@@ -45,14 +54,16 @@ class ReinstallCommandTest extends TestCase
     public function caseProvider(): Generator 
     {
         yield 'reinstall a package' => [
-            ['root/req'],
-            '- Removing root/req (1.0.0)
+            ['root/req', 'root/anotherreq'],
+'- Removing root/req (1.0.0)
+  - Removing root/anotherreq (1.0.0)
+  - Installing root/anotherreq (1.0.0)
   - Installing root/req (1.0.0)'
         ];
 
         yield 'reinstall a package that is not installed' => [
-            ['root/anotherreq'],
-            '<warning>Pattern "root/anotherreq" does not match any currently installed packages.</warning>
+            ['root/unknownreq'],
+            '<warning>Pattern "root/unknownreq" does not match any currently installed packages.</warning>
 <warning>Found no packages to reinstall, aborting.</warning>'
         ];
     }
