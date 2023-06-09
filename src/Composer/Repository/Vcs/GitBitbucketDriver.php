@@ -390,6 +390,10 @@ class GitBitbucketDriver extends VcsDriver
      */
     protected function fetchWithOAuthCredentials(string $url, bool $fetchingRepoData = false): Response
     {
+        if (isset($this->repoConfig['accessToken'])) {
+            $this->io->setAuthentication($this->originUrl, 'x-token-auth', $this->repoConfig['access-token']);
+        }
+
         try {
             return parent::getContents($url);
         } catch (TransportException $e) {
