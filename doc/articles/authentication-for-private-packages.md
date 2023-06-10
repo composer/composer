@@ -24,6 +24,7 @@ for credentials and save them (or a token if Composer is able to retrieve one).
 |[gitlab-token](#gitlab-token)|yes|
 |[github-oauth](#github-oauth)|yes|
 |[bitbucket-oauth](#bitbucket-oauth)|yes|
+|[bitbucket-oauth](#bitbucket-oauth)|no|
 
 Sometimes automatic authentication is not possible, or you may want to predefine
 authentication credentials.
@@ -357,6 +358,32 @@ php composer.phar config [--global] --editor --auth
              "consumer-key": "key",
              "consumer-secret": "secret"
         }
+    }
+}
+```
+
+## bitbucket-token
+
+The BitBucket driver is also able to access your private repositories via the BitBucket REST APIs, using (Bitbucket Repository Access Tokens)[https://support.atlassian.com/bitbucket-cloud/docs/create-a-repository-access-token/].
+Please note that this token is not the same as the OAuth consumer key and secret. On the contrary of the OAuth consumer,
+this token is specific to a repository. That enables the possibility to restrict the access to a specific repository.
+
+You can set up several tokens for each of your private Bitbucket repositories as shown below.
+
+> **Note:** Composer will try to download the repository as ZIP file but unfortunately Bitbucket does not support authentication
+> with access token. Therefore, Composer will fallback to cloning the repository using HTTPS and the access token as password.
+> The warning message `Failed to download ...` can be ignored.
+
+### Manual bitbucket-oauth
+
+```shell
+php composer.phar config [--global] --editor --auth
+```
+
+```json
+{
+    "bitbucket-token": {
+        "{workspace-name}/{repository-name}": "{repository access token}"
     }
 }
 ```
