@@ -24,11 +24,10 @@ class ReinstallCommandTest extends TestCase
      */
     public function testReinstallCommand(array $packages, string $expected): void
     {
-        $this->initTempComposer(
-            [
-                'require' => [
-                    'root/req' => '1.*',
-                    'root/anotherreq' => '2.*'
+        $this->initTempComposer([
+            'require' => [
+                'root/req' => '1.*',
+                'root/anotherreq' => '2.*'
             ]
         ]);
 
