@@ -283,6 +283,11 @@ class GitBitbucketDriver extends VcsDriver
             return $this->fallbackDriver->getDist($identifier);
         }
 
+        if ($this->hasAccessToken()) {
+            // Authentication with access token is not supported for downloads
+            return null;
+        }
+
         $url = sprintf(
             'https://bitbucket.org/%s/%s/get/%s.zip',
             $this->owner,
@@ -533,5 +538,11 @@ class GitBitbucketDriver extends VcsDriver
 
             $this->io->setAuthentication($this->originUrl, 'x-token-auth', $bitbucketTokens[$this->owner . "/" . $this->repository]);
         }
+    }
+
+    private function hasAccessToken(): bool
+    {
+        return $this->config->has('bitbucket-token')
+            && isset($this->config->get('bitbucket-token')[$this->owner . "/" . $this->repository]);
     }
 }

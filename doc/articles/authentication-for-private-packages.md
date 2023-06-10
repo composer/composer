@@ -370,10 +370,6 @@ this token is specific to a repository. That enables the possibility to restrict
 
 You can set up several tokens for each of your private Bitbucket repositories as shown below.
 
-> **Note:** Composer will try to download the repository as ZIP file but unfortunately Bitbucket does not support authentication
-> with access token. Therefore, Composer will fallback to cloning the repository using HTTPS and the access token as password.
-> The warning message `Failed to download ...` can be ignored.
-
 ### Manual bitbucket-oauth
 
 ```shell
