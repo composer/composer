@@ -119,7 +119,17 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $this->io->writeError($msg);
 
-        $commandCallable = static function (string $url) use ($path, $command, $cachePath): string {
+        $io = $this->io;
+
+        $commandCallable = static function (string $url) use ($path, $command, $cachePath, $io): string {
+            if (Preg::isMatch('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(?:\.git|/?)?$#i', $url)) {
+                $auth = $io->getAuthentication('bitbucket.org');
+
+                if (isset($auth['username']) && $auth['username'] === 'x-token-auth') {
+                    $url = Preg::replace('/bitbucket\.org/', $auth['username'].':'.$auth['password'].'@bitbucket.org', $url, 1);
+                }
+            }
+
             return str_replace(
                 ['%url%', '%path%', '%cachePath%', '%sanitizedUrl%'],
                 [
