@@ -24,7 +24,7 @@ for credentials and save them (or a token if Composer is able to retrieve one).
 |[gitlab-token](#gitlab-token)|yes|
 |[github-oauth](#github-oauth)|yes|
 |[bitbucket-oauth](#bitbucket-oauth)|yes|
-|[bitbucket-oauth](#bitbucket-oauth)|no|
+|[bitbucket-token](#bitbucket-token)|no|
 
 Sometimes automatic authentication is not possible, or you may want to predefine
 authentication credentials.
