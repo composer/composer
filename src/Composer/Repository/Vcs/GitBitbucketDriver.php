@@ -524,11 +524,6 @@ class GitBitbucketDriver extends VcsDriver
 
     private function authenticateAccessToken(): void
     {
-        if (isset($this->repoConfig['access-token'])) {
-            $this->io->setAuthentication($this->originUrl, 'x-token-auth', $this->repoConfig['access-token']);
-            return;
-        }
-
         if ($this->config->has('bitbucket-token')) {
             $bitbucketTokens = $this->config->get('bitbucket-token');
 
