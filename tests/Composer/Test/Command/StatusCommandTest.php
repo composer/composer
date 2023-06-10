@@ -19,6 +19,7 @@ class StatusCommandTest extends TestCase
 {
     /**
      * @dataProvider caseProvider
+     * @param array<mixed> $composerJson
      * @param string $expected
      */
     public function testStatusCommand(
