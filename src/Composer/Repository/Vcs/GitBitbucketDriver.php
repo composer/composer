@@ -390,9 +390,7 @@ class GitBitbucketDriver extends VcsDriver
      */
     protected function fetchWithOAuthCredentials(string $url, bool $fetchingRepoData = false): Response
     {
-        if (isset($this->repoConfig['access-token'])) {
-            $this->io->setAuthentication($this->originUrl, 'x-token-auth', $this->repoConfig['access-token']);
-        }
+        $this->authenticateAccessToken();
 
         try {
             return parent::getContents($url);
@@ -522,5 +520,23 @@ class GitBitbucketDriver extends VcsDriver
         }
 
         return true;
+    }
+
+    private function authenticateAccessToken(): void
+    {
+        if (isset($this->repoConfig['access-token'])) {
+            $this->io->setAuthentication($this->originUrl, 'x-token-auth', $this->repoConfig['access-token']);
+            return;
+        }
+
+        if ($this->config->has('bitbucket-token')) {
+            $bitbucketTokens = $this->config->get('bitbucket-token');
+
+            if (! isset($bitbucketTokens[$this->owner . "/" . $this->repository])) {
+                return;
+            }
+
+            $this->io->setAuthentication($this->originUrl, 'x-token-auth', $bitbucketTokens[$this->owner . "/" . $this->repository]);
+        }
     }
 }
