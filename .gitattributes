@@ -24,3 +24,6 @@
 /PORTING_INFO export-ignore
 /README.md export-ignore
 /UPGRADE-2.0.md export-ignore
+
+# Ref https://github.com/composer/composer/issues/11507
+/phpstan/rules.neon -export-ignore
