@@ -1,0 +1,8 @@
+/.direnv/
+/.idea/
+/vendor/
+/docs/
+/build/
+/tests/
+CHANGELOG.md
+composer.lock
