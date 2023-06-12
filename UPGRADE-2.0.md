@@ -54,8 +54,8 @@
 
 #### Composer v1
 
-- Composer resolves dependencies (dispatching PRE/POST_DEPENDENCIES_SOLVING)
-- It then iterates over all packages one by one (dispatching PRE_PACKAGE_INSTALL/UPDATE/UNINSTALL, then PRE_FILE_DOWNLOAD if needed, then POST_PACKAGE_\*)
+- Composer resolves dependencies (dispatching `PRE`/`POST_DEPENDENCIES_SOLVING`)
+- It then iterates over all packages one by one (dispatching `PRE_PACKAGE_INSTALL`/`UPDATE`/`UNINSTALL`, then `PRE_FILE_DOWNLOAD` if needed, then `POST_PACKAGE_*`)
 - And finally writes the lock file at the end
 
 #### Composer v2
@@ -71,7 +71,7 @@ Install then does:
 
 - Dispatches PRE_OPERATIONS_EXEC with the full list of operations to be executed
 - Downloads all the packages not in cache yet in parallel (dispatching PRE_FILE_DOWNLOAD for those not in cache yet)
-- It then iterates over all packages and executes updates/installs/uninstalls in parallel (dispatching PRE_PACKAGE_INSTALL/UPDATE/UNINSTALL then POST_PACKAGE_\* but one package started last may finish installing before another is done for example).
+- It then iterates over all packages and executes updates/installs/uninstalls in parallel (dispatching `PRE_PACKAGE_INSTALL`/`UPDATE`/`UNINSTALL` then `POST_PACKAGE_*` but one package started last may finish installing before another is done for example).
 
 ## For Composer repository implementors
 
