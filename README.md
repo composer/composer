@@ -50,6 +50,21 @@ PHP versions 5.3.2 - 8.1 are still supported via the LTS releases of Composer (2
 run the installer or the `self-update` command the appropriate Composer version for your PHP
 should be automatically selected.
 
+#### Binary dependencies
+
+- `7z` (or `7zz`)
+- `gzip`
+- `tar`
+- `unrar`
+- `unzip`
+- `xz`
+- Fossil (`fossil`)
+- Git (`git`)
+- Mercurial (`hg`)
+- Perforce (`p4`)
+- Subversion (`svn`)
+- (optional) `hhvm`
+
 Authors
 -------
 
