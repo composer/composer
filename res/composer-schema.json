@@ -6,7 +6,7 @@
         "name": {
             "type": "string",
             "description": "Package name, including 'vendor-name/' prefix.",
-            "pattern": "^[a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$"
+            "pattern": "^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$"
         },
         "description": {
             "type": "string",
@@ -203,7 +203,10 @@
                     { "$ref": "#/definitions/repository" },
                     {
                         "type": "object",
-                        "additionalProperties": { "type": "boolean", "enum": [false] },
+                        "additionalProperties": {
+                            "type": "boolean",
+                            "enum": [false]
+                        },
                         "minProperties": 1,
                         "maxProperties": 1
                     }
@@ -348,7 +351,7 @@
                     "description": "An object of domain name => gitlab API oauth tokens, typically {\"gitlab.com\":{\"expires-at\":\"<expiration date>\", \"refresh-token\":\"<refresh token>\", \"token\":\"<token>\"}}.",
                     "additionalProperties": {
                         "type": ["string", "object"],
-                        "required": [ "token"],
+                        "required": ["token"],
                         "properties": {
                             "expires-at": {
                                 "type": "integer",
@@ -675,7 +678,7 @@
             "items": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": [ "name"],
+                "required": ["name"],
                 "properties": {
                     "name": {
                         "type": "string",
@@ -778,7 +781,21 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
-                "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "bitbucket", "git-bitbucket", "hg", "fossil", "perforce", "svn"] },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "vcs",
+                        "github",
+                        "git",
+                        "gitlab",
+                        "bitbucket",
+                        "git-bitbucket",
+                        "hg",
+                        "fossil",
+                        "perforce",
+                        "svn"
+                    ]
+                },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
                 "only": {
@@ -942,10 +959,7 @@
                     "type": "string"
                 },
                 "license": {
-                    "type": [
-                        "string",
-                        "array"
-                    ]
+                    "type": ["string", "array"]
                 },
                 "authors": {
                     "$ref": "#/definitions/authors"

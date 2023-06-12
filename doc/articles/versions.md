@@ -24,12 +24,13 @@ in `composer.json`).
 
 ## VCS Tags and Branches
 
-*For the following discussion, let's assume the following sample library
-repository:*
+_For the following discussion, let's assume the following sample library
+repository:_
 
 ```shell
 ~/my-library$ git branch
 ```
+
 ```text
 v1
 v2
@@ -40,6 +41,7 @@ another-feature
 ```shell
 ~/my-library$ git tag
 ```
+
 ```text
 v1.0
 v1.0.1
@@ -80,7 +82,7 @@ correct location in your `vendor` directory.
 
 ### Branches
 
-If you want Composer to check out a branch instead of a tag, you need to point it to the branch using the special `dev-*` prefix (or sometimes suffix; see below). If you're checking out a branch, it's assumed that you want to *work* on the branch and Composer actually clones the repo into the correct place in your `vendor` directory. For tags, it copies the right files without actually cloning the repo. (You can modify this behavior with --prefer-source and --prefer-dist, see [install options](../03-cli.md#install).)
+If you want Composer to check out a branch instead of a tag, you need to point it to the branch using the special `dev-*` prefix (or sometimes suffix; see below). If you're checking out a branch, it's assumed that you want to _work_ on the branch and Composer actually clones the repo into the correct place in your `vendor` directory. For tags, it copies the right files without actually cloning the repo. (You can modify this behavior with --prefer-source and --prefer-dist, see [install options](../03-cli.md#install).)
 
 In the above example, if you wanted to check out the `my-feature` branch, you would specify `dev-my-feature` as the version constraint in your `require` clause. This would result in Composer cloning the `my-library` repository into my `vendor` directory and checking out the `my-feature` branch.
 
@@ -131,17 +133,18 @@ will be treated as a **logical OR**. AND has higher precedence than OR.
 > Consider using the [caret](#caret-version-range-) operator instead for safety.
 
 <!--blank line followed by comment markup to separate the block quotes-->
+
 > **Note:** In older versions of Composer the single pipe (`|`) was the
 > recommended alternative to the **logical OR**. Thus for backwards compatibility
 > the single pipe (`|`) will still be treated as a **logical OR**.
 
 Examples:
 
-* `>=1.0`
-* `>=1.0 <2.0`
-* `>=1.0 <1.1 || >=1.2`
+-   `>=1.0`
+-   `>=1.0 <2.0`
+-   `>=1.0 <1.1 || >=1.2`
 
-### Hyphenated Version Range (` - `)
+### Hyphenated Version Range (`-`)
 
 Inclusive set of versions. Partial versions on the right include are completed
 with a wildcard. For example `1.0 - 2.0` is equivalent to `>=1.0.0 <2.1` as the
@@ -211,17 +214,17 @@ add the suffix `-stable`.
 
 Examples:
 
- Constraint         | Internally
-------------------- | ------------------------
- `1.2.3`            | `=1.2.3.0-stable`
- `>1.2`             | `>1.2.0.0-stable`
- `>=1.2`            | `>=1.2.0.0-dev`
- `>=1.2-stable`     | `>=1.2.0.0-stable`
- `<1.3`             | `<1.3.0.0-dev`
- `<=1.3`            | `<=1.3.0.0-stable`
- `1 - 2`            | `>=1.0.0.0-dev <3.0.0.0-dev`
- `~1.3`             | `>=1.3.0.0-dev <2.0.0.0-dev`
- `1.4.*`            | `>=1.4.0.0-dev <1.5.0.0-dev`
+| Constraint     | Internally                   |
+| -------------- | ---------------------------- |
+| `1.2.3`        | `=1.2.3.0-stable`            |
+| `>1.2`         | `>1.2.0.0-stable`            |
+| `>=1.2`        | `>=1.2.0.0-dev`              |
+| `>=1.2-stable` | `>=1.2.0.0-stable`           |
+| `<1.3`         | `<1.3.0.0-dev`               |
+| `<=1.3`        | `<=1.3.0.0-stable`           |
+| `1 - 2`        | `>=1.0.0.0-dev <3.0.0.0-dev` |
+| `~1.3`         | `>=1.3.0.0-dev <2.0.0.0-dev` |
+| `1.4.*`        | `>=1.4.0.0-dev <1.5.0.0-dev` |
 
 To allow various stabilities without enforcing them at the constraint level
 however, you may use [stability-flags](../04-schema.md#package-links) like
@@ -231,6 +234,7 @@ setting. All available stability flags are listed on the minimum-stability
 section of the [schema page](../04-schema.md#minimum-stability).
 
 ## Summary
+
 ```jsonc
 "require": {
     "vendor/package": "1.3.2", // exactly 1.3.2

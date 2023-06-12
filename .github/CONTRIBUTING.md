@@ -1,12 +1,10 @@
-Contributing to Composer
-========================
+# Contributing to Composer
 
 Please note that this project is released with a
 [Contributor Code of Conduct](https://github.com/composer/composer/blob/main/CODE_OF_CONDUCT.md).
 By participating in this project you agree to abide by its terms.
 
-Reporting Issues
-----------------
+## Reporting Issues
 
 When reporting issues, please try to be as descriptive as possible, and include
 as much relevant information as you can. A step by step guide on how to
@@ -21,18 +19,15 @@ If your issue involves installing, updating or resolving dependencies, the
 chance of us being able to reproduce your issue will be much higher if you
 share your `composer.json` with us.
 
-Coding Style Fixes
-------------------
+## Coding Style Fixes
 
 We do not accept CS fixes pull requests. Fixes are done by the project maintainers when appropriate to avoid causing too many unnecessary conflicts between branches and pull requests.
 
-Security Reports
-----------------
+## Security Reports
 
 Please send any sensitive issue to [security@packagist.org](mailto:security@packagist.org). Thanks!
 
-Installation from Source
-------------------------
+## Installation from Source
 
 Prior to contributing to Composer, you must be able to run the test suite.
 To achieve this, you need to acquire the Composer source code:
@@ -45,14 +40,13 @@ You can run the test suite by executing `vendor/bin/simple-phpunit` when inside 
 composer directory, and run Composer by executing the `bin/composer`.
 
 For running the tests against the most recent PHP versions (PHP 8.0/8.1), you will
-need to run `composer update --ignore-platform-reqs && git checkout composer.lock`  before running 
+need to run `composer update --ignore-platform-reqs && git checkout composer.lock` before running
 the `vendor/bin/simple-phpunit` command.
 
 To test your modified Composer code against another project, run
 `php /path/to/composer/bin/composer` inside that project's directory.
 
-Contributing policy
--------------------
+## Contributing policy
 
 Fork the project, create a feature branch, and send us a pull request.
 

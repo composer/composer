@@ -10,11 +10,11 @@ be adapted to run Composer as part of their project bootstrapping.
 While it can be tempting to commit it in some environment, it leads to a few
 problems:
 
-- Large VCS repository size and diffs when you update code.
-- Duplication of the history of all your dependencies in your own VCS.
-- Adding dependencies installed via git to a git repo will show them as
-  submodules. This is problematic because they are not real submodules, and you
-  will run into issues.
+-   Large VCS repository size and diffs when you update code.
+-   Duplication of the history of all your dependencies in your own VCS.
+-   Adding dependencies installed via git to a git repo will show them as
+    submodules. This is problematic because they are not real submodules, and you
+    will run into issues.
 
 If you really feel like you must do this, you have a few options:
 

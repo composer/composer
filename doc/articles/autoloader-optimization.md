@@ -27,9 +27,9 @@ For this reason, Composer offers a few strategies to optimize the autoloader.
 
 There are a few options to enable this:
 
-- Set `"optimize-autoloader": true` inside the config key of composer.json
-- Call `install` or `update` with `-o` / `--optimize-autoloader`
-- Call `dump-autoload` with `-o` / `--optimize`
+-   Set `"optimize-autoloader": true` inside the config key of composer.json
+-   Call `install` or `update` with `-o` / `--optimize-autoloader`
+-   Call `dump-autoload` with `-o` / `--optimize`
 
 ### What does it do?
 
@@ -59,9 +59,9 @@ class_exists checks that are done for classes that do not exist in your project.
 
 There are a few options to enable this:
 
-- Set `"classmap-authoritative": true` inside the config key of composer.json
-- Call `install` or `update` with `-a` / `--classmap-authoritative`
-- Call `dump-autoload` with `-a` / `--classmap-authoritative`
+-   Set `"classmap-authoritative": true` inside the config key of composer.json
+-   Call `install` or `update` with `-a` / `--classmap-authoritative`
+-   Call `dump-autoload` with `-a` / `--classmap-authoritative`
 
 ### What does it do?
 
@@ -87,9 +87,9 @@ then you might experience "class not found" issues in production. Enable this wi
 
 There are a few options to enable this:
 
-- Set `"apcu-autoloader": true` inside the config key of composer.json
-- Call `install` or `update` with `--apcu-autoloader`
-- Call `dump-autoload` with `--apcu`
+-   Set `"apcu-autoloader": true` inside the config key of composer.json
+-   Call `install` or `update` with `--apcu-autoloader`
+-   Call `dump-autoload` with `--apcu`
 
 ### What does it do?
 

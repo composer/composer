@@ -3,10 +3,10 @@ name: "Autoloader"
 on:
   push:
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
   pull_request:
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
 
 permissions:
   contents: read

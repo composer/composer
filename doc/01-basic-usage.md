@@ -98,17 +98,17 @@ php composer.phar update
 
 This will make Composer do two things:
 
-- It resolves all dependencies listed in your `composer.json` file and writes all of the
-  packages and their exact versions to the `composer.lock` file, locking the project to
-  those specific versions. You should commit the `composer.lock` file to your project repo
-  so that all people working on the project are locked to the same versions of dependencies
-  (more below). This is the main role of the `update` command.
-- It then implicitly runs the [`install`](03-cli.md#install-i) command. This will download
-  the dependencies' files into the `vendor` directory in your project. (The `vendor`
-  directory is the conventional location for all third-party code in a project). In our
-  example from above, you would end up with the Monolog source files in
-  `vendor/monolog/monolog/`. As Monolog has a dependency on `psr/log`, that package's files
-  can also be found inside `vendor/`.
+-   It resolves all dependencies listed in your `composer.json` file and writes all of the
+    packages and their exact versions to the `composer.lock` file, locking the project to
+    those specific versions. You should commit the `composer.lock` file to your project repo
+    so that all people working on the project are locked to the same versions of dependencies
+    (more below). This is the main role of the `update` command.
+-   It then implicitly runs the [`install`](03-cli.md#install-i) command. This will download
+    the dependencies' files into the `vendor` directory in your project. (The `vendor`
+    directory is the conventional location for all third-party code in a project). In our
+    example from above, you would end up with the Monolog source files in
+    `vendor/monolog/monolog/`. As Monolog has a dependency on `psr/log`, that package's files
+    can also be found inside `vendor/`.
 
 > **Tip:** If you are using git for your project, you probably want to add
 > `vendor` in your `.gitignore`. You really don't want to add all of that
@@ -195,21 +195,21 @@ Composer has platform packages, which are virtual packages for things that are
 installed on the system but are not actually installable by Composer. This
 includes PHP itself, PHP extensions and some system libraries.
 
-* `php` represents the PHP version of the user, allowing you to apply
-  constraints, e.g. `^7.1`. To require a 64bit version of php, you can
-  require the `php-64bit` package.
+-   `php` represents the PHP version of the user, allowing you to apply
+    constraints, e.g. `^7.1`. To require a 64bit version of php, you can
+    require the `php-64bit` package.
 
-* `hhvm` represents the version of the HHVM runtime and allows you to apply
-  a constraint, e.g., `^2.3`.
+-   `hhvm` represents the version of the HHVM runtime and allows you to apply
+    a constraint, e.g., `^2.3`.
 
-* `ext-<name>` allows you to require PHP extensions (includes core
-  extensions). Versioning can be quite inconsistent here, so it's often
-  a good idea to set the constraint to `*`.  An example of an extension
-  package name is `ext-gd`.
+-   `ext-<name>` allows you to require PHP extensions (includes core
+    extensions). Versioning can be quite inconsistent here, so it's often
+    a good idea to set the constraint to `*`. An example of an extension
+    package name is `ext-gd`.
 
-* `lib-<name>` allows constraints to be made on versions of libraries used by
-  PHP. The following are available: `curl`, `iconv`, `icu`, `libxml`,
-  `openssl`, `pcre`, `uuid`, `xsl`.
+-   `lib-<name>` allows constraints to be made on versions of libraries used by
+    PHP. The following are available: `curl`, `iconv`, `icu`, `libxml`,
+    `openssl`, `pcre`, `uuid`, `xsl`.
 
 You can use [`show --platform`](03-cli.md#show) to get a list of your locally
 available platform packages.
@@ -234,7 +234,7 @@ You can even add your own code to the autoloader by adding an
 ```json
 {
     "autoload": {
-        "psr-4": {"Acme\\": "src/"}
+        "psr-4": { "Acme\\": "src/" }
     }
 }
 ```
@@ -276,4 +276,4 @@ See also the docs on [optimizing the autoloader](articles/autoloader-optimizatio
 > one, you can include `vendor/composer/autoload_*.php` files, which return
 > associative arrays allowing you to configure your own autoloader.
 
-&larr; [Intro](00-intro.md)  |  [Libraries](02-libraries.md) &rarr;
+&larr; [Intro](00-intro.md) | [Libraries](02-libraries.md) &rarr;

@@ -3,10 +3,10 @@ name: "PHPStan"
 on:
   push:
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
   pull_request:
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --prefer-dist"
@@ -45,7 +45,7 @@ jobs:
 
       - name: "Determine composer cache directory"
         id: "determine-composer-cache-directory"
-        run: "echo \"directory=$(composer config cache-dir)\" >> $GITHUB_OUTPUT"
+        run: 'echo "directory=$(composer config cache-dir)" >> $GITHUB_OUTPUT'
 
       - name: "Cache dependencies installed with composer"
         uses: "actions/cache@v3"

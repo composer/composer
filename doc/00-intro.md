@@ -109,7 +109,7 @@ Linux distributions.
 > `mkdir -p /usr/local/bin`.
 
 > **Note:** For information on changing your PATH, please read the
-> [Wikipedia article](https://en.wikipedia.org/wiki/PATH_(variable)) and/or use
+> [Wikipedia article](<https://en.wikipedia.org/wiki/PATH_(variable)>) and/or use
 > your search engine of choice.
 
 Now run `composer` in order to run Composer instead of `php composer.phar`.
@@ -158,6 +158,7 @@ Close your current terminal. Test usage with a new terminal:
 ```shell
 C:\Users\username>composer -V
 ```
+
 ```text
 Composer version 2.4.0 2022-08-16 16:10:48
 ```

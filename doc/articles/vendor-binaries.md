@@ -129,13 +129,13 @@ gets installed with a Composer version supporting the feature.
 
 ## What about Windows and .bat files?
 
-Packages managed entirely by Composer do not *need* to contain any
+Packages managed entirely by Composer do not _need_ to contain any
 `.bat` files for Windows compatibility. Composer handles installation
 of binaries in a special way when run in a Windows environment:
 
- * A `.bat` file is generated automatically to reference the binary
- * A Unix-style proxy file with the same name as the binary is also
-   generated, which is useful for WSL, Linux VMs, etc.
+-   A `.bat` file is generated automatically to reference the binary
+-   A Unix-style proxy file with the same name as the binary is also
+    generated, which is useful for WSL, Linux VMs, etc.
 
 Packages that need to support workflows that may not include Composer
 are welcome to maintain custom `.bat` files. In this case, the package
@@ -145,8 +145,8 @@ should **not** list the `.bat` file as a binary as it is not needed.
 
 Yes, there are two ways an alternate vendor binary location can be specified:
 
- 1. Setting the `bin-dir` configuration setting in `composer.json`
- 1. Setting the environment variable `COMPOSER_BIN_DIR`
+1.  Setting the `bin-dir` configuration setting in `composer.json`
+1.  Setting the environment variable `COMPOSER_BIN_DIR`
 
 An example of the former looks like this:
 

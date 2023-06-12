@@ -1,15 +1,15 @@
 {
     "providers": {
-        "bar\/baz": {
+        "bar/baz": {
             "sha256": "923363b3c22e73abb2e3fd891c8156dd4d0821a97fd3e428bc910833e3e46dbe"
         },
-        "foo\/bar": {
+        "foo/bar": {
             "sha256": "4baabb3303afa3e34a4d3af18fb138e5f3b79029c1f8d9ab5b477ea15776ba0a"
         },
-        "gar\/nix": {
+        "gar/nix": {
             "sha256": "5d210670cb46c8364c8e3fb449967b9bea558b971e5b082f330ae4f1d484c321"
         },
-        "qux\/quux": {
+        "qux/quux": {
             "sha256": "c142d1a07ca354be46b613f59f1d601923a5a00ccc5fcce50a77ecdd461eb72d"
         }
     }

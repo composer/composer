@@ -99,9 +99,9 @@ The only required field is `packages`. The JSON structure is as follows:
 The `@composer.json` marker would be the contents of the `composer.json` from
 that package version including as a minimum:
 
-* name
-* version
-* dist or source
+-   name
+-   version
+-   dist or source
 
 Here is a minimal package definition:
 
@@ -138,9 +138,7 @@ JSON request body:
 
 ```json
 {
-    "downloads": [
-        {"name": "monolog/monolog", "version": "1.2.1.0"}
-    ]
+    "downloads": [{ "name": "monolog/monolog", "version": "1.2.1.0" }]
 }
 ```
 
@@ -216,7 +214,7 @@ monolog/monolog itself.
 
 ```json
 {
-    "providers-api": "https://packagist.org/providers/%package%.json",
+    "providers-api": "https://packagist.org/providers/%package%.json"
 }
 ```
 
@@ -232,12 +230,10 @@ any substring.
 Replace/provide rules should not be considered here.
 
 It must return an array of package names:
+
 ```json
 {
-    "packageNames": [
-        "a/b",
-        "c/d"
-    ]
+    "packageNames": ["a/b", "c/d"]
 }
 ```
 
@@ -391,7 +387,7 @@ GitHub and Bitbucket:
     "repositories": [
         {
             "type": "vcs",
-            "url":  "git@bitbucket.org:vendor/my-private-repo.git"
+            "url": "git@bitbucket.org:vendor/my-private-repo.git"
         }
     ],
     "require": {
@@ -407,10 +403,10 @@ The only requirement is the installation of SSH keys for a git client.
 Git is not the only version control system supported by the VCS repository.
 The following are supported:
 
-* **Git:** [git-scm.com](https://git-scm.com)
-* **Subversion:** [subversion.apache.org](https://subversion.apache.org)
-* **Mercurial:** [mercurial-scm.org](https://www.mercurial-scm.org)
-* **Fossil**: [fossil-scm.org](https://www.fossil-scm.org/)
+-   **Git:** [git-scm.com](https://git-scm.com)
+-   **Subversion:** [subversion.apache.org](https://subversion.apache.org)
+-   **Mercurial:** [mercurial-scm.org](https://www.mercurial-scm.org)
+-   **Fossil**: [fossil-scm.org](https://www.fossil-scm.org/)
 
 To get packages from these systems you need to have their respective clients
 installed. That can be inconvenient. And for this reason there is special
@@ -418,8 +414,8 @@ support for GitHub and Bitbucket that use the APIs provided by these sites, to
 fetch the packages without having to install the version control system. The
 VCS repository provides `dist`s for them that fetch the packages as zips.
 
-* **GitHub:** [github.com](https://github.com) (Git)
-* **Bitbucket:** [bitbucket.org](https://bitbucket.org) (Git)
+-   **GitHub:** [github.com](https://github.com) (Git)
+-   **Bitbucket:** [bitbucket.org](https://bitbucket.org) (Git)
 
 The VCS driver to be used is detected automatically based on the URL. However,
 should you need to specify one for whatever reason, you can use `bitbucket`,
@@ -432,9 +428,10 @@ GitHub API. But unlike using the `git` driver directly, Composer will still
 attempt to use github's zip files.
 
 Please note:
-* **To let Composer choose which driver to use** the repository type needs to be defined as "vcs"
-* **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update Composer cache and install the package from dist.
-* VCS driver `git-bitbucket` is deprecated in favor of `bitbucket`
+
+-   **To let Composer choose which driver to use** the repository type needs to be defined as "vcs"
+-   **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update Composer cache and install the package from dist.
+-   VCS driver `git-bitbucket` is deprecated in favor of `bitbucket`
 
 #### Bitbucket Driver Configuration
 
@@ -551,10 +548,10 @@ Typically, you would leave the source part off, as you don't really need it.
 > **Note**: This repository type has a few limitations and should be avoided
 > whenever possible:
 >
-> - Composer will not update the package unless you change the `version` field.
-> - Composer will not update the commit references, so if you use `master` as
->   reference you will have to delete the package to force an update, and will
->   have to deal with an unstable lock file.
+> -   Composer will not update the package unless you change the `version` field.
+> -   Composer will not update the commit references, so if you use `master` as
+>     reference you will have to delete the package to force an update, and will
+>     have to deal with an unstable lock file.
 
 The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:
 
@@ -585,13 +582,13 @@ The `"package"` key in a `package` repository may be set to an array to define m
 While you will probably want to put your packages on packagist most of the
 time, there are some use cases for hosting your own repository.
 
-* **Private company packages:** If you are part of a company that uses Composer
-  for their packages internally, you might want to keep those packages private.
+-   **Private company packages:** If you are part of a company that uses Composer
+    for their packages internally, you might want to keep those packages private.
 
-* **Separate ecosystem:** If you have a project which has its own ecosystem,
-  and the packages aren't really reusable by the greater PHP community, you
-  might want to keep them separate to packagist. An example of this would be
-  WordPress plugins.
+-   **Separate ecosystem:** If you have a project which has its own ecosystem,
+    and the packages aren't really reusable by the greater PHP community, you
+    might want to keep them separate to packagist. An example of this would be
+    WordPress plugins.
 
 For hosting your own packages, a native `composer` type of repository is
 recommended, which provides the best performance.
@@ -649,6 +646,7 @@ Each zip artifact is a ZIP archive with `composer.json` in root folder:
 ```shell
 unzip -l acme-corp-parser-10.3.5.zip
 ```
+
 ```text
 composer.json
 ...
@@ -666,6 +664,7 @@ you to depend on a local directory, either absolute or relative. This can be
 especially useful when dealing with monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
+
 ```text
 ...
 ├── apps
@@ -760,12 +759,13 @@ You can configure the way the package's dist reference (which appears in
 the composer.lock file) is built.
 
 The following modes exist:
-- `none` - reference will be always null. This can help reduce lock file conflicts
-  in the lock file but reduces clarity as to when the last update happened and whether
-  the package is in the latest state.
-- `config` - reference is built based on a hash of the package's composer.json and repo config
-- `auto` (used by default) - reference is built basing on the hash like with `config`, but if
-  the package folder contains a git repository, the HEAD commit's hash is used as reference instead.
+
+-   `none` - reference will be always null. This can help reduce lock file conflicts
+    in the lock file but reduces clarity as to when the last update happened and whether
+    the package is in the latest state.
+-   `config` - reference is built based on a hash of the package's composer.json and repo config
+-   `auto` (used by default) - reference is built basing on the hash like with `config`, but if
+    the package folder contains a git repository, the HEAD commit's hash is used as reference instead.
 
 ```json
 {
@@ -802,4 +802,4 @@ You can disable Packagist.org globally by using the global config flag:
 php composer.phar config -g repo.packagist false
 ```
 
-&larr; [Schema](04-schema.md)  |  [Config](06-config.md) &rarr;
+&larr; [Schema](04-schema.md) | [Config](06-config.md) &rarr;

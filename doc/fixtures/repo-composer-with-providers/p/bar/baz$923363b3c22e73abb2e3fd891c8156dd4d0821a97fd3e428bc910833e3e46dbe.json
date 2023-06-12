@@ -1,13 +1,13 @@
 {
     "packages": {
-        "bar\/baz": {
+        "bar/baz": {
             "1.0.0": {
-                "name": "bar\/baz",
+                "name": "bar/baz",
                 "version": "1.0.0",
                 "version_normalized": "1.0.0.0",
                 "source": {
                     "type": "hg",
-                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "url": "http://some.where/over/the/rainbow/",
                     "reference": "35810817c14d"
                 },
                 "time": "2014-10-13 12:04:55",
@@ -15,12 +15,12 @@
                 "uid": 0
             },
             "1.0.x-dev": {
-                "name": "bar\/baz",
+                "name": "bar/baz",
                 "version": "1.0.x-dev",
                 "version_normalized": "1.0.9999999.9999999-dev",
                 "source": {
                     "type": "hg",
-                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "url": "http://some.where/over/the/rainbow/",
                     "reference": "ffff9aae6ed5"
                 },
                 "time": "2014-10-13 12:05:37",
@@ -28,12 +28,12 @@
                 "uid": 1
             },
             "dev-default": {
-                "name": "bar\/baz",
+                "name": "bar/baz",
                 "version": "dev-default",
                 "version_normalized": "9999999-dev",
                 "source": {
                     "type": "hg",
-                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "url": "http://some.where/over/the/rainbow/",
                     "reference": "f317e556f2e2"
                 },
                 "time": "2014-10-13 12:06:45",

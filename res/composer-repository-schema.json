@@ -3,9 +3,9 @@
     "description": "A representation of packages metadata.",
     "type": "object",
     "oneOf": [
-        { "required": [ "packages" ] },
-        { "required": [ "providers" ] },
-        { "required": [ "provider-includes", "providers-url" ] }
+        { "required": ["packages"] },
+        { "required": ["providers"] },
+        { "required": ["provider-includes", "providers-url"] }
     ],
     "properties": {
         "packages": {
@@ -80,10 +80,12 @@
                         "source": { "type": "object" }
                     }
                 },
-                { "oneOf": [
-                    { "required": [ "name", "version", "source" ] },
-                    { "required": [ "name", "version", "dist" ] }
-                ] }
+                {
+                    "oneOf": [
+                        { "required": ["name", "version", "source"] },
+                        { "required": ["name", "version", "dist"] }
+                    ]
+                }
             ]
         },
         "metapackage": {
@@ -91,9 +93,9 @@
                 { "$ref": "#/definitions/package-base" },
                 {
                     "properties": {
-                        "type": { "type": "string", "enum": [ "metapackage" ] }
+                        "type": { "type": "string", "enum": ["metapackage"] }
                     },
-                    "required": [ "name", "version", "type" ]
+                    "required": ["name", "version", "type"]
                 }
             ]
         },

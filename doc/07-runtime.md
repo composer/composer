@@ -92,7 +92,7 @@ and not being replaced if your code is running.
 It is nonetheless a good idea to make sure you handle the `null` return value as gracefully as
 possible for safety.
 
-----
+---
 
 A few other methods are available for more complex usages, please refer to the
 source/docblocks of [the class itself](https://github.com/composer/composer/blob/main/src/Composer/InstalledVersions.php).
@@ -175,4 +175,4 @@ about this [on the vendor binaries docs](articles/vendor-binaries.md#finding-the
 This is set by the binary proxy and as such is not made available to projects
 by Composer's `vendor/autoload.php`.
 
-&larr; [Config](06-config.md)  |  [Community](08-community.md) &rarr;
+&larr; [Config](06-config.md) | [Community](08-community.md) &rarr;

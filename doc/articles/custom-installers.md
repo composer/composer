@@ -88,7 +88,7 @@ Example:
     "type": "composer-plugin",
     "license": "MIT",
     "autoload": {
-        "psr-0": {"phpDocumentor\\Composer": "src/"}
+        "psr-0": { "phpDocumentor\\Composer": "src/" }
     },
     "extra": {
         "class": "phpDocumentor\\Composer\\TemplateInstallerPlugin"
@@ -148,17 +148,17 @@ recognized by packages that will use this installer in the `supports()` method.
 The InstallerInterface class defines the following methods (please see the
 source for the exact signature):
 
-* **supports()**, here you test whether the passed [type][1] matches the name
-  that you declared for this installer (see the example).
-* **isInstalled()**, determines whether a supported package is installed or not.
-* **install()**, here you can determine the actions that need to be executed
-  upon installation.
-* **update()**, here you define the behavior that is required when Composer is
-  invoked with the update argument.
-* **uninstall()**, here you can determine the actions that need to be executed
-  when the package needs to be removed.
-* **getInstallPath()**, this method should return the absolute path where the
-  package is to be installed. The path _must not end with a slash._
+-   **supports()**, here you test whether the passed [type][1] matches the name
+    that you declared for this installer (see the example).
+-   **isInstalled()**, determines whether a supported package is installed or not.
+-   **install()**, here you can determine the actions that need to be executed
+    upon installation.
+-   **update()**, here you define the behavior that is required when Composer is
+    invoked with the update argument.
+-   **uninstall()**, here you can determine the actions that need to be executed
+    when the package needs to be removed.
+-   **getInstallPath()**, this method should return the absolute path where the
+    package is to be installed. The path _must not end with a slash._
 
 Example:
 

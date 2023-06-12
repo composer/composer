@@ -1,10 +1,10 @@
 <!--
     tagline: Solving problems
 -->
+
 # Troubleshooting
 
 This is a list of common pitfalls on using Composer, and how to avoid them.
-
 
 ## General
 
@@ -23,7 +23,6 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    `rm -rf vendor && composer update -v` when troubleshooting, excluding any
    possible interferences with existing vendor installations or `composer.lock`
    entries.
-
 
 ## Package not found
 
@@ -49,11 +48,9 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    In this case add the `--with-dependencies` argument **or** add all dependencies which
    need an update to the command.
 
-
 ## Package is not updating to the expected version
 
 Try running `php composer.phar why-not [package-name] [expected-version]`.
-
 
 ## Dependencies on the root package
 
@@ -77,7 +74,6 @@ indirectly) back on the root package itself, issues can occur in two cases:
    the variable only for the call to composer, or you can define it globally in the
    CI env vars.
 
-
 ## Network timeout issues, curl error
 
 If you see something along the lines of:
@@ -89,7 +85,6 @@ Failed to download * curl error 28 while downloading * Operation timed out after
 It means your network is probably so slow that a request took over 300seconds to complete. This is the
 minimum timeout Composer will use, but you can increase it by increasing the `default_socket_timeout`
 value in your php.ini to something higher.
-
 
 ## Package not found in a Jenkins-build
 
@@ -103,14 +98,12 @@ value in your php.ini to something higher.
    branch as you are checking out. Using this, the checkout will not be in detached state any more
    and the dependency on the root package should become satisfied.
 
-
 ## I have a dependency which contains a "repositories" definition in its composer.json, but it seems to be ignored.
 
 The [`repositories`](../04-schema.md#repositories) configuration property is defined as [root-only](../04-schema.md#root-package). It is not inherited. You can read more about the reasons behind this in the "[why can't
 Composer load repositories recursively?](../faqs/why-cant-composer-load-repositories-recursively.md)" article.
 The simplest work-around to this limitation, is moving or duplicating the `repositories` definition into your root
 composer.json.
-
 
 ## I have locked a dependency to a specific commit but get unexpected results.
 
@@ -126,7 +119,6 @@ frequently overlooked:
 > as you can.
 
 There is no simple work-around to this limitation. It is therefore strongly recommended that you do not use it.
-
 
 ## Need to override a package version
 
@@ -148,11 +140,9 @@ composer.json:
 
 See [aliases](aliases.md) for more information.
 
-
 ## Figuring out where a config value came from
 
 Use `php composer.phar config --list --source` to see where each config value originated from.
-
 
 ## Memory limit errors
 
@@ -196,7 +186,6 @@ php -d memory_limit=-1 composer.phar <...>
 
 This issue can also happen on cPanel instances, when the shell fork bomb protection is activated. For more information, see the [documentation](https://documentation.cpanel.net/display/68Docs/Shell+Fork+Bomb+Protection) of the fork bomb feature on the cPanel site.
 
-
 ## Xdebug impact on Composer
 
 To improve performance when the Xdebug extension is enabled, Composer automatically restarts PHP without it.
@@ -206,7 +195,6 @@ Composer will always show a warning if Xdebug is being used, but you can overrid
 `COMPOSER_DISABLE_XDEBUG_WARN=1`. If you see this warning unexpectedly, then the restart process has failed:
 please report this [issue](https://github.com/composer/composer/issues).
 
-
 ## "The system cannot find the path specified" (Windows)
 
 1. Open regedit.
@@ -214,7 +202,6 @@ please report this [issue](https://github.com/composer/composer/issues).
    `HKEY_CURRENT_USER\Software\Microsoft\Command Processor`
    or `HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Command Processor`.
 3. Check if it contains any path to a non-existent file, if it's the case, remove them.
-
 
 ## API rate limit and OAuth tokens
 
@@ -225,7 +212,6 @@ If you would prefer not to provide your GitHub credentials to Composer you can
 manually create a token using the [procedure documented here](authentication-for-private-packages.md#github-oauth).
 
 Now Composer should install/update without asking for authentication.
-
 
 ## proc_open(): fork failed errors
 
@@ -238,6 +224,7 @@ This could be happening because the VPS runs out of memory and has no Swap space
 ```shell
 free -m
 ```
+
 ```text
 total used free shared buffers cached
 Mem: 2048 357 1690 0 0 237
@@ -253,8 +240,8 @@ To enable the swap you can use for example:
 /bin/chmod 0600 /var/swap.1
 /sbin/swapon /var/swap.1
 ```
-You can make a permanent swap file following this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04).
 
+You can make a permanent swap file following this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04).
 
 ## proc_open(): failed to open stream errors (Windows)
 
@@ -269,7 +256,6 @@ service. The issue was fixed in PHP 7.2.23 and 7.3.10.
 Alternatively it could be because the Windows Null Service is not enabled. For
 more information, see this [issue](https://github.com/composer/composer/issues/7186#issuecomment-373134916).
 
-
 ## Degraded Mode
 
 Due to some intermittent issues on Travis and other systems, we introduced a
@@ -282,15 +268,14 @@ and resolve it.
 
 If you have been pointed to this page, you want to check a few things:
 
-- If you are using ESET antivirus, go in "Advanced Settings" and disable "HTTP-scanner"
-  under "web access protection"
-- If you are using IPv6, try disabling it. If that solves your issues, get in touch
-  with your ISP or server host, the problem is not at the Packagist level but in the
-  routing rules between you and Packagist (i.e. the internet at large). The best way to get
-  these fixed is to raise awareness to the network engineers that have the power to fix it.
-  Take a look at the next section for IPv6 workarounds.
-- If none of the above helped, please report the error.
-
+-   If you are using ESET antivirus, go in "Advanced Settings" and disable "HTTP-scanner"
+    under "web access protection"
+-   If you are using IPv6, try disabling it. If that solves your issues, get in touch
+    with your ISP or server host, the problem is not at the Packagist level but in the
+    routing rules between you and Packagist (i.e. the internet at large). The best way to get
+    these fixed is to raise awareness to the network engineers that have the power to fix it.
+    Take a look at the next section for IPv6 workarounds.
+-   If none of the above helped, please report the error.
 
 ## Operation timed out (IPv6 issues)
 
@@ -343,7 +328,6 @@ That said, if this fixes your problem, please talk to your ISP about it to
 try to resolve the routing errors. That's the best way to get things resolved
 for everyone.
 
-
 ## Composer hangs with SSH ControlMaster
 
 When you try to install packages from a Git repository and you use the `ControlMaster`
@@ -361,13 +345,11 @@ php composer.phar update
 
 See also https://github.com/composer/composer/issues/4180 for more information.
 
-
 ## Zip archives are not unpacked correctly.
 
 Composer can unpack zipballs using either a system-provided `unzip` or `7z` (7-Zip) utility, or PHP's
 native `ZipArchive` class. On OSes where ZIP files can contain permissions and symlinks, we recommend
 installing `unzip` or `7z` as these features are not supported by `ZipArchive`.
-
 
 ## Disabling the pool optimizer
 

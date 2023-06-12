@@ -32,5 +32,4 @@ collection of Composer related questions.
 For paid support, we do provide Composer-related support via chat and email to
 [Private Packagist](https://packagist.com) customers.
 
-
 &larr; [Runtime](07-runtime.md)

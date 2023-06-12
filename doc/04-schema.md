@@ -31,8 +31,8 @@ The config of dependencies is ignored. This makes the `config` field
 The name of the package. It consists of vendor name and project name,
 separated by `/`. Examples:
 
-* monolog/monolog
-* igorw/event-source
+-   monolog/monolog
+-   igorw/event-source
 
 The name must be lowercase and consist of words separated by `-`, `.` or `_`.
 The complete name should match `^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$`.
@@ -58,15 +58,15 @@ The patch, alpha, beta and RC suffixes can also be followed by a number.
 
 Examples:
 
-- 1.0.0
-- 1.0.2
-- 1.1.0
-- 0.2.5
-- 1.0.0-dev
-- 1.0.0-alpha3
-- 1.0.0-beta2
-- 1.0.0-RC5
-- v2.0.4-p1
+-   1.0.0
+-   1.0.2
+-   1.1.0
+-   0.2.5
+-   1.0.0-dev
+-   1.0.0-alpha3
+-   1.0.0-beta2
+-   1.0.0-RC5
+-   v2.0.4-p1
 
 Optional if the package repository can infer the version from somewhere, such
 as the VCS tag name in the VCS repository. In that case it is also recommended
@@ -88,20 +88,20 @@ installer capable of installing packages of that type.
 
 Out of the box, Composer supports four types:
 
-- **library:** This is the default. It will copy the files to `vendor`.
-- **project:** This denotes a project rather than a library. For example
-  application shells like the [Symfony standard edition](https://github.com/symfony/symfony-standard),
-  CMSs like the [SilverStripe installer](https://github.com/silverstripe/silverstripe-installer)
-  or full fledged applications distributed as packages. This can for example
-  be used by IDEs to provide listings of projects to initialize when creating
-  a new workspace.
-- **metapackage:** An empty package that contains requirements and will trigger
-  their installation, but contains no files and will not write anything to the
-  filesystem. As such, it does not require a dist or source key to be
-  installable.
-- **composer-plugin:** A package of type `composer-plugin` may provide an
-  installer for other packages that have a custom type. Read more in the
-  [dedicated article](articles/custom-installers.md).
+-   **library:** This is the default. It will copy the files to `vendor`.
+-   **project:** This denotes a project rather than a library. For example
+    application shells like the [Symfony standard edition](https://github.com/symfony/symfony-standard),
+    CMSs like the [SilverStripe installer](https://github.com/silverstripe/silverstripe-installer)
+    or full fledged applications distributed as packages. This can for example
+    be used by IDEs to provide listings of projects to initialize when creating
+    a new workspace.
+-   **metapackage:** An empty package that contains requirements and will trigger
+    their installation, but contains no files and will not write anything to the
+    filesystem. As such, it does not require a dist or source key to be
+    installable.
+-   **composer-plugin:** A package of type `composer-plugin` may provide an
+    installer for other packages that have a custom type. Read more in the
+    [dedicated article](articles/custom-installers.md).
 
 Only use a custom type if you need custom logic during installation. It is
 recommended to omit this field and have it default to `library`.
@@ -113,11 +113,11 @@ searching and filtering.
 
 Examples:
 
-- logging
-- events
-- database
-- redis
-- templating
+-   logging
+-   events
+-   database
+-   redis
+-   templating
 
 > **Note**: Some special keywords trigger `composer require` without the
 > `--dev` option to prompt users if they would like to add these packages to
@@ -153,15 +153,15 @@ The license of the package. This can be either a string or an array of strings.
 
 The recommended notation for the most common licenses is (alphabetical):
 
-- Apache-2.0
-- BSD-2-Clause
-- BSD-3-Clause
-- BSD-4-Clause
-- GPL-2.0-only / GPL-2.0-or-later
-- GPL-3.0-only / GPL-3.0-or-later
-- LGPL-2.1-only / LGPL-2.1-or-later
-- LGPL-3.0-only / LGPL-3.0-or-later
-- MIT
+-   Apache-2.0
+-   BSD-2-Clause
+-   BSD-3-Clause
+-   BSD-4-Clause
+-   GPL-2.0-only / GPL-2.0-or-later
+-   GPL-3.0-only / GPL-3.0-or-later
+-   LGPL-2.1-only / LGPL-2.1-or-later
+-   LGPL-3.0-only / LGPL-3.0-or-later
+-   MIT
 
 Optional, but it is highly recommended to supply this. More identifiers are
 listed at the [SPDX Open Source License Registry](https://spdx.org/licenses/).
@@ -183,10 +183,7 @@ An Example for disjunctive licenses:
 
 ```json
 {
-    "license": [
-        "LGPL-2.1-only",
-        "GPL-3.0-or-later"
-    ]
+    "license": ["LGPL-2.1-only", "GPL-3.0-or-later"]
 }
 ```
 
@@ -207,10 +204,10 @@ The authors of the package. This is an array of objects.
 
 Each author object can have following properties:
 
-* **name:** The author's name. Usually their real name.
-* **email:** The author's email address.
-* **homepage:** URL to the author's website.
-* **role:** The author's role in the project (e.g. developer or translator)
+-   **name:** The author's name. Usually their real name.
+-   **email:** The author's email address.
+-   **homepage:** URL to the author's website.
+-   **role:** The author's role in the project (e.g. developer or translator)
 
 An example:
 
@@ -241,16 +238,16 @@ Various information to get support about the project.
 
 Support information includes the following:
 
-* **email:** Email address for support.
-* **issues:** URL to the issue tracker.
-* **forum:** URL to the forum.
-* **wiki:** URL to the wiki.
-* **irc:** IRC channel for support, as irc://server/channel.
-* **source:** URL to browse or download the sources.
-* **docs:** URL to the documentation.
-* **rss:** URL to the RSS feed.
-* **chat:** URL to the chat channel.
-* **security:** URL to the vulnerability disclosure policy (VDP).
+-   **email:** Email address for support.
+-   **issues:** URL to the issue tracker.
+-   **forum:** URL to the forum.
+-   **wiki:** URL to the wiki.
+-   **irc:** IRC channel for support, as irc://server/channel.
+-   **source:** URL to browse or download the sources.
+-   **docs:** URL to the documentation.
+-   **rss:** URL to the RSS feed.
+-   **chat:** URL to the chat channel.
+-   **security:** URL to the vulnerability disclosure policy (VDP).
 
 An example:
 
@@ -272,8 +269,8 @@ development of new functionality.
 
 Each entry consists of the following
 
-* **type:** The type of funding, or the platform through which funding can be provided, e.g. patreon, opencollective, tidelift or github.
-* **url:** URL to a website with details, and a way to fund the package.
+-   **type:** The type of funding, or the platform through which funding can be provided, e.g. patreon, opencollective, tidelift or github.
+-   **url:** URL to a website with details, and a way to fund the package.
 
 An example:
 
@@ -424,7 +421,7 @@ Map of packages that conflict with this version of this package. They
 will not be allowed to be installed together with your package.
 
 Note that when specifying ranges like `<1.0 >=1.1` in a `conflict` link,
-this will state a conflict with all versions that are less than 1.0 *and* equal
+this will state a conflict with all versions that are less than 1.0 _and_ equal
 or newer than 1.1 at the same time, which is probably not what you want. You
 probably want to go for `<1.0 || >=1.1` in this case.
 
@@ -662,7 +659,7 @@ If two packages have the same amount of dependents or no dependencies, the order
 
 Files from the root package are always loaded last, and you cannot use files autoloading
 yourself to override functions from your dependencies. If you want to achieve that we recommend
-you include your own functions *before* including Composer's `vendor/autoload.php`.
+you include your own functions _before_ including Composer's `vendor/autoload.php`.
 
 #### Exclude files from classmaps
 
@@ -801,16 +798,16 @@ ignored.
 
 The following repository types are supported:
 
-* **composer:** A Composer repository is a `packages.json` file served
-  via the network (HTTP, FTP, SSH), that contains a list of `composer.json`
-  objects with additional `dist` and/or `source` information. The `packages.json`
-  file is loaded using a PHP stream. You can set extra options on that stream
-  using the `options` parameter.
-* **vcs:** The version control system repository can fetch packages from git,
-  svn, fossil and hg repositories.
-* **package:** If you depend on a project that does not have any support for
-  Composer whatsoever you can define the package inline using a `package`
-  repository. You basically inline the `composer.json` object.
+-   **composer:** A Composer repository is a `packages.json` file served
+    via the network (HTTP, FTP, SSH), that contains a list of `composer.json`
+    objects with additional `dist` and/or `source` information. The `packages.json`
+    file is loaded using a PHP stream. You can set extra options on that stream
+    using the `options` parameter.
+-   **vcs:** The version control system repository can fetch packages from git,
+    svn, fossil and hg repositories.
+-   **package:** If you depend on a project that does not have any support for
+    Composer whatsoever you can define the package inline using a `package`
+    repository. You basically inline the `composer.json` object.
 
 For more information on any of these, see [Repositories](05-repositories.md).
 
@@ -857,9 +854,9 @@ Example:
 ```
 
 > **Note:** Order is significant here. When looking for a package, Composer
-will look from the first to the last repository, and pick the first match.
-By default Packagist is added last which means that custom repositories can
-override packages from it.
+> will look from the first to the last repository, and pick the first match.
+> By default Packagist is added last which means that custom repositories can
+> override packages from it.
 
 Using JSON object notation is also possible. However, JSON key/value pairs
 are to be considered unordered so consistent behaviour cannot be guaranteed.
@@ -915,9 +912,9 @@ A set of options for creating package archives.
 
 The following options are supported:
 
-* **name:** Allows configuring base name for archive.
-  By default (if not configured, and `--file` is not passed as command-line argument),
-  `preg_replace('#[^a-z0-9-_]#i', '-', name)` is used.
+-   **name:** Allows configuring base name for archive.
+    By default (if not configured, and `--file` is not passed as command-line argument),
+    `preg_replace('#[^a-z0-9-_]#i', '-', name)` is used.
 
 Example:
 
@@ -930,11 +927,11 @@ Example:
 }
 ```
 
-* **exclude:** Allows configuring a list of patterns for excluded paths. The
-  pattern syntax matches .gitignore files. A leading exclamation mark (!) will
-  result in any matching files to be included even if a previous pattern
-  excluded them. A leading slash will only match at the beginning of the project
-  relative path. An asterisk will not expand to a directory separator.
+-   **exclude:** Allows configuring a list of patterns for excluded paths. The
+    pattern syntax matches .gitignore files. A leading exclamation mark (!) will
+    result in any matching files to be included even if a previous pattern
+    excluded them. A leading slash will only match at the beginning of the project
+    relative path. An asterisk will not expand to a directory separator.
 
 Example:
 
@@ -1002,4 +999,4 @@ Then `composer show -s` will give you `versions : * dev-latest-testing`.
 
 Optional.
 
-&larr; [Command-line interface](03-cli.md)  |  [Repositories](05-repositories.md) &rarr;
+&larr; [Command-line interface](03-cli.md) | [Repositories](05-repositories.md) &rarr;

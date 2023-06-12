@@ -25,59 +25,59 @@ Composer fires the following named events during its execution process:
 
 ### Command Events
 
-- **pre-install-cmd**: occurs before the `install` command is executed with a
-  lock file present.
-- **post-install-cmd**: occurs after the `install` command has been executed
-  with a lock file present.
-- **pre-update-cmd**: occurs before the `update` command is executed, or before
-  the `install` command is executed without a lock file present.
-- **post-update-cmd**: occurs after the `update` command has been executed, or
-  after the `install` command has been executed without a lock file present.
-- **pre-status-cmd**: occurs before the `status` command is executed.
-- **post-status-cmd**: occurs after the `status` command has been executed.
-- **pre-archive-cmd**: occurs before the `archive` command is executed.
-- **post-archive-cmd**: occurs after the `archive` command has been executed.
-- **pre-autoload-dump**: occurs before the autoloader is dumped, either during
-  `install`/`update`, or via the `dump-autoload` command.
-- **post-autoload-dump**: occurs after the autoloader has been dumped, either
-  during `install`/`update`, or via the `dump-autoload` command.
-- **post-root-package-install**: occurs after the root package has been
-  installed during the `create-project` command (but before its
-  dependencies are installed).
-- **post-create-project-cmd**: occurs after the `create-project` command has
-  been executed.
+-   **pre-install-cmd**: occurs before the `install` command is executed with a
+    lock file present.
+-   **post-install-cmd**: occurs after the `install` command has been executed
+    with a lock file present.
+-   **pre-update-cmd**: occurs before the `update` command is executed, or before
+    the `install` command is executed without a lock file present.
+-   **post-update-cmd**: occurs after the `update` command has been executed, or
+    after the `install` command has been executed without a lock file present.
+-   **pre-status-cmd**: occurs before the `status` command is executed.
+-   **post-status-cmd**: occurs after the `status` command has been executed.
+-   **pre-archive-cmd**: occurs before the `archive` command is executed.
+-   **post-archive-cmd**: occurs after the `archive` command has been executed.
+-   **pre-autoload-dump**: occurs before the autoloader is dumped, either during
+    `install`/`update`, or via the `dump-autoload` command.
+-   **post-autoload-dump**: occurs after the autoloader has been dumped, either
+    during `install`/`update`, or via the `dump-autoload` command.
+-   **post-root-package-install**: occurs after the root package has been
+    installed during the `create-project` command (but before its
+    dependencies are installed).
+-   **post-create-project-cmd**: occurs after the `create-project` command has
+    been executed.
 
 ### Installer Events
 
-- **pre-operations-exec**: occurs before the install/upgrade/.. operations
-  are executed when installing a lock file. Plugins that need to hook into
-  this event will need to be installed globally to be usable, as otherwise
-  they would not be loaded yet when a fresh install of a project happens.
+-   **pre-operations-exec**: occurs before the install/upgrade/.. operations
+    are executed when installing a lock file. Plugins that need to hook into
+    this event will need to be installed globally to be usable, as otherwise
+    they would not be loaded yet when a fresh install of a project happens.
 
 ### Package Events
 
-- **pre-package-install**: occurs before a package is installed.
-- **post-package-install**: occurs after a package has been installed.
-- **pre-package-update**: occurs before a package is updated.
-- **post-package-update**: occurs after a package has been updated.
-- **pre-package-uninstall**: occurs before a package is uninstalled.
-- **post-package-uninstall**: occurs after a package has been uninstalled.
+-   **pre-package-install**: occurs before a package is installed.
+-   **post-package-install**: occurs after a package has been installed.
+-   **pre-package-update**: occurs before a package is updated.
+-   **post-package-update**: occurs after a package has been updated.
+-   **pre-package-uninstall**: occurs before a package is uninstalled.
+-   **post-package-uninstall**: occurs after a package has been uninstalled.
 
 ### Plugin Events
 
-- **init**: occurs after a Composer instance is done being initialized.
-- **command**: occurs before any Composer Command is executed on the CLI. It
-  provides you with access to the input and output objects of the program.
-- **pre-file-download**: occurs before files are downloaded and allows
-  you to manipulate the `HttpDownloader` object prior to downloading files
-  based on the URL to be downloaded.
-- **post-file-download**: occurs after package dist files are downloaded and
-  allows you to perform additional checks on the file if required.
-- **pre-command-run**: occurs before a command is executed and allows you to
-  manipulate the `InputInterface` object's options and arguments to tweak
-  a command's behavior.
-- **pre-pool-create**: occurs before the Pool of packages is created, and lets
-  you filter the list of packages that is going to enter the Solver.
+-   **init**: occurs after a Composer instance is done being initialized.
+-   **command**: occurs before any Composer Command is executed on the CLI. It
+    provides you with access to the input and output objects of the program.
+-   **pre-file-download**: occurs before files are downloaded and allows
+    you to manipulate the `HttpDownloader` object prior to downloading files
+    based on the URL to be downloaded.
+-   **post-file-download**: occurs after package dist files are downloaded and
+    allows you to perform additional checks on the file if required.
+-   **pre-command-run**: occurs before a command is executed and allows you to
+    manipulate the `InputInterface` object's options and arguments to tweak
+    a command's behavior.
+-   **pre-pool-create**: occurs before the Pool of packages is created, and lets
+    you filter the list of packages that is going to enter the Solver.
 
 > **Note:** Composer makes no assumptions about the state of your dependencies
 > prior to `install` or `update`. Therefore, you should not specify scripts
@@ -95,15 +95,15 @@ corresponding scripts. An event's scripts can be defined as either a string
 
 For any given event:
 
-- Scripts execute in the order defined when their corresponding event is fired.
-- An array of scripts wired to a single event can contain both PHP callbacks
-and command-line executable commands.
-- PHP classes and commands containing defined callbacks must be autoloadable
-via Composer's autoload functionality.
-- Callbacks can only autoload classes from psr-0, psr-4 and classmap
-definitions. If a defined callback relies on functions defined outside of a
-class, the callback itself is responsible for loading the file containing these
-functions.
+-   Scripts execute in the order defined when their corresponding event is fired.
+-   An array of scripts wired to a single event can contain both PHP callbacks
+    and command-line executable commands.
+-   PHP classes and commands containing defined callbacks must be autoloadable
+    via Composer's autoload functionality.
+-   Callbacks can only autoload classes from psr-0, psr-4 and classmap
+    definitions. If a defined callback relies on functions defined outside of a
+    class, the callback itself is responsible for loading the file containing these
+    functions.
 
 Script definition example:
 
@@ -111,16 +111,9 @@ Script definition example:
 {
     "scripts": {
         "post-update-cmd": "MyVendor\\MyClass::postUpdate",
-        "post-package-install": [
-            "MyVendor\\MyClass::postPackageInstall"
-        ],
-        "post-install-cmd": [
-            "MyVendor\\MyClass::warmCache",
-            "phpunit -c app/"
-        ],
-        "post-autoload-dump": [
-            "MyVendor\\MyClass::postAutoloadDump"
-        ],
+        "post-package-install": ["MyVendor\\MyClass::postPackageInstall"],
+        "post-install-cmd": ["MyVendor\\MyClass::warmCache", "phpunit -c app/"],
+        "post-autoload-dump": ["MyVendor\\MyClass::postAutoloadDump"],
         "post-create-project-cmd": [
             "php -r \"copy('config/local-example.php', 'config/local.php');\""
         ]
@@ -184,15 +177,15 @@ Depending on the [script types](#event-names) you will get various event
 subclasses containing various getters with relevant data and associated
 objects:
 
-- Base class: [`Composer\EventDispatcher\Event`](https://github.com/composer/composer/blob/main/src/Composer/EventDispatcher/Event.php)
-- Command Events: [`Composer\Script\Event`](https://github.com/composer/composer/blob/main/src/Composer/Script/Event.php)
-- Installer Events: [`Composer\Installer\InstallerEvent`](https://github.com/composer/composer/blob/main/src/Composer/Installer/InstallerEvent.php)
-- Package Events: [`Composer\Installer\PackageEvent`](https://github.com/composer/composer/blob/main/src/Composer/Installer/PackageEvent.php)
-- Plugin Events:
-  - init: [`Composer\EventDispatcher\Event`](https://github.com/composer/composer/blob/main/src/Composer/EventDispatcher/Event.php)
-  - command: [`Composer\Plugin\CommandEvent`](https://github.com/composer/composer/blob/main/src/Composer/Plugin/CommandEvent.php)
-  - pre-file-download: [`Composer\Plugin\PreFileDownloadEvent`](https://github.com/composer/composer/blob/main/src/Composer/Plugin/PreFileDownloadEvent.php)
-  - post-file-download: [`Composer\Plugin\PostFileDownloadEvent`](https://github.com/composer/composer/blob/main/src/Composer/Plugin/PostFileDownloadEvent.php)
+-   Base class: [`Composer\EventDispatcher\Event`](https://github.com/composer/composer/blob/main/src/Composer/EventDispatcher/Event.php)
+-   Command Events: [`Composer\Script\Event`](https://github.com/composer/composer/blob/main/src/Composer/Script/Event.php)
+-   Installer Events: [`Composer\Installer\InstallerEvent`](https://github.com/composer/composer/blob/main/src/Composer/Installer/InstallerEvent.php)
+-   Package Events: [`Composer\Installer\PackageEvent`](https://github.com/composer/composer/blob/main/src/Composer/Installer/PackageEvent.php)
+-   Plugin Events:
+    -   init: [`Composer\EventDispatcher\Event`](https://github.com/composer/composer/blob/main/src/Composer/EventDispatcher/Event.php)
+    -   command: [`Composer\Plugin\CommandEvent`](https://github.com/composer/composer/blob/main/src/Composer/Plugin/CommandEvent.php)
+    -   pre-file-download: [`Composer\Plugin\PreFileDownloadEvent`](https://github.com/composer/composer/blob/main/src/Composer/Plugin/PreFileDownloadEvent.php)
+    -   post-file-download: [`Composer\Plugin\PostFileDownloadEvent`](https://github.com/composer/composer/blob/main/src/Composer/Plugin/PostFileDownloadEvent.php)
 
 ## Running scripts manually
 
@@ -286,7 +279,6 @@ class MyCommand extends Command
 > are directly accessible. In this example no matter if the `phpunit` binary is
 > actually in `vendor/bin/phpunit` or `bin/phpunit` it will be found and executed.
 
-
 ## Managing the process timeout
 
 Although Composer is not intended to manage long-running processes and other
@@ -294,11 +286,11 @@ such aspects of PHP projects, it can sometimes be handy to disable the process
 timeout on custom commands. This timeout defaults to 300 seconds and can be
 overridden in a variety of ways depending on the desired effect:
 
-- disable it for all commands using the config key `process-timeout`,
-- disable it for the current or future invocations of composer using the
-  environment variable `COMPOSER_PROCESS_TIMEOUT`,
-- for a specific invocation using the `--timeout` flag of the `run-script` command,
-- using a static helper for specific scripts.
+-   disable it for all commands using the config key `process-timeout`,
+-   disable it for the current or future invocations of composer using the
+    environment variable `COMPOSER_PROCESS_TIMEOUT`,
+-   for a specific invocation using the `--timeout` flag of the `run-script` command,
+-   using a static helper for specific scripts.
 
 To disable the timeout for specific scripts with the static helper directly in
 composer.json:
@@ -306,10 +298,7 @@ composer.json:
 ```json
 {
     "scripts": {
-        "test": [
-            "Composer\\Config::disableProcessTimeout",
-            "phpunit"
-        ]
+        "test": ["Composer\\Config::disableProcessTimeout", "phpunit"]
     }
 }
 ```
@@ -347,10 +336,7 @@ one by prefixing the command name with `@`:
 ```json
 {
     "scripts": {
-        "test": [
-            "@clearCache",
-            "phpunit"
-        ],
+        "test": ["@clearCache", "phpunit"],
         "clearCache": "rm -rf cache/*"
     }
 }
@@ -375,10 +361,7 @@ resolve to whatever composer.phar is currently being used:
 ```json
 {
     "scripts": {
-        "test": [
-            "@composer install",
-            "phpunit"
-        ]
+        "test": ["@composer install", "phpunit"]
     }
 }
 ```
@@ -395,10 +378,7 @@ resolve to whatever php process is currently being used:
 ```json
 {
     "scripts": {
-        "test": [
-            "@php script.php",
-            "phpunit"
-        ]
+        "test": ["@php script.php", "phpunit"]
     }
 }
 ```

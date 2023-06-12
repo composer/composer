@@ -3,10 +3,10 @@ name: "Continuous Integration"
 on:
   push:
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
   pull_request:
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
@@ -78,11 +78,11 @@ jobs:
 
       - name: "Handle lowest dependencies update"
         if: "contains(matrix.dependencies, 'lowest')"
-        run: "echo \"COMPOSER_UPDATE_FLAGS=$COMPOSER_UPDATE_FLAGS --prefer-lowest\" >> $GITHUB_ENV"
+        run: 'echo "COMPOSER_UPDATE_FLAGS=$COMPOSER_UPDATE_FLAGS --prefer-lowest" >> $GITHUB_ENV'
 
       - name: "Handle ignore-platform-reqs dependencies update"
         if: "contains(matrix.dependencies, 'ignore')"
-        run: "echo \"COMPOSER_FLAGS=$COMPOSER_FLAGS --ignore-platform-req=php\" >> $GITHUB_ENV"
+        run: 'echo "COMPOSER_FLAGS=$COMPOSER_FLAGS --ignore-platform-req=php" >> $GITHUB_ENV'
 
       - name: "Remove platform config to get latest dependencies for current PHP version when build is not locked"
         if: "contains(matrix.dependencies, 'highest') || contains(matrix.dependencies, 'lowest')"

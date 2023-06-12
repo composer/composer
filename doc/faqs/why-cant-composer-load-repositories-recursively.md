@@ -14,22 +14,22 @@ associated with inline VCS repositories.
 
 There are three ways the dependency solver could work with custom repositories:
 
-- Fetch the repositories of root package, get all the packages from the defined
-repositories, then resolve requirements. This is the current state and it works well
-except for the limitation of not loading repositories recursively.
+-   Fetch the repositories of root package, get all the packages from the defined
+    repositories, then resolve requirements. This is the current state and it works well
+    except for the limitation of not loading repositories recursively.
 
-- Fetch the repositories of root package, while initializing packages from the
-defined repos, initialize recursively all repos found in those packages, and
-their package's packages, etc, then resolve requirements. It could work, but it
-slows down the initialization a lot since VCS repos can each take a few seconds,
-and it could end up in a completely broken state since many versions of a package
-could define the same packages inside a package repository, but with different
-dist/source. There are many ways this could go wrong.
+-   Fetch the repositories of root package, while initializing packages from the
+    defined repos, initialize recursively all repos found in those packages, and
+    their package's packages, etc, then resolve requirements. It could work, but it
+    slows down the initialization a lot since VCS repos can each take a few seconds,
+    and it could end up in a completely broken state since many versions of a package
+    could define the same packages inside a package repository, but with different
+    dist/source. There are many ways this could go wrong.
 
-- Fetch the repositories of root package, then fetch the repositories of the
-first level dependencies, then fetch the repositories of their dependencies, etc,
-then resolve requirements. This sounds more efficient, but it suffers from the
-same problems as the second solution, because loading the repositories of the
-dependencies is not as easy as it sounds. You need to load all the repos of all
-the potential matches for a requirement, which again might have conflicting
-package definitions.
+-   Fetch the repositories of root package, then fetch the repositories of the
+    first level dependencies, then fetch the repositories of their dependencies, etc,
+    then resolve requirements. This sounds more efficient, but it suffers from the
+    same problems as the second solution, because loading the repositories of the
+    dependencies is not as easy as it sounds. You need to load all the repos of all
+    the potential matches for a requirement, which again might have conflicting
+    package definitions.

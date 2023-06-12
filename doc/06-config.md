@@ -16,10 +16,7 @@ helper is available:
 ```json
 {
     "scripts": {
-        "test": [
-            "Composer\\Config::disableProcessTimeout",
-            "phpunit"
-        ]
+        "test": ["Composer\\Config::disableProcessTimeout", "phpunit"]
     }
 }
 ```
@@ -86,15 +83,15 @@ optionally be an object with package name patterns for keys for more granular in
 }
 ```
 
-- `source` means Composer will install packages from their `source` if there
-  is one. This is typically a git clone or equivalent checkout of the version
-  control system the package uses. This is useful if you want to make a bugfix
-  to a project and get a local git clone of the dependency directly.
-- `auto` is the legacy behavior where Composer uses `source` automatically
-  for dev versions, and `dist` otherwise.
-- `dist` (the default as of Composer 2.1) means Composer installs from `dist`,
-  where possible. This is typically a zip file download, which is faster than
-  cloning the entire repository.
+-   `source` means Composer will install packages from their `source` if there
+    is one. This is typically a git clone or equivalent checkout of the version
+    control system the package uses. This is useful if you want to make a bugfix
+    to a project and get a local git clone of the dependency directly.
+-   `auto` is the legacy behavior where Composer uses `source` automatically
+    for dev versions, and `dist` otherwise.
+-   `dist` (the default as of Composer 2.1) means Composer installs from `dist`,
+    where possible. This is typically a zip file download, which is faster than
+    cloning the entire repository.
 
 > **Note:** Order matters. More specific patterns should be earlier than
 > more relaxed patterns. When mixing the string notation with the hash
@@ -243,7 +240,7 @@ you may ignore it instead by passing `--ignore-platform-req=ext-foo` to `update`
 extensions as if you ignore one now and a new package you add a month later also
 requires it, you may introduce issues in production unknowingly.
 
-If you have an extension installed locally but *not* on production, you may want
+If you have an extension installed locally but _not_ on production, you may want
 to artificially hide it from Composer using `{"ext-foo": false}`.
 
 ## vendor-dir
@@ -357,7 +354,7 @@ github API will have a date instead of the machine hostname.
 
 ## use-github-api
 
-Defaults to `true`.  Similar to the `no-api` key on a specific repository,
+Defaults to `true`. Similar to the `no-api` key on a specific repository,
 setting `use-github-api` to `false` will define the global behavior for all
 GitHub repositories to clone the repository as it would with any other git
 repository instead of using the GitHub API. But unlike using the `git`
@@ -420,4 +417,4 @@ throw, but you can set this config option to `["example.org"]` to allow using sv
 URLs on that hostname. This is a better/safer alternative to disabling `secure-http`
 altogether.
 
-&larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;
+&larr; [Repositories](05-repositories.md) | [Runtime](07-runtime.md) &rarr;

@@ -1,31 +1,31 @@
 {
     "packages": {
-        "qux\/quux": {
+        "qux/quux": {
             "dev-default": {
-                "name": "qux\/quux",
+                "name": "qux/quux",
                 "version": "dev-default",
                 "version_normalized": "9999999-dev",
                 "source": {
                     "type": "hg",
-                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "url": "http://some.where/over/the/rainbow/",
                     "reference": "4a10a567baa5"
                 },
                 "replace": {
-                    "gar\/nix": "1.0.*"
+                    "gar/nix": "1.0.*"
                 },
                 "time": "2014-10-11 15:48:15",
                 "type": "library",
                 "uid": 10
             }
         },
-        "gar\/nix": {
+        "gar/nix": {
             "1.0.0": {
-                "name": "gar\/nix",
+                "name": "gar/nix",
                 "version": "1.0.0",
                 "version_normalized": "1.0.0.0",
                 "source": {
                     "type": "hg",
-                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "url": "http://some.where/over/the/rainbow/",
                     "reference": "44977145d64e"
                 },
                 "time": "2014-10-13 12:03:33",
@@ -33,12 +33,12 @@
                 "uid": 8
             },
             "dev-default": {
-                "name": "gar\/nix",
+                "name": "gar/nix",
                 "version": "dev-default",
                 "version_normalized": "9999999-dev",
                 "source": {
                     "type": "hg",
-                    "url": "http:\/\/some.where\/over\/the\/rainbow\/",
+                    "url": "http://some.where/over/the/rainbow/",
                     "reference": "51cca95a31c2"
                 },
                 "time": "2014-10-13 12:03:35",

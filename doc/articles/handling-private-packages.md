@@ -115,14 +115,26 @@ because any VCS repository might contain (on any branch) one of the selected
 packages.
 
 If you want to scan only the selected package and not all VCS repositories you need
-to declare a *name* for all your package (this only work on VCS repositories type) :
+to declare a _name_ for all your package (this only work on VCS repositories type) :
 
 ```json
 {
     "repositories": [
-        { "name": "company/privaterepo", "type": "vcs", "url": "https://github.com/mycompany/privaterepo" },
-        { "name": "private/repo", "type": "vcs", "url": "http://svn.example.org/private/repo" },
-        { "name": "mycompany/privaterepo2", "type": "vcs", "url": "https://github.com/mycompany/privaterepo2" }
+        {
+            "name": "company/privaterepo",
+            "type": "vcs",
+            "url": "https://github.com/mycompany/privaterepo"
+        },
+        {
+            "name": "private/repo",
+            "type": "vcs",
+            "url": "http://svn.example.org/private/repo"
+        },
+        {
+            "name": "mycompany/privaterepo2",
+            "type": "vcs",
+            "url": "https://github.com/mycompany/privaterepo2"
+        }
     ]
 }
 ```
@@ -142,7 +154,9 @@ will update itself.
 
 ```json
 {
-    "repositories": [ { "type": "composer", "url": "http://packages.example.org/" } ],
+    "repositories": [
+        { "type": "composer", "url": "http://packages.example.org/" }
+    ],
     "require": {
         "company/package": "1.2.0",
         "company/package2": "1.5.2",
@@ -161,17 +175,19 @@ Example using a custom repository using SSH (requires the SSH2 PECL extension):
 
 ```json
 {
-    "repositories": [{
-        "type": "composer",
-        "url": "ssh2.sftp://example.org",
-        "options": {
-            "ssh2": {
-                "username": "composer",
-                "pubkey_file": "/home/composer/.ssh/id_rsa.pub",
-                "privkey_file": "/home/composer/.ssh/id_rsa"
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "ssh2.sftp://example.org",
+            "options": {
+                "ssh2": {
+                    "username": "composer",
+                    "pubkey_file": "/home/composer/.ssh/id_rsa.pub",
+                    "privkey_file": "/home/composer/.ssh/id_rsa"
+                }
             }
         }
-    }]
+    ]
 }
 ```
 
@@ -181,15 +197,17 @@ Example using SSL/TLS (HTTPS) using a client certificate:
 
 ```json
 {
-    "repositories": [{
-         "type": "composer",
-         "url": "https://example.org",
-         "options": {
-             "ssl": {
-                 "local_cert": "/home/composer/.ssl/composer.pem"
-             }
-         }
-    }]
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "options": {
+                "ssl": {
+                    "local_cert": "/home/composer/.ssl/composer.pem"
+                }
+            }
+        }
+    ]
 }
 ```
 
@@ -199,17 +217,17 @@ Example using a custom HTTP Header field for token authentication:
 
 ```json
 {
-    "repositories": [{
-        "type": "composer",
-        "url": "https://example.org",
-        "options":  {
-            "http": {
-                "header": [
-                    "API-TOKEN: YOUR-API-TOKEN"
-                ]
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "options": {
+                "http": {
+                    "header": ["API-TOKEN: YOUR-API-TOKEN"]
+                }
             }
         }
-    }]
+    ]
 }
 ```
 
@@ -244,21 +262,21 @@ and Subversion) your packages, add the following to your `satis.json`:
 
 #### Options explained
 
- * `directory`: required, the location of the dist files (inside the
-   `output-dir`)
- * `format`: optional, `zip` (default) or `tar`
- * `prefix-url`: optional, location of the downloads, homepage (from
-   `satis.json`) followed by `directory` by default
- * `skip-dev`: optional, `false` by default, when enabled (`true`) satis will
-   not create downloads for branches
- * `absolute-directory`: optional, a _local_ directory where the dist files are
-   dumped instead of `output-dir`/`directory`
- * `whitelist`: optional, if set as a list of package names, satis will only
-   dump the dist files of these packages
- * `blacklist`: optional, if set as a list of package names, satis will not
-   dump the dist files of these packages
- * `checksum`: optional, `true` by default, when disabled (`false`) satis will
-   not provide the sha1 checksum for the dist files
+-   `directory`: required, the location of the dist files (inside the
+    `output-dir`)
+-   `format`: optional, `zip` (default) or `tar`
+-   `prefix-url`: optional, location of the downloads, homepage (from
+    `satis.json`) followed by `directory` by default
+-   `skip-dev`: optional, `false` by default, when enabled (`true`) satis will
+    not create downloads for branches
+-   `absolute-directory`: optional, a _local_ directory where the dist files are
+    dumped instead of `output-dir`/`directory`
+-   `whitelist`: optional, if set as a list of package names, satis will only
+    dump the dist files of these packages
+-   `blacklist`: optional, if set as a list of package names, satis will not
+    dump the dist files of these packages
+-   `checksum`: optional, `true` by default, when disabled (`false`) satis will
+    not provide the sha1 checksum for the dist files
 
 Once enabled, all downloads (include those from GitHub and BitBucket) will be
 replaced with a _local_ version.
@@ -275,10 +293,10 @@ Example: A `prefix-url` of `https://my-bucket.s3.amazonaws.com` (and
 
 ### Web outputs
 
- * `output-html`: optional, `true` by default, when disabled (`false`) satis
-   will not generate the `output-dir`/index.html page.
- * `twig-template`: optional, a path to a personalized [Twig] template for
-   the `output-dir`/index.html page.
+-   `output-html`: optional, `true` by default, when disabled (`false`) satis
+    will not generate the `output-dir`/index.html page.
+-   `twig-template`: optional, a path to a personalized [Twig] template for
+    the `output-dir`/index.html page.
 
 ### Abandoned packages
 
@@ -315,7 +333,7 @@ complete local mirror of packages. Add the following to your `satis.json`:
 ```
 
 When searching for packages, satis will attempt to resolve all the required
-packages from the listed repositories.  Therefore, if you are requiring a
+packages from the listed repositories. Therefore, if you are requiring a
 package from Packagist, you will need to define it in your `satis.json`.
 
 Dev dependencies are packaged only if the `require-dev-dependencies` parameter
@@ -323,17 +341,17 @@ is set to true.
 
 ### Other options
 
- * `providers`: optional, `false` by default, when enabled (`true`) each
-   package will be dumped into a separate include file which will be only
-   loaded by Composer when the package is really required. Speeds up composer
-   handling for repositories with huge number of packages like f.i. packagist.
- * `output-dir`: optional, defines where to output the repository files if not
-   provided as an argument when calling the `build` command.
- * `config`: optional, lets you define all config options from composer, except
-   `archive-format` and `archive-dir` as the configuration is done through
-   [archive](#downloads) instead. See docs on [config schema] for more details.
- * `notify-batch`: optional, specify a URL that will be called every time a
-   user installs a package. See [notify-batch].
+-   `providers`: optional, `false` by default, when enabled (`true`) each
+    package will be dumped into a separate include file which will be only
+    loaded by Composer when the package is really required. Speeds up composer
+    handling for repositories with huge number of packages like f.i. packagist.
+-   `output-dir`: optional, defines where to output the repository files if not
+    provided as an argument when calling the `build` command.
+-   `config`: optional, lets you define all config options from composer, except
+    `archive-format` and `archive-dir` as the configuration is done through
+    [archive](#downloads) instead. See docs on [config schema] for more details.
+-   `notify-batch`: optional, specify a URL that will be called every time a
+    user installs a package. See [notify-batch].
 
 [ssh2 context options]: https://secure.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options
 [ssl context options]: https://secure.php.net/manual/en/context.ssl.php
