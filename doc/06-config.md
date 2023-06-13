@@ -198,7 +198,7 @@ Read more [here](articles/authentication-for-private-packages.md#bitbucket-oauth
 
 ## bitbucket-token
 
-A list of repository names with the particular (access token)[https://support.atlassian.com/bitbucket-cloud/docs/create-a-repository-access-token/].
+A list of repository names with the particular [access token](https://support.atlassian.com/bitbucket-cloud/docs/create-a-repository-access-token/).
 For example using `{"composer/composer": "example-access-token"}`.
 Read more [here](articles/authentication-for-private-packages.md#bitbucket-token).
 
