@@ -364,7 +364,7 @@ php composer.phar config [--global] --editor --auth
 
 ## bitbucket-token
 
-The BitBucket driver is also able to access your private repositories via the BitBucket REST APIs, using (Bitbucket Repository Access Tokens)[https://support.atlassian.com/bitbucket-cloud/docs/create-a-repository-access-token/].
+The Bitbucket driver is also able to access your private repositories via the Bitbucket REST APIs, using (Bitbucket Repository Access Tokens)[https://support.atlassian.com/bitbucket-cloud/docs/create-a-repository-access-token/].
 Please note that this token is not the same as the OAuth consumer key and secret. On the contrary of the OAuth consumer,
 this token is specific to a repository. That enables the possibility to restrict the access to a specific repository.
 
