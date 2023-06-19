@@ -387,6 +387,63 @@ class JsonFileTest extends TestCase
         unlink(__DIR__.'/Fixtures/tabs2.json');
     }
 
+    public function testComposerLockFileMergeConflictSimple(): void
+    {
+        $data = [
+            '_readme' => [
+                'This file locks the dependencies of your project to a known state',
+                'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies',
+                'This file is @generated automatically',
+            ],
+            'content-hash' => 'VCS merge conflict detected. Please run `composer update --lock`.',
+            'packages' => [],
+            'packages-dev' => [],
+            'aliases' => [],
+            'minimum-stability' => "stable",
+            'stability-flags' => [],
+            'prefer-stable' => false,
+            'prefer-lowest' => false,
+            'platform' => [],
+            'platform-dev' => [],
+            'plugin-api-version' => '2.3.0',
+        ];
+
+        $json = '{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+<<<<<<< HEAD
+    "content-hash": "e0281a92ffdb4118e47df762a8e80d8d",
+=======
+    "content-hash": "19ff2417ff3290c12442b3d170de974e",
+>>>>>>> branch-name
+    "packages": [],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
+}';
+
+        $this->assertEquals($data, JsonFile::parseJson($json));
+    }
+
+    public function testComposerLockFileMergeConflictComplex(): void
+    {
+        $data = (string) file_get_contents(__DIR__ . '/Fixtures/composer-lock-merge-conflict-complex.txt');
+
+        $this->expectException(ParsingException::class);
+        // We don't care here what the error message says, just that there is an exception thrown.
+        // Other tests verify that the message text is sensible.
+        JsonFile::parseJson($data);
+    }
+
     private function expectParseException(string $text, string $json): void
     {
         try {
