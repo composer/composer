@@ -284,6 +284,10 @@ Now the `custom-plugin-command` is available alongside Composer commands.
 Plugins for an event can be run manually by the `run-script` command. This works the same way as
 [running scripts manually](scripts.md#running-scripts-manually).
 
+If it is another type of plugin the best way to test it is probably using a [path repository](../05-repositories.md#path)
+to require the plugin in a test project, and then `rm -rf vendor && composer update`
+every time you want to install/run it again.
+
 ## Using Plugins
 
 Plugin packages are automatically loaded as soon as they are installed and will
