@@ -436,7 +436,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     protected function getFileName(PackageInterface $package, string $path): string
     {
-        return rtrim($this->config->get('vendor-dir') . '/composer/tmp-' . md5($package . spl_object_hash($package)) . '.' . $this->getDistPath($package, PATHINFO_EXTENSION), '.');
+        $extension = $this->getDistPath($package, PATHINFO_EXTENSION);
+        if ($extension === '') {
+            $extension = $package->getDistType();
+        }
+
+        return rtrim($this->config->get('vendor-dir') . '/composer/tmp-' . md5($package . spl_object_hash($package)) . '.' . $extension, '.');
     }
 
     /**
