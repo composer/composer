@@ -113,7 +113,7 @@ Your requirements could not be resolved to an installable set of packages.
   Problem 3
     - Root composer.json requires non-existent/pkg, it could not be found in any version, there may be a typo in the package name.
   Problem 4
-    - Root composer.json requires stable-requiree-excluded/pkg 1.0.1, found stable-requiree-excluded/pkg[1.0.1] but the package is fixed to 1.0.0 (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.
+    - Root composer.json requires stable-requiree-excluded/pkg 1.0.1 (exact version match: 1.0.1 or 1.0.1.0), found stable-requiree-excluded/pkg[1.0.1] but the package is fixed to 1.0.0 (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.
   Problem 5
     - Root composer.json requires linked library lib-xml 1002.* but it has the wrong version installed or is missing from your system, make sure to load the extension providing it.
   Problem 6
@@ -121,7 +121,7 @@ Your requirements could not be resolved to an installable set of packages.
   Problem 7
     - Root composer.json requires PHP extension ext-xml 1002.* but it has the wrong version installed (%s).
   Problem 8
-    - Root composer.json requires php 1 but your php version (%s) does not satisfy that requirement.
+    - Root composer.json requires php 1 (exact version match: 1, 1.0, 1.0.0 or 1.0.0.0) but your php version (%s) does not satisfy that requirement.
   Problem 9
     - Root composer.json requires package/found 2.* -> satisfiable by package/found[2.0.0].
     - package/found 2.0.0 requires unstable/package2 2.* -> found unstable/package2[2.0.0-alpha] but it does not match your minimum-stability.

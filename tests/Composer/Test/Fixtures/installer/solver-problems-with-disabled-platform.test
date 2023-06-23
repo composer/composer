@@ -59,7 +59,7 @@ Your requirements could not be resolved to an installable set of packages.
   Problem 3
     - Root composer.json requires linked library lib-icu 1001.* but it has the wrong version installed, try upgrading the intl extension.
   Problem 4
-    - Root composer.json requires PHP extension ext-foobar 1.0.0 but it is missing from your system. Install or enable PHP's foobar extension.
+    - Root composer.json requires PHP extension ext-foobar 1.0.0 (exact version match: 1.0.0 or 1.0.0.0) but it is missing from your system. Install or enable PHP's foobar extension.
   Problem 5
     - Root composer.json requires PHP extension ext-pcre ^8 but the ext-pcre package is disabled by your platform config. Enable it again with "composer config platform.ext-pcre --unset".
   Problem 6

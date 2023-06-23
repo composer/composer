@@ -24,7 +24,6 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - Root composer.json requires a/aliased 3.0.2 as 3.0.3, found a/aliased[1.2.3] but it does not match the constraint.
+    - Root composer.json requires a/aliased 3.0.2 as 3.0.3 (exact version match), found a/aliased[1.2.3] but it does not match the constraint.
 
 --EXPECT--
-

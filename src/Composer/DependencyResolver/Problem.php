@@ -557,6 +557,19 @@ class Problem
      */
     protected static function constraintToText(?ConstraintInterface $constraint = null): string
     {
+        if ($constraint instanceof Constraint && $constraint->getOperator() === Constraint::STR_OP_EQ && !str_starts_with($constraint->getVersion(), 'dev-')) {
+            if (!Preg::isMatch('{^\d+(?:\.\d+)*$}', $constraint->getPrettyString())) {
+                return ' '.$constraint->getPrettyString() .' (exact version match)';
+            }
+
+            $versions = [$constraint->getPrettyString()];
+            for ($i = 3 - substr_count($versions[0], '.'); $i > 0; $i--) {
+                $versions[] = end($versions) . '.0';
+            }
+
+            return ' ' . $constraint->getPrettyString() . ' (exact version match: ' . (count($versions) > 1 ? implode(', ', array_slice($versions, 0, -1)) . ' or ' . end($versions) : $versions[0]) . ')';
+        }
+
         return $constraint ? ' '.$constraint->getPrettyString() : '';
     }
 }
