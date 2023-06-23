@@ -65,6 +65,10 @@ should be automatically selected.
 - Subversion (`svn`)
 - (optional) `hhvm`
 
+It's important to note that the need for these binary dependencies may vary
+depending on individual use cases. However, for most users, only 3 dependencies
+are essential for Composer: `7z` (or `7zz`), `unzip`, and `git`.
+
 Authors
 -------
 
