@@ -13,20 +13,12 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
-use Generator;
 
 class StatusCommandTest extends TestCase
 {
-    /**
-     * @dataProvider caseProvider
-     * @param array<mixed> $composerJson
-     * @param string $expected
-     */
-    public function testStatusCommand(
-        array $composerJson,
-        string $expected
-    ): void {
-        $this->initTempComposer($composerJson);
+    public function testNoLocalChanges(): void 
+    {
+        $this->initTempComposer(['require' => ['root/req' => '1.*']]);
 
         $package = self::getPackage('root/req');
         $package->setType('metapackage');
@@ -37,14 +29,6 @@ class StatusCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'status']);
 
-        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
-    }
-
-    public function caseProvider(): Generator
-    {
-        yield 'test no changes made to installed packages' => [
-            ['require' => ['root/req' => '1.*']],
-            'No local changes'
-        ];
+        $this->assertSame('No local changes', trim($appTester->getDisplay(true)));
     }
 }
