@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\IO\IOInterface;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -100,7 +101,7 @@ trait PackageDiscoveryTrait
 
                 if (!isset($requirement['version'])) {
                     // determine the best version automatically
-                    [$name, $version] = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $platformRepo, $preferredStability, $fixed);
+                    [$name, $version] = $this->findBestVersionAndNameForPackage($this->getIO(), $input, $requirement['name'], $platformRepo, $preferredStability, $fixed);
 
                     // replace package name from packagist.org
                     $requirement['name'] = $name;
@@ -243,7 +244,7 @@ trait PackageDiscoveryTrait
                     );
 
                     if (false === $constraint) {
-                        [, $constraint] = $this->findBestVersionAndNameForPackage($input, $package, $platformRepo, $preferredStability);
+                        [, $constraint] = $this->findBestVersionAndNameForPackage($this->getIO(), $input, $package, $platformRepo, $preferredStability);
 
                         $io->writeError(sprintf(
                             'Using version <info>%s</info> for <info>%s</info>',
@@ -273,7 +274,7 @@ trait PackageDiscoveryTrait
      * @throws \InvalidArgumentException
      * @return array{string, string}     name version
      */
-    private function findBestVersionAndNameForPackage(InputInterface $input, string $name, ?PlatformRepository $platformRepo = null, string $preferredStability = 'stable', bool $fixed = false): array
+    private function findBestVersionAndNameForPackage(IOInterface $io, InputInterface $input, string $name, ?PlatformRepository $platformRepo = null, string $preferredStability = 'stable', bool $fixed = false): array
     {
         // handle ignore-platform-reqs flag if present
         if ($input->hasOption('ignore-platform-reqs') && $input->hasOption('ignore-platform-req')) {
@@ -356,6 +357,13 @@ trait PackageDiscoveryTrait
                         "Could not find package %s. It was however found via repository search, which indicates a consistency issue with the repository.",
                         $name
                     ));
+                }
+
+                if ($input->isInteractive()) {
+                    $result = $io->select("<error>Could not find package $name.</error>\nPick one of these or leave empty to abort:", $similar, false, 1);
+                    if ($result !== false) {
+                        return $this->findBestVersionAndNameForPackage($io, $input, $similar[$result], $platformRepo, $preferredStability, $fixed);
+                    }
                 }
 
                 throw new \InvalidArgumentException(sprintf(
