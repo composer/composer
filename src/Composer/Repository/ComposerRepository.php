@@ -139,8 +139,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         parent::__construct();
         if (!Preg::isMatch('{^[\w.]+\??://}', $repoConfig['url'])) {
-            // assume http as the default protocol
-            $repoConfig['url'] = 'http://'.$repoConfig['url'];
+            if (($localFilePath = realpath($repoConfig['url'])) !== false) {
+                // it is a local path, add file scheme
+                $repoConfig['url'] = 'file://'.$localFilePath;
+            } else {
+                // otherwise, assume http as the default protocol
+                $repoConfig['url'] = 'http://'.$repoConfig['url'];
+            }
         }
         $repoConfig['url'] = rtrim($repoConfig['url'], '/');
         if ($repoConfig['url'] === '') {
