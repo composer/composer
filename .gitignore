@@ -9,4 +9,5 @@ phpunit.xml
 .vagrant
 Vagrantfile
 .idea
+.vscode
 .php-cs-fixer.cache
