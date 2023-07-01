@@ -50,6 +50,24 @@ PHP versions 5.3.2 - 8.1 are still supported via the LTS releases of Composer (2
 run the installer or the `self-update` command the appropriate Composer version for your PHP
 should be automatically selected.
 
+#### Binary dependencies
+
+- `7z` (or `7zz`)
+- `unzip` (if `7z` is missing)
+- `gzip`
+- `tar`
+- `unrar`
+- `xz`
+- Git (`git`)
+- Mercurial (`hg`)
+- Fossil (`fossil`)
+- Perforce (`p4`)
+- Subversion (`svn`)
+
+It's important to note that the need for these binary dependencies may vary
+depending on individual use cases. However, for most users, only 2 dependencies
+are essential for Composer: `7z` (or `7zz` or `unzip`), and `git`.
+
 Authors
 -------
 

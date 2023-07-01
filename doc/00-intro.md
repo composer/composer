@@ -39,8 +39,14 @@ a legacy PHP version. A few sensitive php settings and compile flags are also
 required, but when using the installer you will be warned about any
 incompatibilities.
 
-To install packages from sources instead of plain zip archives, you will need
-git, svn, fossil or hg depending on how the package is version-controlled.
+Composer needs several supporting applications to work effectively, making the
+process of handling package dependencies more efficient. For decompressing
+files, Composer relies on tools like `7z` (or `7zz`), `gzip`, `tar`, `unrar`,
+`unzip` and `xz`. As for version control systems, Composer integrates seamlessly
+with Fossil, Git, Mercurial, Perforce and Subversion, thereby ensuring the
+application's smooth operation and management of library repositories. Before
+using Composer, ensure that these dependencies are correctly installed on your
+system.
 
 Composer is multi-platform and we strive to make it run equally well on Windows,
 Linux and macOS.
