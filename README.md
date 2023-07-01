@@ -53,21 +53,20 @@ should be automatically selected.
 #### Binary dependencies
 
 - `7z` (or `7zz`)
+- `unzip` (if `7z` is missing)
 - `gzip`
 - `tar`
 - `unrar`
-- `unzip`
 - `xz`
-- Fossil (`fossil`)
 - Git (`git`)
 - Mercurial (`hg`)
+- Fossil (`fossil`)
 - Perforce (`p4`)
 - Subversion (`svn`)
-- (optional) `hhvm`
 
 It's important to note that the need for these binary dependencies may vary
-depending on individual use cases. However, for most users, only 3 dependencies
-are essential for Composer: `7z` (or `7zz`), `unzip`, and `git`.
+depending on individual use cases. However, for most users, only 2 dependencies
+are essential for Composer: `7z` (or `7zz` or `unzip`), and `git`.
 
 Authors
 -------
