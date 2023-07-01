@@ -1,3 +1,4 @@
+![Approve](https://github.com/composer/composer/assets/122245952/a994ab5c-d0ab-4bd2-91ce-bb9776450dfb)
 # How do I install Composer programmatically?
 
 As noted on the download page, the installer script contains a
