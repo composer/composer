@@ -57,7 +57,7 @@ class HomeCommandTest extends TestCase
         $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
-    public function useCaseProvider(): Generator
+    public static function useCaseProvider(): Generator
     {
         yield 'Invalid or missing repository URL' => [
             [

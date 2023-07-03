@@ -129,7 +129,7 @@ class SuggestsCommandTest extends TestCase
         self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
-    public function provideSuggest(): \Generator
+    public static function provideSuggest(): \Generator
     {
         yield 'with lockfile, show suggested' => [
             true,
