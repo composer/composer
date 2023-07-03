@@ -17,7 +17,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\CompletePackage;
 
-abstract class ArchiverTest extends TestCase
+abstract class ArchiverTestCase extends TestCase
 {
     /**
      * @var \Composer\Util\Filesystem

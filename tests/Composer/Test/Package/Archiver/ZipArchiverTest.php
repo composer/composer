@@ -16,7 +16,7 @@ use Composer\Util\Platform;
 use ZipArchive;
 use Composer\Package\Archiver\ZipArchiver;
 
-class ZipArchiverTest extends ArchiverTest
+class ZipArchiverTest extends ArchiverTestCase
 {
     /**
      * @dataProvider provideGitignoreExcludeNegationTestCases
