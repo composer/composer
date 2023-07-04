@@ -442,6 +442,10 @@ EOT
         $exitCode = 0;
         $viewData = [];
         $viewMetaData = [];
+
+        $writeVersion = false;
+        $writeDescription = false;
+
         foreach (['platform' => true, 'locked' => true, 'available' => false, 'installed' => true] as $type => $showVersion) {
             if (isset($packages[$type])) {
                 ksort($packages[$type]);
@@ -616,14 +620,14 @@ EOT
                     $io->writeError('');
                     $io->writeError('<info>Direct dependencies required in composer.json:</>');
                     if (\count($directDeps) > 0) {
-                        $this->printPackages($io, $directDeps, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
+                        $this->printPackages($io, $directDeps, $indent, $writeVersion && $versionFits, $latestFits, $writeDescription && $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     } else {
                         $io->writeError('Everything up to date');
                     }
                     $io->writeError('');
                     $io->writeError('<info>Transitive dependencies not required in composer.json:</>');
                     if (\count($transitiveDeps) > 0) {
-                        $this->printPackages($io, $transitiveDeps, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
+                        $this->printPackages($io, $transitiveDeps, $indent, $writeVersion && $versionFits, $latestFits, $writeDescription && $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     } else {
                         $io->writeError('Everything up to date');
                     }
@@ -631,7 +635,7 @@ EOT
                     if ($writeLatest && \count($packages) === 0) {
                         $io->writeError('All your direct dependencies are up to date');
                     } else {
-                        $this->printPackages($io, $packages, $indent, $versionFits, $latestFits, $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
+                        $this->printPackages($io, $packages, $indent, $writeVersion && $versionFits, $writeLatest && $latestFits, $writeDescription && $descriptionFits, $width, $versionLength, $nameLength, $latestLength);
                     }
                 }
 
@@ -649,15 +653,18 @@ EOT
      */
     private function printPackages(IOInterface $io, array $packages, string $indent, bool $writeVersion, bool $writeLatest, bool $writeDescription, int $width, int $versionLength, int $nameLength, int $latestLength): void
     {
+        $padName = $writeVersion || $writeLatest || $writeDescription;
+        $padVersion = $writeLatest || $writeDescription;
+        $padLatest = $writeDescription;
         foreach ($packages as $package) {
             $link = $package['source'] ?? $package['homepage'] ?? '';
             if ($link !== '') {
-                $io->write($indent . '<href='.OutputFormatter::escape($link).'>'.$package['name'].'</>'. str_repeat(' ', $nameLength - strlen($package['name'])), false);
+                $io->write($indent . '<href='.OutputFormatter::escape($link).'>'.$package['name'].'</>'. str_repeat(' ', ($padName ? $nameLength - strlen($package['name']) : 0)), false);
             } else {
-                $io->write($indent . str_pad($package['name'], $nameLength, ' '), false);
+                $io->write($indent . str_pad($package['name'], ($padName ? $nameLength : 0), ' '), false);
             }
             if (isset($package['version']) && $writeVersion) {
-                $io->write(' ' . str_pad($package['version'], $versionLength, ' '), false);
+                $io->write(' ' . str_pad($package['version'], ($padVersion ? $versionLength : 0), ' '), false);
             }
             if (isset($package['latest']) && isset($package['latest-status']) && $writeLatest) {
                 $latestVersion = $package['latest'];
@@ -666,7 +673,7 @@ EOT
                 if (!$io->isDecorated()) {
                     $latestVersion = str_replace(['up-to-date', 'semver-safe-update', 'update-possible'], ['=', '!', '~'], $updateStatus) . ' ' . $latestVersion;
                 }
-                $io->write(' <' . $style . '>' . str_pad($latestVersion, $latestLength, ' ') . '</' . $style . '>', false);
+                $io->write(' <' . $style . '>' . str_pad($latestVersion, ($padLatest ? $latestLength : 0), ' ') . '</' . $style . '>', false);
             }
             if (isset($package['description']) && $writeDescription) {
                 $description = strtok($package['description'], "\r\n");
