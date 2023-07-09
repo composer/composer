@@ -14,6 +14,7 @@
 namespace Composer\Test\Command;
 
 use Symfony\Component\Console\Command\Command;
+use UnexpectedValueException;
 use Composer\Test\TestCase;
 use RuntimeException;
 use Generator;
@@ -52,28 +53,69 @@ class BaseDependencyCommandTest extends TestCase
      */
     public function noParametersCaseProvider(): Generator
     {
-        yield '`why` without package parameter' => [
+        yield '`why` command without package parameter' => [
             'why',
             [],
             'Not enough arguments (missing: "package").'
         ];
 
-        yield '`why-not` without package and version parameters' => [
+        yield '`why-not` command without package and version parameters' => [
             'why-not',
             [],
             'Not enough arguments (missing: "package, version").'
         ];
 
-        yield '`why-not` without package parameter' => [
+        yield '`why-not` command without package parameter' => [
             'why-not',
             ['version' => '*'],
             'Not enough arguments (missing: "package").'
         ];
 
-        yield '`why-not` without version parameter' => [
+        yield '`why-not` command without version parameter' => [
             'why-not',
             ['package' => 'vendor1/package1'],
             'Not enough arguments (missing: "version").'
+        ];
+    }
+
+    /**
+     * Test that SUT will throw an exception when there is not a provided locked file alongside `--locked` parameter
+     *
+     * @dataProvider noLockedFileCaseProvider
+     *
+     * @param string $command
+     * @param array<mixed> $parameters
+     */
+    public function testExceptionWhenRunningLockedWithoutLockFile(string $command, array $parameters): void
+    {
+        $this->initTempComposer();
+
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('A valid composer.lock file is required to run this command with --locked');
+
+        $appTester = $this->getApplicationTester();
+        $this->assertEquals(
+            Command::FAILURE,
+            $appTester->run(['command' => $command] + $parameters + ['--locked' => true]
+            )
+        );
+    }
+
+    /**
+     * @return Generator [$command, $parameters]
+     */
+    public function noLockedFileCaseProvider(): Generator
+    {
+        yield '`why` command without locked filename' => [
+            'why',
+            ['package' => 'vendor1/package1'],
+            'Not enough arguments (missing: "package").'
+        ];
+
+        yield '`why-not` command without locked filename' => [
+            'why-not',
+            ['package' => 'vendor1/package1', 'version' => '1.*'],
+            'Not enough arguments (missing: "package").'
         ];
     }
 }
