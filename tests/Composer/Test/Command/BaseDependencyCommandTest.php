@@ -1,0 +1,79 @@
+<?php declare(strict_types=1);
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+
+namespace Composer\Test\Command;
+
+use Symfony\Component\Console\Command\Command;
+use Composer\Test\TestCase;
+use RuntimeException;
+use Generator;
+
+/**
+ * @covers \Composer\Command\BaseDependencyCommand
+ * @covers \Composer\Command\DependsCommand
+ * @covers \Composer\Command\ProhibitsCommand
+ */
+class BaseDependencyCommandTest extends TestCase
+{
+    /**
+     * Test that SUT will throw an exception when there were not provided some parameters
+     *
+     * @dataProvider noParametersCaseProvider
+     *
+     * @param string $command
+     * @param array<mixed> $parameters
+     * @param string $expectedExceptionMessage
+     *
+     */
+    public function testExceptionWhenNoRequiredParameters(
+        string $command,
+        array $parameters,
+        string $expectedExceptionMessage
+    ): void {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage($expectedExceptionMessage);
+
+        $appTester = $this->getApplicationTester();
+        $this->assertEquals(Command::FAILURE, $appTester->run(['command' => $command] + $parameters));
+    }
+
+    /**
+     * @return Generator [$command, $parameters, $expectedExceptionMessage]
+     */
+    public function noParametersCaseProvider(): Generator
+    {
+        yield '`why` without package parameter' => [
+            'why',
+            [],
+            'Not enough arguments (missing: "package").'
+        ];
+
+        yield '`why-not` without package and version parameters' => [
+            'why-not',
+            [],
+            'Not enough arguments (missing: "package, version").'
+        ];
+
+        yield '`why-not` without package parameter' => [
+            'why-not',
+            ['version' => '*'],
+            'Not enough arguments (missing: "package").'
+        ];
+
+        yield '`why-not` without version parameter' => [
+            'why-not',
+            ['package' => 'vendor1/package1'],
+            'Not enough arguments (missing: "version").'
+        ];
+    }
+}
