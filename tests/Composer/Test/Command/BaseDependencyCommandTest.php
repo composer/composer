@@ -15,6 +15,7 @@ namespace Composer\Test\Command;
 
 use Symfony\Component\Console\Command\Command;
 use UnexpectedValueException;
+use InvalidArgumentException;
 use Composer\Test\TestCase;
 use RuntimeException;
 use Generator;
@@ -102,16 +103,40 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
+     * Test that SUT will throw an exception when the provided package to be inspected is not required by the project
+     *
+     * @dataProvider caseProvider
+     *
+     * @param string $command
+     * @param array<mixed> $parameters
+     */
+    public function testExceptionWhenItCouldNotFoundThePackage(string $command, array $parameters): void
+    {
+        $packageToBeInspected = $parameters['package'];
+
+        $this->initTempComposer();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf('Could not find package "%s" in your project', $packageToBeInspected));
+
+        $appTester = $this->getApplicationTester();
+        $this->assertEquals(
+            Command::FAILURE,
+            $appTester->run(['command' => $command] + $parameters)
+        );
+    }
+
+    /**
      * @return Generator [$command, $parameters]
      */
     public function caseProvider(): Generator
     {
-        yield '`why` command without locked filename' => [
+        yield '`why` command' => [
             'why',
             ['package' => 'vendor1/package1']
         ];
 
-        yield '`why-not` command without locked filename' => [
+        yield '`why-not` command' => [
             'why-not',
             ['package' => 'vendor1/package1', 'version' => '1.*']
         ];
