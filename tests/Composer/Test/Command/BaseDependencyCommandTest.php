@@ -136,7 +136,6 @@ class BaseDependencyCommandTest extends TestCase
      */
     public function testWarningWhenDependenciesAreNotInstalled(string $command, array $parameters): void
     {
-        $packageToBeInspected = $parameters['package'];
         $expectedWarningMessage = <<<OUTPUT
 <warning>No dependencies installed. Try running composer install or update, or use --locked.</warning>
 OUTPUT;
@@ -156,11 +155,7 @@ OUTPUT;
         $this->createComposerLock([$someRequiredPackage], [$someRequiredDevPackage]);
 
         $appTester = $this->getApplicationTester();
-        $appTester->run([
-                'command' => 'depends',
-                'package' => $packageToBeInspected
-            ]
-        );
+        $appTester->run(['command' => $command] + $parameters);
 
         $this->assertSame($expectedWarningMessage, trim($appTester->getDisplay(true)));
     }
