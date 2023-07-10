@@ -127,6 +127,45 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
+     * Test that SUT will show a warning message when dependencies have not been installed yet
+     *
+     * @dataProvider caseProvider
+     *
+     * @param string $command
+     * @param array<mixed> $parameters
+     */
+    public function testWarningWhenDependenciesAreNotInstalled(string $command, array $parameters): void
+    {
+        $packageToBeInspected = $parameters['package'];
+        $expectedWarningMessage = <<<OUTPUT
+<warning>No dependencies installed. Try running composer install or update, or use --locked.</warning>
+OUTPUT;
+
+        $this->initTempComposer([
+            'require' => [
+                'vendor1/package1' => '1.*'
+            ],
+            'require-dev' => [
+                'vendor2/package1' => '2.*'
+            ]
+        ]);
+
+        $someRequiredPackage = self::getPackage('vendor1/package1');
+        $someRequiredDevPackage = self::getPackage('vendor2/package1');
+
+        $this->createComposerLock([$someRequiredPackage], [$someRequiredDevPackage]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run([
+                'command' => 'depends',
+                'package' => $packageToBeInspected
+            ]
+        );
+
+        $this->assertSame($expectedWarningMessage, trim($appTester->getDisplay(true)));
+    }
+
+    /**
      * @return Generator [$command, $parameters]
      */
     public function caseProvider(): Generator
