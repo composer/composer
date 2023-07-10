@@ -20,15 +20,14 @@ use Composer\Test\TestCase;
 use RuntimeException;
 use Generator;
 
-/**
- * @covers \Composer\Command\BaseDependencyCommand
- * @covers \Composer\Command\DependsCommand
- * @covers \Composer\Command\ProhibitsCommand
- */
 class BaseDependencyCommandTest extends TestCase
 {
     /**
      * Test that SUT will throw an exception when there were not provided some parameters
+     *
+     * @covers       \Composer\Command\BaseDependencyCommand
+     * @covers       \Composer\Command\DependsCommand
+     * @covers       \Composer\Command\ProhibitsCommand
      *
      * @dataProvider noParametersCaseProvider
      *
@@ -82,6 +81,10 @@ class BaseDependencyCommandTest extends TestCase
     /**
      * Test that SUT will throw an exception when there is not a provided locked file alongside `--locked` parameter
      *
+     * @covers       \Composer\Command\BaseDependencyCommand
+     * @covers       \Composer\Command\DependsCommand
+     * @covers       \Composer\Command\ProhibitsCommand
+     *
      * @dataProvider caseProvider
      *
      * @param string $command
@@ -105,6 +108,10 @@ class BaseDependencyCommandTest extends TestCase
     /**
      * Test that SUT will throw an exception when the provided package to be inspected is not required by the project
      *
+     * @covers       \Composer\Command\BaseDependencyCommand
+     * @covers       \Composer\Command\DependsCommand
+     * @covers       \Composer\Command\ProhibitsCommand
+     *
      * @dataProvider caseProvider
      *
      * @param string $command
@@ -127,14 +134,18 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * Test that SUT will show a warning message when the provided package was not found in the project
+     * Test that SUT should show a warning message when the provided package was not found in the project
+     *
+     * @covers       \Composer\Command\BaseDependencyCommand
+     * @covers       \Composer\Command\DependsCommand
+     * @covers       \Composer\Command\ProhibitsCommand
      *
      * @dataProvider caseProvider
      *
      * @param string $command
      * @param array<mixed> $parameters
      */
-    public function testExceptionWhenPackageWasNotFoundLocally(string $command, array $parameters): void
+    public function testExceptionWhenPackageWasNotFoundInProject(string $command, array $parameters): void
     {
         $packageToBeInspected = $parameters['package'];
 
@@ -147,8 +158,6 @@ class BaseDependencyCommandTest extends TestCase
 
         $firstRequiredPackage = self::getPackage('vendor1/package2');
         $secondRequiredPackage = self::getPackage('vendor2/package1');
-        $firstRequiredPackage->setType('metapackage');
-        $secondRequiredPackage->setType('metapackage');
 
         $this->createInstalledJson([$firstRequiredPackage, $secondRequiredPackage]);
         $this->createComposerLock([$firstRequiredPackage, $secondRequiredPackage]);
@@ -162,7 +171,11 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * Test that SUT will show a warning message when dependencies have not been installed yet
+     * Test that SUT should show a warning message when dependencies have not been installed yet
+     *
+     * @covers       \Composer\Command\BaseDependencyCommand
+     * @covers       \Composer\Command\DependsCommand
+     * @covers       \Composer\Command\ProhibitsCommand
      *
      * @dataProvider caseProvider
      *
@@ -185,9 +198,9 @@ OUTPUT;
         ]);
 
         $someRequiredPackage = self::getPackage('vendor1/package1');
-        $someRequiredDevPackage = self::getPackage('vendor2/package1');
+        $someDevRequiredPackage = self::getPackage('vendor2/package1');
 
-        $this->createComposerLock([$someRequiredPackage], [$someRequiredDevPackage]);
+        $this->createComposerLock([$someRequiredPackage], [$someDevRequiredPackage]);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => $command] + $parameters);
@@ -208,6 +221,98 @@ OUTPUT;
         yield '`why-not` command' => [
             'why-not',
             ['package' => 'vendor1/package1', 'version' => '1.*']
+        ];
+    }
+
+    /**
+     * Test that SUT should finish successfully and show some outputs depending different command parameters
+     *
+     * @covers       \Composer\Command\BaseDependencyCommand
+     * @covers       \Composer\Command\ProhibitsCommand
+     *
+     * @dataProvider caseWhyNotProvider
+     *
+     * @param array<mixed> $parameters
+     * @param array<mixed> $expectedMessages
+     */
+    public function testWhyNotCommandOutputs(array $parameters, array $expectedMessages): void
+    {
+        $packageToBeInspected = $parameters['package'];
+        $packageVersionToBeInspected = $parameters['version'];
+
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'vendor1/package1', 'version' => '1.3.0'],
+                        ['name' => 'vendor2/package1', 'version' => '1.0.0']
+                    ],
+                ],
+            ],
+            'require' => [
+                'vendor1/package1' => '1.*'
+            ],
+            'require-dev' => [
+                'vendor2/package1' => '2.*'
+            ]
+        ]);
+
+        $someRequiredPackage = self::getPackage('vendor1/package1');
+        $someDevRequiredPackage = self::getPackage('vendor2/package1');
+        $this->createComposerLock([$someRequiredPackage], [$someDevRequiredPackage]);
+        $this->createInstalledJson([$someRequiredPackage], [$someDevRequiredPackage]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run([
+            'command' => 'why-not',
+            'package' => $packageToBeInspected,
+            'version' => $packageVersionToBeInspected
+        ]);
+
+        $appTester->assertCommandIsSuccessful();
+        $this->assertSame(implode(PHP_EOL, $expectedMessages), trim($appTester->getDisplay(true)));
+    }
+
+    /**
+     * @return Generator [$parameters, $expectedMessages]
+     */
+    public function caseWhyNotProvider(): Generator
+    {
+        yield 'it could not found the package with a specific version' => [
+            ['package' => 'vendor1/package1', 'version' => '3.*'],
+            [
+                <<<OUTPUT
+Package "vendor1/package1" could not be found with constraint "3.*", results below will most likely be incomplete.
+OUTPUT,
+                "__root__ - requires vendor1/package1 (1.*) ",
+                <<<OUTPUT
+Not finding what you were looking for? Try calling `composer update "vendor1/package1:3.*" --dry-run` to get another view on the problem.
+OUTPUT
+            ]
+        ];
+
+        yield 'it could not found the package and there is no installed package with a specific version' => [
+            ['package' => 'vendor1/package1', 'version' => '^1.4'],
+            [
+                <<<OUTPUT
+Package "vendor1/package1" could not be found with constraint "^1.4", results below will most likely be incomplete.
+OUTPUT,
+                'There is no installed package depending on "vendor1/package1" in versions not matching ^1.4',
+                <<<OUTPUT
+Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.4" --dry-run` to get another view on the problem.
+OUTPUT
+            ]
+        ];
+
+        yield 'there is no installed package depending on the package in versions not matching a specific version' => [
+            ['package' => 'vendor1/package1', 'version' => '^1.3'],
+            [
+                'There is no installed package depending on "vendor1/package1" in versions not matching ^1.3',
+                <<<OUTPUT
+Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.3" --dry-run` to get another view on the problem.
+OUTPUT
+            ]
         ];
     }
 }
