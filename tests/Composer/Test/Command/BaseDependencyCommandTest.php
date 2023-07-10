@@ -259,7 +259,7 @@ OUTPUT;
             ]
         ]);
 
-        $firstRequiredPackage = self::getPackage('vendor1/package1');
+        $firstRequiredPackage = self::getPackage('vendor1/package1','1.3.0');
         $firstRequiredPackage->setRequires([
             'vendor1/package2' => new Link(
                 'vendor1/package1',
@@ -269,7 +269,7 @@ OUTPUT;
                 '^2'
             )
         ]);
-        $secondRequiredPackage = self::getPackage('vendor1/package2', '1.1.0');
+        $secondRequiredPackage = self::getPackage('vendor1/package2', '2.3.0');
         $someDevRequiredPackage = self::getPackage('vendor2/package1');
         $this->createComposerLock([$firstRequiredPackage, $secondRequiredPackage], [$someDevRequiredPackage]);
         $this->createInstalledJson([$firstRequiredPackage, $secondRequiredPackage], [$someDevRequiredPackage]);
@@ -300,7 +300,7 @@ OUTPUT;
             ['package' => 'vendor1/package2'],
             [
                 '__root__         -     requires vendor1/package2 (2.0.1) ',
-                'vendor1/package1 1.0.0 requires vendor1/package2 (^2)'
+                'vendor1/package1 1.3.0 requires vendor1/package2 (^2)'
             ]
         ];
 
@@ -346,8 +346,8 @@ OUTPUT;
             ]
         ]);
 
-        $someRequiredPackage = self::getPackage('vendor1/package1');
-        $someDevRequiredPackage = self::getPackage('vendor2/package1');
+        $someRequiredPackage = self::getPackage('vendor1/package1', '1.3.0');
+        $someDevRequiredPackage = self::getPackage('vendor2/package1', '1.0.0');
         $this->createComposerLock([$someRequiredPackage], [$someDevRequiredPackage]);
         $this->createInstalledJson([$someRequiredPackage], [$someDevRequiredPackage]);
 
