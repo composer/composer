@@ -127,6 +127,41 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
+     * Test that SUT will show a warning message when the provided package was not found in the project
+     *
+     * @dataProvider caseProvider
+     *
+     * @param string $command
+     * @param array<mixed> $parameters
+     */
+    public function testExceptionWhenPackageWasNotFoundLocally(string $command, array $parameters): void
+    {
+        $packageToBeInspected = $parameters['package'];
+
+        $this->initTempComposer([
+            'require' => [
+                'vendor1/package2' => '1.*',
+                'vendor2/package1' => '2.*'
+            ]
+        ]);
+
+        $firstRequiredPackage = self::getPackage('vendor1/package2');
+        $secondRequiredPackage = self::getPackage('vendor2/package1');
+        $firstRequiredPackage->setType('metapackage');
+        $secondRequiredPackage->setType('metapackage');
+
+        $this->createInstalledJson([$firstRequiredPackage, $secondRequiredPackage]);
+        $this->createComposerLock([$firstRequiredPackage, $secondRequiredPackage]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(sprintf('Could not find package "%s" in your project', $packageToBeInspected));
+
+        $appTester = $this->getApplicationTester();
+
+        $this->assertEquals(Command::FAILURE, $appTester->run(['command' => $command] + $parameters));
+    }
+
+    /**
      * Test that SUT will show a warning message when dependencies have not been installed yet
      *
      * @dataProvider caseProvider
