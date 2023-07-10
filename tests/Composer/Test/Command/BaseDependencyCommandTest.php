@@ -13,10 +13,12 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Symfony\Component\Console\Command\Command;
 use UnexpectedValueException;
 use InvalidArgumentException;
 use Composer\Test\TestCase;
+use Composer\Package\Link;
 use RuntimeException;
 use Generator;
 
@@ -228,6 +230,92 @@ OUTPUT;
      * Test that SUT should finish successfully and show some outputs depending different command parameters
      *
      * @covers       \Composer\Command\BaseDependencyCommand
+     * @covers       \Composer\Command\DependsCommand
+     *
+     * @dataProvider caseWhyProvider
+     *
+     * @param array<mixed> $parameters
+     * @param array<mixed> $expectedMessages
+     */
+    public function testWhyCommandOutputs(array $parameters, array $expectedMessages): void
+    {
+        $packageToBeInspected = $parameters['package'];
+
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'vendor1/package1', 'version' => '1.3.0', 'require' => ['vendor1/package2' => '^2']],
+                        ['name' => 'vendor1/package2', 'version' => '2.3.0']
+                    ],
+                ],
+            ],
+            'require' => [
+                'vendor1/package2' => '2.0.1'
+            ],
+            'require-dev' => [
+                'vendor2/package1' => '2.*'
+            ]
+        ]);
+
+        $firstRequiredPackage = self::getPackage('vendor1/package1');
+        $firstRequiredPackage->setRequires([
+            'vendor1/package2' => new Link(
+                'vendor1/package1',
+                'vendor1/package2',
+                new MatchAllConstraint(),
+                Link::TYPE_REQUIRE,
+                '^2'
+            )
+        ]);
+        $secondRequiredPackage = self::getPackage('vendor1/package2', '1.1.0');
+        $someDevRequiredPackage = self::getPackage('vendor2/package1');
+        $this->createComposerLock([$firstRequiredPackage, $secondRequiredPackage], [$someDevRequiredPackage]);
+        $this->createInstalledJson([$firstRequiredPackage, $secondRequiredPackage], [$someDevRequiredPackage]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run([
+            'command' => 'why',
+            'package' => $packageToBeInspected
+        ]);
+
+        $appTester->assertCommandIsSuccessful();
+        $this->assertSame(implode(PHP_EOL, $expectedMessages), trim($appTester->getDisplay(true)));
+    }
+
+    /**
+     * @return Generator [$parameters, $expectedMessages]
+     */
+    public function caseWhyProvider(): Generator
+    {
+        yield 'there is no installed package depending on the package' => [
+            ['package' => 'vendor1/package1'],
+            [
+                'There is no installed package depending on "vendor1/package1"'
+            ]
+        ];
+
+        yield 'a simple package dependency' => [
+            ['package' => 'vendor1/package2'],
+            [
+                '__root__         -     requires vendor1/package2 (2.0.1) ',
+                'vendor1/package1 1.0.0 requires vendor1/package2 (^2)'
+            ]
+        ];
+
+        yield 'a simple package dev dependency' => [
+            ['package' => 'vendor2/package1'],
+            [
+                '__root__ - requires (for development) vendor2/package1 (2.*)'
+            ]
+        ];
+    }
+
+    /**
+     * Test that SUT should finish successfully and show some outputs depending different command parameters
+     *
+     * @covers       \Composer\Command\BaseDependencyCommand
      * @covers       \Composer\Command\ProhibitsCommand
      *
      * @dataProvider caseWhyNotProvider
@@ -285,7 +373,7 @@ OUTPUT;
                 <<<OUTPUT
 Package "vendor1/package1" could not be found with constraint "3.*", results below will most likely be incomplete.
 OUTPUT,
-                "__root__ - requires vendor1/package1 (1.*) ",
+                '__root__ - requires vendor1/package1 (1.*) ',
                 <<<OUTPUT
 Not finding what you were looking for? Try calling `composer update "vendor1/package1:3.*" --dry-run` to get another view on the problem.
 OUTPUT
