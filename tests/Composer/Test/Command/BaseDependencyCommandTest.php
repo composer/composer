@@ -81,7 +81,7 @@ class BaseDependencyCommandTest extends TestCase
     /**
      * Test that SUT will throw an exception when there is not a provided locked file alongside `--locked` parameter
      *
-     * @dataProvider noLockedFileCaseProvider
+     * @dataProvider caseProvider
      *
      * @param string $command
      * @param array<mixed> $parameters
@@ -104,18 +104,16 @@ class BaseDependencyCommandTest extends TestCase
     /**
      * @return Generator [$command, $parameters]
      */
-    public function noLockedFileCaseProvider(): Generator
+    public function caseProvider(): Generator
     {
         yield '`why` command without locked filename' => [
             'why',
-            ['package' => 'vendor1/package1'],
-            'Not enough arguments (missing: "package").'
+            ['package' => 'vendor1/package1']
         ];
 
         yield '`why-not` command without locked filename' => [
             'why-not',
-            ['package' => 'vendor1/package1', 'version' => '1.*'],
-            'Not enough arguments (missing: "package").'
+            ['package' => 'vendor1/package1', 'version' => '1.*']
         ];
     }
 }
