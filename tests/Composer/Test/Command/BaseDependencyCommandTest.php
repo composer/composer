@@ -186,9 +186,7 @@ class BaseDependencyCommandTest extends TestCase
      */
     public function testWarningWhenDependenciesAreNotInstalled(string $command, array $parameters): void
     {
-        $expectedWarningMessage = <<<OUTPUT
-<warning>No dependencies installed. Try running composer install or update, or use --locked.</warning>
-OUTPUT;
+        $expectedWarningMessage = '<warning>No dependencies installed. Try running composer install or update, or use --locked.</warning>';
 
         $this->initTempComposer([
             'require' => [
@@ -259,7 +257,7 @@ OUTPUT;
             ]
         ]);
 
-        $firstRequiredPackage = self::getPackage('vendor1/package1','1.3.0');
+        $firstRequiredPackage = self::getPackage('vendor1/package1', '1.3.0');
         $firstRequiredPackage->setRequires([
             'vendor1/package2' => new Link(
                 'vendor1/package1',
@@ -370,26 +368,18 @@ OUTPUT;
         yield 'it could not found the package with a specific version' => [
             ['package' => 'vendor1/package1', 'version' => '3.*'],
             [
-                <<<OUTPUT
-Package "vendor1/package1" could not be found with constraint "3.*", results below will most likely be incomplete.
-OUTPUT,
+                'Package "vendor1/package1" could not be found with constraint "3.*", results below will most likely be incomplete.',
                 '__root__ - requires vendor1/package1 (1.*) ',
-                <<<OUTPUT
-Not finding what you were looking for? Try calling `composer update "vendor1/package1:3.*" --dry-run` to get another view on the problem.
-OUTPUT
+                'Not finding what you were looking for? Try calling `composer update "vendor1/package1:3.*" --dry-run` to get another view on the problem.'
             ]
         ];
 
         yield 'it could not found the package and there is no installed package with a specific version' => [
             ['package' => 'vendor1/package1', 'version' => '^1.4'],
             [
-                <<<OUTPUT
-Package "vendor1/package1" could not be found with constraint "^1.4", results below will most likely be incomplete.
-OUTPUT,
+                'Package "vendor1/package1" could not be found with constraint "^1.4", results below will most likely be incomplete.',
                 'There is no installed package depending on "vendor1/package1" in versions not matching ^1.4',
-                <<<OUTPUT
-Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.4" --dry-run` to get another view on the problem.
-OUTPUT
+                'Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.4" --dry-run` to get another view on the problem.'
             ]
         ];
 
@@ -397,9 +387,7 @@ OUTPUT
             ['package' => 'vendor1/package1', 'version' => '^1.3'],
             [
                 'There is no installed package depending on "vendor1/package1" in versions not matching ^1.3',
-                <<<OUTPUT
-Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.3" --dry-run` to get another view on the problem.
-OUTPUT
+                'Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.3" --dry-run` to get another view on the problem.'
             ]
         ];
     }
