@@ -814,6 +814,11 @@ class Filesystem
         if (!is_dir($target)) {
             throw new IOException(sprintf('Cannot junction to "%s" as it is not a directory.', $target), 0, null, $target);
         }
+        //fix Cannot create a file when that file already exists.
+        if ($this->isJunction($junction)){
+            $this->removeJunction($junction);
+        }
+
         $cmd = sprintf(
             'mklink /J %s %s',
             ProcessExecutor::escape(str_replace('/', DIRECTORY_SEPARATOR, $junction)),
