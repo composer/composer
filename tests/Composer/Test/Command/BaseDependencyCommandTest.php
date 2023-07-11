@@ -17,6 +17,7 @@ use Composer\Semver\Constraint\MatchAllConstraint;
 use Symfony\Component\Console\Command\Command;
 use UnexpectedValueException;
 use InvalidArgumentException;
+use Composer\Util\Platform;
 use Composer\Test\TestCase;
 use Composer\Package\Link;
 use RuntimeException;
@@ -51,7 +52,7 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * @return Generator [$command, $parameters, $expectedExceptionMessage]
+     * @return Generator<string, array<string|string[]>> [string $command, array $parameters, array $expectedExceptionMessage]
      */
     public function noParametersCaseProvider(): Generator
     {
@@ -136,7 +137,7 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * Test that SUT should show a warning message when the provided package was not found in the project
+     * Test that SUT should show a warning message when the package to be inspected was not found in the project
      *
      * @covers       \Composer\Command\BaseDependencyCommand
      * @covers       \Composer\Command\DependsCommand
@@ -209,7 +210,7 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * @return Generator [$command, $parameters]
+     * @return Generator<string, array<string|string[]>> [string $command, array $parameters]
      */
     public function caseProvider(): Generator
     {
@@ -225,7 +226,7 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * Test that SUT should finish successfully and show some outputs depending different command parameters
+     * Test that SUT should finish successfully and show some outputs depending on different command parameters
      *
      * @covers       \Composer\Command\BaseDependencyCommand
      * @covers       \Composer\Command\DependsCommand
@@ -279,11 +280,14 @@ class BaseDependencyCommandTest extends TestCase
         ]);
 
         $appTester->assertCommandIsSuccessful();
-        $this->assertSame(implode(PHP_EOL, $expectedMessages), trim($appTester->getDisplay(true)));
+
+        $expectedOutput = implode(Platform::isWindows() ? "\r\n" : PHP_EOL, $expectedMessages);
+        $actualOutput = trim($appTester->getDisplay(true));
+        $this->assertSame($expectedOutput, $actualOutput);
     }
 
     /**
-     * @return Generator [$parameters, $expectedMessages]
+     * @return Generator<string, array<string[]>> [array $parameters, array $expectedMessages]
      */
     public function caseWhyProvider(): Generator
     {
@@ -294,7 +298,7 @@ class BaseDependencyCommandTest extends TestCase
             ]
         ];
 
-        yield 'a simple package dependency' => [
+        yield 'a nested package dependency' => [
             ['package' => 'vendor1/package2'],
             [
                 '__root__         -     requires vendor1/package2 (2.0.1) ',
@@ -311,7 +315,7 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * Test that SUT should finish successfully and show some outputs depending different command parameters
+     * Test that SUT should finish successfully and show some outputs depending on different command parameters
      *
      * @covers       \Composer\Command\BaseDependencyCommand
      * @covers       \Composer\Command\ProhibitsCommand
@@ -357,11 +361,14 @@ class BaseDependencyCommandTest extends TestCase
         ]);
 
         $appTester->assertCommandIsSuccessful();
-        $this->assertSame(implode(PHP_EOL, $expectedMessages), trim($appTester->getDisplay(true)));
+
+        $expectedOutput = implode(Platform::isWindows() ? "\r\n" : PHP_EOL, $expectedMessages);
+        $actualOutput = trim($appTester->getDisplay(true));
+        $this->assertSame($expectedOutput, $actualOutput);
     }
 
     /**
-     * @return Generator [$parameters, $expectedMessages]
+     * @return Generator<string, array<string[]>> [array $parameters, array $expectedMessages]
      */
     public function caseWhyNotProvider(): Generator
     {
