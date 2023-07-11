@@ -115,7 +115,7 @@ class ArchiveCommandTest extends TestCase
         $output = $this->getMockBuilder(OutputInterface::class)
             ->getMock();
 
-        $ed = $this->getMockBuilder(EventDispatcher::class)
+        $eventDispatcher = $this->getMockBuilder(EventDispatcher::class)
             ->disableOriginalConstructor()->getMock();
 
         $composer = new Composer;
@@ -144,7 +144,7 @@ class ArchiveCommandTest extends TestCase
             ->with($package, 'zip', '.', null, false)->willReturn(Platform::getCwd());
 
         $composer->setArchiveManager($manager);
-        $composer->setEventDispatcher($ed);
+        $composer->setEventDispatcher($eventDispatcher);
         $composer->setPackage($package);
         $composer->setRepositoryManager($repositoryManager);
 
