@@ -814,9 +814,10 @@ class Filesystem
         if (!is_dir($target)) {
             throw new IOException(sprintf('Cannot junction to "%s" as it is not a directory.', $target), 0, null, $target);
         }
-        //fix Cannot create a file when that file already exists.
-        if ($this->isJunction($junction)){
-            $this->removeJunction($junction);
+
+        // Removing any previously to ensure clean execution.
+        if (!is_dir($junction) or $this->isJunction($junction)) {
+            @rmdir($junction);
         }
 
         $cmd = sprintf(
