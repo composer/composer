@@ -310,7 +310,7 @@ class GitHubDriver extends VcsDriver
             $resource = $this->getContents($resource['git_url'])->decodeJson();
         }
 
-        if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($content = base64_decode($resource['content']))) {
+        if (!isset($resource['content']) || $resource['encoding'] !== 'base64' || false === ($content = base64_decode($resource['content']))) {
             throw new \RuntimeException('Could not retrieve ' . $file . ' for '.$identifier);
         }
 

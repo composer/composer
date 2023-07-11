@@ -401,6 +401,34 @@ class GitHubDriverTest extends TestCase
         ];
     }
 
+    public function testGetEmptyFileContent(): void
+    {
+        $repoUrl = 'http://github.com/composer/packagist';
+
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io->expects($this->any())
+            ->method('isInteractive')
+            ->will($this->returnValue(true));
+
+        $httpDownloader = $this->getHttpDownloaderMock($io, $this->config);
+        $httpDownloader->expects(
+            [
+                ['url' => 'https://api.github.com/repos/composer/packagist', 'body' => '{"master_branch": "test_master", "owner": {"login": "composer"}, "name": "packagist", "archived": true}'],
+                ['url' => 'https://api.github.com/repos/composer/packagist/contents/composer.json?ref=main', 'body' => '{"encoding":"base64","content":""}'],
+            ],
+            true
+        );
+
+        $repoConfig = [
+            'url' => $repoUrl,
+        ];
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $this->getProcessExecutorMock());
+        $gitHubDriver->initialize();
+
+        $this->assertSame('', $gitHubDriver->getFileContent('composer.json', 'main'));
+    }
+
     /**
      * @param string|object $object
      * @param mixed         $value
