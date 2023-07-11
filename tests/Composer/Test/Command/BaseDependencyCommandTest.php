@@ -17,7 +17,6 @@ use Composer\Semver\Constraint\MatchAllConstraint;
 use Symfony\Component\Console\Command\Command;
 use UnexpectedValueException;
 use InvalidArgumentException;
-use Composer\Util\Platform;
 use Composer\Test\TestCase;
 use Composer\Package\Link;
 use RuntimeException;
@@ -234,9 +233,9 @@ class BaseDependencyCommandTest extends TestCase
      * @dataProvider caseWhyProvider
      *
      * @param array<mixed> $parameters
-     * @param array<mixed> $expectedMessages
+     * @param string $expectedOutput
      */
-    public function testWhyCommandOutputs(array $parameters, array $expectedMessages): void
+    public function testWhyCommandOutputs(array $parameters, string $expectedOutput): void
     {
         $packageToBeInspected = $parameters['package'];
 
@@ -281,36 +280,30 @@ class BaseDependencyCommandTest extends TestCase
 
         $appTester->assertCommandIsSuccessful();
 
-        $expectedOutput = implode(Platform::isWindows() ? "\r\n" : PHP_EOL, $expectedMessages);
-        $actualOutput = trim($appTester->getDisplay(true));
-        $this->assertSame($expectedOutput, $actualOutput);
+        $this->assertEquals(trim($expectedOutput), trim($appTester->getDisplay(true)));
     }
 
     /**
-     * @return Generator<string, array<string[]>> [array $parameters, array $expectedMessages]
+     * @return Generator<string, array<string[]|string>> [array $parameters, string $expectedMessages]
      */
     public function caseWhyProvider(): Generator
     {
         yield 'there is no installed package depending on the package' => [
             ['package' => 'vendor1/package1'],
-            [
-                'There is no installed package depending on "vendor1/package1"'
-            ]
+            'There is no installed package depending on "vendor1/package1"'
         ];
 
         yield 'a nested package dependency' => [
             ['package' => 'vendor1/package2'],
-            [
-                '__root__         -     requires vendor1/package2 (2.0.1) ',
-                'vendor1/package1 1.3.0 requires vendor1/package2 (^2)'
-            ]
+            <<<OUTPUT
+__root__         -     requires vendor1/package2 (2.0.1) 
+vendor1/package1 1.3.0 requires vendor1/package2 (^2)
+OUTPUT
         ];
 
         yield 'a simple package dev dependency' => [
             ['package' => 'vendor2/package1'],
-            [
-                '__root__ - requires (for development) vendor2/package1 (2.*)'
-            ]
+            '__root__ - requires (for development) vendor2/package1 (2.*)'
         ];
     }
 
@@ -323,9 +316,9 @@ class BaseDependencyCommandTest extends TestCase
      * @dataProvider caseWhyNotProvider
      *
      * @param array<mixed> $parameters
-     * @param array<mixed> $expectedMessages
+     * @param string $expectedOutput
      */
-    public function testWhyNotCommandOutputs(array $parameters, array $expectedMessages): void
+    public function testWhyNotCommandOutputs(array $parameters, string $expectedOutput): void
     {
         $packageToBeInspected = $parameters['package'];
         $packageVersionToBeInspected = $parameters['version'];
@@ -362,40 +355,38 @@ class BaseDependencyCommandTest extends TestCase
 
         $appTester->assertCommandIsSuccessful();
 
-        $expectedOutput = implode(Platform::isWindows() ? "\r\n" : PHP_EOL, $expectedMessages);
-        $actualOutput = trim($appTester->getDisplay(true));
-        $this->assertSame($expectedOutput, $actualOutput);
+        $this->assertSame(trim($expectedOutput), trim($appTester->getDisplay(true)));
     }
 
     /**
-     * @return Generator<string, array<string[]>> [array $parameters, array $expectedMessages]
+     * @return Generator<string, array<string[]|string>> [array $parameters, string $expectedMessages]
      */
     public function caseWhyNotProvider(): Generator
     {
         yield 'it could not found the package with a specific version' => [
             ['package' => 'vendor1/package1', 'version' => '3.*'],
-            [
-                'Package "vendor1/package1" could not be found with constraint "3.*", results below will most likely be incomplete.',
-                '__root__ - requires vendor1/package1 (1.*) ',
-                'Not finding what you were looking for? Try calling `composer update "vendor1/package1:3.*" --dry-run` to get another view on the problem.'
-            ]
+            <<<OUTPUT
+Package "vendor1/package1" could not be found with constraint "3.*", results below will most likely be incomplete.
+__root__ - requires vendor1/package1 (1.*) 
+Not finding what you were looking for? Try calling `composer update "vendor1/package1:3.*" --dry-run` to get another view on the problem.
+OUTPUT
         ];
 
         yield 'it could not found the package and there is no installed package with a specific version' => [
             ['package' => 'vendor1/package1', 'version' => '^1.4'],
-            [
-                'Package "vendor1/package1" could not be found with constraint "^1.4", results below will most likely be incomplete.',
-                'There is no installed package depending on "vendor1/package1" in versions not matching ^1.4',
-                'Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.4" --dry-run` to get another view on the problem.'
-            ]
+            <<<OUTPUT
+Package "vendor1/package1" could not be found with constraint "^1.4", results below will most likely be incomplete.
+There is no installed package depending on "vendor1/package1" in versions not matching ^1.4
+Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.4" --dry-run` to get another view on the problem.
+OUTPUT
         ];
 
         yield 'there is no installed package depending on the package in versions not matching a specific version' => [
             ['package' => 'vendor1/package1', 'version' => '^1.3'],
-            [
-                'There is no installed package depending on "vendor1/package1" in versions not matching ^1.3',
-                'Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.3" --dry-run` to get another view on the problem.'
-            ]
+            <<<OUTPUT
+There is no installed package depending on "vendor1/package1" in versions not matching ^1.3
+Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.3" --dry-run` to get another view on the problem.
+OUTPUT
         ];
     }
 }
