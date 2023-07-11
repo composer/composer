@@ -816,7 +816,7 @@ class Filesystem
         }
 
         // Removing any previously junction to ensure clean execution.
-        if (!is_dir($junction) or $this->isJunction($junction)) {
+        if (!is_dir($junction) || $this->isJunction($junction)) {
             @rmdir($junction);
         }
 
