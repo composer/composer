@@ -238,6 +238,8 @@ class BaseDependencyCommandTest extends TestCase
     public function testWhyCommandOutputs(array $parameters, string $expectedOutput): void
     {
         $packageToBeInspected = $parameters['package'];
+        $renderAsTree = $parameters['--tree'] ?? false;
+        $renderRecursively = $parameters['--recursive'] ?? false;
 
         $this->initTempComposer([
             'repositories' => [
@@ -245,12 +247,14 @@ class BaseDependencyCommandTest extends TestCase
                     'type' => 'package',
                     'package' => [
                         ['name' => 'vendor1/package1', 'version' => '1.3.0', 'require' => ['vendor1/package2' => '^2']],
-                        ['name' => 'vendor1/package2', 'version' => '2.3.0']
+                        ['name' => 'vendor1/package2', 'version' => '2.3.0', 'require' => ['vendor1/package3' => '^1']],
+                        ['name' => 'vendor1/package3', 'version' => '2.1.0']
                     ],
                 ],
             ],
             'require' => [
-                'vendor1/package2' => '2.0.1'
+                'vendor1/package2' => '1.3.0',
+                'vendor1/package3' => '2.3.0',
             ],
             'require-dev' => [
                 'vendor2/package1' => '2.*'
@@ -268,14 +272,33 @@ class BaseDependencyCommandTest extends TestCase
             )
         ]);
         $secondRequiredPackage = self::getPackage('vendor1/package2', '2.3.0');
+        $secondRequiredPackage->setRequires([
+            'vendor1/package3' => new Link(
+                'vendor1/package2',
+                'vendor1/package3',
+                new MatchAllConstraint(),
+                Link::TYPE_REQUIRE,
+                '^1'
+            )
+        ]);
+        $thirdRequiredPackage = self::getPackage('vendor1/package3', '2.1.0');
         $someDevRequiredPackage = self::getPackage('vendor2/package1');
-        $this->createComposerLock([$firstRequiredPackage, $secondRequiredPackage], [$someDevRequiredPackage]);
-        $this->createInstalledJson([$firstRequiredPackage, $secondRequiredPackage], [$someDevRequiredPackage]);
+        $this->createComposerLock(
+            [$firstRequiredPackage, $secondRequiredPackage, $thirdRequiredPackage],
+            [$someDevRequiredPackage]
+        );
+        $this->createInstalledJson(
+            [$firstRequiredPackage, $secondRequiredPackage, $thirdRequiredPackage],
+            [$someDevRequiredPackage]
+        );
 
         $appTester = $this->getApplicationTester();
         $appTester->run([
             'command' => 'why',
-            'package' => $packageToBeInspected
+            'package' => $packageToBeInspected,
+            '--tree' => $renderAsTree,
+            '--recursive' => $renderRecursively,
+            '--locked' => true
         ]);
 
         $appTester->assertCommandIsSuccessful();
@@ -284,7 +307,7 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * @return Generator<string, array<string[]|string>> [array $parameters, string $expectedMessages]
+     * @return Generator<string, array<string[]|bool[]|string>> [array $parameters, string $expectedMessages]
      */
     public function caseWhyProvider(): Generator
     {
@@ -294,10 +317,31 @@ class BaseDependencyCommandTest extends TestCase
         ];
 
         yield 'a nested package dependency' => [
-            ['package' => 'vendor1/package2'],
+            ['package' => 'vendor1/package3'],
             <<<OUTPUT
-__root__         -     requires vendor1/package2 (2.0.1) 
-vendor1/package1 1.3.0 requires vendor1/package2 (^2)
+__root__         -     requires vendor1/package3 (2.3.0) 
+vendor1/package2 2.3.0 requires vendor1/package3 (^1)
+OUTPUT
+        ];
+
+        yield 'a nested package dependency (tree mode)' => [
+            ['package' => 'vendor1/package3', '--tree' => true],
+            <<<OUTPUT
+vendor1/package3 2.1.0 
+|--__root__ (requires vendor1/package3 2.3.0)
+`--vendor1/package2 2.3.0 (requires vendor1/package3 ^1)
+   |--__root__ (requires vendor1/package2 1.3.0)
+   `--vendor1/package1 1.3.0 (requires vendor1/package2 ^2)
+OUTPUT
+        ];
+
+        yield 'a nested package dependency (recursive mode)' => [
+            ['package' => 'vendor1/package3', '--recursive' => true],
+            <<<OUTPUT
+__root__         -     requires vendor1/package2 (1.3.0) 
+vendor1/package1 1.3.0 requires vendor1/package2 (^2)    
+__root__         -     requires vendor1/package3 (2.3.0) 
+vendor1/package2 2.3.0 requires vendor1/package3 (^1)
 OUTPUT
         ];
 
