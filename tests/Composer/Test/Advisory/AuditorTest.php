@@ -14,6 +14,7 @@ namespace Composer\Test\Advisory;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\IO\BufferIO;
 use Composer\IO\NullIO;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
@@ -69,6 +70,35 @@ class AuditorTest extends TestCase
         $auditor = new Auditor();
         $result = $auditor->audit(new NullIO(), $this->getRepoSet(), $data['packages'], Auditor::FORMAT_PLAIN, $data['warningOnly']);
         $this->assertSame($expected, $result, $message);
+    }
+
+    public function testAuditIgnoredIDs(): void
+    {
+        $packages = [
+            new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
+            new Package('vendor1/package2', '3.0.0.0', '3.0.0'),
+            new Package('vendorx/packagex', '3.0.0.0', '3.0.0'),
+            new Package('vendor3/package1', '3.0.0.0', '3.0.0'),
+        ];
+
+        $ignoredIds = ['CVE1', 'ID2', 'RemoteIDx'];
+
+        $auditor = new Auditor();
+        $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $packages, Auditor::FORMAT_PLAIN, false, $ignoredIds);
+        $io->expects([
+            ['text' => 'Found 1 security vulnerability advisory affecting 1 package:'],
+            ['text' => 'Package: vendor3/package1'],
+            ['text' => 'CVE: CVE5'],
+            ['text' => 'Title: advisory7'],
+            ['text' => 'URL: https://advisory.example.com/advisory7'],
+            ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+            ['text' => 'Reported at: 2015-05-25T13:21:00+00:00'],
+        ], true);
+        $this->assertSame(1, $result);
+
+        // without ignored IDs, we should get all 4
+        $result = $auditor->audit($io, $this->getRepoSet(), $packages, Auditor::FORMAT_PLAIN, false);
+        $this->assertSame(4, $result);
     }
 
     private function getRepoSet(): RepositorySet
@@ -160,7 +190,7 @@ class AuditorTest extends TestCase
                     'sources' => [
                         [
                             'name' => 'source2',
-                            'remoteId' => 'RemoteID2',
+                            'remoteId' => 'RemoteID4',
                         ],
                     ],
                     'reportedAt' => '2022-05-25 13:21:00',
@@ -205,14 +235,14 @@ class AuditorTest extends TestCase
                 [
                     'advisoryId' => 'IDx',
                     'packageName' => 'vendorx/packagex',
-                    'title' => 'advisory7',
-                    'link' => 'https://advisory.example.com/advisory7',
+                    'title' => 'advisory17',
+                    'link' => 'https://advisory.example.com/advisory17',
                     'cve' => 'CVE5',
                     'affectedVersions' => '>=3,<3.4.3|>=1,<2.5.6',
                     'sources' => [
                         [
                             'name' => 'source2',
-                            'remoteId' => 'RemoteID4',
+                            'remoteId' => 'RemoteIDx',
                         ],
                     ],
                     'reportedAt' => '2015-05-25 13:21:00',

@@ -556,7 +556,26 @@ EOT
                     return $vals;
                 },
             ],
+            'audit.ignore' => [
+                static function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
+
+                    return true;
+                },
+                static function ($vals) {
+                    return $vals;
+                },
+            ],
         ];
+
+        // allow unsetting audit config entirely
+        if ($input->getOption('unset') && $settingKey === 'audit') {
+            $this->configSource->removeConfigSetting($settingKey);
+
+            return 0;
+        }
 
         if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {
             if ($settingKey === 'disable-tls' && $this->config->get('disable-tls')) {

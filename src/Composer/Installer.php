@@ -402,7 +402,7 @@ class Installer
                         $repoSet->addRepository($repo);
                     }
 
-                    return $auditor->audit($this->io, $repoSet, $packages, $this->auditFormat) > 0 ? self::ERROR_AUDIT_FAILED : 0;
+                    return $auditor->audit($this->io, $repoSet, $packages, $this->auditFormat, true, $this->config->get('audit')['ignored'] ?? []) > 0 ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {

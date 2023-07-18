@@ -37,6 +37,7 @@ class Config
         'allow-plugins' => [],
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
+        'audit' => ['ignored' => []],
         'notify-on-install' => true,
         'github-protocols' => ['https', 'ssh', 'git'],
         'gitlab-protocol' => null,
@@ -207,6 +208,11 @@ class Config
                         $this->config[$key] = $val;
                         $this->setSourceOfConfigValue($val, $key, $source);
                     }
+                } elseif ('audit' === $key) {
+                    $currentIgnores = $this->config['audit']['ignored'];
+                    $this->config[$key] = $val;
+                    $this->setSourceOfConfigValue($val, $key, $source);
+                    $this->config['audit']['ignored'] = array_merge($currentIgnores, $val['ignored']);
                 } else {
                     $this->config[$key] = $val;
                     $this->setSourceOfConfigValue($val, $key, $source);
