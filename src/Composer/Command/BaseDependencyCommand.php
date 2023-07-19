@@ -24,10 +24,12 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Package\Version\VersionParser;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Util\PackageInfo;
 
 /**
  * Base implementation for commands mapping dependency relationships.
@@ -180,7 +182,9 @@ abstract class BaseDependencyCommand extends BaseCommand
                 }
                 $doubles[$unique] = true;
                 $version = $package->getPrettyVersion() === RootPackage::DEFAULT_PRETTY_VERSION ? '-' : $package->getPrettyVersion();
-                $rows[] = [$package->getPrettyName(), $version, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint())];
+                $packageUrl = PackageInfo::getViewSourceOrHomepageUrl($package);
+                $nameWithLink = $packageUrl !== null ? '<href=' . OutputFormatter::escape($packageUrl) . '>' . $package->getPrettyName() . '</>' : $package->getPrettyName();
+                $rows[] = [$nameWithLink, $version, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint())];
                 if ($children) {
                     $queue = array_merge($queue, $children);
                 }
@@ -229,7 +233,9 @@ abstract class BaseDependencyCommand extends BaseCommand
             $prevColor = $this->colors[($level - 1) % count($this->colors)];
             $isLast = (++$idx === $count);
             $versionText = $package->getPrettyVersion() === RootPackage::DEFAULT_PRETTY_VERSION ? '' : $package->getPrettyVersion();
-            $packageText = rtrim(sprintf('<%s>%s</%1$s> %s', $color, $package->getPrettyName(), $versionText));
+            $packageUrl = PackageInfo::getViewSourceOrHomepageUrl($package);
+            $nameWithLink = $packageUrl !== null ? '<href=' . OutputFormatter::escape($packageUrl) . '>' . $package->getPrettyName() . '</>' : $package->getPrettyName();
+            $packageText = rtrim(sprintf('<%s>%s</%1$s> %s', $color, $nameWithLink, $versionText));
             $linkText = sprintf('%s <%s>%s</%2$s> %s', $link->getDescription(), $prevColor, $link->getTarget(), $link->getPrettyConstraint());
             $circularWarn = $children === false ? '(circular dependency aborted here)' : '';
             $this->writeTreeLine(rtrim(sprintf("%s%s%s (%s) %s", $prefix, $isLast ? '└──' : '├──', $packageText, $linkText, $circularWarn)));

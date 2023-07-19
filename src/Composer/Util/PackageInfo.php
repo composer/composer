@@ -19,7 +19,7 @@ class PackageInfo
 {
     public static function getViewSourceUrl(PackageInterface $package): ?string
     {
-        if ($package instanceof CompletePackageInterface && isset($package->getSupport()['source'])) {
+        if ($package instanceof CompletePackageInterface && isset($package->getSupport()['source']) && '' !== $package->getSupport()['source']) {
             return $package->getSupport()['source'];
         }
 
@@ -28,6 +28,12 @@ class PackageInfo
 
     public static function getViewSourceOrHomepageUrl(PackageInterface $package): ?string
     {
-        return self::getViewSourceUrl($package) ?? ($package instanceof CompletePackageInterface ? $package->getHomepage() : null);
+        $url = self::getViewSourceUrl($package) ?? ($package instanceof CompletePackageInterface ? $package->getHomepage() : null);
+
+        if ($url === '') {
+            return null;
+        }
+
+        return $url;
     }
 }
