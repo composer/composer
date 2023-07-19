@@ -364,6 +364,29 @@ class JsonFileTest extends TestCase
         $this->assertEquals($data, $doubleData);
     }
 
+    public function testPreserveIndentationAfterRead(): void
+    {
+        copy(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/tabs2.json');
+        $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs2.json');
+        $data = $jsonFile->read();
+        $jsonFile->write(['foo' => 'baz']);
+
+        self::assertSame("{\n\t\"foo\": \"baz\"\n}\n", file_get_contents(__DIR__.'/Fixtures/tabs2.json'));
+
+        unlink(__DIR__.'/Fixtures/tabs2.json');
+    }
+
+    public function testOverwritesIndentationByDefault(): void
+    {
+        copy(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/tabs2.json');
+        $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs2.json');
+        $jsonFile->write(['foo' => 'baz']);
+
+        self::assertSame("{\n    \"foo\": \"baz\"\n}\n", file_get_contents(__DIR__.'/Fixtures/tabs2.json'));
+
+        unlink(__DIR__.'/Fixtures/tabs2.json');
+    }
+
     private function expectParseException(string $text, string $json): void
     {
         try {
