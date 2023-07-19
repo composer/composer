@@ -1666,6 +1666,11 @@ parameters:
 			path: ../src/Composer/Downloader/FileDownloader.php
 
 		-
+			message: "#^Strict comparison using \\=\\=\\= between null and Composer\\\\Util\\\\Http\\\\Response will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/FileDownloader.php
+
+		-
 			message: "#^Parameter \\#3 \\$cwd of method Composer\\\\Util\\\\ProcessExecutor\\:\\:execute\\(\\) expects string\\|null, string\\|false given\\.$#"
 			count: 5
 			path: ../src/Composer/Downloader/FossilDownloader.php
@@ -2302,11 +2307,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, React\\\\Promise\\\\PromiseInterface\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/InstallationManager.php
 

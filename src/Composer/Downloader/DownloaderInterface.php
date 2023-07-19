@@ -34,6 +34,7 @@ interface DownloaderInterface
      * This should do any network-related tasks to prepare for an upcoming install/update
      *
      * @param  string $path download path
+     * @phpstan-return PromiseInterface<void|null|string>
      */
     public function download(PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface;
 
@@ -49,6 +50,7 @@ interface DownloaderInterface
      * @param  PackageInterface      $package     package instance
      * @param  string                $path        download path
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
+     * @phpstan-return PromiseInterface<void|null>
      */
     public function prepare(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface;
 
@@ -57,6 +59,7 @@ interface DownloaderInterface
      *
      * @param  PackageInterface      $package package instance
      * @param  string                $path    download path
+     * @phpstan-return PromiseInterface<void|null>
      */
     public function install(PackageInterface $package, string $path): PromiseInterface;
 
@@ -66,6 +69,7 @@ interface DownloaderInterface
      * @param  PackageInterface      $initial initial package
      * @param  PackageInterface      $target  updated package
      * @param  string                $path    download path
+     * @phpstan-return PromiseInterface<void|null>
      */
     public function update(PackageInterface $initial, PackageInterface $target, string $path): PromiseInterface;
 
@@ -74,6 +78,7 @@ interface DownloaderInterface
      *
      * @param  PackageInterface      $package package instance
      * @param  string                $path    download path
+     * @phpstan-return PromiseInterface<void|null>
      */
     public function remove(PackageInterface $package, string $path): PromiseInterface;
 
@@ -88,6 +93,7 @@ interface DownloaderInterface
      * @param  PackageInterface      $package     package instance
      * @param  string                $path        download path
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
+     * @phpstan-return PromiseInterface<void|null>
      */
     public function cleanup(string $type, PackageInterface $package, string $path, ?PackageInterface $prevPackage = null): PromiseInterface;
 }

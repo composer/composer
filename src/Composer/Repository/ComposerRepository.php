@@ -1070,6 +1070,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return ['namesFound' => $namesFound, 'packages' => $packages];
     }
 
+    /**
+     * @phpstan-return PromiseInterface<array{mixed, string}>
+     */
     private function startCachedAsyncDownload(string $fileName, ?string $packageName = null): PromiseInterface
     {
         if (null === $this->lazyProvidersUrl) {
@@ -1598,6 +1601,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
     }
 
+    /**
+     * @phpstan-return PromiseInterface<array<mixed>|true> true if the response was a 304 and the cache is fresh, otherwise it returns the decoded json
+     */
     private function asyncFetchFile(string $filename, string $cacheKey, ?string $lastModifiedTime = null): PromiseInterface
     {
         if ('' === $filename) {
@@ -1610,7 +1616,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (isset($this->freshMetadataUrls[$filename]) && $lastModifiedTime) {
             // make it look like we got a 304 response
-            return \React\Promise\resolve(true);
+            /** @var PromiseInterface<true> $promise */
+            $promise = \React\Promise\resolve(true);
+
+            return $promise;
         }
 
         $httpDownloader = $this->httpDownloader;

@@ -48,6 +48,7 @@ interface InstallerInterface
      * @param  PackageInterface      $package     package instance
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     public function download(PackageInterface $package, ?PackageInterface $prevPackage = null);
 
@@ -63,6 +64,7 @@ interface InstallerInterface
      * @param  PackageInterface      $package     package instance
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     public function prepare(string $type, PackageInterface $package, ?PackageInterface $prevPackage = null);
 
@@ -72,6 +74,7 @@ interface InstallerInterface
      * @param  InstalledRepositoryInterface $repo    repository in which to check
      * @param  PackageInterface             $package package instance
      * @return PromiseInterface|null
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package);
 
@@ -83,6 +86,7 @@ interface InstallerInterface
      * @param  PackageInterface             $target  updated version
      * @throws InvalidArgumentException     if $initial package is not installed
      * @return PromiseInterface|null
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target);
 
@@ -92,6 +96,7 @@ interface InstallerInterface
      * @param  InstalledRepositoryInterface $repo    repository in which to check
      * @param  PackageInterface             $package package instance
      * @return PromiseInterface|null
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package);
 
@@ -106,6 +111,7 @@ interface InstallerInterface
      * @param  PackageInterface      $package     package instance
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     public function cleanup(string $type, PackageInterface $package, ?PackageInterface $prevPackage = null);
 

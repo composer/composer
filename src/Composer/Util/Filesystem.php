@@ -133,6 +133,7 @@ class Filesystem
      *
      * @throws \RuntimeException
      * @return PromiseInterface
+     * @phpstan-return PromiseInterface<bool>
      */
     public function removeDirectoryAsync(string $directory)
     {

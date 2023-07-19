@@ -25,7 +25,7 @@ class Loop
     private $httpDownloader;
     /** @var ProcessExecutor|null */
     private $processExecutor;
-    /** @var PromiseInterface[][] */
+    /** @var array<int, array<PromiseInterface<mixed>>> */
     private $currentPromises = [];
     /** @var int */
     private $waitIndex = 0;
@@ -52,18 +52,17 @@ class Loop
     }
 
     /**
-     * @param  PromiseInterface[] $promises
-     * @param  ?ProgressBar       $progress
+     * @param array<PromiseInterface<mixed>> $promises
+     * @param ProgressBar|null              $progress
      */
     public function wait(array $promises, ?ProgressBar $progress = null): void
     {
-        /** @var \Exception|null */
         $uncaught = null;
 
         \React\Promise\all($promises)->then(
             static function (): void {
             },
-            static function ($e) use (&$uncaught): void {
+            static function (\Throwable $e) use (&$uncaught): void {
                 $uncaught = $e;
             }
         );
@@ -107,7 +106,7 @@ class Loop
         }
 
         unset($this->currentPromises[$waitIndex]);
-        if ($uncaught) {
+        if (null !== $uncaught) {
             throw $uncaught;
         }
     }
@@ -116,9 +115,8 @@ class Loop
     {
         foreach ($this->currentPromises as $promiseGroup) {
             foreach ($promiseGroup as $promise) {
-                if ($promise instanceof CancellablePromiseInterface) {
-                    $promise->cancel();
-                }
+                // to support react/promise 2.x we wrap the promise in a resolve() call for safety
+                \React\Promise\resolve($promise)->cancel();
             }
         }
     }

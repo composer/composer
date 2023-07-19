@@ -105,6 +105,7 @@ class ZipDownloader extends ArchiveDownloader
      *
      * @param  string           $file File to extract
      * @param  string           $path Path where to extract file
+     * @phpstan-return PromiseInterface<void|null>
      */
     private function extractWithSystemUnzip(PackageInterface $package, string $file, string $path): PromiseInterface
     {
@@ -194,6 +195,7 @@ class ZipDownloader extends ArchiveDownloader
      *
      * @param  string           $file File to extract
      * @param  string           $path Path where to extract file
+     * @phpstan-return PromiseInterface<void|null>
      */
     private function extractWithZipArchive(PackageInterface $package, string $file, string $path): PromiseInterface
     {

@@ -174,6 +174,7 @@ class DownloadManager
      * @param PackageInterface      $package     package instance
      * @param string                $targetDir   target dir
      * @param PackageInterface|null $prevPackage previous package instance in case of updates
+     * @phpstan-return PromiseInterface<void|null>
      *
      * @throws \InvalidArgumentException if package have no urls to download from
      * @throws \RuntimeException
@@ -241,6 +242,7 @@ class DownloadManager
      * @param PackageInterface      $package     package instance
      * @param string                $targetDir   target dir
      * @param PackageInterface|null $prevPackage previous package instance in case of updates
+     * @phpstan-return PromiseInterface<void|null>
      */
     public function prepare(string $type, PackageInterface $package, string $targetDir, ?PackageInterface $prevPackage = null): PromiseInterface
     {
@@ -258,6 +260,7 @@ class DownloadManager
      *
      * @param PackageInterface $package   package instance
      * @param string           $targetDir target dir
+     * @phpstan-return PromiseInterface<void|null>
      *
      * @throws \InvalidArgumentException if package have no urls to download from
      * @throws \RuntimeException
@@ -279,6 +282,7 @@ class DownloadManager
      * @param PackageInterface $initial   initial package version
      * @param PackageInterface $target    target package version
      * @param string           $targetDir target dir
+     * @phpstan-return PromiseInterface<void|null>
      *
      * @throws \InvalidArgumentException if initial package is not installed
      */
@@ -328,6 +332,7 @@ class DownloadManager
      *
      * @param PackageInterface $package   package instance
      * @param string           $targetDir target dir
+     * @phpstan-return PromiseInterface<void|null>
      */
     public function remove(PackageInterface $package, string $targetDir): PromiseInterface
     {
@@ -347,6 +352,7 @@ class DownloadManager
      * @param PackageInterface      $package     package instance
      * @param string                $targetDir   target dir
      * @param PackageInterface|null $prevPackage previous package instance in case of updates
+     * @phpstan-return PromiseInterface<void|null>
      */
     public function cleanup(string $type, PackageInterface $package, string $targetDir, ?PackageInterface $prevPackage = null): PromiseInterface
     {
