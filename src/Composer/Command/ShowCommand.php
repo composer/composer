@@ -756,8 +756,12 @@ EOT
         }
 
         // select preferred package according to policy rules
-        if (!$matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($pool, $matches)) {
+        if (null === $matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($pool, $matches)) {
             $matchedPackage = $pool->literalToPackage($preferred[0]);
+        }
+
+        if ($matchedPackage !== null && !$matchedPackage instanceof CompletePackageInterface) {
+            throw new \LogicException('ShowCommand::getPackage can only work with CompletePackageInterface, but got '.get_class($matchedPackage));
         }
 
         return [$matchedPackage, $versions];
@@ -1250,6 +1254,9 @@ EOT
                 }
                 $colorIdent = $level % count($this->colors);
                 $color = $this->colors[$colorIdent];
+
+                assert(is_string($require['name']));
+                assert(is_string($require['version']));
 
                 $circularWarn = in_array(
                     $require['name'],

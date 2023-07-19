@@ -86,11 +86,6 @@ parameters:
 			path: ../src/Composer/Downloader/GzipDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$string of function rawurldecode expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/VcsDownloader.php
-
-		-
 			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
