@@ -561,10 +561,6 @@ class JsonManipulator
 
     protected function detectIndenting(): void
     {
-        if (Preg::isMatchStrictGroups('{^([ \t]+)"}m', $this->contents, $match)) {
-            $this->indent = $match[1];
-        } else {
-            $this->indent = '    ';
-        }
+        $this->indent = JsonFile::detectIndenting($this->contents);
     }
 }
