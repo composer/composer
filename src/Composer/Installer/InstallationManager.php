@@ -180,7 +180,7 @@ class InstallationManager
      */
     public function execute(InstalledRepositoryInterface $repo, array $operations, bool $devMode = true, bool $runScripts = true, bool $downloadOnly = false): void
     {
-        /** @var array<callable(): ?PromiseInterface> */
+        /** @var array<callable(): ?PromiseInterface<void|null>> */
         $cleanupPromises = [];
 
         $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) use (&$cleanupPromises) {
@@ -237,8 +237,8 @@ class InstallationManager
 
     /**
      * @param OperationInterface[] $operations    List of operations to execute in this batch
-     * @param array<callable(): ?PromiseInterface> $cleanupPromises
      * @param OperationInterface[] $allOperations Complete list of operations to be executed in the install job, used for event listeners
+     * @phpstan-param array<callable(): ?PromiseInterface<void|null>> $cleanupPromises
      */
     private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, bool $devMode, bool $runScripts, bool $downloadOnly, array $allOperations): void
     {
@@ -275,7 +275,7 @@ class InstallationManager
 
             if ($opType !== 'uninstall') {
                 $promise = $installer->download($package, $initialPackage);
-                if ($promise) {
+                if (null !== $promise) {
                     $promises[] = $promise;
                 }
             }
@@ -322,8 +322,8 @@ class InstallationManager
 
     /**
      * @param OperationInterface[] $operations    List of operations to execute in this batch
-     * @param array<callable(): ?PromiseInterface> $cleanupPromises
      * @param OperationInterface[] $allOperations Complete list of operations to be executed in the install job, used for event listeners
+     * @phpstan-param array<callable(): ?PromiseInterface<void|null>> $cleanupPromises
      */
     private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, bool $devMode, bool $runScripts, array $allOperations): void
     {
@@ -413,7 +413,7 @@ class InstallationManager
     }
 
     /**
-     * @param PromiseInterface[] $promises
+     * @param array<PromiseInterface<void|null>> $promises
      */
     private function waitOnPromises(array $promises): void
     {
@@ -440,7 +440,7 @@ class InstallationManager
     /**
      * Executes download operation.
      *
-     * $param PackageInterface $package
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     public function download(PackageInterface $package): ?PromiseInterface
     {
@@ -455,6 +455,7 @@ class InstallationManager
      *
      * @param InstalledRepositoryInterface $repo      repository in which to check
      * @param InstallOperation             $operation operation instance
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     public function install(InstalledRepositoryInterface $repo, InstallOperation $operation): ?PromiseInterface
     {
@@ -471,6 +472,7 @@ class InstallationManager
      *
      * @param InstalledRepositoryInterface $repo      repository in which to check
      * @param UpdateOperation              $operation operation instance
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation): ?PromiseInterface
     {
@@ -509,6 +511,7 @@ class InstallationManager
      *
      * @param InstalledRepositoryInterface $repo      repository in which to check
      * @param UninstallOperation           $operation operation instance
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation): ?PromiseInterface
     {
@@ -638,8 +641,8 @@ class InstallationManager
     }
 
     /**
-     * @param array<callable(): ?PromiseInterface> $cleanupPromises
      * @return void
+     * @phpstan-param array<callable(): ?PromiseInterface<void|null>> $cleanupPromises
      */
     private function runCleanup(array $cleanupPromises): void
     {
@@ -648,7 +651,7 @@ class InstallationManager
         $this->loop->abortJobs();
 
         foreach ($cleanupPromises as $cleanup) {
-            $promises[] = new \React\Promise\Promise(static function ($resolve, $reject) use ($cleanup): void {
+            $promises[] = new \React\Promise\Promise(static function ($resolve) use ($cleanup): void {
                 $promise = $cleanup();
                 if (!$promise instanceof PromiseInterface) {
                     $resolve();

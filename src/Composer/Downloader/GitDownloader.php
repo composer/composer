@@ -536,6 +536,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
+     * @phpstan-return PromiseInterface<void|null>
      * @throws \RuntimeException
      */
     protected function discardChanges(string $path): PromiseInterface
@@ -551,6 +552,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
+     * @phpstan-return PromiseInterface<void|null>
      * @throws \RuntimeException
      */
     protected function stashChanges(string $path): PromiseInterface

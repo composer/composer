@@ -28,7 +28,7 @@ use React\Promise\PromiseInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @phpstan-type Request array{url: non-empty-string, options: mixed[], copyTo: string|null}
- * @phpstan-type Job array{id: int, status: int, request: Request, sync: bool, origin: string, resolve?: callable, reject?: callable, curl_id?: int, response?: Response, exception?: TransportException}
+ * @phpstan-type Job array{id: int, status: int, request: Request, sync: bool, origin: string, resolve?: callable, reject?: callable, curl_id?: int, response?: Response, exception?: \Throwable}
  */
 class HttpDownloader
 {
@@ -123,6 +123,7 @@ class HttpDownloader
      *                                     although not all options are supported when using the default curl downloader
      * @throws TransportException
      * @return PromiseInterface
+     * @phpstan-return PromiseInterface<Http\Response>
      */
     public function add(string $url, array $options = [])
     {
@@ -164,6 +165,7 @@ class HttpDownloader
      *                                     although not all options are supported when using the default curl downloader
      * @throws TransportException
      * @return PromiseInterface
+     * @phpstan-return PromiseInterface<Http\Response>
      */
     public function addCopy(string $url, string $to, array $options = [])
     {
@@ -199,6 +201,7 @@ class HttpDownloader
     /**
      * @phpstan-param Request $request
      * @return array{Job, PromiseInterface}
+     * @phpstan-return array{Job, PromiseInterface<Http\Response>}
      */
     private function addJob(array $request, bool $sync = false): array
     {

@@ -314,7 +314,7 @@ class ZipDownloaderTest extends TestCase
     }
 
     /**
-     * @param ?\React\Promise\PromiseInterface $promise
+     * @param ?\React\Promise\PromiseInterface<mixed> $promise
      */
     private function wait($promise): void
     {
@@ -329,7 +329,7 @@ class ZipDownloaderTest extends TestCase
             $e = $ex;
         });
 
-        if ($e) {
+        if ($e !== null) {
             throw $e;
         }
     }

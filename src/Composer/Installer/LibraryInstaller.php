@@ -272,6 +272,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
 
     /**
      * @return PromiseInterface|null
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     protected function installCode(PackageInterface $package)
     {
@@ -282,6 +283,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
 
     /**
      * @return PromiseInterface|null
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     protected function updateCode(PackageInterface $initial, PackageInterface $target)
     {
@@ -316,6 +318,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
 
     /**
      * @return PromiseInterface|null
+     * @phpstan-return PromiseInterface<void|null>|null
      */
     protected function removeCode(PackageInterface $package)
     {

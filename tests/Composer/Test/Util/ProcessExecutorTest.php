@@ -120,7 +120,6 @@ class ProcessExecutorTest extends TestCase
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
         $process->enableAsync();
         $start = microtime(true);
-        /** @var Promise $promise */
         $promise = $process->executeAsync('sleep 2');
         $this->assertEquals(1, $process->countActiveJobs());
         $promise->cancel();

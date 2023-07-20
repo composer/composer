@@ -230,6 +230,9 @@ class SvnDownloader extends VcsDownloader
         return "Could not retrieve changes between $fromReference and $toReference due to missing revision information";
     }
 
+    /**
+     * @phpstan-return PromiseInterface<void|null>
+     */
     protected function discardChanges(string $path): PromiseInterface
     {
         if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {

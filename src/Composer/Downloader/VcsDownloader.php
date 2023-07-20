@@ -259,6 +259,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      *                                    if false (remove) the changes should be assumed to be lost if the operation is not aborted
      *
      * @throws \RuntimeException in case the operation must be aborted
+     * @phpstan-return PromiseInterface<void|null>
      */
     protected function cleanChanges(PackageInterface $package, string $path, bool $update): PromiseInterface
     {
@@ -286,6 +287,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @param string                $path        download path
      * @param string                $url         package url
      * @param PackageInterface|null $prevPackage previous package (in case of an update)
+     * @phpstan-return PromiseInterface<void|null>
      */
     abstract protected function doDownload(PackageInterface $package, string $path, string $url, ?PackageInterface $prevPackage = null): PromiseInterface;
 
@@ -295,6 +297,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @param PackageInterface $package package instance
      * @param string           $path    download path
      * @param string           $url     package url
+     * @phpstan-return PromiseInterface<void|null>
      */
     abstract protected function doInstall(PackageInterface $package, string $path, string $url): PromiseInterface;
 
@@ -305,6 +308,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @param PackageInterface $target  updated package
      * @param string           $path    download path
      * @param string           $url     package url
+     * @phpstan-return PromiseInterface<void|null>
      */
     abstract protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): PromiseInterface;
 

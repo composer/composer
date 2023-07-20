@@ -155,6 +155,7 @@ class ProcessExecutor
      *
      * @param  string|list<string> $command the command to execute
      * @param  string              $cwd     the working directory
+     * @phpstan-return PromiseInterface<Process>
      */
     public function executeAsync($command, ?string $cwd = null): PromiseInterface
     {

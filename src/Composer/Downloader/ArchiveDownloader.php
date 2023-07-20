@@ -216,6 +216,7 @@ abstract class ArchiveDownloader extends FileDownloader
      *
      * @param string $file Extracted file
      * @param string $path Directory
+     * @phpstan-return PromiseInterface<void|null>
      *
      * @throws \UnexpectedValueException If can not extract downloaded file to path
      */
