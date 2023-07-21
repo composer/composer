@@ -44,12 +44,18 @@ class Auditor
      * @param PackageInterface[] $packages
      * @param self::FORMAT_* $format The format that will be used to output audit results.
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
+     * @param string[] $ignoredIds Ignored advisory IDs, remote IDs or CVE IDs
      * @return int Amount of packages with vulnerabilities found
      * @throws InvalidArgumentException If no packages are passed in
      */
-    public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true): int
+    public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoredIds = []): int
     {
         $advisories = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY);
+
+        if (\count($ignoredIds) > 0) {
+            $advisories = $this->filterIgnoredAdvisories($advisories, $ignoredIds);
+        }
+
         if (self::FORMAT_JSON === $format) {
             $io->write(JsonFile::encode(['advisories' => $advisories]));
 
@@ -71,6 +77,40 @@ class Auditor
         $io->writeError('<info>No security vulnerability advisories found</info>');
 
         return 0;
+    }
+
+    /**
+     * @phpstan-param array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> $advisories
+     * @param array<string> $ignoredIds
+     * @phpstan-return array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>
+     */
+    private function filterIgnoredAdvisories(array $advisories, array $ignoredIds): array
+    {
+        foreach ($advisories as $package => $pkgAdvisories) {
+            $advisories[$package] = array_filter($pkgAdvisories, static function (PartialSecurityAdvisory $advisory) use ($ignoredIds) {
+                if (in_array($advisory->advisoryId, $ignoredIds, true)) {
+                    return false;
+                }
+                if ($advisory instanceof SecurityAdvisory) {
+                    if (in_array($advisory->cve, $ignoredIds, true)) {
+                        return false;
+                    }
+
+                    foreach ($advisory->sources as $source) {
+                        if (in_array($source['remoteId'], $ignoredIds, true)) {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            });
+            if (\count($advisories[$package]) === 0) {
+                unset($advisories[$package]);
+            }
+        }
+
+        return $advisories;
     }
 
     /**

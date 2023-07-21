@@ -325,6 +325,19 @@
                         "type": ["string"]
                     }
                 },
+                "audit": {
+                    "type": "object",
+                    "description": "Security audit configuration options",
+                    "properties": {
+                        "ignored": {
+                            "type": "array",
+                            "description": "A set of advisory ids, remote ids or CVE ids that should be ignored and not reported as part of an audit.",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
                 "notify-on-install": {
                     "type": "boolean",
                     "description": "Composer allows repositories to define a notification URL, so that they get notified whenever a package from that repository is installed. This option allows you to disable that behaviour, defaults to true."

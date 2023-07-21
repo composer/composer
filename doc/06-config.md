@@ -101,6 +101,24 @@ optionally be an object with package name patterns for keys for more granular in
 > configuration in global and package configurations the string notation
 > is translated to a `*` package pattern.
 
+## audit
+
+Security audit configuration options
+
+### ignored
+
+A set of advisory ids, remote ids or CVE ids that should be ignored and not reported as part of an audit.
+
+```json
+{
+    "config": {
+        "audit": {
+            "ignored": ["CVE-1234", "GHSA-xx", "PKSA-yy"]
+        }
+    }
+}
+```
+
 ## use-parent-dir
 
 When running Composer in a directory where there is no composer.json, if there
