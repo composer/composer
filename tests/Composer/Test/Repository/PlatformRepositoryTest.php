@@ -376,7 +376,6 @@ libSSH Version => libssh2/1.4.1',
             'curl: libssh not libssh2' => array(
                 'curl',
                 '
-
 curl
 
 cURL support => enabled
