@@ -15,6 +15,7 @@ parameters:
     excludePaths:
        - '../tests/Composer/Test/Fixtures/*'
        - '../tests/Composer/Test/Autoload/Fixtures/*'
+       - '../tests/Composer/Test/Autoload/MinimumVersionSupport/vendor/'
        - '../tests/Composer/Test/Plugin/Fixtures/*'
        - '../tests/Composer/Test/PolyfillTestCase.php'
 
