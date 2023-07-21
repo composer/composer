@@ -21,7 +21,7 @@ use Composer\Test\Mock\FactoryMock;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 
-class ArchiveManagerTest extends ArchiverTest
+class ArchiveManagerTest extends ArchiverTestCase
 {
     /**
      * @var ArchiveManager

@@ -15,7 +15,7 @@ namespace Composer\Test\Package\Archiver;
 use Composer\Package\Archiver\PharArchiver;
 use Composer\Util\Platform;
 
-class PharArchiverTest extends ArchiverTest
+class PharArchiverTest extends ArchiverTestCase
 {
     public function testTarArchive(): void
     {
