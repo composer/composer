@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Util\Platform;
 use Composer\Util\Filesystem;
 use Composer\Test\TestCase;
 
@@ -315,6 +316,38 @@ class FilesystemTest extends TestCase
         $this->assertDirectoryExists($junction, $junction . ' is a directory');
         $this->assertTrue($fs->removeJunction($junction), $junction . ' has been removed');
         $this->assertDirectoryDoesNotExist($junction, $junction . ' is not a directory');
+    }
+
+    public function testOverrideJunctions(): void
+    {
+        if (!Platform::isWindows()) {
+            $this->markTestSkipped('Only runs on windows');
+        }
+
+        @mkdir($this->workingDir.'/real/nesting/testing', 0777, true);
+        $fs = new Filesystem();
+
+        $old_target = $this->workingDir.'/real/nesting/testing';
+        $target = $this->workingDir.'/real/../real/nesting';
+        $junction = $this->workingDir.'/junction';
+
+        // Override non-broken junction
+        $fs->junction($old_target, $junction);
+        $fs->junction($target, $junction);
+
+        $this->assertTrue($fs->isJunction($junction), $junction.': is a junction');
+        $this->assertTrue($fs->isJunction($target.'/../../junction'), $target.'/../../junction: is a junction');
+
+        //Remove junction
+        $this->assertTrue($fs->removeJunction($junction), $junction . ' has been removed');
+
+        // Override broken junction
+        $fs->junction($old_target, $junction);
+        $fs->removeDirectory($old_target);
+        $fs->junction($target, $junction);
+
+        $this->assertTrue($fs->isJunction($junction), $junction.': is a junction');
+        $this->assertTrue($fs->isJunction($target.'/../../junction'), $target.'/../../junction: is a junction');
     }
 
     public function testCopy(): void
