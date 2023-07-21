@@ -238,7 +238,12 @@ class PlatformRepository extends ArrayRepository
                             $parsedVersion = Version::parseOpenssl($sslMatches['version'], $isFips);
                             $this->addLibrary($name.'-openssl'.($isFips ? '-fips' : ''), $parsedVersion, 'curl OpenSSL version ('.$parsedVersion.')', [], $isFips ? ['curl-openssl'] : []);
                         } else {
-                            $this->addLibrary($name.'-'.$library, $sslMatches['version'], 'curl '.$library.' version ('.$sslMatches['version'].')', ['curl-openssl']);
+                            if ($library === '(securetransport) openssl') {
+                                $shortlib = 'securetransport';
+                            } else {
+                                $shortlib = $library;
+                            }
+                            $this->addLibrary($name.'-'.$shortlib, $sslMatches['version'], 'curl '.$library.' version ('.$sslMatches['version'].')', ['curl-openssl']);
                         }
                     }
 
