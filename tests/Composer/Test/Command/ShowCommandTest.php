@@ -288,12 +288,19 @@ vendor/package 1.1.0 <highlight>! 1.2.0</highlight>", trim($appTester->getDispla
         unlink('./composer.json');
         unlink('./auth.json');
 
+        // listing packages
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'show', '-p' => true]);
         $output = trim($appTester->getDisplay(true));
         foreach (Regex::matchAll('{^(\w+)}m', $output)->matches as $m) {
             self::assertTrue(PlatformRepository::isPlatformPackage((string) $m[1]));
         }
+
+        // getting a single package
+        $appTester->run(['command' => 'show', '-p' => true, 'package' => 'php']);
+        $appTester->assertCommandIsSuccessful();
+        $appTester->run(['command' => 'show', '-p' => true, '-f' => 'json', 'package' => 'php']);
+        $appTester->assertCommandIsSuccessful();
     }
 
     public function testOutdatedWithZeroMajor(): void
