@@ -2,7 +2,7 @@
 
   * Fixed regression in edge cases where root package gets added to a repository already during the install process (#11495)
   * Fixed EventDispatcher on windows picking bat files when using "@php binary" (#11490)
-  * Fixed ICU CDLR version parsing failing the whole process when ICU cannot initialize the resource bundle (#11492)
+  * Fixed ICU CLDR version parsing failing the whole process when ICU cannot initialize the resource bundle (#11492)
   * Fixed type declarations on ClassLoader (#11500)
 
 ### [2.5.7] 2023-05-24
