@@ -91,7 +91,7 @@ Out of the box, Composer supports four types:
 - **library:** This is the default. It will copy the files to `vendor`.
 - **project:** This denotes a project rather than a library. For example
   application shells like the [Symfony standard edition](https://github.com/symfony/symfony-standard),
-  CMSs like the [SilverStripe installer](https://github.com/silverstripe/silverstripe-installer)
+  CMSs like the [Silverstripe installer](https://github.com/silverstripe/silverstripe-installer)
   or full fledged applications distributed as packages. This can for example
   be used by IDEs to provide listings of projects to initialize when creating
   a new workspace.
