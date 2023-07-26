@@ -665,7 +665,18 @@ EOF;
             },
             $files
         );
+        $oldFiles = $files;
         $files = array_unique($files);
+        if ( count( $files ) < count( $oldFiles ) ) {
+            $dupedFiles = array_diff_assoc( $oldFiles, $files );
+            $this->io->writeError(
+                '<warning>'
+                . 'Some files are included multiple times, not including these twice in autoloader: '
+                . '"' . implode( $dupedFiles, '", "' ) . '"'
+                . '</warning>'
+            );
+        }
+        unset( $oldFiles );
 
         $filesCode = '';
 
