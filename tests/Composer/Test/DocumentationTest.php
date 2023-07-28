@@ -53,6 +53,9 @@ class DocumentationTest extends TestCase
     {
         $application = new Application();
         $application->setAutoExit(false);
+        if (method_exists($application, 'setCatchErrors')) {
+            $application->setCatchErrors(false);
+        }
         $application->setCatchExceptions(false);
 
         $description = new ApplicationDescription($application);

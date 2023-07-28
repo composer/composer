@@ -87,6 +87,10 @@ class Application extends BaseApplication
 
     public function __construct(string $name = 'Composer', string $version = '')
     {
+        if (method_exists($this, 'setCatchErrors')) {
+            $this->setCatchErrors(true);
+        }
+
         static $shutdownRegistered = false;
         if ($version === '') {
             $version = Composer::getVersion();
@@ -395,9 +399,10 @@ class Application extends BaseApplication
 
             $this->hintCommonErrors($e, $output);
 
-            // symfony/console does not handle \Error subtypes so we have to renderThrowable ourselves
+            // symfony/console <6.4 does not handle \Error subtypes so we have to renderThrowable ourselves
             // instead of rethrowing those for consumption by the parent class
-            if (!$e instanceof \Exception) {
+            // can be removed when Composer supports PHP 8.1+
+            if (!method_exists($this, 'setCatchErrors') && !$e instanceof \Exception) {
                 if ($output instanceof ConsoleOutputInterface) {
                     $this->renderThrowable($e, $output->getErrorOutput());
                 } else {

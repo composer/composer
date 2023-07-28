@@ -198,6 +198,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         $application = new Application();
         $application->setAutoExit(false);
         $application->setCatchExceptions(false);
+        if (method_exists($application, 'setCatchErrors')) {
+            $application->setCatchErrors(false);
+        }
 
         return new ApplicationTester($application);
     }

@@ -277,6 +277,9 @@ class EventDispatcher
 
                     $app = new Application();
                     $app->setCatchExceptions(false);
+                    if (method_exists($app, 'setCatchErrors')) {
+                        $app->setCatchErrors(false);
+                    }
                     $app->setAutoExit(false);
                     $cmd = new $className($event->getName());
                     $app->add($cmd);
