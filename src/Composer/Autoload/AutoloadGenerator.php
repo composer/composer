@@ -671,7 +671,7 @@ EOF;
             $dupedFiles = array_diff_assoc( $oldFiles, $files );
             $this->io->writeError(
                 '<warning>'
-                . 'Some files are included multiple times, not including these twice in autoloader: '
+                . 'Some files are included multiple times, only including these once: '
                 . '"' . implode( $dupedFiles, '", "' ) . '"'
                 . '</warning>'
             );
