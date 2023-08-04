@@ -223,6 +223,7 @@ class Git
                     }
 
                     $this->io->writeError('    Authentication required (<info>' . $match[2] . '</info>):');
+                    $this->io->writeError('<warning>' . trim($errorMsg) . '</warning>', true, IOInterface::VERBOSE);
                     $auth = [
                         'username' => $this->io->ask('      Username: ', $defaultUsername),
                         'password' => $this->io->askAndHideAnswer('      Password: '),
