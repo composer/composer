@@ -212,7 +212,7 @@ class Config
                     $currentIgnores = $this->config['audit']['ignored'];
                     $this->config[$key] = $val;
                     $this->setSourceOfConfigValue($val, $key, $source);
-                    $this->config['audit']['ignored'] = array_merge($currentIgnores, $val['ignored']);
+                    $this->config['audit']['ignored'] = array_merge($currentIgnores, $val['ignored'] ?? []);
                 } else {
                     $this->config[$key] = $val;
                     $this->setSourceOfConfigValue($val, $key, $source);
