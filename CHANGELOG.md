@@ -254,7 +254,7 @@
   * Added abandoned flag to `show`/`outdated` commands JSON-formatted output (#10485)
   * Added config.reference option to `path` repositories to configure the way the reference is generated, and possibly reduce composer.lock conflicts (#10488)
   * Added automatic removal of allow-plugins rules when removing a plugin via the `remove` command (#10615)
-  * Added COMPOSER_IGNORE_PLATFOR_REQ & COMPOSER_IGNORE_PLATFOR_REQS env vars to configure the equivalent flags (#10616)
+  * Added `COMPOSER_IGNORE_PLATFORM_REQ` & `COMPOSER_IGNORE_PLATFORM_REQS` env vars to configure the equivalent flags (#10616)
   * Added support for Symfony 6.0 components
   * Added support for psr/log 3.x (#10454)
   * Fixed symlink creation in linux VM guest filesystems to be recognized by Windows (#10592)
