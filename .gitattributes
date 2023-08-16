@@ -11,7 +11,7 @@
 # Exclude non-essential files from dist
 /.github/ export-ignore
 /doc export-ignore
-/phpstan/ export-ignore
+/phpstan/* export-ignore
 /tests/ export-ignore
 /.editorconfig export-ignore
 /.gitattributes export-ignore
