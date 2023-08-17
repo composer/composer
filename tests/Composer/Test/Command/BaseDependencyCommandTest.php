@@ -25,7 +25,7 @@ use Generator;
 class BaseDependencyCommandTest extends TestCase
 {
     /**
-     * Test that SUT will throw an exception when there were not provided some parameters
+     * Test that an exception is throw when there weren't provided some parameters
      *
      * @covers       \Composer\Command\BaseDependencyCommand
      * @covers       \Composer\Command\DependsCommand
@@ -33,10 +33,7 @@ class BaseDependencyCommandTest extends TestCase
      *
      * @dataProvider noParametersCaseProvider
      *
-     * @param string $command
-     * @param array<mixed> $parameters
-     * @param string $expectedExceptionMessage
-     *
+     * @param array<string, string> $parameters
      */
     public function testExceptionWhenNoRequiredParameters(
         string $command,
@@ -51,9 +48,9 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * @return Generator<string, array<string|string[]>> [string $command, array $parameters, array $expectedExceptionMessage]
+     * @return Generator<string, array{string, array<string, string>, string}>
      */
-    public function noParametersCaseProvider(): Generator
+    public static function noParametersCaseProvider(): Generator
     {
         yield '`why` command without package parameter' => [
             'why',
@@ -81,7 +78,7 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * Test that SUT will throw an exception when there is not a provided locked file alongside `--locked` parameter
+     * Test that an exception is throw when there wasn't provided the locked file alongside `--locked` parameter
      *
      * @covers       \Composer\Command\BaseDependencyCommand
      * @covers       \Composer\Command\DependsCommand
@@ -89,8 +86,7 @@ class BaseDependencyCommandTest extends TestCase
      *
      * @dataProvider caseProvider
      *
-     * @param string $command
-     * @param array<mixed> $parameters
+     * @param array<string, string> $parameters
      */
     public function testExceptionWhenRunningLockedWithoutLockFile(string $command, array $parameters): void
     {
@@ -108,7 +104,7 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * Test that SUT will throw an exception when the provided package to be inspected is not required by the project
+     * Test that an exception is throw when the provided package to be inspected isn't required by the project
      *
      * @covers       \Composer\Command\BaseDependencyCommand
      * @covers       \Composer\Command\DependsCommand
@@ -116,8 +112,7 @@ class BaseDependencyCommandTest extends TestCase
      *
      * @dataProvider caseProvider
      *
-     * @param string $command
-     * @param array<mixed> $parameters
+     * @param array<string, string> $parameters
      */
     public function testExceptionWhenItCouldNotFoundThePackage(string $command, array $parameters): void
     {
@@ -136,7 +131,7 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * Test that SUT should show a warning message when the package to be inspected was not found in the project
+     * Test that it shows a warning message when the package to be inspected wasn't found in the project
      *
      * @covers       \Composer\Command\BaseDependencyCommand
      * @covers       \Composer\Command\DependsCommand
@@ -144,8 +139,7 @@ class BaseDependencyCommandTest extends TestCase
      *
      * @dataProvider caseProvider
      *
-     * @param string $command
-     * @param array<mixed> $parameters
+     * @param array<string, string> $parameters
      */
     public function testExceptionWhenPackageWasNotFoundInProject(string $command, array $parameters): void
     {
@@ -173,7 +167,7 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * Test that SUT should show a warning message when dependencies have not been installed yet
+     * Test that it shows a warning message when the dependencies haven't been installed yet
      *
      * @covers       \Composer\Command\BaseDependencyCommand
      * @covers       \Composer\Command\DependsCommand
@@ -181,8 +175,7 @@ class BaseDependencyCommandTest extends TestCase
      *
      * @dataProvider caseProvider
      *
-     * @param string $command
-     * @param array<mixed> $parameters
+     * @param array<string, string> $parameters
      */
     public function testWarningWhenDependenciesAreNotInstalled(string $command, array $parameters): void
     {
@@ -209,9 +202,9 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * @return Generator<string, array<string|string[]>> [string $command, array $parameters]
+     * @return Generator<string, array{string, array<string, string>}>
      */
-    public function caseProvider(): Generator
+    public static function caseProvider(): Generator
     {
         yield '`why` command' => [
             'why',
@@ -225,15 +218,14 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * Test that SUT should finish successfully and show some outputs depending on different command parameters
+     * Test that it finishes successfully and show some expected outputs depending on different command parameters
      *
      * @covers       \Composer\Command\BaseDependencyCommand
      * @covers       \Composer\Command\DependsCommand
      *
      * @dataProvider caseWhyProvider
      *
-     * @param array<mixed> $parameters
-     * @param string $expectedOutput
+     * @param array<string, string|bool> $parameters
      */
     public function testWhyCommandOutputs(array $parameters, string $expectedOutput): void
     {
@@ -307,9 +299,9 @@ class BaseDependencyCommandTest extends TestCase
     }
 
     /**
-     * @return Generator<string, array<string[]|bool[]|string>> [array $parameters, string $expectedMessages]
+     * @return Generator<string, array{array<string, string|bool>, string}>
      */
-    public function caseWhyProvider(): Generator
+    public static function caseWhyProvider(): Generator
     {
         yield 'there is no installed package depending on the package' => [
             ['package' => 'vendor1/package1'],
@@ -352,15 +344,14 @@ OUTPUT
     }
 
     /**
-     * Test that SUT should finish successfully and show some outputs depending on different command parameters
+     * Test that it finishes successfully and show some expected outputs depending on different command parameters
      *
      * @covers       \Composer\Command\BaseDependencyCommand
      * @covers       \Composer\Command\ProhibitsCommand
      *
      * @dataProvider caseWhyNotProvider
      *
-     * @param array<mixed> $parameters
-     * @param string $expectedOutput
+     * @param array<string, string> $parameters
      */
     public function testWhyNotCommandOutputs(array $parameters, string $expectedOutput): void
     {
@@ -403,7 +394,7 @@ OUTPUT
     }
 
     /**
-     * @return Generator<string, array<string[]|string>> [array $parameters, string $expectedMessages]
+     * @return Generator<string, array{array<string, string>, string}>
      */
     public function caseWhyNotProvider(): Generator
     {
