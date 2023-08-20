@@ -83,7 +83,7 @@ class VersionBumper
             (?<=,|\ |\||^) # leading separator
             (?P<constraint>
                 \^'.$major.'(?:\.\d+)* # e.g. ^2.anything
-                | ~'.$major.'(?:\.\d+)? # e.g. ~2 or ~2.2 but no more
+                | ~'.$major.'(?:\.\d+){0,2} # e.g. ~2 or ~2.2 or ~2.2.2 but no more
                 | '.$major.'(?:\.[*x])+ # e.g. 2.* or 2.*.* or 2.x.x.x etc
                 | >=\d(?:\.\d+)* # e.g. >=2 or >=1.2 etc
             )
@@ -97,7 +97,9 @@ class VersionBumper
                 if (substr_count($match[0], '.') === 2 && substr_count($versionWithoutSuffix, '.') === 1) {
                     $suffix = '.0';
                 }
-                if (str_starts_with($match[0], '>=')) {
+                if (str_starts_with($match[0], '~') && substr_count($match[0], '.') === 2) {
+                    $replacement = '~'.$versionWithoutSuffix.$suffix;
+                } elseif (str_starts_with($match[0], '>=')) {
                     $replacement = '>='.$versionWithoutSuffix.$suffix;
                 } else {
                     $replacement = $newPrettyConstraint.$suffix;
