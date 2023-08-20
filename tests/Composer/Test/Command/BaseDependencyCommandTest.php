@@ -13,6 +13,7 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Symfony\Component\Console\Command\Command;
 use UnexpectedValueException;
@@ -364,7 +365,10 @@ OUTPUT
                     'type' => 'package',
                     'package' => [
                         ['name' => 'vendor1/package1', 'version' => '1.3.0'],
-                        ['name' => 'vendor2/package1', 'version' => '1.0.0']
+                        ['name' => 'vendor2/package1', 'version' => '2.0.0'],
+                        ['name' => 'vendor2/package2', 'version' => '1.0.0', 'require' => ['vendor2/package3' => '1.4.*']],
+                        ['name' => 'vendor2/package3', 'version' => '1.4.0'],
+                        ['name' => 'vendor2/package3', 'version' => '1.5.0']
                     ],
                 ],
             ],
@@ -372,14 +376,33 @@ OUTPUT
                 'vendor1/package1' => '1.*'
             ],
             'require-dev' => [
-                'vendor2/package1' => '2.*'
+                'vendor2/package1' => '2.*',
+                'vendor2/package2' => '^1'
             ]
         ]);
 
         $someRequiredPackage = self::getPackage('vendor1/package1', '1.3.0');
-        $someDevRequiredPackage = self::getPackage('vendor2/package1', '1.0.0');
-        $this->createComposerLock([$someRequiredPackage], [$someDevRequiredPackage]);
-        $this->createInstalledJson([$someRequiredPackage], [$someDevRequiredPackage]);
+        $firstDevRequiredPackage = self::getPackage('vendor2/package1', '2.0.0');
+        $secondDevRequiredPackage = self::getPackage('vendor2/package2', '1.0.0');
+        $secondDevRequiredPackage->setRequires([
+            'vendor2/package3' => new Link(
+                'vendor2/package2',
+                'vendor2/package3',
+                new MatchAllConstraint(),
+                Link::TYPE_REQUIRE,
+                '1.4.*'
+            )
+        ]);
+       $secondDevNestedRequiredPackage = self::getPackage('vendor2/package3', '1.4.0');
+
+        $this->createComposerLock(
+            [$someRequiredPackage], 
+            [$firstDevRequiredPackage, $secondDevRequiredPackage]
+        );
+        $this->createInstalledJson(
+            [$someRequiredPackage], 
+            [$firstDevRequiredPackage, $secondDevRequiredPackage, $secondDevNestedRequiredPackage]
+        );
 
         $appTester = $this->getApplicationTester();
         $appTester->run([
@@ -389,7 +412,6 @@ OUTPUT
         ]);
 
         $appTester->assertCommandIsSuccessful();
-
         $this->assertSame(trim($expectedOutput), trim($appTester->getDisplay(true)));
     }
 
@@ -421,6 +443,14 @@ OUTPUT
             <<<OUTPUT
 There is no installed package depending on "vendor1/package1" in versions not matching ^1.3
 Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.3" --dry-run` to get another view on the problem.
+OUTPUT
+        ];
+
+        yield 'an installed package requires an incompatible version of the inspected package' => [
+            ['package' => 'vendor2/package3', 'version' => '1.5.0'],
+            <<<OUTPUT
+vendor2/package2 1.0.0 requires vendor2/package3 (1.4.*) 
+Not finding what you were looking for? Try calling `composer update "vendor2/package3:1.5.0" --dry-run` to get another view on the problem.
 OUTPUT
         ];
     }
