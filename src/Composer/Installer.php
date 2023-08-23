@@ -607,16 +607,6 @@ class Installer
             $this->io->writeError('<info>Writing lock file</info>');
         }
 
-        // see https://github.com/composer/composer/issues/2764
-        if ($this->executeOperations && count($lockTransaction->getOperations()) > 0) {
-            $vendorDir = $this->config->get('vendor-dir');
-            if (is_dir($vendorDir)) {
-                // suppress errors as this fails sometimes on OSX for no apparent reason
-                // see https://github.com/composer/composer/issues/4070#issuecomment-129792748
-                @touch($vendorDir);
-            }
-        }
-
         if ($doInstall) {
             // TODO ensure lock is used from locker as-is, since it may not have been written to disk in case of executeOperations == false
             return $this->doInstall($localRepo, true);
@@ -795,6 +785,16 @@ class Installer
         if ($this->executeOperations) {
             $localRepo->setDevPackageNames($this->locker->getDevPackageNames());
             $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts, $this->downloadOnly);
+
+            // see https://github.com/composer/composer/issues/2764
+            if (count($localRepoTransaction->getOperations()) > 0) {
+                $vendorDir = $this->config->get('vendor-dir');
+                if (is_dir($vendorDir)) {
+                    // suppress errors as this fails sometimes on OSX for no apparent reason
+                    // see https://github.com/composer/composer/issues/4070#issuecomment-129792748
+                    @touch($vendorDir);
+                }
+            }
         } else {
             foreach ($localRepoTransaction->getOperations() as $operation) {
                 // output op, but alias op only in debug verbosity
