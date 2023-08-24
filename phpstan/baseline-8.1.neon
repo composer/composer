@@ -271,6 +271,11 @@ parameters:
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
 		-
+			message: "#^Call to deprecated method withConsecutive\\(\\) of class PHPUnit\\\\Framework\\\\MockObject\\\\Builder\\\\InvocationMocker\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
+
+		-
 			message: "#^Parameter \\#1 \\$include_path of function set_include_path expects string, string\\|false given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
@@ -281,9 +286,54 @@ parameters:
 			path: ../tests/Composer/Test/ConfigTest.php
 
 		-
+			message: "#^Call to deprecated method withConsecutive\\(\\) of class PHPUnit\\\\Framework\\\\MockObject\\\\Builder\\\\InvocationMocker\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Downloader/DownloadManagerTest.php
+
+		-
+			message: "#^Call to deprecated method withConsecutive\\(\\) of class PHPUnit\\\\Framework\\\\MockObject\\\\Builder\\\\InvocationMocker\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
+
+		-
+			message: "#^Call to deprecated method withConsecutive\\(\\) of class PHPUnit\\\\Framework\\\\MockObject\\\\Builder\\\\InvocationMocker\\.$#"
+			count: 2
+			path: ../tests/Composer/Test/Downloader/GitDownloaderTest.php
+
+		-
+			message: "#^Call to deprecated method withConsecutive\\(\\) of class PHPUnit\\\\Framework\\\\MockObject\\\\Builder\\\\InvocationMocker\\.$#"
+			count: 2
+			path: ../tests/Composer/Test/EventDispatcher/EventDispatcherTest.php
+
+		-
+			message: "#^Call to deprecated method withConsecutive\\(\\) of class PHPUnit\\\\Framework\\\\MockObject\\\\Builder\\\\InvocationMocker\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/IO/ConsoleIOTest.php
+
+		-
+			message: "#^Call to deprecated method withConsecutive\\(\\) of class PHPUnit\\\\Framework\\\\MockObject\\\\Builder\\\\InvocationMocker\\.$#"
+			count: 5
+			path: ../tests/Composer/Test/Installer/SuggestedPackagesReporterTest.php
+
+		-
 			message: "#^Parameter \\#1 \\$callback of function call_user_func_array expects callable\\(\\)\\: mixed, array\\{Composer\\\\Repository\\\\CompositeRepository, string\\} given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/CompositeRepositoryTest.php
+
+		-
+			message: "#^Call to deprecated method withConsecutive\\(\\) of class PHPUnit\\\\Framework\\\\MockObject\\\\Builder\\\\InvocationMocker\\.$#"
+			count: 6
+			path: ../tests/Composer/Test/Util/BitbucketTest.php
+
+		-
+			message: "#^Call to deprecated method withConsecutive\\(\\) of class PHPUnit\\\\Framework\\\\MockObject\\\\Builder\\\\InvocationMocker\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Util/GitHubTest.php
+
+		-
+			message: "#^Call to deprecated method withConsecutive\\(\\) of class PHPUnit\\\\Framework\\\\MockObject\\\\Builder\\\\InvocationMocker\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Util/GitLabTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$object of method ReflectionProperty\\:\\:getValue\\(\\) expects object\\|null, object\\|string given\\.$#"
