@@ -251,7 +251,7 @@ EOT
      */
     private function checkHttp(string $proto, Config $config)
     {
-        $result = $this->checkConnectivity();
+        $result = $this->checkConnectivityAndComposerNetworkHttpEnablement();
         if ($result !== true) {
             return $result;
         }
@@ -290,7 +290,7 @@ EOT
      */
     private function checkHttpProxy()
     {
-        $result = $this->checkConnectivity();
+        $result = $this->checkConnectivityAndComposerNetworkHttpEnablement();
         if ($result !== true) {
             return $result;
         }
@@ -318,7 +318,7 @@ EOT
      */
     private function checkGithubOauth(string $domain, string $token)
     {
-        $result = $this->checkConnectivity();
+        $result = $this->checkConnectivityAndComposerNetworkHttpEnablement();
         if ($result !== true) {
             return $result;
         }
@@ -348,7 +348,7 @@ EOT
      */
     private function getGithubRateLimit(string $domain, ?string $token = null)
     {
-        $result = $this->checkConnectivity();
+        $result = $this->checkConnectivityAndComposerNetworkHttpEnablement();
         if ($result !== true) {
             return $result;
         }
@@ -419,7 +419,7 @@ EOT
      */
     private function checkVersion(Config $config)
     {
-        $result = $this->checkConnectivity();
+        $result = $this->checkConnectivityAndComposerNetworkHttpEnablement();
         if ($result !== true) {
             return $result;
         }
@@ -733,7 +733,39 @@ EOT
     private function checkConnectivity()
     {
         if (!ini_get('allow_url_fopen')) {
-            return '<info>Skipped because allow_url_fopen is missing.</info>';
+            return '<info>SKIP</> <comment>Because allow_url_fopen is missing.</>';
+        }
+
+        return true;
+    }
+
+    /**
+     * @return string|true
+     */
+    private function checkConnectivityAndComposerNetworkHttpEnablement()
+    {
+        $result = $this->checkConnectivity();
+        if ($result !== true) {
+            return $result;
+        }
+
+        $result = $this->checkComposerNetworkHttpEnablement();
+        if ($result !== true) {
+            return $result;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if Composer network is enabled for HTTP/S
+     *
+     * @return string|true
+     */
+    private function checkComposerNetworkHttpEnablement()
+    {
+        if ((bool) Platform::getEnv('COMPOSER_DISABLE_NETWORK')) {
+            return '<info>SKIP</> <comment>Network is disabled by COMPOSER_DISABLE_NETWORK.</>';
         }
 
         return true;
