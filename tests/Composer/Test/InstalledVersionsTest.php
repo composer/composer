@@ -33,14 +33,14 @@ class InstalledVersionsTest extends TestCase
         $prop = new \ReflectionProperty('Composer\Autoload\ClassLoader', 'registeredLoaders');
         $prop->setAccessible(true);
         self::$previousRegisteredLoaders = $prop->getValue();
-        $prop->setValue([]);
+        $prop->setValue(null, []);
     }
 
     public static function tearDownAfterClass(): void
     {
         $prop = new \ReflectionProperty('Composer\Autoload\ClassLoader', 'registeredLoaders');
         $prop->setAccessible(true);
-        $prop->setValue(self::$previousRegisteredLoaders);
+        $prop->setValue(null, self::$previousRegisteredLoaders);
         InstalledVersions::reload(null); // @phpstan-ignore-line
     }
 
