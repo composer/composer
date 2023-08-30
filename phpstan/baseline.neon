@@ -2,7 +2,7 @@ parameters:
 	ignoreErrors:
 		-
 			message: "#^Parameter \\#2 \\$advisories of method Composer\\\\Advisory\\\\Auditor\\:\\:outputAdvisories\\(\\) expects array\\<string, array\\<Composer\\\\Advisory\\\\SecurityAdvisory\\>\\>, array\\<string, array\\<Composer\\\\Advisory\\\\PartialSecurityAdvisory\\>\\> given\\.$#"
-			count: 1
+			count: 3
 			path: ../src/Composer/Advisory/Auditor.php
 
 		-

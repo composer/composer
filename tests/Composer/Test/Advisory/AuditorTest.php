@@ -14,7 +14,6 @@ namespace Composer\Test\Advisory;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
-use Composer\IO\BufferIO;
 use Composer\IO\NullIO;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
@@ -72,33 +71,144 @@ class AuditorTest extends TestCase
         $this->assertSame($expected, $result, $message);
     }
 
-    public function testAuditIgnoredIDs(): void
-    {
-        $packages = [
-            new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
-            new Package('vendor1/package2', '3.0.0.0', '3.0.0'),
-            new Package('vendorx/packagex', '3.0.0.0', '3.0.0'),
-            new Package('vendor3/package1', '3.0.0.0', '3.0.0'),
+    public function ignoredIdsProvider(): \Generator {
+        yield 'ignore by CVE' => [
+            [
+                new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
+            ],
+            ['CVE1'],
+            0,
+            [
+                ['text' => '1 ignored security vulnerability advisory affecting 1 package:'],
+                ['text' => 'Package: vendor1/package1'],
+                ['text' => 'CVE: CVE1'],
+                ['text' => 'Title: advisory1'],
+                ['text' => 'URL: https://advisory.example.com/advisory1'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2022-05-25T13:21:00+00:00'],
+            ]
         ];
+        yield 'ignore by CVE with reasoning' => [
+            [
+                new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
+            ],
+            ['CVE1' => 'A good reason'],
+            0,
+            [
+                ['text' => '1 ignored security vulnerability advisory affecting 1 package:'],
+                ['text' => 'Package: vendor1/package1'],
+                ['text' => 'CVE: CVE1'],
+                ['text' => 'Title: advisory1'],
+                ['text' => 'URL: https://advisory.example.com/advisory1'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2022-05-25T13:21:00+00:00'],
+                ['text' => 'Ignore reason: A good reason'],
+            ]
+        ];
+        yield 'ignore by advisory id' => [
+            [
+                new Package('vendor1/package2', '3.0.0.0', '3.0.0'),
+            ],
+            ['ID2'],
+            0,
+            [
+                ['text' => '1 ignored security vulnerability advisory affecting 1 package:'],
+                ['text' => 'Package: vendor1/package2'],
+                ['text' => 'CVE: '],
+                ['text' => 'Title: advisory2'],
+                ['text' => 'URL: https://advisory.example.com/advisory2'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2022-05-25T13:21:00+00:00'],
+            ]
+        ];
+        yield 'ignore by remote id' => [
+            [
+                new Package('vendorx/packagex', '3.0.0.0', '3.0.0'),
+            ],
+            ['RemoteIDx'],
+            0,
+            [
+                ['text' => '1 ignored security vulnerability advisory affecting 1 package:'],
+                ['text' => 'Package: vendorx/packagex'],
+                ['text' => 'CVE: CVE5'],
+                ['text' => 'Title: advisory17'],
+                ['text' => 'URL: https://advisory.example.com/advisory17'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2015-05-25T13:21:00+00:00'],
+            ]
+        ];
+        yield '1 vulnerability, 0 ignored' => [
+            [
+                new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
+            ],
+            [],
+            1,
+            [
+                ['text' => 'Found 1 security vulnerability advisory affecting 1 package:'],
+                ['text' => 'Package: vendor1/package1'],
+                ['text' => 'CVE: CVE1'],
+                ['text' => 'Title: advisory1'],
+                ['text' => 'URL: https://advisory.example.com/advisory1'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2022-05-25T13:21:00+00:00'],
+            ]
+        ];
+        yield '1 vulnerability, 3 ignored affecting 2 packages' => [
+            [
+                new Package('vendor3/package1', '3.0.0.0', '3.0.0'),
+                // RemoteIDx
+                new Package('vendorx/packagex', '3.0.0.0', '3.0.0'),
+                // ID3, ID6
+                new Package('vendor2/package1', '3.0.0.0', '3.0.0'),
+            ],
+            ['RemoteIDx', 'ID3', 'ID6'],
+            1,
+            [
+                ['text' => 'Found 1 security vulnerability advisory affecting 1 package:'],
+                ['text' => 'Package: vendor3/package1'],
+                ['text' => 'CVE: CVE5'],
+                ['text' => 'Title: advisory7'],
+                ['text' => 'URL: https://advisory.example.com/advisory7'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2015-05-25T13:21:00+00:00'],
+                ['text' => '3 ignored security vulnerability advisories affecting 2 packages:'],
+                ['text' => 'Package: vendor2/package1'],
+                ['text' => 'CVE: CVE2'],
+                ['text' => 'Title: advisory3'],
+                ['text' => 'URL: https://advisory.example.com/advisory3'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2022-05-25T13:21:00+00:00'],
+                ['text' => '--------'],
+                ['text' => 'Package: vendor2/package1'],
+                ['text' => 'CVE: CVE4'],
+                ['text' => 'Title: advisory6'],
+                ['text' => 'URL: https://advisory.example.com/advisory6'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2015-05-25T13:21:00+00:00'],
+                ['text' => '--------'],
+                ['text' => 'Package: vendorx/packagex'],
+                ['text' => 'CVE: CVE5'],
+                ['text' => 'Title: advisory17'],
+                ['text' => 'URL: https://advisory.example.com/advisory17'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2015-05-25T13:21:00+00:00'],
+            ]
+        ];
+    }
 
-        $ignoredIds = ['CVE1', 'ID2', 'RemoteIDx'];
-
+    /**
+     * @dataProvider ignoredIdsProvider
+     * @phpstan-param array<\Composer\Package\Package> $packages
+     * @phpstan-param array<string>|array<string,string> $ignoredIds
+     * @phpstan-param 0|positive-int $exitCode
+     * @phpstan-param list<array{text: string, verbosity?: \Composer\IO\IOInterface::*, regex?: true}|array{ask: string, reply: string}|array{auth: array{string, string, string|null}}> $expectedOutput
+     */
+    public function testAuditWithIgnore($packages, $ignoredIds, $exitCode, $expectedOutput): void
+    {
         $auditor = new Auditor();
         $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $packages, Auditor::FORMAT_PLAIN, false, $ignoredIds);
-        $io->expects([
-            ['text' => 'Found 1 security vulnerability advisory affecting 1 package:'],
-            ['text' => 'Package: vendor3/package1'],
-            ['text' => 'CVE: CVE5'],
-            ['text' => 'Title: advisory7'],
-            ['text' => 'URL: https://advisory.example.com/advisory7'],
-            ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
-            ['text' => 'Reported at: 2015-05-25T13:21:00+00:00'],
-        ], true);
-        $this->assertSame(1, $result);
-
-        // without ignored IDs, we should get all 4
-        $result = $auditor->audit($io, $this->getRepoSet(), $packages, Auditor::FORMAT_PLAIN, false);
-        $this->assertSame(4, $result);
+        $io->expects($expectedOutput, true);
+        $this->assertSame($exitCode, $result);
     }
 
     private function getRepoSet(): RepositorySet

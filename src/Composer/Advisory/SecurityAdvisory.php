@@ -42,7 +42,7 @@ class SecurityAdvisory extends PartialSecurityAdvisory
     public $reportedAt;
 
     /**
-     * @var array<array{name: string, remoteId: string}>
+     * @var non-empty-array<array{name: string, remoteId: string}>
      * @readonly
      */
     public $sources;
