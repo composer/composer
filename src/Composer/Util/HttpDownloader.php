@@ -108,7 +108,7 @@ class HttpDownloader
             throw new \InvalidArgumentException('$url must not be an empty string');
         }
         [$job, $promise] = $this->addJob(['url' => $url, 'options' => $options, 'copyTo' => null], true);
-        $promise->catch(function (\Throwable $e) {
+        $promise->then(null, function (\Throwable $e) {
             // suppress error as it is rethrown to the caller by getResponse() a few lines below
         });
         $this->wait($job['id']);
