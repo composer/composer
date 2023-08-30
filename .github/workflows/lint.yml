@@ -22,7 +22,6 @@ jobs:
         php-version:
           - "7.2"
           - "latest"
-          - "8.3"
 
     steps:
       - name: "Checkout"

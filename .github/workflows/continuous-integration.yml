@@ -31,6 +31,7 @@ jobs:
           - "8.0"
           - "8.1"
           - "8.2"
+          - "8.3"
         dependencies: [locked]
         os: [ubuntu-latest]
         experimental: [false]
@@ -55,26 +56,14 @@ jobs:
             os: macos-latest
             dependencies: locked
             experimental: false
-          - php-version: "8.2"
-            dependencies: lowest-ignore
-            os: ubuntu-latest
-            experimental: false
-          - php-version: "8.2"
-            dependencies: highest-ignore
-            os: ubuntu-latest
-            experimental: false
-          - php-version: "8.3"
-            dependencies: locked
-            os: ubuntu-latest
-            experimental: true
           - php-version: "8.3"
             dependencies: lowest-ignore
             os: ubuntu-latest
-            experimental: true
+            experimental: false
           - php-version: "8.3"
             dependencies: highest-ignore
             os: ubuntu-latest
-            experimental: true
+            experimental: false
 
     steps:
       - name: "Checkout"
