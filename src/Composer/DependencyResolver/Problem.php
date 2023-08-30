@@ -453,7 +453,7 @@ class Problem
     }
 
     /**
-     * @param array<string, string> $versions an array of pretty versions, with normalized versions as keys
+     * @param array<string|int, string> $versions an array of pretty versions, with normalized versions as keys
      * @return list<string> a list of pretty versions and '...' where versions were removed
      */
     private static function condenseVersionList(array $versions, int $max, int $maxDev = 16): array
@@ -465,10 +465,10 @@ class Problem
         $filtered = [];
         $byMajor = [];
         foreach ($versions as $version => $pretty) {
-            if (0 === stripos($version, 'dev-')) {
+            if (0 === stripos((string) $version, 'dev-')) {
                 $byMajor['dev'][] = $pretty;
             } else {
-                $byMajor[Preg::replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
+                $byMajor[Preg::replace('{^(\d+)\..*}', '$1', (string) $version)][] = $pretty;
             }
         }
         foreach ($byMajor as $majorVersion => $versionsForMajor) {
