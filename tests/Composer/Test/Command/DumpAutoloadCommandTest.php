@@ -75,12 +75,22 @@ class DumpAutoloadCommandTest extends TestCase
         $this->assertMatchesRegularExpression('/Generated optimized autoload files \(authoritative\) containing \d+ classes/', $output);
     }
 
+    public function testUsingClassmapAuthoritativeAndStrictPsr(): void
+    {
+        $appTester = $this->getApplicationTester();
+        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload', '--classmap-authoritative' => true, '--strict-psr' => true]));
+
+        $output = $appTester->getDisplay(true);
+        $this->assertStringContainsString('Generating optimized autoload files', $output);
+        $this->assertMatchesRegularExpression('/Generated optimized autoload files \(authoritative\) containing \d+ classes/', $output);
+    }
+
     public function testStrictPsrDoesNotWorkWithoutOptimizedAutoloader(): void
     {
         $appTester = $this->getApplicationTester();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('--strict-psr mode only works with optimized autoloader, use --optimize if you want a strict return value.');
+        $this->expectExceptionMessage('--strict-psr mode only works with optimized autoloader, use --optimize or --classmap-authoritative if you want a strict return value.');
         $appTester->run(['command' => 'dump-autoload', '--strict-psr' => true]);
     }
 
