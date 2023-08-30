@@ -161,7 +161,7 @@ class ComposerRepositoryTest extends TestCase
                 ],
             ]));
 
-        $reflMethod = new \ReflectionMethod($repo, 'whatProvides');
+        $reflMethod = new \ReflectionMethod(ComposerRepository::class, 'whatProvides');
         $reflMethod->setAccessible(true);
         $packages = $reflMethod->invoke($repo, 'a');
 
