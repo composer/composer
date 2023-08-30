@@ -225,7 +225,7 @@ This field is optional.
 #### list
 
 The `list` field allows you to return the names of packages which match a
-given field (or all names if no filter is present). It should accept an
+given filter (or all names if no filter is present). It should accept an
 optional `?filter=xx` query param, which can contain `*` as wildcards matching
 any substring.
 
