@@ -70,8 +70,8 @@ EOT
         $apcuPrefix = $input->getOption('apcu-prefix');
         $apcu = $apcuPrefix !== null || $input->getOption('apcu') || $config->get('apcu-autoloader');
 
-        if ($input->getOption('strict-psr') && !$optimize) {
-            throw new \InvalidArgumentException('--strict-psr mode only works with optimized autoloader, use --optimize if you want a strict return value.');
+        if ($input->getOption('strict-psr') && !$optimize && !$authoritative) {
+            throw new \InvalidArgumentException('--strict-psr mode only works with optimized autoloader, use --optimize or --classmap-authoritative if you want a strict return value.');
         }
 
         if ($authoritative) {
