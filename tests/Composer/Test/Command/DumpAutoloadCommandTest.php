@@ -47,6 +47,24 @@ class DumpAutoloadCommandTest extends TestCase
         $this->assertMatchesRegularExpression('/Generated optimized autoload files containing \d+ classes/', $output);
     }
 
+    public function testFailsUsingStrictPsrIfClassMapViolationsAreFound(): void
+    {
+        $dir = $this->initTempComposer([
+            'autoload' => [
+                'psr-4' => [
+                    'Application\\' => 'src',
+                ]
+            ]
+        ]);
+        mkdir($dir . '/src/');
+        file_put_contents($dir . '/src/Foo.php', '<?php namespace Application\Src; class Foo {}');
+        $appTester = $this->getApplicationTester();
+        $this->assertSame(1, $appTester->run(['command' => 'dump-autoload', '--optimize' => true, '--strict-psr' => true]));
+
+        $output = $appTester->getDisplay(true);
+        $this->assertMatchesRegularExpression('/Class Application\\\Src\\\Foo located in .*? does not comply with psr-4 autoloading standard. Skipping./', $output);
+    }
+
     public function testUsingClassmapAuthoritative(): void
     {
         $appTester = $this->getApplicationTester();
