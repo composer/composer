@@ -73,6 +73,11 @@ class AutoloadGenerator
     /**
      * @var bool
      */
+    private $dryRun = false;
+
+    /**
+     * @var bool
+     */
     private $runScripts = false;
 
     /**
@@ -125,6 +130,18 @@ class AutoloadGenerator
     public function setRunScripts(bool $runScripts = true)
     {
         $this->runScripts = $runScripts;
+    }
+
+    /**
+     * Whether to run in drymode or not
+     *
+     * @return AutoloadGenerator
+     */
+    public function setDryRun(bool $dryRun = true): self
+    {
+        $this->dryRun = $dryRun;
+
+        return $this;
     }
 
     /**
@@ -398,45 +415,47 @@ EOF;
             }
         }
 
-        $filesystem->filePutContentsIfModified($targetDir.'/autoload_namespaces.php', $namespacesFile);
-        $filesystem->filePutContentsIfModified($targetDir.'/autoload_psr4.php', $psr4File);
-        $filesystem->filePutContentsIfModified($targetDir.'/autoload_classmap.php', $classmapFile);
-        $includePathFilePath = $targetDir.'/include_paths.php';
-        if ($includePathFileContents = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)) {
-            $filesystem->filePutContentsIfModified($includePathFilePath, $includePathFileContents);
-        } elseif (file_exists($includePathFilePath)) {
-            unlink($includePathFilePath);
-        }
-        $includeFilesFilePath = $targetDir.'/autoload_files.php';
-        if ($includeFilesFileContents = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)) {
-            $filesystem->filePutContentsIfModified($includeFilesFilePath, $includeFilesFileContents);
-        } elseif (file_exists($includeFilesFilePath)) {
-            unlink($includeFilesFilePath);
-        }
-        $filesystem->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath));
-        $checkPlatform = $config->get('platform-check') !== false && !($this->platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter);
-        $platformCheckContent = null;
-        if ($checkPlatform) {
-            $platformCheckContent = $this->getPlatformCheck($packageMap, $config->get('platform-check'), $devPackageNames);
-            if (null === $platformCheckContent) {
-                $checkPlatform = false;
+        if (!$this->dryRun) {
+            $filesystem->filePutContentsIfModified($targetDir.'/autoload_namespaces.php', $namespacesFile);
+            $filesystem->filePutContentsIfModified($targetDir.'/autoload_psr4.php', $psr4File);
+            $filesystem->filePutContentsIfModified($targetDir.'/autoload_classmap.php', $classmapFile);
+            $includePathFilePath = $targetDir.'/include_paths.php';
+            if ($includePathFileContents = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)) {
+                $filesystem->filePutContentsIfModified($includePathFilePath, $includePathFileContents);
+            } elseif (file_exists($includePathFilePath)) {
+                unlink($includePathFilePath);
             }
-        }
-        if ($checkPlatform) {
-            $filesystem->filePutContentsIfModified($targetDir.'/platform_check.php', $platformCheckContent);
-        } elseif (file_exists($targetDir.'/platform_check.php')) {
-            unlink($targetDir.'/platform_check.php');
-        }
-        $filesystem->filePutContentsIfModified($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        $filesystem->filePutContentsIfModified($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $checkPlatform));
+            $includeFilesFilePath = $targetDir.'/autoload_files.php';
+            if ($includeFilesFileContents = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)) {
+                $filesystem->filePutContentsIfModified($includeFilesFilePath, $includeFilesFileContents);
+            } elseif (file_exists($includeFilesFilePath)) {
+                unlink($includeFilesFilePath);
+            }
+            $filesystem->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath));
+            $checkPlatform = $config->get('platform-check') !== false && !($this->platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter);
+            $platformCheckContent = null;
+            if ($checkPlatform) {
+                $platformCheckContent = $this->getPlatformCheck($packageMap, $config->get('platform-check'), $devPackageNames);
+                if (null === $platformCheckContent) {
+                    $checkPlatform = false;
+                }
+            }
+            if ($checkPlatform) {
+                $filesystem->filePutContentsIfModified($targetDir.'/platform_check.php', $platformCheckContent);
+            } elseif (file_exists($targetDir.'/platform_check.php')) {
+                unlink($targetDir.'/platform_check.php');
+            }
+            $filesystem->filePutContentsIfModified($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
+            $filesystem->filePutContentsIfModified($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $checkPlatform));
 
-        $filesystem->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
-        $filesystem->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
+            $filesystem->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+            $filesystem->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
 
-        if ($this->runScripts) {
-            $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, [], [
-                'optimize' => $scanPsrPackages,
-            ]);
+            if ($this->runScripts) {
+                $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, [], [
+                    'optimize' => $scanPsrPackages,
+                ]);
+            }
         }
 
         return $classMap;
