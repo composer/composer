@@ -73,6 +73,11 @@ class AutoloadGenerator
     /**
      * @var bool
      */
+    private $dryRun = false;
+
+    /**
+     * @var bool
+     */
     private $runScripts = false;
 
     /**
@@ -125,6 +130,14 @@ class AutoloadGenerator
     public function setRunScripts(bool $runScripts = true)
     {
         $this->runScripts = $runScripts;
+    }
+
+    /**
+     * Whether to run in drymode or not
+     */
+    public function setDryRun(bool $dryRun = true): void
+    {
+        $this->dryRun = $dryRun;
     }
 
     /**
@@ -396,6 +409,10 @@ EOF;
             if (null === $suffix) {
                 $suffix = md5(uniqid('', true));
             }
+        }
+
+        if ($this->dryRun) {
+            return $classMap;
         }
 
         $filesystem->filePutContentsIfModified($targetDir.'/autoload_namespaces.php', $namespacesFile);

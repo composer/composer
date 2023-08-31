@@ -37,6 +37,7 @@ class DumpAutoloadCommand extends BaseCommand
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.'),
                 new InputOption('apcu', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('apcu-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu'),
+                new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables autoload-dev rules. Composer will by default infer this automatically according to the last install or update --no-dev state.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules. Composer will by default infer this automatically according to the last install or update --no-dev state.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
@@ -83,6 +84,9 @@ EOT
         }
 
         $generator = $composer->getAutoloadGenerator();
+        if ($input->getOption('dry-run')) {
+            $generator->setDryRun(true);
+        }
         if ($input->getOption('no-dev')) {
             $generator->setDevMode(false);
         }
