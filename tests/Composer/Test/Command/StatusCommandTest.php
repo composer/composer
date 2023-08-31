@@ -49,7 +49,7 @@ class StatusCommandTest extends TestCase
 
         // installed.json LGTM
         var_dump(file_get_contents(getcwd() . '/vendor/composer/installed.json'));
-        // Expected some source here instead of an empty dir
+        // Expected some source here instead of an empty dir. Do I actually need to run a `composer install` here?
         var_dump(scandir(getcwd() . '/vendor/composer/class-map-generator/'));
 
         // A hack to modify a package file just to get the test stood up. Will find a better way...
