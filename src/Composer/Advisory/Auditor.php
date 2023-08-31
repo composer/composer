@@ -51,28 +51,34 @@ class Auditor
      */
     public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = []): int
     {
-        ['filtered' => $filteredAdvisories, 'ignored' => $ignoredAdvisories] = $this->processAdvisories($repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY), $ignoreList);
+        $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY);
+        // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
+        // and ignores are set then we need to query again the full data to make sure it can be filtered
+        if (count($allAdvisories) > 0 && $ignoreList !== [] && $format === self::FORMAT_SUMMARY) {
+            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packages, false);
+        }
+        ['advisories' => $advisories, 'ignoredAdvisories' => $ignoredAdvisories] = $this->processAdvisories($allAdvisories, $ignoreList);
 
         if (self::FORMAT_JSON === $format) {
-            $json = ['advisories' => $filteredAdvisories];
+            $json = ['advisories' => $advisories];
             if ($ignoredAdvisories !== []) {
                 $json['ignored-advisories'] = $ignoredAdvisories;
             }
 
             $io->write(JsonFile::encode($json));
 
-            return count($filteredAdvisories);
+            return count($advisories);
         }
 
         $errorOrWarn = $warningOnly ? 'warning' : 'error';
-        if (count($filteredAdvisories) > 0 || count($ignoredAdvisories) > 0) {
-            [$affectedPackagesCount, $totalAdvisoryCount] = $this->countAdvisories($filteredAdvisories);
+        if (count($advisories) > 0 || count($ignoredAdvisories) > 0) {
+            [$affectedPackagesCount, $totalAdvisoryCount] = $this->countAdvisories($advisories);
             if ($affectedPackagesCount > 0) {
                 $plurality = $totalAdvisoryCount === 1 ? 'y' : 'ies';
                 $pkgPlurality = $affectedPackagesCount === 1 ? '' : 's';
                 $punctuation = $format === 'summary' ? '.' : ':';
                 $io->writeError("<$errorOrWarn>Found $totalAdvisoryCount security vulnerability advisor{$plurality} affecting $affectedPackagesCount package{$pkgPlurality}{$punctuation}</$errorOrWarn>");
-                $this->outputAdvisories($io, $filteredAdvisories, $format);
+                $this->outputAdvisories($io, $advisories, $format);
             }
 
             if ($ignoredAdvisories !== []) {
@@ -84,7 +90,10 @@ class Auditor
                     $io->writeError("<info>$ignoredTotalAdvisoryCount ignored security vulnerability advisor{$plurality} affecting $ignoredAffectedPackagesCount package{$pkgPlurality}{$punctuation}</info>");
                     $this->outputAdvisories($io, $ignoredAdvisories, $format);
                 }
+            }
 
+            if ($format === self::FORMAT_SUMMARY) {
+                $io->writeError('Run "composer audit" for a full list of advisories.');
             }
 
             return $affectedPackagesCount;
@@ -96,79 +105,78 @@ class Auditor
     }
 
     /**
-     * @phpstan-param array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> $advisories
+     * @phpstan-param array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> $allAdvisories
      * @param array<string>|array<string,string> $ignoreList List of advisory IDs, remote IDs or CVE IDs that reported but not listed as vulnerabilities.
-     * @phpstan-return array{filtered: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, ignored: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>}
+     * @phpstan-return array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, ignoredAdvisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>}
      */
-    private function processAdvisories(array $advisories, array $ignoreList): array
+    private function processAdvisories(array $allAdvisories, array $ignoreList): array
     {
         if ($ignoreList === []) {
-            return ['filtered' => $advisories, 'ignored' => []];
+            return ['advisories' => $allAdvisories, 'ignoredAdvisories' => []];
         }
 
-        if ((\count($ignoreList) > 0) && !\array_is_list($ignoreList)) {
+        if (\count($ignoreList) > 0 && !\array_is_list($ignoreList)) {
             $ignoredIds = array_keys($ignoreList);
-        }
-        else {
+        } else {
             $ignoredIds = $ignoreList;
         }
 
-        $filtered = [];
+        $advisories = [];
         $ignored = [];
-        $ignoreReason = NULL;
+        $ignoreReason = null;
 
-        foreach ($advisories as $package => $pkgAdvisories) {
+        foreach ($allAdvisories as $package => $pkgAdvisories) {
             foreach ($pkgAdvisories as $advisory) {
-                $isFiltered = true;
+                $isActive = true;
 
                 if (in_array($advisory->advisoryId, $ignoredIds, true)) {
-                    $isFiltered = false;
-                    $ignoreReason = $ignoreList[$advisory->advisoryId] ?? NULL;
+                    $isActive = false;
+                    $ignoreReason = $ignoreList[$advisory->advisoryId] ?? null;
                 }
 
                 if ($advisory instanceof SecurityAdvisory) {
                     if (in_array($advisory->cve, $ignoredIds, true)) {
-                        $isFiltered = false;
-                        $ignoreReason = $ignoreList[$advisory->cve] ?? NULL;
+                        $isActive = false;
+                        $ignoreReason = $ignoreList[$advisory->cve] ?? null;
                     }
 
                     foreach ($advisory->sources as $source) {
                         if (in_array($source['remoteId'], $ignoredIds, true)) {
-                            $isFiltered = false;
-                            $ignoreReason = $ignoreList[$source['remoteId']] ?? NULL;
+                            $isActive = false;
+                            $ignoreReason = $ignoreList[$source['remoteId']] ?? null;
                             break;
                         }
                     }
                 }
 
-                if ($isFiltered) {
-                    $filtered[$package][] = $advisory;
+                if ($isActive) {
+                    $advisories[$package][] = $advisory;
+                    continue;
                 }
-                else {
-                    // Partial security advisories only used in summary mode
-                    // and that case we do not need to cast the object.
-                    if ($advisory instanceof SecurityAdvisory) {
-                        $advisory = new IgnoredSecurityAdvisory(
-                            $advisory->packageName,
-                            $advisory->advisoryId,
-                            $advisory->affectedVersions,
-                            $advisory->title,
-                            $advisory->sources,
-                            $advisory->reportedAt,
-                            $advisory->cve,
-                            $advisory->link
-                        );
-                        if ($ignoreReason !== NULL) {
-                            $advisory->specifyIgnoreReason($ignoreReason);
-                        }
-                    }
 
-                    $ignored[$package][] = $advisory;
+                // Partial security advisories only used in summary mode
+                // and in that case we do not need to cast the object.
+                if ($advisory instanceof SecurityAdvisory) {
+                    $advisory = new IgnoredSecurityAdvisory(
+                        $advisory->packageName,
+                        $advisory->advisoryId,
+                        $advisory->affectedVersions,
+                        $advisory->title,
+                        $advisory->sources,
+                        $advisory->reportedAt,
+                        $advisory->cve,
+                        $advisory->link
+                    );
+                    if ($ignoreReason !== null) {
+                        $advisory->specifyIgnoreReason($ignoreReason);
+                    }
                 }
+
+                $ignored[$package][] = $advisory;
             }
         }
 
-        return ['filtered' => $filtered, 'ignored' => $ignored];
+        return ['advisories' => $advisories, 'ignoredAdvisories' => $ignored];
     }
 
     /**
@@ -204,8 +212,6 @@ class Auditor
 
                 return;
             case self::FORMAT_SUMMARY:
-                // We've already output the number of advisories in audit()
-                $io->writeError('Run composer audit for a full list of advisories.');
 
                 return;
             default:
@@ -236,7 +242,7 @@ class Auditor
                     $advisory->affectedVersions->getPrettyString(),
                     $advisory->reportedAt->format(DATE_ATOM),
                 ];
-                $showIgnoreReason = $advisory instanceof IgnoredSecurityAdvisory && $advisory->ignoreReason !== NULL;
+                $showIgnoreReason = $advisory instanceof IgnoredSecurityAdvisory && $advisory->ignoreReason !== null;
                 if ($showIgnoreReason) {
                     $headers[] = 'Ignore reason';
                     $row[] = $advisory->ignoreReason;
@@ -270,7 +276,7 @@ class Auditor
                 $error[] = "URL: ".$this->getURL($advisory);
                 $error[] = "Affected versions: ".OutputFormatter::escape($advisory->affectedVersions->getPrettyString());
                 $error[] = "Reported at: ".$advisory->reportedAt->format(DATE_ATOM);
-                if ($advisory instanceof IgnoredSecurityAdvisory && $advisory->ignoreReason !== NULL) {
+                if ($advisory instanceof IgnoredSecurityAdvisory && $advisory->ignoreReason !== null) {
                     $error[] = "Ignore reason: ".$advisory->ignoreReason;
                 }
                 $firstAdvisory = false;

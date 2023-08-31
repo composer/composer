@@ -107,7 +107,7 @@ Security audit configuration options
 
 ### ignore
 
-A list of advisory ids, remote ids or CVE ids that reported but they do not make the audit command fail.
+A list of advisory ids, remote ids or CVE ids that are reported but let the audit command pass.
 
 ```json
 {
