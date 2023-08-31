@@ -209,10 +209,10 @@ class Config
                         $this->setSourceOfConfigValue($val, $key, $source);
                     }
                 } elseif ('audit' === $key) {
-                    $currentAuditPass = $this->config['audit']['ignore'];
+                    $currentIgnores = $this->config['audit']['ignore'];
                     $this->config[$key] = $val;
                     $this->setSourceOfConfigValue($val, $key, $source);
-                    $this->config['audit']['ignore'] = array_merge($currentAuditPass, $val['ignore'] ?? []);
+                    $this->config['audit']['ignore'] = array_merge($currentIgnores, $val['ignore'] ?? []);
                 } else {
                     $this->config[$key] = $val;
                     $this->setSourceOfConfigValue($val, $key, $source);
