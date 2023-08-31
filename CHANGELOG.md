@@ -1,3 +1,29 @@
+### [2.6.0] 2023-08-31
+
+  * Added audit.ignore config setting to ignore security advisories by id or CVE id (#11556, #11605)
+  * Added `rm` alias to the `remove` command (#11367)
+  * Added runtime platform check to verify the php-64bit requirement is met (#11334)
+  * Added platform package detection for lib-pq-libpq and lib-rdkafka-librdkafka (#11418)
+  * Added `--dry-run` to `dump-autoload` command to allow running --strict-psr checks without modifying the filesystem (#11608)
+  * Added support for `bump`ing patch level in `~1.2.3` constraints (#11590)
+  * Added prompt in `require` if the package name is not found but similar ones exist (#11284)
+  * Added support for env vars and `~` in repository paths for vcs and artifact repositories (#11453)
+  * Added support for local directory paths for repositories of type `composer` (#11526)
+  * Added links to package homepages in `why`/`why-not` command output (#11308)
+  * Added a `security` key to the `support` key of composer.json to set the URL to the vulnerability disclosure policy (#11271)
+  * Added support for gathering security advisories from multiple repositories for a single package (#11436)
+  * Fixed `install` and `update` exit code to be non-zero if the post-install security audit failed (#11362)
+  * Fixed binary proxies causing scripts inspecting `$_SERVER['SCRIPT_NAME']` to detect them, they are now more transparent (#11562)
+  * Fixed executability of non-php binaries which are not marked executable (#11557)
+  * Fixed `mtime` modification of the vendor dir to only happen when packages are modified, and not require lock file modification to happen (#11593)
+  * Fixed `create-project` using the wrong composer.json file if one was set via the `COMPOSER` env var (#11493)
+  * Fixed json editing to preserve indentation when updating json files (#11390)
+  * Fixed handling of broken junctions on windows (#11550)
+  * Fixed parsing of lib-curl-openssl version with OSX SecureTransport (#11534)
+  * Fixed svn repo parsing in some edge cases (#11350)
+  * Fixed handling of archive URLs without file extension (#11520)
+  * Performance improvement in pool optimization step (#11449, #11450)
+
 ### [2.5.8] 2023-06-09
 
   * Fixed regression in edge cases where root package gets added to a repository already during the install process (#11495)
@@ -1731,6 +1757,7 @@
 
   * Initial release
 
+[2.6.0]: https://github.com/composer/composer/compare/2.5.8...2.6.0
 [2.5.8]: https://github.com/composer/composer/compare/2.5.7...2.5.8
 [2.5.7]: https://github.com/composer/composer/compare/2.5.6...2.5.7
 [2.5.6]: https://github.com/composer/composer/compare/2.5.5...2.5.6
