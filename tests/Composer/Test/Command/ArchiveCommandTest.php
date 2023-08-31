@@ -15,9 +15,16 @@ namespace Composer\Test\Command;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Factory;
+use Composer\Package\RootPackage;
 use Composer\Test\TestCase;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Input\ArrayInput;
+use Composer\Repository\RepositoryManager;
+use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Package\Archiver\ArchiveManager;
+use Composer\Command\ArchiveCommand;
+use Composer\EventDispatcher\EventDispatcher;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class ArchiveCommandTest extends TestCase
 {
@@ -97,5 +104,61 @@ class ArchiveCommandTest extends TestCase
             )->willReturn(0);
 
         $this->assertEquals(0, $command->run($input, $output));
+    }
+
+    public function testUsesConfigFromComposerObjectWithPackageName(): void
+    {
+        $input = new ArrayInput([
+            'package' => 'foo/bar',
+        ]);
+
+        $output = $this->getMockBuilder(OutputInterface::class)
+            ->getMock();
+
+        $eventDispatcher = $this->getMockBuilder(EventDispatcher::class)
+            ->disableOriginalConstructor()->getMock();
+
+        $composer = new Composer;
+        $config = new Config;
+        $config->merge(['config' => ['archive-format' => 'zip']]);
+        $composer->setConfig($config);
+
+        $manager = $this->getMockBuilder(ArchiveManager::class)
+            ->disableOriginalConstructor()->getMock();
+
+        $package = new RootPackage('foo/bar', '1.0.0', '1.0');
+
+        $installedRepository = $this->getMockBuilder(InstalledRepositoryInterface::class)
+            ->getMock();
+        $installedRepository->expects($this->once())->method('loadPackages')
+            ->willReturn(['packages' => [$package], 'namesFound' => ['foo/bar']]);
+
+        $repositoryManager = $this->getMockBuilder(RepositoryManager::class)
+            ->disableOriginalConstructor()->getMock();
+        $repositoryManager->expects($this->once())->method('getLocalRepository')
+            ->willReturn($installedRepository);
+        $repositoryManager->expects($this->once())->method('getRepositories')
+            ->willReturn([]);
+
+        $manager->expects($this->once())->method('archive')
+            ->with($package, 'zip', '.', null, false)->willReturn(Platform::getCwd());
+
+        $composer->setArchiveManager($manager);
+        $composer->setEventDispatcher($eventDispatcher);
+        $composer->setPackage($package);
+        $composer->setRepositoryManager($repositoryManager);
+
+        $command = $this->getMockBuilder(ArchiveCommand::class)
+            ->onlyMethods([
+                'mergeApplicationDefinition',
+                'getSynopsis',
+                'initialize',
+                'tryComposer',
+                'requireComposer',
+            ])->getMock();
+        $command->expects($this->atLeastOnce())->method('tryComposer')
+            ->willReturn($composer);
+
+        $command->run($input, $output);
     }
 }
