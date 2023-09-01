@@ -72,7 +72,6 @@ class StatusCommandTest extends TestCase
 
         $this->assertStringContainsString($expected, $actual);
         $this->assertStringContainsString($packageData['name'], $actual);
-
     }
 
     public static function locallyModifiedPackagesUseCaseProvider(): Generator
