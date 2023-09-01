@@ -72,23 +72,19 @@ class Auditor
 
         $errorOrWarn = $warningOnly ? 'warning' : 'error';
         if (count($advisories) > 0 || count($ignoredAdvisories) > 0) {
-            [$affectedPackagesCount, $totalAdvisoryCount] = $this->countAdvisories($advisories);
-            if ($affectedPackagesCount > 0) {
-                $plurality = $totalAdvisoryCount === 1 ? 'y' : 'ies';
-                $pkgPlurality = $affectedPackagesCount === 1 ? '' : 's';
-                $punctuation = $format === 'summary' ? '.' : ':';
-                $io->writeError("<$errorOrWarn>Found $totalAdvisoryCount security vulnerability advisor{$plurality} affecting $affectedPackagesCount package{$pkgPlurality}{$punctuation}</$errorOrWarn>");
-                $this->outputAdvisories($io, $advisories, $format);
-            }
-
-            if ($ignoredAdvisories !== []) {
-                [$ignoredAffectedPackagesCount, $ignoredTotalAdvisoryCount] = $this->countAdvisories($ignoredAdvisories);
-                if ($ignoredAffectedPackagesCount > 0) {
-                    $plurality = $ignoredTotalAdvisoryCount === 1 ? 'y' : 'ies';
-                    $pkgPlurality = $ignoredAffectedPackagesCount === 1 ? '' : 's';
+            $passes = [
+                [$ignoredAdvisories, "<info>Found %d ignored security vulnerability advisor%s affecting %d package%s%s</info>"],
+                // this has to run last to allow $affectedPackagesCount in the return statement to be correct
+                [$advisories, "<$errorOrWarn>Found %d security vulnerability advisor%s affecting %d package%s%s</$errorOrWarn>"],
+            ];
+            foreach ($passes as [$advisories, $message]) {
+                [$affectedPackagesCount, $totalAdvisoryCount] = $this->countAdvisories($advisories);
+                if ($affectedPackagesCount > 0) {
+                    $plurality = $totalAdvisoryCount === 1 ? 'y' : 'ies';
+                    $pkgPlurality = $affectedPackagesCount === 1 ? '' : 's';
                     $punctuation = $format === 'summary' ? '.' : ':';
-                    $io->writeError("<info>$ignoredTotalAdvisoryCount ignored security vulnerability advisor{$plurality} affecting $ignoredAffectedPackagesCount package{$pkgPlurality}{$punctuation}</info>");
-                    $this->outputAdvisories($io, $ignoredAdvisories, $format);
+                    $io->writeError(sprintf($message, $totalAdvisoryCount, $plurality, $affectedPackagesCount, $pkgPlurality, $punctuation));
+                    $this->outputAdvisories($io, $advisories, $format);
                 }
             }
 
