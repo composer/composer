@@ -226,10 +226,9 @@ class Auditor
                     $advisory->affectedVersions->getPrettyString(),
                     $advisory->reportedAt->format(DATE_ATOM),
                 ];
-                $showIgnoreReason = $advisory instanceof IgnoredSecurityAdvisory && $advisory->ignoreReason !== null;
-                if ($showIgnoreReason) {
+                if ($advisory instanceof IgnoredSecurityAdvisory) {
                     $headers[] = 'Ignore reason';
-                    $row[] = $advisory->ignoreReason;
+                    $row[] = $advisory->ignoreReason ?? 'None specified';
                 }
                 $io->getTable()
                     ->setHorizontal()
@@ -260,8 +259,8 @@ class Auditor
                 $error[] = "URL: ".$this->getURL($advisory);
                 $error[] = "Affected versions: ".OutputFormatter::escape($advisory->affectedVersions->getPrettyString());
                 $error[] = "Reported at: ".$advisory->reportedAt->format(DATE_ATOM);
-                if ($advisory instanceof IgnoredSecurityAdvisory && $advisory->ignoreReason !== null) {
-                    $error[] = "Ignore reason: ".$advisory->ignoreReason;
+                if ($advisory instanceof IgnoredSecurityAdvisory) {
+                    $error[] = "Ignore reason: ".($advisory->ignoreReason ?? 'None specified');
                 }
                 $firstAdvisory = false;
             }
