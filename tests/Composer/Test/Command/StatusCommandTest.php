@@ -45,7 +45,6 @@ class StatusCommandTest extends TestCase
         $package->setSourceReference('953cc4ea32e0c31f2185549c7d216d7921f03da9');
 
         $this->createComposerLock([$package], []);
-        /* $this->createInstalledJson([$package], []); */
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'install']);
