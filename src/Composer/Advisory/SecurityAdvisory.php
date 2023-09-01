@@ -49,7 +49,6 @@ class SecurityAdvisory extends PartialSecurityAdvisory
 
     /**
      * @param non-empty-array<array{name: string, remoteId: string}> $sources
-     * @readonly
      */
     public function __construct(string $packageName, string $advisoryId, ConstraintInterface $affectedVersions, string $title, array $sources, DateTimeImmutable $reportedAt, ?string $cve = null, ?string $link = null)
     {
@@ -60,6 +59,24 @@ class SecurityAdvisory extends PartialSecurityAdvisory
         $this->reportedAt = $reportedAt;
         $this->cve = $cve;
         $this->link = $link;
+    }
+
+    /**
+     * @internal
+     */
+    public function toIgnoredAdvisory(?string $ignoreReason): IgnoredSecurityAdvisory
+    {
+        return new IgnoredSecurityAdvisory(
+            $this->packageName,
+            $this->advisoryId,
+            $this->affectedVersions,
+            $this->title,
+            $this->sources,
+            $this->reportedAt,
+            $this->cve,
+            $this->link,
+            $ignoreReason
+        );
     }
 
     /**

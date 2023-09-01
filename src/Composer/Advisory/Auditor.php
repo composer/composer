@@ -77,14 +77,14 @@ class Auditor
                 // this has to run last to allow $affectedPackagesCount in the return statement to be correct
                 [$advisories, "<$errorOrWarn>Found %d security vulnerability advisor%s affecting %d package%s%s</$errorOrWarn>"],
             ];
-            foreach ($passes as [$advisories, $message]) {
-                [$affectedPackagesCount, $totalAdvisoryCount] = $this->countAdvisories($advisories);
+            foreach ($passes as [$advisoriesToOutput, $message]) {
+                [$affectedPackagesCount, $totalAdvisoryCount] = $this->countAdvisories($advisoriesToOutput);
                 if ($affectedPackagesCount > 0) {
                     $plurality = $totalAdvisoryCount === 1 ? 'y' : 'ies';
                     $pkgPlurality = $affectedPackagesCount === 1 ? '' : 's';
                     $punctuation = $format === 'summary' ? '.' : ':';
                     $io->writeError(sprintf($message, $totalAdvisoryCount, $plurality, $affectedPackagesCount, $pkgPlurality, $punctuation));
-                    $this->outputAdvisories($io, $advisories, $format);
+                    $this->outputAdvisories($io, $advisoriesToOutput, $format);
                 }
             }
 
@@ -153,19 +153,7 @@ class Auditor
                 // Partial security advisories only used in summary mode
                 // and in that case we do not need to cast the object.
                 if ($advisory instanceof SecurityAdvisory) {
-                    $advisory = new IgnoredSecurityAdvisory(
-                        $advisory->packageName,
-                        $advisory->advisoryId,
-                        $advisory->affectedVersions,
-                        $advisory->title,
-                        $advisory->sources,
-                        $advisory->reportedAt,
-                        $advisory->cve,
-                        $advisory->link
-                    );
-                    if ($ignoreReason !== null) {
-                        $advisory->specifyIgnoreReason($ignoreReason);
-                    }
+                    $advisory = $advisory->toIgnoredAdvisory($ignoreReason);
                 }
 
                 $ignored[$package][] = $advisory;

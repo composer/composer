@@ -2,7 +2,12 @@ parameters:
 	ignoreErrors:
 		-
 			message: "#^Parameter \\#2 \\$advisories of method Composer\\\\Advisory\\\\Auditor\\:\\:outputAdvisories\\(\\) expects array\\<string, array\\<Composer\\\\Advisory\\\\SecurityAdvisory\\>\\>, array\\<string, array\\<Composer\\\\Advisory\\\\PartialSecurityAdvisory\\>\\> given\\.$#"
-			count: 3
+			count: 1
+			path: ../src/Composer/Advisory/Auditor.php
+
+		-
+			message: "#^Variable \\$affectedPackagesCount might not be defined\\.$#"
+			count: 1
 			path: ../src/Composer/Advisory/Auditor.php
 
 		-
@@ -3575,7 +3580,7 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 6
+			count: 5
 			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
 
 		-
@@ -3610,7 +3615,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
 
 		-
