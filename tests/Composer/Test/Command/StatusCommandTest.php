@@ -49,14 +49,17 @@ class StatusCommandTest extends TestCase
         $package = self::getPackage($packageData['name'], $packageData['version']);
         $package->setInstallationSource($packageData['installation_source']);
 
-        $packageMetaDataMethods = [
-            'type' => "set{$packageData['installation_source']}Type",
-            'url' => "set{$packageData['installation_source']}Url",
-            'reference' => "set{$packageData['installation_source']}Reference",
-        ];
-        $package->{$packageMetaDataMethods['type']}($packageData['type']);
-        $package->{$packageMetaDataMethods['url']}($packageData['url']);
-        $package->{$packageMetaDataMethods['reference']}($packageData['reference']);
+        if ($packageData['installation_source'] === 'source') {
+            $package->setSourceType($packageData['type']);
+            $package->setSourceUrl($packageData['url']);
+            $package->setSourceReference($packageData['reference']);
+        }
+
+        if ($packageData['installation_source'] === 'dist') {
+            $package->setDistType($packageData['type']);
+            $package->setDistUrl($packageData['url']);
+            $package->setDistReference($packageData['reference']);
+        }
 
         $this->createComposerLock([$package], []);
 
