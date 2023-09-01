@@ -488,7 +488,7 @@ EOT
         }
 
         $status = $install->run();
-        if ($status !== 0) {
+        if ($status !== 0 && $status !== Installer::ERROR_AUDIT_FAILED) {
             if ($status === Installer::ERROR_DEPENDENCY_RESOLUTION_FAILED) {
                 foreach ($this->normalizeRequirements($input->getArgument('packages')) as $req) {
                     if (!isset($req['version'])) {
