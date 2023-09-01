@@ -45,20 +45,16 @@ class StatusCommandTest extends TestCase
         $package->setSourceReference('953cc4ea32e0c31f2185549c7d216d7921f03da9');
 
         $this->createComposerLock([$package], []);
-        $this->createInstalledJson([$package], []);
-
-        // installed.json LGTM
-        var_dump(file_get_contents(getcwd() . '/vendor/composer/installed.json'));
-        // Expected some source here instead of an empty dir. Do I actually need to run a `composer install` here?
-        var_dump(scandir(getcwd() . '/vendor/composer/class-map-generator/'));
-
-        // A hack to modify a package file just to get the test stood up. Will find a better way...
-        file_put_contents(getcwd() . '/vendor/composer/class-map-generator/composer.json', '{}');
+        /* $this->createInstalledJson([$package], []); */
 
         $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'install']);
+
+        file_put_contents(getcwd() . '/vendor/composer/class-map-generator/composer.json', '{}');
+
         $appTester->run(['command' => 'status']);
 
-        $expected = '<error>You have changes in the following dependencies:</error>';
+        $expected = 'You have changes in the following dependencies:';
         $actual = trim($appTester->getDisplay(true));
         $modifiedLocalPackage = 'class-map-generator';
 
