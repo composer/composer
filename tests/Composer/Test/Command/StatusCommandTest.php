@@ -49,15 +49,14 @@ class StatusCommandTest extends TestCase
         $package = self::getPackage($packageData['name'], $packageData['version']);
         $package->setInstallationSource($packageData['installation_source']);
 
-        if ($packageData['installation_source'] === 'source') {
-            $package->setSourceType($packageData['type']);
-            $package->setSourceUrl($packageData['url']);
-            $package->setSourceReference($packageData['reference']);
-        } else {
-            $package->setDistType($packageData['type']);
-            $package->setDistUrl($packageData['url']);
-            $package->setDistReference($packageData['reference']);
-        }
+        $packageMetaDataMethods = [
+            'type' => "set{$packageData['installation_source']}Type",
+            'url' => "set{$packageData['installation_source']}Url",
+            'reference' => "set{$packageData['installation_source']}Reference",
+        ];
+        $package->{$packageMetaDataMethods['type']}($packageData['type']);
+        $package->{$packageMetaDataMethods['url']}($packageData['url']);
+        $package->{$packageMetaDataMethods['reference']}($packageData['reference']);
 
         $this->createComposerLock([$package], []);
 
@@ -76,7 +75,7 @@ class StatusCommandTest extends TestCase
 
     }
 
-    public function locallyModifiedPackagesUseCaseProvider(): Generator
+    public static function locallyModifiedPackagesUseCaseProvider(): Generator
     {
         yield 'locally modified package from source' => [
             ['require' => ['composer/class-map-generator' => '^1.0']],
