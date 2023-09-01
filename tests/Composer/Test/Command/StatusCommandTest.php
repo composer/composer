@@ -13,6 +13,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use Generator;
 
 class StatusCommandTest extends TestCase
 {
@@ -32,32 +33,75 @@ class StatusCommandTest extends TestCase
         $this->assertSame('No local changes', trim($appTester->getDisplay(true)));
     }
 
-    public function testLocalPackageHasChanges(): void
-    {
-        $this->initTempComposer([
-            'require' => ['composer/class-map-generator' => '^1.1']
-        ]);
+    /**
+     * @dataProvider locallyModifiedPackagesUseCaseProvider
+     * @param array<mixed> $composerJson
+     * @param array<mixed> $commandFlags
+     * @param array<mixed> $packageData
+     */
+    public function testLocallyModifiedPackages(
+        array $composerJson,
+        array $commandFlags,
+        array $packageData
+    ): void {
+        $this->initTempComposer($composerJson);
 
-        $package = self::getPackage('composer/class-map-generator', '1.1');
-        $package->setInstallationSource('source');
-        $package->setSourceType('git');
-        $package->setSourceUrl('https://github.com/composer/class-map-generator.git');
-        $package->setSourceReference('953cc4ea32e0c31f2185549c7d216d7921f03da9');
+        $package = self::getPackage($packageData['name'], $packageData['version']);
+        $package->setInstallationSource($packageData['installation_source']);
+
+        if ($packageData['installation_source'] === 'source') {
+            $package->setSourceType($packageData['type']);
+            $package->setSourceUrl($packageData['url']);
+            $package->setSourceReference($packageData['reference']);
+        } else {
+            $package->setDistType($packageData['type']);
+            $package->setDistUrl($packageData['url']);
+            $package->setDistReference($packageData['reference']);
+        }
 
         $this->createComposerLock([$package], []);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'install']);
 
-        file_put_contents(getcwd() . '/vendor/composer/class-map-generator/composer.json', '{}');
+        file_put_contents(getcwd() . '/vendor/' . $packageData['name'] . '/composer.json', '{}');
 
-        $appTester->run(['command' => 'status']);
+        $appTester->run(array_merge(['command' => 'status'], $commandFlags));
 
         $expected = 'You have changes in the following dependencies:';
         $actual = trim($appTester->getDisplay(true));
-        $modifiedLocalPackage = 'class-map-generator';
 
         $this->assertStringContainsString($expected, $actual);
-        $this->assertStringContainsString($modifiedLocalPackage, $actual);
+        $this->assertStringContainsString($packageData['name'], $actual);
+
+    }
+
+    public function locallyModifiedPackagesUseCaseProvider(): Generator
+    {
+        yield 'locally modified package from source' => [
+            ['require' => ['composer/class-map-generator' => '^1.0']],
+            [],
+            [
+                'name' => 'composer/class-map-generator' ,
+                'version' => '1.1',
+                'installation_source' => 'source',
+                'type' => 'git',
+                'url' => 'https://github.com/composer/class-map-generator.git',
+                'reference' => '953cc4ea32e0c31f2185549c7d216d7921f03da9'
+            ]
+        ];
+
+        yield 'locally modified package from dist' => [
+            ['require' => ['smarty/smarty' => '^3.1']],
+            ['--verbose' => true],
+            [
+                'name' => 'smarty/smarty',
+                'version' => '3.1.7',
+                'installation_source' => 'dist',
+                'type' => 'zip',
+                'url' => 'https://www.smarty.net/files/Smarty-3.1.7.zip',
+                'reference' => null
+            ]
+        ];
     }
 }
