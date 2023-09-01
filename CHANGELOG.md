@@ -1,3 +1,7 @@
+### [2.6.1] 2023-09-01
+
+  * Reverted "Fixed executability of non-php binaries which are not marked executable (#11557)" which caused a regression (#11612)
+
 ### [2.6.0] 2023-09-01
 
   * Added audit.ignore config setting to ignore security advisories by id or CVE id (#11556, #11605)
@@ -1757,6 +1761,7 @@
 
   * Initial release
 
+[2.6.1]: https://github.com/composer/composer/compare/2.6.0...2.6.1
 [2.6.0]: https://github.com/composer/composer/compare/2.5.8...2.6.0
 [2.5.8]: https://github.com/composer/composer/compare/2.5.7...2.5.8
 [2.5.7]: https://github.com/composer/composer/compare/2.5.6...2.5.7
