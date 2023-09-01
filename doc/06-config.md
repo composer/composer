@@ -105,15 +105,31 @@ optionally be an object with package name patterns for keys for more granular in
 
 Security audit configuration options
 
-### ignored
+### ignore
 
-A set of advisory ids, remote ids or CVE ids that should be ignored and not reported as part of an audit.
+A list of advisory ids, remote ids or CVE ids that are reported but let the audit command pass.
 
 ```json
 {
     "config": {
         "audit": {
-            "ignored": ["CVE-1234", "GHSA-xx", "PKSA-yy"]
+            "ignore": {
+                "CVE-1234": "The affected component is not in use.",
+                "GHSA-xx": "The security fix was applied as a patch.",
+                "PKSA-yy": "Due to mitigations in place the update can be delayed."
+            }
+        }
+    }
+}
+```
+
+or
+
+```json
+{
+    "config": {
+        "audit": {
+            "ignore": ["CVE-1234", "GHSA-xx", "PKSA-yy"]
         }
     }
 }

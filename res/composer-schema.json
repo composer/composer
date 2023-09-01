@@ -329,12 +329,23 @@
                     "type": "object",
                     "description": "Security audit configuration options",
                     "properties": {
-                        "ignored": {
-                            "type": "array",
-                            "description": "A set of advisory ids, remote ids or CVE ids that should be ignored and not reported as part of an audit.",
-                            "items": {
-                                "type": "string"
-                            }
+                        "ignore": {
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "description": "A list of advisory ids, remote ids or CVE ids (keys) and the explanations (values) for why they're being ignored. The listed items are reported but let the audit command pass.",
+                                    "additionalProperties": {
+                                        "type": ["string", "string"]
+                                    }
+                                },
+                                {
+                                    "type": "array",
+                                    "description": "A set of advisory ids, remote ids or CVE ids that are reported but let the audit command pass.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ]
                         }
                     }
                 },
