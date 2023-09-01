@@ -1,4 +1,4 @@
-### [2.6.0] 2023-08-31
+### [2.6.0] 2023-09-01
 
   * Added audit.ignore config setting to ignore security advisories by id or CVE id (#11556, #11605)
   * Added `rm` alias to the `remove` command (#11367)
