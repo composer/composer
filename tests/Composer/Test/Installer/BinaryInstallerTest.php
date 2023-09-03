@@ -112,18 +112,6 @@ EOL
 echo 'success '.$_SERVER['argv'][1];
 EOL
             ],
-            'php file which validates $_SERVER["SCRIPT_NAME"]' => [<<<'EOL'
-<?php
-if (__FILE__ === realpath($_SERVER['SCRIPT_NAME'])) {
-    echo 'success '.$_SERVER['argv'][1];
-} else {
-    fwrite(STDERR, "Test failure: __FILE__ does not match \$_SERVER['SCRIPT_NAME']\n");
-    fwrite(STDERR, "\t__FILE__:\t" . __FILE__ . "\n");
-    fwrite(STDERR, "\t\$_SERVER['SCRIPT_NAME']:\t" . $_SERVER['SCRIPT_NAME'] . "\n");
-    exit(1);
-}
-EOL
-            ],
         ];
     }
 

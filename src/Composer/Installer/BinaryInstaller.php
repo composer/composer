@@ -359,11 +359,6 @@ namespace Composer;
 
 $globalsCode
 $streamProxyCode
-
-if (__FILE__ === realpath(\$_SERVER['SCRIPT_NAME'])) {
-    \$_SERVER['SCRIPT_NAME'] = realpath($binPathExported);
-}
-
 return include $binPathExported;
 
 PROXY;
