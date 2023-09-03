@@ -472,8 +472,8 @@ EOT
         // ensure that the env var being set does not interfere with create-project
         // as it is probably not meant to be used here, so we do not use it if a composer.json can be found
         // in the project
-        if (file_exists($directory.'/composer.json')) {
-            Platform::putEnv('COMPOSER', $directory.'/composer.json');
+        if (file_exists($directory.'/composer.json') && Platform::getEnv('COMPOSER') !== false) {
+            Platform::clearEnv('COMPOSER');
         }
 
         Platform::putEnv('COMPOSER_ROOT_VERSION', $package->getPrettyVersion());
