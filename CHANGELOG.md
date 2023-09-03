@@ -1,3 +1,9 @@
+### [2.6.2] 2023-09-03
+
+  * Reverted "Fixed binary proxies causing scripts inspecting `$_SERVER['SCRIPT_NAME']` to detect them, they are now more transparent (#11562)" which caused a regression (#11617)
+  * Fixed non-zero exit code on failed audits to only apply to `install --audit` runs and not implicit audits with `require`, `create-project` or `update` commands (#11616)
+  * Fixed `create-project` infinite post-install loop in some circumstances (#11613)
+
 ### [2.6.1] 2023-09-01
 
   * Reverted "Fixed executability of non-php binaries which are not marked executable (#11557)" which caused a regression (#11612)
@@ -16,9 +22,9 @@
   * Added links to package homepages in `why`/`why-not` command output (#11308)
   * Added a `security` key to the `support` key of composer.json to set the URL to the vulnerability disclosure policy (#11271)
   * Added support for gathering security advisories from multiple repositories for a single package (#11436)
-  * Fixed `install` and `update` exit code to be non-zero if the post-install security audit failed (#11362)
-  * Fixed binary proxies causing scripts inspecting `$_SERVER['SCRIPT_NAME']` to detect them, they are now more transparent (#11562)
-  * Fixed executability of non-php binaries which are not marked executable (#11557)
+  * Fixed `install` exit code to be non-zero (5) if a requested security audit failed (#11362)
+  * ~~Fixed binary proxies causing scripts inspecting `$_SERVER['SCRIPT_NAME']` to detect them, they are now more transparent (#11562)~~ (Reverted in 2.6.2)
+  * ~~Fixed executability of non-php binaries which are not marked executable (#11557)~~ (Reverted in 2.6.1)
   * Fixed `mtime` modification of the vendor dir to only happen when packages are modified, and not require lock file modification to happen (#11593)
   * Fixed `create-project` using the wrong composer.json file if one was set via the `COMPOSER` env var (#11493)
   * Fixed json editing to preserve indentation when updating json files (#11390)
@@ -1761,6 +1767,7 @@
 
   * Initial release
 
+[2.6.2]: https://github.com/composer/composer/compare/2.6.1...2.6.2
 [2.6.1]: https://github.com/composer/composer/compare/2.6.0...2.6.1
 [2.6.0]: https://github.com/composer/composer/compare/2.5.8...2.6.0
 [2.5.8]: https://github.com/composer/composer/compare/2.5.7...2.5.8
