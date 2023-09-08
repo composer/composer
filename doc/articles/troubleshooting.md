@@ -153,7 +153,6 @@ See [aliases](aliases.md) for more information.
 
 Use `php composer.phar config --list --source` to see where each config value originated from.
 
-
 ## Memory limit errors
 
 The first thing to do is to make sure you are running Composer 2, and if possible 2.2.0 or above.
@@ -194,8 +193,9 @@ Or, you can increase the limit with a command-line argument:
 php -d memory_limit=-1 composer.phar <...>
 ```
 
-This issue can also happen on cPanel instances, when the shell fork bomb protection is activated. For more information, see the [documentation](https://documentation.cpanel.net/display/68Docs/Shell+Fork+Bomb+Protection) of the fork bomb feature on the cPanel site.
+However, please note that setting the memory limit using these methods primarily addresses memory issues within Composer itself and its immediate processes. Child processes or external commands invoked by Composer may still require separate adjustments if they have their own memory requirements.
 
+This issue can also happen on cPanel instances, when the shell fork bomb protection is activated. For more information, see the [documentation](https://documentation.cpanel.net/display/68Docs/Shell+Fork+Bomb+Protection) of the fork bomb feature on the cPanel site.
 
 ## Xdebug impact on Composer
 
