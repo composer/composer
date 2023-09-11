@@ -654,10 +654,10 @@ class InstallationManager
             $promises[] = new \React\Promise\Promise(static function ($resolve) use ($cleanup): void {
                 $promise = $cleanup();
                 if (!$promise instanceof PromiseInterface) {
-                    $resolve();
+                    $resolve(null);
                 } else {
                     $promise->then(static function () use ($resolve): void {
-                        $resolve();
+                        $resolve(null);
                     });
                 }
             });
