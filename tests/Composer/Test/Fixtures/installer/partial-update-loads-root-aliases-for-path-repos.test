@@ -1,0 +1,53 @@
+--TEST--
+Partial updates always load root aliases even for path repos which are symlinked but not marked as updating
+
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "Fixtures/functional/installed-versions/plugin-a"
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "c/new", "version": "2.0.0", "require": { "plugin/a": "2.*" } }
+            ]
+        }
+    ],
+    "require": {
+        "plugin/a": "1.1.1 as 2.0.0",
+        "c/new": "*"
+    }
+}
+
+--LOCK--
+{
+    "packages": [
+        { "name": "plugin/a", "version": "1.0.0", "dist": { "type": "path", "url": "..." }, "transport-options": {}, "require": { "symfony/console": "1.*" } },
+        { "name": "symfony/console", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+
+--INSTALLED--
+[
+    { "name": "plugin/a", "version": "1.1.1", "require": { "symfony/console": "2.0.*" } },
+    { "name": "symfony/console", "version": "1.0.0" }
+]
+
+--RUN--
+update c/new -v
+
+--EXPECT--
+Upgrading plugin/a (1.1.1 => 1.1.1 b133081)
+Marking plugin/a (2.0.0) as installed, alias of plugin/a (1.1.1)
+Installing c/new (2.0.0)
