@@ -283,6 +283,7 @@ class RemoteFilesystemTest extends TestCase
      * @param string $url
      * @param string $contents
      * @dataProvider provideBitbucketPublicDownloadUrls
+     * @requires PHP 7.4.17
      */
     public function testBitBucketPublicDownload($url, $contents)
     {
@@ -306,6 +307,7 @@ class RemoteFilesystemTest extends TestCase
      * @param string $url
      * @param string $contents
      * @dataProvider provideBitbucketPublicDownloadUrls
+     * @requires PHP 7.4.17
      */
     public function testBitBucketPublicDownloadWithAuthConfigured($url, $contents)
     {
