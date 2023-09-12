@@ -665,6 +665,11 @@ class PoolBuilder
                             }
                         }
                     }
+
+                    // make sure the unlocked package is loaded if it is a root requirement, even if nothing in the loop above triggered a load
+                    if ($this->isRootRequire($request, $name)) {
+                        $this->markPackageNameForLoading($request, $name, $request->getRequires()[$name]);
+                    }
                 }
             }
         }
