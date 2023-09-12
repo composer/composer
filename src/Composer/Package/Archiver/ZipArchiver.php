@@ -31,7 +31,7 @@ class ZipArchiver implements ArchiverInterface
     public function archive(string $sources, string $target, string $format, array $excludes = [], bool $ignoreFilters = false): string
     {
         $fs = new Filesystem();
-        $sources = $fs->normalizePath($sources);
+        $sources = $fs->normalizePath(realpath($sources));
 
         $zip = new ZipArchive();
         $res = $zip->open($target, ZipArchive::CREATE);
