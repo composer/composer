@@ -97,6 +97,7 @@ Check that replacers from additional repositories are loaded when doing a partia
 
 --EXPECT--
 [
+    "base/package-1.0.0.0",
     "indirect/replacer-1.2.0.0",
     "indirect/replacer-1.0.0.0",
     "replacer/package-1.2.0.0",
@@ -107,6 +108,7 @@ Check that replacers from additional repositories are loaded when doing a partia
 
 --EXPECT-OPTIMIZED--
 [
+    "base/package-1.0.0.0",
     "indirect/replacer-1.2.0.0",
     "indirect/replacer-1.0.0.0",
     "replacer/package-1.2.0.0",

@@ -672,6 +672,10 @@ class PoolBuilder
 
     private function markPackageNameForLoadingIfRequired(Request $request, string $name): void
     {
+        if ($this->isRootRequire($request, $name)) {
+            $this->markPackageNameForLoading($request, $name, $request->getRequires()[$name]);
+        }
+
         foreach ($this->packages as $package) {
             foreach ($package->getRequires() as $link) {
                 if ($name === $link->getTarget()) {
