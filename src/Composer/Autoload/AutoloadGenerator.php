@@ -666,10 +666,10 @@ EOF;
             $files
         );
         $uniqueFiles = array_unique($files);
-        if (count($files) < count($uniqueFiles)) {
+        if (count($uniqueFiles) < count($files)) {
             $this->io->writeError('<warning>The following "files" autoload rules are included multiple times, this may cause issues and should be resolved:</warning>');
-            foreach (array_unique(array_diff_assoc($uniqueFiles, $files)) as $duplicateFile) {
-                $this->io->writeError('<warning>'.$duplicateFile.'</warning>');
+            foreach (array_unique(array_diff_assoc($files, $uniqueFiles)) as $duplicateFile) {
+                $this->io->writeError('<warning> - '.$duplicateFile.'</warning>');
             }
         }
         unset($uniqueFiles);
