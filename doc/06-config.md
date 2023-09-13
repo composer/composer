@@ -135,6 +135,14 @@ or
 }
 ```
 
+### abandoned
+
+Defaults to `report` in Composer 2.6, and defaults to `fail` from Composer 2.7 on. Defines whether the audit command reports abandoned packages or not, this has three possible values:
+
+- `ignore` means the audit command does not consider abandoned packages at all.
+- `report` means abandoned packages are reported as an error but do not cause the command to exit with a non-zero code.
+- `fail` means abandoned packages will cause audits to fail with a non-zero code.
+
 ## use-parent-dir
 
 When running Composer in a directory where there is no composer.json, if there
