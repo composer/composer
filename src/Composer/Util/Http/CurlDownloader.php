@@ -349,7 +349,7 @@ class CurlDownloader
                         (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')
                         && (
                             in_array($errno, [7 /* CURLE_COULDNT_CONNECT */, 16 /* CURLE_HTTP2 */, 92 /* CURLE_HTTP2_STREAM */, 6 /* CURLE_COULDNT_RESOLVE_HOST */], true)
-                            || (in_array($errno, [56 /* CURLE_RECV_ERROR */, 35 /* CURLE_SSL_CONNECT_ERROR */], true) && str_contains($error, 'Connection reset by peer'))
+                            || (in_array($errno, [56 /* CURLE_RECV_ERROR */, 35 /* CURLE_SSL_CONNECT_ERROR */], true) && str_contains((string) $error, 'Connection reset by peer'))
                         ) && $job['attributes']['retries'] < $this->maxRetries
                     ) {
                         $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to curl error '. $errno, true, IOInterface::DEBUG);
