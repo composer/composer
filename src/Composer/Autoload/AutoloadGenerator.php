@@ -665,18 +665,14 @@ EOF;
             },
             $files
         );
-        $oldFiles = $files;
-        $files = array_unique($files);
-        if ( count( $files ) < count( $oldFiles ) ) {
-            $dupedFiles = array_diff_assoc( $oldFiles, $files );
-            $this->io->writeError(
-                '<warning>'
-                . 'Some files are included multiple times, only including these once: '
-                . '"' . implode( $dupedFiles, '", "' ) . '"'
-                . '</warning>'
-            );
+        $uniqueFiles = array_unique($files);
+        if (count($files) < count($uniqueFiles)) {
+            $this->io->writeError('<warning>The following "files" autoload rules are included multiple times, this may cause issues and should be resolved:</warning>');
+            foreach (array_unique(array_diff_assoc($uniqueFiles, $files)) as $duplicateFile) {
+                $this->io->writeError('<warning>'.$duplicateFile.'</warning>');
+            }
         }
-        unset( $oldFiles );
+        unset($uniqueFiles);
 
         $filesCode = '';
 
