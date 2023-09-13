@@ -14,6 +14,8 @@ namespace Composer\Test\Autoload;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\IO\BufferIO;
+use Composer\IO\IOInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\Version\VersionParser;
@@ -75,6 +77,11 @@ class AutoloadGeneratorTest extends TestCase
     private $fs;
 
     /**
+     * @var BufferIO
+     */
+    private $io;
+
+    /**
      * @var EventDispatcher&MockObject
      */
     private $eventDispatcher;
@@ -108,6 +115,8 @@ class AutoloadGeneratorTest extends TestCase
                 return false;
             },
         ];
+
+        $this->io = new BufferIO();
 
         $this->config->expects($this->atLeastOnce())
             ->method('get')
@@ -149,7 +158,7 @@ class AutoloadGeneratorTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->generator = new AutoloadGenerator($this->eventDispatcher);
+        $this->generator = new AutoloadGenerator($this->eventDispatcher, $this->io);
     }
 
     protected function tearDown(): void
@@ -371,6 +380,31 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertFileContentEquals(__DIR__.'/Fixtures/autoload_static_target_dir.php', $this->vendorDir.'/composer/autoload_static.php');
         $this->assertFileContentEquals(__DIR__.'/Fixtures/autoload_files_target_dir.php', $this->vendorDir.'/composer/autoload_files.php');
         $this->assertAutoloadFiles('classmap6', $this->vendorDir.'/composer', 'classmap');
+    }
+
+    public function testDuplicateFilesWarning(): void
+    {
+        $package = new RootPackage('root/a', '1.0', '1.0');
+        $package->setAutoload([
+            'files' => ['foo.php', 'bar.php', './foo.php', '././foo.php'],
+        ]);
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue([]));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/lib');
+
+        file_put_contents($this->workingDir.'/foo.php', '<?php class FilesFoo {}');
+        file_put_contents($this->workingDir.'/bar.php', '<?php class FilesBar {}');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'FilesWarning');
+        self::assertFileContentEquals(__DIR__.'/Fixtures/autoload_files_duplicates.php', $this->vendorDir.'/composer/autoload_files.php');
+        $expected = '<warning>The following "files" autoload rules are included multiple times, this may cause issues and should be resolved:</warning>'.PHP_EOL.
+            '<warning> - $baseDir . \'/foo.php\'</warning>'.PHP_EOL;
+        self::assertEquals($expected, $this->io->getOutput());;
     }
 
     public function testVendorsAutoloading(): void

@@ -679,10 +679,26 @@ EOF;
      */
     protected function getIncludeFilesFile(array $files, Filesystem $filesystem, string $basePath, string $vendorPath, string $vendorPathCode, string $appBaseDirCode)
     {
+        // Get the path to each file, and make sure these paths are unique.
+        $files = array_map(
+            function (string $functionFile) use ($filesystem, $basePath, $vendorPath): string {
+                return $this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile);
+            },
+            $files
+        );
+        $uniqueFiles = array_unique($files);
+        if (count($uniqueFiles) < count($files)) {
+            $this->io->writeError('<warning>The following "files" autoload rules are included multiple times, this may cause issues and should be resolved:</warning>');
+            foreach (array_unique(array_diff_assoc($files, $uniqueFiles)) as $duplicateFile) {
+                $this->io->writeError('<warning> - '.$duplicateFile.'</warning>');
+            }
+        }
+        unset($uniqueFiles);
+
         $filesCode = '';
+
         foreach ($files as $fileIdentifier => $functionFile) {
-            $filesCode .= '    ' . var_export($fileIdentifier, true) . ' => '
-                . $this->getPathCode($filesystem, $basePath, $vendorPath, $functionFile) . ",\n";
+            $filesCode .= '    ' . var_export($fileIdentifier, true) . ' => ' . $functionFile . ",\n";
         }
 
         if (!$filesCode) {
