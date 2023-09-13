@@ -1,0 +1,49 @@
+--TEST--
+Ensure that a root package gets loaded which is replaced by old versions of another requirement
+
+--REQUEST--
+{
+    "require": {
+        "root/dep": "*",
+        "replaced/pkg": "1.0.0"
+    },
+    "locked": [
+        {"name": "root/dep", "version": "1.1.0", "require": {"replacer/pkg": "1.*"}},
+        {"name": "replacer/pkg", "version": "1.1.0"},
+        {"name": "replaced/pkg", "version": "1.0.0"}
+    ],
+    "allowList": [
+        "root/dep"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "root/dep", "version": "1.2.0", "require": {"replacer/pkg": "1.*"}},
+        {"name": "replacer/pkg", "version": "1.0.0", "replace": {"replaced/pkg": "1.0.0"}},
+        {"name": "replacer/pkg", "version": "1.1.0"},
+        {"name": "replaced/pkg", "version": "1.0.0"}
+    ]
+]
+
+--EXPECT--
+[
+    "replaced/pkg-1.0.0.0",
+    "replacer/pkg-1.0.0.0",
+    "replacer/pkg-1.1.0.0",
+    "root/dep-1.2.0.0"
+]
+
+--EXPECT-OPTIMIZED--
+[
+    "replaced/pkg-1.0.0.0",
+    "replacer/pkg-1.0.0.0",
+    "replacer/pkg-1.1.0.0",
+    "root/dep-1.2.0.0"
+]
