@@ -14,7 +14,9 @@ namespace Composer\Test\Advisory;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\IO\BufferIO;
 use Composer\IO\NullIO;
+use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\ComposerRepository;
@@ -27,33 +29,98 @@ class AuditorTest extends TestCase
 {
     public static function auditProvider()
     {
-        return [
-            // Test no advisories returns 0
-            [
-                'data' => [
-                    'packages' => [
-                        new Package('vendor1/package2', '9.0.0', '9.0.0'),
-                        new Package('vendor1/package1', '9.0.0', '9.0.0'),
-                        new Package('vendor3/package1', '9.0.0', '9.0.0'),
-                    ],
-                    'warningOnly' => true,
+        yield 'Test no advisories returns 0' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package2', '9.0.0', '9.0.0'),
+                    new Package('vendor1/package1', '9.0.0', '9.0.0'),
+                    new Package('vendor3/package1', '9.0.0', '9.0.0'),
                 ],
-                'expected' => 0,
-                'message' => 'Test no advisories returns 0',
+                'warningOnly' => true,
             ],
-            // Test with advisories returns 1
-            [
-                'data' => [
-                    'packages' => [
-                        new Package('vendor1/package2', '9.0.0', '9.0.0'),
-                        new Package('vendor1/package1', '8.2.1', '8.2.1'),
-                        new Package('vendor3/package1', '9.0.0', '9.0.0'),
-                    ],
-                    'warningOnly' => true,
+            'expected' => 0,
+            'output' => 'No security vulnerability advisories found.',
+        ];
+
+        yield 'Test with advisories returns 1' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package2', '9.0.0', '9.0.0'),
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                    new Package('vendor3/package1', '9.0.0', '9.0.0'),
                 ],
-                'expected' => 1,
-                'message' => 'Test with advisories returns 1',
+                'warningOnly' => true,
             ],
+            'expected' => 1,
+            'output' => '<warning>Found 2 security vulnerability advisories affecting 1 package:</warning>
+Package: vendor1/package1
+CVE: CVE3
+Title: advisory4
+URL: https://advisory.example.com/advisory4
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00
+--------
+Package: vendor1/package1
+CVE: '.'
+Title: advisory5
+URL: https://advisory.example.com/advisory5
+Affected versions: >=8,<8.2.2|>=1,<2.5.6
+Reported at: 2022-05-25T13:21:00+00:00',
+        ];
+
+        $abandonedWithReplacement = new CompletePackage('vendor/abandoned', '1.0.0', '1.0.0');
+        $abandonedWithReplacement->setAbandoned('foo/bar');
+        $abandonedNoReplacement = new CompletePackage('vendor/abandoned2', '1.0.0', '1.0.0');
+        $abandonedNoReplacement->setAbandoned(true);
+
+        yield 'abandoned packages ignored' => [
+            'data' => [
+                'packages' => [
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => false,
+                'abandoned' => Auditor::ABANDONED_IGNORE,
+            ],
+            'expected' => 0,
+            'output' => 'No security vulnerability advisories found.',
+        ];
+
+        yield 'abandoned packages reported only' => [
+            'data' => [
+                'packages' => [
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => true,
+                'abandoned' => Auditor::ABANDONED_REPORT,
+            ],
+            'expected' => 0,
+            'output' => 'No security vulnerability advisories found.
+Found 2 abandoned packages:
+vendor/abandoned is abandoned. Use foo/bar instead.
+vendor/abandoned2 is abandoned. No replacement was suggested.',
+        ];
+
+        yield 'abandoned packages fails' => [
+            'data' => [
+                'packages' => [
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => false,
+                'abandoned' => Auditor::ABANDONED_FAIL,
+                'format' => Auditor::FORMAT_TABLE,
+            ],
+            'expected' => 2,
+            'output' => 'No security vulnerability advisories found.
+Found 2 abandoned packages:
++-------------------+----------------------------------------------------------------------------------+
+| Abandoned Package | Suggested Replacement                                                            |
++-------------------+----------------------------------------------------------------------------------+
+| vendor/abandoned  | foo/bar                                                                          |
+| vendor/abandoned2 | none                                                                             |
++-------------------+----------------------------------------------------------------------------------+',
         ];
     }
 
@@ -61,14 +128,15 @@ class AuditorTest extends TestCase
      * @dataProvider auditProvider
      * @phpstan-param array<string, mixed> $data
      */
-    public function testAudit(array $data, int $expected, string $message): void
+    public function testAudit(array $data, int $expected, string $output): void
     {
         if (count($data['packages']) === 0) {
             $this->expectException(InvalidArgumentException::class);
         }
         $auditor = new Auditor();
-        $result = $auditor->audit(new NullIO(), $this->getRepoSet(), $data['packages'], Auditor::FORMAT_PLAIN, $data['warningOnly']);
-        $this->assertSame($expected, $result, $message);
+        $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly'], [], $data['abandoned'] ?? Auditor::ABANDONED_IGNORE);
+        $this->assertSame($expected, $result);
+        $this->assertSame($output, trim(str_replace("\r", '', $io->getOutput())));
     }
 
     public function ignoredIdsProvider(): \Generator {
@@ -322,7 +390,7 @@ class AuditorTest extends TestCase
                             'remoteId' => 'RemoteID3',
                         ],
                     ],
-                    'reportedAt' => '',
+                    'reportedAt' => '2022-05-25 13:21:00',
                     'composerRepository' => 'https://packagist.org',
                 ],
             ],

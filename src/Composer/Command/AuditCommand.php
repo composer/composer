@@ -63,7 +63,9 @@ EOT
             $repoSet->addRepository($repo);
         }
 
-        return min(255, $auditor->audit($this->getIO(), $repoSet, $packages, $this->getAuditFormat($input, 'format'), false, $composer->getConfig()->get('audit')['ignore'] ?? []));
+        $auditConfig = $composer->getConfig()->get('audit');
+
+        return min(255, $auditor->audit($this->getIO(), $repoSet, $packages, $this->getAuditFormat($input, 'format'), false, $auditConfig['ignore'] ?? [], $auditConfig['abandoned'] ?? Auditor::ABANDONED_REPORT));
     }
 
     /**

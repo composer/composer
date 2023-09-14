@@ -12,6 +12,7 @@
 
 namespace Composer;
 
+use Composer\Advisory\Auditor;
 use Composer\Config\ConfigSourceInterface;
 use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
@@ -37,7 +38,7 @@ class Config
         'allow-plugins' => [],
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
-        'audit' => ['ignore' => []],
+        'audit' => ['ignore' => [], 'abandoned' => 'default'], // TODO in 2.7 switch to ABANDONED_FAIL
         'notify-on-install' => true,
         'github-protocols' => ['https', 'ssh', 'git'],
         'gitlab-protocol' => null,
@@ -210,7 +211,7 @@ class Config
                     }
                 } elseif ('audit' === $key) {
                     $currentIgnores = $this->config['audit']['ignore'];
-                    $this->config[$key] = $val;
+                    $this->config[$key] = array_merge($this->config['audit'], $val);
                     $this->setSourceOfConfigValue($val, $key, $source);
                     $this->config['audit']['ignore'] = array_merge($currentIgnores, $val['ignore'] ?? []);
                 } else {
