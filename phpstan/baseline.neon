@@ -6,11 +6,6 @@ parameters:
 			path: ../src/Composer/Advisory/Auditor.php
 
 		-
-			message: "#^Variable \\$affectedPackagesCount might not be defined\\.$#"
-			count: 1
-			path: ../src/Composer/Advisory/Auditor.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 10
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
@@ -4146,6 +4141,11 @@ parameters:
 		-
 			message: "#^Cannot access offset 'features' on array\\|false\\.$#"
 			count: 2
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
