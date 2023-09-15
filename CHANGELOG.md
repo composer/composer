@@ -1,3 +1,12 @@
+### [2.6.3] 2023-09-15
+
+  * Added audit.abandoned config setting. Can be set to `ignore`, `report` (current default) or `fail` (future default in 2.7) to make the audit command report abandoned packages as a security problem (#11639)
+  * Added a warning when duplicates `files` autoload rules are detected (#11109)
+  * Fixed unhandled promise rejection regression (#11620)
+  * Fixed loading of root aliases on path repo packages when doing partial updates (#11632)
+  * Fixed `archive` command not producing the correct output if the temp dir is a symlink (#11636)
+  * Fixed some replaced packages being incorrectly missing when unlocked in a partial update (#11629)
+
 ### [2.6.2] 2023-09-03
 
   * Reverted "Fixed binary proxies causing scripts inspecting `$_SERVER['SCRIPT_NAME']` to detect them, they are now more transparent (#11562)" which caused a regression (#11617)
@@ -1767,6 +1776,7 @@
 
   * Initial release
 
+[2.6.3]: https://github.com/composer/composer/compare/2.6.2...2.6.3
 [2.6.2]: https://github.com/composer/composer/compare/2.6.1...2.6.2
 [2.6.1]: https://github.com/composer/composer/compare/2.6.0...2.6.1
 [2.6.0]: https://github.com/composer/composer/compare/2.5.8...2.6.0
