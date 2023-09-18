@@ -87,8 +87,8 @@ class Auditor
                 $json['ignored-advisories'] = $ignoredAdvisories;
             }
             $json['abandoned'] = array_reduce($abandonedPackages, static function(array $carry, CompletePackageInterface $package): array {
-              $carry[$package->getPrettyName()] = $package->getReplacementPackage();
-              return $carry;
+                $carry[$package->getPrettyName()] = $package->getReplacementPackage();
+                return $carry;
             }, []);
 
             $io->write(JsonFile::encode($json));
@@ -308,7 +308,7 @@ class Auditor
     }
 
     /**
-     * @param array<PackageInterface> $packages
+     * @param array<CompletePackageInterface> $packages
      * @param self::FORMAT_PLAIN|self::FORMAT_TABLE $format
      */
     private function outputAbandonedPackages(IOInterface $io, array $packages, string $format): void
@@ -317,10 +317,6 @@ class Auditor
 
         if ($format === self::FORMAT_PLAIN) {
             foreach ($packages as $pkg) {
-                if (!$pkg instanceof CompletePackageInterface) {
-                    continue;
-                }
-
                 $replacement = $pkg->getReplacementPackage() !== null
                     ? 'Use '.$pkg->getReplacementPackage().' instead'
                     : 'No replacement was suggested';
@@ -344,10 +340,6 @@ class Auditor
             ->setColumnMaxWidth(1, 80);
 
         foreach ($packages as $pkg) {
-            if (!$pkg instanceof CompletePackageInterface) {
-                continue;
-            }
-
             $replacement = $pkg->getReplacementPackage() !== null ? $pkg->getReplacementPackage() : 'none';
             $table->addRow([$this->getPackageNameWithLink($pkg), $replacement]);
         }
