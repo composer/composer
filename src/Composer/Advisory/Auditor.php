@@ -86,7 +86,10 @@ class Auditor
             if ($ignoredAdvisories !== []) {
                 $json['ignored-advisories'] = $ignoredAdvisories;
             }
-            $json['abandoned'] = $abandonedPackages;
+            $json['abandoned'] = array_reduce($abandonedPackages, static function(array $carry, CompletePackageInterface $package): array {
+              $carry[$package->getPrettyName()] = $package->getReplacementPackage();
+              return $carry;
+            }, []);
 
             $io->write(JsonFile::encode($json));
 
@@ -127,11 +130,11 @@ class Auditor
 
     /**
      * @param array<PackageInterface> $packages
-     * @return array<PackageInterface>
+     * @return array<CompletePackageInterface>
      */
     private function filterAbandonedPackages(array $packages): array
     {
-        return array_filter($packages, function (PackageInterface $pkg) {
+        return array_filter($packages, static function (PackageInterface $pkg) {
             return $pkg instanceof CompletePackageInterface && $pkg->isAbandoned();
         });
     }
