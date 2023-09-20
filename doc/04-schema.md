@@ -450,7 +450,7 @@ that exact version, and not any other version, which would be incorrect.
 
 Map of packages that are provided by this package. This is mostly
 useful for implementations of common interfaces. A package could depend on
-some virtual package e.g. `psr/logger-implementation`, any library that implements
+some virtual package e.g. `psr/log-implementation`, any library that implements
 this logger interface would list it in `provide`. Implementors can then
 be [found on Packagist.org](https://packagist.org/providers/psr/log-implementation).
 
