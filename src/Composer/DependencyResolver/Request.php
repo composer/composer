@@ -50,10 +50,12 @@ class Request
     protected $lockedPackages = [];
     /** @var array<string, BasePackage> */
     protected $fixedLockedPackages = [];
-    /** @var string[] */
+    /** @var array<string> */
     protected $updateAllowList = [];
     /** @var false|self::UPDATE_* */
     protected $updateAllowTransitiveDependencies = false;
+    /** @var non-empty-list<string>|null */
+    private $restrictedPackages = null;
 
     public function __construct(?LockArrayRepository $lockedRepository = null)
     {
@@ -118,7 +120,7 @@ class Request
     }
 
     /**
-     * @param string[] $updateAllowList
+     * @param array<string> $updateAllowList
      * @param false|self::UPDATE_* $updateAllowTransitiveDependencies
      */
     public function setUpdateAllowList(array $updateAllowList, $updateAllowTransitiveDependencies): void
@@ -128,7 +130,7 @@ class Request
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     public function getUpdateAllowList(): array
     {
@@ -232,5 +234,23 @@ class Request
     public function getLockedRepository(): ?LockArrayRepository
     {
         return $this->lockedRepository;
+    }
+
+    /**
+     * Restricts the pool builder from loading other packages than those listed here
+     *
+     * @param non-empty-list<string> $names
+     */
+    public function restrictPackages(array $names): void
+    {
+        $this->restrictedPackages = $names;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getRestrictedPackages(): ?array
+    {
+        return $this->restrictedPackages;
     }
 }

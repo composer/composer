@@ -126,7 +126,7 @@ class PoolBuilderTest extends TestCase
             if (isset($requestData['allowTransitiveDeps']) && $requestData['allowTransitiveDeps']) {
                 $transitiveDeps = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
             }
-            $request->setUpdateAllowList(array_flip($requestData['allowList']), $transitiveDeps);
+            $request->setUpdateAllowList($requestData['allowList'], $transitiveDeps);
         }
 
         foreach ($fixed as $fixedPackage) {

@@ -102,10 +102,15 @@ class PoolBuilder
      * @var BasePackage[]
      */
     private $unacceptableFixedOrLockedPackages = [];
-    /** @var string[] */
+    /** @var array<string> */
     private $updateAllowList = [];
     /** @var array<string, array<PackageInterface>> */
     private $skippedLoad = [];
+    /**
+     * If provided, only these package names are loaded
+     * @var array<string, int>|null
+     */
+    private $restrictedPackagesList = null;
 
     /**
      * Keeps a list of dependencies which are locked but were auto-unlocked as they are path repositories
@@ -165,6 +170,8 @@ class PoolBuilder
      */
     public function buildPool(array $repositories, Request $request): Pool
     {
+        $this->restrictedPackagesList = $request->getRestrictedPackages() !== null ? array_flip($request->getRestrictedPackages()) : null;
+
         if ($request->getUpdateAllowList()) {
             $this->updateAllowList = $request->getUpdateAllowList();
             $this->warnAboutNonMatchingUpdateAllowList($request);
@@ -366,6 +373,10 @@ class PoolBuilder
     private function loadPackagesMarkedForLoading(Request $request, array $repositories): void
     {
         foreach ($this->packagesToLoad as $name => $constraint) {
+            if ($this->restrictedPackagesList !== null && !isset($this->restrictedPackagesList[$name])) {
+                unset($this->packagesToLoad[$name]);
+                continue;
+            }
             $this->loadedPackages[$name] = $constraint;
         }
 
@@ -559,7 +570,7 @@ class PoolBuilder
      */
     private function isUpdateAllowed(BasePackage $package): bool
     {
-        foreach ($this->updateAllowList as $pattern => $void) {
+        foreach ($this->updateAllowList as $pattern) {
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
             if (Preg::isMatch($patternRegexp, $package->getName())) {
                 return true;
@@ -571,7 +582,7 @@ class PoolBuilder
 
     private function warnAboutNonMatchingUpdateAllowList(Request $request): void
     {
-        foreach ($this->updateAllowList as $pattern => $void) {
+        foreach ($this->updateAllowList as $pattern) {
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
             // update pattern matches a locked package? => all good
             foreach ($request->getLockedRepository()->getPackages() as $package) {
