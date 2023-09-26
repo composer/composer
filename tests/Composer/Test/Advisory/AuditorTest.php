@@ -122,6 +122,26 @@ Found 2 abandoned packages:
 | vendor/abandoned2 | none                                                                             |
 +-------------------+----------------------------------------------------------------------------------+',
         ];
+
+        yield 'abandoned packages fails with json format' => [
+            'data' => [
+                'packages' => [
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => false,
+                'abandoned' => Auditor::ABANDONED_FAIL,
+                'format' => Auditor::FORMAT_JSON,
+            ],
+            'expected' => 2,
+            'output' => '{
+    "advisories": [],
+    "abandoned": {
+        "vendor/abandoned": "foo/bar",
+        "vendor/abandoned2": null
+    }
+}',
+        ];
     }
 
     /**
