@@ -50,9 +50,12 @@ class DefaultPolicy implements PolicyInterface
             return BasePackage::$stabilities[$stabA] < BasePackage::$stabilities[$stabB];
         }
 
-        // TODO: Why is this not the case in CompilingMatcher?
-        if (false !== strpos($a->getVersion(), 'dev-') || false !== strpos($b->getVersion(), 'dev-')) {
-            return true;
+        // dev versions need to be compared as branches via matchSpecific's special treatment, the rest can be optimized with compiling matcher
+        if (strpos($a->getVersion(), 'dev-') === 0 || strpos($b->getVersion(), 'dev-') === 0) {
+            $constraint = new Constraint($operator, $b->getVersion());
+            $version = new Constraint('==', $a->getVersion());
+
+            return $constraint->matchSpecific($version, true);
         }
 
         return CompilingMatcher::match(new Constraint($operator, $b->getVersion()), Constraint::OP_EQ, $a->getVersion());
