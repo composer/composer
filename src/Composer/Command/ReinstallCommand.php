@@ -163,7 +163,15 @@ EOT
             $generator->setClassMapAuthoritative($authoritative);
             $generator->setApcu($apcu, $apcuPrefix);
             $generator->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input));
-            $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
+            $generator->dump(
+                $config,
+                $localRepo,
+                $package,
+                $installationManager,
+                $composer->getLocker(),
+                'composer',
+                $optimize
+            );
         }
 
         $eventDispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, $devMode);
