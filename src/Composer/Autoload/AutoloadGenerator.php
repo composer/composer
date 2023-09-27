@@ -406,9 +406,8 @@ EOF;
                 }
             }
 
-            // generate one if we still haven't got a suffix
             if (null === $suffix) {
-                $suffix = md5(uniqid('', true));
+                $suffix = $locker->isLocked() ? $locker->getLockData()['content-hash'] : md5(uniqid('', true));
             }
         }
 
