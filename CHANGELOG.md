@@ -1,3 +1,9 @@
+### [2.6.4] 2023-09-xx
+
+  * Fixed json output of abandoned packages in audit command (#11647)
+  * Performance improvement in pool optimization step (#11638)
+  * Performance improvement in `show -a <packagename>` (#11659)
+
 ### [2.6.3] 2023-09-15
 
   * Added audit.abandoned config setting. Can be set to `ignore`, `report` (current default) or `fail` (future default in 2.7) to make the audit command report abandoned packages as a security problem (#11639)
@@ -1776,6 +1782,7 @@
 
   * Initial release
 
+[2.6.4]: https://github.com/composer/composer/compare/2.6.3...2.6.4
 [2.6.3]: https://github.com/composer/composer/compare/2.6.2...2.6.3
 [2.6.2]: https://github.com/composer/composer/compare/2.6.1...2.6.2
 [2.6.1]: https://github.com/composer/composer/compare/2.6.0...2.6.1
