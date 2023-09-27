@@ -122,9 +122,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @see getApplicationTester
      * @param mixed[] $composerJson
      * @param mixed[] $authJson
+     * @param mixed[] $composerLock
      * @return string the newly created temp dir
      */
-    public function initTempComposer(array $composerJson = [], array $authJson = []): string
+    public function initTempComposer(array $composerJson = [], array $authJson = [], array $composerLock = []): string
     {
         $dir = self::getUniqueTmpDirectory();
 
@@ -149,6 +150,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         chdir($dir);
         file_put_contents($dir.'/composer.json', JsonFile::encode($composerJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         file_put_contents($dir.'/auth.json', JsonFile::encode($authJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+        if ($composerLock !== []) {
+            file_put_contents($dir.'/composer.lock', JsonFile::encode($composerLock, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        }
 
         return $dir;
     }
