@@ -106,8 +106,13 @@ class PoolBuilder
     private $updateAllowList = [];
     /** @var array<string, array<PackageInterface>> */
     private $skippedLoad = [];
+
     /**
      * If provided, only these package names are loaded
+     *
+     * This is a special-use functionality of the Request class to optimize the pool creation process
+     * when only a minimal subset of packages is needed and we do not need their dependencies.
+     *
      * @var array<string, int>|null
      */
     private $restrictedPackagesList = null;
