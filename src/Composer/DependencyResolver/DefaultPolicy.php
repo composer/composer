@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
+use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -49,10 +50,15 @@ class DefaultPolicy implements PolicyInterface
             return BasePackage::$stabilities[$stabA] < BasePackage::$stabilities[$stabB];
         }
 
-        $constraint = new Constraint($operator, $b->getVersion());
-        $version = new Constraint('==', $a->getVersion());
+        // dev versions need to be compared as branches via matchSpecific's special treatment, the rest can be optimized with compiling matcher
+        if (strpos($a->getVersion(), 'dev-') === 0 || strpos($b->getVersion(), 'dev-') === 0) {
+            $constraint = new Constraint($operator, $b->getVersion());
+            $version = new Constraint('==', $a->getVersion());
 
-        return $constraint->matchSpecific($version, true);
+            return $constraint->matchSpecific($version, true);
+        }
+
+        return CompilingMatcher::match(new Constraint($operator, $b->getVersion()), Constraint::OP_EQ, $a->getVersion());
     }
 
     /**
