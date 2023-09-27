@@ -75,6 +75,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies (can also be set via the COMPOSER_PREFER_STABLE=1 env var).'),
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies (can also be set via the COMPOSER_PREFER_LOWEST=1 env var).'),
+                new InputOption('minimal-update', 'm', InputOption::VALUE_NONE, 'During a partial update with -w/-W, only perform absolutely necessary updates of transitive dependencies (can also be set via the COMPOSER_MINIMAL_UPDATE=1 env var).'),
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
             ])
@@ -238,6 +239,7 @@ EOT
             ->setTemporaryConstraints($temporaryConstraints)
             ->setAudit(!$input->getOption('no-audit'))
             ->setAuditFormat($this->getAuditFormat($input))
+            ->setMinimalUpdate($input->getOption('minimal-update'))
         ;
 
         if ($input->getOption('no-plugins')) {

@@ -28,15 +28,21 @@ class DefaultPolicy implements PolicyInterface
     private $preferStable;
     /** @var bool */
     private $preferLowest;
+    /** @var array<string, string>|null */
+    private $preferredVersions;
     /** @var array<int, array<string, array<int, int>>> */
     private $preferredPackageResultCachePerPool;
     /** @var array<int, array<string, int>> */
     private $sortingCachePerPool;
 
-    public function __construct(bool $preferStable = false, bool $preferLowest = false)
+    /**
+     * @param array<string, string>|null $preferredVersions Must be an array of package name => normalized version
+     */
+    public function __construct(bool $preferStable = false, bool $preferLowest = false, ?array $preferredVersions = null)
     {
         $this->preferStable = $preferStable;
         $this->preferLowest = $preferLowest;
+        $this->preferredVersions = $preferredVersions;
     }
 
     /**
@@ -204,6 +210,22 @@ class DefaultPolicy implements PolicyInterface
      */
     protected function pruneToBestVersion(Pool $pool, array $literals): array
     {
+        if ($this->preferredVersions !== null) {
+            $name = $pool->literalToPackage($literals[0])->getName();
+            if (isset($this->preferredVersions[$name])) {
+                $preferredVersion = $this->preferredVersions[$name];
+                $bestLiterals = [];
+                foreach ($literals as $literal) {
+                    if ($pool->literalToPackage($literal)->getVersion() === $preferredVersion) {
+                        $bestLiterals[] = $literal;
+                    }
+                }
+                if (\count($bestLiterals) > 0) {
+                    return $bestLiterals;
+                }
+            }
+        }
+
         $operator = $this->preferLowest ? '<' : '>';
         $bestLiterals = [$literals[0]];
         $bestPackage = $pool->literalToPackage($literals[0]);
