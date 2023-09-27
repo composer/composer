@@ -196,6 +196,17 @@ class ConfigValidator
             }
         }
 
+        // report scripts-aliases for non-existent scripts
+        $scriptAliases = $manifest['scripts-aliases'] ?? [];
+        foreach ($scriptAliases as $scriptName => $scriptAlias) {
+            if (!array_key_exists($scriptName, $scripts)) {
+                $warnings[] = sprintf(
+                    'Aliases for non-existent script "%s" found in "scripts-aliases"',
+                    $scriptName
+                );
+            }
+        }
+
         // check for empty psr-0/psr-4 namespace prefixes
         if (isset($manifest['autoload']['psr-0'][''])) {
             $warnings[] = "Defining autoload.psr-0 with an empty namespace prefix is a bad idea for performance";

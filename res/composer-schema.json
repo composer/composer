@@ -694,6 +694,13 @@
             "additionalProperties": {
                 "type": "string"
             }
+        },
+        "scripts-aliases": {
+            "type": ["object"],
+            "description": "Aliases for custom commands.",
+            "additionalProperties": {
+                "type": "array"
+            }
         }
     },
     "definitions": {
