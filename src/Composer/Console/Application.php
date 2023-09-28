@@ -365,7 +365,7 @@ class Application extends BaseApplication
                                     $description = $composer['scripts-descriptions'][$script];
                                 }
 
-                                $aliases = $composer['scripts-aliases'][$script] ?? null;
+                                $aliases = $composer['scripts-aliases'][$script] ?? [];
 
                                 $this->add(new Command\ScriptAliasCommand($script, $description, $aliases));
                             }

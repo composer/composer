@@ -31,13 +31,13 @@ class ScriptAliasCommand extends BaseCommand
     private $aliases;
 
     /**
-     * @param string[]|null $aliases
+     * @param string[] $aliases
      */
-    public function __construct(string $script, ?string $description, ?array $aliases = [])
+    public function __construct(string $script, ?string $description, array $aliases = [])
     {
         $this->script = $script;
         $this->description = $description ?? 'Runs the '.$script.' script as defined in composer.json';
-        $this->aliases = $aliases ?? [];
+        $this->aliases = $aliases;
 
         foreach ($this->aliases as $alias) {
             if (!is_string($alias)) {
