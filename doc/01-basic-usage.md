@@ -152,6 +152,13 @@ a Composer `install` to make sure the vendor directory is up in sync with your
 php composer.phar install
 ```
 
+Composer enables reproducible builds by default. This means that running the
+same command multiple times will produce a `vendor/` directory containing files
+that are identical (*except their timestamps*), including the autoloader files.
+It is especially beneficial for environments that require strict
+verification processes, as well as for Linux distributions aiming to package PHP
+applications in a secure and predictable manner.
+
 ## Updating dependencies to their latest versions
 
 As mentioned above, the `composer.lock` file prevents you from automatically getting

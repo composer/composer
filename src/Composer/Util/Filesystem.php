@@ -874,10 +874,8 @@ class Filesystem
 
     /**
      * Copy file using stream_copy_to_stream to work around https://bugs.php.net/bug.php?id=6463
-     *
-     * @return void
      */
-    public function safeCopy(string $source, string $target)
+    public function safeCopy(string $source, string $target): void
     {
         if (!file_exists($target) || !file_exists($source) || !$this->filesAreEqual($source, $target)) {
             $sourceHandle = fopen($source, 'r');
@@ -888,6 +886,8 @@ class Filesystem
             stream_copy_to_stream($sourceHandle, $targetHandle);
             fclose($sourceHandle);
             fclose($targetHandle);
+
+            touch($target, (int) filemtime($source), (int) fileatime($source));
         }
     }
 

@@ -365,8 +365,10 @@ with other autoloaders.
 
 ## autoloader-suffix
 
-Defaults to `null`. Non-empty string to be used as a suffix for the generated
-Composer autoloader. When null a random one will be generated.
+Defaults to `null`. When set to a non-empty string, this value will be used as a
+suffix for the generated Composer autoloader. If set to `null`, the
+`content-hash` value from the `composer.lock` file will be used if available;
+otherwise, a random suffix will be generated.
 
 ## optimize-autoloader
 

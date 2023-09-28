@@ -102,4 +102,86 @@ class DumpAutoloadCommandTest extends TestCase
         $this->expectExceptionMessage('You can not use both --no-dev and --dev as they conflict with each other.');
         $appTester->run(['command' => 'dump-autoload', '--dev' => true, '--no-dev' => true]);
     }
+
+    public function testWithCustomAutoloaderSuffix(): void
+    {
+        $dir = $this->initTempComposer([
+            'config' => [
+                'autoloader-suffix' => 'Foobar',
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload']));
+
+        self::assertStringContainsString('ComposerAutoloaderInitFoobar', (string) file_get_contents($dir . '/vendor/autoload.php'));
+    }
+
+    public function testWithExistingComposerLockAndAutoloaderSuffix(): void
+    {
+        $dir = $this->initTempComposer(
+            [
+                'config' => [
+                    'autoloader-suffix' => 'Foobar',
+                ],
+            ],
+            [],
+            [
+                "_readme" => [
+                    "This file locks the dependencies of your project to a known state",
+                    "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+                    "This file is @generated automatically"
+                ],
+                "content-hash" => "d751713988987e9331980363e24189ce",
+                "packages" => [],
+                "packages-dev" => [],
+                "aliases" => [],
+                "minimum-stability" => "stable",
+                "stability-flags" => [],
+                "prefer-stable" => false,
+                "prefer-lowest" => false,
+                "platform" => [],
+                "platform-dev" => [],
+                "plugin-api-version" => "2.6.0"
+            ]
+        );
+
+        $appTester = $this->getApplicationTester();
+        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload']));
+
+        self::assertStringContainsString('ComposerAutoloaderInitFoobar', (string) file_get_contents($dir . '/vendor/autoload.php'));
+    }
+
+    public function testWithExistingComposerLockWithoutAutoloaderSuffix(): void
+    {
+        $dir = $this->initTempComposer(
+            [
+                'name' => 'foo/bar',
+            ],
+            [],
+            [
+                "_readme" => [
+                    "This file locks the dependencies of your project to a known state",
+                    "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+                    "This file is @generated automatically"
+                ],
+                "content-hash" => "2d4a6be9a93712c5d6a119b26734a047",
+                "packages" => [],
+                "packages-dev" => [],
+                "aliases" => [],
+                "minimum-stability" => "stable",
+                "stability-flags" => [],
+                "prefer-stable" => false,
+                "prefer-lowest" => false,
+                "platform" => [],
+                "platform-dev" => [],
+                "plugin-api-version" => "2.6.0"
+            ]
+        );
+
+        $appTester = $this->getApplicationTester();
+        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload']));
+
+        self::assertStringContainsString('ComposerAutoloaderInit2d4a6be9a93712c5d6a119b26734a047', (string) file_get_contents($dir . '/vendor/autoload.php'));
+    }
 }
