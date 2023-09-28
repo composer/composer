@@ -1,3 +1,14 @@
+### [2.2.22] 2023-09-29
+
+  * Fixed authentication issue when downloading several files from private Bitbucket in parallel (#11464)
+  * Fixed handling of broken junctions on windows (#11550)
+  * Fixed loading of root aliases on path repo packages when doing partial updates (#11632)
+  * Fixed parsing of lib-curl-openssl version with OSX SecureTransport (#11534)
+  * Fixed binary proxies not being transparent when included by another PHP process and returning a value (#11454)
+  * Fixed support for plugin classes being marked as readonly (#11404)
+  * Fixed GitHub rate limit reporting (#11366)
+  * Fixed issue displaying solver problems with branch names containing `%` signs (#11359)
+
 ### [2.2.21] 2023-02-15
 
   * Fixed extra.plugin-optional support in PluginInstaller when doing pre-install checks (#11326)
@@ -1491,6 +1502,7 @@
 
   * Initial release
 
+[2.2.22]: https://github.com/composer/composer/compare/2.2.21...2.2.22
 [2.2.21]: https://github.com/composer/composer/compare/2.2.20...2.2.21
 [2.2.20]: https://github.com/composer/composer/compare/2.2.19...2.2.20
 [2.2.19]: https://github.com/composer/composer/compare/2.2.18...2.2.19
