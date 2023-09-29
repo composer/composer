@@ -1,3 +1,7 @@
+### [1.10.27] 2023-09-29
+
+  * Security: Fixed possible remote code execution vulnerability if composer.phar is publicly accessible, executable as PHP, and register_argc_argv is enabled in php.ini (GHSA-jm6m-4632-36hf / CVE-2023-43655)
+
 ### [1.10.26] 2022-04-13
 
   * Security: Fixed command injection vulnerability in HgDriver/GitDriver (GHSA-x7cr-6qr6-2hh6 / CVE-2022-24828)
@@ -956,6 +960,7 @@
 
   * Initial release
 
+[1.10.27]: https://github.com/composer/composer/compare/1.10.26...1.10.27
 [1.10.26]: https://github.com/composer/composer/compare/1.10.25...1.10.26
 [1.10.25]: https://github.com/composer/composer/compare/1.10.24...1.10.25
 [1.10.24]: https://github.com/composer/composer/compare/1.10.23...1.10.24
