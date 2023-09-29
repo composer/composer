@@ -1,5 +1,6 @@
-### [2.6.4] 2023-09-xx
+### [2.6.4] 2023-09-29
 
+  * Security: Fixed possible remote code execution vulnerability if composer.phar is publicly accessible, executable as PHP, and register_argc_argv is enabled in php.ini (GHSA-jm6m-4632-36hf / CVE-2023-43655)
   * Fixed json output of abandoned packages in audit command (#11647)
   * Performance improvement in pool optimization step (#11638)
   * Performance improvement in `show -a <packagename>` (#11659)
