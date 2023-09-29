@@ -1,5 +1,6 @@
 ### [2.2.22] 2023-09-29
 
+  * Security: Fixed possible remote code execution vulnerability if composer.phar is publicly accessible, executable as PHP, and register_argc_argv is enabled in php.ini (GHSA-jm6m-4632-36hf / CVE-2023-43655)
   * Fixed authentication issue when downloading several files from private Bitbucket in parallel (#11464)
   * Fixed handling of broken junctions on windows (#11550)
   * Fixed loading of root aliases on path repo packages when doing partial updates (#11632)
