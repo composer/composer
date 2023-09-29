@@ -2,6 +2,11 @@
 <?php
 
 if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
+    if (0 === strpos(__FILE__, 'phar:') && ini_get('register_argc_argv')) {
+        echo 'Composer cannot be run safely on non-CLI SAPIs with register_argc_argv=On. Aborting.'.PHP_EOL;
+        exit(1);
+    }
+
     echo 'Warning: Composer should be invoked via the CLI version of PHP, not the '.PHP_SAPI.' SAPI'.PHP_EOL;
 }
 
