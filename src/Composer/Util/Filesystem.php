@@ -251,10 +251,13 @@ class Filesystem
                     $directory.' exists and is not a directory.'
                 );
             }
+
+            if (is_link($directory) && !@$this->unlinkImplementation($directory)) {
+                throw new \RuntimeException('Could not delete symbolic link '.$directory.': '.(error_get_last()['message'] ?? ''));
+            }
+
             if (!@mkdir($directory, 0777, true)) {
-                throw new \RuntimeException(
-                    $directory.' does not exist and could not be created.'
-                );
+                throw new \RuntimeException($directory.' does not exist and could not be created: '.(error_get_last()['message'] ?? ''));
             }
         }
     }
