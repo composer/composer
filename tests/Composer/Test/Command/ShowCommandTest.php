@@ -440,7 +440,7 @@ installed:
         $pkg2->setDescription('description of locked2 package');
         $this->createComposerLock([
             $pkg,
-            $pkg2
+            $pkg2,
         ]);
 
         $appTester = $this->getApplicationTester();
@@ -550,15 +550,15 @@ OUTPUT;
             'names' => 'vendor/package',
         ];
         $expectedString = implode(
-                "\n",
-                array_map(
-                    static function ($k, $v) {
-                        return sprintf('%-8s : %s', $k, $v);
-                    },
-                    array_keys($expected),
-                    $expected
-                )
-            ) . "\n";
+            "\n",
+            array_map(
+                static function ($k, $v) {
+                    return sprintf('%-8s : %s', $k, $v);
+                },
+                array_keys($expected),
+                $expected
+            )
+        ) . "\n";
 
         self::assertSame($expectedString, $appTester->getDisplay(true));
     }
@@ -606,7 +606,8 @@ OUTPUT;
         );
     }
 
-    public function testPackageFilter(): void {
+    public function testPackageFilter(): void
+    {
         $this->initTempComposer([
             'require' => [
                 'vendor/package' => '1.0.0',
@@ -640,10 +641,7 @@ OUTPUT;
 
     /**
      * @dataProvider provideNotExistingPackage
-     * @param string $package
      * @param array<string, mixed> $options
-     * @param string $expected
-     * @return void
      */
     public function testNotExistingPackage(string $package, array $options, string $expected): void
     {
@@ -709,10 +707,7 @@ OUTPUT;
 
     /**
      * @dataProvider providePackageAndTree
-     * @param callable $callable
      * @param array<string, mixed> $options
-     * @param string $expected
-     * @return void
      */
     public function testSpecificPackageAndTree(callable $callable, array $options, string $expected): void
     {
@@ -734,6 +729,7 @@ OUTPUT;
         yield 'just package' => [
             function () {
                 $pgk = $this->getPackage('vendor/package', '1.0.0');
+
                 return [$pgk];
             },
             [],
@@ -749,6 +745,7 @@ OUTPUT;
                     Link::TYPE_REQUIRE,
                     '1.0.0'
                 )]);
+
                 return [$pgk];
             },
             [],
@@ -765,6 +762,7 @@ OUTPUT;
                     Link::TYPE_REQUIRE,
                     '8.2.0'
                 )]);
+
                 return [$pgk];
             },
             [],
@@ -774,6 +772,7 @@ OUTPUT;
         yield 'package with json format' => [
             function () {
                 $pgk = $this->getPackage('vendor/package', '1.0.0');
+
                 return [$pgk];
             },
             ['--format' => 'json'],
