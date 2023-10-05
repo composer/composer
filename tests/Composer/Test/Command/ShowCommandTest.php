@@ -421,7 +421,7 @@ installed:
     {
         $this->initTempComposer();
 
-        $pkg = $this->getPackage('vendor/locked', '3.0.0');
+        $pkg = static::getPackage('vendor/locked', '3.0.0');
         $pkg->setDescription('description of locked package');
         $this->createComposerLock([
             $pkg,
@@ -436,7 +436,7 @@ installed:
             $output
         );
 
-        $pkg2 = $this->getPackage('vendor/locked2', '2.0.0');
+        $pkg2 = static::getPackage('vendor/locked2', '2.0.0');
         $pkg2->setDescription('description of locked2 package');
         $this->createComposerLock([
             $pkg,
@@ -594,8 +594,8 @@ OUTPUT;
             ],
         ]);
         $this->createInstalledJson([
-            $this->getPackage('vendor/package', '1.0.0'),
-            $this->getPackage('vendor/package-dev', '1.0.0'),
+            static::getPackage('vendor/package', '1.0.0'),
+            static::getPackage('vendor/package-dev', '1.0.0'),
         ]);
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'show', '--no-dev' => true]);
@@ -617,10 +617,10 @@ OUTPUT;
             ],
         ]);
         $this->createInstalledJson([
-            $this->getPackage('vendor/package', '1.0.0'),
-            $this->getPackage('vendor/other-package', '1.0.0'),
-            $this->getPackage('company/package', '1.0.0'),
-            $this->getPackage('company/other-package', '1.0.0'),
+            static::getPackage('vendor/package', '1.0.0'),
+            static::getPackage('vendor/other-package', '1.0.0'),
+            static::getPackage('company/package', '1.0.0'),
+            static::getPackage('company/other-package', '1.0.0'),
         ]);
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'show', 'package' => 'vendor/package']);
@@ -650,7 +650,7 @@ OUTPUT;
                 'vendor/package' => '1.0.0',
             ],
         ]);
-        $pkg = $this->getPackage('vendor/package', '1.0.0');
+        $pkg = static::getPackage('vendor/package', '1.0.0');
         $this->createInstalledJson([$pkg]);
         $this->createComposerLock([$pkg]);
         if (isset($options['--working-dir'])) {
@@ -697,7 +697,7 @@ OUTPUT;
                 'vendor/package' => '1.0.0',
             ],
         ]);
-        $pkg = $this->getPackage('vendor/package', '1.0.0');
+        $pkg = static::getPackage('vendor/package', '1.0.0');
         $this->createInstalledJson([$pkg]);
 
         $this->expectExceptionMessageMatches("/^" . preg_quote("Package \"not/existing\" not found in {$dir}/composer.json, try using --available (-a) to show all available packages.", '/') . "/");
@@ -728,7 +728,7 @@ OUTPUT;
     {
         yield 'just package' => [
             function () {
-                $pgk = $this->getPackage('vendor/package', '1.0.0');
+                $pgk = static::getPackage('vendor/package', '1.0.0');
 
                 return [$pgk];
             },
@@ -737,11 +737,11 @@ OUTPUT;
         ];
         yield 'package with one package requirement' => [
             function () {
-                $pgk = $this->getPackage('vendor/package', '1.0.0');
+                $pgk = static::getPackage('vendor/package', '1.0.0');
                 $pgk->setRequires(['vendor/required-package' => new Link(
                     'vendor/package',
                     'vendor/required-package',
-                    $this->getVersionConstraint('=', '1.0.0'),
+                    static::getVersionConstraint('=', '1.0.0'),
                     Link::TYPE_REQUIRE,
                     '1.0.0'
                 )]);
@@ -754,11 +754,11 @@ OUTPUT;
         ];
         yield 'package with platform requirement' => [
             function () {
-                $pgk = $this->getPackage('vendor/package', '1.0.0');
+                $pgk = static::getPackage('vendor/package', '1.0.0');
                 $pgk->setRequires(['php' => new Link(
                     'vendor/package',
                     'php',
-                    $this->getVersionConstraint('=', '8.2.0'),
+                    static::getVersionConstraint('=', '8.2.0'),
                     Link::TYPE_REQUIRE,
                     '8.2.0'
                 )]);
@@ -771,7 +771,7 @@ OUTPUT;
         ];
         yield 'package with json format' => [
             function () {
-                $pgk = $this->getPackage('vendor/package', '1.0.0');
+                $pgk = static::getPackage('vendor/package', '1.0.0');
 
                 return [$pgk];
             },
