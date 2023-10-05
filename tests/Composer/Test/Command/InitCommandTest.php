@@ -139,7 +139,6 @@ class InitCommandTest extends TestCase
     {
         $command = new DummyInitCommand;
         $gitConfig = $command->getGitConfig();
-        $this->assertIsArray($gitConfig);
         $this->assertArrayHasKey('user.name', $gitConfig);
         $this->assertArrayHasKey('user.email', $gitConfig);
         $this->assertArrayHasKey('remote.origin.url', $gitConfig);
@@ -148,16 +147,19 @@ class InitCommandTest extends TestCase
     public function testAddVendorIgnore(): void
     {
         $command = new DummyInitCommand;
-        $ignoreFile = $this->getUniqueTmpDirectory().'/ignore';
+        $ignoreFile = self::getUniqueTmpDirectory().'/ignore';
         $command->addVendorIgnore($ignoreFile);
         $this->assertFileExists($ignoreFile);
-        $this->assertStringContainsString('/vendor/', file_get_contents($ignoreFile));
+        if (file_exists($ignoreFile)) {
+            $content = (string) file_get_contents($ignoreFile);
+            $this->assertStringContainsString('/vendor/', $content);
+        }
     }
 
     public function testHasVendorIgnore(): void
     {
         $command = new DummyInitCommand;
-        $ignoreFile = $this->getUniqueTmpDirectory().'/ignore';
+        $ignoreFile = self::getUniqueTmpDirectory().'/ignore';
         $this->assertFalse($command->hasVendorIgnore($ignoreFile));
         $command->addVendorIgnore($ignoreFile);
         $this->assertTrue($command->hasVendorIgnore($ignoreFile));
