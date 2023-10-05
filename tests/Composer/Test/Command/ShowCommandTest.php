@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Package\Link;
 use Composer\Pcre\Preg;
 use Composer\Pcre\Regex;
 use Composer\Repository\PlatformRepository;
@@ -402,7 +403,390 @@ available:
   vendor/available generic description
 
 installed:
-  vendor/installed 2.0.0 description of installed package', $output);
+  vendor/installed 2.0.0 description of installed package',
+            $output
+        );
+    }
+
+    public function testLockedRequiresValidLockFile(): void
+    {
+        $this->initTempComposer();
+        $this->expectExceptionMessage(
+            "A valid composer.json and composer.lock files is required to run this command with --locked"
+        );
+        $this->getApplicationTester()->run(['command' => 'show', '--locked' => true]);
+    }
+
+    public function testLockedShowsAllLocked(): void
+    {
+        $this->initTempComposer();
+
+        $pkg = $this->getPackage('vendor/locked', '3.0.0');
+        $pkg->setDescription('description of locked package');
+        $this->createComposerLock([
+            $pkg,
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--locked' => true]);
+        $output = trim($appTester->getDisplay(true));
+
+        self::assertSame(
+            'vendor/locked 3.0.0 description of locked package',
+            $output
+        );
+
+        $pkg2 = $this->getPackage('vendor/locked2', '2.0.0');
+        $pkg2->setDescription('description of locked2 package');
+        $this->createComposerLock([
+            $pkg,
+            $pkg2
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--locked' => true]);
+        $output = trim($appTester->getDisplay(true));
+        $shouldBe = <<<OUTPUT
+vendor/locked  3.0.0 description of locked package
+vendor/locked2 2.0.0 description of locked2 package
+OUTPUT;
+
+        self::assertSame(
+            $shouldBe,
+            $output
+        );
+    }
+
+    public function testInvalidOptionCombinations(): void
+    {
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--direct' => true, '--all' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--direct' => true, '--available' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--direct' => true, '--platform' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--tree' => true, '--all' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--tree' => true, '--available' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--tree' => true, '--latest' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--tree' => true, '--path' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--patch-only' => true, '--minor-only' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--patch-only' => true, '--major-only' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--minor-only' => true, '--major-only' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--minor-only' => true, '--major-only' => true, '--patch-only' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--format' => 'test']);
+        self::assertSame(1, $appTester->getStatusCode());
+    }
+
+    public function testIgnoredOptionCombinations(): void
+    {
+        $this->initTempComposer();
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--installed' => true]);
+        self::assertStringContainsString(
+            'You are using the deprecated option "installed".',
+            $appTester->getDisplay(true)
+        );
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--ignore' => ['vendor/package']]);
+        self::assertStringContainsString('You are using the option "ignore"', $appTester->getDisplay(true));
+    }
+
+    public function testSelfAndNameOnly(): void
+    {
+        $this->initTempComposer(['name' => 'vendor/package']);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--self' => true, '--name-only' => true]);
+        self::assertSame('vendor/package', trim($appTester->getDisplay(true)));
+    }
+
+    public function testSelfAndPackageCombination(): void
+    {
+        $this->initTempComposer(['name' => 'vendor/package']);
+
+        $appTester = $this->getApplicationTester();
+        $this->expectException(\InvalidArgumentException::class);
+        $appTester->run(['command' => 'show', '--self' => true, 'package' => 'vendor/package']);
+    }
+
+    public function testSelf(): void
+    {
+        $this->initTempComposer(['name' => 'vendor/package']);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--self' => true]);
+        $expected = [
+            'name' => 'vendor/package',
+            'descrip.' => '',
+            'keywords' => '',
+            'versions' => '* 1.0.0+no-version-set',
+            'type' => 'library',
+            'homepage' => '',
+            'source' => '[]  ',
+            'dist' => '[]  ',
+            'path' => '',
+            'names' => 'vendor/package',
+        ];
+        $expectedString = implode(
+                "\n",
+                array_map(
+                    static function ($k, $v) {
+                        return sprintf('%-8s : %s', $k, $v);
+                    },
+                    array_keys($expected),
+                    $expected
+                )
+            ) . "\n";
+
+        self::assertSame($expectedString, $appTester->getDisplay(true));
+    }
+
+    public function testNotInstalledError(): void
+    {
+        $this->initTempComposer([
+            'require' => [
+                'vendor/package' => '1.0.0',
+            ],
+            'require-dev' => [
+                'vendor/package-dev' => '1.0.0',
+            ],
+        ]);
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show']);
+        $output = trim($appTester->getDisplay(true));
+        self::assertStringContainsString(
+            'No dependencies installed. Try running composer install or update.',
+            $output,
+            'Should show error message when no dependencies are installed'
+        );
+    }
+
+    public function testNoDevOption(): void
+    {
+        $this->initTempComposer([
+            'require' => [
+                'vendor/package' => '1.0.0',
+            ],
+            'require-dev' => [
+                'vendor/package-dev' => '1.0.0',
+            ],
+        ]);
+        $this->createInstalledJson([
+            $this->getPackage('vendor/package', '1.0.0'),
+            $this->getPackage('vendor/package-dev', '1.0.0'),
+        ]);
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--no-dev' => true]);
+        $output = trim($appTester->getDisplay(true));
+        self::assertSame(
+            'vendor/package 1.0.0',
+            $output
+        );
+    }
+
+    public function testPackageFilter(): void {
+        $this->initTempComposer([
+            'require' => [
+                'vendor/package' => '1.0.0',
+                'vendor/other-package' => '1.0.0',
+                'company/package' => '1.0.0',
+                'company/other-package' => '1.0.0',
+            ],
+        ]);
+        $this->createInstalledJson([
+            $this->getPackage('vendor/package', '1.0.0'),
+            $this->getPackage('vendor/other-package', '1.0.0'),
+            $this->getPackage('company/package', '1.0.0'),
+            $this->getPackage('company/other-package', '1.0.0'),
+        ]);
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'vendor/package']);
+        $output = trim($appTester->getDisplay(true));
+        self::assertStringContainsString('vendor/package', $output);
+        self::assertStringNotContainsString('vendor/other-package', $output);
+        self::assertStringNotContainsString('company/package', $output);
+        self::assertStringNotContainsString('company/other-package', $output);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'company/*', '--name-only' => true]);
+        $output = trim($appTester->getDisplay(true));
+        self::assertStringNotContainsString('vendor/package', $output);
+        self::assertStringNotContainsString('vendor/other-package', $output);
+        self::assertStringContainsString('company/package', $output);
+        self::assertStringContainsString('company/other-package', $output);
+    }
+
+    /**
+     * @dataProvider provideNotExistingPackage
+     * @param string $package
+     * @param array<string, mixed> $options
+     * @param string $expected
+     * @return void
+     */
+    public function testNotExistingPackage(string $package, array $options, string $expected): void
+    {
+        $dir = $this->initTempComposer([
+            'require' => [
+                'vendor/package' => '1.0.0',
+            ],
+        ]);
+        $pkg = $this->getPackage('vendor/package', '1.0.0');
+        $this->createInstalledJson([$pkg]);
+        $this->createComposerLock([$pkg]);
+        if (isset($options['--working-dir'])) {
+            $options['--working-dir'] = $dir;
+        }
+        $this->expectExceptionMessageMatches("/^" . preg_quote($expected, '/') . "/");
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => $package] + $options);
+    }
+
+    public function provideNotExistingPackage(): \Generator
+    {
+        yield 'package with no options' => [
+            'not/existing',
+            [],
+            'Package "not/existing" not found, try using --available (-a) to show all available packages.',
+        ];
+        yield 'package with --all option' => [
+            'not/existing',
+            ['--all' => true],
+            'Package "not/existing" not found.',
+        ];
+        yield 'package with --locked option' => [
+            'not/existing',
+            ['--locked' => true],
+            'Package "not/existing" not found in lock file, try using --available (-a) to show all available packages.',
+        ];
+        yield 'platform with --platform' => [
+            'ext-nonexisting',
+            ['--platform' => true],
+            'Package "ext-nonexisting" not found, try using --available (-a) to show all available packages.',
+        ];
+        yield 'platform without --platform' => [
+            'ext-nonexisting',
+            [],
+            'Package "ext-nonexisting" not found, try using --platform (-p) to show platform packages, try using --available (-a) to show all available packages.',
+        ];
+    }
+
+    public function testNotExistingPackageWithWorkingDir(): void
+    {
+        $dir = $this->initTempComposer([
+            'require' => [
+                'vendor/package' => '1.0.0',
+            ],
+        ]);
+        $pkg = $this->getPackage('vendor/package', '1.0.0');
+        $this->createInstalledJson([$pkg]);
+
+        $this->expectExceptionMessageMatches("/^" . preg_quote("Package \"not/existing\" not found in {$dir}/composer.json, try using --available (-a) to show all available packages.", '/') . "/");
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'not/existing', '--working-dir' => $dir]);
+    }
+
+    /**
+     * @dataProvider providePackageAndTree
+     * @param callable $callable
+     * @param array<string, mixed> $options
+     * @param string $expected
+     * @return void
+     */
+    public function testSpecificPackageAndTree(callable $callable, array $options, string $expected): void
+    {
+        $this->initTempComposer([
+            'require' => [
+                'vendor/package' => '1.0.0',
+            ],
+        ]);
+
+        $this->createInstalledJson($callable());
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'vendor/package', '--tree' => true] + $options);
+        self::assertSame($expected, trim($appTester->getDisplay(true)));
+    }
+
+    public function providePackageAndTree(): \Generator
+    {
+        yield 'just package' => [
+            function () {
+                $pgk = $this->getPackage('vendor/package', '1.0.0');
+                return [$pgk];
+            },
+            [],
+            'vendor/package 1.0.0',
+        ];
+        yield 'package with one package requirement' => [
+            function () {
+                $pgk = $this->getPackage('vendor/package', '1.0.0');
+                $pgk->setRequires(['vendor/required-package' => new Link(
+                    'vendor/package',
+                    'vendor/required-package',
+                    $this->getVersionConstraint('=', '1.0.0'),
+                    Link::TYPE_REQUIRE,
+                    '1.0.0'
+                )]);
+                return [$pgk];
+            },
+            [],
+            'vendor/package 1.0.0
+`--vendor/required-package 1.0.0',
+        ];
+        yield 'package with platform requirement' => [
+            function () {
+                $pgk = $this->getPackage('vendor/package', '1.0.0');
+                $pgk->setRequires(['php' => new Link(
+                    'vendor/package',
+                    'php',
+                    $this->getVersionConstraint('=', '8.2.0'),
+                    Link::TYPE_REQUIRE,
+                    '8.2.0'
+                )]);
+                return [$pgk];
+            },
+            [],
+            'vendor/package 1.0.0
+`--php 8.2.0',
+        ];
+        yield 'package with json format' => [
+            function () {
+                $pgk = $this->getPackage('vendor/package', '1.0.0');
+                return [$pgk];
+            },
+            ['--format' => 'json'],
+            '{
+    "installed": [
+        {
+            "name": "vendor/package",
+            "version": "1.0.0",
+            "description": null
+        }
+    ]
+}',
+        ];
     }
 
     public function testNameOnlyPrintsNoTrailingWhitespace(): void
