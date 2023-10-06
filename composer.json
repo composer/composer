@@ -59,7 +59,7 @@
     },
     "config": {
         "http-proxy": "http://your-proxy-url:your-proxy-port",
-        "https-proxy": "http://your-proxy-url:your-proxy-port"
+        "https-proxy": "http://your-proxy-url:your-proxy-port",
         "platform": {
             "php": "7.2.5"
         },
