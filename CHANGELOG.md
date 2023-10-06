@@ -1,3 +1,9 @@
+### [2.6.5] 2023-10-06
+
+  * Fixed error when vendor dir contains broken symlinks (#11670)
+  * Fixed composer.lock missing from Composer's zip archives (#11674)
+  * Fixed AutoloadGenerator::dump() non-BC signature change in 2.6.4 (cb363b0e8)
+
 ### [2.6.4] 2023-09-29
 
   * Security: Fixed possible remote code execution vulnerability if composer.phar is publicly accessible, executable as PHP, and register_argc_argv is enabled in php.ini (GHSA-jm6m-4632-36hf / CVE-2023-43655)
@@ -1783,6 +1789,7 @@
 
   * Initial release
 
+[2.6.5]: https://github.com/composer/composer/compare/2.6.4...2.6.5
 [2.6.4]: https://github.com/composer/composer/compare/2.6.3...2.6.4
 [2.6.3]: https://github.com/composer/composer/compare/2.6.2...2.6.3
 [2.6.2]: https://github.com/composer/composer/compare/2.6.1...2.6.2
