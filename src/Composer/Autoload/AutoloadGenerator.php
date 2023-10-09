@@ -173,7 +173,7 @@ class AutoloadGenerator
      * @throws \Seld\JsonLint\ParsingException
      * @throws \RuntimeException
      */
-    public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, Locker $locker, string $targetDir, bool $scanPsrPackages = false, ?string $suffix = null)
+    public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, string $targetDir, bool $scanPsrPackages = false, ?string $suffix = null, ?Locker $locker = null)
     {
         if ($this->classMapAuthoritative) {
             // Force scanPsrPackages when classmap is authoritative
@@ -407,7 +407,7 @@ EOF;
             }
 
             if (null === $suffix) {
-                $suffix = $locker->isLocked() ? $locker->getLockData()['content-hash'] : md5(uniqid('', true));
+                $suffix = $locker !== null && $locker->isLocked() ? $locker->getLockData()['content-hash'] : md5(uniqid('', true));
             }
         }
 
