@@ -356,9 +356,10 @@ class Installer
                     $localRepo,
                     $this->package,
                     $this->installationManager,
-                    $this->locker,
                     'composer',
-                    $this->optimizeAutoloader
+                    $this->optimizeAutoloader,
+                    null,
+                    $this->locker
                 );
         }
 

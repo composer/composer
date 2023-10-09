@@ -105,9 +105,10 @@ EOT
             $localRepo,
             $package,
             $installationManager,
-            $composer->getLocker(),
             'composer',
-            $optimize
+            $optimize,
+            null,
+            $composer->getLocker()
         );
         $numberOfClasses = count($classMap);
 
