@@ -449,6 +449,12 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'pgsql':
+                    if ($this->runtime->hasConstant('PGSQL_LIBPQ_VERSION')) {
+                        $this->addLibrary('pgsql-libpq', $this->runtime->getConstant('PGSQL_LIBPQ_VERSION'), 'libpq for pgsql');
+                        break;
+                    }
+                // intentional fall-through to next case...
+
                 case 'pdo_pgsql':
                     $info = $this->runtime->getExtensionInfo($name);
 
