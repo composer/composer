@@ -998,6 +998,8 @@ pgsql.auto_reset_persistent => Off => Off
 pgsql.ignore_notice => Off => Off
 pgsql.log_notice => Off => Off',
                 ['lib-pgsql-libpq' => '12.2'],
+                [],
+                [['PGSQL_LIBPQ_VERSION', null, '12.2']],
             ],
             'pdo_pgsql' => [
                 'pdo_pgsql',
