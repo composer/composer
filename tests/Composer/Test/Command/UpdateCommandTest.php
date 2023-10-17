@@ -91,5 +91,14 @@ Your requirements could not be resolved to an installable set of packages.
     - root/req 1.0.0 requires dep/pkg ^1 -> found dep/pkg[1.0.0, 1.0.1, 1.0.2] but it conflicts with your temporary update constraint (dep/pkg:^2).
 OUTPUT
         ];
+
+        yield 'update with temporary constraint failing resolution on root package' => [
+            $rootDepAndTransitiveDep,
+            ['--with' => ['root/req:^2']],
+            <<<OUTPUT
+The temporary constraint "^2" for "root/req" must be a subset of the constraint in your composer.json (1.*)
+You may like to try running `composer require root/req` or `composer require root/req:^2`
+OUTPUT
+        ];
     }
 }
