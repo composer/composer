@@ -40,6 +40,7 @@ class VersionBumper
      *  * ^3@dev + 3.2.99999-dev  -> ^3.2@dev
      *  * ~2 + 2.0-beta.1         -> ~2
      *  * dev-master + dev-master -> dev-master
+     *  * * + 1.2.3               -> >=1.2.3
      */
     public function bumpRequirement(ConstraintInterface $constraint, PackageInterface $package): string
     {
@@ -86,6 +87,7 @@ class VersionBumper
                 | ~'.$major.'(?:\.\d+){0,2} # e.g. ~2 or ~2.2 or ~2.2.2 but no more
                 | '.$major.'(?:\.[*x])+ # e.g. 2.* or 2.*.* or 2.x.x.x etc
                 | >=\d(?:\.\d+)* # e.g. >=2 or >=1.2 etc
+                | \* # full wildcard
             )
             (?=,|$|\ |\||@) # trailing separator
         }x';
@@ -99,7 +101,7 @@ class VersionBumper
                 }
                 if (str_starts_with($match[0], '~') && substr_count($match[0], '.') === 2) {
                     $replacement = '~'.$versionWithoutSuffix.$suffix;
-                } elseif (str_starts_with($match[0], '>=')) {
+                } elseif ($match[0] === '*' || str_starts_with($match[0], '>=')) {
                     $replacement = '>='.$versionWithoutSuffix.$suffix;
                 } else {
                     $replacement = $newPrettyConstraint.$suffix;

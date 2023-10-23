@@ -67,5 +67,6 @@ class VersionBumperTest extends TestCase
         yield 'leave extra-only-tilde alone' => ['~2.2.3.1', '2.2.4.5', '~2.2.3.1'];
         yield 'upgrade bigger-or-eq to latest' => ['>=3.0', '3.4.5', '>=3.4.5'];
         yield 'leave bigger-than untouched' => ['>2.2.3', '2.2.6', '>2.2.3'];
+        yield 'upgrade full wildcard to bigger-or-eq' => ['*', '1.2.3', '>=1.2.3'];
     }
 }
