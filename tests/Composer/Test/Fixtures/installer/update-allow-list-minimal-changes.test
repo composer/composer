@@ -56,7 +56,7 @@ Updating transitive dependencies only updates what is really required when a min
     "platform-dev": []
 }
 --RUN--
-update allowed/pkg --with-all-dependencies --minimal-update
+update allowed/pkg --with-all-dependencies --minimal-changes
 --EXPECT--
 Upgrading dependency/pkg (1.0.0 => 2.0.0)
 Upgrading allowed/pkg (1.0.0 => 1.1.0)
