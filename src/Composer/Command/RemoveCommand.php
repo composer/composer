@@ -83,7 +83,7 @@ EOT
     /**
      * @throws \Seld\JsonLint\ParsingException
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getArgument('packages') === [] && !$input->getOption('unused')) {
             throw new InvalidArgumentException('Not enough arguments (missing: "packages").');

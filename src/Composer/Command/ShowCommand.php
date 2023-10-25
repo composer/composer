@@ -131,7 +131,7 @@ EOT
         };
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->versionParser = new VersionParser;
         if ($input->getOption('tree')) {
