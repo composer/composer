@@ -396,11 +396,11 @@ OUTPUT
        $secondDevNestedRequiredPackage = self::getPackage('vendor2/package3', '1.4.0');
 
         $this->createComposerLock(
-            [$someRequiredPackage], 
+            [$someRequiredPackage],
             [$firstDevRequiredPackage, $secondDevRequiredPackage]
         );
         $this->createInstalledJson(
-            [$someRequiredPackage], 
+            [$someRequiredPackage],
             [$firstDevRequiredPackage, $secondDevRequiredPackage, $secondDevNestedRequiredPackage]
         );
 
@@ -425,7 +425,7 @@ OUTPUT
             <<<OUTPUT
 Package "vendor1/package1" could not be found with constraint "3.*", results below will most likely be incomplete.
 __root__ - requires vendor1/package1 (1.*) 
-Not finding what you were looking for? Try calling `composer update "vendor1/package1:3.*" --dry-run` to get another view on the problem.
+Not finding what you were looking for? Try calling `composer require "vendor1/package1:3.*" --dry-run` to get another view on the problem.
 OUTPUT
         ];
 
@@ -434,7 +434,7 @@ OUTPUT
             <<<OUTPUT
 Package "vendor1/package1" could not be found with constraint "^1.4", results below will most likely be incomplete.
 There is no installed package depending on "vendor1/package1" in versions not matching ^1.4
-Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.4" --dry-run` to get another view on the problem.
+Not finding what you were looking for? Try calling `composer require "vendor1/package1:^1.4" --dry-run` to get another view on the problem.
 OUTPUT
         ];
 
@@ -442,7 +442,7 @@ OUTPUT
             ['package' => 'vendor1/package1', 'version' => '^1.3'],
             <<<OUTPUT
 There is no installed package depending on "vendor1/package1" in versions not matching ^1.3
-Not finding what you were looking for? Try calling `composer update "vendor1/package1:^1.3" --dry-run` to get another view on the problem.
+Not finding what you were looking for? Try calling `composer require "vendor1/package1:^1.3" --dry-run` to get another view on the problem.
 OUTPUT
         ];
 

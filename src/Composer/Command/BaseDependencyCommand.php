@@ -152,7 +152,23 @@ abstract class BaseDependencyCommand extends BaseCommand
         }
 
         if ($inverted && $input->hasArgument(self::ARGUMENT_CONSTRAINT)) {
-            $this->getIO()->writeError('Not finding what you were looking for? Try calling `composer update "'.$input->getArgument(self::ARGUMENT_PACKAGE).':'.$input->getArgument(self::ARGUMENT_CONSTRAINT).'" --dry-run` to get another view on the problem.');
+            $composerCommand = 'update';
+
+            foreach ($composer->getPackage()->getRequires() as $rootRequirement) {
+                if ($rootRequirement->getTarget() === $needle) {
+                    $composerCommand = 'require';
+                    break;
+                }
+            }
+
+            foreach ($composer->getPackage()->getDevRequires() as $rootRequirement) {
+                if ($rootRequirement->getTarget() === $needle) {
+                    $composerCommand = 'require --dev';
+                    break;
+                }
+            }
+
+            $this->getIO()->writeError('Not finding what you were looking for? Try calling `composer '.$composerCommand.' "'.$needle.':'.$textConstraint.'" --dry-run` to get another view on the problem.');
         }
 
         return 0;

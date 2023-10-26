@@ -91,7 +91,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             'svn' => 'Composer\Repository\Vcs\SvnDriver',
         ];
 
-        $this->url = Platform::expandPath($repoConfig['url']);
+        $this->url = $repoConfig['url'] = Platform::expandPath($repoConfig['url']);
         $this->io = $io;
         $this->type = $repoConfig['type'] ?? 'vcs';
         $this->isVerbose = $io->isVerbose();
