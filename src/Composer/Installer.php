@@ -165,6 +165,8 @@ class Installer
     /** @var bool */
     protected $preferLowest = false;
     /** @var bool */
+    protected $minimalUpdate = false;
+    /** @var bool */
     protected $writeLock;
     /** @var bool */
     protected $executeOperations = true;
@@ -464,7 +466,7 @@ class Installer
         $this->io->writeError('<info>Loading composer repositories with package information</info>');
 
         // creating repository set
-        $policy = $this->createPolicy(true);
+        $policy = $this->createPolicy(true, $lockedRepository);
         $repositorySet = $this->createRepositorySet(true, $platformRepo, $aliases);
         $repositories = $this->repositoryManager->getRepositories();
         foreach ($repositories as $repository) {
@@ -904,7 +906,7 @@ class Installer
         return $repositorySet;
     }
 
-    private function createPolicy(bool $forUpdate): DefaultPolicy
+    private function createPolicy(bool $forUpdate, ?LockArrayRepository $lockedRepo = null): DefaultPolicy
     {
         $preferStable = null;
         $preferLowest = null;
@@ -921,7 +923,18 @@ class Installer
             $preferLowest = $this->preferLowest;
         }
 
-        return new DefaultPolicy($preferStable, $preferLowest);
+        $preferredVersions = null;
+        if ($forUpdate && $this->minimalUpdate && $this->updateAllowList !== null && $lockedRepo !== null) {
+            $preferredVersions = [];
+            foreach ($lockedRepo->getPackages() as $pkg) {
+                if ($pkg instanceof AliasPackage || in_array($pkg->getName(), $this->updateAllowList, true)) {
+                    continue;
+                }
+                $preferredVersions[$pkg->getName()] = $pkg->getVersion();
+            }
+        }
+
+        return new DefaultPolicy($preferStable, $preferLowest, $preferredVersions);
     }
 
     /**
@@ -1384,7 +1397,7 @@ class Installer
      */
     public function setPreferStable(bool $preferStable = true): self
     {
-        $this->preferStable = (bool) $preferStable;
+        $this->preferStable = $preferStable;
 
         return $this;
     }
@@ -1396,7 +1409,21 @@ class Installer
      */
     public function setPreferLowest(bool $preferLowest = true): self
     {
-        $this->preferLowest = (bool) $preferLowest;
+        $this->preferLowest = $preferLowest;
+
+        return $this;
+    }
+
+    /**
+     * Only relevant for partial updates (with setUpdateAllowList), if this is enabled currently locked versions will be preferred for packages which are not in the allowlist
+     *
+     * This reduces the update to
+     *
+     * @return Installer
+     */
+    public function setMinimalUpdate(bool $minimalUpdate = true): self
+    {
+        $this->minimalUpdate = $minimalUpdate;
 
         return $this;
     }
@@ -1410,7 +1437,7 @@ class Installer
      */
     public function setWriteLock(bool $writeLock = true): self
     {
-        $this->writeLock = (bool) $writeLock;
+        $this->writeLock = $writeLock;
 
         return $this;
     }
@@ -1424,7 +1451,7 @@ class Installer
      */
     public function setExecuteOperations(bool $executeOperations = true): self
     {
-        $this->executeOperations = (bool) $executeOperations;
+        $this->executeOperations = $executeOperations;
 
         return $this;
     }

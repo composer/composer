@@ -229,6 +229,8 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`. Can also be set via the
   COMPOSER_PREFER_LOWEST=1 env var.
+* **--minimal-changes:** During a partial update with `-w`/`-W`, only perform absolutely necessary
+  changes to transitive dependencies. Can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var.
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
 
@@ -288,6 +290,8 @@ If you do not specify a package, Composer will prompt you to search for a packag
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`. Can also be set via the
   COMPOSER_PREFER_LOWEST=1 env var.
+* **--minimal-changes:** During an update with `-w`/`-W`, only perform absolutely necessary
+  changes to transitive dependencies. Can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var.
 * **--sort-packages:** Keep packages sorted in `composer.json`.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
   get a faster autoloader. This is recommended especially for production, but
@@ -326,6 +330,8 @@ uninstalled.
   (Deprecated, is now default behavior)
 * **--update-with-all-dependencies (-W):** Allows all inherited dependencies to be updated,
   including those that are root requirements.
+* **--minimal-changes:** During an update with `-w`/`-W`, only perform absolutely necessary
+  changes to transitive dependencies. Can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
@@ -1289,6 +1295,11 @@ If set to `1`, it is the equivalent of passing the `--prefer-stable` option to
 
 If set to `1`, it is the equivalent of passing the `--prefer-lowest` option to
 `update` or `require`.
+
+### COMPOSER_MINIMAL_CHANGES
+
+If set to `1`, it is the equivalent of passing the `--minimal-changes` option to
+`update`, `require` or `remove`.
 
 ### COMPOSER_IGNORE_PLATFORM_REQ or COMPOSER_IGNORE_PLATFORM_REQS
 

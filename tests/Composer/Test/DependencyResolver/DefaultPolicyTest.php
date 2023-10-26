@@ -121,6 +121,59 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
+    public function testSelectNewestWithPreferredVersionPicksPreferredVersionIfAvailable(): void
+    {
+        $this->repo->addPackage($packageA1 = self::getPackage('A', '1.0.0'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', '1.1.0'));
+        $this->repo->addPackage($packageA2b = self::getPackage('A', '1.1.0'));
+        $this->repo->addPackage($packageA3 = self::getPackage('A', '1.2.0'));
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
+
+        $literals = [$packageA1->getId(), $packageA2->getId(), $packageA2b->getId(), $packageA3->getId()];
+        $expected = [$packageA2->getId(), $packageA2b->getId()];
+
+        $policy = new DefaultPolicy(false, false, ['a' => '1.1.0.0']);
+        $selected = $policy->selectPreferredPackages($pool, $literals);
+
+        $this->assertSame($expected, $selected);
+    }
+
+    public function testSelectNewestWithPreferredVersionPicksNewestOtherwise(): void
+    {
+        $this->repo->addPackage($packageA1 = self::getPackage('A', '1.0.0'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', '1.2.0'));
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
+
+        $literals = [$packageA1->getId(), $packageA2->getId()];
+        $expected = [$packageA2->getId()];
+
+        $policy = new DefaultPolicy(false, false, ['a' => '1.1.0.0']);
+        $selected = $policy->selectPreferredPackages($pool, $literals);
+
+        $this->assertSame($expected, $selected);
+    }
+
+    public function testSelectNewestWithPreferredVersionPicksLowestIfPreferLowest(): void
+    {
+        $this->repo->addPackage($packageA1 = self::getPackage('A', '1.0.0'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', '1.2.0'));
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
+
+        $literals = [$packageA1->getId(), $packageA2->getId()];
+        $expected = [$packageA1->getId()];
+
+        $policy = new DefaultPolicy(false, true, ['a' => '1.1.0.0']);
+        $selected = $policy->selectPreferredPackages($pool, $literals);
+
+        $this->assertSame($expected, $selected);
+    }
+
     public function testRepositoryOrderingAffectsPriority(): void
     {
         $repo1 = new ArrayRepository;

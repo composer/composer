@@ -1,0 +1,62 @@
+--TEST--
+Updating transitive dependencies only updates what is really required when a minimal update is requested
+
+* dependency/pkg has to upgrade to 2.x
+* dependency/pkg2 remains at 1.0.0 and does not upgrade to 1.1.0 even though it would without minimal update
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "allowed/pkg", "version": "1.1.0", "require": { "dependency/pkg": "2.*", "dependency/pkg2": "1.*" } },
+                { "name": "allowed/pkg", "version": "1.0.0", "require": { "dependency/pkg": "1.*", "dependency/pkg2": "1.*" } },
+                { "name": "dependency/pkg", "version": "2.0.0" },
+                { "name": "dependency/pkg", "version": "1.1.0" },
+                { "name": "dependency/pkg", "version": "1.0.0" },
+                { "name": "dependency/pkg2", "version": "2.0.0" },
+                { "name": "dependency/pkg2", "version": "1.1.0" },
+                { "name": "dependency/pkg2", "version": "1.0.0" },
+                { "name": "unrelated/pkg", "version": "1.1.0", "require": { "unrelated/pkg-dependency": "1.*" }  },
+                { "name": "unrelated/pkg", "version": "1.0.0", "require": { "unrelated/pkg-dependency": "1.*" }  },
+                { "name": "unrelated/pkg-dependency", "version": "1.1.0" },
+                { "name": "unrelated/pkg-dependency", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "allowed/pkg": "1.*",
+        "unrelated/pkg": "1.*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "allowed/pkg", "version": "1.0.0", "require": { "dependency/pkg": "1.*", "dependency/pkg2": "1.*" } },
+    { "name": "dependency/pkg", "version": "1.0.0" },
+    { "name": "dependency/pkg2", "version": "1.0.0" },
+    { "name": "unrelated/pkg", "version": "1.0.0", "require": { "unrelated/pkg-dependency": "1.*" } },
+    { "name": "unrelated/pkg-dependency", "version": "1.0.0" }
+]
+--LOCK--
+{
+    "packages": [
+        { "name": "allowed/pkg", "version": "1.0.0", "require": { "dependency/pkg": "1.*", "dependency/pkg2": "1.*" } },
+        { "name": "dependency/pkg", "version": "1.0.0" },
+        { "name": "dependency/pkg2", "version": "1.0.0" },
+        { "name": "unrelated/pkg", "version": "1.0.0", "require": { "unrelated/pkg-dependency": "1.*" } },
+        { "name": "unrelated/pkg-dependency", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update allowed/pkg --with-all-dependencies --minimal-changes
+--EXPECT--
+Upgrading dependency/pkg (1.0.0 => 2.0.0)
+Upgrading allowed/pkg (1.0.0 => 1.1.0)

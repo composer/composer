@@ -381,6 +381,7 @@ class InstallerTest extends TestCase
         $update->addOption('lock', null, InputOption::VALUE_NONE);
         $update->addOption('with-all-dependencies', null, InputOption::VALUE_NONE);
         $update->addOption('with-dependencies', null, InputOption::VALUE_NONE);
+        $update->addOption('minimal-changes', null, InputOption::VALUE_NONE);
         $update->addOption('prefer-stable', null, InputOption::VALUE_NONE);
         $update->addOption('prefer-lowest', null, InputOption::VALUE_NONE);
         $update->addArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL);
@@ -412,7 +413,8 @@ class InstallerTest extends TestCase
                 ->setPreferStable($input->getOption('prefer-stable'))
                 ->setPreferLowest($input->getOption('prefer-lowest'))
                 ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
-                ->setAudit(false);
+                ->setAudit(false)
+                ->setMinimalUpdate($input->getOption('minimal-changes'));
 
             return $installer->run();
         });
