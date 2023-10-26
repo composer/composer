@@ -33,7 +33,7 @@
         "psr/log": "^1.0 || ^2.0 || ^3.0",
         "seld/jsonlint": "^1.4",
         "seld/phar-utils": "^1.2",
-        "symfony/console": "^5.4.11 || ^6.0.11 || ^7",
+        "symfony/console": "^5.4.11 || ^6.0.11",
         "symfony/filesystem": "^5.4 || ^6.0 || ^7",
         "symfony/finder": "^5.4 || ^6.0 || ^7",
         "symfony/process": "^5.4 || ^6.0 || ^7",
