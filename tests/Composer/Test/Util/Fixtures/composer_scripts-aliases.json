@@ -1,0 +1,10 @@
+{
+    "scripts": {
+        "test": "phpunit",
+        "phpcs": "phpcs"
+    },
+    "scripts-aliases": {
+        "test": ["t"],
+        "phpcsxxx": ["x"]
+    }
+}

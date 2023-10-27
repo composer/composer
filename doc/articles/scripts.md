@@ -441,3 +441,19 @@ The descriptions are used in `composer list` or `composer run -l` commands to
 describe what the scripts do when the command is run.
 
 > **Note:** You can only set custom descriptions of custom commands.
+
+## Custom aliases.
+
+You can set custom script aliases with the following in your `composer.json`:
+
+```json
+{
+    "scripts-aliases": {
+        "phpstan": ["stan", "analyze"]
+    }
+}
+```
+
+The aliases provide alternate command names.
+
+> **Note:** You can only set custom aliases of custom commands.

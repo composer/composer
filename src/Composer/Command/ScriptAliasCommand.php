@@ -27,11 +27,23 @@ class ScriptAliasCommand extends BaseCommand
     private $script;
     /** @var string */
     private $description;
+    /** @var string[] */
+    private $aliases;
 
-    public function __construct(string $script, ?string $description)
+    /**
+     * @param string[] $aliases
+     */
+    public function __construct(string $script, ?string $description, array $aliases = [])
     {
         $this->script = $script;
         $this->description = $description ?? 'Runs the '.$script.' script as defined in composer.json';
+        $this->aliases = $aliases;
+
+        foreach ($this->aliases as $alias) {
+            if (!is_string($alias)) {
+                throw new \InvalidArgumentException('"scripts-aliases" element array values should contain only strings');
+            }
+        }
 
         $this->ignoreValidationErrors();
 
@@ -43,6 +55,7 @@ class ScriptAliasCommand extends BaseCommand
         $this
             ->setName($this->script)
             ->setDescription($this->description)
+            ->setAliases($this->aliases)
             ->setDefinition([
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),

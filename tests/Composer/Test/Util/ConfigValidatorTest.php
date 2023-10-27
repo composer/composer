@@ -46,6 +46,17 @@ class ConfigValidatorTest extends TestCase
         );
     }
 
+    public function testConfigValidatorWarnsOnScriptAliasForNonexistentScript(): void
+    {
+        $configValidator = new ConfigValidator(new NullIO());
+        [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-aliases.json');
+
+        $this->assertContains(
+            'Aliases for non-existent script "phpcsxxx" found in "scripts-aliases"',
+            $warnings
+        );
+    }
+
     public function testConfigValidatorWarnsOnUnnecessaryProvideReplace(): void
     {
         $configValidator = new ConfigValidator(new NullIO());

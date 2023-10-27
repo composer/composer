@@ -109,6 +109,32 @@ class RunScriptCommandTest extends TestCase
         $this->assertStringContainsString('Run the codestyle fixer', $output, 'The custom description for the fix-cs script should be printed');
     }
 
+    public function testCanDefineAliases(): void
+    {
+        $expectedAliases = ['one', 'two', 'three'];
+
+        $this->initTempComposer([
+            'scripts' => [
+                'test' => '@php test',
+            ],
+            'scripts-aliases' => [
+                'test' => $expectedAliases,
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'test', '--help' => true, '--format' => 'json']);
+
+        $appTester->assertCommandIsSuccessful();
+
+        $output = $appTester->getDisplay();
+        $array = json_decode($output, true);
+        $actualAliases = $array['usage'];
+        array_shift($actualAliases);
+
+        $this->assertSame($expectedAliases, $actualAliases, 'The custom aliases for the test command should be printed');
+    }
+
     public function testExecutionOfCustomSymfonyCommand(): void
     {
         $this->initTempComposer([
