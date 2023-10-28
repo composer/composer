@@ -1,45 +1,45 @@
-# Basic usage
+#   Temel kullanım 
 
-## Introduction
+##   Giriş 
 
-For our basic usage introduction, we will be installing `monolog/monolog`,
-a logging library. If you have not yet installed Composer, refer to the
-[Intro](00-intro.md) chapter.
+ Temel kullanım girişi için, monte edeceğiz.   `monolog/monolog`,
+Bir kayıt kütüphanesi. Eğer henüz bir bileşen yüklemediyseniz, şuna değinin
+[[[] name[İntro](00-intro.md) Bölüm.
 
-> **Note:** for the sake of simplicity, this introduction will assume you
-> have performed a [local](00-intro.md#locally) install of Composer.
+> **Hayır:**   Basitçe uğruna bu giriş sizi kabul edecek. 
+>   Bir sahne aldı. [[ [[[Yerel](00-intro.md#locally)   Besteci'nin monte edilmesi. 
 
-## `composer.json`: Project setup
+## `composer.json`: Proje kurulumu: Proje
 
-To start using Composer in your project, all you need is a `composer.json`
-file. This file describes the dependencies of your project and may contain
-other metadata as well. It typically should go in the top-most directory of
-your project/VCS repository. You can technically run Composer anywhere but
-if you want to publish a package to Packagist.org, it will have to be able
-to find the file at the top of your VCS repository.
+ Projenizde Besteci kullanmaya başlamak için tek ihtiyacınız olan bir şey...   `composer.json`
+Dosya. Bu dosya projenin bağımlılıklarını tarif eder ve içebilir.
+Diğer metaveriler de. Tipik olarak en üst düzey dizgine girmelidir.
+Proje/VCS deposu. Teknik olarak bileşen herhangi bir yere çalıştırabilirsiniz.
+Packagist.org'a bir paket yayınlamak istiyorsanız, bu da yapabilmek zorunda kalacak.
+Dosya VCS deposunun en tepesinde bulmak için.
 
-### The `require` key
+### ... `Gerekli`   anahtar 
 
-The first thing you specify in `composer.json` is the
-[`require`](04-schema.md#require) key. You are telling Composer which
-packages your project depends on.
+ İlk olarak belirttiğin şey.   `composer.json`   İşte... 
+[[[] name[`Gerekli`](04-schema.md#require) anahtar. Besteciye hangisini söylüyorsunuz.
+Projeniz paketleri bağlı.
 
-```json
+```json.
 {
-    "require": {
-        "monolog/monolog": "2.0.*"
-    }
+ "gerekli": { 
+ "monolog/monolog": "2.0.*" 
+     } 
 }
 ```
 
-As you can see, [`require`](04-schema.md#require) takes an object that maps
-**package names** (e.g. `monolog/monolog`) to **version constraints** (e.g.
+Gördüğünüz gibi, [`Gerekli`](04-schema.md#require) haritaları alan bir nesne alıyor.
+**paket isimleri**  (e.g.  `monolog/monolog`) to... **Sürüm kısıtlamaları**  (e.g.
 `1.0.*`).
 
-Composer uses this information to search for the right set of files in package
-"repositories" that you register using the [`repositories`](04-schema.md#repositories)
-key, or in [Packagist.org](https://packagist.org), the default package repository.
-In the above example, since no other repository has been registered in the
+Besin, paketteki doğru dosya setini aramak için bu bilgiyi kullanıyor
+"depolar" kullanarak kaydettiğiniz "depolar" [`Depolar`](04-schema.md#repositories)
+anahtar ya da içeride [[[Packagist.org](https://packagist.org), öntanımlı paket deposu.
+Yukarıdaki örnekte, başka bir depo kaydedilmediği için...
 `composer.json` file, it is assumed that the `monolog/monolog` package is registered
 on Packagist.org. (Read more [about Packagist](#packagist), and
 [about repositories](05-repositories.md)).
