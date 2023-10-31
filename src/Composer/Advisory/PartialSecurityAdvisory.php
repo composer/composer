@@ -44,7 +44,7 @@ class PartialSecurityAdvisory implements JsonSerializable
     {
         $constraint = $parser->parseConstraints($data['affectedVersions']);
         if (isset($data['title'], $data['sources'], $data['reportedAt'])) {
-            return new SecurityAdvisory($packageName, $data['advisoryId'], $constraint, $data['title'], $data['sources'], new \DateTimeImmutable($data['reportedAt'], new \DateTimeZone('UTC')), $data['cve'] ?? null, $data['link'] ?? null);
+            return new SecurityAdvisory($packageName, $data['advisoryId'], $constraint, $data['title'], $data['sources'], new \DateTimeImmutable($data['reportedAt'], new \DateTimeZone('UTC')), $data['cve'] ?? null, $data['link'] ?? null, $data['severity'] ?? null);
         }
 
         return new self($packageName, $data['advisoryId'], $constraint);

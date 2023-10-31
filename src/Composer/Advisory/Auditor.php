@@ -251,6 +251,7 @@ class Auditor
             foreach ($packageAdvisories as $advisory) {
                 $headers = [
                     'Package',
+                    'Severity',
                     'CVE',
                     'Title',
                     'URL',
@@ -259,6 +260,7 @@ class Auditor
                 ];
                 $row = [
                     $advisory->packageName,
+                    $this->getSeverity($advisory),
                     $this->getCVE($advisory),
                     $advisory->title,
                     $this->getURL($advisory),
@@ -293,6 +295,7 @@ class Auditor
                     $error[] = '--------';
                 }
                 $error[] = "Package: ".$advisory->packageName;
+                $error[] = "Severity: ".$this->getSeverity($advisory);
                 $error[] = "CVE: ".$this->getCVE($advisory);
                 $error[] = "Title: ".OutputFormatter::escape($advisory->title);
                 $error[] = "URL: ".$this->getURL($advisory);
@@ -352,6 +355,15 @@ class Auditor
         $packageUrl = PackageInfo::getViewSourceOrHomepageUrl($package);
 
         return $packageUrl !== null ? '<href=' . OutputFormatter::escape($packageUrl) . '>' . $package->getPrettyName() . '</>' : $package->getPrettyName();
+    }
+
+    private function getSeverity(SecurityAdvisory $advisory): string
+    {
+        if ($advisory->severity === null) {
+            return '';
+        }
+
+        return $advisory->severity;
     }
 
     private function getCVE(SecurityAdvisory $advisory): string
