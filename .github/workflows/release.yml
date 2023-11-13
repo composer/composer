@@ -86,7 +86,7 @@ jobs:
       # This step requires a secret token with `pull` access to composer/docker. The default
       # secrets.GITHUB_TOKEN is scoped to this repository only which is not sufficient.
       - name: "Open issue @ Docker repository"
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           script: |
