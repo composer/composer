@@ -13,6 +13,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use InvalidArgumentException;
 
 class UpdateCommandTest extends TestCase
 {
@@ -100,5 +101,15 @@ The temporary constraint "^2" for "root/req" must be a subset of the constraint 
 Run `composer require root/req` or `composer require root/req:^2` instead to replace the constraint
 OUTPUT
         ];
+    }
+
+    public function testInteractiveModeThrowsIfNoPackageEntered()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You must enter minimum one package.');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->setInputs(['']);
+        $appTester->run(['command' => 'update', '--interactive' => true]);
     }
 }
