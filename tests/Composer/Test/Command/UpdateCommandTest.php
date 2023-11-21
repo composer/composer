@@ -103,7 +103,7 @@ OUTPUT
         ];
     }
 
-    public function testInteractiveModeThrowsIfNoPackageEntered()
+    public function testInteractiveModeThrowsIfNoPackageEntered(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You must enter minimum one package.');
