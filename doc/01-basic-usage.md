@@ -59,7 +59,7 @@ you to require certain versions of server software. See
 ### Package version constraints
 
 In our example, we are requesting the Monolog package with the version constraint
-[`2.0.*`](https://semver.mwl.be/#?package=monolog%2Fmonolog&version=2.0.*).
+[`2.0.*`](https://semver.madewithlove.com/?package=monolog%2Fmonolog&constraint=2.0.*).
 This means any version in the `2.0` development branch, or any version that is
 greater than or equal to 2.0 and less than 2.1 (`>=2.0 <2.1`).
 
