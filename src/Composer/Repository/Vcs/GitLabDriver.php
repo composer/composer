@@ -43,7 +43,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @var mixed[] Project data returned by GitLab API
      */
-    private $project;
+    private $project = null;
 
     /**
      * @var array<string|int, mixed[]> Keeps commits returned by GitLab API as commit id => info
@@ -381,7 +381,7 @@ class GitLabDriver extends VcsDriver
 
     protected function fetchProject(): void
     {
-        if ($this->project) {
+        if (!is_null($this->project)) {
             return;
         }
 
