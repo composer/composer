@@ -1,3 +1,9 @@
+### [2.6.6] 2023-12-08
+
+  * Fixed symfony/console requirement to exclude 7.x as Composer 2.6 is not compatible, 2.7 will be (#11741)
+  * Fixed libpq parsing to use the global constant if available (#11684)
+  * Fixed error output when updating with a temporary constraint fails (#11692)
+
 ### [2.6.5] 2023-10-06
 
   * Fixed error when vendor dir contains broken symlinks (#11670)
@@ -1789,6 +1795,7 @@
 
   * Initial release
 
+[2.6.6]: https://github.com/composer/composer/compare/2.6.5...2.6.6
 [2.6.5]: https://github.com/composer/composer/compare/2.6.4...2.6.5
 [2.6.4]: https://github.com/composer/composer/compare/2.6.3...2.6.4
 [2.6.3]: https://github.com/composer/composer/compare/2.6.2...2.6.3
