@@ -38,7 +38,7 @@ class Config
         'allow-plugins' => [],
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
-        'audit' => ['ignore' => [], 'abandoned' => 'default'], // TODO in 2.7 switch to ABANDONED_FAIL
+        'audit' => ['ignore' => [], 'abandoned' => Auditor::ABANDONED_FAIL],
         'notify-on-install' => true,
         'github-protocols' => ['https', 'ssh', 'git'],
         'gitlab-protocol' => null,
