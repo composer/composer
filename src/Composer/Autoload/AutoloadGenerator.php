@@ -1133,6 +1133,10 @@ HEADER;
             $loader->setPsr4($namespace, $path);
         }
 
+        /**
+         * @var string $vendorDir
+         * @var string $baseDir
+         */
         $classMap = require $targetDir . '/autoload_classmap.php';
         if ($classMap) {
             $loader->addClassMap($classMap);
