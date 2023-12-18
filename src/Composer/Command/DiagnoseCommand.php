@@ -12,14 +12,23 @@
 
 namespace Composer\Command;
 
+use Composer\Advisory\Auditor;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\Config;
 use Composer\Downloader\TransportException;
+use Composer\IO\BufferIO;
+use Composer\Json\JsonFile;
+use Composer\Package\RootPackage;
+use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
+use Composer\Repository\ComposerRepository;
+use Composer\Repository\FilesystemRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Repository\RepositorySet;
+use Composer\Repository\RootPackageRepository;
 use Composer\Util\ConfigValidator;
 use Composer\Util\Git;
 use Composer\Util\IniHelper;
@@ -153,9 +162,12 @@ EOT
             $io->write('Checking pubkeys: ', false);
             $this->outputResult($this->checkPubKeys($config));
 
-            $io->write('Checking composer version: ', false);
+            $io->write('Checking Composer version: ', false);
             $this->outputResult($this->checkVersion($config));
         }
+
+        $io->write('Checking Composer and its dependencies for vulnerabilities: ', false);
+        $this->outputResult($this->checkComposerAudit($config));
 
         $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::getVersion()));
 
@@ -433,6 +445,48 @@ EOT
 
         if (Composer::VERSION !== $latest['version'] && Composer::VERSION !== '@package_version@') {
             return '<comment>You are not running the latest '.$versionsUtil->getChannel().' version, run `composer self-update` to update ('.Composer::VERSION.' => '.$latest['version'].')</comment>';
+        }
+
+        return true;
+    }
+
+    /**
+     * @return string|true
+     */
+    private function checkComposerAudit(Config $config)
+    {
+        $result = $this->checkConnectivityAndComposerNetworkHttpEnablement();
+        if ($result !== true) {
+            return $result;
+        }
+
+        $auditor = new Auditor();
+        $repoSet = new RepositorySet();
+        $installedJson = new JsonFile(__DIR__ . '/../../../vendor/composer/installed.json');
+        if (!$installedJson->exists()) {
+            return '<warning>Could not find Composer\'s installed.json, this must be a non-standard Composer installation.</>';
+        }
+
+        $localRepo = new FilesystemRepository($installedJson);
+        $version = Composer::getVersion();
+        $packages = $localRepo->getCanonicalPackages();
+        if ($version !== '@package_version@') {
+            $versionParser = new VersionParser();
+            $normalizedVersion = $versionParser->normalize($version);
+            $rootPkg = new RootPackage('composer/composer', $normalizedVersion, $version);
+            $packages[] = $rootPkg;
+        }
+        $repoSet->addRepository(new ComposerRepository(['type' => 'composer', 'url' => 'https://packagist.org'], new NullIO(), $config, $this->httpDownloader));
+
+        try {
+            $io = new BufferIO();
+            $result = $auditor->audit($io, $repoSet, $packages, Auditor::FORMAT_TABLE, true, [], Auditor::ABANDONED_IGNORE);
+        } catch (\Throwable $e) {
+            return '<warning>Failed performing audit: '.$e->getMessage().'</>';
+        }
+
+        if ($result > 0) {
+            return '<error>Audit found some issues:</>' . PHP_EOL . $io->getOutput();
         }
 
         return true;
