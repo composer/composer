@@ -34,19 +34,19 @@ class ShowCommandTest extends TestCase
                     'package' => [
                         ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0'],
 
-                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.0.0 description', 'version' => '1.0.0'],
-                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.0.1 description', 'version' => '1.0.1'],
-                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.1.0 description', 'version' => '1.1.0'],
-                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.1.1 description', 'version' => '1.1.1'],
-                        ['name' => 'outdated/major', 'description' => 'outdated/major v2.0.0 description', 'version' => '2.0.0'],
+                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.0.0 description', 'version' => '1.0.0', 'time' => '2019-01-02 01:00:00'],
+                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.0.1 description', 'version' => '1.0.1', 'time' => '2019-01-02 01:00:00'],
+                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.1.0 description', 'version' => '1.1.0', 'time' => '2019-01-02 01:00:00'],
+                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.1.1 description', 'version' => '1.1.1', 'time' => '2019-01-02 01:00:00'],
+                        ['name' => 'outdated/major', 'description' => 'outdated/major v2.0.0 description', 'version' => '2.0.0', 'time' => '2019-01-02 01:00:00'],
 
-                        ['name' => 'outdated/minor', 'description' => 'outdated/minor v1.0.0 description', 'version' => '1.0.0'],
-                        ['name' => 'outdated/minor', 'description' => 'outdated/minor v1.0.1 description', 'version' => '1.0.1'],
-                        ['name' => 'outdated/minor', 'description' => 'outdated/minor v1.1.0 description', 'version' => '1.1.0'],
-                        ['name' => 'outdated/minor', 'description' => 'outdated/minor v1.1.1 description', 'version' => '1.1.1'],
+                        ['name' => 'outdated/minor', 'description' => 'outdated/minor v1.0.0 description', 'version' => '1.0.0', 'time' => date('Y-m-d H:i:s', strtotime('-2 weeks'))],
+                        ['name' => 'outdated/minor', 'description' => 'outdated/minor v1.0.1 description', 'version' => '1.0.1', 'time' => date('Y-m-d H:i:s', strtotime('-2 weeks'))],
+                        ['name' => 'outdated/minor', 'description' => 'outdated/minor v1.1.0 description', 'version' => '1.1.0', 'time' => date('Y-m-d H:i:s', strtotime('-2 weeks'))],
+                        ['name' => 'outdated/minor', 'description' => 'outdated/minor v1.1.1 description', 'version' => '1.1.1', 'time' => date('Y-m-d H:i:s', strtotime('-2 weeks'))],
 
-                        ['name' => 'outdated/patch', 'description' => 'outdated/patch v1.0.0 description', 'version' => '1.0.0'],
-                        ['name' => 'outdated/patch', 'description' => 'outdated/patch v1.0.1 description', 'version' => '1.0.1'],
+                        ['name' => 'outdated/patch', 'description' => 'outdated/patch v1.0.0 description', 'version' => '1.0.0', 'time' => date('Y-m-d H:i:s')],
+                        ['name' => 'outdated/patch', 'description' => 'outdated/patch v1.0.1 description', 'version' => '1.0.1', 'time' => date('Y-m-d H:i:s')],
                     ],
                 ],
             ],
@@ -107,9 +107,9 @@ Direct dependencies required in composer.json:
 Everything up to date
 
 Transitive dependencies not required in composer.json:
-outdated/major 1.0.0 ~ 2.0.0
-outdated/minor 1.0.0 <highlight>! 1.1.1</highlight>
-outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
+outdated/major 1.0.0 ~ 2.0.0 2019-01-02 '.'
+outdated/minor 1.0.0 <highlight>! 1.1.1</highlight> 2 weeks ago
+outdated/patch 1.0.0 <highlight>! 1.0.1</highlight> today',
         ];
 
         yield 'outdated deps with --direct only show direct deps with updated' => [
@@ -117,7 +117,7 @@ outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
 'Legend:
 ! patch or minor release available - update recommended
 ~ major release available - update possible
-outdated/major 1.0.0 ~ 2.0.0',
+outdated/major 1.0.0 ~ 2.0.0 2019-01-02',
             [
                 'vendor/package' => '*',
                 'outdated/major' => '*',
@@ -142,7 +142,7 @@ Direct dependencies required in composer.json:
 Everything up to date
 
 Transitive dependencies not required in composer.json:
-outdated/major 1.0.0 ~ 2.0.0',
+outdated/major 1.0.0 ~ 2.0.0 2019-01-02',
         ];
 
         yield 'outdated deps with --minor-only only shows minor updates' => [
@@ -152,11 +152,11 @@ outdated/major 1.0.0 ~ 2.0.0',
 ~ major release available - update possible
 
 Direct dependencies required in composer.json:
-outdated/minor 1.0.0 <highlight>! 1.1.1</highlight>
+outdated/minor 1.0.0 <highlight>! 1.1.1</highlight> 2 weeks ago
 
 Transitive dependencies not required in composer.json:
-outdated/major 1.0.0 <highlight>! 1.1.1</highlight>
-outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
+outdated/major 1.0.0 <highlight>! 1.1.1</highlight> 2019-01-02 '.'
+outdated/patch 1.0.0 <highlight>! 1.0.1</highlight> today',
             ['outdated/minor' => '*'],
         ];
 
@@ -170,9 +170,9 @@ Direct dependencies required in composer.json:
 Everything up to date
 
 Transitive dependencies not required in composer.json:
-outdated/major 1.0.0 <highlight>! 1.0.1</highlight>
-outdated/minor 1.0.0 <highlight>! 1.0.1</highlight>
-outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
+outdated/major 1.0.0 <highlight>! 1.0.1</highlight> 2019-01-02 '.'
+outdated/minor 1.0.0 <highlight>! 1.0.1</highlight> 2 weeks ago
+outdated/patch 1.0.0 <highlight>! 1.0.1</highlight> today',
         ];
     }
 
@@ -351,7 +351,7 @@ zero/patch 0.1.2 <highlight>! 0.1.2.1</highlight>', trim($appTester->getDisplay(
 'Legend:
 ! patch or minor release available - update recommended
 ~ major release available - update possible
-zero/minor 0.1.0 <highlight>! 0.1.2  </highlight>
+zero/minor 0.1.0 <highlight>! 0.1.2  </highlight> '.'
 zero/patch 0.1.2 <highlight>! 0.1.2.1</highlight>', trim($appTester->getDisplay(true)));
 
         $appTester = $this->getApplicationTester();
@@ -360,7 +360,7 @@ zero/patch 0.1.2 <highlight>! 0.1.2.1</highlight>', trim($appTester->getDisplay(
 'Legend:
 ! patch or minor release available - update recommended
 ~ major release available - update possible
-zero/major     0.1.0 ~ 0.2.0
+zero/major     0.1.0 ~ 0.2.0 '.'
 zerozero/major 0.0.1 ~ 0.0.2', trim($appTester->getDisplay(true)));
     }
 
@@ -533,7 +533,7 @@ OUTPUT;
 
     public function testSelf(): void
     {
-        $this->initTempComposer(['name' => 'vendor/package']);
+        $this->initTempComposer(['name' => 'vendor/package', 'time' => date('Y-m-d')]);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'show', '--self' => true]);
@@ -543,6 +543,7 @@ OUTPUT;
             'keywords' => '',
             'versions' => '* 1.0.0+no-version-set',
             'type' => 'library',
+            'released' => 'today',
             'homepage' => '',
             'source' => '[]  ',
             'dist' => '[]  ',
