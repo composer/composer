@@ -82,10 +82,10 @@ class VersionBumper
         $pattern = '{
             (?<=,|\ |\||^) # leading separator
             (?P<constraint>
-                \^'.$major.'(?:\.\d+)* # e.g. ^2.anything
-                | ~'.$major.'(?:\.\d+){0,2} # e.g. ~2 or ~2.2 or ~2.2.2 but no more
-                | '.$major.'(?:\.[*x])+ # e.g. 2.* or 2.*.* or 2.x.x.x etc
-                | >=\d(?:\.\d+)* # e.g. >=2 or >=1.2 etc
+                \^v?'.$major.'(?:\.\d+)* # e.g. ^2.anything
+                | ~v?'.$major.'(?:\.\d+){0,2} # e.g. ~2 or ~2.2 or ~2.2.2 but no more
+                | v?'.$major.'(?:\.[*x])+ # e.g. 2.* or 2.*.* or 2.x.x.x etc
+                | >=v?\d(?:\.\d+)* # e.g. >=2 or >=1.2 etc
             )
             (?=,|$|\ |\||@) # trailing separator
         }x';
