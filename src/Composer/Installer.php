@@ -605,7 +605,14 @@ class Installer
 
             // output op if lock file is enabled, but alias op only in debug verbosity
             if ($this->config->get('lock') && (false === strpos($operation->getOperationType(), 'Alias') || $this->io->isDebug())) {
-                $this->io->writeError('  - ' . $operation->show(true));
+                $sourceRepo = '';
+                if ($this->io->isVeryVerbose() && false === strpos($operation->getOperationType(), 'Alias')) {
+                    $operationPkg = ($operation instanceof UpdateOperation ? $operation->getTargetPackage() : $operation->getPackage());
+                    if ($operationPkg->getRepository() !== null) {
+                        $sourceRepo = ' from ' . $operationPkg->getRepository()->getRepoName();
+                    }
+                }
+                $this->io->writeError('  - ' . $operation->show(true) . $sourceRepo);
             }
         }
 

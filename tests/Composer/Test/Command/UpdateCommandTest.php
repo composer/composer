@@ -29,7 +29,7 @@ class UpdateCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true], $command));
 
-        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+        $this->assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
     }
 
     public static function provideUpdates(): \Generator
@@ -62,6 +62,29 @@ Lock file operations: 2 installs, 0 updates, 0 removals
   - Locking root/req (1.0.0)
 Installing dependencies from lock file (including require-dev)
 Package operations: 2 installs, 0 updates, 0 removals
+  - Installing dep/pkg (1.0.2)
+  - Installing root/req (1.0.0)
+OUTPUT
+        ];
+
+        yield 'simple update with very verbose output' => [
+            $rootDepAndTransitiveDep,
+            ['-vv' => true],
+            <<<OUTPUT
+Loading composer repositories with package information
+Pool optimizer completed in %f seconds
+Found %d package versions referenced in your dependency graph. %d (%d%%) were optimized away.
+Updating dependencies
+Dependency resolution completed in %f seconds
+Analyzed %d packages to resolve dependencies
+Analyzed %d rules to resolve dependencies
+Lock file operations: 2 installs, 0 updates, 0 removals
+Installs: dep/pkg:1.0.2, root/req:1.0.0
+  - Locking dep/pkg (1.0.2) from package repo (defining 4 packages)
+  - Locking root/req (1.0.0) from package repo (defining 4 packages)
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
+Installs: dep/pkg:1.0.2, root/req:1.0.0
   - Installing dep/pkg (1.0.2)
   - Installing root/req (1.0.0)
 OUTPUT
