@@ -56,6 +56,11 @@ parameters:
 			path: ../src/Composer/Config/JsonConfigSource.php
 
 		-
+			message: "#^Call to function method_exists\\(\\) with \\$this\\(Composer\\\\Console\\\\Application\\) and 'setCatchErrors' will always evaluate to true\\.$#"
+			count: 2
+			path: ../src/Composer/Console/Application.php
+
+		-
 			message: "#^Parameter \\#2 \\$callback of function uksort expects callable\\(string, string\\)\\: int, 'version_compare' given\\.$#"
 			count: 2
 			path: ../src/Composer/DependencyResolver/Problem.php
@@ -84,6 +89,11 @@ parameters:
 			message: "#^Parameter \\#3 \\$length of function fwrite expects int\\<0, max\\>\\|null, int given\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/GzipDownloader.php
+
+		-
+			message: "#^Call to function method_exists\\(\\) with Symfony\\\\Component\\\\Console\\\\Application and 'setCatchErrors' will always evaluate to true\\.$#"
+			count: 1
+			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
 			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\<0, max\\>\\|false given\\.$#"
@@ -271,9 +281,19 @@ parameters:
 			path: ../tests/Composer/Test/ConfigTest.php
 
 		-
+			message: "#^Call to function method_exists\\(\\) with Composer\\\\Console\\\\Application and 'setCatchErrors' will always evaluate to true\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/DocumentationTest.php
+
+		-
 			message: "#^Parameter \\#1 \\$callback of function call_user_func_array expects callable\\(\\)\\: mixed, array\\{Composer\\\\Repository\\\\CompositeRepository, string\\} given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/CompositeRepositoryTest.php
+
+		-
+			message: "#^Call to function method_exists\\(\\) with Composer\\\\Console\\\\Application and 'setCatchErrors' will always evaluate to true\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/TestCase.php
 
 		-
 			message: "#^Parameter \\#1 \\$object of method ReflectionProperty\\:\\:getValue\\(\\) expects object\\|null, object\\|string given\\.$#"
