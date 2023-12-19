@@ -26,9 +26,9 @@ class IgnoredSecurityAdvisory extends SecurityAdvisory
     /**
      * @param non-empty-array<array{name: string, remoteId: string}> $sources
      */
-    public function __construct(string $packageName, string $advisoryId, ConstraintInterface $affectedVersions, string $title, array $sources, DateTimeImmutable $reportedAt, ?string $cve = null, ?string $link = null, ?string $ignoreReason = null)
+    public function __construct(string $packageName, string $advisoryId, ConstraintInterface $affectedVersions, string $title, array $sources, DateTimeImmutable $reportedAt, ?string $cve = null, ?string $link = null, ?string $ignoreReason = null, ?string $severity = null)
     {
-        parent::__construct($packageName, $advisoryId, $affectedVersions, $title, $sources, $reportedAt, $cve, $link);
+        parent::__construct($packageName, $advisoryId, $affectedVersions, $title, $sources, $reportedAt, $cve, $link, $severity);
 
         $this->ignoreReason = $ignoreReason;
     }
