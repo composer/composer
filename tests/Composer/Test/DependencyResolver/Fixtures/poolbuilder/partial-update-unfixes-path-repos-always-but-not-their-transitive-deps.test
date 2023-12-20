@@ -86,5 +86,6 @@ Partially updating one root requirement with transitive deps fully updates trans
    "symlinked/path-pkg-2.0.0.0",
    "root/update-1.0.4.0",
    "symlinked/transitive2-2.0.4.0",
-   "mirrored/transitive2-1.0.7.0"
+   "mirrored/transitive2-1.0.7.0",
+   "mirrored/transitive2-2.0.8.0"
 ]

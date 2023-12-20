@@ -56,5 +56,6 @@ Do not load packages into the pool that cannot meet the fixed/locked requirement
     "first/pkg-1.0.0.0 (locked)",
     "replacer/pkg-1.0.0.0 (locked)",
     "second/pkg-1.0.0.0",
-    "replacer/dep-1.0.1.0"
+    "replacer/dep-1.0.1.0",
+    "replacer/dep-2.0.0.0"
 ]

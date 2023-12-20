@@ -49,11 +49,6 @@ class PoolOptimizer
     private $conflictConstraintsPerPackage = [];
 
     /**
-     * @var array<int, true>
-     */
-    private $packagesToRemove = [];
-
-    /**
      * @var array<int, BasePackage[]>
      */
     private $aliasesPerPackage = [];
@@ -74,8 +69,6 @@ class PoolOptimizer
 
         $this->optimizeByIdenticalDependencies($request, $pool);
 
-        $this->optimizeImpossiblePackagesAway($request, $pool);
-
         $optimizedPool = $this->applyRemovalsToPool($pool);
 
         // No need to run this recursively at the moment
@@ -86,7 +79,6 @@ class PoolOptimizer
         $this->irremovablePackages = [];
         $this->requireConstraintsPerPackage = [];
         $this->conflictConstraintsPerPackage = [];
-        $this->packagesToRemove = [];
         $this->aliasesPerPackage = [];
         $this->removedVersionsByPackage = [];
 
@@ -145,6 +137,11 @@ class PoolOptimizer
 
     private function markPackageIrremovable(BasePackage $package): void
     {
+        // Already marked to keep
+        if (isset($this->irremovablePackages[$package->id])) {
+            return;
+        }
+
         $this->irremovablePackages[$package->id] = true;
         if ($package instanceof AliasPackage) {
             // recursing here so aliasesPerPackage for the aliasOf can be checked
@@ -166,7 +163,7 @@ class PoolOptimizer
         $packages = [];
         $removedVersions = [];
         foreach ($pool->getPackages() as $package) {
-            if (!isset($this->packagesToRemove[$package->id])) {
+            if (isset($this->irremovablePackages[$package->id])) {
                 $packages[] = $package;
             } else {
                 $removedVersions[$package->getName()][$package->getVersion()] = $package->getPrettyVersion();
@@ -190,8 +187,6 @@ class PoolOptimizer
             if (isset($this->irremovablePackages[$package->id])) {
                 continue;
             }
-
-            $this->markPackageForRemoval($package->id);
 
             $dependencyHash = $this->calculateDependencyHash($package);
 
@@ -240,7 +235,7 @@ class PoolOptimizer
                 foreach ($constraintGroup as $packages) {
                     // Only one package in this constraint group has the same requirements, we're not allowed to remove that package
                     if (1 === \count($packages)) {
-                        $this->keepPackage($packages[0], $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup);
+                        $this->keepPackageWithinDependencyGroups($packages[0], $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup);
                         continue;
                     }
 
@@ -253,7 +248,7 @@ class PoolOptimizer
                     }
 
                     foreach ($this->policy->selectPreferredPackages($pool, $literals) as $preferredLiteral) {
-                        $this->keepPackage($pool->literalToPackage($preferredLiteral), $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup);
+                        $this->keepPackageWithinDependencyGroups($pool->literalToPackage($preferredLiteral), $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup);
                     }
                 }
             }
@@ -300,33 +295,18 @@ class PoolOptimizer
         return $hash;
     }
 
-    private function markPackageForRemoval(int $id): void
-    {
-        // We are not allowed to remove packages if they have been marked as irremovable
-        if (isset($this->irremovablePackages[$id])) {
-            throw new \LogicException('Attempted removing a package which was previously marked irremovable');
-        }
-
-        $this->packagesToRemove[$id] = true;
-    }
-
     /**
      * @param array<string, array<string, array<string, list<BasePackage>>>> $identicalDefinitionsPerPackage
      * @param array<int, array<string, array{groupHash: string, dependencyHash: string}>> $packageIdenticalDefinitionLookup
      */
-    private function keepPackage(BasePackage $package, array $identicalDefinitionsPerPackage, array $packageIdenticalDefinitionLookup): void
+    private function keepPackageWithinDependencyGroups(BasePackage $package, array $identicalDefinitionsPerPackage, array $packageIdenticalDefinitionLookup): void
     {
-        // Already marked to keep
-        if (!isset($this->packagesToRemove[$package->id])) {
-            return;
-        }
-
-        unset($this->packagesToRemove[$package->id]);
+        $this->markPackageIrremovable($package);
 
         if ($package instanceof AliasPackage) {
             // recursing here so aliasesPerPackage for the aliasOf can be checked
             // and all its aliases marked to be kept as well
-            $this->keepPackage($package->getAliasOf(), $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup);
+            $this->keepPackageWithinDependencyGroups($package->getAliasOf(), $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup);
         }
 
         // record all the versions of the package group so we can list them later in Problem output
@@ -345,8 +325,6 @@ class PoolOptimizer
 
         if (isset($this->aliasesPerPackage[$package->id])) {
             foreach ($this->aliasesPerPackage[$package->id] as $aliasPackage) {
-                unset($this->packagesToRemove[$aliasPackage->id]);
-
                 // record all the versions of the package group so we can list them later in Problem output
                 foreach ($aliasPackage->getNames(false) as $name) {
                     if (isset($packageIdenticalDefinitionLookup[$aliasPackage->id][$name])) {
@@ -358,70 +336,6 @@ class PoolOptimizer
                             }
                             $this->removedVersionsByPackage[spl_object_hash($aliasPackage)][$pkg->getVersion()] = $pkg->getPrettyVersion();
                         }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Use the list of locked packages to constrain the loaded packages
-     * This will reduce packages with significant numbers of historical versions to a smaller number
-     * and reduce the resulting rule set that is generated
-     */
-    private function optimizeImpossiblePackagesAway(Request $request, Pool $pool): void
-    {
-        if (count($request->getLockedPackages()) === 0) {
-            return;
-        }
-
-        $packageIndex = [];
-
-        foreach ($pool->getPackages() as $package) {
-            $id = $package->id;
-
-            // Do not remove irremovable packages
-            if (isset($this->irremovablePackages[$id])) {
-                continue;
-            }
-            // Do not remove a package aliased by another package, nor aliases
-            if (isset($this->aliasesPerPackage[$id]) || $package instanceof AliasPackage) {
-                continue;
-            }
-            // Do not remove locked packages
-            if ($request->isFixedPackage($package) || $request->isLockedPackage($package)) {
-                continue;
-            }
-
-            $packageIndex[$package->getName()][$package->id] = $package;
-        }
-
-        foreach ($request->getLockedPackages() as $package) {
-            // If this locked package is no longer required by root or anything in the pool, it may get uninstalled so do not apply its requirements
-            // In a case where a requirement WERE to appear in the pool by a package that would not be used, it would've been unlocked and so not filtered still
-            $isUnusedPackage = true;
-            foreach ($package->getNames(false) as $packageName) {
-                if (isset($this->requireConstraintsPerPackage[$packageName])) {
-                    $isUnusedPackage = false;
-                    break;
-                }
-            }
-
-            if ($isUnusedPackage) {
-                continue;
-            }
-
-            foreach ($package->getRequires() as $link) {
-                $require = $link->getTarget();
-                if (!isset($packageIndex[$require])) {
-                    continue;
-                }
-
-                $linkConstraint = $link->getConstraint();
-                foreach ($packageIndex[$require] as $id => $requiredPkg) {
-                    if (false === CompilingMatcher::match($linkConstraint, Constraint::OP_EQ, $requiredPkg->getVersion())) {
-                        $this->markPackageForRemoval($id);
-                        unset($packageIndex[$require][$id]);
                     }
                 }
             }

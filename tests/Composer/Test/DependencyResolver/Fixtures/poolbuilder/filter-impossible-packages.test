@@ -51,5 +51,6 @@ Do not load packages into the pool that cannot meet the fixed/locked requirement
 [
     2,
     "some/pkg-1.0.4.0",
+    "dep/dep-1.0.2.0",
     "dep/dep-2.0.1.0"
 ]

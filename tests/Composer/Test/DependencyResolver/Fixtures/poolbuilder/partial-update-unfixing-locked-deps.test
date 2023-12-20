@@ -55,5 +55,6 @@ locked packages still need to be taking into account for loading all necessary v
     "root/req2-1.0.0.0 (locked)",
     "dep/pkg2-1.0.0.0",
     "dep/pkg2-1.2.0.0",
-    "dep/pkg1-1.0.1.0"
+    "dep/pkg1-1.0.1.0",
+    "dep/pkg1-2.0.0.0"
 ]
