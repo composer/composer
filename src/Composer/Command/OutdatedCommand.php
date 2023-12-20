@@ -40,7 +40,7 @@ class OutdatedCommand extends BaseCommand
                 new InputOption('major-only', 'M', InputOption::VALUE_NONE, 'Show only packages that have major SemVer-compatible updates.'),
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates.'),
                 new InputOption('patch-only', 'p', InputOption::VALUE_NONE, 'Show only packages that have patch SemVer-compatible updates.'),
-                new InputOption('sort-by-age', 'A', InputOption::VALUE_NONE, 'Sort by and display current release age.'),
+                new InputOption('sort-by-age', 'A', InputOption::VALUE_NONE, 'Displays the installed version\'s age, and sorts packages oldest first.'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
                 new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it if you don\'t want to be informed about new versions of some packages.', null, $this->suggestInstalledPackage(false)),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),

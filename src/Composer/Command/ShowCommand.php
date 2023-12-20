@@ -98,7 +98,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('major-only', 'M', InputOption::VALUE_NONE, 'Show only packages that have major SemVer-compatible updates. Use with the --latest or --outdated option.'),
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --latest or --outdated option.'),
                 new InputOption('patch-only', null, InputOption::VALUE_NONE, 'Show only packages that have patch SemVer-compatible updates. Use with the --latest or --outdated option.'),
-                new InputOption('sort-by-age', 'A', InputOption::VALUE_NONE, 'Sort by and display current release age. Use with the --latest or --outdated option.'),
+                new InputOption('sort-by-age', 'A', InputOption::VALUE_NONE, 'Displays the installed version\'s age, and sorts packages oldest first. Use with the --latest or --outdated option.'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
