@@ -293,7 +293,7 @@ EOT
                 if (PlatformRepository::isPlatformPackage($packageFilter) && !$input->getOption('platform')) {
                     $hint .= ', try using --platform (-p) to show platform packages';
                 }
-                if (!$input->getOption('all')) {
+                if (!$input->getOption('all') && !$input->getOption('available')) {
                     $hint .= ', try using --available (-a) to show all available packages';
                 }
 
