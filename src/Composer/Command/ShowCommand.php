@@ -98,6 +98,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('major-only', 'M', InputOption::VALUE_NONE, 'Show only packages that have major SemVer-compatible updates. Use with the --latest or --outdated option.'),
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --latest or --outdated option.'),
                 new InputOption('patch-only', null, InputOption::VALUE_NONE, 'Show only packages that have patch SemVer-compatible updates. Use with the --latest or --outdated option.'),
+                new InputOption('sort-by-age', 'A', InputOption::VALUE_NONE, 'Sort by and display current release age. Use with the --latest or --outdated option.'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
@@ -469,8 +470,19 @@ EOT
                 $writeVersion = !$input->getOption('name-only') && !$input->getOption('path') && $showVersion;
                 $writeLatest = $writeVersion && $showLatest;
                 $writeDescription = !$input->getOption('name-only') && !$input->getOption('path');
+                $writeReleaseDate = $writeLatest && $input->getOption('sort-by-age');
 
                 $hasOutdatedPackages = false;
+
+                if ($input->getOption('sort-by-age')) {
+                    usort($packages[$type], function ($a, $b) {
+                        if (is_object($a) && is_object($b)) {
+                            return $a->getReleaseDate() <=> $b->getReleaseDate();
+                        }
+
+                        return 0;
+                    });
+                }
 
                 $viewData[$type] = [];
                 foreach ($packages[$type] as $package) {
@@ -505,15 +517,20 @@ EOT
                             $packageViewData['version'] = $package->getFullPrettyVersion();
                             $versionLength = max($versionLength, strlen($package->getFullPrettyVersion()));
                         }
+                        if ($writeReleaseDate) {
+                            if ($package->getReleaseDate() !== null) {
+                                $packageViewData['release-age'] = str_replace(' ago', ' old', $this->getRelativeTime($package->getReleaseDate()));
+                                if (!str_contains($packageViewData['release-age'], ' old')) {
+                                    $packageViewData['release-age'] = 'from '.$packageViewData['release-age'];
+                                }
+                                $releaseDateLength = max($releaseDateLength, strlen($packageViewData['release-age']));
+                            } else {
+                                $packageViewData['release-age'] = '';
+                            }
+                        }
                         if ($writeLatest && $latestPackage) {
                             $packageViewData['latest'] = $latestPackage->getFullPrettyVersion();
                             $packageViewData['latest-status'] = $this->getUpdateStatus($latestPackage, $package);
-                            if ($latestPackage->getReleaseDate() !== null) {
-                                $packageViewData['latest-released'] = $this->getRelativeTime($latestPackage->getReleaseDate());
-                                $releaseDateLength = max($releaseDateLength, strlen($packageViewData['latest-released']));
-                            } else {
-                                $packageViewData['latest-released'] = '';
-                            }
                             $latestLength = max($latestLength, strlen($packageViewData['latest']));
                         } elseif ($writeLatest) {
                             $packageViewData['latest'] = '[none matched]';
@@ -560,6 +577,7 @@ EOT
                     'latestLength' => $latestLength,
                     'releaseDateLength' => $releaseDateLength,
                     'writeLatest' => $writeLatest,
+                    'writeReleaseDate' => $writeReleaseDate,
                 ];
                 if ($input->getOption('strict') && $hasOutdatedPackages) {
                     $exitCode = 1;
@@ -597,6 +615,7 @@ EOT
                 $latestLength = $viewMetaData[$type]['latestLength'];
                 $releaseDateLength = $viewMetaData[$type]['releaseDateLength'];
                 $writeLatest = $viewMetaData[$type]['writeLatest'];
+                $writeReleaseDate = $viewMetaData[$type]['writeReleaseDate'];
 
                 $versionFits = $nameLength + $versionLength + 3 <= $width;
                 $latestFits = $nameLength + $versionLength + $latestLength + 3 <= $width;
@@ -629,14 +648,14 @@ EOT
                     $io->writeError('');
                     $io->writeError('<info>Direct dependencies required in composer.json:</>');
                     if (\count($directDeps) > 0) {
-                        $this->printPackages($io, $directDeps, $indent, $writeVersion && $versionFits, $latestFits, $writeDescription && $descriptionFits, $width, $versionLength, $nameLength, $latestLength, $releaseDateFits, $releaseDateLength);
+                        $this->printPackages($io, $directDeps, $indent, $writeVersion && $versionFits, $latestFits, $writeDescription && $descriptionFits, $width, $versionLength, $nameLength, $latestLength, $writeReleaseDate && $releaseDateFits, $releaseDateLength);
                     } else {
                         $io->writeError('Everything up to date');
                     }
                     $io->writeError('');
                     $io->writeError('<info>Transitive dependencies not required in composer.json:</>');
                     if (\count($transitiveDeps) > 0) {
-                        $this->printPackages($io, $transitiveDeps, $indent, $writeVersion && $versionFits, $latestFits, $writeDescription && $descriptionFits, $width, $versionLength, $nameLength, $latestLength, $releaseDateFits, $releaseDateLength);
+                        $this->printPackages($io, $transitiveDeps, $indent, $writeVersion && $versionFits, $latestFits, $writeDescription && $descriptionFits, $width, $versionLength, $nameLength, $latestLength, $writeReleaseDate && $releaseDateFits, $releaseDateLength);
                     } else {
                         $io->writeError('Everything up to date');
                     }
@@ -644,7 +663,7 @@ EOT
                     if ($writeLatest && \count($packages) === 0) {
                         $io->writeError('All your direct dependencies are up to date');
                     } else {
-                        $this->printPackages($io, $packages, $indent, $writeVersion && $versionFits, $writeLatest && $latestFits, $writeDescription && $descriptionFits, $width, $versionLength, $nameLength, $latestLength, $writeLatest && $releaseDateFits, $releaseDateLength);
+                        $this->printPackages($io, $packages, $indent, $writeVersion && $versionFits, $writeLatest && $latestFits, $writeDescription && $descriptionFits, $width, $versionLength, $nameLength, $latestLength, $writeReleaseDate && $releaseDateFits, $releaseDateLength);
                     }
                 }
 
@@ -684,8 +703,8 @@ EOT
                     $latestVersion = str_replace(['up-to-date', 'semver-safe-update', 'update-possible'], ['=', '!', '~'], $updateStatus) . ' ' . $latestVersion;
                 }
                 $io->write(' <' . $style . '>' . str_pad($latestVersion, ($padLatest ? $latestLength : 0), ' ') . '</' . $style . '>', false);
-                if ($writeReleaseDate && isset($package['latest-released'])) {
-                    $io->write(' '.str_pad($package['latest-released'], ($padReleaseDate ? $releaseDateLength : 0), ' '), false);
+                if ($writeReleaseDate && isset($package['release-age'])) {
+                    $io->write(' '.str_pad($package['release-age'], ($padReleaseDate ? $releaseDateLength : 0), ' '), false);
                 }
             }
             if (isset($package['description']) && $writeDescription) {
@@ -826,17 +845,17 @@ EOT
         $io->write('<info>descrip.</info> : ' . $package->getDescription());
         $io->write('<info>keywords</info> : ' . implode(', ', $package->getKeywords() ?: []));
         $this->printVersions($package, $versions, $installedRepo);
+        if ($isInstalledPackage && $package->getReleaseDate() !== null) {
+            $io->write('<info>released</info> : ' . $package->getReleaseDate()->format('Y-m-d') . ', ' . $this->getRelativeTime($package->getReleaseDate()));
+        }
         if ($latestPackage) {
             $style = $this->getVersionStyle($latestPackage, $package);
-            $releasedTime = $latestPackage->getReleaseDate() === null ? '' : ' released '.$this->getRelativeTime($latestPackage->getReleaseDate());
+            $releasedTime = $latestPackage->getReleaseDate() === null ? '' : ' released ' . $latestPackage->getReleaseDate()->format('Y-m-d') . ', ' . $this->getRelativeTime($latestPackage->getReleaseDate());
             $io->write('<info>latest</info>   : <'.$style.'>' . $latestPackage->getPrettyVersion() . '</'.$style.'>' . $releasedTime);
         } else {
             $latestPackage = $package;
         }
         $io->write('<info>type</info>     : ' . $package->getType());
-        if ($isInstalledPackage && $package->getReleaseDate() !== null) {
-            $io->write('<info>released</info> : ' . $this->getRelativeTime($package->getReleaseDate()));
-        }
         $this->printLicenses($package);
         $io->write('<info>homepage</info> : ' . $package->getHomepage());
         $io->write('<info>source</info>   : ' . sprintf('[%s] <comment>%s</comment> %s', $package->getSourceType(), $package->getSourceUrl(), $package->getSourceReference()));
@@ -1486,10 +1505,14 @@ EOT
             return 'last week';
         }
 
-        if ($diff->days < 30) {
+        if ($diff->m < 1 && $diff->days < 31) {
             return floor($diff->days / 7) . ' weeks ago';
         }
 
-        return $releaseDate->format('Y-m-d');
+        if ($diff->y < 1) {
+            return $diff->m . ' month' . ($diff->m > 1 ? 's' : '') . ' ago';
+        }
+
+        return $diff->y . ' year' . ($diff->y > 1 ? 's' : '') . ' ago';
     }
 }
