@@ -17,6 +17,7 @@ use Composer\Pcre\Preg;
 use Composer\Pcre\Regex;
 use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
+use DateTimeImmutable;
 
 class ShowCommandTest extends TestCase
 {
@@ -55,13 +56,14 @@ class ShowCommandTest extends TestCase
 
         $pkg = self::getPackage('vendor/package', '1.0.0');
         $pkg->setDescription('description of installed package');
+        $major = self::getPackage('outdated/major', '1.0.0');
+        $major->setReleaseDate(new DateTimeImmutable());
+        $minor = self::getPackage('outdated/minor', '1.0.0');
+        $minor->setReleaseDate(new DateTimeImmutable('-2 years'));
+        $patch = self::getPackage('outdated/patch', '1.0.0');
+        $patch->setReleaseDate(new DateTimeImmutable('-2 weeks'));
 
-        $this->createInstalledJson([
-            $pkg,
-            self::getPackage('outdated/major', '1.0.0'),
-            self::getPackage('outdated/minor', '1.0.0'),
-            self::getPackage('outdated/patch', '1.0.0'),
-        ]);
+        $this->createInstalledJson([$pkg, $major, $minor, $patch]);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'show'], $command));
@@ -110,6 +112,21 @@ Transitive dependencies not required in composer.json:
 outdated/major 1.0.0 ~ 2.0.0
 outdated/minor 1.0.0 <highlight>! 1.1.1</highlight>
 outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
+        ];
+
+        yield 'outdated deps sorting by age' => [
+            ['command' => 'outdated', '--sort-by-age' => true],
+'Legend:
+! patch or minor release available - update recommended
+~ major release available - update possible
+
+Direct dependencies required in composer.json:
+Everything up to date
+
+Transitive dependencies not required in composer.json:
+outdated/minor 1.0.0 <highlight>! 1.1.1</highlight> 2 years old
+outdated/patch 1.0.0 <highlight>! 1.0.1</highlight> 2 weeks old
+outdated/major 1.0.0 ~ 2.0.0 from today',
         ];
 
         yield 'outdated deps with --direct only show direct deps with updated' => [
@@ -533,7 +550,7 @@ OUTPUT;
 
     public function testSelf(): void
     {
-        $this->initTempComposer(['name' => 'vendor/package']);
+        $this->initTempComposer(['name' => 'vendor/package', 'time' => date('Y-m-d')]);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'show', '--self' => true]);
@@ -542,6 +559,7 @@ OUTPUT;
             'descrip.' => '',
             'keywords' => '',
             'versions' => '* 1.0.0+no-version-set',
+            'released' => date('Y-m-d'). ', today',
             'type' => 'library',
             'homepage' => '',
             'source' => '[]  ',
