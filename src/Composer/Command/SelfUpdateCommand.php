@@ -23,6 +23,7 @@ use Composer\SelfUpdate\Versions;
 use Composer\IO\IOInterface;
 use Composer\Downloader\FilesystemException;
 use Composer\Downloader\TransportException;
+use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
 use Composer\Console\Input\InputArgument;
@@ -154,6 +155,15 @@ EOT
 
         if ($input->getOption('rollback')) {
             return $this->rollback($output, $rollbackDir, $localFilename);
+        }
+
+        if ($input->getArgument('command') === 'self' && $input->getArgument('version') === 'update') {
+            $question = '<info>"update"</info> is not a valid version. Did you mean "composer self-update" [<comment>Y/n</comment>]? ';
+            if ($io->isInteractive() && $io->askConfirmation($question, false)) {
+                $input->setArgument('version', null);
+            } else {
+                throw new CommandNotFoundException(sprintf('The command "%s" does not exist.', $input->getArgument('command')));
+            }
         }
 
         $latest = $versionsUtil->getLatest();
