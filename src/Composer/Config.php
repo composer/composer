@@ -77,7 +77,7 @@ class Config
         'htaccess-protect' => true,
         'use-github-api' => true,
         'lock' => true,
-        'no-fund' => false,
+        'fund' => true,
         'platform-check' => 'php-only',
         'bitbucket-oauth' => [],
         'github-oauth' => [],

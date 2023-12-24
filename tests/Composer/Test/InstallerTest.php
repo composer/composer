@@ -87,11 +87,10 @@ class InstallerTest extends TestCase
                 switch ($key) {
                     case 'vendor-dir':
                         return 'foo';
+                    case 'fund':
                     case 'lock':
                     case 'notify-on-install':
                         return true;
-                    case 'no-fund':
-                        return false;
                     case 'platform':
                         return [];
                 }

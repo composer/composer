@@ -38,7 +38,7 @@ Installs a simple package with exact match requirement
         "a/a": "1.0.0"
     },
     "config": {
-        "no-fund": true
+        "fund": false
     }
 }
 --RUN--

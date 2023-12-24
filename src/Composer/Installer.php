@@ -169,7 +169,7 @@ class Installer
     /** @var bool */
     protected $writeLock;
     /** @var bool */
-    protected $noFund;
+    protected $fund;
     /** @var bool */
     protected $executeOperations = true;
     /** @var bool */
@@ -228,7 +228,7 @@ class Installer
         $this->platformRequirementFilter = PlatformRequirementFilterFactory::ignoreNothing();
 
         $this->writeLock = $config->get('lock');
-        $this->noFund = $config->get('no-fund');
+        $this->fund = $config->get('fund');
     }
 
     /**
@@ -381,7 +381,7 @@ class Installer
                 $fundingCount++;
             }
         }
-        if (!$this->noFund && $fundingCount > 0) {
+        if ($this->fund && $fundingCount > 0) {
             $this->io->writeError([
                 sprintf(
                     "<info>%d package%s you are using %s looking for funding.</info>",
