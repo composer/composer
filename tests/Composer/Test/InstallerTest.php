@@ -59,6 +59,7 @@ class InstallerTest extends TestCase
     {
         parent::tearDown();
         Platform::clearEnv('COMPOSER_POOL_OPTIMIZER');
+        Platform::clearEnv('COMPOSER_FUND');
 
         chdir($this->prevCwd);
         if (isset($this->tempComposerHome) && is_dir($this->tempComposerHome)) {

@@ -1145,6 +1145,10 @@ If set to 1, this env suppresses a warning when Composer is running with the Xde
 
 This env var controls the [`discard-changes`](06-config.md#discard-changes) config option.
 
+### COMPOSER_FUND
+
+If set to 0, this env suppresses funding notices when installing.
+
 ### COMPOSER_HOME
 
 The `COMPOSER_HOME` var allows you to change the Composer home directory. This
