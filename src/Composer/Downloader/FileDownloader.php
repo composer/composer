@@ -458,7 +458,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * Process the download url
      *
-     * @param  PackageInterface  $package package the url is coming from
+     * @param  PackageInterface  $package package instance
      * @param  non-empty-string  $url     download url
      * @throws \RuntimeException If any problem with the url
      * @return non-empty-string  url
