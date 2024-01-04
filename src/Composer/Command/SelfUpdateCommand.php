@@ -156,6 +156,10 @@ EOT
             return $this->rollback($output, $rollbackDir, $localFilename);
         }
 
+        if ($input->getArgument('command') === 'self' && $input->getArgument('version') === 'update') {
+            $input->setArgument('version', null);
+        }
+
         $latest = $versionsUtil->getLatest();
         $latestStable = $versionsUtil->getLatest('stable');
         try {
