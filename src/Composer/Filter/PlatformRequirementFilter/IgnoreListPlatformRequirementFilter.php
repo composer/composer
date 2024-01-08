@@ -60,6 +60,15 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
         return Preg::isMatch($this->ignoreRegex, $req);
     }
 
+    public function isUpperBoundIgnored(string $req): bool
+    {
+        if (!PlatformRepository::isPlatformPackage($req)) {
+            return false;
+        }
+
+        return $this->isIgnored($req) || Preg::isMatch($this->ignoreUpperBoundRegex, $req);
+    }
+
     /**
      * @param bool $allowUpperBoundOverride For conflicts we do not want the upper bound to be skipped
      */

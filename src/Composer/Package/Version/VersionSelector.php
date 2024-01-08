@@ -13,6 +13,7 @@
 namespace Composer\Package\Version;
 
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
@@ -129,6 +130,13 @@ class VersionSelector
                             if ($link->getConstraint()->matches($providedConstraint)) {
                                 // constraint satisfied, go to next require
                                 continue 2;
+                            }
+                            if ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter && $platformRequirementFilter->isUpperBoundIgnored($name)) {
+                                $filteredConstraint = $platformRequirementFilter->filterConstraint($name, $link->getConstraint());
+                                if ($filteredConstraint->matches($providedConstraint)) {
+                                    // constraint satisfied with the upper bound ignored, go to next require
+                                    continue 2;
+                                }
                             }
                         }
 
