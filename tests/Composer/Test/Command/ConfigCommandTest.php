@@ -13,6 +13,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use RuntimeException;
 
 class ConfigCommandTest extends TestCase
 {
@@ -138,5 +139,14 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'repos'],
             '{"foo":{"type":"vcs","url":"https://example.org"}}',
         ];
+    }
+
+    public function testConfigThrowsForInvalidArgCombination(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('--file and --global can not be combined');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', '--file' => 'alt.composer.json', '--global' => true]);
     }
 }
