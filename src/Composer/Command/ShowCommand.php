@@ -27,6 +27,7 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Repository\ArrayRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
@@ -142,7 +143,7 @@ EOT
         $composer = $this->tryComposer();
         $io = $this->getIO();
 
-        if ($input->getOption('installed')) {
+        if ($input->getOption('installed') && !$input->getOption('self')) {
             $io->writeError('<warning>You are using the deprecated option "installed". Only installed packages are shown by default now. The --all option can be used to show all packages.</warning>');
         }
 
@@ -199,7 +200,7 @@ EOT
         $platformRepo = new PlatformRepository([], $platformOverrides);
         $lockedRepo = null;
 
-        if ($input->getOption('self')) {
+        if ($input->getOption('self') && !$input->getOption('installed') && !$input->getOption('locked')) {
             $package = clone $this->requireComposer()->getPackage();
             if ($input->getOption('name-only')) {
                 $io->write($package->getName());
@@ -243,6 +244,9 @@ EOT
             }
             $locker = $composer->getLocker();
             $lockedRepo = $locker->getLockedRepository(!$input->getOption('no-dev'));
+            if ($input->getOption('self')) {
+                $lockedRepo->addPackage(clone $composer->getPackage());
+            }
             $repos = $installedRepo = new InstalledRepository([$lockedRepo]);
         } else {
             // --installed / default case
@@ -250,13 +254,18 @@ EOT
                 $composer = $this->requireComposer();
             }
             $rootPkg = $composer->getPackage();
-            $repos = $installedRepo = new InstalledRepository([$composer->getRepositoryManager()->getLocalRepository()]);
 
+            $rootRepo = new InstalledArrayRepository();
+            if ($input->getOption('self')) {
+                $rootRepo = new RootPackageRepository(clone $rootPkg);
+            }
             if ($input->getOption('no-dev')) {
-                $packages = RepositoryUtils::filterRequiredPackages($installedRepo->getPackages(), $rootPkg);
-                $repos = $installedRepo = new InstalledRepository([new InstalledArrayRepository(array_map(static function ($pkg): PackageInterface {
+                $packages = RepositoryUtils::filterRequiredPackages($composer->getRepositoryManager()->getLocalRepository()->getPackages(), $rootPkg);
+                $repos = $installedRepo = new InstalledRepository([$rootRepo, new InstalledArrayRepository(array_map(static function ($pkg): PackageInterface {
                     return clone $pkg;
                 }, $packages))]);
+            } else {
+                $repos = $installedRepo = new InstalledRepository([$rootRepo, $composer->getRepositoryManager()->getLocalRepository()]);
             }
 
             if (!$installedRepo->getPackages() && ($rootPkg->getRequires() || $rootPkg->getDevRequires())) {
