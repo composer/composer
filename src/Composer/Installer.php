@@ -373,14 +373,12 @@ class Installer
         }
 
         $fundEnv = Platform::getEnv('COMPOSER_FUND');
-        if (!is_numeric($fundEnv)) {
-            $fundEnv = true;
-        }
+        $showFunding = true;
         if (is_numeric($fundEnv)) {
-            $fundEnv = intval($fundEnv) === 1;
+            $showFunding = intval($fundEnv) !== 0;
         }
 
-        if ($fundEnv) {
+        if ($showFunding) {
             $fundingCount = 0;
             foreach ($localRepo->getPackages() as $package) {
                 if ($package instanceof CompletePackageInterface && !$package instanceof AliasPackage && $package->getFunding()) {
