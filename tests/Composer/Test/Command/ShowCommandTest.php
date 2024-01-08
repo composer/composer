@@ -29,6 +29,8 @@ class ShowCommandTest extends TestCase
     public function testShow(array $command, string $expected, array $requires = []): void
     {
         $this->initTempComposer([
+            'name' => 'root/pkg',
+            'version' => '1.2.3',
             'repositories' => [
                 'packages' => [
                     'type' => 'package',
@@ -65,6 +67,12 @@ class ShowCommandTest extends TestCase
 
         $this->createInstalledJson([$pkg, $major, $minor, $patch]);
 
+        $pkg = self::getPackage('vendor/locked', '3.0.0');
+        $pkg->setDescription('description of locked package');
+        $this->createComposerLock([
+            $pkg,
+        ]);
+
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'show'], $command));
         self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
@@ -78,6 +86,21 @@ class ShowCommandTest extends TestCase
 outdated/minor 1.0.0
 outdated/patch 1.0.0
 vendor/package 1.0.0 description of installed package',
+        ];
+
+        yield 'with -s and --installed shows list of installed + self package' => [
+            ['--installed' => true, '--self' => true],
+'outdated/major 1.0.0
+outdated/minor 1.0.0
+outdated/patch 1.0.0
+root/pkg       1.2.3
+vendor/package 1.0.0 description of installed package',
+        ];
+
+        yield 'with -s and --locked shows list of installed + self package' => [
+            ['--locked' => true, '--self' => true],
+'root/pkg      1.2.3
+vendor/locked 3.0.0 description of locked package',
         ];
 
         yield 'with -a show available packages with description but no version' => [
