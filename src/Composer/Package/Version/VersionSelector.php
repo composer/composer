@@ -190,6 +190,7 @@ class VersionSelector
      *
      * For example:
      *  * 1.2.1         -> ^1.2
+     *  * 1.2.1.2       -> ^1.2
      *  * 1.2           -> ^1.2
      *  * v3.2.1        -> ^3.2
      *  * 2.0-beta.1    -> ^2.0@beta
@@ -235,7 +236,7 @@ class VersionSelector
         $semanticVersionParts = explode('.', $version);
 
         // check to see if we have a semver-looking version
-        if (count($semanticVersionParts) === 4 && Preg::isMatch('{^0\D?}', $semanticVersionParts[3])) {
+        if (count($semanticVersionParts) === 4 && Preg::isMatch('{^\d+\D?}', $semanticVersionParts[3])) {
             // remove the last parts (i.e. the patch version number and any extra)
             if ($semanticVersionParts[0] === '0') {
                 unset($semanticVersionParts[3]);

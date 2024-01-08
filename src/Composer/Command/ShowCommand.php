@@ -268,8 +268,16 @@ EOT
                 $repos = $installedRepo = new InstalledRepository([$rootRepo, $composer->getRepositoryManager()->getLocalRepository()]);
             }
 
-            if (!$installedRepo->getPackages() && ($rootPkg->getRequires() || $rootPkg->getDevRequires())) {
-                $io->writeError('<warning>No dependencies installed. Try running composer install or update.</warning>');
+            if (!$installedRepo->getPackages()) {
+                $hasNonPlatformReqs = static function (array $reqs): bool {
+                    return (bool) array_filter(array_keys($reqs), function (string $name) {
+                        return !PlatformRepository::isPlatformPackage($name);
+                    });
+                };
+
+                if ($hasNonPlatformReqs($rootPkg->getRequires()) || $hasNonPlatformReqs($rootPkg->getDevRequires())) {
+                    $io->writeError('<warning>No dependencies installed. Try running composer install or update.</warning>');
+                }
             }
         }
 
