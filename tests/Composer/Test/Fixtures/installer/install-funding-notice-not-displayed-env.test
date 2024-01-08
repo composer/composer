@@ -1,0 +1,60 @@
+--TEST--
+Installs a simple package with exact match requirement
+--CONDITION--
+putenv('COMPOSER_FUND=0')
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a",
+                    "version": "1.0.0",
+                    "funding": [{ "type": "example", "url": "http://example.org/fund" }],
+                    "require": {
+                        "d/d": "^1.0"
+                    }
+                },
+                {
+                    "name": "b/b",
+                    "version": "1.0.0",
+                    "funding": [{ "type": "example", "url": "http://example.org/fund" }]
+                },
+                {
+                    "name": "c/c",
+                    "version": "1.0.0",
+                    "funding": [{ "type": "example", "url": "http://example.org/fund" }]
+                },
+                {
+                    "name": "d/d",
+                    "version": "1.0.0",
+                    "require": {
+                        "b/b": "^1.0"
+                    }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    }
+}
+--RUN--
+install
+--EXPECT-OUTPUT--
+<warning>No composer.lock file present. Updating dependencies to latest instead of installing from lock file. See https://getcomposer.org/install for more information.</warning>
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 3 installs, 0 updates, 0 removals
+  - Locking a/a (1.0.0)
+  - Locking b/b (1.0.0)
+  - Locking d/d (1.0.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 3 installs, 0 updates, 0 removals
+Generating autoload files
+--EXPECT--
+Installing b/b (1.0.0)
+Installing d/d (1.0.0)
+Installing a/a (1.0.0)
