@@ -122,8 +122,8 @@ versions of the dependencies that you are using. Your CI server, production
 machines, other developers in your team, everything and everyone runs on the
 same dependencies, which mitigates the potential for bugs affecting only some
 parts of the deployments. Even if you develop alone, in six months when
-reinstalling the project you can feel confident the dependencies installed are
-still working even if your dependencies released many new versions since then.
+reinstalling the project you can feel confident that the dependencies installed are
+still working, even if the dependencies have released many new versions since then.
 (See note below about using the `update` command.)
 
 > **Note:** For libraries it is not necessary to commit the lock
@@ -141,7 +141,7 @@ in `composer.lock` to ensure that the package versions are consistent for everyo
 working on your project. As a result you will have all dependencies requested by your
 `composer.json` file, but they may not all be at the very latest available versions
 (some of the dependencies listed in the `composer.lock` file may have released newer versions since
-the file was created). This is by design, it ensures that your project does not break because of
+the file was created). This is by design, ensuring that your project does not break because of
 unexpected changes in dependencies.
 
 So after fetching new changes from your VCS repository it is recommended to run
