@@ -28,7 +28,7 @@ use React\Promise\Promise;
  * @internal
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
- * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, storeAuth: 'prompt'|bool}
+ * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, storeAuth: 'prompt'|bool, ipResolve: 4|6|null}
  * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable}
  */
 class CurlDownloader
@@ -158,6 +158,12 @@ class CurlDownloader
             'ipResolve' => null,
         ], $attributes);
 
+        if ($attributes['ipResolve'] === null && Platform::getEnv('COMPOSER_IPRESOLVE') === '4') {
+            $attributes['ipResolve'] = 4;
+        } elseif ($attributes['ipResolve'] === null && Platform::getEnv('COMPOSER_IPRESOLVE') === '6') {
+            $attributes['ipResolve'] = 6;
+        }
+
         $originalOptions = $options;
 
         // check URL can be accessed (i.e. is not insecure), but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
@@ -200,9 +206,9 @@ class CurlDownloader
         curl_setopt($curlHandle, CURLOPT_ENCODING, ""); // let cURL set the Accept-Encoding header to what it supports
         curl_setopt($curlHandle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
 
-        if ($attributes['ipResolve'] === 4 || Platform::getEnv('COMPOSER_IPRESOLVE') === '4') {
+        if ($attributes['ipResolve'] === 4) {
             curl_setopt($curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        } elseif ($attributes['ipResolve'] === 6 || Platform::getEnv('COMPOSER_IPRESOLVE') === '6') {
+        } elseif ($attributes['ipResolve'] === 6) {
             curl_setopt($curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6);
         }
 

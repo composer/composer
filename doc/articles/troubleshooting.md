@@ -306,8 +306,8 @@ following workarounds:
 
 **Generic Workaround:**
 
-Set the `COMPOSER_IPRESOLVE=4` environment variable which will force curl to resolve
-domains using IPv4.
+Set the [`COMPOSER_IPRESOLVE=4`](../03-cli.md#composer-ipresolve) environment variable which will force curl to resolve
+domains using IPv4. This only works when the curl extension is used for downloads.
 
 **Workaround Linux:**
 

@@ -1246,8 +1246,8 @@ in performance gains.
 
 ### COMPOSER_IPRESOLVE
 
-Set to `4` or `6` to force IPv4 or IPv6 DNS resolution. This only works when curl
-is present.
+Set to `4` or `6` to force IPv4 or IPv6 DNS resolution. This only works when the
+curl extension is used for downloads.
 
 ### HTTP_PROXY_REQUEST_FULLURI
 
