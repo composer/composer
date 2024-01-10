@@ -113,7 +113,7 @@ class LockTransaction extends Transaction
                             if ($presentPackage->getSourceReference() && $presentPackage->getSourceType() === $package->getSourceType()) {
                                 $package->setSourceDistReferences($presentPackage->getSourceReference());
                                 // if the dist url is not one of those handled gracefully by setSourceDistReferences then we should overwrite it with the old one
-                                if (!Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
+                                if ($package->getDistUrl() !== null && !Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
                                     $package->setDistUrl($presentPackage->getDistUrl());
                                 }
                                 $package->setDistType($presentPackage->getDistType());
