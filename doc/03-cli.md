@@ -1244,6 +1244,11 @@ defaults to 12 and must be between 1 and 50. If your proxy has issues with
 concurrency maybe you want to lower this. Increasing it should generally not result
 in performance gains.
 
+### COMPOSER_IPRESOLVE
+
+Set to `4` or `6` to force IPv4 or IPv6 DNS resolution. This only works when curl
+is present.
+
 ### HTTP_PROXY_REQUEST_FULLURI
 
 If you use a proxy, but it does not support the request_fulluri flag, then you
