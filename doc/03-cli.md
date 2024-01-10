@@ -198,8 +198,9 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--lock:** Only updates the lock file hash to suppress warning about the
-  lock file being out of date.
+* **--lock:** Overwrites the lock file hash to suppress warning about the lock file being out of
+  date without updating package versions. Package metadata like mirrors and URLs are updated if
+  they changed.
 * **--with:** Temporary version constraint to add, e.g. foo/bar:1.0.0 or foo/bar=1.0.0
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-progress:** Removes the progress display that can mess with some
