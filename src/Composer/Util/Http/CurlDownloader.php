@@ -143,7 +143,7 @@ class CurlDownloader
     /**
      * @param mixed[]  $options
      *
-     * @param array{retryAuthFailure?: bool, redirects?: int<0, max>, retries?: int<0, max>, storeAuth?: 'prompt'|bool, ipResolve?: 4|6} $attributes
+     * @param array{retryAuthFailure?: bool, redirects?: int<0, max>, retries?: int<0, max>, storeAuth?: 'prompt'|bool, ipResolve?: 4|6|null} $attributes
      * @param non-empty-string $url
      *
      * @return int internal job id
