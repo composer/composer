@@ -111,6 +111,9 @@ class LockTransaction extends Transaction
                         if ($package->getName() === $presentPackage->getName() && $package->getVersion() === $presentPackage->getVersion()) {
                             if ($presentPackage->getSourceReference() && $presentPackage->getSourceType() === $package->getSourceType()) {
                                 $package->setSourceDistReferences($presentPackage->getSourceReference());
+                                $package->setDistUrl($presentPackage->getDistUrl());
+                                $package->setDistType($presentPackage->getDistType());
+                                $package->setDistSha1Checksum($presentPackage->getDistSha1Checksum());
                             }
                             if ($presentPackage->getReleaseDate() !== null && $package instanceof Package) {
                                 $package->setReleaseDate($presentPackage->getReleaseDate());
