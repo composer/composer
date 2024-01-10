@@ -113,7 +113,9 @@ class LockTransaction extends Transaction
                                 $package->setSourceDistReferences($presentPackage->getSourceReference());
                                 $package->setDistUrl($presentPackage->getDistUrl());
                                 $package->setDistType($presentPackage->getDistType());
-                                $package->setDistSha1Checksum($presentPackage->getDistSha1Checksum());
+                                if ($package instanceof Package) {
+                                    $package->setDistSha1Checksum($presentPackage->getDistSha1Checksum());
+                                }
                             }
                             if ($presentPackage->getReleaseDate() !== null && $package instanceof Package) {
                                 $package->setReleaseDate($presentPackage->getReleaseDate());
