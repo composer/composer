@@ -553,7 +553,7 @@ EOT
 
         if ($result) {
             foreach ($result as $message) {
-                $io->write($message);
+                $io->write(trim($message));
             }
         }
     }
@@ -774,6 +774,11 @@ EOT
 
         if ($displayIniMessage) {
             $out($iniMessage, 'comment');
+        }
+
+        if (in_array(Platform::getEnv('COMPOSER_IPRESOLVE'), ['4', '6'], true)) {
+            $warnings['ipresolve'] = true;
+            $out('The COMPOSER_IPRESOLVE env var is set to ' . Platform::getEnv('COMPOSER_IPRESOLVE') .' which may result in network failures below.', 'comment');
         }
 
         return count($warnings) === 0 && count($errors) === 0 ? true : $output;
