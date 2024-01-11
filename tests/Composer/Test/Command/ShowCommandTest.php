@@ -18,6 +18,7 @@ use Composer\Pcre\Regex;
 use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
 use DateTimeImmutable;
+use InvalidArgumentException;
 
 class ShowCommandTest extends TestCase
 {
@@ -296,6 +297,23 @@ Everything up to date
 
 Transitive dependencies not required in composer.json:
 vendor/package 1.1.0 <highlight>! 1.2.0</highlight>", trim($appTester->getDisplay(true)));
+    }
+
+    public function testShowDirectWithNameOnlyShowsDirectDependents(): void
+    {
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('Package "vendor/package" is installed but not a direct dependent of the root package.');
+
+        $this->initTempComposer([
+            'repositories' => [],
+        ]);
+
+        $this->createInstalledJson([
+            self::getPackage('vendor/package', '1.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--direct' => true, 'package' => 'vendor/package']);
     }
 
     public function testShowPlatformOnlyShowsPlatformPackages(): void

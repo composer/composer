@@ -299,6 +299,12 @@ EOT
         } elseif (null !== $packageFilter && !str_contains($packageFilter, '*')) {
             [$package, $versions] = $this->getPackage($installedRepo, $repos, $packageFilter, $input->getArgument('version'));
 
+            if (isset($package) && $input->getOption('direct')) {
+                if (!in_array($package->getName(), $this->getRootRequires(), true)) {
+                    throw new \InvalidArgumentException('Package "' . $package->getName() . '" is installed but not a direct dependent of the root package.');
+                }
+            }
+
             if (!isset($package)) {
                 $options = $input->getOptions();
                 $hint = '';
