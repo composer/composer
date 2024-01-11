@@ -637,6 +637,15 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $apiUrl = $this->securityAdvisoryConfig['api-url'];
 
+        // respect available-package-patterns / available-packages directives from the repo
+        if ($this->hasAvailablePackageList) {
+            foreach ($packageConstraintMap as $name => $constraint) {
+                if (!$this->lazyProvidersRepoContains(strtolower($name))) {
+                    unset($packageConstraintMap[$name]);
+                }
+            }
+        }
+
         $parser = new VersionParser();
         /**
          * @param array<mixed> $data
