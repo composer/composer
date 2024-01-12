@@ -709,8 +709,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $options['http']['content'] = http_build_query(['packages' => array_keys($packageConstraintMap)]);
 
             $response = $this->httpDownloader->get($apiUrl, $options);
+            $warned = false;
             /** @var string $name */
             foreach ($response->decodeJson()['advisories'] as $name => $list) {
+                if (!isset($packageConstraintMap[$name])) {
+                    if (!$warned) {
+                        $this->io->writeError('<warning>'.$this->getRepoName().' returned names which were not requested in response to the security-advisories API. '.$name.' was not requested but is present in the response. Requested names were: '.implode(', ', array_keys($packageConstraintMap)).'</warning>');
+                        $warned = true;
+                    }
+                    continue;
+                }
                 if (count($list) > 0) {
                     $advisories[$name] = array_filter(array_map(
                         static function ($data) use ($name, $create) {
