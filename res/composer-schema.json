@@ -6,7 +6,7 @@
         "name": {
             "type": "string",
             "description": "Package name, including 'vendor-name/' prefix.",
-            "pattern": "^[a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$"
+            "pattern": "^([a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*|ext-[a-z0-9]([_.-]?[a-z0-9]+)*)$"
         },
         "description": {
             "type": "string",
@@ -285,6 +285,23 @@
                 "exclude": {
                     "type": "array",
                     "description": "A list of patterns for paths to exclude or include if prefixed with an exclamation mark."
+                }
+            }
+        },
+        "php-ext": {
+            "type": "object",
+            "description": "Settings for PHP extension packages.",
+            "properties": {
+                "priority": {
+                    "type": "integer",
+                    "description": "The installation \"priority\". Defaults to 20, and is used when generating an ini file to enable the extension."
+                },
+                "config": {
+                    "type": "object",
+                    "description": "A list of configure options that can be passed to `./configure`, and whether whey would be passed by default to configure in that stage (either true, or false). These must match the names in the config.m4 file.",
+                    "additionalProperties": {
+                        "type": ["boolean"]
+                    }
                 }
             }
         },

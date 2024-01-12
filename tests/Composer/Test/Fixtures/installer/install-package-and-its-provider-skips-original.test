@@ -6,17 +6,17 @@ Install package and it's replacer skips the original
         {
             "type": "package",
             "package": [
-                { "name": "ext-foo", "version": "1.0.0" },
-                { "name": "ext-foo/fork", "version": "0.5.0", "replace": { "ext-foo": "1.0.*" } }
+                { "name": "example/foo", "version": "1.0.0" },
+                { "name": "example/foo-fork", "version": "0.5.0", "replace": { "example/foo": "1.0.*" } }
             ]
         }
     ],
     "require": {
-        "ext-foo": "1.0.0",
-        "ext-foo/fork": "0.5.*"
+        "example/foo": "1.0.0",
+        "example/foo-fork": "0.5.*"
     }
 }
 --RUN--
 install
 --EXPECT--
-Installing ext-foo/fork (0.5.0)
+Installing example/foo-fork (0.5.0)

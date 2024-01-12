@@ -324,6 +324,13 @@ interface PackageInterface
     public function getIncludePaths(): array;
 
     /**
+     * Returns the settings for php extension packages
+     *
+     * @return array{priority?: int, config?: array<string, bool>}|null
+     */
+    public function getPhpExt(): ?array;
+
+    /**
      * Stores a reference to the repository that owns the package
      */
     public function setRepository(RepositoryInterface $repository): void;

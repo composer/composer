@@ -98,6 +98,8 @@ class Package extends BasePackage
     protected $isDefaultBranch = false;
     /** @var mixed[] */
     protected $transportOptions = [];
+    /** @var array{priority?: int, config?: array<string, bool>}|null */
+    protected $phpExt = null;
 
     /**
      * Creates a new in memory package.
@@ -588,6 +590,24 @@ class Package extends BasePackage
     public function getIncludePaths(): array
     {
         return $this->includePaths;
+    }
+
+    /**
+     * Sets the list of paths added to PHP's include path.
+     *
+     * @param array{priority?: int, config?: array<string, bool>}|null $phpExt List of directories.
+     */
+    public function setPhpExt(?array $phpExt): void
+    {
+        $this->phpExt = $phpExt;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPhpExt(): ?array
+    {
+        return $this->phpExt;
     }
 
     /**

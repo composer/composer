@@ -26,9 +26,9 @@ class ComposerSchemaTest extends TestCase
         $expectedError = [
             [
                 'property' => 'name',
-                'message' => 'Does not match the regex pattern ^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$',
+                'message' => 'Does not match the regex pattern ^([a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*|ext-[a-z0-9]([_.-]?[a-z0-9]+)*)$',
                 'constraint' => 'pattern',
-                'pattern' => '^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$',
+                'pattern' => '^([a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*|ext-[a-z0-9]([_.-]?[a-z0-9]+)*)$',
             ],
         ];
 
