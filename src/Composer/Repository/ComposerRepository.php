@@ -109,7 +109,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $partialPackagesByName = null;
     /** @var bool */
     private $displayedWarningAboutNonMatchingPackageIndex = false;
-    /** @var array{metadata: bool, query-all: bool, api-url: string|null}|null */
+    /** @var array{metadata: bool, api-url: string|null}|null */
     private $securityAdvisoryConfig = null;
 
     /**
@@ -1257,9 +1257,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (isset($data['security-advisories']) && is_array($data['security-advisories'])) {
                 $this->securityAdvisoryConfig = [
                     'metadata' => $data['security-advisories']['metadata'] ?? false,
-                    'api-url' => $data['security-advisories']['api-url'] ?? null,
-                    'query-all' => $data['security-advisories']['query-all'] ?? false,
+                    'api-url' => isset($data['security-advisories']['api-url']) && is_string($data['security-advisories']['api-url']) ? $this->canonicalizeUrl($data['security-advisories']['api-url']) : null,
                 ];
+                if ($this->securityAdvisoryConfig['api-url'] === null && !$this->hasAvailablePackageList) {
+                    throw new \UnexpectedValueException('Invalid security advisory configuration on '.$this->getRepoName().': If the repository does not provide a security-advisories.api-url then available-packages or available-package-patterns are required to be provided for performance reason.');
+                }
             }
         }
 
@@ -1289,12 +1291,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @param non-empty-string $url
+     * @param string $url
      * @return non-empty-string
      */
     private function canonicalizeUrl(string $url): string
     {
-        if ('/' === $url[0]) {
+        if (strlen($url) === 0) {
+            throw new \InvalidArgumentException('Expected a string with a value and not an empty string');
+        }
+
+        if (str_starts_with($url, '/')) {
             if (Preg::isMatch('{^[^:]++://[^/]*+}', $this->url, $matches)) {
                 return $matches[0] . $url;
             }
