@@ -19,6 +19,7 @@ use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Util\PackageInfo;
+use Composer\Util\Platform;
 use InvalidArgumentException;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 
@@ -58,6 +59,10 @@ class Auditor
      */
     public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_REPORT): int
     {
+        if (Platform::getEnv('COMPOSER_AUDIT_ABANDONED') !== FALSE) {
+            $abandoned = Platform::getEnv('COMPOSER_AUDIT_ABANDONED');
+        }
+
         if ($abandoned === 'default' && $format !== self::FORMAT_SUMMARY) {
             $io->writeError('<warning>The new audit.abandoned setting (currently defaulting to "report" will default to "fail" in Composer 2.7, make sure to set it to "report" or "ignore" explicitly by then if you do not want this.</warning>');
         }
