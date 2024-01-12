@@ -23,6 +23,7 @@ use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 use Composer\Advisory\Auditor;
+use Composer\Util\Platform;
 use InvalidArgumentException;
 
 class AuditorTest extends TestCase
@@ -144,6 +145,29 @@ Found 2 abandoned packages:
     }
 }',
         ];
+
+        yield 'abandoned packages reporting mode override via env var' => [
+            'data' => [
+                'packages' => [
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => false,
+                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned_via_env_var' => Auditor::ABANDONED_REPORT,
+                'format' => Auditor::FORMAT_TABLE,
+            ],
+            'expected' => 0,
+            'output' => 'No security vulnerability advisories found.
+Found 2 abandoned packages:
++-------------------+----------------------------------------------------------------------------------+
+| Abandoned Package | Suggested Replacement                                                            |
++-------------------+----------------------------------------------------------------------------------+
+| vendor/abandoned  | foo/bar                                                                          |
+| vendor/abandoned2 | none                                                                             |
++-------------------+----------------------------------------------------------------------------------+',
+        ];
+
     }
 
     /**
@@ -156,9 +180,13 @@ Found 2 abandoned packages:
             $this->expectException(InvalidArgumentException::class);
         }
         $auditor = new Auditor();
+        if (array_key_exists('abandoned_via_env_var', $data)) {
+            Platform::putEnv('COMPOSER_AUDIT_ABANDONED', $data['abandoned_via_env_var']);
+        }
         $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly'], [], $data['abandoned'] ?? Auditor::ABANDONED_IGNORE);
         $this->assertSame($expected, $result);
         $this->assertSame($output, trim(str_replace("\r", '', $io->getOutput())));
+        Platform::clearEnv('COMPOSER_AUDIT_ABANDONED');
     }
 
     public function ignoredIdsProvider(): \Generator {

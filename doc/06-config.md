@@ -143,6 +143,8 @@ Defaults to `report` in Composer 2.6, and defaults to `fail` from Composer 2.7 o
 - `report` means abandoned packages are reported as an error but do not cause the command to exit with a non-zero code.
 - `fail` means abandoned packages will cause audits to fail with a non-zero code.
 
+Since Composer 2.6.7 the default and the configuration in composer.json can be overriden via the `COMPOSER_AUDIT_ABANDONED` environmant variable.
+
 ## use-parent-dir
 
 When running Composer in a directory where there is no composer.json, if there
