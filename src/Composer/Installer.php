@@ -372,22 +372,30 @@ class Installer
             }
         }
 
-        $fundingCount = 0;
-        foreach ($localRepo->getPackages() as $package) {
-            if ($package instanceof CompletePackageInterface && !$package instanceof AliasPackage && $package->getFunding()) {
-                $fundingCount++;
-            }
+        $fundEnv = Platform::getEnv('COMPOSER_FUND');
+        $showFunding = true;
+        if (is_numeric($fundEnv)) {
+            $showFunding = intval($fundEnv) !== 0;
         }
-        if ($fundingCount > 0) {
-            $this->io->writeError([
-                sprintf(
-                    "<info>%d package%s you are using %s looking for funding.</info>",
-                    $fundingCount,
-                    1 === $fundingCount ? '' : 's',
-                    1 === $fundingCount ? 'is' : 'are'
-                ),
-                '<info>Use the `composer fund` command to find out more!</info>',
-            ]);
+
+        if ($showFunding) {
+            $fundingCount = 0;
+            foreach ($localRepo->getPackages() as $package) {
+                if ($package instanceof CompletePackageInterface && !$package instanceof AliasPackage && $package->getFunding()) {
+                    $fundingCount++;
+                }
+            }
+            if ($fundingCount > 0) {
+                $this->io->writeError([
+                    sprintf(
+                        "<info>%d package%s you are using %s looking for funding.</info>",
+                        $fundingCount,
+                        1 === $fundingCount ? '' : 's',
+                        1 === $fundingCount ? 'is' : 'are'
+                    ),
+                    '<info>Use the `composer fund` command to find out more!</info>',
+                ]);
+            }
         }
 
         if ($this->runScripts) {
@@ -605,7 +613,14 @@ class Installer
 
             // output op if lock file is enabled, but alias op only in debug verbosity
             if ($this->config->get('lock') && (false === strpos($operation->getOperationType(), 'Alias') || $this->io->isDebug())) {
-                $this->io->writeError('  - ' . $operation->show(true));
+                $sourceRepo = '';
+                if ($this->io->isVeryVerbose() && false === strpos($operation->getOperationType(), 'Alias')) {
+                    $operationPkg = ($operation instanceof UpdateOperation ? $operation->getTargetPackage() : $operation->getPackage());
+                    if ($operationPkg->getRepository() !== null) {
+                        $sourceRepo = ' from ' . $operationPkg->getRepository()->getRepoName();
+                    }
+                }
+                $this->io->writeError('  - ' . $operation->show(true) . $sourceRepo);
             }
         }
 

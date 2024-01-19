@@ -43,7 +43,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @var mixed[] Project data returned by GitLab API
      */
-    private $project;
+    private $project = null;
 
     /**
      * @var array<string|int, mixed[]> Keeps commits returned by GitLab API as commit id => info
@@ -381,6 +381,10 @@ class GitLabDriver extends VcsDriver
 
     protected function fetchProject(): void
     {
+        if (!is_null($this->project)) {
+            return;
+        }
+
         // we need to fetch the default branch from the api
         $resource = $this->getApiUrl();
         $this->project = $this->getContents($resource, true)->decodeJson();
@@ -579,6 +583,18 @@ class GitLabDriver extends VcsDriver
         }
 
         return true;
+    }
+
+    /**
+     * Gives back the loaded <gitlab-api>/projects/<owner>/<repo> result
+     *
+     * @return mixed[]|null
+     */
+    public function getRepoData(): ?array
+    {
+        $this->fetchProject();
+
+        return $this->project;
     }
 
     protected function getNextPage(Response $response): ?string

@@ -17,6 +17,8 @@ use Composer\Pcre\Preg;
 use Composer\Pcre\Regex;
 use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
+use DateTimeImmutable;
+use InvalidArgumentException;
 
 class ShowCommandTest extends TestCase
 {
@@ -28,6 +30,8 @@ class ShowCommandTest extends TestCase
     public function testShow(array $command, string $expected, array $requires = []): void
     {
         $this->initTempComposer([
+            'name' => 'root/pkg',
+            'version' => '1.2.3',
             'repositories' => [
                 'packages' => [
                     'type' => 'package',
@@ -55,12 +59,19 @@ class ShowCommandTest extends TestCase
 
         $pkg = self::getPackage('vendor/package', '1.0.0');
         $pkg->setDescription('description of installed package');
+        $major = self::getPackage('outdated/major', '1.0.0');
+        $major->setReleaseDate(new DateTimeImmutable());
+        $minor = self::getPackage('outdated/minor', '1.0.0');
+        $minor->setReleaseDate(new DateTimeImmutable('-2 years'));
+        $patch = self::getPackage('outdated/patch', '1.0.0');
+        $patch->setReleaseDate(new DateTimeImmutable('-2 weeks'));
 
-        $this->createInstalledJson([
+        $this->createInstalledJson([$pkg, $major, $minor, $patch]);
+
+        $pkg = self::getPackage('vendor/locked', '3.0.0');
+        $pkg->setDescription('description of locked package');
+        $this->createComposerLock([
             $pkg,
-            self::getPackage('outdated/major', '1.0.0'),
-            self::getPackage('outdated/minor', '1.0.0'),
-            self::getPackage('outdated/patch', '1.0.0'),
         ]);
 
         $appTester = $this->getApplicationTester();
@@ -76,6 +87,21 @@ class ShowCommandTest extends TestCase
 outdated/minor 1.0.0
 outdated/patch 1.0.0
 vendor/package 1.0.0 description of installed package',
+        ];
+
+        yield 'with -s and --installed shows list of installed + self package' => [
+            ['--installed' => true, '--self' => true],
+'outdated/major 1.0.0
+outdated/minor 1.0.0
+outdated/patch 1.0.0
+root/pkg       1.2.3
+vendor/package 1.0.0 description of installed package',
+        ];
+
+        yield 'with -s and --locked shows list of installed + self package' => [
+            ['--locked' => true, '--self' => true],
+'root/pkg      1.2.3
+vendor/locked 3.0.0 description of locked package',
         ];
 
         yield 'with -a show available packages with description but no version' => [
@@ -110,6 +136,21 @@ Transitive dependencies not required in composer.json:
 outdated/major 1.0.0 ~ 2.0.0
 outdated/minor 1.0.0 <highlight>! 1.1.1</highlight>
 outdated/patch 1.0.0 <highlight>! 1.0.1</highlight>',
+        ];
+
+        yield 'outdated deps sorting by age' => [
+            ['command' => 'outdated', '--sort-by-age' => true],
+'Legend:
+! patch or minor release available - update recommended
+~ major release available - update possible
+
+Direct dependencies required in composer.json:
+Everything up to date
+
+Transitive dependencies not required in composer.json:
+outdated/minor 1.0.0 <highlight>! 1.1.1</highlight> 2 years old
+outdated/patch 1.0.0 <highlight>! 1.0.1</highlight> 2 weeks old
+outdated/major 1.0.0 ~ 2.0.0 from today',
         ];
 
         yield 'outdated deps with --direct only show direct deps with updated' => [
@@ -256,6 +297,23 @@ Everything up to date
 
 Transitive dependencies not required in composer.json:
 vendor/package 1.1.0 <highlight>! 1.2.0</highlight>", trim($appTester->getDisplay(true)));
+    }
+
+    public function testShowDirectWithNameOnlyShowsDirectDependents(): void
+    {
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('Package "vendor/package" is installed but not a direct dependent of the root package.');
+
+        $this->initTempComposer([
+            'repositories' => [],
+        ]);
+
+        $this->createInstalledJson([
+            self::getPackage('vendor/package', '1.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--direct' => true, 'package' => 'vendor/package']);
     }
 
     public function testShowPlatformOnlyShowsPlatformPackages(): void
@@ -533,7 +591,7 @@ OUTPUT;
 
     public function testSelf(): void
     {
-        $this->initTempComposer(['name' => 'vendor/package']);
+        $this->initTempComposer(['name' => 'vendor/package', 'time' => date('Y-m-d')]);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'show', '--self' => true]);
@@ -542,6 +600,7 @@ OUTPUT;
             'descrip.' => '',
             'keywords' => '',
             'versions' => '* 1.0.0+no-version-set',
+            'released' => date('Y-m-d'). ', today',
             'type' => 'library',
             'homepage' => '',
             'source' => '[]  ',

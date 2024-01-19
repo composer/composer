@@ -76,7 +76,7 @@ class BumpCommandTest extends TestCase
         yield 'bump all by default' => [
             [
                 'require' => [
-                    'first/pkg' => '^2.0',
+                    'first/pkg' => '^v2.0',
                     'second/pkg' => '3.*',
                 ],
                 'require-dev' => [

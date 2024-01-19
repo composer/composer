@@ -21,4 +21,12 @@ final class IgnoreNothingPlatformRequirementFilter implements PlatformRequiremen
     {
         return false;
     }
+
+    /**
+     * @return false
+     */
+    public function isUpperBoundIgnored(string $req): bool
+    {
+        return false;
+    }
 }

@@ -12,14 +12,23 @@
 
 namespace Composer\Command;
 
+use Composer\Advisory\Auditor;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\Config;
 use Composer\Downloader\TransportException;
+use Composer\IO\BufferIO;
+use Composer\Json\JsonFile;
+use Composer\Package\RootPackage;
+use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
+use Composer\Repository\ComposerRepository;
+use Composer\Repository\FilesystemRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Repository\RepositorySet;
+use Composer\Repository\RootPackageRepository;
 use Composer\Util\ConfigValidator;
 use Composer\Util\Git;
 use Composer\Util\IniHelper;
@@ -153,9 +162,12 @@ EOT
             $io->write('Checking pubkeys: ', false);
             $this->outputResult($this->checkPubKeys($config));
 
-            $io->write('Checking composer version: ', false);
+            $io->write('Checking Composer version: ', false);
             $this->outputResult($this->checkVersion($config));
         }
+
+        $io->write('Checking Composer and its dependencies for vulnerabilities: ', false);
+        $this->outputResult($this->checkComposerAudit($config));
 
         $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::getVersion()));
 
@@ -438,6 +450,48 @@ EOT
         return true;
     }
 
+    /**
+     * @return string|true
+     */
+    private function checkComposerAudit(Config $config)
+    {
+        $result = $this->checkConnectivityAndComposerNetworkHttpEnablement();
+        if ($result !== true) {
+            return $result;
+        }
+
+        $auditor = new Auditor();
+        $repoSet = new RepositorySet();
+        $installedJson = new JsonFile(__DIR__ . '/../../../vendor/composer/installed.json');
+        if (!$installedJson->exists()) {
+            return '<warning>Could not find Composer\'s installed.json, this must be a non-standard Composer installation.</>';
+        }
+
+        $localRepo = new FilesystemRepository($installedJson);
+        $version = Composer::getVersion();
+        $packages = $localRepo->getCanonicalPackages();
+        if ($version !== '@package_version@') {
+            $versionParser = new VersionParser();
+            $normalizedVersion = $versionParser->normalize($version);
+            $rootPkg = new RootPackage('composer/composer', $normalizedVersion, $version);
+            $packages[] = $rootPkg;
+        }
+        $repoSet->addRepository(new ComposerRepository(['type' => 'composer', 'url' => 'https://packagist.org'], new NullIO(), $config, $this->httpDownloader));
+
+        try {
+            $io = new BufferIO();
+            $result = $auditor->audit($io, $repoSet, $packages, Auditor::FORMAT_TABLE, true, [], Auditor::ABANDONED_IGNORE);
+        } catch (\Throwable $e) {
+            return '<warning>Failed performing audit: '.$e->getMessage().'</>';
+        }
+
+        if ($result > 0) {
+            return '<error>Audit found some issues:</>' . PHP_EOL . $io->getOutput();
+        }
+
+        return true;
+    }
+
     private function getCurlVersion(): string
     {
         if (extension_loaded('curl')) {
@@ -499,7 +553,7 @@ EOT
 
         if ($result) {
             foreach ($result as $message) {
-                $io->write($message);
+                $io->write(trim($message));
             }
         }
     }
@@ -720,6 +774,11 @@ EOT
 
         if ($displayIniMessage) {
             $out($iniMessage, 'comment');
+        }
+
+        if (in_array(Platform::getEnv('COMPOSER_IPRESOLVE'), ['4', '6'], true)) {
+            $warnings['ipresolve'] = true;
+            $out('The COMPOSER_IPRESOLVE env var is set to ' . Platform::getEnv('COMPOSER_IPRESOLVE') .' which may result in network failures below.', 'comment');
         }
 
         return count($warnings) === 0 && count($errors) === 0 ? true : $output;

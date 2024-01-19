@@ -48,9 +48,15 @@ class SecurityAdvisory extends PartialSecurityAdvisory
     public $sources;
 
     /**
+     * @var string|null
+     * @readonly
+     */
+    public $severity;
+
+    /**
      * @param non-empty-array<array{name: string, remoteId: string}> $sources
      */
-    public function __construct(string $packageName, string $advisoryId, ConstraintInterface $affectedVersions, string $title, array $sources, DateTimeImmutable $reportedAt, ?string $cve = null, ?string $link = null)
+    public function __construct(string $packageName, string $advisoryId, ConstraintInterface $affectedVersions, string $title, array $sources, DateTimeImmutable $reportedAt, ?string $cve = null, ?string $link = null, ?string $severity = null)
     {
         parent::__construct($packageName, $advisoryId, $affectedVersions);
 
@@ -59,6 +65,7 @@ class SecurityAdvisory extends PartialSecurityAdvisory
         $this->reportedAt = $reportedAt;
         $this->cve = $cve;
         $this->link = $link;
+        $this->severity = $severity;
     }
 
     /**
@@ -75,7 +82,8 @@ class SecurityAdvisory extends PartialSecurityAdvisory
             $this->reportedAt,
             $this->cve,
             $this->link,
-            $ignoreReason
+            $ignoreReason,
+            $this->severity
         );
     }
 

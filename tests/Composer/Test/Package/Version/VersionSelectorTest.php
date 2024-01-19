@@ -346,6 +346,9 @@ class VersionSelectorTest extends TestCase
             ['0.1.3', '^0.1.3'],
             ['0.0.3', '^0.0.3'],
             ['0.0.3-alpha', '^0.0.3@alpha'],
+            ['0.0.3.4-alpha', '^0.0.3@alpha'],
+            ['3.0.0.2-RC2', '^3.0@RC'],
+            ['1.2.1.1020402', '^1.2'],
             // date-based versions are not touched at all
             ['v20121020', 'v20121020'],
             ['v20121020.2', 'v20121020.2'],

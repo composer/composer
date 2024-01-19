@@ -349,6 +349,10 @@ EOT
             }
             throw $e;
         } finally {
+            if ($input->getOption('dry-run') && $this->newlyCreated) {
+                @unlink($this->json->getPath());
+            }
+
             $signalHandler->unregister();
         }
     }

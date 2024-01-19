@@ -109,7 +109,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $partialPackagesByName = null;
     /** @var bool */
     private $displayedWarningAboutNonMatchingPackageIndex = false;
-    /** @var array{metadata: bool, query-all: bool, api-url: string|null}|null */
+    /** @var array{metadata: bool, api-url: string|null}|null */
     private $securityAdvisoryConfig = null;
 
     /**
@@ -637,6 +637,15 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $apiUrl = $this->securityAdvisoryConfig['api-url'];
 
+        // respect available-package-patterns / available-packages directives from the repo
+        if ($this->hasAvailablePackageList) {
+            foreach ($packageConstraintMap as $name => $constraint) {
+                if (!$this->lazyProvidersRepoContains(strtolower($name))) {
+                    unset($packageConstraintMap[$name]);
+                }
+            }
+        }
+
         $parser = new VersionParser();
         /**
          * @param array<mixed> $data
@@ -700,8 +709,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $options['http']['content'] = http_build_query(['packages' => array_keys($packageConstraintMap)]);
 
             $response = $this->httpDownloader->get($apiUrl, $options);
+            $warned = false;
             /** @var string $name */
             foreach ($response->decodeJson()['advisories'] as $name => $list) {
+                if (!isset($packageConstraintMap[$name])) {
+                    if (!$warned) {
+                        $this->io->writeError('<warning>'.$this->getRepoName().' returned names which were not requested in response to the security-advisories API. '.$name.' was not requested but is present in the response. Requested names were: '.implode(', ', array_keys($packageConstraintMap)).'</warning>');
+                        $warned = true;
+                    }
+                    continue;
+                }
                 if (count($list) > 0) {
                     $advisories[$name] = array_filter(array_map(
                         static function ($data) use ($name, $create) {
@@ -1248,9 +1265,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (isset($data['security-advisories']) && is_array($data['security-advisories'])) {
                 $this->securityAdvisoryConfig = [
                     'metadata' => $data['security-advisories']['metadata'] ?? false,
-                    'api-url' => $data['security-advisories']['api-url'] ?? null,
-                    'query-all' => $data['security-advisories']['query-all'] ?? false,
+                    'api-url' => isset($data['security-advisories']['api-url']) && is_string($data['security-advisories']['api-url']) ? $this->canonicalizeUrl($data['security-advisories']['api-url']) : null,
                 ];
+                if ($this->securityAdvisoryConfig['api-url'] === null && !$this->hasAvailablePackageList) {
+                    throw new \UnexpectedValueException('Invalid security advisory configuration on '.$this->getRepoName().': If the repository does not provide a security-advisories.api-url then available-packages or available-package-patterns are required to be provided for performance reason.');
+                }
             }
         }
 
@@ -1280,12 +1299,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @param non-empty-string $url
+     * @param string $url
      * @return non-empty-string
      */
     private function canonicalizeUrl(string $url): string
     {
-        if ('/' === $url[0]) {
+        if (strlen($url) === 0) {
+            throw new \InvalidArgumentException('Expected a string with a value and not an empty string');
+        }
+
+        if (str_starts_with($url, '/')) {
             if (Preg::isMatch('{^[^:]++://[^/]*+}', $this->url, $matches)) {
                 return $matches[0] . $url;
             }

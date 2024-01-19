@@ -738,7 +738,7 @@ monolithic repository.
     "repositories": [
         {
             "type": "path",
-            "url": "../../packages/my-package",
+            "url": "../../packages/*",
             "options": {
                 "symlink": false
             }
@@ -772,7 +772,7 @@ The following modes exist:
     "repositories": [
         {
             "type": "path",
-            "url": "../../packages/my-package",
+            "url": "../../packages/*",
             "options": {
                 "reference": "config"
             }

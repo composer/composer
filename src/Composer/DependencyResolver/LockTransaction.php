@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Package;
+use Composer\Pcre\Preg;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -111,6 +112,14 @@ class LockTransaction extends Transaction
                         if ($package->getName() === $presentPackage->getName() && $package->getVersion() === $presentPackage->getVersion()) {
                             if ($presentPackage->getSourceReference() && $presentPackage->getSourceType() === $package->getSourceType()) {
                                 $package->setSourceDistReferences($presentPackage->getSourceReference());
+                                // if the dist url is not one of those handled gracefully by setSourceDistReferences then we should overwrite it with the old one
+                                if ($package->getDistUrl() !== null && !Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
+                                    $package->setDistUrl($presentPackage->getDistUrl());
+                                }
+                                $package->setDistType($presentPackage->getDistType());
+                                if ($package instanceof Package) {
+                                    $package->setDistSha1Checksum($presentPackage->getDistSha1Checksum());
+                                }
                             }
                             if ($presentPackage->getReleaseDate() !== null && $package instanceof Package) {
                                 $package->setReleaseDate($presentPackage->getReleaseDate());

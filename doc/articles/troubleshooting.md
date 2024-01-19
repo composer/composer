@@ -304,6 +304,11 @@ open stream: Operation timed out
 We recommend you fix your IPv6 setup. If that is not possible, you can try the
 following workarounds:
 
+**Generic Workaround:**
+
+Set the [`COMPOSER_IPRESOLVE=4`](../03-cli.md#composer-ipresolve) environment variable which will force curl to resolve
+domains using IPv4. This only works when the curl extension is used for downloads.
+
 **Workaround Linux:**
 
 On linux, it seems that running this command helps to make ipv4 traffic have a
