@@ -92,12 +92,14 @@ class GitHub
         $note .= ' ' . date('Y-m-d Hi');
 
         $url = 'https://'.$originUrl.'/settings/tokens/new?scopes=&description=' . str_replace('%20', '+', rawurlencode($note));
-        $this->io->writeError(sprintf('When working with _public_ GitHub repositories only, head to %s to retrieve a token.', $url));
+        $this->io->writeError('When working with _public_ GitHub repositories only, head here to retrieve a token:'));
+        $this->io->writeError($url);
         $this->io->writeError('This token will have read-only permission for public information only.');
 
         $localAuthConfig = $this->config->getLocalAuthConfigSource();
         $url = 'https://'.$originUrl.'/settings/tokens/new?scopes=repo&description=' . str_replace('%20', '+', rawurlencode($note));
-        $this->io->writeError(sprintf('When you need to access _private_ GitHub repositories as well, go to %s', $url));
+        $this->io->writeError('When you need to access _private_ GitHub repositories as well, go to:');
+        $this->io->writeError($url);
         $this->io->writeError('Note that such tokens have broad read/write permissions on your behalf, even if not needed by Composer.');
         $this->io->writeError(sprintf('Tokens will be stored in plain text in "%s" for future use by Composer.', ($localAuthConfig !== null ? $localAuthConfig->getName() . ' OR ' : '') . $this->config->getAuthConfigSource()->getName()));
         $this->io->writeError('For additional information, check https://getcomposer.org/doc/articles/authentication-for-private-packages.md#github-oauth');
