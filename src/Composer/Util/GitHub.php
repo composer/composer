@@ -92,7 +92,7 @@ class GitHub
         $note .= ' ' . date('Y-m-d Hi');
 
         $url = 'https://'.$originUrl.'/settings/tokens/new?scopes=&description=' . str_replace('%20', '+', rawurlencode($note));
-        $this->io->writeError('When working with _public_ GitHub repositories only, head here to retrieve a token:'));
+        $this->io->writeError('When working with _public_ GitHub repositories only, head here to retrieve a token:');
         $this->io->writeError($url);
         $this->io->writeError('This token will have read-only permission for public information only.');
 
