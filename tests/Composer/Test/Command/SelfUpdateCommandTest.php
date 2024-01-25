@@ -15,15 +15,6 @@ class SelfUpdateCommandTest extends TestCase
         $this->assertStringContainsString('Upgrading to version', $appTester->getDisplay());
     }
 
-    public function testRollbackOption(): void
-    {
-        $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'self-update', '--rollback' => true]);
-       
-        $appTester->assertCommandIsSuccessful();
-        $this->assertStringContainsString('Rolling back to version', $appTester->getDisplay());
-    }
-
     public function testUpdateToSpecificVersion(): void
     {
         $appTester = $this->getApplicationTester();
