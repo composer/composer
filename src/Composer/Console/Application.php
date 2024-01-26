@@ -659,6 +659,16 @@ class Application extends BaseApplication
         return $this->initialWorkingDirectory;
     }
 
+    public function getDisablePluginsByDefault(): bool
+    {
+        return $this->disablePluginsByDefault;
+    }
+
+    public function getDisableScriptsByDefault(): bool
+    {
+        return $this->disableScriptsByDefault;
+    }
+
     /**
      * @return 'prompt'|bool
      */
