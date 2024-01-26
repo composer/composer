@@ -350,8 +350,8 @@ class Factory
             // load auth configs into the IO instance
             $io->loadConfiguration($config);
 
-            // load existing Composer\InstalledVersions instance if available
-            if (!class_exists('Composer\InstalledVersions', false) && file_exists($installedVersionsPath = $config->get('vendor-dir').'/composer/InstalledVersions.php')) {
+            // load existing Composer\InstalledVersions instance if available and scripts/plugins are allowed, as they might need it
+            if (!$disablePlugins && !$disableScripts && !class_exists('Composer\InstalledVersions', false) && file_exists($installedVersionsPath = $config->get('vendor-dir').'/composer/InstalledVersions.php')) {
                 include $installedVersionsPath;
             }
         }
