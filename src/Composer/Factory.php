@@ -351,7 +351,7 @@ class Factory
             $io->loadConfiguration($config);
 
             // load existing Composer\InstalledVersions instance if available and scripts/plugins are allowed, as they might need it
-            if (!$disablePlugins && !$disableScripts && !class_exists('Composer\InstalledVersions', false) && file_exists($installedVersionsPath = $config->get('vendor-dir').'/composer/InstalledVersions.php')) {
+            if (false === $disablePlugins && false === $disableScripts && !class_exists('Composer\InstalledVersions', false) && file_exists($installedVersionsPath = $config->get('vendor-dir').'/composer/InstalledVersions.php')) {
                 include $installedVersionsPath;
             }
         }
