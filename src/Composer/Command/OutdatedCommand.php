@@ -12,6 +12,9 @@
 
 namespace Composer\Command;
 
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PluginEvents;
+use Composer\Script\ScriptEvents;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -110,7 +113,23 @@ EOT
 
         $input = new ArrayInput($args);
 
-        return $this->getApplication()->run($input, $output);
+
+        $composer = $this->tryComposer();
+
+        if ($composer) {
+            $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'archive', $input, $output);
+            $eventDispatcher = $composer->getEventDispatcher();
+            $eventDispatcher->dispatch($commandEvent->getName(), $commandEvent);
+            $eventDispatcher->dispatchScript(ScriptEvents::PRE_OUTDATED_CMD);
+        }
+
+        $returnCode = $this->getApplication()->run($input, $output);
+
+        if (0 === $returnCode && $composer) {
+            $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_OUTDATED_CMD);
+        }
+
+        return $returnCode;
     }
 
     /**

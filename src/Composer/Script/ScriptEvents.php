@@ -128,4 +128,22 @@ class ScriptEvents
      * @var string
      */
     public const POST_ARCHIVE_CMD = 'post-archive-cmd';
+
+    /**
+     * The PRE_OUTDATED_CMD event occurs before the outdated command is executed.
+     *
+     * The event listener method receives a Composer\Script\Event instance.
+     *
+     * @var string
+     */
+    public const PRE_OUTDATED_CMD = 'pre-outdated-cmd';
+
+    /**
+     * The POST_OUTDATED_CMD event occurs after the outdated command is executed.
+     *
+     * The event listener method receives a Composer\Script\Event instance.
+     *
+     * @var string
+     */
+    public const POST_OUTDATED_CMD = 'post-outdated-cmd';
 }

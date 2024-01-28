@@ -638,6 +638,14 @@
                     "type": ["array", "string"],
                     "description": "Occurs after the update command is executed, contains one or more Class::method callables or shell commands."
                 },
+                "pre-outdated-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs before the outdated command is executed, contains one or more Class::method callables or shell commands."
+                },
+                "post-outdated-cmd": {
+                    "type": ["array", "string"],
+                    "description": "Occurs after the outdated command is executed, contains one or more Class::method callables or shell commands."
+                },
                 "pre-status-cmd": {
                     "type": ["array", "string"],
                     "description": "Occurs before the status command is executed, contains one or more Class::method callables or shell commands."
