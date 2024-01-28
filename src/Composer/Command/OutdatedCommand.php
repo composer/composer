@@ -116,7 +116,7 @@ EOT
         $composer = $this->tryComposer();
 
         if ($composer !== null) {
-            $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'archive', $input, $output);
+            $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'outdated', $input, $output);
             $eventDispatcher = $composer->getEventDispatcher();
             $eventDispatcher->dispatch($commandEvent->getName(), $commandEvent);
             $eventDispatcher->dispatchScript(ScriptEvents::PRE_OUTDATED_CMD);
