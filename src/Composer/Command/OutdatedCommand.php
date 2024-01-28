@@ -113,10 +113,9 @@ EOT
 
         $input = new ArrayInput($args);
 
-
         $composer = $this->tryComposer();
 
-        if ($composer) {
+        if ($composer !== null) {
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'archive', $input, $output);
             $eventDispatcher = $composer->getEventDispatcher();
             $eventDispatcher->dispatch($commandEvent->getName(), $commandEvent);
@@ -125,7 +124,7 @@ EOT
 
         $returnCode = $this->getApplication()->run($input, $output);
 
-        if (0 === $returnCode && $composer) {
+        if (0 === $returnCode && $composer !== null) {
             $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_OUTDATED_CMD);
         }
 
