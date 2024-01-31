@@ -967,6 +967,14 @@ Defaults to false.
 
 Optional.
 
+### _comment
+
+Top level key used as a place to store comments (it can be a string or array of strings).
+
+Defaults to empty.
+
+Optional.
+
 ### non-feature-branches
 
 A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something),
