@@ -242,6 +242,9 @@ Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has t
 The `require` command adds new packages to the `composer.json` file from
 the current directory. If no file exists one will be created on the fly.
 
+If you do not specify a package, Composer will prompt you to search for a package, and given
+results, provide a list of matches to require.
+
 ```shell
 php composer.phar require
 ```
@@ -256,7 +259,14 @@ to the command.
 php composer.phar require "vendor/package:2.*" vendor/package2:dev-master
 ```
 
-If you do not specify a package, Composer will prompt you to search for a package, and given results, provide a list of  matches to require.
+If you do not specify a version constraint, composer will choose a suitable one based
+on the available package versions.
+
+```shell
+php composer.phar require vendor/package vendor/package2
+```
+
+If you do not want to install the new dependencies immediately you can call it with --no-update
 
 ### Options
 
