@@ -272,7 +272,7 @@ class Command extends BaseCommand
     {
         $output->writeln('Executing');
 
-        return 1;
+        return 0;
     }
 }
 ```
