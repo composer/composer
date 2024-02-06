@@ -17,6 +17,8 @@ use Composer\Pcre\Preg;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\MatchNoneConstraint;
+use Composer\Semver\Intervals;
 use Composer\Spdx\SpdxLicenses;
 
 /**
@@ -289,6 +291,11 @@ class ValidatingArrayLoader implements LoaderInterface
                             && (new Constraint('>=', '1.0.0.0-dev'))->matches($linkConstraint)
                         ) {
                             $this->warnings[] = $linkType.'.'.$package.' : exact version constraints ('.$constraint.') should be avoided if the package follows semantic versioning';
+                        }
+
+                        $compacted = Intervals::compactConstraint($linkConstraint);
+                        if ($compacted instanceof MatchNoneConstraint) {
+                            $this->warnings[] = $linkType.'.'.$package.' : this version constraint cannot possibly match anything ('.$constraint.')';
                         }
                     }
 

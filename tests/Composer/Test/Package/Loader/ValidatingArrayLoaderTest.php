@@ -484,6 +484,20 @@ class ValidatingArrayLoaderTest extends TestCase
                 [
                     'name' => 'foo/bar',
                     'require' => [
+                        'foo/baz' => '>1, <0.5',
+                        'bar/baz' => 'dev-main, >0.5',
+                    ],
+                ],
+                [
+                    'require.foo/baz : this version constraint cannot possibly match anything (>1, <0.5)',
+                    'require.bar/baz : this version constraint cannot possibly match anything (dev-main, >0.5)',
+                ],
+                false,
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'require' => [
                         'bar/unstable' => '0.3.0',
                     ],
                 ],
