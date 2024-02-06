@@ -271,6 +271,8 @@ class Command extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Executing');
+
+        return 0;
     }
 }
 ```
@@ -285,7 +287,7 @@ Plugins for an event can be run manually by the `run-script` command. This works
 [running scripts manually](scripts.md#running-scripts-manually).
 
 If it is another type of plugin the best way to test it is probably using a [path repository](../05-repositories.md#path)
-to require the plugin in a test project, and then `rm -rf vendor && composer update`
+to require the plugin in a test project. If you are developing locally and want to test frequently, you can make sure the path repository uses symlinks, as changes are updated immediately. Otherwise, you'll have to run `rm -rf vendor && composer update`
 every time you want to install/run it again.
 
 ## Using Plugins
