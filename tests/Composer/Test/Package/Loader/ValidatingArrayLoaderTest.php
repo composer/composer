@@ -426,6 +426,12 @@ class ValidatingArrayLoaderTest extends TestCase
                 ],
                 ['replace.0 : invalid version constraint (Could not parse version constraint acme/bar: Invalid version string "acme/bar")'],
             ],
+            [
+                [
+                    'require' => ['acme/bar' => '^1.0']
+                ],
+                ['name : must be present'],
+            ]
         ]);
     }
 
