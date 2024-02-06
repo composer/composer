@@ -562,7 +562,7 @@ php composer.phar show monolog/monolog 1.0.2
 * **--tree (-t):** List your dependencies as a tree. If you pass a package name it will show the dependency tree for that package.
 * **--latest (-l):** List all installed packages including their latest version.
 * **--outdated (-o):** Implies --latest, but this lists *only* packages that have a newer version available.
-* **--ignore:** Ignore specified package(s). Use it with the --outdated option if you don't want to be informed about new versions of some packages
+* **--ignore:** Ignore specified package(s). Can contain wildcards (`*`). Use it with the --outdated option if you don't want to be informed about new versions of some packages
 * **--no-dev:** Filters dev dependencies from the package list.
 * **--major-only (-M):** Use with --latest or --outdated. Only shows packages that have major SemVer-compatible updates.
 * **--minor-only (-m):** Use with --latest or --outdated. Only shows packages that have minor SemVer-compatible updates.
@@ -597,7 +597,7 @@ The color coding is as such:
 * **--all (-a):** Show all packages, not just outdated (alias for `composer show --latest`).
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 * **--strict:** Returns non-zero exit code if any package is outdated.
-* **--ignore:** Ignore specified package(s). Use it if you don't want to be informed about new versions of some packages
+* **--ignore:** Ignore specified package(s). Can contain wildcards (`*`). Use it if you don't want to be informed about new versions of some packages
 * **--major-only (-M):** Only shows packages that have major SemVer-compatible updates.
 * **--minor-only (-m):** Only shows packages that have minor SemVer-compatible updates.
 * **--patch-only (-p):** Only shows packages that have patch-level SemVer-compatible updates.
