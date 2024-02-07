@@ -30,6 +30,7 @@ use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\StabilityFilter;
 use Composer\Semver\Constraint\MatchAllConstraint;
+use Composer\Semver\Constraint\MultiConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -245,7 +246,15 @@ class RepositorySet
     {
         $map = [];
         foreach ($packages as $package) {
-            $map[$package->getName()] = new Constraint('=', $package->getVersion());
+            // ignore root alias versions as they are not actual package versions and should not matter when it comes to vulnerabilities
+            if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+                continue;
+            }
+            if (isset($map[$package->getName()])) {
+                $map[$package->getName()] = new MultiConstraint([new Constraint('=', $package->getVersion()), $map[$package->getName()]], false);
+            } else {
+                $map[$package->getName()] = new Constraint('=', $package->getVersion());
+            }
         }
 
         return $this->getSecurityAdvisoriesForConstraints($map, $allowPartialAdvisories);
