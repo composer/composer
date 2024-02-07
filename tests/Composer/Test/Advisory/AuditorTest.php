@@ -23,6 +23,7 @@ use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 use Composer\Advisory\Auditor;
+use Composer\Util\Platform;
 use InvalidArgumentException;
 
 class AuditorTest extends TestCase

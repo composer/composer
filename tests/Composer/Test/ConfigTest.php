@@ -12,6 +12,7 @@
 
 namespace Composer\Test;
 
+use Composer\Advisory\Auditor;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\Platform;
@@ -380,6 +381,30 @@ class ConfigTest extends TestCase
         Platform::clearEnv('COMPOSER_HTACCESS_PROTECT');
 
         $this->assertEquals('COMPOSER_HTACCESS_PROTECT', $result);
+    }
+
+    public function testAudit(): void
+    {
+        $config = new Config(true);
+        $result = $config->get('audit');
+        self::assertArrayHasKey('abandoned', $result);
+        self::assertArrayHasKey('ignore', $result);
+        self::assertSame(Auditor::ABANDONED_FAIL, $result['abandoned']);
+        self::assertSame([], $result['ignore']);
+
+        Platform::putEnv('COMPOSER_AUDIT_ABANDONED', Auditor::ABANDONED_IGNORE);
+        $result = $config->get('audit');
+        Platform::clearEnv('COMPOSER_AUDIT_ABANDONED');
+        self::assertArrayHasKey('abandoned', $result);
+        self::assertArrayHasKey('ignore', $result);
+        self::assertSame(Auditor::ABANDONED_IGNORE, $result['abandoned']);
+        self::assertSame([], $result['ignore']);
+
+        $config->merge(['config' => ['audit' => ['ignore' => ['A', 'B']]]]);
+        $config->merge(['config' => ['audit' => ['ignore' => ['A', 'C']]]]);
+        $result = $config->get('audit');
+        self::assertArrayHasKey('ignore', $result);
+        self::assertSame(['A', 'B', 'A', 'C'], $result['ignore']);
     }
 
     public function testGetDefaultsToAnEmptyArray(): void

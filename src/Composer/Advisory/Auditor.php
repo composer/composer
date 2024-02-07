@@ -19,6 +19,7 @@ use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Util\PackageInfo;
+use Composer\Util\Platform;
 use InvalidArgumentException;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 

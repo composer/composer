@@ -1247,6 +1247,11 @@ similar use case), and need to support proxies, please provide the `CGI_HTTP_PRO
 environment variable instead. See [httpoxy.org](https://httpoxy.org/) for further
 details.
 
+### COMPOSER_AUDIT_ABANDONED
+
+Set to `ignore`, `report` or `fail` to override the [audit.abandoned](06-config.md#abandoned)
+config option.
+
 ### COMPOSER_MAX_PARALLEL_HTTP
 
 Set to an integer to configure how many files can be downloaded in parallel. This
