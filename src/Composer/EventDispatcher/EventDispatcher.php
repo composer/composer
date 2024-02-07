@@ -194,7 +194,7 @@ class EventDispatcher
                 $return = 0;
                 $this->ensureBinDirIsInPath();
 
-                $formattedEventNameWithArgs = $event->getName() . ($event->getArguments() !== [] ? ' (' . implode(',', $event->getArguments()) . ')' : '');
+                $formattedEventNameWithArgs = $event->getName() . ($event->getArguments() !== [] ? ' (' . implode(', ', $event->getArguments()) . ')' : '');
                 if (!is_string($callable)) {
                     if (!is_callable($callable)) {
                         $className = is_object($callable[0]) ? get_class($callable[0]) : $callable[0];
