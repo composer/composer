@@ -59,10 +59,6 @@ class Auditor
      */
     public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_FAIL): int
     {
-        if (Platform::getEnv('COMPOSER_AUDIT_ABANDONED') !== FALSE) {
-            $abandoned = Platform::getEnv('COMPOSER_AUDIT_ABANDONED');
-        }
-
         $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY);
         // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
         // and ignores are set then we need to query again the full data to make sure it can be filtered
