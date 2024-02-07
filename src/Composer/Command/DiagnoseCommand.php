@@ -326,7 +326,7 @@ EOT
     }
 
     /**
-     * @return string|true|\Exception
+     * @return string|\Exception
      */
     private function checkGithubOauth(string $domain, string $token)
     {
@@ -339,11 +339,17 @@ EOT
         try {
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/' : 'https://'.$domain.'/api/v3/';
 
-            $this->httpDownloader->get($url, [
+            $response = $this->httpDownloader->get($url, [
                 'retry-auth-failure' => false,
             ]);
 
-            return true;
+            $expiration = $response->getHeader('github-authentication-token-expiration');
+
+            if ($expiration === null) {
+                return '<info>OK</> <comment>does not expire</>';
+            }
+
+            return '<info>OK</> <comment>expires on '. $expiration .'</>';
         } catch (\Exception $e) {
             if ($e instanceof TransportException && $e->getCode() === 401) {
                 return '<comment>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</comment>';
