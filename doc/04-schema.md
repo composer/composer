@@ -967,6 +967,23 @@ Defaults to false.
 
 Optional.
 
+### _comment
+
+Top level key used as a place to store comments (it can be a string or array of strings).
+
+```json
+{
+    "_comment": [
+        "The package foo/bar was required for business logic",
+        "Remove package foo/baz when removing foo/bar"
+    ]
+}
+```
+
+Defaults to empty.
+
+Optional.
+
 ### non-feature-branches
 
 A list of regex patterns of branch names that are non-numeric (e.g. "latest" or something),
