@@ -20,6 +20,8 @@ use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\PartialComposer;
 use Composer\Pcre\Preg;
+use Composer\Plugin\CommandEvent;
+use Composer\Plugin\PreCommandRunEvent;
 use Composer\Util\Platform;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\RepositoryInterface;
@@ -180,6 +182,10 @@ class EventDispatcher
             $details = null;
             if ($event instanceof PackageEvent) {
                 $details = (string) $event->getOperation();
+            } elseif ($event instanceof CommandEvent) {
+                $details = $event->getCommandName();
+            } elseif ($event instanceof PreCommandRunEvent) {
+                $details = $event->getCommand();
             }
             $this->io->writeError('Dispatching <info>'.$event->getName().'</info>'.($details ? ' ('.$details.')' : '').' event');
         }
