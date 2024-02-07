@@ -349,16 +349,7 @@ EOT
                 return '<info>OK</> <comment>does not expire</>';
             }
 
-            try {
-                if (\DateTime::createFromFormat('Y-m-d h:i:s O', $expiration) !== false) {
-                    return '<info>OK</> <comment>expires on '. $expiration .'</>';
-                }
-
-                return '<info>OK</> <comment>returned unexpected expiration date format</>';
-            }
-            catch (\Throwable $exception) {
-                return '<info>OK</> <comment>error parsing returned expiration date</>';
-            }
+            return '<info>OK</> <comment>expires on '. $expiration .'</>';
         } catch (\Exception $e) {
             if ($e instanceof TransportException && $e->getCode() === 401) {
                 return '<comment>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</comment>';
