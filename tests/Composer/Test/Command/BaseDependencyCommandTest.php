@@ -315,7 +315,8 @@ class BaseDependencyCommandTest extends TestCase
             <<<OUTPUT
 __root__         -     requires vendor1/package3 (2.3.0)
 vendor1/package2 2.3.0 requires vendor1/package3 (^1)
-OUTPUT,
+OUTPUT
+,
             0
         ];
 
@@ -327,7 +328,8 @@ vendor1/package3 2.1.0
 `--vendor1/package2 2.3.0 (requires vendor1/package3 ^1)
    |--__root__ (requires vendor1/package2 1.3.0)
    `--vendor1/package1 1.3.0 (requires vendor1/package2 ^2)
-OUTPUT,
+OUTPUT
+,
             0
         ];
 
@@ -338,7 +340,8 @@ __root__         -     requires vendor1/package2 (1.3.0)
 vendor1/package1 1.3.0 requires vendor1/package2 (^2)
 __root__         -     requires vendor1/package3 (2.3.0)
 vendor1/package2 2.3.0 requires vendor1/package3 (^1)
-OUTPUT,
+OUTPUT
+,
             0
         ];
 
@@ -431,7 +434,8 @@ OUTPUT,
 Package "vendor1/package1" could not be found with constraint "3.*", results below will most likely be incomplete.
 __root__ - requires vendor1/package1 (1.*)
 Not finding what you were looking for? Try calling `composer require "vendor1/package1:3.*" --dry-run` to get another view on the problem.
-OUTPUT,
+OUTPUT
+,
             1
         ];
 
@@ -441,7 +445,8 @@ OUTPUT,
 Package "vendor1/package1" could not be found with constraint "^1.4", results below will most likely be incomplete.
 There is no installed package depending on "vendor1/package1" in versions not matching ^1.4
 Not finding what you were looking for? Try calling `composer require "vendor1/package1:^1.4" --dry-run` to get another view on the problem.
-OUTPUT,
+OUTPUT
+,
             0
         ];
 
@@ -450,7 +455,8 @@ OUTPUT,
             <<<OUTPUT
 There is no installed package depending on "vendor1/package1" in versions not matching ^1.3
 Not finding what you were looking for? Try calling `composer require "vendor1/package1:^1.3" --dry-run` to get another view on the problem.
-OUTPUT,
+OUTPUT
+,
             0
         ];
 
@@ -459,7 +465,8 @@ OUTPUT,
             <<<OUTPUT
 vendor2/package2 1.0.0 requires vendor2/package3 (1.4.*)
 Not finding what you were looking for? Try calling `composer update "vendor2/package3:1.5.0" --dry-run` to get another view on the problem.
-OUTPUT,
+OUTPUT
+,
             1
         ];
     }
