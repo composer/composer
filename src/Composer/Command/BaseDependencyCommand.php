@@ -133,6 +133,8 @@ abstract class BaseDependencyCommand extends BaseCommand
         $renderTree = $input->getOption(self::OPTION_TREE);
         $recursive = $renderTree || $input->getOption(self::OPTION_RECURSIVE);
 
+        $return = $inverted ? 1 : 0;
+
         // Resolve dependencies
         $results = $installedRepo->getDependents($needles, $constraint, $inverted, $recursive);
         if (empty($results)) {
@@ -142,6 +144,7 @@ abstract class BaseDependencyCommand extends BaseCommand
                 $needle,
                 $extra
             ));
+            $return = $inverted ? 0 : 1;
         } elseif ($renderTree) {
             $this->initStyles($output);
             $root = $packages[0];
@@ -171,7 +174,7 @@ abstract class BaseDependencyCommand extends BaseCommand
             $this->getIO()->writeError('Not finding what you were looking for? Try calling `composer '.$composerCommand.' "'.$needle.':'.$textConstraint.'" --dry-run` to get another view on the problem.');
         }
 
-        return 0;
+        return $return;
     }
 
     /**
