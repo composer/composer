@@ -210,6 +210,14 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         return new ApplicationTester($application);
     }
 
+    /**
+     * Trims the entire string but also the trailing spaces off of every line
+     */
+    protected function trimLines(string $str): string
+    {
+        return trim(Preg::replace('{^(.*?) *$}m', '$1', $str));
+    }
+
     protected static function getVersionParser(): VersionParser
     {
         if (!self::$parser) {

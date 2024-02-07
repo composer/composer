@@ -228,7 +228,7 @@ class BaseDependencyCommandTest extends TestCase
      *
      * @param array<string, string|bool> $parameters
      */
-    public function testWhyCommandOutputs(array $parameters, string $expectedOutput): void
+    public function testWhyCommandOutputs(array $parameters, string $expectedOutput, int $expectedStatusCode): void
     {
         $packageToBeInspected = $parameters['package'];
         $renderAsTree = $parameters['--tree'] ?? false;
@@ -294,9 +294,9 @@ class BaseDependencyCommandTest extends TestCase
             '--locked' => true
         ]);
 
-        $appTester->assertCommandIsSuccessful();
+        self::assertSame($expectedStatusCode, $appTester->getStatusCode());
 
-        $this->assertEquals(trim($expectedOutput), trim($appTester->getDisplay(true)));
+        $this->assertEquals(trim($expectedOutput), $this->trimLines($appTester->getDisplay(true)));
     }
 
     /**
@@ -306,41 +306,46 @@ class BaseDependencyCommandTest extends TestCase
     {
         yield 'there is no installed package depending on the package' => [
             ['package' => 'vendor1/package1'],
-            'There is no installed package depending on "vendor1/package1"'
+            'There is no installed package depending on "vendor1/package1"',
+            1
         ];
 
         yield 'a nested package dependency' => [
             ['package' => 'vendor1/package3'],
             <<<OUTPUT
-__root__         -     requires vendor1/package3 (2.3.0) 
+__root__         -     requires vendor1/package3 (2.3.0)
 vendor1/package2 2.3.0 requires vendor1/package3 (^1)
-OUTPUT
+OUTPUT,
+            0
         ];
 
         yield 'a nested package dependency (tree mode)' => [
             ['package' => 'vendor1/package3', '--tree' => true],
             <<<OUTPUT
-vendor1/package3 2.1.0 
+vendor1/package3 2.1.0
 |--__root__ (requires vendor1/package3 2.3.0)
 `--vendor1/package2 2.3.0 (requires vendor1/package3 ^1)
    |--__root__ (requires vendor1/package2 1.3.0)
    `--vendor1/package1 1.3.0 (requires vendor1/package2 ^2)
-OUTPUT
+OUTPUT,
+            0
         ];
 
         yield 'a nested package dependency (recursive mode)' => [
             ['package' => 'vendor1/package3', '--recursive' => true],
             <<<OUTPUT
-__root__         -     requires vendor1/package2 (1.3.0) 
-vendor1/package1 1.3.0 requires vendor1/package2 (^2)    
-__root__         -     requires vendor1/package3 (2.3.0) 
+__root__         -     requires vendor1/package2 (1.3.0)
+vendor1/package1 1.3.0 requires vendor1/package2 (^2)
+__root__         -     requires vendor1/package3 (2.3.0)
 vendor1/package2 2.3.0 requires vendor1/package3 (^1)
-OUTPUT
+OUTPUT,
+            0
         ];
 
         yield 'a simple package dev dependency' => [
             ['package' => 'vendor2/package1'],
-            '__root__ - requires (for development) vendor2/package1 (2.*)'
+            '__root__ - requires (for development) vendor2/package1 (2.*)',
+            0
         ];
     }
 
@@ -354,7 +359,7 @@ OUTPUT
      *
      * @param array<string, string> $parameters
      */
-    public function testWhyNotCommandOutputs(array $parameters, string $expectedOutput): void
+    public function testWhyNotCommandOutputs(array $parameters, string $expectedOutput, int $expectedStatusCode): void
     {
         $packageToBeInspected = $parameters['package'];
         $packageVersionToBeInspected = $parameters['version'];
@@ -393,7 +398,7 @@ OUTPUT
                 '1.4.*'
             )
         ]);
-       $secondDevNestedRequiredPackage = self::getPackage('vendor2/package3', '1.4.0');
+        $secondDevNestedRequiredPackage = self::getPackage('vendor2/package3', '1.4.0');
 
         $this->createComposerLock(
             [$someRequiredPackage],
@@ -411,8 +416,8 @@ OUTPUT
             'version' => $packageVersionToBeInspected
         ]);
 
-        $appTester->assertCommandIsSuccessful();
-        $this->assertSame(trim($expectedOutput), trim($appTester->getDisplay(true)));
+        self::assertSame($expectedStatusCode, $appTester->getStatusCode());
+        $this->assertSame(trim($expectedOutput), $this->trimLines($appTester->getDisplay(true)));
     }
 
     /**
@@ -424,9 +429,10 @@ OUTPUT
             ['package' => 'vendor1/package1', 'version' => '3.*'],
             <<<OUTPUT
 Package "vendor1/package1" could not be found with constraint "3.*", results below will most likely be incomplete.
-__root__ - requires vendor1/package1 (1.*) 
+__root__ - requires vendor1/package1 (1.*)
 Not finding what you were looking for? Try calling `composer require "vendor1/package1:3.*" --dry-run` to get another view on the problem.
-OUTPUT
+OUTPUT,
+            1
         ];
 
         yield 'it could not found the package and there is no installed package with a specific version' => [
@@ -435,7 +441,8 @@ OUTPUT
 Package "vendor1/package1" could not be found with constraint "^1.4", results below will most likely be incomplete.
 There is no installed package depending on "vendor1/package1" in versions not matching ^1.4
 Not finding what you were looking for? Try calling `composer require "vendor1/package1:^1.4" --dry-run` to get another view on the problem.
-OUTPUT
+OUTPUT,
+            0
         ];
 
         yield 'there is no installed package depending on the package in versions not matching a specific version' => [
@@ -443,15 +450,17 @@ OUTPUT
             <<<OUTPUT
 There is no installed package depending on "vendor1/package1" in versions not matching ^1.3
 Not finding what you were looking for? Try calling `composer require "vendor1/package1:^1.3" --dry-run` to get another view on the problem.
-OUTPUT
+OUTPUT,
+            0
         ];
 
         yield 'an installed package requires an incompatible version of the inspected package' => [
             ['package' => 'vendor2/package3', 'version' => '1.5.0'],
             <<<OUTPUT
-vendor2/package2 1.0.0 requires vendor2/package3 (1.4.*) 
+vendor2/package2 1.0.0 requires vendor2/package3 (1.4.*)
 Not finding what you were looking for? Try calling `composer update "vendor2/package3:1.5.0" --dry-run` to get another view on the problem.
-OUTPUT
+OUTPUT,
+            1
         ];
     }
 }
