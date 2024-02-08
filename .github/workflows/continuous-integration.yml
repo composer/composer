@@ -105,20 +105,14 @@ jobs:
       - name: "Require latest PHPUnitBridge for PHP 8.x"
         if: "startsWith(matrix.php-version, '8.')"
         # using ~ here to avoid issues with windows CLI removing the ^
-        run: 'composer require --no-update --dev "symfony/phpunit-bridge:~5.2"'
-
-      # temporary fix until phpunit-bridge has a release supporting 8.1
-      - name: "Require latest dev PHPUnitBridge for PHP 8.1"
-        if: "matrix.experimental"
-        # using ~ here to avoid issues with windows CLI removing the ^
-        run: 'composer require --no-update --dev "symfony/phpunit-bridge:~5.4@dev"'
+        run: 'composer require --no-update --dev "symfony/phpunit-bridge"'
 
       - name: "Set ignored deprecations for php 8.1+ on lowest or locked deps"
         if: "matrix.php-version >= '8.1' && !contains(matrix.dependencies, 'highest')"
         run: "echo \"SYMFONY_DEPRECATIONS_HELPER=baselineFile=./tests/deprecations-8.1.json&max[direct]=0\" >> $GITHUB_ENV"
 
       - name: "Update dev requirements to latest available for the current PHP even on locked builds as they are not bundled dependencies"
-        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }} symfony/phpunit-bridge phpspec/prophecy phpdocumentor/* sebastian/* doctrine/instantiator"
+        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }} -W symfony/phpunit-bridge phpspec/prophecy phpdocumentor/* sebastian/* doctrine/instantiator"
 
       - name: "Run install again using composer binary from source"
         run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
