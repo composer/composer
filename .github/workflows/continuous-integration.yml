@@ -34,8 +34,6 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
-          - "8.0"
-          - "8.1"
         dependencies: [locked]
         os: [ubuntu-latest]
         experimental: [false]
@@ -48,19 +46,19 @@ jobs:
             dependencies: lowest
             os: ubuntu-latest
             experimental: false
-          - php-version: "8.0"
+          - php-version: "7.4"
             os: windows-latest
             dependencies: locked
             experimental: false
-          - php-version: "8.0"
+          - php-version: "7.4"
             os: macos-latest
             dependencies: locked
             experimental: false
-          - php-version: "8.1"
+          - php-version: "7.4"
             dependencies: lowest
             os: ubuntu-latest
             experimental: false
-          - php-version: "8.1"
+          - php-version: "7.4"
             dependencies: highest
             os: ubuntu-latest
             experimental: false
