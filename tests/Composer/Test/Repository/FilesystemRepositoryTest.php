@@ -200,7 +200,7 @@ class FilesystemRepositoryTest extends TestCase
         $this->assertSame(file_get_contents(__DIR__.'/Fixtures/installed.php'), file_get_contents($dir.'/installed.php'));
     }
 
-    public function testSafelyLoadInstalledVersions(): void
+    public function testSafelyLoadInstalledVersions()
     {
         $result = FilesystemRepository::safelyLoadInstalledVersions(__DIR__.'/Fixtures/installed_complex.php');
         self::assertTrue($result, 'The file should be considered valid');
