@@ -554,7 +554,7 @@ Where the type field is `git`, this will the be the commit id, branch or tag nam
 **Note**: It is not recommended to use a git branch name for the reference field. While this is valid as it is supported by `git checkout`,
 branch names are mutable and thus cannot be locked.
 
-Where the type field is `svn`, the  reference field should contain the reference that gets appended to the URL when running `svn co`.
+Where the type field is `svn`, the reference field should contain the reference that gets appended to the URL when running `svn co`.
 
 > **Note**: This repository type has a few limitations and should be avoided
 > whenever possible:
