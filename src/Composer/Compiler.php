@@ -120,7 +120,6 @@ class Compiler
             ->notPath('/bin\/(jsonlint|validate-json|simple-phpunit|phpstan|phpstan\.phar)(\.bat)?$/')
             ->notPath('justinrainbow/json-schema/demo/')
             ->notPath('justinrainbow/json-schema/dist/')
-            ->notPath('composer/installed.json')
             ->notPath('composer/LICENSE')
             ->exclude('Tests')
             ->exclude('tests')
@@ -131,6 +130,7 @@ class Compiler
 
         $extraFiles = [];
         foreach ([
+            __DIR__ . '/../../vendor/composer/installed.json',
             __DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-exceptions.json',
             __DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-licenses.json',
             CaBundle::getBundledCaBundlePath(),
