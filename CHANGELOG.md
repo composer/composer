@@ -1,3 +1,32 @@
+### [2.7.0] 2024-02-08
+
+  * Security: Fixed code execution and possible privilege escalation via compromised vendor dir contents (GHSA-7c6p-848j-wh5h / CVE-2024-24821)
+  * Changed the default of the `audit.abandoned` config setting to `fail`, set it to `report` or `ignore` if you do not want this, or set it via `COMPOSER_AUDIT_ABANDONED` env var (#11643)
+  * Added --minimal-changes (-m) flag to `update`/`require`/`remove` commands to perform partial update with --with-dependencies while changing only what is absolutely necessary in transitive dependencies (#11665)
+  * Added --sort-by-age (-A) flag to `outdated`/`show` commands to allow sorting by and displaying the release date (most outdated first) (#11762)
+  * Added support for `--self` combined with `--installed` or `--locked` in `show` command, to add the root package to the package list being output (#11785)
+  * Added severity information to `audit` command output (#11702)
+  * Added `scripts-aliases` top level key in composer.json to define aliases for custom scripts you defined (#11666)
+  * Added IPv4 fallback on connection timeout, as well as a `COMPOSER_IPRESOLVE` env var to force IPv4 or IPv6, set it to `4` or `6` (#11791)
+  * Added support for wildcards in `outdated`'s --ignore arg (#11831)
+  * Added support for `bump` command bumping `*` to `>=current version` (#11694)
+  * Added detection of constraints that cannot possibly match anything to `validate` command (#11829)
+  * Added package source information to the output of `install` when running in very verbose (-vv) mode (#11763)
+  * Added audit of Composer's own bundled dependencies in `diagnose` command (#11761)
+  * Added GitHub token expiration date to `diagnose` command output (#11688)
+  * Added non-zero status code to why/why-not commands (#11796)
+  * Added error when calling `show --direct <package>` with an indirect/transitive dependency (#11728)
+  * Added `COMPOSER_FUND=0` env var to hide calls for funding (#11779)
+  * Fixed `bump` command not bumping packages required with a `v` prefix (#11764)
+  * Fixed automatic disabling of plugins when running non-interactive as root
+  * Fixed `update --lock` not keeping the dist reference/url/checksum pinned (#11787)
+  * Fixed `require` command crashing at the end if no lock file is present (#11814)
+  * Fixed root aliases causing problems when auditing locked dependencies (#11771)
+  * Fixed handling of versions with 4 components in `require` command (#11716)
+  * Fixed compatibility issues with Symfony 7
+  * Fixed composer.json remaining behind after a --dry-run of the `require` command (#11747)
+  * Fixed warnings being shown incorrectly under some circumstances (#11786, #11760, #11803)
+
 ### [2.6.6] 2023-12-08
 
   * Fixed symfony/console requirement to exclude 7.x as Composer 2.6 is not compatible, 2.7 will be (#11741)
@@ -1795,6 +1824,7 @@
 
   * Initial release
 
+[2.7.0]: https://github.com/composer/composer/compare/2.6.6...2.7.0
 [2.6.6]: https://github.com/composer/composer/compare/2.6.5...2.6.6
 [2.6.5]: https://github.com/composer/composer/compare/2.6.4...2.6.5
 [2.6.4]: https://github.com/composer/composer/compare/2.6.3...2.6.4
