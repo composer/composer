@@ -18,6 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\RootPackageInterface;
+use Composer\Repository\FilesystemRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\RepositoryFactory;
 use Composer\Util\Filesystem;
@@ -351,8 +352,13 @@ class Factory
             $io->loadConfiguration($config);
 
             // load existing Composer\InstalledVersions instance if available and scripts/plugins are allowed, as they might need it
-            if (false === $disablePlugins && false === $disableScripts && !class_exists('Composer\InstalledVersions', false) && file_exists($installedVersionsPath = $config->get('vendor-dir').'/composer/InstalledVersions.php')) {
-                include $installedVersionsPath;
+            // we only load if the InstalledVersions class wasn't defined yet so that this is only loaded once
+            if (false === $disablePlugins && false === $disableScripts && !class_exists('Composer\InstalledVersions', false) && file_exists($installedVersionsPath = $config->get('vendor-dir').'/composer/installed.php')) {
+                // force loading the class at this point so it is loaded from the composer phar and not from the vendor dir
+                // as we cannot guarantee integrity of that file
+                if (class_exists('Composer\InstalledVersions')) {
+                    FilesystemRepository::safelyLoadInstalledVersions($installedVersionsPath);
+                }
             }
         }
 

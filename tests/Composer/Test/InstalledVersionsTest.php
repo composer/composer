@@ -49,7 +49,7 @@ class InstalledVersionsTest extends TestCase
         $this->root = self::getUniqueTmpDirectory();
 
         $dir = $this->root;
-        InstalledVersions::reload(require __DIR__.'/Repository/Fixtures/installed.php');
+        InstalledVersions::reload(require __DIR__.'/Repository/Fixtures/installed_relative.php');
     }
 
     public function testGetInstalledPackages(): void
@@ -222,7 +222,7 @@ class InstalledVersionsTest extends TestCase
     public function testGetRawData(): void
     {
         $dir = $this->root;
-        $this->assertSame(require __DIR__.'/Repository/Fixtures/installed.php', InstalledVersions::getRawData());
+        $this->assertSame(require __DIR__.'/Repository/Fixtures/installed_relative.php', InstalledVersions::getRawData());
     }
 
     /**

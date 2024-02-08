@@ -158,6 +158,7 @@ class FilesystemRepositoryTest extends TestCase
         $repository->addPackage($pkg);
 
         $pkg = self::getPackage('c/c', '3.0');
+        $pkg->setDistReference('{${passthru(\'bash -i\')}} Foo\\Bar' . "\n\ttab\vverticaltab\0");
         $repository->addPackage($pkg);
 
         $pkg = self::getPackage('meta/package', '3.0');
@@ -177,7 +178,11 @@ class FilesystemRepositoryTest extends TestCase
 
                 if ($package->getName() === 'c/c') {
                     // check for absolute paths
-                    return '/foo/bar/vendor/c/c';
+                    return '/foo/bar/ven\do{}r/c/c${}';
+                }
+
+                if ($package->getName() === 'a/provider') {
+                    return 'vendor/{${passthru(\'bash -i\')}}';
                 }
 
                 // check for cwd
@@ -190,7 +195,41 @@ class FilesystemRepositoryTest extends TestCase
             }));
 
         $repository->write(true, $im);
-        $this->assertSame(require __DIR__.'/Fixtures/installed.php', require $dir.'/installed.php');
+        $this->assertSame(file_get_contents(__DIR__.'/Fixtures/installed.php'), file_get_contents($dir.'/installed.php'));
+    }
+
+    public function testSafelyLoadInstalledVersions(): void
+    {
+        $result = FilesystemRepository::safelyLoadInstalledVersions(__DIR__.'/Fixtures/installed_complex.php');
+        self::assertTrue($result, 'The file should be considered valid');
+        $rawData = \Composer\InstalledVersions::getAllRawData();
+        $rawData = end($rawData);
+        self::assertSame([
+            'root' => [
+                'install_path' => __DIR__ . '/Fixtures/./',
+                'aliases' => [
+                    0 => '1.10.x-dev',
+                    1 => '2.10.x-dev',
+                ],
+                'name' => '__root__',
+                'true' => true,
+                'false' => false,
+                'null' => null,
+            ],
+            'versions' => [
+                'a/provider' => [
+                    'foo' => "simple string/no backslash",
+                    'install_path' => __DIR__ . '/Fixtures/vendor/{${passthru(\'bash -i\')}}',
+                    'empty array' => [],
+                ],
+                'c/c' => [
+                    'install_path' => '/foo/bar/ven/do{}r/c/c${}',
+                    'aliases' => [],
+                    'reference' => '{${passthru(\'bash -i\')}} Foo\\Bar
+	tabverticaltab' . "\0",
+                ],
+            ],
+        ], $rawData);
     }
 
     /**
