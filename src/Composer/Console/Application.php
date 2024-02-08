@@ -610,6 +610,22 @@ class Application extends BaseApplication
     }
 
     /**
+     * @return bool
+     */
+    public function getDisablePluginsByDefault()
+    {
+        return $this->disablePluginsByDefault;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getDisableScriptsByDefault()
+    {
+        return $this->disableScriptsByDefault;
+    }
+
+    /**
      * @return 'prompt'|bool
      */
     private function getUseParentDirConfigValue()

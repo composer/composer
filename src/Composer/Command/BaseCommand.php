@@ -142,6 +142,15 @@ abstract class BaseCommand extends Command
         // initialize a plugin-enabled Composer instance, either local or global
         $disablePlugins = $input->hasParameterOption('--no-plugins');
         $disableScripts = $input->hasParameterOption('--no-scripts');
+
+        $application = parent::getApplication();
+        if ($application instanceof Application && $application->getDisablePluginsByDefault()) {
+            $disablePlugins = true;
+        }
+        if ($application instanceof Application && $application->getDisableScriptsByDefault()) {
+            $disableScripts = true;
+        }
+
         if ($this instanceof SelfUpdateCommand) {
             $disablePlugins = true;
             $disableScripts = true;
