@@ -1,3 +1,7 @@
+### [2.2.23] 2024-02-08
+
+  * Security: Fixed code execution and possible privilege escalation via compromised vendor dir contents (GHSA-7c6p-848j-wh5h / CVE-2024-24821)
+
 ### [2.2.22] 2023-09-29
 
   * Security: Fixed possible remote code execution vulnerability if composer.phar is publicly accessible, executable as PHP, and register_argc_argv is enabled in php.ini (GHSA-jm6m-4632-36hf / CVE-2023-43655)
@@ -1503,6 +1507,7 @@
 
   * Initial release
 
+[2.2.23]: https://github.com/composer/composer/compare/2.2.22...2.2.23
 [2.2.22]: https://github.com/composer/composer/compare/2.2.21...2.2.22
 [2.2.21]: https://github.com/composer/composer/compare/2.2.20...2.2.21
 [2.2.20]: https://github.com/composer/composer/compare/2.2.19...2.2.20
