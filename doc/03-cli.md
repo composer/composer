@@ -230,7 +230,7 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`. Can also be set via the
   COMPOSER_PREFER_LOWEST=1 env var.
-* **--minimal-changes:** During a partial update with `-w`/`-W`, only perform absolutely necessary
+* **--minimal-changes (-m):** During a partial update with `-w`/`-W`, only perform absolutely necessary
   changes to transitive dependencies. Can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var.
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
@@ -301,7 +301,7 @@ If you do not want to install the new dependencies immediately you can call it w
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`. Can also be set via the
   COMPOSER_PREFER_LOWEST=1 env var.
-* **--minimal-changes:** During an update with `-w`/`-W`, only perform absolutely necessary
+* **--minimal-changes (-m):** During an update with `-w`/`-W`, only perform absolutely necessary
   changes to transitive dependencies. Can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var.
 * **--sort-packages:** Keep packages sorted in `composer.json`.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
@@ -341,7 +341,7 @@ uninstalled.
   (Deprecated, is now default behavior)
 * **--update-with-all-dependencies (-W):** Allows all inherited dependencies to be updated,
   including those that are root requirements.
-* **--minimal-changes:** During an update with `-w`/`-W`, only perform absolutely necessary
+* **--minimal-changes (-m):** During an update with `-w`/`-W`, only perform absolutely necessary
   changes to transitive dependencies. Can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
