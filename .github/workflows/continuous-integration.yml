@@ -102,6 +102,9 @@ jobs:
         if: "matrix.dependencies == 'locked'"
         run: "composer install ${{ env.COMPOSER_FLAGS }}"
 
+      - name: "Remove platform config"
+        run: composer config platform --unset
+
       - name: "Require latest PHPUnitBridge for PHP 8.x"
         if: "startsWith(matrix.php-version, '8.')"
         # using ~ here to avoid issues with windows CLI removing the ^
@@ -112,7 +115,7 @@ jobs:
         run: "echo \"SYMFONY_DEPRECATIONS_HELPER=baselineFile=./tests/deprecations-8.1.json&max[direct]=0\" >> $GITHUB_ENV"
 
       - name: "Update dev requirements to latest available for the current PHP even on locked builds as they are not bundled dependencies"
-        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }} -W symfony/phpunit-bridge phpspec/prophecy phpdocumentor/* sebastian/* doctrine/instantiator"
+        run: "composer update ${{ env.COMPOSER_FLAGS }} -W symfony/phpunit-bridge phpspec/prophecy phpdocumentor/* sebastian/* doctrine/instantiator"
 
       - name: "Run install again using composer binary from source"
         run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
