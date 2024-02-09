@@ -394,6 +394,11 @@ class Application extends BaseApplication
 
             return $result;
         } catch (ScriptExecutionException $e) {
+            if ($this->getDisablePluginsByDefault() && $this->isRunningAsRoot() && !$this->io->isInteractive()) {
+                $io->writeError('<error>Plugins have been disabled automatically as you are running as root, this may be the cause of the script failure.</error>', true, IOInterface::QUIET);
+                $io->writeError('<error>See also https://getcomposer.org/root</error>', true, IOInterface::QUIET);
+            }
+
             return $e->getCode();
         } catch (\Throwable $e) {
             $ghe = new GithubActionError($this->io);
