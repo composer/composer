@@ -1,3 +1,8 @@
+### [2.7.1] 2024-02-09
+
+  * Added several warnings when plugins are disabled to hint at common problems people had with 2.7.0 (#11842)
+  * Fixed `diagnose` auditing of Composer dependencies failing when running from the phar
+
 ### [2.7.0] 2024-02-08
 
   * Security: Fixed code execution and possible privilege escalation via compromised vendor dir contents (GHSA-7c6p-848j-wh5h / CVE-2024-24821)
@@ -1824,6 +1829,7 @@
 
   * Initial release
 
+[2.7.1]: https://github.com/composer/composer/compare/2.7.0...2.7.1
 [2.7.0]: https://github.com/composer/composer/compare/2.6.6...2.7.0
 [2.6.6]: https://github.com/composer/composer/compare/2.6.5...2.6.6
 [2.6.5]: https://github.com/composer/composer/compare/2.6.4...2.6.5
