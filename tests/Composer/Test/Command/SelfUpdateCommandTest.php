@@ -33,27 +33,25 @@ class SelfUpdateCommandTest extends TestCase
         $appTester->run(['command' => 'self-update', 'invalid-option' => true]);   
     }
 
-    public function testUpdateToDifferentChannel(): void
+    /**
+     * @dataProvider channelOptions
+     */
+    public function testUpdateToDifferentChannel(string $option, string $expectedOutput): void
     {
         $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'self-update', '--stable' => true]);
+        $appTester->run(['command' => 'self-update', $option => true]);
+        $appTester->assertCommandIsSuccessful();
 
-        $appTester->assertCommandIsSuccessful();
         $this->assertStringContainsString('Upgrading to version', $appTester->getDisplay());
-        $this->assertStringContainsString('stable channel', $appTester->getDisplay());
-        
-        $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'self-update', '--preview' => true]);
-        
-        $appTester->assertCommandIsSuccessful();
-        $this->assertStringContainsString('Upgrading to version', $appTester->getDisplay());
-        $this->assertStringContainsString('preview channel', $appTester->getDisplay());
-        
-        $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'self-update', '--snapshot' => true]);
-        
-        $appTester->assertCommandIsSuccessful();
-        $this->assertStringContainsString('Upgrading to version', $appTester->getDisplay());
-        $this->assertStringContainsString('snapshot channel', $appTester->getDisplay());
+        $this->assertStringContainsString($expectedOutput, $appTester->getDisplay());
+    }
+
+    public function channelOptions(): array
+    {
+        return [
+            ['--stable', 'stable channel'],
+            ['--preview', 'preview channel'],
+            ['--snapshot', 'snapshot channel'],
+        ];
     }
 }
