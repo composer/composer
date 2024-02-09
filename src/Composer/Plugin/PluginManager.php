@@ -153,6 +153,7 @@ class PluginManager
     public function registerPackage(PackageInterface $package, bool $failOnMissingClasses = false, bool $isGlobalPlugin = false): void
     {
         if ($this->arePluginsDisabled($isGlobalPlugin ? 'global' : 'local')) {
+            $this->io->writeError('<warning>The "'.$package->getName().'" plugin was not loaded as plugins are disabled.</warning>');
             return;
         }
 
@@ -654,6 +655,14 @@ class PluginManager
     public function arePluginsDisabled($type)
     {
         return $this->disablePlugins === true || $this->disablePlugins === $type;
+    }
+
+    /**
+     * @internal
+     */
+    public function disablePlugins(): void
+    {
+        $this->disablePlugins = true;
     }
 
     /**

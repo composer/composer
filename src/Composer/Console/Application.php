@@ -220,7 +220,7 @@ class Application extends BaseApplication
 
         // Clobber sudo credentials if COMPOSER_ALLOW_SUPERUSER is not set before loading plugins
         if ($needsSudoCheck) {
-            $isNonAllowedRoot = function_exists('posix_getuid') && posix_getuid() === 0;
+            $isNonAllowedRoot = $this->isRunningAsRoot();
 
             if ($isNonAllowedRoot) {
                 if ($uid = (int) Platform::getEnv('SUDO_UID')) {
@@ -476,6 +476,12 @@ class Application extends BaseApplication
             $io->writeError('<error>Check https://getcomposer.org/doc/06-config.md#process-timeout for details</error>', true, IOInterface::QUIET);
         }
 
+        if ($this->getDisablePluginsByDefault() && $this->isRunningAsRoot() && !$this->io->isInteractive()) {
+            $io->writeError('<error>Plugins have been disabled automatically as you are running as root, this may be the cause of the following exception. See also https://getcomposer.org/root</error>', true, IOInterface::QUIET);
+        } elseif ($exception instanceof CommandNotFoundException && $this->getDisablePluginsByDefault()) {
+            $io->writeError('<error>Plugins have been disabled, which may be why some commands are missing, unless you made a typo</error>', true, IOInterface::QUIET);
+        }
+
         $hints = HttpDownloader::getExceptionHints($exception);
         if (null !== $hints && count($hints) > 0) {
             foreach ($hints as $hint) {
@@ -677,5 +683,10 @@ class Application extends BaseApplication
         $config = Factory::createConfig($this->io);
 
         return $config->get('use-parent-dir');
+    }
+
+    private function isRunningAsRoot(): bool
+    {
+        return function_exists('posix_getuid') && posix_getuid() === 0;
     }
 }
