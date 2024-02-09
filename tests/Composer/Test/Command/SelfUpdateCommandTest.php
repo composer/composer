@@ -46,6 +46,9 @@ class SelfUpdateCommandTest extends TestCase
         $this->assertStringContainsString($expectedOutput, $appTester->getDisplay());
     }
 
+    /**
+     * @return array<array<string>>
+     */
     public function channelOptions(): array
     {
         return [
