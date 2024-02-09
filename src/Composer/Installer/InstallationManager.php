@@ -94,8 +94,8 @@ class InstallationManager
     /**
      * Disables plugins.
      *
-     * We prevent any plugins from being instantiated by simply
-     * deactivating the installer for them. This ensure that no third-party
+     * We prevent any plugins from being instantiated by
+     * disabling the PluginManager. This ensures that no third-party
      * code is ever executed.
      */
     public function disablePlugins(): void
@@ -105,7 +105,7 @@ class InstallationManager
                 continue;
             }
 
-            unset($this->installers[$i]);
+            $installer->disablePlugins();
         }
     }
 
