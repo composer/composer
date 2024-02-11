@@ -422,7 +422,7 @@ class ClassLoader
      */
     public function loadClass($class)
     {
-        if ($file = $this->findFile($class)) {
+        if ($class !== '' && $file = $this->findFile($class)) {
             $includeFile = self::$includeFile;
             $includeFile($file);
 
