@@ -110,7 +110,7 @@ class LockTransaction extends Transaction
                 if ($updateMirrors && !isset($this->presentMap[spl_object_hash($package)])) {
                     foreach ($this->presentMap as $presentPackage) {
                         if ($package->getName() === $presentPackage->getName() && $package->getVersion() === $presentPackage->getVersion()) {
-                            if ($presentPackage->getSourceReference() && $presentPackage->getSourceType() === $package->getSourceType()) {
+                            if ($presentPackage->getSourceReference() && $presentPackage->getSourceType() === $package->getSourceType() && $presentPackage->getDistType() === $package->getDistType()) {
                                 $package->setSourceDistReferences($presentPackage->getSourceReference());
                                 // if the dist url is not one of those handled gracefully by setSourceDistReferences then we should overwrite it with the old one
                                 if ($package->getDistUrl() !== null && !Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
