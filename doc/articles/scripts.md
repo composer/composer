@@ -425,7 +425,7 @@ To set an environment variable in a cross-platform way, you can use `@putenv`:
 }
 ```
 
-## Custom descriptions.
+## Custom descriptions
 
 You can set custom script descriptions with the following in your `composer.json`:
 
@@ -442,9 +442,9 @@ describe what the scripts do when the command is run.
 
 > **Note:** You can only set custom descriptions of custom commands.
 
-## Custom aliases.
+## Custom aliases
 
-You can set custom script aliases with the following in your `composer.json`:
+As of Composer 2.7, you can set custom script aliases with the following in your `composer.json`:
 
 ```json
 {
