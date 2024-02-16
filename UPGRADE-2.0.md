@@ -1,4 +1,5 @@
 # Upgrade guides for Composer 1.x to 2.0
+#
 
 ## For composer CLI users
 
