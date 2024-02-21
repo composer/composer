@@ -94,6 +94,7 @@ class AllFunctionalTest extends TestCase
         }
 
         $this->assertFileExists(self::$pharPath);
+        copy(self::$pharPath, __DIR__.'/../../composer-test.phar');
     }
 
     /**
