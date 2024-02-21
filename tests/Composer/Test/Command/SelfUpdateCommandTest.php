@@ -14,8 +14,34 @@ namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
 
+/**
+ * @group slow
+ * @depends Composer\Test\AllFunctionalTest::testBuildPhar
+ */
 class SelfUpdateCommandTest extends TestCase
 {
+    /**
+     * @var string
+     */
+    private $prevArgv;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->prevArgv = $_SERVER['argv'][0];
+        $dir = $this->initTempComposer();
+        copy(__DIR__.'/../../../composer-test.phar', $dir.'/composer.phar');
+        $_SERVER['argv'][0] = $dir.'/composer.phar';
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+
+        $_SERVER['argv'][0] = $this->prevArgv;
+    }
+
     public function testSuccessfulUpdate(): void
     {
         $appTester = $this->getApplicationTester();
@@ -29,7 +55,7 @@ class SelfUpdateCommandTest extends TestCase
     {
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'self-update', 'version' => '2.4.0']);
-        
+
         $appTester->assertCommandIsSuccessful();
         $this->assertStringContainsString('Upgrading to version 2.4.0', $appTester->getDisplay());
     }
@@ -40,7 +66,7 @@ class SelfUpdateCommandTest extends TestCase
         $this->expectExceptionMessage('The "invalid-option" argument does not exist.');
 
         $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'self-update', 'invalid-option' => true]);   
+        $appTester->run(['command' => 'self-update', 'invalid-option' => true]);
     }
 
     /**

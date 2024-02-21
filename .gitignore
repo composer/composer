@@ -4,6 +4,7 @@
 /composer.phar
 /vendor
 /nbproject
+/tests/composer-test.phar
 .phpunit.result.cache
 phpunit.xml
 .vagrant
