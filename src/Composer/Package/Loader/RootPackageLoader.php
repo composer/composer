@@ -99,7 +99,7 @@ class RootPackageLoader extends ArrayLoader
             }
 
             if (!isset($config['version'])) {
-                if ($this->io !== null) {
+                if ($this->io !== null && $config['name'] !== '__root__') {
                     $this->io->warning(
 <<<EOF
 Composer hasn't been able to guess the root package version({$config['name']}), it will be set to 1.0.0.
