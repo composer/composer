@@ -49,6 +49,11 @@ class RootPackageLoader extends ArrayLoader
      */
     private $versionGuesser;
 
+    /**
+     * @var IOInterface|null
+     */
+    private $io;
+
     public function __construct(RepositoryManager $manager, Config $config, ?VersionParser $parser = null, ?VersionGuesser $versionGuesser = null, ?IOInterface $io = null)
     {
         parent::__construct($parser);
@@ -56,6 +61,7 @@ class RootPackageLoader extends ArrayLoader
         $this->manager = $manager;
         $this->config = $config;
         $this->versionGuesser = $versionGuesser ?: new VersionGuesser($config, new ProcessExecutor($io), $this->versionParser);
+        $this->io = $io;
     }
 
     /**
@@ -93,6 +99,15 @@ class RootPackageLoader extends ArrayLoader
             }
 
             if (!isset($config['version'])) {
+                if ($this->io !== null) {
+                    $this->io->warning(
+<<<EOF
+Composer hasn't been able to guess the root package version({$config['name']}), it will be set to 1.0.0.
+If you want to skip the version guessing process to happen, make sure that the version control files (e.g. `.git` directory) are available.
+Alternatively, you can set the `COMPOSER_ROOT_VERSION` environment variable or set the `version` attribute in the `composer.json` file.
+EOF
+                    );
+                }
                 $config['version'] = '1.0.0';
                 $autoVersioned = true;
             }
