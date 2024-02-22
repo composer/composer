@@ -55,6 +55,8 @@ class Platform
     /**
      * getenv() equivalent but reads from the runtime global variables first
      *
+     * @param non-empty-string $name
+     *
      * @return string|false
      */
     public static function getEnv(string $name)
@@ -99,6 +101,7 @@ class Platform
 
         return Preg::replaceCallback('#^(\$|(?P<percent>%))(?P<var>\w++)(?(percent)%)(?P<path>.*)#', static function ($matches): string {
             assert(is_string($matches['var']));
+            assert('' !== $matches['var']);
 
             // Treat HOME as an alias for USERPROFILE on Windows for legacy reasons
             if (Platform::isWindows() && $matches['var'] === 'HOME') {
