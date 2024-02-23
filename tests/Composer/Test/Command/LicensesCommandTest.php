@@ -23,6 +23,7 @@ class LicensesCommandTest extends TestCase
 
         $this->initTempComposer([
             'name' => 'test/pkg',
+            'version' => '1.2.3',
             'license' => 'MIT',
             'require' => [
                 'first/pkg' => '^2.0',
@@ -57,7 +58,7 @@ class LicensesCommandTest extends TestCase
 
         $expected = [
             ["Name:", "test/pkg"],
-            ["Version:", "1.0.0+no-version-set"],
+            ["Version:", "1.2.3"],
             ["Licenses:", "MIT"],
             ["Dependencies:"],
             [],
@@ -88,7 +89,7 @@ class LicensesCommandTest extends TestCase
 
         $expected = [
             ["Name:", "test/pkg"],
-            ["Version:", "1.0.0+no-version-set"],
+            ["Version:", "1.2.3"],
             ["Licenses:", "MIT"],
             ["Dependencies:"],
             [],
@@ -118,7 +119,7 @@ class LicensesCommandTest extends TestCase
 
         $expected = [
             "name" => "test/pkg",
-            "version" => "1.0.0+no-version-set",
+            "version" => "1.2.3",
             "license" => ["MIT"],
             "dependencies" => [
                 "dev/pkg" => [
