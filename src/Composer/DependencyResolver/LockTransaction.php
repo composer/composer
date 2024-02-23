@@ -15,7 +15,6 @@ namespace Composer\DependencyResolver;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Package;
-use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 
 /**
@@ -111,9 +110,9 @@ class LockTransaction extends Transaction
 
             $packages[] = $package;
 
-            // if we're just updating mirrors we need to reset references to the same as currently "present" packages' references to keep the lock file as-is
+            // if we're just updating mirrors we need to reset everything to the same as currently "present" packages' references to keep the lock file as-is
             if ($updateMirrors === true && !array_key_exists(spl_object_hash($package), $this->presentMap)) {
-                $this->resetDistSourceRefs($package);
+                $packages[count($packages) - 1] = $this->updateMirrorAndUrls($package);
             }
         }
 
@@ -121,11 +120,11 @@ class LockTransaction extends Transaction
     }
 
     /**
-     * Resets dist and source references to what they were in presentMap
+     * Try to return the original package from presentMap with updated URLs/mirrors
      *
-     * This does not reset references if the currently present package didn't have any, or if the type of VCS has changed
+     * If the type of source/dist changed, then we do not update those and keep them as they were
      */
-    private function resetDistSourceRefs(PackageInterface $package): void
+    private function updateMirrorAndUrls(BasePackage $package): BasePackage
     {
         foreach ($this->presentMap as $presentPackage) {
             if ($package->getName() !== $presentPackage->getName()) {
@@ -144,31 +143,30 @@ class LockTransaction extends Transaction
                 continue;
             }
 
-            // if the dist type changed, we only override the source reference and leave the rest as is even though it is not an ideal situation
+            if ($presentPackage instanceof Package) {
+                $presentPackage->setSourceUrl($package->getSourceUrl());
+                $presentPackage->setSourceMirrors($package->getSourceMirrors());
+            }
+
+            // if the dist type changed, we only update the source url/mirrors
             if ($presentPackage->getDistType() !== $package->getDistType()) {
-                $package->setSourceReference($presentPackage->getSourceReference());
-                break;
+                return $presentPackage;
             }
 
-            // otherwise we can update source and dist references to match what they were previously
-            $package->setSourceDistReferences($presentPackage->getSourceReference());
-
-            // if the dist url is not one of those handled gracefully by setSourceDistReferences then we should overwrite it with the old one
-            if ($package->getDistUrl() !== null && !Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
-                $package->setDistUrl($presentPackage->getDistUrl());
+            // update dist url if it is in a known format
+            if (
+                $package->getDistUrl() !== null
+                && $presentPackage->getDistReference() !== null
+                && Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())
+            ) {
+                $presentPackage->setDistUrl(Preg::replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|$)}i', $presentPackage->getDistReference(), $package->getDistUrl()));
             }
-            $package->setDistType($presentPackage->getDistType());
+            $presentPackage->setDistMirrors($package->getDistMirrors());
 
-            if ($package instanceof Package) {
-                $package->setDistSha1Checksum($presentPackage->getDistSha1Checksum());
-            }
-
-            if ($presentPackage->getReleaseDate() !== null && $package instanceof Package) {
-                $package->setReleaseDate($presentPackage->getReleaseDate());
-            }
-
-            break;
+            return $presentPackage;
         }
+
+        return $package;
     }
 
     /**

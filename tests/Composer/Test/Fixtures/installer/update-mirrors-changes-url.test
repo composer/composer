@@ -16,8 +16,9 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
             "package": [
                 {
                     "name": "a/a", "version": "dev-master",
-                    "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/a/newa", "type": "git" },
-                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/a/newa/zipball/2222222222222222222222222222222222222222", "type": "zip" },
+                    "require": { "b/b": "^2.0.1" },
+                    "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/a/newa", "type": "git", "mirrors": [{"url": "https://example.org/src/%package%/%version%/r%reference%.%type%", "preferred": true}] },
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/a/newa/zipball/2222222222222222222222222222222222222222", "type": "zip", "mirrors": [{"url": "https://example.org/dists/%package%/%version%/r%reference%.%type%", "preferred": true}] },
                     "time": "2021-03-27T14:32:16+00:00"
                 },
                 {
@@ -67,6 +68,7 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
 [
     {
         "name": "a/a", "version": "dev-master",
+        "require": { "b/b": "^2" },
         "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/a/a", "type": "git" },
         "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/a/zipball/1111111111111111111111111111111111111111", "type": "zip" },
         "time": "2021-03-14T16:24:37+00:00"
@@ -102,6 +104,7 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
     "packages": [
         {
             "name": "a/a", "version": "dev-master",
+            "require": { "b/b": "^2" },
             "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/a/a", "type": "git" },
             "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/a/zipball/1111111111111111111111111111111111111111", "type": "zip" },
             "time": "2021-03-14T16:24:37+00:00",
@@ -152,8 +155,9 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
     "packages": [
         {
             "name": "a/a", "version": "dev-master",
-            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/a/newa", "type": "git" },
-            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/newa/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "require": { "b/b": "^2" },
+            "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/a/newa", "type": "git", "mirrors": [{"url": "https://example.org/src/%package%/%version%/r%reference%.%type%", "preferred": true}] },
+            "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/newa/zipball/1111111111111111111111111111111111111111", "type": "zip", "mirrors": [{"url": "https://example.org/dists/%package%/%version%/r%reference%.%type%", "preferred": true}] },
             "time": "2021-03-14T16:24:37+00:00",
             "type": "library"
         },
