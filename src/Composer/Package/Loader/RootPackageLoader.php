@@ -102,7 +102,7 @@ class RootPackageLoader extends ArrayLoader
                 if ($this->io !== null && $config['name'] !== '__root__') {
                     $this->io->warning(
                         sprintf(
-                            "Composer could not detect the root package (%s) version, defaulting to "1.0.0". See https://getcomposer.org/root-version",
+                            "Composer could not detect the root package (%s) version, defaulting to '1.0.0'. See https://getcomposer.org/root-version",
                             $config['name']
                         )
                     );
