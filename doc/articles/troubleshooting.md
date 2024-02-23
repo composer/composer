@@ -71,11 +71,13 @@ indirectly) back on the root package itself, issues can occur in two cases:
    but some CIs do shallow clones so that process can fail when testing pull requests
    and feature branches. In these cases the branch alias may then not be recognized.
    The best solution is to define the version you are on via an environment variable
-   called COMPOSER_ROOT_VERSION. You set it to `dev-main` for example to define
+   called `COMPOSER_ROOT_VERSION`. You set it to `dev-main` for example to define
    the root package's version as `dev-main`.
    Use for example: `COMPOSER_ROOT_VERSION=dev-main composer install` to export
    the variable only for the call to composer, or you can define it globally in the
-   CI env vars.
+   CI env vars. Alternatively, adding a `version` field directly in the
+   `composer.json` file specifying the current version can also resolve the
+   issue.
 
 
 ## Network timeout issues, curl error
