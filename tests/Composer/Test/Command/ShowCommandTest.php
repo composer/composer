@@ -573,7 +573,7 @@ OUTPUT;
 
     public function testSelfAndNameOnly(): void
     {
-        $this->initTempComposer(['name' => 'vendor/package']);
+        $this->initTempComposer(['name' => 'vendor/package', 'version' => '1.2.3']);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'show', '--self' => true, '--name-only' => true]);
@@ -591,7 +591,7 @@ OUTPUT;
 
     public function testSelf(): void
     {
-        $this->initTempComposer(['name' => 'vendor/package', 'time' => date('Y-m-d')]);
+        $this->initTempComposer(['name' => 'vendor/package', 'version' => '1.2.3', 'time' => date('Y-m-d')]);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'show', '--self' => true]);
@@ -599,7 +599,7 @@ OUTPUT;
             'name' => 'vendor/package',
             'descrip.' => '',
             'keywords' => '',
-            'versions' => '* 1.0.0+no-version-set',
+            'versions' => '* 1.2.3',
             'released' => date('Y-m-d'). ', today',
             'type' => 'library',
             'homepage' => '',

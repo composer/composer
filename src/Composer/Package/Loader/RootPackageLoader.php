@@ -49,6 +49,11 @@ class RootPackageLoader extends ArrayLoader
      */
     private $versionGuesser;
 
+    /**
+     * @var IOInterface|null
+     */
+    private $io;
+
     public function __construct(RepositoryManager $manager, Config $config, ?VersionParser $parser = null, ?VersionGuesser $versionGuesser = null, ?IOInterface $io = null)
     {
         parent::__construct($parser);
@@ -56,6 +61,7 @@ class RootPackageLoader extends ArrayLoader
         $this->manager = $manager;
         $this->config = $config;
         $this->versionGuesser = $versionGuesser ?: new VersionGuesser($config, new ProcessExecutor($io), $this->versionParser);
+        $this->io = $io;
     }
 
     /**
@@ -93,6 +99,14 @@ class RootPackageLoader extends ArrayLoader
             }
 
             if (!isset($config['version'])) {
+                if ($this->io !== null && $config['name'] !== '__root__') {
+                    $this->io->warning(
+                        sprintf(
+                            "Composer could not detect the root package (%s) version, defaulting to '1.0.0'. See https://getcomposer.org/root-version",
+                            $config['name']
+                        )
+                    );
+                }
                 $config['version'] = '1.0.0';
                 $autoVersioned = true;
             }

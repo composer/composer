@@ -71,12 +71,43 @@ indirectly) back on the root package itself, issues can occur in two cases:
    but some CIs do shallow clones so that process can fail when testing pull requests
    and feature branches. In these cases the branch alias may then not be recognized.
    The best solution is to define the version you are on via an environment variable
-   called COMPOSER_ROOT_VERSION. You set it to `dev-main` for example to define
+   called `COMPOSER_ROOT_VERSION`. You set it to `dev-main` for example to define
    the root package's version as `dev-main`.
    Use for example: `COMPOSER_ROOT_VERSION=dev-main composer install` to export
    the variable only for the call to composer, or you can define it globally in the
    CI env vars.
 
+## Root package version detection
+
+Composer relies on knowing the version of the root package to resolve
+dependencies effectively. The version of the root package is determined
+using a hierarchical approach:
+
+1. **composer.json Version Field**: Firstly, Composer looks for a `version`
+   field in the project's root `composer.json` file. If present, this field
+   specifies the version of the root package directly. This is generally not
+   recommended as it needs to be constantly updated, but it is an option.
+
+2. **Environment Variable**: Composer then checks for the `COMPOSER_ROOT_VERSION`
+   environment variable. This variable can be explicitly set by the user to
+   define the version of the root package, providing a straightforward way to
+   inform Composer of the exact version, especially in CI/CD environments or
+   when the VCS method is not applicable.
+
+3. **Version Control System (VCS) Inspection**: Composer then attempts to guess
+   the version by interfacing with the version control system of the project. For
+   instance, in projects versioned with Git, Composer executes specific Git
+   commands to deduce the project's current version based on tags, branches, and
+   commit history. If a `.git` directory is missing or the history is incomplete
+   because CI is using a shallow clone for example, this detection may fail to find
+   the correct version.
+
+4. **Fallback**: If all else fails, Composer uses `1.0.0` as default version.
+
+Note that relying on the default/fallback version might potentially lead to dependency
+resolution issues, especially when the root package depends on a package which ends up
+depending (directly or indirectly)
+[back on the root package itself](#dependencies-on-the-root-package).
 
 ## Network timeout issues, curl error
 

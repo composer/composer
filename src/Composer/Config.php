@@ -554,6 +554,8 @@ class Config
      * This should be used to read COMPOSER_ environment variables
      * that overload config values.
      *
+     * @param non-empty-string $var
+     *
      * @return string|false
      */
     private function getComposerEnv(string $var)
