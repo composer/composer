@@ -2,7 +2,6 @@
 Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issues/7665
 --COMPOSER--
 {
-    "name": "smichaelsen/composer-test",
     "require": {
         "behat/behat": "~2.5",
         "friendsofphp/php-cs-fixer": "^2.12"
