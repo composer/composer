@@ -108,57 +108,66 @@ class LockTransaction extends Transaction
                 continue;
             }
 
-            // if we're just updating mirrors we need to reset references to the same as currently "present" packages' references to keep the lock file as-is
-            // we do not reset references if the currently present package didn't have any, or if the type of VCS has changed
-            if ($updateMirrors === false) {
-                continue;
-            }
-
-            if (array_key_exists(spl_object_hash($package), $this->presentMap)) {
-                continue;
-            }
-
-            foreach ($this->presentMap as $presentPackage) {
-                if ($package->getName() !== $presentPackage->getName()) {
-                    continue;
-                }
-
-                if ($package->getVersion() !== $presentPackage->getVersion()) {
-                    continue;
-                }
-
-                if ($presentPackage->getSourceReference() === null) {
-                    continue;
-                }
-
-                if ($presentPackage->getSourceType() !== $package->getSourceType()) {
-                    continue;
-                }
-
-                if ($presentPackage->getDistType() !== $package->getDistType()) {
-                    continue;
-                }
-
-                $package->setSourceDistReferences($presentPackage->getSourceReference());
-                // if the dist url is not one of those handled gracefully by setSourceDistReferences then we should overwrite it with the old one
-                if ($package->getDistUrl() !== null && !Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
-                    $package->setDistUrl($presentPackage->getDistUrl());
-                }
-                $package->setDistType($presentPackage->getDistType());
-
-                if ($package instanceof Package) {
-                    $package->setDistSha1Checksum($presentPackage->getDistSha1Checksum());
-                }
-
-                if ($presentPackage->getReleaseDate() !== null && $package instanceof Package) {
-                    $package->setReleaseDate($presentPackage->getReleaseDate());
-                }
-            }
-
             $packages[] = $package;
+
+            // if we're just updating mirrors we need to reset references to the same as currently "present" packages' references to keep the lock file as-is
+            if ($updateMirrors === true && !array_key_exists(spl_object_hash($package), $this->presentMap)) {
+                $this->resetDistSourceRefs($package);
+            }
         }
 
         return $packages;
+    }
+
+    /**
+     * Resets dist and source references to what they were in presentMap
+     *
+     * This does not reset references if the currently present package didn't have any, or if the type of VCS has changed
+     */
+    private function resetDistSourceRefs(PackageInterface $package): void
+    {
+        foreach ($this->presentMap as $presentPackage) {
+            if ($package->getName() !== $presentPackage->getName()) {
+                continue;
+            }
+
+            if ($package->getVersion() !== $presentPackage->getVersion()) {
+                continue;
+            }
+
+            if ($presentPackage->getSourceReference() === null) {
+                continue;
+            }
+
+            if ($presentPackage->getSourceType() !== $package->getSourceType()) {
+                continue;
+            }
+
+            // if the dist type changed, we only override the source reference and leave the rest as is even though it is not an ideal situation
+            if ($presentPackage->getDistType() !== $package->getDistType()) {
+                $package->setSourceReference($presentPackage->getSourceReference());
+                break;
+            }
+
+            // otherwise we can update source and dist references to match what they were previously
+            $package->setSourceDistReferences($presentPackage->getSourceReference());
+
+            // if the dist url is not one of those handled gracefully by setSourceDistReferences then we should overwrite it with the old one
+            if ($package->getDistUrl() !== null && !Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
+                $package->setDistUrl($presentPackage->getDistUrl());
+            }
+            $package->setDistType($presentPackage->getDistType());
+
+            if ($package instanceof Package) {
+                $package->setDistSha1Checksum($presentPackage->getDistSha1Checksum());
+            }
+
+            if ($presentPackage->getReleaseDate() !== null && $package instanceof Package) {
+                $package->setReleaseDate($presentPackage->getReleaseDate());
+            }
+
+            break;
+        }
     }
 
     /**
