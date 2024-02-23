@@ -101,11 +101,10 @@ class RootPackageLoader extends ArrayLoader
             if (!isset($config['version'])) {
                 if ($this->io !== null && $config['name'] !== '__root__') {
                     $this->io->warning(
-<<<EOF
-Composer hasn't been able to guess the root package version({$config['name']}), it will be set to 1.0.0.
-If you want to skip the version guessing process to happen, make sure that the version control files (e.g. `.git` directory) are available.
-Alternatively, you can set the `COMPOSER_ROOT_VERSION` environment variable or set the `version` attribute in the `composer.json` file.
-EOF
+                        sprintf(
+                            "Composer couldn't find the root package version for %s, defaulting to `1.0.0`. See https://getcomposer.org/doc/articles/troubleshooting.md#dependencies-on-the-root-package for more details.",
+                            $config['name']
+                        )
                     );
                 }
                 $config['version'] = '1.0.0';
