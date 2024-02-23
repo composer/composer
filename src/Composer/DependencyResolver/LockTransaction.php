@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Package;
+use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 
 /**
