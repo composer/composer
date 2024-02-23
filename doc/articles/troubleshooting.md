@@ -75,10 +75,41 @@ indirectly) back on the root package itself, issues can occur in two cases:
    the root package's version as `dev-main`.
    Use for example: `COMPOSER_ROOT_VERSION=dev-main composer install` to export
    the variable only for the call to composer, or you can define it globally in the
-   CI env vars. Alternatively, adding a `version` field directly in the
-   `composer.json` file specifying the current version can also resolve the
-   issue.
+   CI env vars.
 
+## Root package version
+
+Composer relies on accurately knowing the version of the root package to resolve
+dependencies effectively. It first attempts to identify the version of the root
+package using a hierarchical approach that prioritizes automatic detection but
+allows for manual overrides:
+
+1. **Version Control System (VCS) Inspection**: Composer attempts to guess the
+   version by interfacing with the version control system of the project. For
+   instance, in projects versioned with Git, Composer executes specific Git
+   commands to deduce the project's current version based on tags, branches, and
+   commit history.
+
+2. **Environment Variable**: Composer checks for the `COMPOSER_ROOT_VERSION`
+   environment variable. This variable can be explicitly set by the user to
+   define the version of the root package, providing a straightforward way to
+   inform Composer of the exact version, especially in CI/CD environments or
+   when the VCS method is not applicable.
+
+3. **composer.json Version Field**: Lastly, Composer looks for a `version`
+   field in the project's root `composer.json` file. If present, this field
+   specifies the version of the root package directly.
+
+It's important to ensure that at least one of these methods successfully
+communicates the root package version to Composer. In scenarios where the
+version cannot be determined due to factors like a missing `.git` directory or
+the absence of explicit version information, Composer uses a fallback logic.
+This logic is designed to offer developers maximum flexibility and convenience
+across a wide range of development and deployment environments. In the absence
+of a determinable version, Composer defaults to assigning a version of `1.0.0`.
+Note that this default version might potentially lead to dependency resolution
+issues, especially when the root package depends on a package which ends up
+depending (directly or indirectly) back on the root package itself.
 
 ## Network timeout issues, curl error
 
