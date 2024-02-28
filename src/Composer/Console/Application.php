@@ -608,12 +608,18 @@ class Application extends BaseApplication
             $branchAliasString = sprintf(' (%s)', Composer::BRANCH_ALIAS_VERSION);
         }
 
+        $phpVersionString = '';
+        if ($this->getIO()->isVerbose()) {
+            $phpVersionString = "\n" . sprintf('<info>PHP</info> version <comment>%s</comment> (%s)', \PHP_VERSION, \PHP_BINARY);
+        }
+
         return sprintf(
-            '<info>%s</info> version <comment>%s%s</comment> %s',
+            '<info>%s</info> version <comment>%s%s</comment> %s%s',
             $this->getName(),
             $this->getVersion(),
             $branchAliasString,
-            Composer::RELEASE_DATE
+            Composer::RELEASE_DATE,
+            $phpVersionString
         );
     }
 
