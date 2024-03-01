@@ -383,6 +383,11 @@ class Application extends BaseApplication
 
             $result = parent::doRun($input, $output);
 
+            if (true === $input->hasParameterOption(['--version', '-V'], true)) {
+                $io->writeError(sprintf('<info>PHP</info> version <comment>%s</comment> (%s)', \PHP_VERSION, \PHP_BINARY));
+                $io->writeError('Run the "diagnose" command to get more detailed diagnostics output.');
+            }
+
             // chdir back to $oldWorkingDir if set
             if (isset($oldWorkingDir) && '' !== $oldWorkingDir) {
                 Silencer::call('chdir', $oldWorkingDir);
@@ -608,18 +613,12 @@ class Application extends BaseApplication
             $branchAliasString = sprintf(' (%s)', Composer::BRANCH_ALIAS_VERSION);
         }
 
-        $phpVersionString = '';
-        if ($this->getIO()->isVerbose()) {
-            $phpVersionString = "\n" . sprintf('<info>PHP</info> version <comment>%s</comment> (%s)', \PHP_VERSION, \PHP_BINARY);
-        }
-
         return sprintf(
-            '<info>%s</info> version <comment>%s%s</comment> %s%s',
+            '<info>%s</info> version <comment>%s%s</comment> %s',
             $this->getName(),
             $this->getVersion(),
             $branchAliasString,
-            Composer::RELEASE_DATE,
-            $phpVersionString
+            Composer::RELEASE_DATE
         );
     }
 
