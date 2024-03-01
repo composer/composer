@@ -383,6 +383,11 @@ class Application extends BaseApplication
 
             $result = parent::doRun($input, $output);
 
+            if (true === $input->hasParameterOption(['--version', '-V'], true)) {
+                $io->writeError(sprintf('<info>PHP</info> version <comment>%s</comment> (%s)', \PHP_VERSION, \PHP_BINARY));
+                $io->writeError('Run the "diagnose" command to get more detailed diagnostics output.');
+            }
+
             // chdir back to $oldWorkingDir if set
             if (isset($oldWorkingDir) && '' !== $oldWorkingDir) {
                 Silencer::call('chdir', $oldWorkingDir);
