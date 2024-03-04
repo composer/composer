@@ -478,7 +478,7 @@ EOT
 
                 if ($showLatest && $showVersion) {
                     foreach ($packages[$type] as $package) {
-                        if (is_object($package)) {
+                        if (is_object($package) && !Preg::isMatch($ignoredPackagesRegex, $package->getPrettyName())) {
                             $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter);
                             if ($latestPackage === null) {
                                 continue;
