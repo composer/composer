@@ -91,7 +91,7 @@ EOT
         [$errors, $publishErrors, $warnings] = $validator->validate($file, $checkAll, $checkVersion);
 
         $lockErrors = [];
-        $composer = Factory::create($io, $file, $input->hasParameterOption('--no-plugins'));
+        $composer = $this->createComposerInstance($input, $io, $file);
         // config.lock = false ~= implicit --no-check-lock; --check-lock overrides
         $checkLock = ($checkLock && $composer->getConfig()->get('lock')) || $input->getOption('check-lock');
         $locker = $composer->getLocker();

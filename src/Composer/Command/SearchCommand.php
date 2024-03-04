@@ -67,7 +67,7 @@ EOT
         }
 
         if (!($composer = $this->tryComposer())) {
-            $composer = Factory::create($this->getIO(), [], $input->hasParameterOption('--no-plugins'));
+            $composer = $this->createComposerInstance($input, $this->getIO(), []);
         }
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         $installedRepo = new CompositeRepository([$localRepo, $platformRepo]);
