@@ -104,34 +104,69 @@ class LockTransaction extends Transaction
     {
         $packages = [];
         foreach ($this->resultPackages[$devMode ? 'dev' : 'non-dev'] as $package) {
-            if (!$package instanceof AliasPackage) {
-                // if we're just updating mirrors we need to reset references to the same as currently "present" packages' references to keep the lock file as-is
-                // we do not reset references if the currently present package didn't have any, or if the type of VCS has changed
-                if ($updateMirrors && !isset($this->presentMap[spl_object_hash($package)])) {
-                    foreach ($this->presentMap as $presentPackage) {
-                        if ($package->getName() === $presentPackage->getName() && $package->getVersion() === $presentPackage->getVersion()) {
-                            if ($presentPackage->getSourceReference() && $presentPackage->getSourceType() === $package->getSourceType()) {
-                                $package->setSourceDistReferences($presentPackage->getSourceReference());
-                                // if the dist url is not one of those handled gracefully by setSourceDistReferences then we should overwrite it with the old one
-                                if ($package->getDistUrl() !== null && !Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())) {
-                                    $package->setDistUrl($presentPackage->getDistUrl());
-                                }
-                                $package->setDistType($presentPackage->getDistType());
-                                if ($package instanceof Package) {
-                                    $package->setDistSha1Checksum($presentPackage->getDistSha1Checksum());
-                                }
-                            }
-                            if ($presentPackage->getReleaseDate() !== null && $package instanceof Package) {
-                                $package->setReleaseDate($presentPackage->getReleaseDate());
-                            }
-                        }
-                    }
-                }
-                $packages[] = $package;
+            if ($package instanceof AliasPackage) {
+                continue;
             }
+
+            // if we're just updating mirrors we need to reset everything to the same as currently "present" packages' references to keep the lock file as-is
+            if ($updateMirrors === true && !array_key_exists(spl_object_hash($package), $this->presentMap)) {
+                $package = $this->updateMirrorAndUrls($package);
+            }
+
+            $packages[] = $package;
         }
 
         return $packages;
+    }
+
+    /**
+     * Try to return the original package from presentMap with updated URLs/mirrors
+     *
+     * If the type of source/dist changed, then we do not update those and keep them as they were
+     */
+    private function updateMirrorAndUrls(BasePackage $package): BasePackage
+    {
+        foreach ($this->presentMap as $presentPackage) {
+            if ($package->getName() !== $presentPackage->getName()) {
+                continue;
+            }
+
+            if ($package->getVersion() !== $presentPackage->getVersion()) {
+                continue;
+            }
+
+            if ($presentPackage->getSourceReference() === null) {
+                continue;
+            }
+
+            if ($presentPackage->getSourceType() !== $package->getSourceType()) {
+                continue;
+            }
+
+            if ($presentPackage instanceof Package) {
+                $presentPackage->setSourceUrl($package->getSourceUrl());
+                $presentPackage->setSourceMirrors($package->getSourceMirrors());
+            }
+
+            // if the dist type changed, we only update the source url/mirrors
+            if ($presentPackage->getDistType() !== $package->getDistType()) {
+                return $presentPackage;
+            }
+
+            // update dist url if it is in a known format
+            if (
+                $package->getDistUrl() !== null
+                && $presentPackage->getDistReference() !== null
+                && Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $package->getDistUrl())
+            ) {
+                $presentPackage->setDistUrl(Preg::replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|$)}i', $presentPackage->getDistReference(), $package->getDistUrl()));
+            }
+            $presentPackage->setDistMirrors($package->getDistMirrors());
+
+            return $presentPackage;
+        }
+
+        return $package;
     }
 
     /**
