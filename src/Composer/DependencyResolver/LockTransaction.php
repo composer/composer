@@ -108,12 +108,12 @@ class LockTransaction extends Transaction
                 continue;
             }
 
-            $packages[] = $package;
-
             // if we're just updating mirrors we need to reset everything to the same as currently "present" packages' references to keep the lock file as-is
             if ($updateMirrors === true && !array_key_exists(spl_object_hash($package), $this->presentMap)) {
-                $packages[count($packages) - 1] = $this->updateMirrorAndUrls($package);
+                $package = $this->updateMirrorAndUrls($package);
             }
+
+            $packages[] = $package;
         }
 
         return $packages;
