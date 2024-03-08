@@ -106,7 +106,7 @@ EOT
         $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true);
 
         // $errors include publish and lock errors when exists
-        $exitCode = $errors ? 2 : ($isStrict && $warnings ? 1 : 0);
+        $exitCode = count($errors) > 0 ? 2 : (($isStrict && count($warnings) > 0) ? 1 : 0);
 
         if ($input->getOption('with-dependencies')) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
@@ -122,7 +122,7 @@ EOT
                     $this->outputResult($io, $package->getPrettyName(), $errors, $warnings, $checkPublish, $publishErrors);
 
                     // $errors include publish errors when exists
-                    $depCode = $errors ? 2 : ($isStrict && $warnings ? 1 : 0);
+                    $depCode = count($errors) > 0 ? 2 : (($isStrict && count($warnings) > 0) ? 1 : 0);
                     $exitCode = max($depCode, $exitCode);
                 }
             }

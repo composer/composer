@@ -313,8 +313,8 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param array<string, array<string, array<string, array<string, array{string, Link}>>>> $linkCache
-     * @param mixed[]                                                                         $config
+     * @param array<string, array<string, array<int|string, array<int|string, array{string, Link}>>>> $linkCache
+     * @param mixed[]                                                                             $config
      */
     private function configureCachedLinks(array &$linkCache, PackageInterface $package, array $config): void
     {

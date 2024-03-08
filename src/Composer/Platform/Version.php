@@ -20,7 +20,9 @@ use Composer\Pcre\Preg;
 class Version
 {
     /**
-     * @param  bool        $isFips Set by the method
+     * @param bool $isFips Set by the method
+     *
+     * @param-out bool $isFips
      */
     public static function parseOpenssl(string $opensslVersion, ?bool &$isFips): ?string
     {

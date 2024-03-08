@@ -1656,7 +1656,7 @@ parameters:
 			path: ../src/Composer/Downloader/FileDownloader.php
 
 		-
-			message: "#^Strict comparison using \\=\\=\\= between null and Composer\\\\Util\\\\Http\\\\Response will always evaluate to false\\.$#"
+			message: "#^Strict comparison using \\=\\=\\= between null and Composer\\\\Util\\\\Http\\\\Response\\|string will always evaluate to false\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/FileDownloader.php
 
@@ -4229,11 +4229,6 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_setopt expects resource, resource\\|false given\\.$#"
-			count: 2
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Parameter \\#1 \\$str of function preg_quote expects string, string\\|false\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -4310,11 +4305,6 @@ parameters:
 
 		-
 			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs has unknown class CurlHandle as its type\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$multiHandle \\(resource\\|null\\) does not accept resource\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -4480,6 +4470,11 @@ parameters:
 
 		-
 			message: "#^Method Composer\\\\Util\\\\NoProxyPattern\\:\\:getRule\\(\\) should return stdClass\\|null but returns object\\|null\\.$#"
+			count: 1
+			path: ../src/Composer/Util/NoProxyPattern.php
+
+		-
+			message: "#^Method Composer\\\\Util\\\\NoProxyPattern\\:\\:ipCheckData\\(\\) never assigns null to &\\$ipdata so it can be removed from the by\\-ref type\\.$#"
 			count: 1
 			path: ../src/Composer/Util/NoProxyPattern.php
 
@@ -4770,6 +4765,11 @@ parameters:
 
 		-
 			message: "#^Parameter \\#5 \\$maxlen of function file_get_contents expects int\\<0, max\\>, int given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/RemoteFilesystem.php
+
+		-
+			message: "#^Parameter &\\$responseHeaders @param\\-out type of method Composer\\\\Util\\\\RemoteFilesystem\\:\\:getRemoteContents\\(\\) expects list\\<string\\>, array\\<int, string\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
@@ -5320,11 +5320,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$stream of class Symfony\\\\Component\\\\Console\\\\Output\\\\StreamOutput constructor expects resource, resource\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Question/StrictConfirmationQuestionTest.php
-
-		-
-			message: "#^Cannot call method getDistType\\(\\) on Composer\\\\Package\\\\BasePackage\\|null\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/ArtifactRepositoryTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, string\\|null given\\.$#"

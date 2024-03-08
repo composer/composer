@@ -357,11 +357,12 @@ class Git
     }
 
     /**
-     * @param string[] $match
+     * @param array<mixed> $match
+     * @param-out array<int|string, string> $match
      */
     private function isAuthenticationFailure(string $url, array &$match): bool
     {
-        if (!Preg::isMatch('{^(https?://)([^/]+)(.*)$}i', $url, $match)) {
+        if (!Preg::isMatchStrictGroups('{^(https?://)([^/]+)(.*)$}i', $url, $match)) {
             return false;
         }
 

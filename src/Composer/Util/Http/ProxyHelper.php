@@ -104,10 +104,12 @@ class ProxyHelper
     /**
      * Searches $_SERVER for case-sensitive values
      *
-     * @param string[]    $names Names to search for
-     * @param string|null $name  Name of any found value
+     * @param non-empty-list<string> $names Names to search for
+     * @param string|null $name  Name of any found value, you should only rely on it if the function returned a non-null value
      *
      * @return string|null The found value
+     *
+     * @param-out string $name
      */
     private static function getProxyEnv(array $names, ?string &$name): ?string
     {

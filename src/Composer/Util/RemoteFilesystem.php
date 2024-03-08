@@ -509,6 +509,8 @@ class RemoteFilesystem
      * @param int      $maxFileSize The maximum allowed file size
      *
      * @return string|false The response contents or false on failure
+     *
+     * @param-out list<string> $responseHeaders
      */
     protected function getRemoteContents(string $originUrl, string $fileUrl, $context, ?array &$responseHeaders = null, ?int $maxFileSize = null)
     {

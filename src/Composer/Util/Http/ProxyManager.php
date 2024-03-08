@@ -94,6 +94,7 @@ class ProxyManager
             } else {
                 $proxyUrl = $this->fullProxy[$scheme];
                 $options = $this->streams[$scheme]['options'];
+                assert(is_array($options));
                 ProxyHelper::setRequestFullUri($requestUrl, $options);
                 $formattedProxyUrl = $this->safeProxy[$scheme];
             }
