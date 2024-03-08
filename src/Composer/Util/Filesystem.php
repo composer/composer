@@ -363,6 +363,9 @@ class Filesystem
      */
     public function copy(string $source, string $target)
     {
+        // refs https://github.com/composer/composer/issues/11864
+        $target = $this->normalizePath($target);
+
         if (!is_dir($source)) {
             return copy($source, $target);
         }
