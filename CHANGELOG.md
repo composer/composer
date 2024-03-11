@@ -1,3 +1,12 @@
+### [2.7.2] 2024-03-11
+
+  * Added info about the PHP version when running `composer --version` (#11866)
+  * Added warning when the root version cannot be detected (#11858)
+  * Fixed plugins still being enabled in a few contexts when running as root (c3efff91f)
+  * Fixed `outdated --ignore ...` still attempting to load the latest version of the ignored packages (#11863)
+  * Fixed handling of broken symlinks in the middle of an install path (#11864)
+  * Fixed `update --lock` still incorrectly updating some metadata (#11850, #11787)
+
 ### [2.7.1] 2024-02-09
 
   * Added several warnings when plugins are disabled to hint at common problems people had with 2.7.0 (#11842)
@@ -1829,6 +1838,7 @@
 
   * Initial release
 
+[2.7.2]: https://github.com/composer/composer/compare/2.7.1...2.7.2
 [2.7.1]: https://github.com/composer/composer/compare/2.7.0...2.7.1
 [2.7.0]: https://github.com/composer/composer/compare/2.6.6...2.7.0
 [2.6.6]: https://github.com/composer/composer/compare/2.6.5...2.6.6
