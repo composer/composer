@@ -15,6 +15,7 @@ namespace Composer\IO;
 use Composer\Config;
 use Composer\Pcre\Preg;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Silencer;
 use Psr\Log\LogLevel;
 
 abstract class BaseIO implements IOInterface
@@ -218,6 +219,13 @@ abstract class BaseIO implements IOInterface
     public function log($level, $message, array $context = []): void
     {
         $message = (string) $message;
+
+        if ($context !== []) {
+            $json = Silencer::call('json_encode', $context, JSON_INVALID_UTF8_IGNORE|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+            if ($json !== false) {
+                $message .= ' ' . $json;
+            }
+        }
 
         if (in_array($level, [LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR])) {
             $this->writeError('<error>'.$message.'</error>');
