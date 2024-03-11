@@ -419,7 +419,7 @@ To set an environment variable in a cross-platform way, you can use `@putenv`:
     "scripts": {
         "install-phpstan": [
             "@putenv COMPOSER=phpstan-composer.json",
-            "composer install --prefer-dist"
+            "@composer install --prefer-dist"
         ]
     }
 }
