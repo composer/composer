@@ -500,12 +500,16 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $this->install($package, $targetDir.'_compare', false);
             $this->process->wait();
 
-            $comparer = new Comparer();
-            $comparer->setSource($targetDir.'_compare');
-            $comparer->setUpdate($targetDir);
-            $comparer->doCompare();
-            $output = $comparer->getChangedAsString(true);
-            $this->filesystem->removeDirectory($targetDir.'_compare');
+            if (is_dir($targetDir.'_compare')) {
+                $comparer = new Comparer();
+                $comparer->setSource($targetDir.'_compare');
+                $comparer->setUpdate($targetDir);
+                $comparer->doCompare();
+                $output = $comparer->getChangedAsString(true);
+                $this->filesystem->removeDirectory($targetDir.'_compare');
+            } else {
+                $output = $package . ' can\'t be downloaded';
+            }
         } catch (\Exception $e) {
         }
 
