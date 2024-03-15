@@ -298,7 +298,7 @@ class Git
         return true;
     }
 
-    public function fetchRefOrSyncMirror(string $url, string $dir, string $ref, string $prettyVersion = null): bool
+    public function fetchRefOrSyncMirror(string $url, string $dir, string $ref, ?string $prettyVersion = null): bool
     {
         if ($this->checkRefIsInMirror($dir, $ref)) {
             if (Preg::isMatch('{^[a-f0-9]{40}$}', $ref) && $prettyVersion !== null) {
