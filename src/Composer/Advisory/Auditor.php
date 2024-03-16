@@ -264,6 +264,10 @@ class Auditor
                     $advisory->affectedVersions->getPrettyString(),
                     $advisory->reportedAt->format(DATE_ATOM),
                 ];
+                if ($advisory->cve === null) {
+                    $headers[] = 'Advisory ID';
+                    $row[] = $advisory->advisoryId;
+                }
                 if ($advisory instanceof IgnoredSecurityAdvisory) {
                     $headers[] = 'Ignore reason';
                     $row[] = $advisory->ignoreReason ?? 'None specified';
@@ -294,6 +298,9 @@ class Auditor
                 $error[] = "Package: ".$advisory->packageName;
                 $error[] = "Severity: ".$this->getSeverity($advisory);
                 $error[] = "CVE: ".$this->getCVE($advisory);
+                if ($advisory->cve === null) {
+                    $error[] = "Advisory ID: ".$advisory->advisoryId;
+                }
                 $error[] = "Title: ".OutputFormatter::escape($advisory->title);
                 $error[] = "URL: ".$this->getURL($advisory);
                 $error[] = "Affected versions: ".OutputFormatter::escape($advisory->affectedVersions->getPrettyString());
