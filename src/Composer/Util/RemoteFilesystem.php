@@ -249,6 +249,10 @@ class RemoteFilesystem
 
         $origFileUrl = $fileUrl;
 
+        if (isset($options['prevent_ip_callable'])) {
+            throw new \RuntimeException("RemoteFilesystem doesn't support the 'prevent_ip_callable' config.");
+        }
+
         if (isset($options['gitlab-token'])) {
             $fileUrl .= (false === strpos($fileUrl, '?') ? '?' : '&') . 'access_token='.$options['gitlab-token'];
             unset($options['gitlab-token']);

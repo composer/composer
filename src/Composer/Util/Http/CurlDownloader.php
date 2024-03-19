@@ -23,13 +23,14 @@ use Composer\Util\AuthHelper;
 use Composer\Util\Url;
 use Composer\Util\HttpDownloader;
 use React\Promise\Promise;
+use Symfony\Component\HttpFoundation\IpUtils;
 
 /**
  * @internal
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
  * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, storeAuth: 'prompt'|bool, ipResolve: 4|6|null}
- * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable}
+ * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable, primaryIp: string}
  */
 class CurlDownloader
 {
@@ -279,6 +280,7 @@ class CurlDownloader
             'bodyHandle' => $bodyHandle,
             'resolve' => $resolve,
             'reject' => $reject,
+            'primaryIp' => '',
         ];
 
         $usingProxy = $proxy->getFormattedUrl(' using proxy (%s)');
@@ -503,6 +505,18 @@ class CurlDownloader
                     if ($this->jobs[$i]['options']['max_file_size'] < $progress['size_download']) {
                         $this->rejectJob($this->jobs[$i], new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . $progress['size_download'] . ' of allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes'));
                     }
+                }
+
+                if (isset($progress['primary_ip']) && $progress['primary_ip'] !== $this->jobs[$i]['primaryIp']) {
+                    if (
+                        isset($this->jobs[$i]['options']['prevent_ip_access_callable']) &&
+                        is_callable($this->jobs[$i]['options']['prevent_ip_access_callable']) &&
+                        $this->jobs[$i]['options']['prevent_ip_access_callable']($progress['primary_ip'])
+                    ) {
+                        throw new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], $progress['url']));
+                    }
+
+                    $this->jobs[$i]['primaryIp'] = (string) $progress['primary_ip'];
                 }
 
                 // TODO progress
