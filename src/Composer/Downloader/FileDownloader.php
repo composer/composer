@@ -508,7 +508,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 $output = $comparer->getChangedAsString(true);
                 $this->filesystem->removeDirectory($targetDir.'_compare');
             } else {
-                $output = $package . ' can\'t be downloaded';
+                $output = $package . ' could not be downloaded, aborting.';
             }
         } catch (\Exception $e) {
         }
