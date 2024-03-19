@@ -271,7 +271,7 @@ parameters:
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, string given\\.$#"
+			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ConfigCommand.php
 
@@ -1134,11 +1134,6 @@ parameters:
 			message: "#^Cannot access offset 'hash' on array\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/GenericRule.php
-
-		-
-			message: "#^Only booleans are allowed in &&, string\\|null given on the left side\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/LockTransaction.php
 
 		-
 			message: "#^Cannot access offset 'hash' on array\\|false\\.$#"
@@ -2386,11 +2381,6 @@ parameters:
 			path: ../src/Composer/Installer/SuggestedPackagesReporter.php
 
 		-
-			message: "#^Only booleans are allowed in a ternary operator condition, mixed given\\.$#"
-			count: 2
-			path: ../src/Composer/Installer/SuggestedPackagesReporter.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\Package\\\\PackageInterface\\|null given\\.$#"
 			count: 2
 			path: ../src/Composer/Installer/SuggestedPackagesReporter.php
@@ -2601,27 +2591,17 @@ parameters:
 			path: ../src/Composer/Package/Dumper/ArrayDumper.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, array\\<string, string\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Dumper/ArrayDumper.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, array\\<string\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Dumper/ArrayDumper.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, string given\\.$#"
+			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Dumper/ArrayDumper.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 4
-			path: ../src/Composer/Package/Dumper/ArrayDumper.php
-
-		-
-			message: "#^Parameter \\#1 \\$array_arg of function ksort expects array, array\\<int\\|string, mixed\\>\\|string given\\.$#"
+			message: "#^Parameter \\#1 \\$array_arg of function ksort expects array, array\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Dumper/ArrayDumper.php
 
@@ -2703,21 +2683,6 @@ parameters:
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
 			count: 2
-			path: ../src/Composer/Package/Loader/RootPackageLoader.php
-
-		-
-			message: "#^Parameter \\#1 \\$requires of method Composer\\\\Package\\\\Loader\\\\RootPackageLoader\\:\\:extractAliases\\(\\) expects array\\<string, string\\>, array\\<int\\|string, mixed\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Loader/RootPackageLoader.php
-
-		-
-			message: "#^Parameter \\#1 \\$requires of static method Composer\\\\Package\\\\Loader\\\\RootPackageLoader\\:\\:extractReferences\\(\\) expects array\\<string, string\\>, array\\<int\\|string, mixed\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Loader/RootPackageLoader.php
-
-		-
-			message: "#^Parameter \\#1 \\$requires of static method Composer\\\\Package\\\\Loader\\\\RootPackageLoader\\:\\:extractStabilityFlags\\(\\) expects array\\<string, string\\>, array\\<int\\|string, mixed\\> given\\.$#"
-			count: 1
 			path: ../src/Composer/Package/Loader/RootPackageLoader.php
 
 		-
@@ -3087,16 +3052,6 @@ parameters:
 
 		-
 			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:getProviders\\(\\) should return array\\<string, array\\{name\\: string, description\\: string, type\\: string\\}\\> but returns array\\<int\\|string, array\\{name\\: mixed, description\\: mixed, type\\: mixed\\}\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
-			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:getProviders\\(\\) should return array\\<string, array\\{name\\: string, description\\: string, type\\: string\\}\\> but returns array\\<int\\|string, mixed\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
-			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:whatProvides\\(\\) should return array\\<string, Composer\\\\Package\\\\BasePackage\\> but returns array\\<int\\|string, Composer\\\\Package\\\\CompleteAliasPackage\\|Composer\\\\Package\\\\CompletePackage\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
@@ -4470,11 +4425,6 @@ parameters:
 
 		-
 			message: "#^Method Composer\\\\Util\\\\NoProxyPattern\\:\\:getRule\\(\\) should return stdClass\\|null but returns object\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Util/NoProxyPattern.php
-
-		-
-			message: "#^Method Composer\\\\Util\\\\NoProxyPattern\\:\\:ipCheckData\\(\\) never assigns null to &\\$ipdata so it can be removed from the by\\-ref type\\.$#"
 			count: 1
 			path: ../src/Composer/Util/NoProxyPattern.php
 
