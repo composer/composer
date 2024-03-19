@@ -150,4 +150,34 @@ allows you to submit the URL to your VCS repository, at which point Packagist
 will start crawling it. Once it is done, your package will be available to
 anyone!
 
+## Light-weight distribution packages
+
+Some useless information like the `.github` directory, or large examples, test
+data, etc. should typically not be included in distributed packages.
+
+The `.gitattributes` file is a git specific file like `.gitignore` also living
+at the root directory of your library. It overrides local and global
+configuration (`.git/config` and `~/.gitconfig` respectively) when present and
+tracked by git.
+
+Use `.gitattributes` to prevent unwanted files from bloating the zip
+distribution packages.
+
+```text
+// .gitattributes
+/demo export-ignore
+phpunit.xml.dist export-ignore
+/.github/ export-ignore
+```
+
+Test it by inspecting the zip file generated manually:
+
+```shell
+git archive branchName --format zip -o file.zip
+```
+
+> **Note:** Files would be still tracked by git just not included in the
+> zip distribution. This only works for packages installed from
+> dist (i.e. tagged releases) coming from GitHub, GitLab or Bitbucket.
+
 &larr; [Basic usage](01-basic-usage.md) |  [Command-line interface](03-cli.md) &rarr;
