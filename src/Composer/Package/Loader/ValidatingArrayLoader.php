@@ -248,6 +248,10 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         $this->validateArray('php-ext');
+        if (isset($this->config['php-ext']) && !in_array($this->config['type'] ?? '', ['php-ext', 'php-ext-zend'], true)) {
+            $this->errors[] = 'php-ext can only be set by packages of type "php-ext" or "php-ext-zend" which must be C extensions';
+            unset($this->config['php-ext']);
+        }
 
         $unboundConstraint = new Constraint('=', '10000000-dev');
 
