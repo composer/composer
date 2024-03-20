@@ -496,7 +496,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             }
 
             $promise = $this->download($package, $targetDir.'_compare', null, false);
-            $promise->catch(function ($ex) use (&$e) {
+            $promise->then(null, function ($ex) use (&$e) {
                 $e = $ex;
             });
             $this->httpDownloader->wait();
@@ -504,7 +504,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 throw $e;
             }
             $promise = $this->install($package, $targetDir.'_compare', false);
-            $promise->catch(function ($ex) use (&$e) {
+            $promise->then(null, function ($ex) use (&$e) {
                 $e = $ex;
             });
             $this->process->wait();
