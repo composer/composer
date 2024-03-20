@@ -102,6 +102,9 @@ Out of the box, Composer supports four types:
 - **composer-plugin:** A package of type `composer-plugin` may provide an
   installer for other packages that have a custom type. Read more in the
   [dedicated article](articles/custom-installers.md).
+- **php-ext** and **php-ext-zend**: These names are reserved for PHP extension
+  packages which are written in C. Do not use these types for packages written
+  in PHP.
 
 Only use a custom type if you need custom logic during installation. It is
 recommended to omit this field and have it default to `library`.

@@ -351,6 +351,11 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getIncludePaths();
     }
 
+    public function getPhpExt(): ?array
+    {
+        return $this->aliasOf->getPhpExt();
+    }
+
     public function getReleaseDate(): ?\DateTimeInterface
     {
         return $this->aliasOf->getReleaseDate();

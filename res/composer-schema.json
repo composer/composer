@@ -288,6 +288,41 @@
                 }
             }
         },
+        "php-ext": {
+            "type": "object",
+            "description": "Settings for PHP extension packages.",
+            "properties": {
+                "priority": {
+                    "type": "integer",
+                    "description": "This is used to add a prefix to the INI file, e.g. `90-xdebug.ini` which affects the loading order. The priority is a number in the range 10-99 inclusive, with 10 being the highest priority (i.e. will be processed first), and 99 being the lowest priority (i.e. will be processed last). There are two digits so that the files sort correctly on any platform, whether the sorting is natural or not.",
+                    "minimum": 10,
+                    "maximum": 99,
+                    "example": 80,
+                    "default": 80
+                },
+                "configure-options": {
+                    "type": "array",
+                    "description": "These configure options make up the flags that can be passed to ./configure when installing the extension.",
+                    "items": {
+                        "type": "object",
+                        "required": ["name"],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the flag, this would typically be prefixed with `--`, for example, the value 'the-flag' would be passed as `./configure --the-flag`.",
+                                "example": "without-xdebug-compression",
+                                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*$"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "The description of what the flag does or means.",
+                                "example": "Disable compression through zlib"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "config": {
             "type": "object",
             "description": "Composer options.",
