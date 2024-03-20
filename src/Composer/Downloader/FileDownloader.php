@@ -27,6 +27,7 @@ use Composer\Plugin\PostFileDownloadEvent;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
+use Composer\Util\Http\Response;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Composer\Util\HttpDownloader;
@@ -99,9 +100,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $this->httpDownloader = $httpDownloader;
         $this->cache = $cache;
         $this->process = $process ?? new ProcessExecutor($io);
-        $this->filesystem = $filesystem ?: new Filesystem($this->process);
+        $this->filesystem = $filesystem ?? new Filesystem($this->process);
 
-        if ($this->cache && $this->cache->gcIsNecessary()) {
+        if ($this->cache !== null && $this->cache->gcIsNecessary()) {
             $this->io->writeError('Running cache garbage collection', true, IOInterface::VERY_VERBOSE);
             $this->cache->gc($config->get('cache-files-ttl'), $config->get('cache-files-maxsize'));
         }
@@ -120,7 +121,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     public function download(PackageInterface $package, string $path, ?PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
     {
-        if (!$package->getDistUrl()) {
+        if (null === $package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
         }
 
@@ -152,21 +153,15 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $this->filesystem->ensureDirectoryExists($path);
         $this->filesystem->ensureDirectoryExists(dirname($fileName));
 
-        $io = $this->io;
-        $cache = $this->cache;
-        $httpDownloader = $this->httpDownloader;
-        $eventDispatcher = $this->eventDispatcher;
-        $filesystem = $this->filesystem;
-
         $accept = null;
         $reject = null;
-        $download = function () use ($io, $output, $httpDownloader, $cache, $cacheKeyGenerator, $eventDispatcher, $package, $fileName, &$urls, &$accept, &$reject) {
+        $download = function () use ($output, $cacheKeyGenerator, $package, $fileName, &$urls, &$accept, &$reject) {
             $url = reset($urls);
             $index = key($urls);
 
-            if ($eventDispatcher) {
-                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $httpDownloader, $url['processed'], 'package', $package);
-                $eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+            if ($this->eventDispatcher !== null) {
+                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $url['processed'], 'package', $package);
+                $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                 if ($preFileDownloadEvent->getCustomCacheKey() !== null) {
                     $url['cacheKey'] = $cacheKeyGenerator($package, $preFileDownloadEvent->getCustomCacheKey());
                 } elseif ($preFileDownloadEvent->getProcessedUrl() !== $url['processed']) {
@@ -181,27 +176,27 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $cacheKey = $url['cacheKey'];
 
             // use from cache if it is present and has a valid checksum or we have no checksum to check against
-            if ($cache && (!$checksum || $checksum === $cache->sha1($cacheKey)) && $cache->copyTo($cacheKey, $fileName)) {
+            if ($this->cache !== null && ($checksum === null || $checksum === '' || $checksum === $this->cache->sha1($cacheKey)) && $this->cache->copyTo($cacheKey, $fileName)) {
                 if ($output) {
-                    $io->writeError("  - Loading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>) from cache", true, IOInterface::VERY_VERBOSE);
+                    $this->io->writeError("  - Loading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>) from cache", true, IOInterface::VERY_VERBOSE);
                 }
                 // mark the file as having been written in cache even though it is only read from cache, so that if
                 // the cache is corrupt the archive will be deleted and the next attempt will re-download it
                 // see https://github.com/composer/composer/issues/10028
-                if (!$cache->isReadOnly()) {
+                if (!$this->cache->isReadOnly()) {
                     $this->lastCacheWrites[$package->getName()] = $cacheKey;
                 }
                 $result = \React\Promise\resolve($fileName);
             } else {
                 if ($output) {
-                    $io->writeError("  - Downloading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+                    $this->io->writeError("  - Downloading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
                 }
 
-                $result = $httpDownloader->addCopy($url['processed'], $fileName, $package->getTransportOptions())
+                $result = $this->httpDownloader->addCopy($url['processed'], $fileName, $package->getTransportOptions())
                     ->then($accept, $reject);
             }
 
-            return $result->then(static function ($result) use ($fileName, $checksum, $url, $package, $eventDispatcher): string {
+            return $result->then(function ($result) use ($fileName, $checksum, $url, $package): string {
                 // in case of retry, the first call's Promise chain finally calls this twice at the end,
                 // once with $result being the returned $fileName from $accept, and then once for every
                 // failed request with a null result, which can be skipped.
@@ -214,31 +209,35 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                         .' directory is writable and you have internet connectivity');
                 }
 
-                if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
+                if ($checksum !== null && $checksum !== '' && hash_file('sha1', $fileName) !== $checksum) {
                     throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url['base'].')');
                 }
 
-                if ($eventDispatcher) {
+                if ($this->eventDispatcher !== null) {
                     $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, $fileName, $checksum, $url['processed'], 'package', $package);
-                    $eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
+                    $this->eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
                 }
 
                 return $fileName;
             });
         };
 
-        $accept = function ($response) use ($cache, $package, $fileName, &$urls): string {
+        $accept = function (Response $response) use ($package, $fileName, &$urls): string {
             $url = reset($urls);
             $cacheKey = $url['cacheKey'];
-            FileDownloader::$downloadMetadata[$package->getName()] = @filesize($fileName) ?: $response->getHeader('Content-Length') ?: '?';
+            $fileSize = @filesize($fileName);
+            if (false === $fileSize) {
+                $fileSize = $response->getHeader('Content-Length') ?? '?';
+            }
+            FileDownloader::$downloadMetadata[$package->getName()] = $fileSize;
 
             if (Platform::getEnv('GITHUB_ACTIONS') !== false && Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING') === false) {
                 FileDownloader::$responseHeaders[$package->getName()] = $response->getHeaders();
             }
 
-            if ($cache && !$cache->isReadOnly()) {
+            if ($this->cache !== null && !$this->cache->isReadOnly()) {
                 $this->lastCacheWrites[$package->getName()] = $cacheKey;
-                $cache->copyFrom($cacheKey, $fileName);
+                $this->cache->copyFrom($cacheKey, $fileName);
             }
 
             $response->collect();
@@ -246,10 +245,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             return $fileName;
         };
 
-        $reject = function ($e) use ($io, &$urls, $download, $fileName, $package, &$retries, $filesystem) {
+        $reject = function ($e) use (&$urls, $download, $fileName, $package, &$retries) {
             // clean up
             if (file_exists($fileName)) {
-                $filesystem->unlink($fileName);
+                $this->filesystem->unlink($fileName);
             }
             $this->clearLastCacheWrite($package);
 
@@ -263,7 +262,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
             if ($e instanceof TransportException) {
                 // if we got an http response with a proper code, then requesting again will probably not help, abort
-                if ((0 !== $e->getCode() && !in_array($e->getCode(), [500, 502, 503, 504])) || !$retries) {
+                if (0 !== $e->getCode() && !in_array($e->getCode(), [500, 502, 503, 504], true)) {
                     $retries = 0;
                 }
             }
@@ -274,7 +273,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 $urls = [];
             }
 
-            if ($retries) {
+            if ($retries > 0) {
                 usleep(500000);
                 $retries--;
 
@@ -282,12 +281,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             }
 
             array_shift($urls);
-            if ($urls) {
-                if ($io->isDebug()) {
-                    $io->writeError('    Failed downloading '.$package->getName().': ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
-                    $io->writeError('    Trying the next URL for '.$package->getName());
+            if (\count($urls) > 0) {
+                if ($this->io->isDebug()) {
+                    $this->io->writeError('    Failed downloading '.$package->getName().': ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
+                    $this->io->writeError('    Trying the next URL for '.$package->getName());
                 } else {
-                    $io->writeError('    Failed downloading '.$package->getName().', trying the next URL ('.$e->getCode().': '.$e->getMessage().')');
+                    $this->io->writeError('    Failed downloading '.$package->getName().', trying the next URL ('.$e->getCode().': '.$e->getMessage().')');
                 }
 
                 $retries = 3;
@@ -328,8 +327,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         ];
 
         if (isset($this->additionalCleanupPaths[$package->getName()])) {
-            foreach ($this->additionalCleanupPaths[$package->getName()] as $path) {
-                $this->filesystem->remove($path);
+            foreach ($this->additionalCleanupPaths[$package->getName()] as $pathToClean) {
+                $this->filesystem->remove($pathToClean);
             }
         }
 
@@ -355,19 +354,20 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $this->filesystem->ensureDirectoryExists($path);
         $this->filesystem->rename($this->getFileName($package, $path), $path . '/' . $this->getDistPath($package, PATHINFO_BASENAME));
 
-        if ($package->getBinaries()) {
-            // Single files can not have a mode set like files in archives
-            // so we make sure if the file is a binary that it is executable
-            foreach ($package->getBinaries() as $bin) {
-                if (file_exists($path . '/' . $bin) && !is_executable($path . '/' . $bin)) {
-                    Silencer::call('chmod', $path . '/' . $bin, 0777 & ~umask());
-                }
+        // Single files can not have a mode set like files in archives
+        // so we make sure if the file is a binary that it is executable
+        foreach ($package->getBinaries() as $bin) {
+            if (file_exists($path . '/' . $bin) && !is_executable($path . '/' . $bin)) {
+                Silencer::call('chmod', $path . '/' . $bin, 0777 & ~umask());
             }
         }
 
         return \React\Promise\resolve(null);
     }
 
+    /**
+     * @param PATHINFO_EXTENSION|PATHINFO_BASENAME $component
+     */
     protected function getDistPath(PackageInterface $package, int $component): string
     {
         return pathinfo((string) parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), $component);
@@ -375,7 +375,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
     protected function clearLastCacheWrite(PackageInterface $package): void
     {
-        if ($this->cache && isset($this->lastCacheWrites[$package->getName()])) {
+        if ($this->cache !== null && isset($this->lastCacheWrites[$package->getName()])) {
             $this->cache->remove($this->lastCacheWrites[$package->getName()]);
             unset($this->lastCacheWrites[$package->getName()]);
         }
@@ -389,7 +389,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     protected function removeCleanupPath(PackageInterface $package, string $path): void
     {
         if (isset($this->additionalCleanupPaths[$package->getName()])) {
-            $idx = array_search($path, $this->additionalCleanupPaths[$package->getName()]);
+            $idx = array_search($path, $this->additionalCleanupPaths[$package->getName()], true);
             if (false !== $idx) {
                 unset($this->additionalCleanupPaths[$package->getName()][$idx]);
             }
@@ -469,7 +469,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             throw new \RuntimeException('You must enable the openssl extension to download files via https');
         }
 
-        if ($package->getDistReference()) {
+        if ($package->getDistReference() !== null) {
             $url = UrlUtil::updateDistReference($this->config, $url, $package->getDistReference());
         }
 

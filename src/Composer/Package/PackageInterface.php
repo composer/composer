@@ -181,6 +181,8 @@ interface PackageInterface
     /**
      * Returns the sha1 checksum for the distribution archive of this version
      *
+     * Can be an empty string which should be treated as null
+     *
      * @return ?string
      */
     public function getDistSha1Checksum(): ?string;
