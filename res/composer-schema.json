@@ -294,13 +294,31 @@
             "properties": {
                 "priority": {
                     "type": "integer",
-                    "description": "The installation \"priority\". Defaults to 20, and is used when generating an ini file to enable the extension."
+                    "description": "This is used to add a prefix to the INI file, e.g. `90-xdebug.ini` which affects the loading order. The priority is a number in the range 10-99 inclusive, with 10 being the highest priority (i.e. will be processed first), and 99 being the lowest priority (i.e. will be processed last). There are two digits so that the files sort correctly on any platform, whether the sorting is natural or not.",
+                    "minimum": 10,
+                    "maximum": 99,
+                    "example": 80,
+                    "default": 80
                 },
-                "config": {
-                    "type": "object",
-                    "description": "A list of configure options that can be passed to `./configure`, and whether whey would be passed by default to configure in that stage (either true, or false). These must match the names in the config.m4 file.",
-                    "additionalProperties": {
-                        "type": ["boolean"]
+                "configure-options": {
+                    "type": "array",
+                    "description": "These configure options make up the flags that can be passed to ./configure when installing the extension.",
+                    "items": {
+                        "type": "object",
+                        "required": ["name"],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the flag, this would typically be prefixed with `--`, for example, the value 'the-flag' would be passed as `./configure --the-flag`.",
+                                "example": "without-xdebug-compression",
+                                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*$"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "The description of what the flag does or means.",
+                                "example": "Disable compression through zlib"
+                            }
+                        }
                     }
                 }
             }
