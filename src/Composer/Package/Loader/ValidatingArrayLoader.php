@@ -458,11 +458,7 @@ class ValidatingArrayLoader implements LoaderInterface
             return null;
         }
 
-        if (str_starts_with($name, 'ext-')) {
-            if (!Preg::isMatch('{^ext-[a-z0-9]([_.-]?[a-z0-9]+)*$}iD', $name)) {
-                return $name.' is invalid, extension names must be alpha-numeric words separated by -, . or _. The complete name should match "^ext-[a-z0-9]([_.-]?[a-z0-9]+)*$".';
-            }
-        } elseif (!Preg::isMatch('{^[a-z0-9](?:[_.-]?[a-z0-9]++)*+/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]++)*+$}iD', $name)) {
+        if (!Preg::isMatch('{^[a-z0-9](?:[_.-]?[a-z0-9]++)*+/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]++)*+$}iD', $name)) {
             return $name.' is invalid, it should have a vendor name, a forward slash, and a package name. The vendor and package name can be words separated by -, . or _. The complete name should match "^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$".';
         }
 
