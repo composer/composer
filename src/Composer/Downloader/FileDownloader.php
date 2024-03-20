@@ -495,10 +495,22 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 $this->filesystem->removeDirectory($targetDir.'_compare');
             }
 
-            $this->download($package, $targetDir.'_compare', null, false);
+            $promise = $this->download($package, $targetDir.'_compare', null, false);
+            $promise->catch(function ($ex) use (&$e) {
+                $e = $ex;
+            });
             $this->httpDownloader->wait();
-            $this->install($package, $targetDir.'_compare', false);
+            if ($e !== null) {
+                throw $e;
+            }
+            $promise = $this->install($package, $targetDir.'_compare', false);
+            $promise->catch(function ($ex) use (&$e) {
+                $e = $ex;
+            });
             $this->process->wait();
+            if ($e !== null) {
+                throw $e;
+            }
 
             $comparer = new Comparer();
             $comparer->setSource($targetDir.'_compare');
@@ -511,7 +523,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $this->io = $prevIO;
 
-        if ($e) {
+        if ($e !== null) {
             throw $e;
         }
 
