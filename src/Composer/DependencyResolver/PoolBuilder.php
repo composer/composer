@@ -106,6 +106,8 @@ class PoolBuilder
     private $updateAllowList = [];
     /** @var array<string, array<PackageInterface>> */
     private $skippedLoad = [];
+    /** @var list<string> */
+    private $ignoredTypes = [];
 
     /**
      * If provided, only these package names are loaded
@@ -168,6 +170,14 @@ class PoolBuilder
         $this->poolOptimizer = $poolOptimizer;
         $this->io = $io;
         $this->temporaryConstraints = $temporaryConstraints;
+    }
+
+    /**
+     * @param list<string> $types
+     */
+    public function setIgnoredTypes(array $types): void
+    {
+        $this->ignoredTypes = $types;
     }
 
     /**
@@ -416,6 +426,10 @@ class PoolBuilder
      */
     private function loadPackage(Request $request, array $repositories, BasePackage $package, bool $propagateUpdate): void
     {
+        if (in_array($package->getType(), $this->ignoredTypes, true)) {
+            return;
+        }
+
         $index = $this->indexCounter++;
         $this->packages[$index] = $package;
 
