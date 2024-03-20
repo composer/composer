@@ -98,7 +98,7 @@ class Package extends BasePackage
     protected $isDefaultBranch = false;
     /** @var mixed[] */
     protected $transportOptions = [];
-    /** @var array{priority?: int, config?: array<string, bool>}|null */
+    /** @var array{priority?: int, configure-options?: list<array{name: string, description?: string}>}|null */
     protected $phpExt = null;
 
     /**
@@ -595,7 +595,7 @@ class Package extends BasePackage
     /**
      * Sets the list of paths added to PHP's include path.
      *
-     * @param array{priority?: int, config?: array<string, bool>}|null $phpExt List of directories.
+     * @param array{priority?: int, configure-options?: list<array{name: string, description?: string}>}|null $phpExt List of directories.
      */
     public function setPhpExt(?array $phpExt): void
     {
