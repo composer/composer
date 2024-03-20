@@ -58,16 +58,19 @@ class Hg
         }
 
         // Try with the authentication information available
-        if (Preg::isMatch('{^(ssh|https?)://(([^:@]+):?([^:@]+)?@)?([^/]+)(/.*)?}mi', $url, $matches)
-            && $this->io->hasAuthentication((string) $matches[5]))
-        {
-            list($fullURL, $protocol, $credentials, $user, $password, $domain, $path) = $matches;
-            if ($protocol === 'ssh') {
-                if($user !== '') $user = rawurlencode((string)$user) . '@';
-                $authenticatedUrl = $protocol.'://'.$user.$domain.$path;
+        if (
+            Preg::isMatch('{^(?P<proto>ssh|https?)://(?:(?P<user>[^:@]+)(?::(?P<pass>[^:@]+))?@)?(?P<host>[^/]+)(?P<path>/.*)?}mi', $url, $matches)
+            && $this->io->hasAuthentication((string) $matches['host'])
+        ) {
+            if ($matches['proto'] === 'ssh') {
+                $user = '';
+                if ($matches['user'] !== '' && $matches['user'] !== null) {
+                    $user = rawurlencode($matches['user']) . '@';
+                }
+                $authenticatedUrl = $matches['proto'] . '://' . $user . $matches['host'] . $matches['path'];
             } else {
-                $auth = $this->io->getAuthentication((string)$domain);
-                $authenticatedUrl = $protocol.'://'.rawurlencode($auth['username']).':'.rawurlencode($auth['password']).'@'.$domain.$path;
+                $auth = $this->io->getAuthentication((string) $matches['host']);
+                $authenticatedUrl = $matches['proto'] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $matches['host'] . $matches['path'];
             }
             $command = $commandCallable($authenticatedUrl);
 
