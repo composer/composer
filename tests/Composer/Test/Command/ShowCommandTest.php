@@ -299,21 +299,55 @@ Transitive dependencies not required in composer.json:
 vendor/package 1.1.0 <highlight>! 1.2.0</highlight>", trim($appTester->getDisplay(true)));
     }
 
-    public function testShowDirectWithNameOnlyShowsDirectDependents(): void
+    public function testShowDirectWithNameDoesNotShowTransientDependencies(): void
     {
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('Package "vendor/package" is installed but not a direct dependent of the root package.');
 
         $this->initTempComposer([
             'repositories' => [],
+            'require' => [
+                'direct/dependent' => '*',
+            ],
         ]);
 
         $this->createInstalledJson([
+            $direct = self::getPackage('direct/dependent', '1.0.0'),
             self::getPackage('vendor/package', '1.0.0'),
         ]);
 
+        $this->configureLinks($direct, ['require' => ['vendor/package' => '*']]);
+
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'show', '--direct' => true, 'package' => 'vendor/package']);
+    }
+
+    public function testShowDirectWithNameOnlyShowsDirectDependents(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [],
+            'require' => [
+                'direct/dependent' => '*',
+            ],
+            'require-dev' => [
+                'direct/dependent2' => '*',
+            ],
+        ]);
+
+        $this->createInstalledJson([
+            self::getPackage('direct/dependent', '1.0.0'),
+            self::getPackage('direct/dependent2', '1.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--direct' => true, 'package' => 'direct/dependent']);
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('name     : direct/dependent' . "\n", $appTester->getDisplay(true));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--direct' => true, 'package' => 'direct/dependent2']);
+        $appTester->assertCommandIsSuccessful();
+        self::assertStringContainsString('name     : direct/dependent2' . "\n", $appTester->getDisplay(true));
     }
 
     public function testShowPlatformOnlyShowsPlatformPackages(): void
