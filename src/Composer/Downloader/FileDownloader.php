@@ -524,7 +524,11 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $this->io = $prevIO;
 
         if ($e !== null) {
-            throw $e;
+            if ($this->io->isDebug()) {
+                throw $e;
+            }
+
+            return 'Failed to detect changes: ['.get_class($e).'] '.$e->getMessage();
         }
 
         $output = trim($output);
