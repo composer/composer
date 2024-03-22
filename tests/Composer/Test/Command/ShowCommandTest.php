@@ -316,7 +316,7 @@ vendor/package 1.1.0 <highlight>! 1.2.0</highlight>", trim($appTester->getDispla
             self::getPackage('vendor/package', '1.0.0'),
         ]);
 
-        $this->configureLinks($direct, ['require' => ['vendor/package' => '*']]);
+        self::configureLinks($direct, ['require' => ['vendor/package' => '*']]);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'show', '--direct' => true, 'package' => 'vendor/package']);
