@@ -126,6 +126,10 @@ Examples:
 > `--dev` option to prompt users if they would like to add these packages to
 > `require-dev` instead of `require`. These are: `dev`, `testing`, `static analysis`.
 
+> **Note**: The range of characters allowed inside the string is restricted to
+> unicode letters or numbers, space `" "`, dot `.`, underscore `_` and dash `-`. (Regex: `'{^[\p{N}\p{L} ._-]+$}u'`)
+> Using other characters will emit a warning when running `composer validate` and will likely mess with keyword indexing on Packagist.
+
 Optional.
 
 ### homepage
