@@ -661,6 +661,7 @@ class PlatformRepository extends ArrayRepository
         $packageName = $this->buildPackageName($name);
         $ext = new CompletePackage($packageName, $version, $prettyVersion);
         $ext->setDescription('The '.$name.' PHP extension'.$extraDescription);
+        $ext->setType('php-ext');
 
         if ($name === 'uuid') {
             $ext->setReplaces([
