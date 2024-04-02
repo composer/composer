@@ -108,6 +108,8 @@ class PoolBuilder
     private $skippedLoad = [];
     /** @var list<string> */
     private $ignoredTypes = [];
+    /** @var list<string>|null */
+    private $allowedTypes = null;
 
     /**
      * If provided, only these package names are loaded
@@ -173,11 +175,23 @@ class PoolBuilder
     }
 
     /**
+     * Packages of those types are ignored
+     *
      * @param list<string> $types
      */
     public function setIgnoredTypes(array $types): void
     {
         $this->ignoredTypes = $types;
+    }
+
+    /**
+     * Only packages of those types are allowed if set to non-null
+     *
+     * @param list<string>|null $types
+     */
+    public function setAllowedTypes(?array $types): void
+    {
+        $this->allowedTypes = $types;
     }
 
     /**
@@ -416,6 +430,10 @@ class PoolBuilder
             }
             foreach ($result['packages'] as $package) {
                 $this->loadedPerRepo[$repoIndex][$package->getName()][$package->getVersion()] = $package;
+
+                if (in_array($package->getType(), $this->ignoredTypes, true) || ($this->allowedTypes !== null && !in_array($package->getType(), $this->allowedTypes, true))) {
+                    continue;
+                }
                 $this->loadPackage($request, $repositories, $package, !isset($this->pathRepoUnlocked[$package->getName()]));
             }
         }
@@ -426,10 +444,6 @@ class PoolBuilder
      */
     private function loadPackage(Request $request, array $repositories, BasePackage $package, bool $propagateUpdate): void
     {
-        if (in_array($package->getType(), $this->ignoredTypes, true)) {
-            return;
-        }
-
         $index = $this->indexCounter++;
         $this->packages[$index] = $package;
 

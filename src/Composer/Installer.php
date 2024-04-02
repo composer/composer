@@ -176,6 +176,10 @@ class Installer
     protected $errorOnAudit = false;
     /** @var Auditor::FORMAT_* */
     protected $auditFormat = Auditor::FORMAT_SUMMARY;
+    /** @var list<string> */
+    private $ignoredTypes = ['php-ext', 'php-ext-zend'];
+    /** @var list<string>|null */
+    private $allowedTypes = null;
 
     /** @var bool */
     protected $updateMirrors = false;
@@ -492,7 +496,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy));
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes);
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
@@ -750,7 +754,7 @@ class Installer
                 $request->requireName($link->getTarget(), $link->getConstraint());
             }
 
-            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher);
+            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes);
 
             // solve dependencies
             $solver = new Solver($policy, $pool, $this->io);
@@ -1101,6 +1105,26 @@ class Installer
             $composer->getEventDispatcher(),
             $composer->getAutoloadGenerator()
         );
+    }
+
+    /**
+     * Packages of those types are ignored, by default php-ext and php-ext-zend are ignored
+     *
+     * @param list<string> $types
+     */
+    public function setIgnoredTypes(array $types): void
+    {
+        $this->ignoredTypes = $types;
+    }
+
+    /**
+     * Only packages of those types are allowed if set to non-null
+     *
+     * @param list<string>|null $types
+     */
+    public function setAllowedTypes(?array $types): void
+    {
+        $this->allowedTypes = $types;
     }
 
     /**
