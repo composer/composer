@@ -1111,20 +1111,26 @@ class Installer
      * Packages of those types are ignored, by default php-ext and php-ext-zend are ignored
      *
      * @param list<string> $types
+     * @return $this
      */
-    public function setIgnoredTypes(array $types): void
+    public function setIgnoredTypes(array $types): self
     {
         $this->ignoredTypes = $types;
+
+        return $this;
     }
 
     /**
      * Only packages of those types are allowed if set to non-null
      *
      * @param list<string>|null $types
+     * @return $this
      */
-    public function setAllowedTypes(?array $types): void
+    public function setAllowedTypes(?array $types): self
     {
         $this->allowedTypes = $types;
+
+        return $this;
     }
 
     /**
