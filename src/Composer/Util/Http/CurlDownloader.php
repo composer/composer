@@ -52,8 +52,8 @@ class CurlDownloader
     private $maxRedirects = 20;
     /** @var int */
     private $maxRetries = 3;
-    /** @var ProxyManager */
-    private $proxyManager;
+    /** @var ProxyHandler */
+    private $proxyHandler;
     /** @var bool */
     private $supportsSecureProxy;
     /** @var array<int, string[]> */
@@ -117,7 +117,7 @@ class CurlDownloader
         }
 
         $this->authHelper = new AuthHelper($io, $config);
-        $this->proxyManager = ProxyManager::getInstance();
+        $this->proxyHandler = ProxyHandler::getInstance();
 
         $version = curl_version();
         $features = $version['features'];
@@ -245,11 +245,14 @@ class CurlDownloader
             }
         }
 
-        // Always set CURLOPT_PROXY to enable/disable proxy handling
-        // Any proxy authorization is included in the proxy url
-        $proxy = $this->proxyManager->getProxyForRequest($url);
-        if ($proxy->getUrl() !== '') {
-            curl_setopt($curlHandle, CURLOPT_PROXY, $proxy->getUrl());
+        // Always set a proxy url, even an empty value, because it tells curl
+        // to ignore proxy environment variables
+        $proxy = $this->proxyHandler->getProxyForRequest($url);
+        curl_setopt($curlHandle, CURLOPT_PROXY, (string) $proxy->getUrl());
+
+        // If using a proxy, tell curl to ignore no_proxy environment variables
+        if ($proxy->getUrl() !== null) {
+            curl_setopt($curlHandle, CURLOPT_NOPROXY, '');
         }
 
         // Curl needs certificate locations for secure proxies.
@@ -283,7 +286,7 @@ class CurlDownloader
             'primaryIp' => '',
         ];
 
-        $usingProxy = $proxy->getFormattedUrl(' using proxy (%s)');
+        $usingProxy = $proxy->getStatus(' using proxy (%s)');
         $ifModified = false !== stripos(implode(',', $options['http']['header']), 'if-modified-since:') ? ' if modified' : '';
         if ($attributes['redirects'] === 0 && $attributes['retries'] === 0) {
             $this->io->writeError('Downloading ' . Url::sanitize($url) . $usingProxy . $ifModified, true, IOInterface::DEBUG);

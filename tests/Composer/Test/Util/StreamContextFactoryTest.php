@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Util;
 
-use Composer\Util\Http\ProxyManager;
+use Composer\Util\Http\ProxyHandler;
 use Composer\Util\StreamContextFactory;
 use Composer\Test\TestCase;
 
@@ -21,14 +21,14 @@ class StreamContextFactoryTest extends TestCase
     protected function setUp(): void
     {
         unset($_SERVER['HTTP_PROXY'], $_SERVER['http_proxy'], $_SERVER['HTTPS_PROXY'], $_SERVER['https_proxy'], $_SERVER['NO_PROXY'], $_SERVER['no_proxy']);
-        ProxyManager::reset();
+        ProxyHandler::reset();
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
         unset($_SERVER['HTTP_PROXY'], $_SERVER['http_proxy'], $_SERVER['HTTPS_PROXY'], $_SERVER['https_proxy'], $_SERVER['NO_PROXY'], $_SERVER['no_proxy']);
-        ProxyManager::reset();
+        ProxyHandler::reset();
     }
 
     /**
