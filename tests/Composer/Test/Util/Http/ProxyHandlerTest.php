@@ -13,7 +13,6 @@
 namespace Composer\Test\Util\Http;
 
 use Composer\Util\Http\ProxyHandler;
-use Composer\Util\Http\RequestProxy;
 use Composer\Test\TestCase;
 
 /**
@@ -89,7 +88,7 @@ class ProxyHandlerTest extends TestCase
         $proxyHandler = ProxyHandler::getInstance();
 
         $proxy = $proxyHandler->getProxyForRequest($url);
-        self::assertSame($expectedUrl, $proxy->getUrl());
+        self::assertSame($expectedUrl, $proxy->getStatus());
     }
 
     /**
@@ -116,7 +115,7 @@ class ProxyHandlerTest extends TestCase
         $proxyHandler = ProxyHandler::getInstance();
 
         $proxy = $proxyHandler->getProxyForRequest('http://repo.org');
-        self::assertSame($expectedUrl, $proxy->getUrl());
+        self::assertSame($expectedUrl, $proxy->getStatus());
     }
 
     /**
@@ -137,7 +136,7 @@ class ProxyHandlerTest extends TestCase
         $proxyHandler = ProxyHandler::getInstance();
 
         $proxy = $proxyHandler->getProxyForRequest('http://repo.org');
-        self::assertNull($proxy->getUrl());
+        self::assertEquals('', $proxy->getStatus());
     }
 
     public function testNoHttpsProxyDoesNotUseHttpProxy(): void
@@ -152,7 +151,7 @@ class ProxyHandlerTest extends TestCase
 
         $proxyHandler = ProxyHandler::getInstance();
         $proxy = $proxyHandler->getProxyForRequest('https://repo.org');
-        self::assertNull($proxy->getUrl());
+        self::assertEquals('', $proxy->getStatus());
     }
 
     /**
@@ -164,7 +163,7 @@ class ProxyHandlerTest extends TestCase
         $proxyHandler = ProxyHandler::getInstance();
 
         $proxy = $proxyHandler->getProxyForRequest('https://repo.org');
-        self::assertSame('http://proxy.com:80', $proxy->getUrl());
+        self::assertSame('http://proxy.com:80', $proxy->getStatus());
         self::assertTrue($proxyHandler->needsTransitionWarning());
     }
 
@@ -173,24 +172,21 @@ class ProxyHandlerTest extends TestCase
      *
      * @param array<string, string> $server
      * @param non-empty-string      $url
-     * @param ?contextOptions       $expectedOptions
-     * @param ?non-empty-string     $expectedUrl
+     * @param ?contextOptions       $options
      */
-    public function testGetProxyForRequest(array $server, string $url, ?string $expectedUrl, ?array $expectedOptions, bool $expectedSecure, string $expectedInfo): void
+    public function testGetProxyForRequest(array $server, string $url, ?array $options, bool $secure, string $info): void
     {
         $_SERVER = array_merge($_SERVER, $server);
         $proxyHandler = ProxyHandler::getInstance();
 
         $proxy = $proxyHandler->getProxyForRequest($url);
-
-        self::assertSame($expectedUrl, $proxy->getUrl());
-        self::assertSame($expectedOptions, $proxy->getContextOptions());
-        self::assertSame($expectedSecure, $proxy->isSecure());
-        self::assertSame($expectedInfo, $proxy->getStatus());
+        self::assertSame($options, $proxy->getContextOptions());
+        self::assertSame($secure, $proxy->isSecure());
+        self::assertSame($info, $proxy->getStatus());
     }
 
     /**
-     * @return list<array{0: array<string, string>, 1: string, 2: ?non-empty-string, 3: ?contextOptions, 4: bool, 5: string}>
+     * @return list<array{0: array<string, string>, 1: string, 2: ?contextOptions, 3: bool, 4: string}>
      */
     public static function dataRequest(): array
     {
@@ -200,10 +196,10 @@ class ProxyHandlerTest extends TestCase
             'no_proxy' => 'other.repo.org',
         ];
 
-        // server, url, expectedUrl, expectedOptions, expectedSecure, expectedInfo
+        // server, url, options, secure, info
         return [
-            [[], 'http://repo.org', null, null, false, ''],
-            [$server, 'http://repo.org', 'http://user:p%40ss@proxy.com:80',
+            [[], 'http://repo.org', null, false, ''],
+            [$server, 'http://repo.org',
                 ['http' => [
                     'proxy' => 'tcp://proxy.com:80',
                     'header' => 'Proxy-Authorization: Basic dXNlcjpwQHNz',
@@ -212,15 +208,57 @@ class ProxyHandlerTest extends TestCase
                 false,
                 'http://***:***@proxy.com:80',
             ],
-            [
-                $server, 'https://repo.org', 'https://proxy.com:443',
+            [$server, 'https://repo.org',
                 ['http' => [
                     'proxy' => 'ssl://proxy.com:443',
                 ]],
                 true,
                 'https://proxy.com:443',
             ],
-            [$server, 'https://other.repo.org', null, null, false, 'excluded by no_proxy'],
+            [$server, 'https://other.repo.org', null, false, 'excluded by no_proxy'],
+        ];
+    }
+
+    /**
+     * @dataProvider dataCurlRequest
+     *
+     * @param array<string, string> $server
+     * @param non-empty-string      $url
+     */
+    public function testGetProxyForCurlRequest(array $server, string $url, ?string $proxyUrl, ?string $auth): void
+    {
+        $_SERVER = array_merge($_SERVER, $server);
+        $proxyHandler = ProxyHandler::getInstance();
+
+        $proxy = $proxyHandler->getProxyForRequest($url);
+        $reflectionClass = new \ReflectionClass($proxy);
+
+        $property = $reflectionClass->getProperty('url');
+        $property->setAccessible(true);
+        self::assertSame($proxyUrl, $property->getValue($proxy));
+
+        $property = $reflectionClass->getProperty('auth');
+        $property->setAccessible(true);
+        self::assertSame($auth, $property->getValue($proxy));
+    }
+
+    /**
+     * @return list<array{0: array<string, string>, 1: string, 2: ?string, 3: ?string}>
+     */
+    public static function dataCurlRequest(): array
+    {
+        $server = [
+            'http_proxy' => 'http://user:p%40ss@proxy.com',
+            'https_proxy' => 'https://proxy.com:443',
+            'no_proxy' => 'other.repo.org',
+        ];
+
+        // server, url, prxoyUrl, auth
+        return [
+            [[], 'http://repo.org', null, null],
+            [$server, 'http://repo.org', 'http://proxy.com:80', 'user:p%40ss'],
+            [$server, 'https://repo.org', 'https://proxy.com:443', null],
+            [$server, 'https://other.repo.org', null, null],
         ];
     }
 }

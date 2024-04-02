@@ -12,7 +12,7 @@
 
 namespace Composer\Util\Http;
 
-use Composer\Util\Url;
+use Composer\Downloader\TransportException;
 
 /**
  * @internal
@@ -24,24 +24,25 @@ class RequestProxy
 {
     /** @var ?contextOptions */
     private $contextOptions;
-    /** @var bool */
-    private $isSecure;
     /** @var ?non-empty-string */
     private $status;
     /** @var ?non-empty-string */
     private $url;
+    /** @var ?non-empty-string */
+    private $auth;
 
     /**
-     * @param ?non-empty-string $url
+     * @param ?non-empty-string $url The proxy url, without authorization
+     * @param ?non-empty-string $auth Authorization for curl
      * @param ?contextOptions $contextOptions
      * @param ?non-empty-string $status
      */
-    public function __construct(?string $url, ?array $contextOptions, ?string $status)
+    public function __construct(?string $url, ?string $auth, ?array $contextOptions, ?string $status)
     {
         $this->url = $url;
+        $this->auth = $auth;
         $this->contextOptions = $contextOptions;
         $this->status = $status;
-        $this->isSecure = 0 === strpos((string) $url, 'https://');
     }
 
     /**
@@ -52,6 +53,45 @@ class RequestProxy
     public function getContextOptions(): ?array
     {
         return $this->contextOptions;
+    }
+
+    /**
+     * Returns an array of curl proxy options
+     *
+     * @param array<string, string|int> $sslOptions
+     * @return array<int, string|int>
+     */
+    public function getCurlOptions(array $sslOptions): array
+    {
+        if ($this->isSecure() && !$this->supportsSecureProxy()) {
+            throw new TransportException('Cannot use an HTTPS proxy. PHP >= 7.3 and cUrl >= 7.52.0 are required.');
+        }
+
+        // Always set a proxy url, even an empty value, because it tells curl
+        // to ignore proxy environment variables
+        $options = [CURLOPT_PROXY => (string) $this->url];
+
+        // If using a proxy, tell curl to ignore no_proxy environment variables
+        if ($this->url !== null) {
+            $options[CURLOPT_NOPROXY] = '';
+        }
+
+        // Set any authorization
+        if ($this->auth !== null) {
+            $options[CURLOPT_PROXYAUTH] = CURLAUTH_BASIC;
+            $options[CURLOPT_PROXYUSERPWD] = $this->auth;
+        }
+
+        if ($this->isSecure()) {
+            if (isset($sslOptions['cafile'])) {
+                $options[CURLOPT_PROXY_CAINFO] = $sslOptions['cafile'];
+            }
+            if (isset($sslOptions['capath'])) {
+                $options[CURLOPT_PROXY_CAPATH] = $sslOptions['capath'];
+            }
+        }
+
+        return $options;
     }
 
     /**
@@ -79,13 +119,13 @@ class RequestProxy
     }
 
     /**
-     * Returns the proxy url to use for this request, otherwise null
+     * Returns true if the request url has been excluded by a no_proxy value
      *
-     * @ return ?non-empty-string
+     * A false value can also mean that the user has not set a proxy.
      */
-    public function getUrl(): ?string
+    public function isExcludedByNoProxy(): bool
     {
-        return $this->url;
+        return $this->status !== null && $this->url === null;
     }
 
     /**
@@ -96,6 +136,23 @@ class RequestProxy
      */
     public function isSecure(): bool
     {
-        return $this->isSecure;
+        return 0 === strpos((string) $this->url, 'https://');
+    }
+
+    /**
+     * Returns true if an HTTPS proxy can be used.
+     *
+     * This depends on PHP7.3+ for CURL_VERSION_HTTPS_PROXY
+     * and curl including the feature (from version 7.52.0)
+     */
+    public function supportsSecureProxy(): bool
+    {
+        if (false === ($version = curl_version()) || !defined('CURL_VERSION_HTTPS_PROXY')) {
+            return false;
+        }
+
+        $features = $version['features'];
+
+        return (bool) ($features & CURL_VERSION_HTTPS_PROXY);
     }
 }

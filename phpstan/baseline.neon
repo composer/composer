@@ -4009,16 +4009,6 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Constant CURLOPT_PROXY_CAINFO not found\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Constant CURLOPT_PROXY_CAPATH not found\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 3
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -4197,6 +4187,21 @@ parameters:
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Method Composer\\\\Util\\\\Http\\\\RequestProxy::getCurlOptions\\(\\) should return array\\<int, int\\|string\\> but returns array\\<int\\|string, int\\|string\\>.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/RequestProxy.php
+
+		-
+			message: "#^Constant CURLOPT_PROXY_CAINFO not found\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/RequestProxy.php
+
+		-
+			message: "#^Constant CURLOPT_PROXY_CAPATH not found\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/RequestProxy.php
 
 		-
 			message: "#^Cannot call method abortRequest\\(\\) on Composer\\\\Util\\\\Http\\\\CurlDownloader\\|null\\.$#"

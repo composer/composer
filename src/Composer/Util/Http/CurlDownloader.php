@@ -52,10 +52,6 @@ class CurlDownloader
     private $maxRedirects = 20;
     /** @var int */
     private $maxRetries = 3;
-    /** @var ProxyHandler */
-    private $proxyHandler;
-    /** @var bool */
-    private $supportsSecureProxy;
     /** @var array<int, string[]> */
     protected $multiErrors = [
         CURLM_BAD_HANDLE => ['CURLM_BAD_HANDLE', 'The passed-in handle is not a valid CURLM handle.'],
@@ -117,11 +113,6 @@ class CurlDownloader
         }
 
         $this->authHelper = new AuthHelper($io, $config);
-        $this->proxyHandler = ProxyHandler::getInstance();
-
-        $version = curl_version();
-        $features = $version['features'];
-        $this->supportsSecureProxy = defined('CURL_VERSION_HTTPS_PROXY') && ($features & CURL_VERSION_HTTPS_PROXY);
     }
 
     /**
@@ -245,29 +236,8 @@ class CurlDownloader
             }
         }
 
-        // Always set a proxy url, even an empty value, because it tells curl
-        // to ignore proxy environment variables
-        $proxy = $this->proxyHandler->getProxyForRequest($url);
-        curl_setopt($curlHandle, CURLOPT_PROXY, (string) $proxy->getUrl());
-
-        // If using a proxy, tell curl to ignore no_proxy environment variables
-        if ($proxy->getUrl() !== null) {
-            curl_setopt($curlHandle, CURLOPT_NOPROXY, '');
-        }
-
-        // Curl needs certificate locations for secure proxies.
-        // CURLOPT_PROXY_SSL_VERIFY_PEER/HOST are enabled by default
-        if ($proxy->isSecure()) {
-            if (!$this->supportsSecureProxy) {
-                throw new TransportException('Connecting to a secure proxy using curl is not supported on PHP versions below 7.3.0.');
-            }
-            if (!empty($options['ssl']['cafile'])) {
-                curl_setopt($curlHandle, CURLOPT_PROXY_CAINFO, $options['ssl']['cafile']);
-            }
-            if (!empty($options['ssl']['capath'])) {
-                curl_setopt($curlHandle, CURLOPT_PROXY_CAPATH, $options['ssl']['capath']);
-            }
-        }
+        $proxy = ProxyHandler::getInstance()->getProxyForRequest($url);
+        curl_setopt_array($curlHandle, $proxy->getCurlOptions($options['ssl'] ?? []));
 
         $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
 

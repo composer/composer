@@ -24,9 +24,11 @@ class ProxyItem
     private $url;
     /** @var non-empty-string */
     private $safeUrl;
+    /** @var ?non-empty-string */
+    private $curlAuth;
     /** @var string */
     private $optionsProxy;
-    /** @var string|null */
+    /** @var ?non-empty-string */
     private $optionsAuth;
 
     public function __construct(string $proxy, string $envName)
@@ -58,7 +60,17 @@ class ProxyItem
     }
 
     /**
-     * Returns the complete proxy url for use with curl
+     * Returns any proxy authorization for curl
+     *
+     * @return ?non-empty-string
+     */
+    public function getCurlAuth(): ?string
+    {
+        return $this->curlAuth;
+    }
+
+    /**
+     * Returns the proxy url without user data
      *
      * @return non-empty-string
      */
@@ -68,7 +80,7 @@ class ProxyItem
     }
 
     /**
-     * Returns the proxy url with sanitized user data
+     * Returns the complete proxy url with sanitized user data
      *
      * @return non-empty-string
      */
@@ -86,27 +98,29 @@ class ProxyItem
 
         // We need parse_url to have identified a host
         if (!isset($proxy['host'])) {
-           return false;
+            return false;
         }
 
-        $scheme = isset($proxy['scheme']) ? strtolower($proxy['scheme']) . '://' : '';
-        $user = '';
+        $scheme = isset($proxy['scheme']) ? strtolower($proxy['scheme']) . '://' : 'http://';
         $safe = '';
 
         if (isset($proxy['user'])) {
+            $safe = '***';
             $user = $proxy['user'];
             $auth = rawurldecode($proxy['user']);
-            $safe = '***';
 
             if (isset($proxy['pass'])) {
+                $safe .= ':***';
                 $user .= ':' . $proxy['pass'];
                 $auth .= ':' . rawurldecode($proxy['pass']);
-                $safe .= ':***';
             }
 
-            $user .= '@';
             $safe .= '@';
-            $this->optionsAuth = 'Proxy-Authorization: Basic ' . base64_encode($auth);
+
+            if (strlen($user) > 0) {
+                $this->curlAuth = $user;
+                $this->optionsAuth = 'Proxy-Authorization: Basic ' . base64_encode($auth);
+            }
         }
 
         $host = $proxy['host'];
@@ -121,12 +135,12 @@ class ProxyItem
         }
 
         // We need a port because curl uses 1080 for http. Port 0 is reserved,
-        // but is considered valid depending on the the PHP or Curl version.
+        // but is considered valid depending on the PHP or Curl version.
         if ($port === null || $port === 0) {
             return false;
         }
 
-        $this->url = sprintf('%s%s%s:%d', $scheme, $user, $host, $port);
+        $this->url = sprintf('%s%s:%d', $scheme, $host, $port);
         $this->safeUrl = sprintf('%s%s%s:%d', $scheme, $safe, $host, $port);
 
         $scheme = str_replace(['http://', 'https://'], ['tcp://', 'ssl://'], $scheme);

@@ -49,26 +49,28 @@ class ProxyItemTest extends TestCase
     /**
      * @dataProvider dataFormatting
      */
-    public function testUrlFormatting(string $url, string $expected): void
+    public function testUrlFormatting(string $url, string $expectedUrl, ?string $expectedAuth): void
     {
         $proxy = new ProxyItem($url, 'http_proxy');
 
-        self::assertEquals($expected, $proxy->getProxyUrl());
+        self::assertEquals($expectedUrl, $proxy->getProxyUrl());
+        self::assertEquals($expectedAuth, $proxy->getCurlAuth());
     }
 
     /**
-     * @return array<string, array<string>>
+     * @return array<string, array<?string>>
      */
     public static function dataFormatting(): array
     {
-        // url, expected
+        // url, expectedUrl, expectedAuth
         return [
-            'none' => ['http://proxy.com:8888', 'http://proxy.com:8888'],
-            'lowercases-scheme' => ['HTTP://proxy.com:8888', 'http://proxy.com:8888'],
-            'adds-http-port' => ['http://proxy.com', 'http://proxy.com:80'],
-            'adds-https-port' => ['https://proxy.com', 'https://proxy.com:443'],
-            'keeps-user' => ['http://user@proxy.com:6180', 'http://user@proxy.com:6180'],
-            'keeps-user-pass' => ['http://user:p%40ss@proxy.com:6180', 'http://user:p%40ss@proxy.com:6180'],
+            'none' => ['http://proxy.com:8888', 'http://proxy.com:8888', null],
+            'lowercases-scheme' => ['HTTP://proxy.com:8888', 'http://proxy.com:8888', null],
+            'adds-http-scheme' => ['proxy.com:80', 'http://proxy.com:80', null],
+            'adds-http-port' => ['http://proxy.com', 'http://proxy.com:80', null],
+            'adds-https-port' => ['https://proxy.com', 'https://proxy.com:443', null],
+            'removes-user' => ['http://user@proxy.com:6180', 'http://proxy.com:6180', 'user'],
+            'removes-user-pass' => ['http://user:p%40ss@proxy.com:6180', 'http://proxy.com:6180', 'user:p%40ss'],
         ];
     }
 

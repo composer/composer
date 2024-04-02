@@ -84,6 +84,7 @@ class ProxyHandler
 
         $scheme = (string) parse_url($requestUrl, PHP_URL_SCHEME);
         $url = null;
+        $auth = null;
         $options = null;
         $info = null;
 
@@ -94,12 +95,13 @@ class ProxyHandler
                 $info = 'excluded by no_proxy';
             } else {
                 $url = $proxy->getProxyUrl();
+                $auth = $proxy->getCurlAuth();
                 $options = $proxy->getContextOptions($scheme);
                 $info = $proxy->getSafeUrl();
             }
         }
 
-        return new RequestProxy($url, $options, $info);
+        return new RequestProxy($url, $auth, $options, $info);
     }
 
     /**
@@ -126,9 +128,11 @@ class ProxyHandler
             if ($this->isTransitional && $this->httpsProxy === null) {
                 if ($this->httpProxy !== null && !$this->ignoreHttpsProxy) {
                     $this->needsTransitionWarning = true;
+
                     return $this->httpProxy;
                 }
             }
+
             return $this->httpsProxy;
         }
 
