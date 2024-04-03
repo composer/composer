@@ -4844,11 +4844,6 @@ parameters:
 			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$new_include_path of function set_include_path expects string, string\\|false given\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Config/JsonConfigSourceTest.php

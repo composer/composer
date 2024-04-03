@@ -266,11 +266,6 @@ parameters:
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
 		-
-			message: "#^Parameter \\#1 \\$include_path of function set_include_path expects string, string\\|false given\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$string of function rtrim expects string, string\\|false given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/ConfigTest.php
