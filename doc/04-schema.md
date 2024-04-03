@@ -128,7 +128,8 @@ Examples:
 
 > **Note**: The range of characters allowed inside the string is restricted to
 > unicode letters or numbers, space `" "`, dot `.`, underscore `_` and dash `-`. (Regex: `'{^[\p{N}\p{L} ._-]+$}u'`)
-> Using other characters will emit a warning when running `composer validate` and will likely mess with keyword indexing on Packagist.
+> Using other characters will emit a warning when running `composer validate` and
+> will cause the package to fail updating on Packagist.org.
 
 Optional.
 
