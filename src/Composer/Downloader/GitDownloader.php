@@ -67,7 +67,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         GitUtil::cleanEnv();
 
-        $cachePath = $this->config->get('cache-vcs-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', $url).'/';
+        $cachePath = $this->config->get('cache-vcs-dir').'/'.md5($url).'/';
         $gitVersion = GitUtil::getVersion($this->process);
 
         // --dissociate option is only available since git 2.3.0-rc0
