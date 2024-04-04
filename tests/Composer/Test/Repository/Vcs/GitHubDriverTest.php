@@ -299,7 +299,7 @@ class GitHubDriverTest extends TestCase
         $process = new ProcessExecutorMock;
         $process->expects(array(
             array('cmd' => 'git config github.accesstoken', 'return' => 1),
-            'git clone --mirror -- '.ProcessExecutor::escape($repoSshUrl).' '.ProcessExecutor::escape($this->config->get('cache-vcs-dir').'/'.md5($repoUrl).'/'),
+            'git clone --mirror -- '.ProcessExecutor::escape($repoSshUrl).' '.ProcessExecutor::escape($this->config->get('cache-vcs-dir').'/'.md5($repoSshUrl).'/'),
             array(
                 'cmd' => 'git show-ref --tags --dereference',
                 'stdout' => $sha.' refs/tags/'.$identifier,
