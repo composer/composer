@@ -92,7 +92,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     {
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
-        $cachePath = $this->config->get('cache-vcs-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', $url).'/';
+        $cachePath = $this->config->get('cache-vcs-dir').'/'.md5($url).'/';
         $ref = $package->getSourceReference();
         $flag = Platform::isWindows() ? '/D ' : '';
 
@@ -161,7 +161,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             throw new \RuntimeException('The .git directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
-        $cachePath = $this->config->get('cache-vcs-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', $url).'/';
+        $cachePath = $this->config->get('cache-vcs-dir').'/'.md5($url).'/';
         $ref = $target->getSourceReference();
 
         if (!empty($this->cachedPackages[$target->getId()][$ref])) {
