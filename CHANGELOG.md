@@ -1682,7 +1682,7 @@
   * Break: Removed support for lock files created before 2012-09-15 due to their outdated unusable format
   * Added `prefer-stable` flag to pick stable packages over unstable ones when possible
   * Added `preferred-install` config option to always enable --prefer-source or --prefer-dist
-  * Added `diagnose` command to to system/network checks and find common problems
+  * Added `diagnose` command to system/network checks and find common problems
   * Added wildcard support in the update whitelist, e.g. to update all packages of a vendor do `composer update vendor/*`
   * Added `archive` command to archive the current directory or a given package
   * Added `run-script` command to manually trigger scripts
