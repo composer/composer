@@ -100,7 +100,7 @@ If your repository only has a small number of packages, and you want to avoid th
 
 `"providers-api": "https://packagist.org/providers/%package%.json",`
 
-The providers-api is optional, but if you implement it it should return packages which provide a given package name, but not the package which has that name. For example https://packagist.org/providers/monolog/monolog.json lists some package which have a "provide" rule for monolog/monolog, but it does not list monolog/monolog itself.
+The providers-api is optional, but if you implement it, it should return packages which provide a given package name, but not the package which has that name. For example https://packagist.org/providers/monolog/monolog.json lists some package which have a "provide" rule for monolog/monolog, but it does not list monolog/monolog itself.
 
 ### list
 
