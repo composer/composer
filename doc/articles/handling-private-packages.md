@@ -25,10 +25,8 @@ set up your own package archive on [Packagist.com](https://packagist.com).
 Satis on the other hand is open source but only a static `composer` repository
 generator. It is a bit like an ultra-lightweight, static file-based version of
 packagist and can be used to host the metadata of your company's private
-packages, or your own. You can get it from
-[GitHub](https://github.com/composer/satis) or install via CLI:
-
-    php composer.phar create-project composer/satis --stability=dev --keep-vcs
+packages, or your own. You can install it using [Composer](https://github.com/composer/satis?tab=readme-ov-file#run-from-source)
+or [Docker](https://github.com/composer/satis?tab=readme-ov-file#run-as-docker-container).
 
 ## Setup
 
