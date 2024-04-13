@@ -1096,6 +1096,8 @@ Whenever possible it is recommended to specify these settings in the `config`
 section of `composer.json` instead. It is worth noting that the env vars will
 always take precedence over the values specified in `composer.json`.
 
+Proxy environment variables are listed [on this page](faqs/how-to-use-composer-behind-a-proxy.md).
+
 ### COMPOSER
 
 By setting the `COMPOSER` env variable it is possible to set the filename of
@@ -1231,22 +1233,6 @@ to have written files properly before we attempt reading them. You can set the
 environment variable if you use Vagrant or VirtualBox and experience issues with files not
 being found during installation even though they should be present.
 
-### http_proxy or HTTP_PROXY
-
-If you are using Composer from behind an HTTP proxy, you can use the standard
-`http_proxy` or `HTTP_PROXY` env vars. Set it to the URL of your proxy.
-Many operating systems already set this variable for you.
-
-Using `http_proxy` (lowercased) or even defining both might be preferable since
-some tools like git or curl will only use the lower-cased `http_proxy` version.
-Alternatively you can also define the git proxy using
-`git config --global http.proxy <proxy url>`.
-
-If you are using Composer in a non-CLI context (i.e. integration into a CMS or
-similar use case), and need to support proxies, please provide the `CGI_HTTP_PROXY`
-environment variable instead. See [httpoxy.org](https://httpoxy.org/) for further
-details.
-
 ### COMPOSER_AUDIT_ABANDONED
 
 Set to `ignore`, `report` or `fail` to override the [audit.abandoned](06-config.md#abandoned)
@@ -1264,31 +1250,9 @@ in performance gains.
 Set to `4` or `6` to force IPv4 or IPv6 DNS resolution. This only works when the
 curl extension is used for downloads.
 
-### HTTP_PROXY_REQUEST_FULLURI
-
-If you use a proxy, but it does not support the request_fulluri flag, then you
-should set this env var to `false` or `0` to prevent Composer from setting the
-request_fulluri option.
-
-### HTTPS_PROXY_REQUEST_FULLURI
-
-If you use a proxy, but it does not support the request_fulluri flag for HTTPS
-requests, then you should set this env var to `false` or `0` to prevent Composer
-from setting the request_fulluri option.
-
 ### COMPOSER_SELF_UPDATE_TARGET
 
 If set, makes the self-update command write the new Composer phar file into that path instead of overwriting itself. Useful for updating Composer on a read-only filesystem.
-
-### no_proxy or NO_PROXY
-
-If you are behind a proxy and would like to disable it for certain domains, you
-can use the `no_proxy` or `NO_PROXY` env var. Set it to a comma separated list of
-domains the proxy should *not* be used for.
-
-The env var accepts domains, IP addresses, and IP address blocks in CIDR
-notation. You can restrict the filter to a particular port (e.g. `:80`). You
-can also set it to `*` to ignore the proxy for all HTTP requests.
 
 ### COMPOSER_DISABLE_NETWORK
 
