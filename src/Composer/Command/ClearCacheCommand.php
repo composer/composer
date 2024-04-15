@@ -45,7 +45,13 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $config = Factory::createConfig();
+        $composer = $this->tryComposer();
+        if ($composer !== null) {
+            $config = $composer->getConfig();
+        } else {
+            $config = Factory::createConfig();
+        }
+
         $io = $this->getIO();
 
         $cachePaths = [
