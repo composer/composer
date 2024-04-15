@@ -36,13 +36,13 @@ class ShowCommandTest extends TestCase
                 'packages' => [
                     'type' => 'package',
                     'package' => [
-                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0'],
+                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => 'v1.0.0'],
 
-                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.0.0 description', 'version' => '1.0.0'],
-                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.0.1 description', 'version' => '1.0.1'],
-                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.1.0 description', 'version' => '1.1.0'],
-                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.1.1 description', 'version' => '1.1.1'],
-                        ['name' => 'outdated/major', 'description' => 'outdated/major v2.0.0 description', 'version' => '2.0.0'],
+                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.0.0 description', 'version' => 'v1.0.0'],
+                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.0.1 description', 'version' => 'v1.0.1'],
+                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.1.0 description', 'version' => 'v1.1.0'],
+                        ['name' => 'outdated/major', 'description' => 'outdated/major v1.1.1 description', 'version' => 'v1.1.1'],
+                        ['name' => 'outdated/major', 'description' => 'outdated/major v2.0.0 description', 'version' => 'v2.0.0'],
 
                         ['name' => 'outdated/minor', 'description' => 'outdated/minor v1.0.0 description', 'version' => '1.0.0'],
                         ['name' => 'outdated/minor', 'description' => 'outdated/minor v1.0.1 description', 'version' => '1.0.1'],
@@ -57,9 +57,9 @@ class ShowCommandTest extends TestCase
             'require' => $requires === [] ? new \stdClass : $requires,
         ]);
 
-        $pkg = self::getPackage('vendor/package', '1.0.0');
+        $pkg = self::getPackage('vendor/package', 'v1.0.0');
         $pkg->setDescription('description of installed package');
-        $major = self::getPackage('outdated/major', '1.0.0');
+        $major = self::getPackage('outdated/major', 'v1.0.0');
         $major->setReleaseDate(new DateTimeImmutable());
         $minor = self::getPackage('outdated/minor', '1.0.0');
         $minor->setReleaseDate(new DateTimeImmutable('-2 years'));
