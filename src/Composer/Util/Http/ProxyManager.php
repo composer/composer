@@ -19,7 +19,7 @@ use Composer\Util\NoProxyPattern;
  * @internal
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
  */
-class ProxyHandler
+class ProxyManager
 {
     /** @var ?string */
     private $error = null;
@@ -30,7 +30,7 @@ class ProxyHandler
     /** @var ?NoProxyPattern */
     private $noProxyHandler = null;
 
-    /** @var ?ProxyHandler */
+    /** @var ?self */
     private static $instance = null;
 
     /** The following 3 properties can be removed after the transition period */
@@ -54,7 +54,7 @@ class ProxyHandler
         }
     }
 
-    public static function getInstance(): ProxyHandler
+    public static function getInstance(): ProxyManager
     {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -83,25 +83,17 @@ class ProxyHandler
         }
 
         $scheme = (string) parse_url($requestUrl, PHP_URL_SCHEME);
-        $url = null;
-        $auth = null;
-        $options = null;
-        $info = null;
-
         $proxy = $this->getProxyForScheme($scheme);
 
-        if ($proxy !== null) {
-            if ($this->noProxy($requestUrl)) {
-                $info = 'excluded by no_proxy';
-            } else {
-                $url = $proxy->getProxyUrl();
-                $auth = $proxy->getCurlAuth();
-                $options = $proxy->getContextOptions($scheme);
-                $info = $proxy->getSafeUrl();
-            }
+        if ($proxy === null) {
+            return RequestProxy::none();
         }
 
-        return new RequestProxy($url, $auth, $options, $info);
+        if ($this->noProxy($requestUrl)) {
+            return RequestProxy::noProxy();
+        }
+
+        return $proxy->toRequestProxy($scheme);
     }
 
     /**

@@ -16,7 +16,7 @@ use Composer\Composer;
 use Composer\CaBundle\CaBundle;
 use Composer\Downloader\TransportException;
 use Composer\Repository\PlatformRepository;
-use Composer\Util\Http\ProxyHandler;
+use Composer\Util\Http\ProxyManager;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -75,7 +75,7 @@ final class StreamContextFactory
 
         // Add stream proxy options if there is a proxy
         if (!$forCurl) {
-            $proxy = ProxyHandler::getInstance()->getProxyForRequest($url);
+            $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
             $proxyOptions = $proxy->getContextOptions();
             if ($proxyOptions !== null) {
                 $isHttpsRequest = 0 === strpos($url, 'https://');

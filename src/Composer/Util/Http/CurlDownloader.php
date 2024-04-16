@@ -236,7 +236,7 @@ class CurlDownloader
             }
         }
 
-        $proxy = ProxyHandler::getInstance()->getProxyForRequest($url);
+        $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
         curl_setopt_array($curlHandle, $proxy->getCurlOptions($options['ssl'] ?? []));
 
         $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);

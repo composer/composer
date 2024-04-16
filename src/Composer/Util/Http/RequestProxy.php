@@ -18,7 +18,7 @@ use Composer\Downloader\TransportException;
  * @internal
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
  *
- * @phpstan-import-type contextOptions from \Composer\Util\Http\ProxyItem
+ * @phpstan-type contextOptions array{http: array{proxy: string, header?: string, request_fulluri?: bool}}
  */
 class RequestProxy
 {
@@ -43,6 +43,16 @@ class RequestProxy
         $this->auth = $auth;
         $this->contextOptions = $contextOptions;
         $this->status = $status;
+    }
+
+    public static function none(): RequestProxy
+    {
+        return new self(null, null, null, null);
+    }
+
+    public static function noProxy(): RequestProxy
+    {
+        return new self(null, null, null, 'excluded by no_proxy');
     }
 
     /**

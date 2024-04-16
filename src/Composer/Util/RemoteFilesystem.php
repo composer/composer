@@ -18,7 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\Pcre\Preg;
 use Composer\Util\Http\Response;
-use Composer\Util\Http\ProxyHandler;
+use Composer\Util\Http\ProxyManager;
 
 /**
  * @internal
@@ -273,7 +273,7 @@ class RemoteFilesystem
 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, ['notification' => [$this, 'callbackGet']]);
 
-        $proxy = ProxyHandler::getInstance()->getProxyForRequest($fileUrl);
+        $proxy = ProxyManager::getInstance()->getProxyForRequest($fileUrl);
         $usingProxy = $proxy->getStatus(' using proxy (%s)');
         $this->io->writeError((strpos($origFileUrl, 'http') === 0 ? 'Downloading ' : 'Reading ') . Url::sanitize($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
         unset($origFileUrl, $proxy, $usingProxy);

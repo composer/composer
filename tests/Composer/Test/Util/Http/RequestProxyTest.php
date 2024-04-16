@@ -17,16 +17,35 @@ use Composer\Test\TestCase;
 
 class RequestProxyTest extends TestCase
 {
+    public function testFactoryNone(): void
+    {
+        $proxy = RequestProxy::none();
+
+        $options = extension_loaded('curl') ? [CURLOPT_PROXY => ''] : [];
+        self::assertSame($options, $proxy->getCurlOptions([]));
+        self::assertNull($proxy->getContextOptions());
+        self::assertSame('', $proxy->getStatus());
+    }
+
+    public function testFactoryNoProxy(): void
+    {
+        $proxy = RequestProxy::noProxy();
+
+        $options = extension_loaded('curl') ? [CURLOPT_PROXY => ''] : [];
+        self::assertSame($options, $proxy->getCurlOptions([]));
+        self::assertNull($proxy->getContextOptions());
+        self::assertSame('excluded by no_proxy', $proxy->getStatus());
+    }
+
     /**
      * @dataProvider dataSecure
      *
      * @param ?non-empty-string $url
      */
-    public function testIsSecure(?string $url, bool $expectedSecure): void
+    public function testIsSecure(?string $url, bool $expected): void
     {
         $proxy = new RequestProxy($url, null, null, null);
-
-        $this->assertSame($expectedSecure, $proxy->isSecure());
+        self::assertSame($expected, $proxy->isSecure());
     }
 
     /**
@@ -34,7 +53,7 @@ class RequestProxyTest extends TestCase
      */
     public static function dataSecure(): array
     {
-        // url, expectedSecure
+        // url, expected
         return [
             'basic' => ['http://proxy.com:80', false],
             'secure' => ['https://proxy.com:443', true],
@@ -60,10 +79,10 @@ class RequestProxyTest extends TestCase
 
         if ($format === null) {
             // try with and without optional param
-            $this->assertSame($expected, $proxy->getStatus());
-            $this->assertSame($expected, $proxy->getStatus($format));
+            self::assertSame($expected, $proxy->getStatus());
+            self::assertSame($expected, $proxy->getStatus($format));
         } else {
-            $this->assertSame($expected, $proxy->getStatus($format));
+            self::assertSame($expected, $proxy->getStatus($format));
         }
     }
 
@@ -104,7 +123,6 @@ class RequestProxyTest extends TestCase
     public static function dataCurlOptions(): array
     {
         // url, auth, expected
-
         return [
             [null, null, [CURLOPT_PROXY => '']],
             ['http://proxy.com:80', null,
@@ -150,7 +168,6 @@ class RequestProxyTest extends TestCase
         $caPath = 10247; // CURLOPT_PROXY_CAPATH
 
         // url, auth, sslOptions, expected
-
         return [
             ['https://proxy.com:443', null, ['cafile' => '/certs/bundle.pem'],
                 [

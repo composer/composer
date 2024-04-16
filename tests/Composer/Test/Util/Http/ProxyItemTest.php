@@ -15,9 +15,6 @@ namespace Composer\Test\Util\Http;
 use Composer\Util\Http\ProxyItem;
 use Composer\Test\TestCase;
 
-/**
- * @phpstan-import-type contextOptions from ProxyItem
- */
 class ProxyItemTest extends TestCase
 {
     /**
@@ -26,8 +23,7 @@ class ProxyItemTest extends TestCase
     public function testThrowsOnMalformedUrl(string $url): void
     {
         self::expectException('RuntimeException');
-        self::expectExceptionMessage('unsupported `http_proxy` syntax');
-        $proxy = new ProxyItem($url, 'http_proxy');
+        $proxyItem = new ProxyItem($url, 'http_proxy');
     }
 
     /**
@@ -49,88 +45,28 @@ class ProxyItemTest extends TestCase
     /**
      * @dataProvider dataFormatting
      */
-    public function testUrlFormatting(string $url, string $expectedUrl, ?string $expectedAuth): void
+    public function testUrlFormatting(string $url, string $expected): void
     {
-        $proxy = new ProxyItem($url, 'http_proxy');
+        $proxyItem = new ProxyItem($url, 'http_proxy');
+        $proxy = $proxyItem->toRequestProxy('http');
 
-        self::assertEquals($expectedUrl, $proxy->getProxyUrl());
-        self::assertEquals($expectedAuth, $proxy->getCurlAuth());
-    }
-
-    /**
-     * @return array<string, array<?string>>
-     */
-    public static function dataFormatting(): array
-    {
-        // url, expectedUrl, expectedAuth
-        return [
-            'none' => ['http://proxy.com:8888', 'http://proxy.com:8888', null],
-            'lowercases-scheme' => ['HTTP://proxy.com:8888', 'http://proxy.com:8888', null],
-            'adds-http-scheme' => ['proxy.com:80', 'http://proxy.com:80', null],
-            'adds-http-port' => ['http://proxy.com', 'http://proxy.com:80', null],
-            'adds-https-port' => ['https://proxy.com', 'https://proxy.com:443', null],
-            'removes-user' => ['http://user@proxy.com:6180', 'http://proxy.com:6180', 'user'],
-            'removes-user-pass' => ['http://user:p%40ss@proxy.com:6180', 'http://proxy.com:6180', 'user:p%40ss'],
-        ];
-    }
-
-    /**
-     * @dataProvider dataSafe
-     */
-    public function testSafeUrl(string $url, string $expected): void
-    {
-        $proxy = new ProxyItem($url, 'http_proxy');
-
-        self::assertEquals($expected, $proxy->getSafeUrl());
+        self::assertSame($expected, $proxy->getStatus());
     }
 
     /**
      * @return array<string, array<string>>
      */
-    public static function dataSafe(): array
+    public static function dataFormatting(): array
     {
         // url, expected
         return [
-            'no userinfo' => ['http://proxy.com', 'http://proxy.com:80'],
-            'user' => ['http://user@proxy.com', 'http://***@proxy.com:80'],
-            'user-pass' => ['http://user:p%40ss@proxy.com', 'http://***:***@proxy.com:80'],
-        ];
-    }
-
-    /**
-     * @dataProvider dataContextOptions
-     *
-     * @param contextOptions $expected
-     */
-    public function testGetContextOptions(string $url, string $schemel, array $expected): void
-    {
-        $proxy = new ProxyItem($url, 'http_proxy');
-        self::assertEquals($expected, $proxy->getContextOptions($schemel));
-    }
-
-    /**
-     * @return list<array{0: string, 1: string, 2: contextOptions}>
-     */
-    public static function dataContextOptions(): array
-    {
-        // url, scheme, expected
-        return [
-            ['http://proxy.com:6180', 'http', ['http' => [
-                'proxy' => 'tcp://proxy.com:6180',
-                'request_fulluri' => true,
-            ]]],
-            ['http://proxy.com:6180', 'https', ['http' => [
-                'proxy' => 'tcp://proxy.com:6180',
-            ]]],
-            ['https://proxy.com:6180', 'http', ['http' => [
-                'proxy' => 'ssl://proxy.com:6180',
-                'request_fulluri' => true,
-            ]]],
-            ['http://user:p%40ss@proxy.com:6180', 'http', ['http' => [
-                'proxy' => 'tcp://proxy.com:6180',
-                'header' => 'Proxy-Authorization: Basic dXNlcjpwQHNz',
-                'request_fulluri' => true,
-            ]]],
+            'none' => ['http://proxy.com:8888', 'http://proxy.com:8888'],
+            'lowercases-scheme' => ['HTTP://proxy.com:8888', 'http://proxy.com:8888'],
+            'adds-http-scheme' => ['proxy.com:80', 'http://proxy.com:80'],
+            'adds-http-port' => ['http://proxy.com', 'http://proxy.com:80'],
+            'adds-https-port' => ['https://proxy.com', 'https://proxy.com:443'],
+            'removes-user' => ['http://user@proxy.com:6180', 'http://***@proxy.com:6180'],
+            'removes-user-pass' => ['http://user:p%40ss@proxy.com:6180', 'http://***:***@proxy.com:6180'],
         ];
     }
 }

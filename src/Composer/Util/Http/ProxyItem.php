@@ -15,8 +15,6 @@ namespace Composer\Util\Http;
 /**
  * @internal
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
- *
- * @phpstan-type contextOptions array{http: array{proxy: string, header?: string, request_fulluri?: bool}}
  */
 class ProxyItem
 {
@@ -31,74 +29,23 @@ class ProxyItem
     /** @var ?non-empty-string */
     private $optionsAuth;
 
-    public function __construct(string $proxy, string $envName)
+    /**
+     * @param string $proxyUrl The value from the environment
+     * @param string $envName The name of the environment variable
+     * @throws \RuntimeException If the proxy url is invalid
+     */
+    public function __construct(string $proxyUrl, string $envName)
     {
-        if (strpbrk($proxy, "\r\n\t") !== false || !$this->checkData($proxy)) {
-            throw new \RuntimeException(sprintf('unsupported `%s` syntax', $envName));
+        $syntaxError = sprintf('unsupported `%s` syntax', $envName);
+
+        if (strpbrk($proxyUrl, "\r\n\t") !== false) {
+            throw new \RuntimeException($syntaxError);
         }
-    }
-
-    /**
-     * Returns stream context options for the proxy
-     *
-     * @param string $scheme The scheme of the request url
-     * @return contextOptions
-     */
-    public function getContextOptions(string $scheme): array
-    {
-        $options = ['http' => ['proxy' => $this->optionsProxy]];
-
-        if ($this->optionsAuth !== null) {
-            $options['http']['header'] = $this->optionsAuth;
+        if (false === ($proxy = parse_url($proxyUrl))) {
+            throw new \RuntimeException($syntaxError);
         }
-
-        if ($scheme === 'http') {
-            $options['http']['request_fulluri'] = true;
-        }
-
-        return $options;
-    }
-
-    /**
-     * Returns any proxy authorization for curl
-     *
-     * @return ?non-empty-string
-     */
-    public function getCurlAuth(): ?string
-    {
-        return $this->curlAuth;
-    }
-
-    /**
-     * Returns the proxy url without user data
-     *
-     * @return non-empty-string
-     */
-    public function getProxyUrl(): string
-    {
-        return $this->url;
-    }
-
-    /**
-     * Returns the complete proxy url with sanitized user data
-     *
-     * @return non-empty-string
-     */
-    public function getSafeUrl(): string
-    {
-        return $this->safeUrl;
-    }
-
-    /**
-     * Checks the proxy url and sets the class properties
-     */
-    private function checkData(string $url): bool
-    {
-        $proxy = parse_url($url);
-
-        // We need parse_url to have identified a host
         if (!isset($proxy['host'])) {
-            return false;
+            throw new \RuntimeException('unable to find proxy host in ' . $envName);
         }
 
         $scheme = isset($proxy['scheme']) ? strtolower($proxy['scheme']) . '://' : 'http://';
@@ -136,8 +83,11 @@ class ProxyItem
 
         // We need a port because curl uses 1080 for http. Port 0 is reserved,
         // but is considered valid depending on the PHP or Curl version.
-        if ($port === null || $port === 0) {
-            return false;
+        if ($port === null) {
+            throw new \RuntimeException('unable to find proxy port in ' . $envName);
+        }
+        if ($port === 0) {
+            throw new \RuntimeException('port 0 is reserved in ' . $envName);
         }
 
         $this->url = sprintf('%s%s:%d', $scheme, $host, $port);
@@ -145,7 +95,25 @@ class ProxyItem
 
         $scheme = str_replace(['http://', 'https://'], ['tcp://', 'ssl://'], $scheme);
         $this->optionsProxy = sprintf('%s%s:%d', $scheme, $host, $port);
+    }
 
-        return true;
+    /**
+     * Returns a RequestProxy instance for the scheme of the request url
+     *
+     * @param string $scheme The scheme of the request url
+     */
+    public function toRequestProxy(string $scheme): RequestProxy
+    {
+        $options = ['http' => ['proxy' => $this->optionsProxy]];
+
+        if ($this->optionsAuth !== null) {
+            $options['http']['header'] = $this->optionsAuth;
+        }
+
+        if ($scheme === 'http') {
+            $options['http']['request_fulluri'] = true;
+        }
+
+        return new RequestProxy($this->url, $this->curlAuth, $options, $this->safeUrl);
     }
 }
