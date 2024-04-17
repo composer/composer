@@ -52,10 +52,6 @@ class CurlDownloader
     private $maxRedirects = 20;
     /** @var int */
     private $maxRetries = 3;
-    /** @var ProxyManager */
-    private $proxyManager;
-    /** @var bool */
-    private $supportsSecureProxy;
     /** @var array<int, string[]> */
     protected $multiErrors = [
         CURLM_BAD_HANDLE => ['CURLM_BAD_HANDLE', 'The passed-in handle is not a valid CURLM handle.'],
@@ -117,11 +113,6 @@ class CurlDownloader
         }
 
         $this->authHelper = new AuthHelper($io, $config);
-        $this->proxyManager = ProxyManager::getInstance();
-
-        $version = curl_version();
-        $features = $version['features'];
-        $this->supportsSecureProxy = defined('CURL_VERSION_HTTPS_PROXY') && ($features & CURL_VERSION_HTTPS_PROXY);
     }
 
     /**
@@ -245,26 +236,8 @@ class CurlDownloader
             }
         }
 
-        // Always set CURLOPT_PROXY to enable/disable proxy handling
-        // Any proxy authorization is included in the proxy url
-        $proxy = $this->proxyManager->getProxyForRequest($url);
-        if ($proxy->getUrl() !== '') {
-            curl_setopt($curlHandle, CURLOPT_PROXY, $proxy->getUrl());
-        }
-
-        // Curl needs certificate locations for secure proxies.
-        // CURLOPT_PROXY_SSL_VERIFY_PEER/HOST are enabled by default
-        if ($proxy->isSecure()) {
-            if (!$this->supportsSecureProxy) {
-                throw new TransportException('Connecting to a secure proxy using curl is not supported on PHP versions below 7.3.0.');
-            }
-            if (!empty($options['ssl']['cafile'])) {
-                curl_setopt($curlHandle, CURLOPT_PROXY_CAINFO, $options['ssl']['cafile']);
-            }
-            if (!empty($options['ssl']['capath'])) {
-                curl_setopt($curlHandle, CURLOPT_PROXY_CAPATH, $options['ssl']['capath']);
-            }
-        }
+        $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
+        curl_setopt_array($curlHandle, $proxy->getCurlOptions($options['ssl'] ?? []));
 
         $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
 
@@ -283,7 +256,7 @@ class CurlDownloader
             'primaryIp' => '',
         ];
 
-        $usingProxy = $proxy->getFormattedUrl(' using proxy (%s)');
+        $usingProxy = $proxy->getStatus(' using proxy (%s)');
         $ifModified = false !== stripos(implode(',', $options['http']['header']), 'if-modified-since:') ? ' if modified' : '';
         if ($attributes['redirects'] === 0 && $attributes['retries'] === 0) {
             $this->io->writeError('Downloading ' . Url::sanitize($url) . $usingProxy . $ifModified, true, IOInterface::DEBUG);

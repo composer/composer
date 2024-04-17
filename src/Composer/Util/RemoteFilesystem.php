@@ -64,8 +64,6 @@ class RemoteFilesystem
     private $redirects;
     /** @var int */
     private $maxRedirects = 20;
-    /** @var ProxyManager */
-    private $proxyManager;
 
     /**
      * Constructor.
@@ -91,7 +89,6 @@ class RemoteFilesystem
         $this->options = array_replace_recursive($this->options, $options);
         $this->config = $config;
         $this->authHelper = $authHelper ?? new AuthHelper($io, $config);
-        $this->proxyManager = ProxyManager::getInstance();
     }
 
     /**
@@ -276,8 +273,8 @@ class RemoteFilesystem
 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, ['notification' => [$this, 'callbackGet']]);
 
-        $proxy = $this->proxyManager->getProxyForRequest($fileUrl);
-        $usingProxy = $proxy->getFormattedUrl(' using proxy (%s)');
+        $proxy = ProxyManager::getInstance()->getProxyForRequest($fileUrl);
+        $usingProxy = $proxy->getStatus(' using proxy (%s)');
         $this->io->writeError((strpos($origFileUrl, 'http') === 0 ? 'Downloading ' : 'Reading ') . Url::sanitize($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
         unset($origFileUrl, $proxy, $usingProxy);
 

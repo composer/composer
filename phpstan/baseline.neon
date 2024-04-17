@@ -4009,16 +4009,6 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Constant CURLOPT_PROXY_CAINFO not found\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Constant CURLOPT_PROXY_CAPATH not found\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 3
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -4199,72 +4189,17 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyHelper.php
-
-		-
-			message: "#^Foreach overwrites \\$name with its value variable\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyHelper.php
-
-		-
-			message: "#^Implicit array creation is not allowed \\- variable \\$options does not exist\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyHelper.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, int\\<0, 65535\\>\\|false\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyHelper.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 3
-			path: ../src/Composer/Util/Http/ProxyHelper.php
-
-		-
-			message: "#^Parameter \\#1 \\$proxy of static method Composer\\\\Util\\\\Http\\\\ProxyHelper\\:\\:formatParsedUrl\\(\\) expects array\\{scheme\\?\\: string, host\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string\\}, array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int\\<0, 65535\\>, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyHelper.php
-
-		-
-			message: "#^Only booleans are allowed in &&, Composer\\\\Util\\\\NoProxyPattern\\|null given on the left side\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyManager.php
-
-		-
-			message: "#^Only booleans are allowed in &&, string\\|null given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyManager.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Util\\\\Http\\\\ProxyManager\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyManager.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 4
-			path: ../src/Composer/Util/Http/ProxyManager.php
-
-		-
-			message: "#^Parameter \\#3 \\$formattedUrl of class Composer\\\\Util\\\\Http\\\\RequestProxy constructor expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyManager.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/ProxyManager.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, string given\\.$#"
+			message: "#^Method Composer\\\\Util\\\\Http\\\\RequestProxy::getCurlOptions\\(\\) should return array\\<int, int\\|string\\> but returns array\\<int\\|string, int\\|string\\>.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/RequestProxy.php
 
 		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
+			message: "#^Constant CURLOPT_PROXY_CAINFO not found\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/RequestProxy.php
+
+		-
+			message: "#^Constant CURLOPT_PROXY_CAPATH not found\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/RequestProxy.php
 
@@ -5280,26 +5215,6 @@ parameters:
 			message: "#^Cannot access an offset on array\\<int, array\\<string, int\\|string\\>\\>\\|false\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Util/GitTest.php
-
-		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Util\\\\\\\\Http…' and Composer\\\\Util\\\\Http\\\\ProxyManager will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Util/Http/ProxyManagerTest.php
-
-		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Util\\\\\\\\Http…' and Composer\\\\Util\\\\Http\\\\RequestProxy will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Util/Http/ProxyManagerTest.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, string given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Util/Http/ProxyManagerTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$haystack of function stripos expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Util/Http/ProxyManagerTest.php
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false\\|null given\\.$#"
