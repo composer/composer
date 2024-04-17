@@ -20,11 +20,6 @@ use Composer\Test\TestCase;
  */
 class ProxyManagerTest extends TestCase
 {
-    // isTransitional can be removed after the transition period
-
-    /** @var bool */
-    private $isTransitional = true;
-
     protected function setUp(): void
     {
         unset(
@@ -142,29 +137,10 @@ class ProxyManagerTest extends TestCase
     public function testNoHttpsProxyDoesNotUseHttpProxy(): void
     {
         $_SERVER['http_proxy'] = 'http://proxy.com:80';
-
-        // This can be removed after the transition period.
-        // An empty https_proxy value prevents using any http_proxy
-        if ($this->isTransitional) {
-            $_SERVER['https_proxy'] = '';
-        }
-
         $proxyManager = ProxyManager::getInstance();
+
         $proxy = $proxyManager->getProxyForRequest('https://repo.org');
         self::assertSame('', $proxy->getStatus());
-    }
-
-    /**
-     * This test can be removed after the transition period
-     */
-    public function testTransitional(): void
-    {
-        $_SERVER['http_proxy'] = 'http://proxy.com:80';
-        $proxyManager = ProxyManager::getInstance();
-
-        $proxy = $proxyManager->getProxyForRequest('https://repo.org');
-        self::assertSame('http://proxy.com:80', $proxy->getStatus());
-        self::assertTrue($proxyManager->needsTransitionWarning());
     }
 
     /**

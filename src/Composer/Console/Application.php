@@ -43,7 +43,6 @@ use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Exception\NoSslException;
 use Composer\XdebugHandler\XdebugHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
-use Composer\Util\Http\ProxyManager;
 
 /**
  * The console application that handles the commands
@@ -384,8 +383,6 @@ class Application extends BaseApplication
         }
 
         try {
-            $proxyManager = ProxyManager::getInstance();
-
             if ($input->hasParameterOption('--profile')) {
                 $startTime = microtime(true);
                 $this->io->enableDebugging($startTime);
@@ -405,14 +402,6 @@ class Application extends BaseApplication
 
             if (isset($startTime)) {
                 $io->writeError('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MiB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MiB), time: '.round(microtime(true) - $startTime, 2).'s');
-            }
-
-            if ($proxyManager->needsTransitionWarning()) {
-                $io->writeError('');
-                $io->writeError('<warning>Composer now requires separate proxy environment variables for HTTP and HTTPS requests.</warning>');
-                $io->writeError('<warning>Please set `https_proxy` in addition to your existing proxy environment variables.</warning>');
-                $io->writeError('<warning>This fallback (and warning) will be removed in Composer 2.8.0.</warning>');
-                $io->writeError('<warning>https://getcomposer.org/doc/faqs/how-to-use-composer-behind-a-proxy.md</warning>');
             }
 
             return $result;
