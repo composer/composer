@@ -1096,8 +1096,6 @@ Whenever possible it is recommended to specify these settings in the `config`
 section of `composer.json` instead. It is worth noting that the env vars will
 always take precedence over the values specified in `composer.json`.
 
-Proxy environment variables are listed [on this page](faqs/how-to-use-composer-behind-a-proxy.md).
-
 ### COMPOSER
 
 By setting the `COMPOSER` env variable it is possible to set the filename of
@@ -1232,6 +1230,14 @@ work around some environment specific issues. The only value currently supported
 to have written files properly before we attempt reading them. You can set the
 environment variable if you use Vagrant or VirtualBox and experience issues with files not
 being found during installation even though they should be present.
+
+### http_proxy or HTTP_PROXY
+### HTTP_PROXY_REQUEST_FULLURI
+### HTTPS_PROXY_REQUEST_FULLURI
+### no_proxy or NO_PROXY
+
+See the [proxy documentation](faqs/how-to-use-composer-behind-a-proxy.md) for more details
+on how to use proxy env vars.
 
 ### COMPOSER_AUDIT_ABANDONED
 
