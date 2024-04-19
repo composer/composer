@@ -1,3 +1,17 @@
+### [2.7.3] 2024-04-19
+
+  * BC Warning: Fixed `https_proxy` env var falling back to `http_proxy`'s value, this is still in place but with a warning for now, and https_proxy can now be set empty to remove the fallback. Composer 2.8.0 will remove the fallback so make sure you heed the warnings (#11915)
+  * Fixed `show` and `outdated` commands to remove leading `v` in e.g. `v1.2.3` when showing lists of packages (#11925)
+  * Fixed `audit` command not showing any id when no CVE is present, the advisory ID is now shown (#11892)
+  * Fixed the warning about a missing default version showing for packages with `project` type as those are typically not versioned and do not have cyclic dependencies (#11885)
+  * Fixed PHP 8.4 deprecation warnings
+  * Fixed `clear-cache` command to respect the config.cache-dir setting from the local composer.json (#11921)
+  * Fixed `status` command not handling failed download/install promises correctly (#11889)
+  * Added support for `buy_me_a_coffee` in GitHub funding files (#11902)
+  * Added `hg` support for SSH urls (#11878)
+  * Fixed some env vars with an integer value causing a crash (#11908)
+  * Fixed context data not being output when using IOInterface as a PSR-3 logger (#11882)
+
 ### [2.7.2] 2024-03-11
 
   * Added info about the PHP version when running `composer --version` (#11866)
@@ -1838,6 +1852,7 @@
 
   * Initial release
 
+[2.7.3]: https://github.com/composer/composer/compare/2.7.2...2.7.3
 [2.7.2]: https://github.com/composer/composer/compare/2.7.1...2.7.2
 [2.7.1]: https://github.com/composer/composer/compare/2.7.0...2.7.1
 [2.7.0]: https://github.com/composer/composer/compare/2.6.6...2.7.0
