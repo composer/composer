@@ -328,13 +328,15 @@ EOT
             }
 
             $json = $this->httpDownloader->get($protocol.'://repo.packagist.org/packages.json')->decodeJson();
-            $hash = reset($json['provider-includes']);
-            $hash = $hash['sha256'];
-            $path = str_replace('%hash%', $hash, key($json['provider-includes']));
-            $provider = $this->httpDownloader->get($protocol.'://repo.packagist.org/'.$path)->getBody();
+            if (isset($json['provider-includes'])) {
+                $hash = reset($json['provider-includes']);
+                $hash = $hash['sha256'];
+                $path = str_replace('%hash%', $hash, key($json['provider-includes']));
+                $provider = $this->httpDownloader->get($protocol.'://repo.packagist.org/'.$path)->getBody();
 
-            if (hash('sha256', $provider) !== $hash) {
-                return '<warning>It seems that your proxy ('.$proxyStatus.') is modifying '.$protocol.' traffic on the fly</>';
+                if (hash('sha256', $provider) !== $hash) {
+                    return '<warning>It seems that your proxy ('.$proxyStatus.') is modifying '.$protocol.' traffic on the fly</>';
+                }
             }
 
             return '<info>OK</> <comment>'.$proxyStatus.'</>';
