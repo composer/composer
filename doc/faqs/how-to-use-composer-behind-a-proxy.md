@@ -25,7 +25,7 @@ Uppercase names can also be used, but HTTP_PROXY will only be accepted in a CLI 
 
 ### Non-CLI usage
 
-Composer does not look for `http_Proxy` or `HTTP_PROXY` in a non-CLI context. If you are running it
+Composer does not look for `http_proxy` or `HTTP_PROXY` in a non-CLI context. If you are running it
 this way (i.e. integration into a CMS or similar use case) you must use `CGI_HTTP_PROXY` for HTTP
 requests:
 
@@ -70,7 +70,7 @@ because the proxy will split the components on the first colon it finds.
 ## HTTPS proxy servers
 
 Composer supports HTTPS proxy servers, where HTTPS is the scheme used to connect to the proxy, but
-only from PHP 7.3 with cUrl version 7.52.0 and above.
+only from PHP 7.3 with curl version 7.52.0 and above.
 
 ```
 http_proxy=https://proxy.com:443
@@ -107,12 +107,12 @@ mitigate issues with misbehaving proxies. These are no longer required or used.
 
 ## Requirement changes
 
-Composer always used `http_proxy` for both HTTP and HTTPS requests if `https_proxy` was not set, but
-this has changed to requiring [scheme-specific](#usage) environment variables.
+Composer <2.8 used `http_proxy` for both HTTP and HTTPS requests if `https_proxy` was not set,
+but as of Composer 2.8.0 it requires [scheme-specific](#usage) environment variables.
 
-The reason for this is to align Composer with current practice across other popular tools. To help
-with the transition, the original behaviour remains but a warning message is shown instructing
-the user to add an `https_proxy` environment variable.
+The reason for this change is to align Composer with current practice across other popular tools. To help
+with the transition, as of Composer 2.7.3 the original behaviour remains but a warning message is 
+shown instructing the user to add an `https_proxy` environment variable.
 
 To prevent the original behaviour during the transition period, set an empty environment variable
 (`https_proxy=`).
