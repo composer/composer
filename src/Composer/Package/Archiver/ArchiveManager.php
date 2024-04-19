@@ -99,7 +99,9 @@ class ArchiveManager
             $parts['source_reference'] = substr(sha1($sourceReference), 0, 6);
         }
 
-        $parts = array_filter($parts);
+        $parts = array_filter($parts, function (?string $part) {
+            return $part !== null;
+        });
         foreach ($parts as $key => $part) {
             $parts[$key] = str_replace('/', '-', $part);
         }

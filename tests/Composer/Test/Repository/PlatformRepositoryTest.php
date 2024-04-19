@@ -1237,7 +1237,7 @@ Linked Version => 1.2.11',
         $expectedLibraries = array_keys(array_filter($expectations, static function ($expectation): bool {
             return $expectation !== false;
         }));
-        self::assertCount(count(array_filter($expectedLibraries)), $libraries, sprintf('Expected: %s, got %s', var_export($expectedLibraries, true), var_export($libraries, true)));
+        self::assertCount(count($expectedLibraries), $libraries, sprintf('Expected: %s, got %s', var_export($expectedLibraries, true), var_export($libraries, true)));
 
         foreach ($extensions as $extension) {
             $expectations['ext-'.$extension] = $extensionVersion;

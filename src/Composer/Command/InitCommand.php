@@ -87,7 +87,7 @@ EOT
         $io = $this->getIO();
 
         $allowlist = ['name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license', 'autoload'];
-        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)));
+        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)), function ($val) { return $val !== null && $val !== []; });
 
         if (isset($options['name']) && !Preg::isMatch('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $options['name'])) {
             throw new \InvalidArgumentException(

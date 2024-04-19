@@ -296,7 +296,9 @@ EOT
             }
         } while (true);
 
-        $packages = array_filter($packages);
+        $packages = array_filter($packages, function (string $pkg) {
+            return $pkg !== '';
+        });
         if (!$packages) {
             throw new \InvalidArgumentException('You must enter minimum one package.');
         }
