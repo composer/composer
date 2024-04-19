@@ -32,6 +32,7 @@ use Seld\JsonLint\ParsingException;
 use Composer\Command;
 use Composer\Composer;
 use Composer\Factory;
+use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
@@ -404,6 +405,7 @@ class Application extends BaseApplication
                 $io->writeError('<warning>Composer now requires separate proxy environment variables for HTTP and HTTPS requests.</warning>');
                 $io->writeError('<warning>Please set `https_proxy` in addition to your existing proxy environment variables.</warning>');
                 $io->writeError('<warning>This fallback (and warning) will be removed in Composer 2.8.0.</warning>');
+                $io->writeError('<warning>https://getcomposer.org/doc/faqs/how-to-use-composer-behind-a-proxy.md</warning>');
             }
 
             return $result;
@@ -479,6 +481,11 @@ class Application extends BaseApplication
         } catch (\Exception $e) {
         }
         Silencer::restore();
+
+        if ($exception instanceof TransportException && str_contains($exception->getMessage(), 'Unable to use a proxy')) {
+            $io->writeError('<error>The following exception indicates your proxy is misconfigured</error>', true, IOInterface::QUIET);
+            $io->writeError('<error>Check https://getcomposer.org/doc/faqs/how-to-use-composer-behind-a-proxy.md for details</error>', true, IOInterface::QUIET);
+        }
 
         if (Platform::isWindows() && false !== strpos($exception->getMessage(), 'The system cannot find the path specified')) {
             $io->writeError('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>', true, IOInterface::QUIET);
