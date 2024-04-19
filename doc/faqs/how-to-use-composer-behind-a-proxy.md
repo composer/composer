@@ -21,7 +21,7 @@ http_proxy=http://proxy.com:80
 https_proxy=http://proxy.com:80
 ```
 
-Uppercase names can also be used, but HTTP_PROXY will only be accepted in a CLI context.
+Uppercase names can also be used.
 
 ### Non-CLI usage
 
