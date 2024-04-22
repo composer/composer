@@ -469,6 +469,7 @@ EOT
             'prepend-autoloader' => [$booleanValidator, $booleanNormalizer],
             'disable-tls' => [$booleanValidator, $booleanNormalizer],
             'secure-http' => [$booleanValidator, $booleanNormalizer],
+            'bump-after-update' => [$booleanValidator, $booleanNormalizer],
             'cafile' => [
                 static function ($val): bool {
                     return file_exists($val) && Filesystem::isReadable($val);

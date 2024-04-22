@@ -476,4 +476,9 @@ throw, but you can set this config option to `["example.org"]` to allow using sv
 URLs on that hostname. This is a better/safer alternative to disabling `secure-http`
 altogether.
 
+## bump-after-update
+
+Defaults to false. If set to true, Composer will run the Bump command after running
+the Update command.
+
 &larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;

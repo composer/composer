@@ -78,6 +78,9 @@ class UpdateCommand extends BaseCommand
                 new InputOption('minimal-changes', 'm', InputOption::VALUE_NONE, 'During a partial update with -w/-W, only perform absolutely necessary changes to transitive dependencies (can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var).'),
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
+                new InputOption('bump-after-update', null, InputOption::VALUE_NONE, 'Runs Bump after performing the update.'),
+                new InputOption('bump-dev-only', null, InputOption::VALUE_NONE, 'Used if "Bump after Update" option is selected. Only bump requirements in "require-dev".'),
+                new InputOption('bump-no-dev-only', null, InputOption::VALUE_NONE, 'Used if "Bump after Update" option is selected. Only bump requirements in "require".'),
             ])
             ->setHelp(
                 <<<EOT
@@ -248,7 +251,27 @@ EOT
             $install->disablePlugins();
         }
 
-        return $install->run();
+        $result = $install->run();
+        $bumpAfterUpdate = $input->getOption('bump-after-update') || $composer->getConfig()->get('bump-after-update');
+
+        if ($bumpAfterUpdate) {
+            if ($result === 0) {
+                $io->writeError('<info>Running Bump after Update.</info>');
+                $bumpCommand = new BumpCommand();
+                $bumpCommand->setComposer($composer);
+                $result = $bumpCommand->doBump(
+                    $io,
+                    $input->getOption('bump-dev-only'),
+                    $input->getOption('bump-no-dev-only'),
+                    $input->getOption('dry-run'),
+                    $input->getArgument('packages'),
+                    true
+                );
+            } else {
+                $io->writeError('<warning>Not running Bump after Update because the update command did not finish successfully.</warning>');
+            }
+        }
+        return $result;
     }
 
     /**

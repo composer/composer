@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Locker;
@@ -72,9 +73,29 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        return $this->doBump(
+            $this->getIO(),
+            $input->getOption('dev-only'),
+            $input->getOption('no-dev-only'),
+            $input->getOption('dry-run'),
+            $input->getArgument('packages')
+        );
+    }
+
+    /**
+     * @param string[] $packagesFilter
+     * @throws \Seld\JsonLint\ParsingException
+     */
+    public function doBump(
+        IOInterface $io,
+        bool $devOnly,
+        bool $noDevOnly,
+        bool $dryRun,
+        array $packagesFilter,
+        bool $calledFromUpdate = false
+    ): int {
         /** @readonly */
         $composerJsonPath = Factory::getComposerFile();
-        $io = $this->getIO();
 
         if (!Filesystem::isReadable($composerJsonPath)) {
             $io->writeError('<error>'.$composerJsonPath.' is not readable.</error>');
@@ -112,27 +133,28 @@ EOT
             $repo = $composer->getRepositoryManager()->getLocalRepository();
         }
 
-        if ($composer->getPackage()->getType() !== 'project' && !$input->getOption('dev-only')) {
+        if ($composer->getPackage()->getType() !== 'project' && !$devOnly) {
             $io->writeError('<warning>Warning: Bumping dependency constraints is not recommended for libraries as it will narrow down your dependencies and may cause problems for your users.</warning>');
 
             $contents = $composerJson->read();
             if (!isset($contents['type'])) {
                 $io->writeError('<warning>If your package is not a library, you can explicitly specify the "type" by using "composer config type project".</warning>');
-                $io->writeError('<warning>Alternatively you can use --dev-only to only bump dependencies within "require-dev".</warning>');
+                $io->writeError('<warning>Alternatively you can use --' .
+                    ($calledFromUpdate ? 'bump-' : '') .
+                    'dev-only to only bump dependencies within "require-dev".</warning>');
             }
             unset($contents);
         }
 
         $bumper = new VersionBumper();
         $tasks = [];
-        if (!$input->getOption('dev-only')) {
+        if (!$devOnly) {
             $tasks['require'] = $composer->getPackage()->getRequires();
         }
-        if (!$input->getOption('no-dev-only')) {
+        if (!$noDevOnly) {
             $tasks['require-dev'] = $composer->getPackage()->getDevRequires();
         }
 
-        $packagesFilter = $input->getArgument('packages');
         if (count($packagesFilter) > 0) {
             $pattern = BasePackage::packageNamesToRegexp(array_unique(array_map('strtolower', $packagesFilter)));
             foreach ($tasks as $key => $reqs) {
@@ -170,8 +192,6 @@ EOT
                 $updates[$key][$pkgName] = $bumped;
             }
         }
-
-        $dryRun = $input->getOption('dry-run');
 
         if (!$dryRun && !$this->updateFileCleanly($composerJson, $updates)) {
             $composerDefinition = $composerJson->read();
