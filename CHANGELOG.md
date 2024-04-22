@@ -1,3 +1,7 @@
+### [2.7.4] 2024-04-22
+
+  * Fixed regression (`Call to undefined method ProxyManager::needsTransitionWarning()`) with projects requiring composer/composer in an pre-2.7.3 version (#11943, #11940)
+
 ### [2.7.3] 2024-04-19
 
   * BC Warning: Fixed `https_proxy` env var falling back to `http_proxy`'s value, this is still in place but with a warning for now, and https_proxy can now be set empty to remove the fallback. Composer 2.8.0 will remove the fallback so make sure you heed the warnings (#11915)
@@ -1852,6 +1856,7 @@
 
   * Initial release
 
+[2.7.4]: https://github.com/composer/composer/compare/2.7.3...2.7.4
 [2.7.3]: https://github.com/composer/composer/compare/2.7.2...2.7.3
 [2.7.2]: https://github.com/composer/composer/compare/2.7.1...2.7.2
 [2.7.1]: https://github.com/composer/composer/compare/2.7.0...2.7.1
