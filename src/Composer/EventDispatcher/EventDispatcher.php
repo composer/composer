@@ -459,9 +459,9 @@ class EventDispatcher
             return $className::$methodName($event);
         } finally {
             $currentAutoloadFunctions = spl_autoload_functions();
-            if ($existingAutoloadFunctions !== false && $currentAutoloadFunctions !== false) {
+            if ($currentAutoloadFunctions) {
                 foreach ($currentAutoloadFunctions as $function) {
-                    if (!in_array($function, $existingAutoloadFunctions, true)) {
+                    if (!$existingAutoloadFunctions || !in_array($function, $existingAutoloadFunctions, true)) {
                         spl_autoload_unregister($function);
                     }
                 }
