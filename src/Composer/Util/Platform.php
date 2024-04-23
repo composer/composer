@@ -38,6 +38,8 @@ class Platform
         // fallback to realpath('') just in case this works but odds are it would break as well if we are in a case where getcwd fails
         if (false === $cwd) {
             $cwd = realpath('');
+        } else {
+            $cwd = realpath($cwd);
         }
 
         // crappy state, assume '' and hopefully relative paths allow things to continue
