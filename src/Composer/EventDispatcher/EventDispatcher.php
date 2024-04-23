@@ -454,13 +454,16 @@ class EventDispatcher
             $this->io->writeError(sprintf('> %s::%s', $className, $methodName));
         }
 
-        $autoloadFunctions = spl_autoload_functions();
+        $existingAutoloadFunctions = spl_autoload_functions();
         try {
             return $className::$methodName($event);
         } finally {
-            foreach (spl_autoload_functions() as $function) {
-                if (!in_array($function, $autoloadFunctions, true)) {
-                    spl_autoload_unregister($function);
+            $currentAutoloadFunctions = spl_autoload_functions();
+            if ($existingAutoloadFunctions !== false && $currentAutoloadFunctions !== false) {
+                foreach ($currentAutoloadFunctions as $function) {
+                    if (!in_array($function, $existingAutoloadFunctions, true)) {
+                        spl_autoload_unregister($function);
+                    }
                 }
             }
         }
