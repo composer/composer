@@ -326,7 +326,7 @@ interface PackageInterface
     /**
      * Returns the settings for php extension packages
      *
-     * @return array{priority?: int, configure-options?: list<array{name: string, description?: string}>}|null
+     * @return array{extension-name?: string, priority?: int, support-zts?: bool, configure-options?: list<array{name: string, description?: string}>}|null
      */
     public function getPhpExt(): ?array;
 
