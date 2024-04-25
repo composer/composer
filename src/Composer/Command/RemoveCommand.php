@@ -43,7 +43,7 @@ class RemoveCommand extends BaseCommand
     {
         $this
             ->setName('remove')
-            ->setAliases(['rm'])
+            ->setAliases(['rm', 'uninstall'])
             ->setDescription('Removes a package from the require or require-dev')
             ->setDefinition([
                 new InputArgument('packages', InputArgument::IS_ARRAY, 'Packages that should be removed.', null, $this->suggestRootRequirement()),
