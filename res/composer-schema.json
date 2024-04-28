@@ -292,6 +292,11 @@
             "type": "object",
             "description": "Settings for PHP extension packages.",
             "properties": {
+                "extension-name": {
+                    "type": "string",
+                    "description": "If specified, this will be used as the name of the extension, where needed by tooling. If this is not specified, the extension name will be derived from the Composer package name (e.g. `vendor/name` would become `ext-name`). The extension name may be specified with or without the `ext-` prefix, and tools that use this must normalise this appropriately.",
+                    "example": "ext-xdebug"
+                },
                 "priority": {
                     "type": "integer",
                     "description": "This is used to add a prefix to the INI file, e.g. `90-xdebug.ini` which affects the loading order. The priority is a number in the range 10-99 inclusive, with 10 being the highest priority (i.e. will be processed first), and 99 being the lowest priority (i.e. will be processed last). There are two digits so that the files sort correctly on any platform, whether the sorting is natural or not.",
@@ -299,6 +304,12 @@
                     "maximum": 99,
                     "example": 80,
                     "default": 80
+                },
+                "support-zts": {
+                    "type": "boolean",
+                    "description": "Does this package support Zend Thread Safety",
+                    "example": false,
+                    "default": true
                 },
                 "configure-options": {
                     "type": "array",
