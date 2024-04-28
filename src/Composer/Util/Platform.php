@@ -152,7 +152,9 @@ class Platform
                 !ini_get('open_basedir')
                 && is_readable('/proc/version')
                 && false !== stripos((string)Silencer::call('file_get_contents', '/proc/version'), 'microsoft')
-                && !file_exists('/.dockerenv') // docker running inside WSL should not be seen as WSL
+                && !file_exists('/.dockerenv') // Docker and Podman running inside WSL should not be seen as WSL
+                && !file_exists('/run/.containerenv')
+                && !file_exists('/var/run/.containerenv')
             ) {
                 return self::$isWindowsSubsystemForLinux = true;
             }
