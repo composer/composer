@@ -199,7 +199,7 @@ EOT
         }
 
         $io->write('OpenSSL version: ' . (defined('OPENSSL_VERSION_TEXT') ? '<comment>'.OPENSSL_VERSION_TEXT.'</comment>' : '<error>missing</error>'));
-        $io->write('cURL version: ' . $this->getCurlVersion());
+        $io->write('curl version: ' . $this->getCurlVersion());
 
         $finder = new ExecutableFinder;
         $hasSystemUnzip = (bool) $finder->find('unzip');

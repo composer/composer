@@ -221,6 +221,12 @@ class CurlDownloader
             curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
         }
 
+        // curl 8.7.0 - 8.7.1 has a bug whereas automatic accept-encoding header results in an error when reading the response
+        // https://github.com/composer/composer/issues/11913
+        if (in_array($version['version'], ['8.7.0', '8.7.1'], true) && \defined('CURL_VERSION_LIBZ') && (CURL_VERSION_LIBZ & $features)) {
+            curl_setopt($curlHandle, CURLOPT_ENCODING, "gzip");
+        }
+
         $options['http']['header'] = $this->authHelper->addAuthenticationHeader($options['http']['header'], $origin, $url);
         $options = StreamContextFactory::initOptions($url, $options, true);
 
