@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Advisory\AuditConfig;
 use Composer\Composer;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\RepositoryUtils;
@@ -68,7 +69,7 @@ EOT
             $repoSet->addRepository($repo);
         }
 
-        $auditConfig = $composer->getConfig()->get('audit');
+        $auditConfig = AuditConfig::fromConfig($composer->getConfig());
 
         $abandoned = $input->getOption('abandoned');
         if ($abandoned !== null && !in_array($abandoned, Auditor::ABANDONEDS, true)) {
@@ -90,7 +91,7 @@ EOT
             $abandoned,
             $ignoreSeverities,
             $ignoreUnreachable,
-            $auditConfig['ignore-abandoned'] ?? []
+            $auditConfig->ignoreAbandonedPackages
         ));
 
     }

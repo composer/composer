@@ -12,6 +12,7 @@
 
 namespace Composer;
 
+use Composer\Advisory\AuditConfig;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Console\GithubActionError;
 use Composer\DependencyResolver\DefaultPolicy;
@@ -23,6 +24,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\DependencyResolver\PolicyInterface;
@@ -431,9 +433,9 @@ class Installer
                         $repoSet->addRepository($repo);
                     }
 
-                    $auditConfig = $this->config->get('audit');
+                    $auditConfig = AuditConfig::fromConfig($this->config);
 
-                    return $auditor->audit($this->io, $repoSet, $packages, $this->auditFormat, true, $auditConfig['ignore'] ?? [], $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL, [], false, $auditConfig['ignore-abandoned'] ?? []) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
+                    return $auditor->audit($this->io, $repoSet, $packages, $this->auditFormat, true, $auditConfig->ignoreList, $auditConfig->abandoned, [], false, $auditConfig->ignoreAbandonedPackages) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {
@@ -498,7 +500,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes);
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter());
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
@@ -1103,6 +1105,11 @@ class Installer
         }
 
         return new PoolOptimizer($policy);
+    }
+
+    private function createSecurityAuditPoolFilter(): SecurityAdvisoryPoolFilter
+    {
+        return new SecurityAdvisoryPoolFilter(new Auditor(), AuditConfig::fromConfig($this->config));
     }
 
     /**

@@ -40,20 +40,24 @@ class Pool implements \Countable
     protected $removedVersions = [];
     /** @var array<string, array<string, string>> Map of package object hash => removed normalized versions => removed pretty version */
     protected $removedVersionsByPackage = [];
+    /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
+    private $securityRemovedVersions = [];
 
     /**
      * @param BasePackage[] $packages
      * @param BasePackage[] $unacceptableFixedOrLockedPackages
      * @param array<string, array<string, string>> $removedVersions
      * @param array<string, array<string, string>> $removedVersionsByPackage
+     * @param array<string, array<string, string>> $securityRemoveVersions
      */
-    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [])
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemoveVersions = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
         $this->unacceptableFixedOrLockedPackages = $unacceptableFixedOrLockedPackages;
         $this->removedVersions = $removedVersions;
         $this->removedVersionsByPackage = $removedVersionsByPackage;
+        $this->securityRemovedVersions = $securityRemoveVersions;
     }
 
     /**
@@ -85,6 +89,25 @@ class Pool implements \Countable
         }
 
         return $this->removedVersionsByPackage[$objectHash];
+    }
+
+    public function isSecurityRemovedPackageVersion(string $packageName, ?ConstraintInterface $constraint): bool
+    {
+        foreach ($this->securityRemovedVersions[$packageName] ?? [] as $version => $prettyVersion) {
+            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return array<string, array<string, string>>
+     */
+    public function getAllSecurityRemovedPackageVersions(): array
+    {
+        return $this->securityRemovedVersions;
     }
 
     /**
