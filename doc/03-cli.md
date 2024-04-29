@@ -313,7 +313,7 @@ If you do not want to install the new dependencies immediately you can call it w
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu-autoloader`.
 
-## remove / rm
+## remove / rm / uninstall
 
 The `remove` command removes packages from the `composer.json` file from
 the current directory.
