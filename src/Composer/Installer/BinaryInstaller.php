@@ -225,7 +225,12 @@ class BinaryInstaller
             $phpunitHack1 = $phpunitHack2 = '';
             // Don't expose autoload path when vendor dir was not set in custom installers
             if ($this->vendorDir) {
-                $globalsCode .= '$GLOBALS[\'_composer_autoload_path\'] = ' . $this->filesystem->findShortestPathCode($link, $this->vendorDir . '/autoload.php', false, true).";\n";
+                // ensure comparisons work accurately if the CWD is a symlink, as $link is realpath'd already
+                $vendorDirReal = realpath($this->vendorDir);
+                if ($vendorDirReal === false) {
+                    $vendorDirReal = $this->vendorDir;
+                }
+                $globalsCode .= '$GLOBALS[\'_composer_autoload_path\'] = ' . $this->filesystem->findShortestPathCode($link, $vendorDirReal . '/autoload.php', false, true).";\n";
             }
             // Add workaround for PHPUnit process isolation
             if ($this->filesystem->normalizePath($bin) === $this->filesystem->normalizePath($this->vendorDir.'/phpunit/phpunit/phpunit')) {
