@@ -416,6 +416,9 @@ class JsonManipulator
             if ($subName !== null) {
                 $curVal = json_decode($children, true);
                 unset($curVal[$name][$subName]);
+                if ($curVal[$name] === []) {
+                    $curVal[$name] = new \ArrayObject();
+                }
                 $this->addSubNode($mainNode, $name, $curVal[$name]);
             }
 
@@ -427,7 +430,7 @@ class JsonManipulator
             if ($subName !== null) {
                 $curVal = json_decode($matches['content'], true);
                 unset($curVal[$name][$subName]);
-                $childrenClean = $this->format($curVal);
+                $childrenClean = $this->format($curVal, 0, true);
             }
 
             return $matches['start'] . $childrenClean . $matches['end'];
@@ -534,12 +537,19 @@ class JsonManipulator
     /**
      * @param mixed $data
      */
-    public function format($data, int $depth = 0): string
+    public function format($data, int $depth = 0, bool $wasObject = false): string
     {
-        if (is_array($data)) {
-            reset($data);
+        if ($data instanceof \stdClass || $data instanceof \ArrayObject) {
+            $data = (array) $data;
+            $wasObject = true;
+        }
 
-            if (is_numeric(key($data))) {
+        if (is_array($data)) {
+            if (\count($data) === 0) {
+                return $wasObject ? '{' . $this->newline . str_repeat($this->indent, $depth + 1) . '}' : '[]';
+            }
+
+            if (array_is_list($data)) {
                 foreach ($data as $key => $val) {
                     $data[$key] = $this->format($val, $depth + 1);
                 }
@@ -550,7 +560,7 @@ class JsonManipulator
             $out = '{' . $this->newline;
             $elems = [];
             foreach ($data as $key => $val) {
-                $elems[] = str_repeat($this->indent, $depth + 2) . JsonFile::encode($key). ': '.$this->format($val, $depth + 1);
+                $elems[] = str_repeat($this->indent, $depth + 2) . JsonFile::encode((string) $key). ': '.$this->format($val, $depth + 1);
             }
 
             return $out . implode(','.$this->newline, $elems) . $this->newline . str_repeat($this->indent, $depth + 1) . '}';

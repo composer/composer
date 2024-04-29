@@ -82,6 +82,26 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'preferred-install.foo/*', '--unset' => true],
             ['config' => ['preferred-install' => []]],
         ];
+        yield 'set extra with merge' => [
+            [],
+            ['setting-key' => 'extra.patches.foo/bar', 'setting-value' => ['{"123":"value"}'], '--json' => true, '--merge' => true],
+            ['extra' => ['patches' => ['foo/bar' => [123 => 'value']]]],
+        ];
+        yield 'combine extra with merge' => [
+            ['extra' => ['patches' => ['foo/bar' => [5 => 'oldvalue']]]],
+            ['setting-key' => 'extra.patches.foo/bar', 'setting-value' => ['{"123":"value"}'], '--json' => true, '--merge' => true],
+            ['extra' => ['patches' => ['foo/bar' => [123 => 'value', 5 => 'oldvalue']]]],
+        ];
+        yield 'combine extra with list' => [
+            ['extra' => ['patches' => ['foo/bar' => ['oldvalue']]]],
+            ['setting-key' => 'extra.patches.foo/bar', 'setting-value' => ['{"123":"value"}'], '--json' => true, '--merge' => true],
+            ['extra' => ['patches' => ['foo/bar' => [123 => 'value', 0 => 'oldvalue']]]],
+        ];
+        yield 'overwrite extra with merge' => [
+            ['extra' => ['patches' => ['foo/bar' => [123 => 'oldvalue']]]],
+            ['setting-key' => 'extra.patches.foo/bar', 'setting-value' => ['{"123":"value"}'], '--json' => true, '--merge' => true],
+            ['extra' => ['patches' => ['foo/bar' => [123 => 'value']]]],
+        ];
     }
 
     /**

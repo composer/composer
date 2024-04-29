@@ -771,8 +771,12 @@ EOT
                     foreach ($bits as $bit) {
                         $currentValue = $currentValue[$bit] ?? null;
                     }
-                    if (is_array($currentValue)) {
-                        $value = array_merge($currentValue, $value);
+                    if (is_array($currentValue) && is_array($value)) {
+                        if (array_is_list($currentValue) && array_is_list($value)) {
+                            $value = array_merge($currentValue, $value);
+                        } else {
+                            $value = $value + $currentValue;
+                        }
                     }
                 }
             }

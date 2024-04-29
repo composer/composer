@@ -1721,6 +1721,38 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testRemoveSubNodePreservesObjectTypeWhenEmpty(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "test": {"0": "foo"}
+}');
+
+        $this->assertTrue($manipulator->removeSubNode('test', '0'));
+        $this->assertEquals('{
+    "test": {
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveSubNodePreservesObjectTypeWhenEmpty2(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "preferred-install": {"foo/*": "source"}
+    }
+}');
+
+        $this->assertTrue($manipulator->removeConfigSetting('preferred-install.foo/*'));
+        $this->assertEquals('{
+    "config": {
+        "preferred-install": {
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testAddSubNodeInRequire(): void
     {
         $manipulator = new JsonManipulator('{
