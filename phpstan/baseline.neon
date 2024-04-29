@@ -332,7 +332,7 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 4
+			count: 3
 			path: ../src/Composer/Command/DiagnoseCommand.php
 
 		-
@@ -1849,6 +1849,11 @@ parameters:
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/ZipDownloader.php
+
+		-
+			message: "#^Argument of an invalid type array\\<int, callable\\>\\|false supplied for foreach, only iterables are supported\\.$#"
+			count: 2
+			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
@@ -4000,7 +4005,7 @@ parameters:
 
 		-
 			message: "#^Cannot access offset 'features' on array\\|false\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
@@ -4010,11 +4015,6 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 3
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Only booleans are allowed in &&, int given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -4189,17 +4189,17 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Method Composer\\\\Util\\\\Http\\\\RequestProxy::getCurlOptions\\(\\) should return array\\<int, int\\|string\\> but returns array\\<int\\|string, int\\|string\\>.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/RequestProxy.php
-
-		-
 			message: "#^Constant CURLOPT_PROXY_CAINFO not found\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/RequestProxy.php
 
 		-
 			message: "#^Constant CURLOPT_PROXY_CAPATH not found\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/RequestProxy.php
+
+		-
+			message: "#^Method Composer\\\\Util\\\\Http\\\\RequestProxy\\:\\:getCurlOptions\\(\\) should return array\\<int, int\\|string\\> but returns array\\<int\\|string, int\\|string\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/RequestProxy.php
 
@@ -4615,11 +4615,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a ternary operator condition, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/StreamContextFactory.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, array given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/StreamContextFactory.php
 

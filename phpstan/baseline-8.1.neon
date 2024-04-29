@@ -181,11 +181,6 @@ parameters:
 			path: ../src/Composer/Util/Hg.php
 
 		-
-			message: "#^Only booleans are allowed in &&, int\\<0, 2097152\\> given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_add_handle expects CurlMultiHandle, resource\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
