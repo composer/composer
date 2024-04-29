@@ -82,6 +82,11 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'preferred-install.foo/*', '--unset' => true],
             ['config' => ['preferred-install' => []]],
         ];
+        yield 'unset platform' => [
+            ['config' => ['platform' => ['php' => '7.2.5'], 'platform-check' => false]],
+            ['setting-key' => 'platform.php', '--unset' => true],
+            ['config' => ['platform' => [], 'platform-check' => false]],
+        ];
         yield 'set extra with merge' => [
             [],
             ['setting-key' => 'extra.patches.foo/bar', 'setting-value' => ['{"123":"value"}'], '--json' => true, '--merge' => true],

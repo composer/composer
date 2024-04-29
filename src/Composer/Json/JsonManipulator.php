@@ -430,6 +430,9 @@ class JsonManipulator
             if ($subName !== null) {
                 $curVal = json_decode($matches['content'], true);
                 unset($curVal[$name][$subName]);
+                if ($curVal[$name] === []) {
+                    $curVal[$name] = new \ArrayObject();
+                }
                 $childrenClean = $this->format($curVal, 0, true);
             }
 
