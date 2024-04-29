@@ -142,10 +142,10 @@ Installing dependencies from lock file (including require-dev)
 Package operations: 2 installs, 0 updates, 0 removals
   - Installing dep/pkg (1.0.2)
   - Installing root/req (1.0.0)
-Running Bump after Update.
+Bumping dependencies
 <warning>Warning: Bumping dependency constraints is not recommended for libraries as it will narrow down your dependencies and may cause problems for your users.</warning>
 <warning>If your package is not a library, you can explicitly specify the "type" by using "composer config type project".</warning>
-<warning>Alternatively you can use --bump-dev-only to only bump dependencies within "require-dev".</warning>
+<warning>Alternatively you can use the dev-only option to only bump dependencies within "require-dev".</warning>
 No requirements to update in ./composer.json.
 OUTPUT
             , true
@@ -153,7 +153,7 @@ OUTPUT
 
         yield 'update & bump dev only' => [
             $rootDepAndTransitiveDep,
-            ['--bump-after-update' => true, '--bump-dev-only' => true],
+            ['--bump-after-update' => 'dev'],
             <<<OUTPUT
 Loading composer repositories with package information
 Updating dependencies
@@ -164,7 +164,7 @@ Installing dependencies from lock file (including require-dev)
 Package operations: 2 installs, 0 updates, 0 removals
   - Installing dep/pkg (1.0.2)
   - Installing root/req (1.0.0)
-Running Bump after Update.
+Bumping dependencies
 No requirements to update in ./composer.json.
 OUTPUT
             , true
@@ -181,8 +181,6 @@ Your requirements could not be resolved to an installable set of packages.
   Problem 1
     - Root composer.json requires root/req 1.* -> satisfiable by root/req[1.0.0].
     - root/req 1.0.0 requires dep/pkg ^1 -> found dep/pkg[1.0.0, 1.0.1, 1.0.2] but it conflicts with your temporary update constraint (dep/pkg:^2).
-
-<warning>Not running Bump after Update because the update command did not finish successfully.</warning>
 OUTPUT
         ];
 

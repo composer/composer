@@ -91,8 +91,7 @@ EOT
         bool $devOnly,
         bool $noDevOnly,
         bool $dryRun,
-        array $packagesFilter,
-        bool $calledFromUpdate = false
+        array $packagesFilter
     ): int {
         /** @readonly */
         $composerJsonPath = Factory::getComposerFile();
@@ -139,9 +138,7 @@ EOT
             $contents = $composerJson->read();
             if (!isset($contents['type'])) {
                 $io->writeError('<warning>If your package is not a library, you can explicitly specify the "type" by using "composer config type project".</warning>');
-                $io->writeError('<warning>Alternatively you can use --' .
-                    ($calledFromUpdate ? 'bump-' : '') .
-                    'dev-only to only bump dependencies within "require-dev".</warning>');
+                $io->writeError('<warning>Alternatively you can use the dev-only option to only bump dependencies within "require-dev".</warning>');
             }
             unset($contents);
         }

@@ -658,8 +658,8 @@
                     "description": "Defaults to \"php-only\" which checks only the PHP version. Setting to true will also check the presence of required PHP extensions. If set to false, Composer will not create and require a platform_check.php file as part of the autoloader bootstrap."
                 },
                 "bump-after-update": {
-                    "type": "boolean",
-                    "description": "Defaults to false. If set to true, Composer will run the Bump command after running the Update command."
+                    "type": ["string", "boolean"],
+                    "description": "Defaults to false and can be any of true, false, \"dev\"` or \"no-dev\"`. If set to true, Composer will run the Bump command after running the Update command. If set to \"dev\" or \"no-dev\" then only the corresponding dependencies will be bumped."
                 }
             }
         },

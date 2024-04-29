@@ -79,8 +79,6 @@ class UpdateCommand extends BaseCommand
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
                 new InputOption('bump-after-update', null, InputOption::VALUE_NONE, 'Runs Bump after performing the update.'),
-                new InputOption('bump-dev-only', null, InputOption::VALUE_NONE, 'Used if "Bump after Update" option is selected. Only bump requirements in "require-dev".'),
-                new InputOption('bump-no-dev-only', null, InputOption::VALUE_NONE, 'Used if "Bump after Update" option is selected. Only bump requirements in "require".'),
             ])
             ->setHelp(
                 <<<EOT
@@ -252,23 +250,23 @@ EOT
         }
 
         $result = $install->run();
-        $bumpAfterUpdate = $input->getOption('bump-after-update') || $composer->getConfig()->get('bump-after-update');
 
-        if ($bumpAfterUpdate) {
-            if ($result === 0) {
-                $io->writeError('<info>Running Bump after Update.</info>');
+        if ($result === 0) {
+            $bumpAfterUpdate = (bool) $input->getOption('bump-after-update') || (bool) $composer->getConfig()->get('bump-after-update');
+
+            if ($bumpAfterUpdate) {
+                $io->writeError('<info>Bumping dependencies</info>');
                 $bumpCommand = new BumpCommand();
                 $bumpCommand->setComposer($composer);
                 $result = $bumpCommand->doBump(
                     $io,
-                    $input->getOption('bump-dev-only'),
-                    $input->getOption('bump-no-dev-only'),
+                    $input->getOption('bump-after-update') === 'dev'
+                        || $composer->getConfig()->get('bump-after-update') === 'dev',
+                    $input->getOption('bump-after-update') === 'no-dev'
+                        || $composer->getConfig()->get('bump-after-update') === 'no-dev',
                     $input->getOption('dry-run'),
-                    $input->getArgument('packages'),
-                    true
+                    $input->getArgument('packages')
                 );
-            } else {
-                $io->writeError('<warning>Not running Bump after Update because the update command did not finish successfully.</warning>');
             }
         }
         return $result;
