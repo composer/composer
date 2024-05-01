@@ -1,5 +1,5 @@
-# Libraries
-
+CopyRight 
+MIT License 
 This chapter will tell you how to make your library installable through
 Composer.
 
