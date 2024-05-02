@@ -80,8 +80,8 @@ class Installer
     // used/declared in SolverProblemsException, carried over here for completeness
     public const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
     public const ERROR_AUDIT_FAILED = 5;
-    // technically exceptions are thrown with various status codes >400, but the process exit code is normalized to 255
-    public const ERROR_TRANSPORT_EXCEPTION = 255;
+    // technically exceptions are thrown with various status codes >400, but the process exit code is normalized to 100
+    public const ERROR_TRANSPORT_EXCEPTION = 100;
 
     /**
      * @var IOInterface

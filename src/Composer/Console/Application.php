@@ -12,6 +12,7 @@
 
 namespace Composer\Console;
 
+use Composer\Installer;
 use Composer\IO\NullIO;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
@@ -439,6 +440,13 @@ class Application extends BaseApplication
                 }
 
                 return max(1, $e->getCode());
+            }
+
+            // override TransportException's code for the purpose of parent::run() using it as process exit code
+            // as http error codes are all beyond the 255 range of permitted exit codes
+            if ($e instanceof TransportException) {
+                $reflProp = new \ReflectionProperty($e, 'code');
+                $reflProp->setValue($e, Installer::ERROR_TRANSPORT_EXCEPTION);
             }
 
             throw $e;
