@@ -1,3 +1,13 @@
+### [2.7.5] 2024-05-03
+
+  * Added `uninstall` alias to `remove` command (#11951)
+  * Added workaround for broken curl versions 8.7.0/8.7.1 causing transport exceptions (#11913)
+  * Fixed root usage warnings showing up within Podman containers (#11946)
+  * Fixed config command not handling objects correctly in some conditions (#11945)
+  * Fixed binary proxies not containing the correct path if the project dir is a symlink (#11947)
+  * Fixed Composer autoloader being overruled by project autoloaders when they are loaded by event handlers (scripts/plugins) (#11955)
+  * Fixed TransportException (http failures) not having a distinct exit code, should now exit with `100` as code (#11954)
+
 ### [2.7.4] 2024-04-22
 
   * Fixed regression (`Call to undefined method ProxyManager::needsTransitionWarning()`) with projects requiring composer/composer in an pre-2.7.3 version (#11943, #11940)
@@ -1856,6 +1866,7 @@
 
   * Initial release
 
+[2.7.5]: https://github.com/composer/composer/compare/2.7.4...2.7.5
 [2.7.4]: https://github.com/composer/composer/compare/2.7.3...2.7.4
 [2.7.3]: https://github.com/composer/composer/compare/2.7.2...2.7.3
 [2.7.2]: https://github.com/composer/composer/compare/2.7.1...2.7.2
