@@ -661,7 +661,10 @@ class EventDispatcher
         }
     }
 
-    private function getCallbackIdentifier(callable $cb): string
+    /**
+     * @param callable $cb DO NOT MOVE TO TYPE HINT as private autoload callbacks are not technically callable
+     */
+    private function getCallbackIdentifier($cb): string
     {
         if (is_string($cb)) {
             return 'fn:'.$cb;
