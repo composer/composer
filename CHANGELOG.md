@@ -1,3 +1,7 @@
+### [2.7.6] 2024-05-04
+
+  * Fixed regression when script handlers add an autoloader which uses a private callback (#11960)
+
 ### [2.7.5] 2024-05-03
 
   * Added `uninstall` alias to `remove` command (#11951)
@@ -1866,6 +1870,7 @@
 
   * Initial release
 
+[2.7.6]: https://github.com/composer/composer/compare/2.7.5...2.7.6
 [2.7.5]: https://github.com/composer/composer/compare/2.7.4...2.7.5
 [2.7.4]: https://github.com/composer/composer/compare/2.7.3...2.7.4
 [2.7.3]: https://github.com/composer/composer/compare/2.7.2...2.7.3
