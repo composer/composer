@@ -21,6 +21,7 @@ Install from a lock file that deleted a package
 }
 --LOCK--
 {
+    "content-hash": "4c3b9426f087ef6dc15cc81ef697f162",
     "packages": [
         { "name": "allowed/pkg", "version": "1.1.0" },
         { "name": "fixed/dependency", "version": "1.0.0" }

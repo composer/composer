@@ -21,6 +21,7 @@ Installing an old alias that doesn't exist anymore from a lock is possible
 }
 --LOCK--
 {
+    "content-hash": "4c3b9426f087ef6dc15cc81ef697f162",
     "packages": [
         {
             "name": "a/a", "version": "dev-master", "version_normalized": "9999999-dev",

@@ -16,6 +16,7 @@ Suggestions are not displayed for when not updating the lock file
 }
 --LOCK--
 {
+    "content-hash": "4c3b9426f087ef6dc15cc81ef697f162",
     "packages": [
         { "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" } }
     ],
@@ -33,6 +34,7 @@ install
 --EXPECT-OUTPUT--
 Installing dependencies from lock file (including require-dev)
 Verifying lock file contents can be installed on current platform.
+<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. It is recommended that you run `composer update` or `composer update <package name>`.</warning>
 Package operations: 1 install, 0 updates, 0 removals
 Generating autoload files
 

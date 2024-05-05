@@ -9,6 +9,7 @@ Installing locked dev packages should remove old dependencies
 }
 --LOCK--
 {
+    "content-hash": "4c3b9426f087ef6dc15cc81ef697f162",
     "packages": [
         {
             "name": "a/devpackage", "version": "dev-master",

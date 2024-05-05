@@ -354,7 +354,12 @@ class Installer
             }
 
             $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
-            $this->autoloadGenerator->setApcu($this->apcuAutoloader, $this->apcuAutoloaderPrefix);
+            $this->autoloadGenerator->setApcu(
+                $this->apcuAutoloader,
+                $this->apcuAutoloaderPrefix === null
+                ? ($this->locker !== null && $this->locker->isLocked() ? $this->locker->getLockData()['content-hash'] : null)
+                : $this->apcuAutoloaderPrefix
+            );
             $this->autoloadGenerator->setRunScripts($this->runScripts);
             $this->autoloadGenerator->setPlatformRequirementFilter($this->platformRequirementFilter);
             $this
