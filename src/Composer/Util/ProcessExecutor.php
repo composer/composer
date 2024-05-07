@@ -106,10 +106,16 @@ class ProcessExecutor
         $this->captureOutput = func_num_args() > 3;
         $this->errorOutput = '';
 
+        $env = null;
+
+        if ($cwd && is_int(stripos($cwd, 'git '))) {
+            $env = ['GIT_DIR' => $cwd . '/.git'];
+        }
+
         if (is_string($command)) {
-            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+            $process = Process::fromShellCommandline($command, $cwd, $env, null, static::getTimeout());
         } else {
-            $process = new Process($command, $cwd, null, null, static::getTimeout());
+            $process = new Process($command, $cwd, $env, null, static::getTimeout());
         }
 
         if (!Platform::isWindows() && $tty) {
