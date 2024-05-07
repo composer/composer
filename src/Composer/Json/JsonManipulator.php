@@ -214,6 +214,14 @@ class JsonManipulator
             return $this->removeSubNode('scripts', substr($name, 8));
         }
 
+        if (strpos($name, 'autoload.') === 0) {
+            return $this->removeSubNode('autoload', substr($name, 9));
+        }
+
+        if (strpos($name, 'autoload-dev.') === 0) {
+            return $this->removeSubNode('autoload-dev', substr($name, 13));
+        }
+
         return $this->removeMainKey($name);
     }
 
