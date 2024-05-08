@@ -107,6 +107,16 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'extra.patches.foo/bar', 'setting-value' => ['{"123":"value"}'], '--json' => true, '--merge' => true],
             ['extra' => ['patches' => ['foo/bar' => [123 => 'value']]]],
         ];
+        yield 'unset autoload' => [
+            ['autoload' => ['psr-4' => ['test'], 'classmap' => ['test']]],
+            ['setting-key' => 'autoload.psr-4', '--unset' => true],
+            ['autoload' => ['classmap' => ['test']]],
+        ];
+        yield 'unset autoload-dev' => [
+            ['autoload-dev' => ['psr-4' => ['test'], 'classmap' => ['test']]],
+            ['setting-key' => 'autoload-dev.psr-4', '--unset' => true],
+            ['autoload-dev' => ['classmap' => ['test']]],
+        ];
     }
 
     /**

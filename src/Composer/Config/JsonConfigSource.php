@@ -162,7 +162,7 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeProperty(string $name): void
     {
         $this->manipulateJson('removeProperty', static function (&$config, $key): void {
-            if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
+            if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0 || stripos($key, 'autoload.') === 0 || stripos($key, 'autoload-dev.') === 0) {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
                 $arr = &$config[reset($bits)];
