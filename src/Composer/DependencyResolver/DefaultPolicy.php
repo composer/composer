@@ -57,7 +57,7 @@ class DefaultPolicy implements PolicyInterface
         }
 
         // dev versions need to be compared as branches via matchSpecific's special treatment, the rest can be optimized with compiling matcher
-        if (strpos($a->getVersion(), 'dev-') === 0 || strpos($b->getVersion(), 'dev-') === 0) {
+        if (($a->isDev() && str_starts_with($a->getVersion(), 'dev-')) || ($b->isDev() && str_starts_with($b->getVersion(), 'dev-'))) {
             $constraint = new Constraint($operator, $b->getVersion());
             $version = new Constraint('==', $a->getVersion());
 
