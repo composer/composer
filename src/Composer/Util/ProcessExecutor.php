@@ -110,7 +110,9 @@ class ProcessExecutor
 
         $cmdContainsGit = is_array($command) ? in_array('git', $command, true) : is_int(stripos($command, 'git'));
 
-        if ($cwd !== null && $cmdContainsGit) {
+        $dotGitDir = sprintf('%s/.git', trim((string) $cwd, '/'));
+        $hasGitDotDir = file_exists($dotGitDir);
+        if ($hasGitDotDir === false && $cmdContainsGit) {
             $env = ['GIT_DIR' => $cwd];
         }
 
