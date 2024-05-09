@@ -108,8 +108,10 @@ class ProcessExecutor
 
         $env = null;
 
-        if ($cwd && is_int(stripos($cwd, 'git '))) {
-            $env = ['GIT_DIR' => $cwd . '/.git'];
+        $cmdContainsGit = is_array($command) ? in_array('git', $command, true) : is_int(stripos($command, 'git'));
+
+        if ($cwd !== null && $cmdContainsGit) {
+            $env = ['GIT_DIR' => $cwd];
         }
 
         if (is_string($command)) {
