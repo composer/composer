@@ -33,6 +33,13 @@ class ProcessExecutor
     private const STATUS_FAILED = 4;
     private const STATUS_ABORTED = 5;
 
+    private const GIT_CMDS_NEED_GIT_DIR = [
+        'show',
+        'log',
+        'branch',
+        ['remote', 'seturl']
+    ];
+
     /** @var int */
     protected static $timeout = 300;
 
@@ -108,11 +115,10 @@ class ProcessExecutor
 
         $env = null;
 
-        $cmdContainsGit = is_array($command) ? in_array('git', $command, true) : is_int(stripos($command, 'git'));
+        $requiresGitDirEnv = $this->requiresGitDirEnv($command);
+        $isBareRepository = !is_dir(sprintf('%s/.git', trim((string) $cwd, '/')));
 
-        $dotGitDir = sprintf('%s/.git', trim((string) $cwd, '/'));
-        $hasGitDotDir = file_exists($dotGitDir);
-        if ($hasGitDotDir === false && $cmdContainsGit) {
+        if ($cwd !== null && $isBareRepository && $requiresGitDirEnv) {
             $env = ['GIT_DIR' => $cwd];
         }
 
@@ -487,5 +493,28 @@ class ProcessExecutor
         }
 
         return $argument;
+    }
+
+    /**
+     * @param string[]|string $command
+     */
+    public function requiresGitDirEnv($command): bool
+    {
+        $cmd = ! is_array($command) ? explode(' ', $command) : $command;
+        if ($cmd[0] !== 'git') {
+            return false;
+        }
+        $requiresGitDirEnv = false;
+        foreach (self::GIT_CMDS_NEED_GIT_DIR as $gitCmd) {
+            if (is_string($gitCmd) && in_array($gitCmd, $cmd, true)) {
+                return true;
+            }
+
+            if (is_array($gitCmd) && array_intersect($cmd, $gitCmd) === $gitCmd) {
+                return true;
+            }
+        }
+
+        return $requiresGitDirEnv;
     }
 }
