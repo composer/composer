@@ -72,6 +72,6 @@ class ApplicationTest extends TestCase
         $output = new BufferedOutput();
         $application->doRun(new ArrayInput(['command' => 'self-update']), $output);
 
-        $this->assertSame("<warning>Composer could not detect the root package (composer/composer) version, defaulting to '1.0.0'. See https://getcomposer.org/root-version</warning>\n", $output->fetch());
+        $this->assertSame('', $output->fetch());
     }
 }

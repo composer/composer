@@ -104,6 +104,62 @@ class ProcessExecutor
 
     /**
      * @param  string|list<string> $command
+     * @param  array<string, string>|null $env
+     * @param  mixed   $output
+     */
+    private function runProcess($command, ?string $cwd, ?array $env, bool $tty, &$output = null): ?int
+    {
+        if (is_string($command)) {
+            $process = Process::fromShellCommandline($command, $cwd, $env, null, static::getTimeout());
+        } else {
+            $process = new Process($command, $cwd, $env, null, static::getTimeout());
+        }
+
+        if (! Platform::isWindows() && $tty) {
+            try {
+                $process->setTty(true);
+            } catch (RuntimeException $e) {
+                // ignore TTY enabling errors
+            }
+        }
+
+        $callback = is_callable($output) ? $output : function (string $type, string $buffer): void {
+            $this->outputHandler($type, $buffer);
+        };
+
+        $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP],
+            function (string $signal) {
+                if ($this->io !== null) {
+                    $this->io->writeError(
+                        'Received '.$signal.', aborting when child process is done',
+                        true,
+                        IOInterface::DEBUG
+                    );
+                }
+            });
+
+        try {
+            $process->run($callback);
+
+            if ($this->captureOutput && ! is_callable($output)) {
+                $output = $process->getOutput();
+            }
+
+            $this->errorOutput = $process->getErrorOutput();
+        } catch (ProcessSignaledException $e) {
+            if ($signalHandler->isTriggered()) {
+                // exiting as we were signaled and the child process exited too due to the signal
+                $signalHandler->exitWithLastSignal();
+            }
+        } finally {
+            $signalHandler->unregister();
+        }
+
+        return $process->getExitCode();
+    }
+
+    /**
+     * @param  string|list<string> $command
      * @param  mixed   $output
      */
     private function doExecute($command, ?string $cwd, bool $tty, &$output = null): int
@@ -119,51 +175,16 @@ class ProcessExecutor
         $isBareRepository = !is_dir(sprintf('%s/.git', trim((string) $cwd, '/')));
 
         if ($cwd !== null && $isBareRepository && $requiresGitDirEnv) {
-            $env = ['GIT_DIR' => $cwd];
-        }
-
-        if (is_string($command)) {
-            $process = Process::fromShellCommandline($command, $cwd, $env, null, static::getTimeout());
-        } else {
-            $process = new Process($command, $cwd, $env, null, static::getTimeout());
-        }
-
-        if (!Platform::isWindows() && $tty) {
-            try {
-                $process->setTty(true);
-            } catch (RuntimeException $e) {
-                // ignore TTY enabling errors
-            }
-        }
-
-        $callback = is_callable($output) ? $output : function (string $type, string $buffer): void {
-            $this->outputHandler($type, $buffer);
-        };
-
-        $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal) {
-            if ($this->io !== null) {
-                $this->io->writeError('Received '.$signal.', aborting when child process is done', true, IOInterface::DEBUG);
-            }
-        });
-
-        try {
-            $process->run($callback);
-
-            if ($this->captureOutput && !is_callable($output)) {
-                $output = $process->getOutput();
+            $configValue = '';
+            $this->runProcess('git config safe.bareRepository', $cwd, ['GIT_DIR' => $cwd], $tty, $configValue);
+            $configValue = trim($configValue);
+            if ($configValue === 'explicit') {
+                $env = ['GIT_DIR' => $cwd];
             }
 
-            $this->errorOutput = $process->getErrorOutput();
-        } catch (ProcessSignaledException $e) {
-            if ($signalHandler->isTriggered()) {
-                // exiting as we were signaled and the child process exited too due to the signal
-                $signalHandler->exitWithLastSignal();
-            }
-        } finally {
-            $signalHandler->unregister();
         }
 
-        return $process->getExitCode();
+        return $this->runProcess($command, $cwd, $env, $tty, $output);
     }
 
     /**
