@@ -96,7 +96,7 @@ trait PackageDiscoveryTrait
 
             foreach ($requires as $requirement) {
                 if (isset($requirement['version']) && Preg::isMatch('{^\d+(\.\d+)?$}', $requirement['version'])) {
-                    $io->writeError('<warning>The "'.$requirement['version'].'" constraint for "'.$requirement['name'].'" appears too strict and will likely not match what you want. See https://getcomposer.org/constraints');
+                    $io->writeError('<warning>The "'.$requirement['version'].'" constraint for "'.$requirement['name'].'" appears too strict and will likely not match what you want. See https://getcomposer.org/constraints</warning>');
                 }
 
                 if (!isset($requirement['version'])) {
