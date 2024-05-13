@@ -41,7 +41,7 @@ class InstalledVersionsTest extends TestCase
         $prop = new \ReflectionProperty('Composer\Autoload\ClassLoader', 'registeredLoaders');
         $prop->setAccessible(true);
         $prop->setValue(null, self::$previousRegisteredLoaders);
-        InstalledVersions::reload(null); // @phpstan-ignore-line
+        InstalledVersions::reload(null); // @phpstan-ignore argument.type
     }
 
     public function setUp(): void

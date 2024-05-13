@@ -279,7 +279,7 @@ class InstallerTest extends TestCase
     {
         if ($condition) {
             eval('$res = '.$condition.';');
-            if (!$res) { // @phpstan-ignore-line
+            if (!$res) { // @phpstan-ignore variable.undefined
                 $this->markTestSkipped($condition);
             }
         }

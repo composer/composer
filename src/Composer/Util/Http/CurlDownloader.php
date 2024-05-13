@@ -176,7 +176,7 @@ class CurlDownloader
         }
 
         $errorMessage = '';
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         set_error_handler(static function ($code, $msg) use (&$errorMessage): void {
             if ($errorMessage) {
                 $errorMessage .= "\n";

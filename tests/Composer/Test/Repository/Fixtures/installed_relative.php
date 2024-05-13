@@ -5,7 +5,7 @@
         'version' => 'dev-master',
         'reference' => 'sourceref-by-default',
         'type' => 'library',
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore variable.undefined
         'install_path' => $dir . '/./',
         'aliases' => array(
             '1.10.x-dev',
@@ -18,7 +18,7 @@
             'version' => 'dev-master',
             'reference' => 'sourceref-by-default',
             'type' => 'library',
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore variable.undefined
             'install_path' => $dir . '/./',
             'aliases' => array(
                 '1.10.x-dev',
@@ -30,7 +30,7 @@
             'version' => '1.1.0.0',
             'reference' => 'distref-as-no-source',
             'type' => 'library',
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore variable.undefined
             'install_path' => $dir . '/vendor/a/provider',
             'aliases' => array(),
             'dev_requirement' => false,
@@ -40,7 +40,7 @@
             'version' => '1.2.0.0',
             'reference' => 'distref-as-installed-from-dist',
             'type' => 'library',
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore variable.undefined
             'install_path' => $dir . '/vendor/a/provider2',
             'aliases' => array(
               '1.4',
@@ -52,7 +52,7 @@
             'version' => '2.2.0.0',
             'reference' => null,
             'type' => 'library',
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore variable.undefined
             'install_path' => $dir . '/vendor/b/replacer',
             'aliases' => array(),
             'dev_requirement' => false,

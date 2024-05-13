@@ -68,7 +68,7 @@ class RuleSetTest extends TestCase
         $ruleSet = new RuleSet;
 
         self::expectException('OutOfBoundsException');
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore argument.type
         $ruleSet->add(new GenericRule([], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]), 7);
     }
 

@@ -432,7 +432,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $uniques = [];
         foreach ($names as $name) {
-            // @phpstan-ignore-next-line
+            // @phpstan-ignore argument.type
             $uniques[substr($name, 0, strpos($name, '/'))] = true;
         }
 

@@ -100,7 +100,7 @@ class ProcessExecutorMock extends ProcessExecutor
         }
 
         // dummy assertion to ensure the test is not marked as having no assertions
-        Assert::assertTrue(true); // @phpstan-ignore-line
+        Assert::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
     }
 
     public function execute($command, &$output = null, ?string $cwd = null): int

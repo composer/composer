@@ -248,7 +248,7 @@ class AllFunctionalTest extends TestCase
             throw new \RuntimeException('The test file must have a section named "EXPECT", "EXPECT-REGEX", or "EXPECT-REGEXES".');
         }
 
-        return $data; // @phpstan-ignore-line
+        return $data; // @phpstan-ignore return.type
     }
 
     private function cleanOutput(string $output): string
