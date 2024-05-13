@@ -133,12 +133,12 @@ class Filesystem
      * Sets access and modification time of file.
      *
      * @param string|iterable $files A filename, an array of files, or a \Traversable instance to create
-     * @param int|null        $time  The touch time as a Unix timestamp, if not supplied the current system time is used
-     * @param int|null        $atime The access time as a Unix timestamp, if not supplied the current system time is used
+     * @param ?int            $time  The touch time as a Unix timestamp, if not supplied the current system time is used
+     * @param ?int            $atime The access time as a Unix timestamp, if not supplied the current system time is used
      *
      * @throws IOException When touch fails
      */
-    public function touch($files, int $time = null, int $atime = null)
+    public function touch($files, ?int $time = null, ?int $atime = null)
     {
         foreach ($this->toIterable($files) as $file) {
             $touch = $time ? @touch($file, $time, $atime) : @touch($file);
@@ -506,7 +506,7 @@ class Filesystem
      *
      * @throws IOException When file type is unknown
      */
-    public function mirror(string $originDir, string $targetDir, \Traversable $iterator = null, array $options = [])
+    public function mirror(string $originDir, string $targetDir, ?\Traversable $iterator = null, array $options = [])
     {
         $targetDir = rtrim($targetDir, '/\\');
         $originDir = rtrim($originDir, '/\\');
