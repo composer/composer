@@ -42,7 +42,7 @@ class NullIOTest extends TestCase
     {
         $io = new NullIO();
 
-        $this->assertIsArray($io->getAuthentications()); // @phpstan-ignore-line
+        $this->assertIsArray($io->getAuthentications()); // @phpstan-ignore staticMethod.dynamicCall
         $this->assertEmpty($io->getAuthentications());
         $this->assertEquals(['username' => null, 'password' => null], $io->getAuthentication('foo'));
     }

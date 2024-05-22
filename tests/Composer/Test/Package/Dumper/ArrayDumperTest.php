@@ -81,7 +81,7 @@ class ArrayDumperTest extends TestCase
     {
         $package = self::getRootPackage();
 
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore method.dynamicName, ternary.shortNotAllowed
         $package->{'set'.ucfirst($method ?: $key)}($value);
 
         $config = $this->dumper->dump($package);

@@ -46,11 +46,11 @@
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^6.4.1 || ^7.0.1",
-        "phpstan/phpstan": "^1.9.3",
-        "phpstan/phpstan-phpunit": "^1.0",
-        "phpstan/phpstan-deprecation-rules": "^1",
-        "phpstan/phpstan-strict-rules": "^1",
-        "phpstan/phpstan-symfony": "^1.2.10"
+        "phpstan/phpstan": "^1.11.0",
+        "phpstan/phpstan-phpunit": "^1.4.0",
+        "phpstan/phpstan-deprecation-rules": "^1.2.0",
+        "phpstan/phpstan-strict-rules": "^1.6.0",
+        "phpstan/phpstan-symfony": "^1.4.0"
     },
     "suggest": {
         "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages",

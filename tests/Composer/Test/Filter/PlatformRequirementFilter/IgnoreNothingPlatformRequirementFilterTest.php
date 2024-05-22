@@ -24,8 +24,8 @@ final class IgnoreNothingPlatformRequirementFilterTest extends TestCase
     {
         $platformRequirementFilter = new IgnoreNothingPlatformRequirementFilter();
 
-        $this->assertFalse($platformRequirementFilter->isIgnored($req)); // @phpstan-ignore-line
-        $this->assertFalse($platformRequirementFilter->isUpperBoundIgnored($req)); // @phpstan-ignore-line
+        $this->assertFalse($platformRequirementFilter->isIgnored($req)); // @phpstan-ignore staticMethod.dynamicCall
+        $this->assertFalse($platformRequirementFilter->isUpperBoundIgnored($req)); // @phpstan-ignore staticMethod.dynamicCall
     }
 
     /**

@@ -539,7 +539,7 @@ class Installer
         }
 
         // exists as of composer/semver 3.3.0
-        if (method_exists('Composer\Semver\CompilingMatcher', 'clear')) { // @phpstan-ignore-line
+        if (method_exists('Composer\Semver\CompilingMatcher', 'clear')) { // @phpstan-ignore function.alreadyNarrowedType
             \Composer\Semver\CompilingMatcher::clear();
         }
 

@@ -329,7 +329,7 @@ TAGSPUBKEY
 
             // PHP 8 automatically frees the key instance and deprecates the function
             if (PHP_VERSION_ID < 80000) {
-                // @phpstan-ignore-next-line
+                // @phpstan-ignore function.deprecated
                 openssl_free_key($pubkeyid);
             }
 
