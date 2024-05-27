@@ -175,7 +175,7 @@ class ProcessExecutor
 
         $requiresGitDirEnv = $this->requiresGitDirEnv($command);
         if ($cwd !== null && $requiresGitDirEnv) {
-            $isBareRepository = !is_dir(sprintf('%s/.git', rtrim((string) $cwd, '/')));
+            $isBareRepository = !is_dir(sprintf('%s/.git', rtrim($cwd, '/')));
             if ($isBareRepository) {
                 $configValue = '';
                 $this->runProcess('git config safe.bareRepository', $cwd, ['GIT_DIR' => $cwd], $tty, $configValue);
