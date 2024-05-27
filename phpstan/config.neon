@@ -21,6 +21,7 @@ parameters:
 
     reportUnmatchedIgnoredErrors: false
     treatPhpDocTypesAsCertain: false
+    reportPossiblyNonexistentConstantArrayOffset: true
 
     ignoreErrors:
         # unused parameters

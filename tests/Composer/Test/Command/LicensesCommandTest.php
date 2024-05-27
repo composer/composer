@@ -78,6 +78,9 @@ class LicensesCommandTest extends TestCase
                 continue;
             }
 
+            if (!isset($expected[$i])) {
+                $this->fail('Got more output lines than expected');
+            }
             $this->assertMatchesRegularExpression("/" . implode("\s+", $expected[$i]) . "/", $line);
         }
     }
@@ -108,6 +111,9 @@ class LicensesCommandTest extends TestCase
                 continue;
             }
 
+            if (!isset($expected[$i])) {
+                $this->fail('Got more output lines than expected');
+            }
             $this->assertMatchesRegularExpression("/" . implode("\s+", $expected[$i]) . "/", $line);
         }
     }
