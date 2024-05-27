@@ -17,10 +17,14 @@ use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Package\Loader\RootPackageLoader;
+use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\Version\VersionParser;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Semver\Intervals;
 use Composer\Util\HttpDownloader;
 use Composer\Advisory\Auditor;
@@ -29,7 +33,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
 use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -272,36 +275,25 @@ EOT
         }
 
         $installedPackages = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
+        $versionSelector = $this->createVersionSelector($composer);
         foreach ($installedPackages as $package) {
-            $autocompleterValues[$package->getName()] = $package->getPrettyName();
+            $currentVersion = $package->getPrettyVersion();
+            $latestVersion = $versionSelector->findBestCandidate($package->getName());
+            if ($latestVersion !== false) {
+                $autocompleterValues[$package->getName()] = '<info>' . $package->getPrettyName() . '</info> (<comment>' . $currentVersion . '</comment> => <comment>' . $latestVersion . '</comment>)';
+            }
         }
 
-        $helper = $this->getHelper('question');
-        $question = new Question('<comment>Enter package name: </comment>', null);
+        $packages = $io->select(
+            'Select packages: (Select more than one value separated by comma) ',
+            $autocompleterValues,
+            false,
+            1,
+            'No package named "%s" is installed.',
+            true
+        );
 
         $io->writeError('<info>Press enter without value to end submission</info>');
-
-        do {
-            $autocompleterValues = array_diff($autocompleterValues, $packages);
-            $question->setAutocompleterValues($autocompleterValues);
-            $addedPackage = $helper->ask($input, $output, $question);
-
-            if (!is_string($addedPackage) || empty($addedPackage)) {
-                break;
-            }
-
-            $addedPackage = strtolower($addedPackage);
-            if (!in_array($addedPackage, $packages)) {
-                $packages[] = $addedPackage;
-            }
-        } while (true);
-
-        $packages = array_filter($packages, function (string $pkg) {
-            return $pkg !== '';
-        });
-        if (!$packages) {
-            throw new \InvalidArgumentException('You must enter minimum one package.');
-        }
 
         $table = new Table($output);
         $table->setHeaders(['Selected packages']);
@@ -319,4 +311,12 @@ EOT
 
         throw new \RuntimeException('Installation aborted.');
     }
+
+    private function createVersionSelector(Composer $composer): VersionSelector
+    {
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository(new CompositeRepository($composer->getRepositoryManager()->getRepositories()));
+        return new VersionSelector($repositorySet);
+    }
+
 }

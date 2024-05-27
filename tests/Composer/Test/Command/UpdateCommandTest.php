@@ -130,8 +130,7 @@ OUTPUT
 
     public function testInteractiveModeThrowsIfNoPackageEntered(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('You must enter minimum one package.');
+        $this->expectExceptionMessage('No package named "" is installed.');
 
         $appTester = $this->getApplicationTester();
         $appTester->setInputs(['']);
