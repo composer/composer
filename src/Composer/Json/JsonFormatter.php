@@ -67,7 +67,7 @@ class JsonFormatter
 
                 if ($unescapeUnicode && function_exists('mb_convert_encoding')) {
                     // https://stackoverflow.com/questions/2934563/how-to-decode-unicode-escape-sequences-like-u00ed-to-proper-utf-8-encoded-cha
-                    $buffer = Preg::replaceCallback('/(\\\\+)u([0-9a-f]{4})/i', static function ($match) {
+                    $buffer = Preg::replaceCallback('/(\\\\+)u([0-9a-f]{4})/i', static function ($match): string {
                         assert(is_string($match[1]));
                         assert(is_string($match[2]));
                         $l = strlen($match[1]);
@@ -77,7 +77,7 @@ class JsonFormatter
                             // 0xD800..0xDFFF denotes UTF-16 surrogate pair which won't be unescaped
                             // see https://github.com/composer/composer/issues/7510
                             if (0xD800 <= $code && 0xDFFF >= $code) {
-                                return $match[0];
+                                return (string) $match[0];
                             }
 
                             return str_repeat('\\', $l - 1) . mb_convert_encoding(
@@ -87,7 +87,7 @@ class JsonFormatter
                             );
                         }
 
-                        return $match[0];
+                        return (string) $match[0];
                     }, $buffer);
                 }
 
