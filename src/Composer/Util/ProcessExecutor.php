@@ -33,6 +33,13 @@ class ProcessExecutor
     private const STATUS_FAILED = 4;
     private const STATUS_ABORTED = 5;
 
+    private const GIT_CMDS_NEED_GIT_DIR = [
+        ['show'],
+        ['log'],
+        ['branch'],
+        ['remote', 'set-url']
+    ];
+
     /** @var int */
     protected static $timeout = 300;
 
@@ -97,22 +104,18 @@ class ProcessExecutor
 
     /**
      * @param  string|list<string> $command
+     * @param  array<string, string>|null $env
      * @param  mixed   $output
      */
-    private function doExecute($command, ?string $cwd, bool $tty, &$output = null): int
+    private function runProcess($command, ?string $cwd, ?array $env, bool $tty, &$output = null): ?int
     {
-        $this->outputCommandRun($command, $cwd, false);
-
-        $this->captureOutput = func_num_args() > 3;
-        $this->errorOutput = '';
-
         if (is_string($command)) {
-            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+            $process = Process::fromShellCommandline($command, $cwd, $env, null, static::getTimeout());
         } else {
-            $process = new Process($command, $cwd, null, null, static::getTimeout());
+            $process = new Process($command, $cwd, $env, null, static::getTimeout());
         }
 
-        if (!Platform::isWindows() && $tty) {
+        if (! Platform::isWindows() && $tty) {
             try {
                 $process->setTty(true);
             } catch (RuntimeException $e) {
@@ -124,11 +127,18 @@ class ProcessExecutor
             $this->outputHandler($type, $buffer);
         };
 
-        $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal) {
-            if ($this->io !== null) {
-                $this->io->writeError('Received '.$signal.', aborting when child process is done', true, IOInterface::DEBUG);
+        $signalHandler = SignalHandler::create(
+            [SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP],
+            function (string $signal) {
+                if ($this->io !== null) {
+                    $this->io->writeError(
+                        'Received '.$signal.', aborting when child process is done',
+                        true,
+                        IOInterface::DEBUG
+                    );
+                }
             }
-        });
+        );
 
         try {
             $process->run($callback);
@@ -148,6 +158,35 @@ class ProcessExecutor
         }
 
         return $process->getExitCode();
+    }
+
+    /**
+     * @param  string|list<string> $command
+     * @param  mixed   $output
+     */
+    private function doExecute($command, ?string $cwd, bool $tty, &$output = null): int
+    {
+        $this->outputCommandRun($command, $cwd, false);
+
+        $this->captureOutput = func_num_args() > 3;
+        $this->errorOutput = '';
+
+        $env = null;
+
+        $requiresGitDirEnv = $this->requiresGitDirEnv($command);
+        if ($cwd !== null && $requiresGitDirEnv) {
+            $isBareRepository = !is_dir(sprintf('%s/.git', rtrim($cwd, '/')));
+            if ($isBareRepository) {
+                $configValue = '';
+                $this->runProcess('git config safe.bareRepository', $cwd, ['GIT_DIR' => $cwd], $tty, $configValue);
+                $configValue = trim($configValue);
+                if ($configValue === 'explicit') {
+                    $env = ['GIT_DIR' => $cwd];
+                }
+            }
+        }
+
+        return $this->runProcess($command, $cwd, $env, $tty, $output);
     }
 
     /**
@@ -477,5 +516,24 @@ class ProcessExecutor
         }
 
         return $argument;
+    }
+
+    /**
+     * @param string[]|string $command
+     */
+    public function requiresGitDirEnv($command): bool
+    {
+        $cmd = !is_array($command) ? explode(' ', $command) : $command;
+        if ($cmd[0] !== 'git') {
+            return false;
+        }
+
+        foreach (self::GIT_CMDS_NEED_GIT_DIR as $gitCmd) {
+            if (array_intersect($cmd, $gitCmd) === $gitCmd) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
