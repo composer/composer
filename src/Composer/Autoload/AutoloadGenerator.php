@@ -41,6 +41,8 @@ use Composer\Package\Locker;
  */
 class AutoloadGenerator
 {
+    private const EXCLUDE_FROM_CLASSMAP_SUFFIX_PATTERN = '($|/)';
+
     /**
      * @var EventDispatcher
      */
@@ -325,7 +327,8 @@ EOF;
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            $classMapGenerator->scanPaths($dir, $this->buildExclusionRegex($dir, $excluded));
+            $excludeRules = $this->buildExclusionRegex($dir, $excluded);
+            $classMapGenerator->scanPaths($dir, $excludeRules['pattern'], 'classmap', null, $excludeRules['paths']);
         }
 
         if ($scanPsrPackages) {
@@ -348,7 +351,8 @@ EOF;
                             continue;
                         }
 
-                        $classMapGenerator->scanPaths($dir, $this->buildExclusionRegex($dir, $excluded), $group['type'], $namespace);
+                        $excludeRules = $this->buildExclusionRegex($dir, $excluded);
+                        $classMapGenerator->scanPaths($dir, $excludeRules['pattern'], $group['type'], $namespace, $excludeRules['paths']);
                     }
                 }
             }
@@ -463,11 +467,13 @@ EOF;
      * @param array<string>|null $excluded
      * @return non-empty-string|null
      */
-    private function buildExclusionRegex(string $dir, ?array $excluded): ?string
+    private function buildExclusionRegex(string $dir, ?array $excluded): array
     {
         if (null === $excluded) {
-            return null;
+            return ['pattern' => null, 'paths' => []];
         }
+
+        $excludedPaths = [];
 
         // filter excluded patterns here to only use those matching $dir
         // exclude-from-classmap patterns are all realpath'd so we can only filter them if $dir exists so that realpath($dir) will work
@@ -478,14 +484,22 @@ EOF;
             foreach ($excluded as $index => $pattern) {
                 // extract the constant string prefix of the pattern here, until we reach a non-escaped regex special character
                 $pattern = Preg::replace('{^(([^.+*?\[^\]$(){}=!<>|:\\\\#-]+|\\\\[.+*?\[^\]$(){}=!<>|:#-])*).*}', '$1', $pattern);
+
                 // if the pattern is not a subset or superset of $dir, it is unrelated and we skip it
-                if (0 !== strpos($pattern, $dirMatch) && 0 !== strpos($dirMatch, $pattern)) {
+                if (!Preg::isMatch('{^'.preg_quote($pattern).'($|/)}', $dirMatch) && !Preg::isMatch('{^'.preg_quote($dirMatch).'($|/)}', $pattern)) {
                     unset($excluded[$index]);
+                    continue;
+                }
+
+                if ($pattern.self::EXCLUDE_FROM_CLASSMAP_SUFFIX_PATTERN === $excluded[$index]) {
+                    $excludedPaths[] = substr($pattern, strlen($dirMatch) + 1);
+
+                    // TODO maybe this shuold have a /prefix to make sure it does not exclude "Tests" for example from any sub-path
                 }
             }
         }
 
-        return \count($excluded) > 0 ? '{(' . implode('|', $excluded) . ')}' : null;
+        return ['pattern' => \count($excluded) > 0 ? '{^(' . implode('|', $excluded) . ')}' : null, 'paths' => $excludedPaths];
     }
 
     /**
@@ -612,7 +626,8 @@ EOF;
 
             foreach ($autoloads['classmap'] as $dir) {
                 try {
-                    $classMapGenerator->scanPaths($dir, $this->buildExclusionRegex($dir, $excluded));
+                    $excludeRules = $this->buildExclusionRegex($dir, $excluded);
+                    $classMapGenerator->scanPaths($dir, $excludeRules['pattern'], 'classmap', null, $excludeRules['paths']);
                 } catch (\RuntimeException $e) {
                     $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
                 }
@@ -1272,7 +1287,7 @@ INITIALIZER;
                         if (false === $resolvedPath) {
                             continue;
                         }
-                        $autoloads[] = preg_quote(strtr($resolvedPath, '\\', '/')) . '/' . $path . '($|/)';
+                        $autoloads[] = preg_quote(strtr($resolvedPath, '\\', '/')) . '/' . $path . self::EXCLUDE_FROM_CLASSMAP_SUFFIX_PATTERN;
                         continue;
                     }
 
