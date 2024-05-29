@@ -28,7 +28,7 @@ class RemoveCommandTest extends TestCase
         $this->expectExceptionMessage('Not enough arguments (missing: "packages").');
 
         $appTester = $this->getApplicationTester();
-        $this->assertEquals(Command::FAILURE, $appTester->run(['command' => 'remove']));
+        self::assertEquals(Command::FAILURE, $appTester->run(['command' => 'remove']));
     }
 
     public function testExceptionWhenRunningUnusedWithoutLockFile(): void
@@ -39,7 +39,7 @@ class RemoveCommandTest extends TestCase
         $this->expectExceptionMessage('A valid composer.lock file is required to run this command with --unused');
 
         $appTester = $this->getApplicationTester();
-        $this->assertEquals(Command::FAILURE, $appTester->run(['command' => 'remove', '--unused' => true]));
+        self::assertEquals(Command::FAILURE, $appTester->run(['command' => 'remove', '--unused' => true]));
     }
 
     public function testWarningWhenRemovingNonExistentPackage(): void
@@ -64,7 +64,7 @@ class RemoveCommandTest extends TestCase
         self::assertEquals(Command::SUCCESS, $appTester->run(['command' => 'remove', 'packages' => ['root/req'], '--dev' => true, '--no-update' => true, '--no-interaction' => true]));
         self::assertSame('<warning>root/req could not be found in require-dev but it is present in require</warning>
 ./composer.json has been updated', trim($appTester->getDisplay(true)));
-        $this->assertEquals(['require' => ['root/req' => '1.*']], (new JsonFile('./composer.json'))->read());
+        self::assertEquals(['require' => ['root/req' => '1.*']], (new JsonFile('./composer.json'))->read());
     }
 
     public function testWarningWhenRemovingPackageWithDeprecatedDependenciesFlag(): void
@@ -79,7 +79,7 @@ class RemoveCommandTest extends TestCase
         self::assertEquals(Command::SUCCESS, $appTester->run(['command' => 'remove', 'packages' => ['root/req'], '--update-with-dependencies' => true, '--no-update' => true, '--no-interaction' => true]));
         self::assertSame('<warning>You are using the deprecated option "update-with-dependencies". This is now default behaviour. The --no-update-with-dependencies option can be used to remove a package without its dependencies.</warning>
 ./composer.json has been updated', trim($appTester->getDisplay(true)));
-        $this->assertEmpty((new JsonFile('./composer.json'))->read());
+        self::assertEmpty((new JsonFile('./composer.json'))->read());
     }
 
     public function testMessageOutputWhenNoUnusedPackagesToRemove(): void

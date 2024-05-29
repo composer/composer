@@ -31,9 +31,9 @@ class RootAliasPackageTest extends TestCase
             ->with($this->equalTo($links));
 
         $alias = new RootAliasPackage($root, '1.0', '1.0.0.0');
-        $this->assertEmpty($alias->getRequires());
+        self::assertEmpty($alias->getRequires());
         $alias->setRequires($links);
-        $this->assertNotEmpty($alias->getRequires());
+        self::assertNotEmpty($alias->getRequires());
     }
 
     public function testUpdateDevRequires(): void
@@ -46,9 +46,9 @@ class RootAliasPackageTest extends TestCase
             ->with($this->equalTo($links));
 
         $alias = new RootAliasPackage($root, '1.0', '1.0.0.0');
-        $this->assertEmpty($alias->getDevRequires());
+        self::assertEmpty($alias->getDevRequires());
         $alias->setDevRequires($links);
-        $this->assertNotEmpty($alias->getDevRequires());
+        self::assertNotEmpty($alias->getDevRequires());
     }
 
     public function testUpdateConflicts(): void
@@ -61,9 +61,9 @@ class RootAliasPackageTest extends TestCase
             ->with($this->equalTo($links));
 
         $alias = new RootAliasPackage($root, '1.0', '1.0.0.0');
-        $this->assertEmpty($alias->getConflicts());
+        self::assertEmpty($alias->getConflicts());
         $alias->setConflicts($links);
-        $this->assertNotEmpty($alias->getConflicts());
+        self::assertNotEmpty($alias->getConflicts());
     }
 
     public function testUpdateProvides(): void
@@ -76,9 +76,9 @@ class RootAliasPackageTest extends TestCase
             ->with($this->equalTo($links));
 
         $alias = new RootAliasPackage($root, '1.0', '1.0.0.0');
-        $this->assertEmpty($alias->getProvides());
+        self::assertEmpty($alias->getProvides());
         $alias->setProvides($links);
-        $this->assertNotEmpty($alias->getProvides());
+        self::assertNotEmpty($alias->getProvides());
     }
 
     public function testUpdateReplaces(): void
@@ -91,9 +91,9 @@ class RootAliasPackageTest extends TestCase
             ->with($this->equalTo($links));
 
         $alias = new RootAliasPackage($root, '1.0', '1.0.0.0');
-        $this->assertEmpty($alias->getReplaces());
+        self::assertEmpty($alias->getReplaces());
         $alias->setReplaces($links);
-        $this->assertNotEmpty($alias->getReplaces());
+        self::assertNotEmpty($alias->getReplaces());
     }
 
     /**

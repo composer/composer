@@ -26,7 +26,7 @@
         "composer/ca-bundle": "^1.0",
         "composer/class-map-generator": "^1.0",
         "composer/metadata-minifier": "^1.0",
-        "composer/semver": "^3.2.5",
+        "composer/semver": "^3.3",
         "composer/spdx-licenses": "^1.5.7",
         "composer/xdebug-handler": "^2.0.2 || ^3.0.3",
         "justinrainbow/json-schema": "^5.2.11",

@@ -26,7 +26,7 @@ final class IgnoreListPlatformRequirementFilterTest extends TestCase
     {
         $platformRequirementFilter = new IgnoreListPlatformRequirementFilter($reqList);
 
-        $this->assertSame($expectIgnored, $platformRequirementFilter->isIgnored($req));
+        self::assertSame($expectIgnored, $platformRequirementFilter->isIgnored($req));
     }
 
     /**
@@ -58,7 +58,7 @@ final class IgnoreListPlatformRequirementFilterTest extends TestCase
     {
         $platformRequirementFilter = new IgnoreListPlatformRequirementFilter($reqList);
 
-        $this->assertSame($expectIgnored, $platformRequirementFilter->isUpperBoundIgnored($req));
+        self::assertSame($expectIgnored, $platformRequirementFilter->isUpperBoundIgnored($req));
     }
 
     /**

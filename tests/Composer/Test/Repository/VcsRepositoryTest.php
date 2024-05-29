@@ -177,6 +177,6 @@ class VcsRepositoryTest extends TestCase
             }
         }
 
-        $this->assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
+        self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
     }
 }

@@ -132,9 +132,9 @@ class PerforceDriverTest extends TestCase
     {
         $driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->process);
         $driver->initialize();
-        $this->assertEquals(self::TEST_URL, $driver->getUrl());
-        $this->assertEquals(self::TEST_DEPOT, $driver->getDepot());
-        $this->assertEquals(self::TEST_BRANCH, $driver->getBranch());
+        self::assertEquals(self::TEST_URL, $driver->getUrl());
+        self::assertEquals(self::TEST_DEPOT, $driver->getDepot());
+        self::assertEquals(self::TEST_BRANCH, $driver->getBranch());
     }
 
     public function testInitializeLogsInAndConnectsClient(): void
@@ -157,7 +157,7 @@ class PerforceDriverTest extends TestCase
         $this->perforce->expects($this->any())->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue([]));
         $this->driver->initialize();
         $result = $this->driver->hasComposerFile($identifier);
-        $this->assertFalse($result);
+        self::assertFalse($result);
     }
 
     /**
@@ -171,7 +171,7 @@ class PerforceDriverTest extends TestCase
         $this->perforce->expects($this->any())->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue(['']));
         $this->driver->initialize();
         $result = $this->driver->hasComposerFile($identifier);
-        $this->assertTrue($result);
+        self::assertTrue($result);
     }
 
     /**
@@ -182,7 +182,7 @@ class PerforceDriverTest extends TestCase
     public function testSupportsReturnsFalseNoDeepCheck(): void
     {
         $this->expectOutputString('');
-        $this->assertFalse(PerforceDriver::supports($this->io, $this->config, 'existing.url'));
+        self::assertFalse(PerforceDriver::supports($this->io, $this->config, 'existing.url'));
     }
 
     public function testCleanup(): void

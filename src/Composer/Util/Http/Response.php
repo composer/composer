@@ -101,8 +101,7 @@ class Response
      */
     public function collect(): void
     {
-        /** @phpstan-ignore assign.propertyType, assign.propertyType, assign.propertyType */
-        $this->request = $this->code = $this->headers = $this->body = null;
+        unset($this->request, $this->code, $this->headers, $this->body);
     }
 
     /**

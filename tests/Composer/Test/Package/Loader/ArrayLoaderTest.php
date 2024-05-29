@@ -42,7 +42,7 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
         $replaces = $package->getReplaces();
-        $this->assertEquals('== 1.2.3.4', (string) $replaces['foo']->getConstraint());
+        self::assertEquals('== 1.2.3.4', (string) $replaces['foo']->getConstraint());
     }
 
     public function testTypeDefault(): void
@@ -53,7 +53,7 @@ class ArrayLoaderTest extends TestCase
         ];
 
         $package = $this->loader->load($config);
-        $this->assertEquals('library', $package->getType());
+        self::assertEquals('library', $package->getType());
 
         $config = [
             'name' => 'A',
@@ -62,7 +62,7 @@ class ArrayLoaderTest extends TestCase
         ];
 
         $package = $this->loader->load($config);
-        $this->assertEquals('foo', $package->getType());
+        self::assertEquals('foo', $package->getType());
     }
 
     public function testNormalizedVersionOptimization(): void
@@ -73,7 +73,7 @@ class ArrayLoaderTest extends TestCase
         ];
 
         $package = $this->loader->load($config);
-        $this->assertEquals('1.2.3.0', $package->getVersion());
+        self::assertEquals('1.2.3.0', $package->getVersion());
 
         $config = [
             'name' => 'A',
@@ -82,7 +82,7 @@ class ArrayLoaderTest extends TestCase
         ];
 
         $package = $this->loader->load($config);
-        $this->assertEquals('1.2.3.4', $package->getVersion());
+        self::assertEquals('1.2.3.4', $package->getVersion());
     }
 
     public static function parseDumpProvider(): array
@@ -161,7 +161,7 @@ class ArrayLoaderTest extends TestCase
         $package = $this->loader->load($config);
         $dumper = new ArrayDumper;
         $expectedConfig = $this->fixConfigWhenLoadConfigIsFalse($config);
-        $this->assertEquals($expectedConfig, $dumper->dump($package));
+        self::assertEquals($expectedConfig, $dumper->dump($package));
     }
 
     /**
@@ -175,7 +175,7 @@ class ArrayLoaderTest extends TestCase
         $package = $loader->load($config);
         $dumper = new ArrayDumper;
         $expectedConfig = $config;
-        $this->assertEquals($expectedConfig, $dumper->dump($package));
+        self::assertEquals($expectedConfig, $dumper->dump($package));
     }
 
     /**
@@ -189,7 +189,7 @@ class ArrayLoaderTest extends TestCase
         $package = $loader->load($config);
         $dumper = new ArrayDumper;
         $expectedConfig = $this->fixConfigWhenLoadConfigIsFalse($config);
-        $this->assertEquals($expectedConfig, $dumper->dump($package));
+        self::assertEquals($expectedConfig, $dumper->dump($package));
     }
 
     public function testPackageWithBranchAlias(): void
@@ -202,8 +202,8 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
 
-        $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
-        $this->assertEquals('1.0.x-dev', $package->getPrettyVersion());
+        self::assertInstanceOf('Composer\Package\AliasPackage', $package);
+        self::assertEquals('1.0.x-dev', $package->getPrettyVersion());
 
         $config = [
             'name' => 'A',
@@ -213,8 +213,8 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
 
-        $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
-        $this->assertEquals('1.0.x-dev', $package->getPrettyVersion());
+        self::assertInstanceOf('Composer\Package\AliasPackage', $package);
+        self::assertEquals('1.0.x-dev', $package->getPrettyVersion());
 
         $config = [
             'name' => 'B',
@@ -224,8 +224,8 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
 
-        $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
-        $this->assertEquals('4.0.x-dev', $package->getPrettyVersion());
+        self::assertInstanceOf('Composer\Package\AliasPackage', $package);
+        self::assertEquals('4.0.x-dev', $package->getPrettyVersion());
 
         $config = [
             'name' => 'B',
@@ -235,8 +235,8 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
 
-        $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
-        $this->assertEquals('4.0.x-dev', $package->getPrettyVersion());
+        self::assertInstanceOf('Composer\Package\AliasPackage', $package);
+        self::assertEquals('4.0.x-dev', $package->getPrettyVersion());
 
         $config = [
             'name' => 'C',
@@ -246,8 +246,8 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
 
-        $this->assertInstanceOf('Composer\Package\CompletePackage', $package);
-        $this->assertEquals('4.x-dev', $package->getPrettyVersion());
+        self::assertInstanceOf('Composer\Package\CompletePackage', $package);
+        self::assertEquals('4.x-dev', $package->getPrettyVersion());
     }
 
     public function testPackageAliasingWithoutBranchAlias(): void
@@ -261,8 +261,8 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
 
-        $this->assertInstanceOf('Composer\Package\AliasPackage', $package);
-        $this->assertEquals(VersionParser::DEFAULT_BRANCH_ALIAS, $package->getPrettyVersion());
+        self::assertInstanceOf('Composer\Package\AliasPackage', $package);
+        self::assertEquals(VersionParser::DEFAULT_BRANCH_ALIAS, $package->getPrettyVersion());
 
         // non-default branch gets no alias even if non-numeric
         $config = [
@@ -273,8 +273,8 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
 
-        $this->assertInstanceOf('Composer\Package\CompletePackage', $package);
-        $this->assertEquals('dev-main', $package->getPrettyVersion());
+        self::assertInstanceOf('Composer\Package\CompletePackage', $package);
+        self::assertEquals('dev-main', $package->getPrettyVersion());
 
         // default branch gets no alias if already numeric
         $config = [
@@ -285,8 +285,8 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
 
-        $this->assertInstanceOf('Composer\Package\CompletePackage', $package);
-        $this->assertEquals('2.9999999.9999999.9999999-dev', $package->getVersion());
+        self::assertInstanceOf('Composer\Package\CompletePackage', $package);
+        self::assertEquals('2.9999999.9999999.9999999-dev', $package->getVersion());
 
         // default branch gets no alias if already numeric, with v prefix
         $config = [
@@ -297,8 +297,8 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
 
-        $this->assertInstanceOf('Composer\Package\CompletePackage', $package);
-        $this->assertEquals('2.9999999.9999999.9999999-dev', $package->getVersion());
+        self::assertInstanceOf('Composer\Package\CompletePackage', $package);
+        self::assertEquals('2.9999999.9999999.9999999-dev', $package->getVersion());
     }
 
     public function testAbandoned(): void
@@ -310,8 +310,8 @@ class ArrayLoaderTest extends TestCase
         ];
 
         $package = $this->loader->load($config);
-        $this->assertTrue($package->isAbandoned());
-        $this->assertEquals('foo/bar', $package->getReplacementPackage());
+        self::assertTrue($package->isAbandoned());
+        self::assertEquals('foo/bar', $package->getReplacementPackage());
     }
 
     public function testNotAbandoned(): void
@@ -322,7 +322,7 @@ class ArrayLoaderTest extends TestCase
         ];
 
         $package = $this->loader->load($config);
-        $this->assertFalse($package->isAbandoned());
+        self::assertFalse($package->isAbandoned());
     }
 
     public static function providePluginApiVersions(): array
@@ -353,23 +353,23 @@ class ArrayLoaderTest extends TestCase
     {
         $links = $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, ['composer-plugin-api' => $apiVersion]);
 
-        $this->assertArrayHasKey('composer-plugin-api', $links);
-        $this->assertSame($apiVersion, $links['composer-plugin-api']->getConstraint()->getPrettyString());
+        self::assertArrayHasKey('composer-plugin-api', $links);
+        self::assertSame($apiVersion, $links['composer-plugin-api']->getConstraint()->getPrettyString());
     }
 
     public function testPluginApiVersionDoesSupportSelfVersion(): void
     {
         $links = $this->loader->parseLinks('Plugin', '6.6.6', Link::TYPE_REQUIRE, ['composer-plugin-api' => 'self.version']);
 
-        $this->assertArrayHasKey('composer-plugin-api', $links);
-        $this->assertSame('6.6.6', $links['composer-plugin-api']->getConstraint()->getPrettyString());
+        self::assertArrayHasKey('composer-plugin-api', $links);
+        self::assertSame('6.6.6', $links['composer-plugin-api']->getConstraint()->getPrettyString());
     }
 
     public function testParseLinksIntegerTarget(): void
     {
         $links = $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, ['1' => 'dev-main']);
 
-        $this->assertArrayHasKey('1', $links);
+        self::assertArrayHasKey('1', $links);
     }
 
     public function testNoneStringVersion(): void
@@ -380,7 +380,7 @@ class ArrayLoaderTest extends TestCase
         ];
 
         $package = $this->loader->load($config);
-        $this->assertSame('1', $package->getPrettyVersion());
+        self::assertSame('1', $package->getPrettyVersion());
     }
 
     public function testNoneStringSourceDistReference(): void
@@ -401,8 +401,8 @@ class ArrayLoaderTest extends TestCase
         ];
 
         $package = $this->loader->load($config);
-        $this->assertSame('2019', $package->getSourceReference());
-        $this->assertSame('2019', $package->getDistReference());
+        self::assertSame('2019', $package->getSourceReference());
+        self::assertSame('2019', $package->getDistReference());
     }
 
     public function testBranchAliasIntegerIndex(): void
@@ -421,7 +421,7 @@ class ArrayLoaderTest extends TestCase
             ],
         ];
 
-        $this->assertNull($this->loader->getBranchAlias($config));
+        self::assertNull($this->loader->getBranchAlias($config));
     }
 
     public function testPackageLinksRequire(): void
@@ -435,8 +435,8 @@ class ArrayLoaderTest extends TestCase
         );
 
         $package = $this->loader->load($config);
-        $this->assertArrayHasKey('foo/bar', $package->getRequires());
-        $this->assertSame('1.0', $package->getRequires()['foo/bar']->getConstraint()->getPrettyString());
+        self::assertArrayHasKey('foo/bar', $package->getRequires());
+        self::assertSame('1.0', $package->getRequires()['foo/bar']->getConstraint()->getPrettyString());
     }
 
     public function testPackageLinksRequireInvalid(): void
@@ -452,7 +452,7 @@ class ArrayLoaderTest extends TestCase
         );
 
         $package = $this->loader->load($config);
-        $this->assertCount(0, $package->getRequires());
+        self::assertCount(0, $package->getRequires());
     }
 
     public function testPackageLinksReplace(): void
@@ -466,8 +466,8 @@ class ArrayLoaderTest extends TestCase
         );
 
         $package = $this->loader->load($config);
-        $this->assertArrayHasKey('coyote/package', $package->getReplaces());
-        $this->assertSame('dev-1', $package->getReplaces()['coyote/package']->getConstraint()->getPrettyString());
+        self::assertArrayHasKey('coyote/package', $package->getReplaces());
+        self::assertSame('dev-1', $package->getReplaces()['coyote/package']->getConstraint()->getPrettyString());
     }
 
     public function testPackageLinksReplaceInvalid(): void
@@ -479,7 +479,7 @@ class ArrayLoaderTest extends TestCase
         );
 
         $package = $this->loader->load($config);
-        $this->assertCount(0, $package->getReplaces());
+        self::assertCount(0, $package->getReplaces());
     }
 
     public function testSupportStringValue(): void
@@ -491,6 +491,6 @@ class ArrayLoaderTest extends TestCase
         );
 
         $package = $this->loader->load($config);
-        $this->assertSame([], $package->getSupport());
+        self::assertSame([], $package->getSupport());
     }
 }

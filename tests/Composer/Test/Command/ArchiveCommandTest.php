@@ -103,7 +103,7 @@ class ArchiveCommandTest extends TestCase
                 null
             )->willReturn(0);
 
-        $this->assertEquals(0, $command->run($input, $output));
+        self::assertEquals(0, $command->run($input, $output));
     }
 
     public function testUsesConfigFromComposerObjectWithPackageName(): void

@@ -62,8 +62,8 @@ class RootPackageLoaderTest extends TestCase
             'minimum-stability' => 'alpha',
         ]);
 
-        $this->assertEquals('alpha', $package->getMinimumStability());
-        $this->assertEquals([
+        self::assertEquals('alpha', $package->getMinimumStability());
+        self::assertEquals([
             'bar/baz' => BasePackage::STABILITY_DEV,
             'qux/quux' => BasePackage::STABILITY_RC,
             'zux/complex' => BasePackage::STABILITY_DEV,
@@ -88,8 +88,8 @@ class RootPackageLoaderTest extends TestCase
 
         $package = $loader->load([]);
 
-        $this->assertEquals("1.0.0.0", $package->getVersion());
-        $this->assertEquals(RootPackage::DEFAULT_PRETTY_VERSION, $package->getPrettyVersion());
+        self::assertEquals("1.0.0.0", $package->getVersion());
+        self::assertEquals(RootPackage::DEFAULT_PRETTY_VERSION, $package->getPrettyVersion());
     }
 
     public function testPrettyVersionForRootPackageInVersionBranch(): void
@@ -110,7 +110,7 @@ class RootPackageLoaderTest extends TestCase
         $loader = new RootPackageLoader($manager, $config, null, $versionGuesser);
         $package = $loader->load([]);
 
-        $this->assertEquals('3.0-dev', $package->getPrettyVersion());
+        self::assertEquals('3.0-dev', $package->getPrettyVersion());
     }
 
     public function testFeatureBranchPrettyVersion(): void
@@ -138,7 +138,7 @@ class RootPackageLoaderTest extends TestCase
         $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $process, new VersionParser()));
         $package = $loader->load(['require' => ['foo/bar' => 'self.version']]);
 
-        $this->assertEquals("dev-master", $package->getPrettyVersion());
+        self::assertEquals("dev-master", $package->getPrettyVersion());
     }
 
     public function testNonFeatureBranchPrettyVersion(): void
@@ -165,6 +165,6 @@ class RootPackageLoaderTest extends TestCase
         $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $process, new VersionParser()));
         $package = $loader->load(['require' => ['foo/bar' => 'self.version'], "non-feature-branches" => ["latest-.*"]]);
 
-        $this->assertEquals("dev-latest-production", $package->getPrettyVersion());
+        self::assertEquals("dev-latest-production", $package->getPrettyVersion());
     }
 }

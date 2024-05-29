@@ -102,7 +102,7 @@ class ZipDownloaderTest extends TestCase
 
             $this->fail('Download of invalid zip files should throw an exception');
         } catch (\Exception $e) {
-            $this->assertStringContainsString('is not a zip archive', $e->getMessage());
+            self::assertStringContainsString('is not a zip archive', $e->getMessage());
         }
     }
 

@@ -25,14 +25,14 @@ class JsonValidationExceptionTest extends TestCase
     public function testGetErrors(string $message, array $errors, string $expectedMessage, array $expectedErrors): void
     {
         $object = new JsonValidationException($message, $errors);
-        $this->assertSame($expectedMessage, $object->getMessage());
-        $this->assertSame($expectedErrors, $object->getErrors());
+        self::assertSame($expectedMessage, $object->getMessage());
+        self::assertSame($expectedErrors, $object->getErrors());
     }
 
     public function testGetErrorsWhenNoErrorsProvided(): void
     {
         $object = new JsonValidationException('test message');
-        $this->assertEquals([], $object->getErrors());
+        self::assertEquals([], $object->getErrors());
     }
 
     public static function errorProvider(): array

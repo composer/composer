@@ -56,7 +56,7 @@ class FundCommandTest extends TestCase
         $appTester->run(array_merge(['command' => 'fund'], $command));
 
         $appTester->assertCommandIsSuccessful();
-        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+        self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
     public static function useCaseProvider(): Generator

@@ -63,7 +63,7 @@ class StrictConfirmationQuestionTest extends TestCase
         [$input, $dialog] = $this->createInput($question."\n");
 
         $question = new StrictConfirmationQuestion('Do you like French fries?', $default);
-        $this->assertEquals($expected, $dialog->ask($input, $this->createOutputInterface(), $question), 'confirmation question should '.($expected ? 'pass' : 'cancel'));
+        self::assertEquals($expected, $dialog->ask($input, $this->createOutputInterface(), $question), 'confirmation question should '.($expected ? 'pass' : 'cancel'));
     }
 
     /**
@@ -88,10 +88,10 @@ class StrictConfirmationQuestionTest extends TestCase
         $question = new StrictConfirmationQuestion('Do you like French fries?', false, '/^ja$/i', '/^nein$/i');
 
         [$input, $dialog] = $this->createInput("ja\n");
-        $this->assertTrue($dialog->ask($input, $this->createOutputInterface(), $question));
+        self::assertTrue($dialog->ask($input, $this->createOutputInterface(), $question));
 
         [$input, $dialog] = $this->createInput("nein\n");
-        $this->assertFalse($dialog->ask($input, $this->createOutputInterface(), $question));
+        self::assertFalse($dialog->ask($input, $this->createOutputInterface(), $question));
     }
 
     /**
@@ -100,7 +100,7 @@ class StrictConfirmationQuestionTest extends TestCase
     protected function getInputStream(string $input)
     {
         $stream = fopen('php://memory', 'r+', false);
-        $this->assertNotFalse($stream);
+        self::assertNotFalse($stream);
 
         fwrite($stream, $input);
         rewind($stream);

@@ -45,7 +45,7 @@ class BaseDependencyCommandTest extends TestCase
         $this->expectExceptionMessage($expectedExceptionMessage);
 
         $appTester = $this->getApplicationTester();
-        $this->assertEquals(Command::FAILURE, $appTester->run(['command' => $command] + $parameters));
+        self::assertEquals(Command::FAILURE, $appTester->run(['command' => $command] + $parameters));
     }
 
     /**
@@ -97,7 +97,7 @@ class BaseDependencyCommandTest extends TestCase
         $this->expectExceptionMessage('A valid composer.lock file is required to run this command with --locked');
 
         $appTester = $this->getApplicationTester();
-        $this->assertEquals(
+        self::assertEquals(
             Command::FAILURE,
             $appTester->run(['command' => $command] + $parameters + ['--locked' => true]
             )
@@ -125,7 +125,7 @@ class BaseDependencyCommandTest extends TestCase
         $this->expectExceptionMessage(sprintf('Could not find package "%s" in your project', $packageToBeInspected));
 
         $appTester = $this->getApplicationTester();
-        $this->assertEquals(
+        self::assertEquals(
             Command::FAILURE,
             $appTester->run(['command' => $command] + $parameters)
         );
@@ -164,7 +164,7 @@ class BaseDependencyCommandTest extends TestCase
 
         $appTester = $this->getApplicationTester();
 
-        $this->assertEquals(Command::FAILURE, $appTester->run(['command' => $command] + $parameters));
+        self::assertEquals(Command::FAILURE, $appTester->run(['command' => $command] + $parameters));
     }
 
     /**
@@ -199,7 +199,7 @@ class BaseDependencyCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => $command] + $parameters);
 
-        $this->assertSame($expectedWarningMessage, trim($appTester->getDisplay(true)));
+        self::assertSame($expectedWarningMessage, trim($appTester->getDisplay(true)));
     }
 
     /**
@@ -296,7 +296,7 @@ class BaseDependencyCommandTest extends TestCase
 
         self::assertSame($expectedStatusCode, $appTester->getStatusCode());
 
-        $this->assertEquals(trim($expectedOutput), $this->trimLines($appTester->getDisplay(true)));
+        self::assertEquals(trim($expectedOutput), $this->trimLines($appTester->getDisplay(true)));
     }
 
     /**
@@ -420,7 +420,7 @@ OUTPUT
         ]);
 
         self::assertSame($expectedStatusCode, $appTester->getStatusCode());
-        $this->assertSame(trim($expectedOutput), $this->trimLines($appTester->getDisplay(true)));
+        self::assertSame(trim($expectedOutput), $this->trimLines($appTester->getDisplay(true)));
     }
 
     /**

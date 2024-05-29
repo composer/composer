@@ -32,7 +32,7 @@ class ArrayDumperTest extends TestCase
     public function testRequiredInformation(): void
     {
         $config = $this->dumper->dump(self::getPackage());
-        $this->assertEquals(
+        self::assertEquals(
             [
                 'name' => 'dummy/pkg',
                 'version' => '1.0.0',
@@ -49,7 +49,7 @@ class ArrayDumperTest extends TestCase
         $package->setMinimumStability('dev');
 
         $config = $this->dumper->dump($package);
-        $this->assertSame('dev', $config['minimum-stability']);
+        self::assertSame('dev', $config['minimum-stability']);
     }
 
     public function testDumpAbandoned(): void
@@ -58,7 +58,7 @@ class ArrayDumperTest extends TestCase
         $package->setAbandoned(true);
         $config = $this->dumper->dump($package);
 
-        $this->assertTrue($config['abandoned']);
+        self::assertTrue($config['abandoned']);
     }
 
     public function testDumpAbandonedReplacement(): void
@@ -67,7 +67,7 @@ class ArrayDumperTest extends TestCase
         $package->setAbandoned('foo/bar');
         $config = $this->dumper->dump($package);
 
-        $this->assertSame('foo/bar', $config['abandoned']);
+        self::assertSame('foo/bar', $config['abandoned']);
     }
 
     /**
@@ -81,12 +81,12 @@ class ArrayDumperTest extends TestCase
     {
         $package = self::getRootPackage();
 
-        // @phpstan-ignore method.dynamicName, ternary.shortNotAllowed
-        $package->{'set'.ucfirst($method ?: $key)}($value);
+        // @phpstan-ignore method.dynamicName
+        $package->{'set'.ucfirst($method ?? $key)}($value);
 
         $config = $this->dumper->dump($package);
 
-        $this->assertSame($expectedValue ?: $value, $config[$key]);
+        self::assertSame($expectedValue ?: $value, $config[$key]);
     }
 
     public static function provideKeys(): array

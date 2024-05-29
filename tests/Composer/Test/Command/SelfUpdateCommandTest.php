@@ -53,7 +53,7 @@ class SelfUpdateCommandTest extends TestCase
         $appTester->run(['command' => 'self-update']);
 
         $appTester->assertCommandIsSuccessful();
-        $this->assertStringContainsString('Upgrading to version', $appTester->getDisplay());
+        self::assertStringContainsString('Upgrading to version', $appTester->getDisplay());
     }
 
     public function testUpdateToSpecificVersion(): void
@@ -62,7 +62,7 @@ class SelfUpdateCommandTest extends TestCase
         $appTester->run(['command' => 'self-update', 'version' => '2.4.0']);
 
         $appTester->assertCommandIsSuccessful();
-        $this->assertStringContainsString('Upgrading to version 2.4.0', $appTester->getDisplay());
+        self::assertStringContainsString('Upgrading to version 2.4.0', $appTester->getDisplay());
     }
 
     public function testUpdateWithInvalidOptionThrowsException(): void
@@ -87,8 +87,8 @@ class SelfUpdateCommandTest extends TestCase
         $appTester->run(['command' => 'self-update', $option => true]);
         $appTester->assertCommandIsSuccessful();
 
-        $this->assertStringContainsString('Upgrading to version', $appTester->getDisplay());
-        $this->assertStringContainsString($expectedOutput, $appTester->getDisplay());
+        self::assertStringContainsString('Upgrading to version', $appTester->getDisplay());
+        self::assertStringContainsString($expectedOutput, $appTester->getDisplay());
     }
 
     /**

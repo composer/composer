@@ -23,13 +23,13 @@ class DiagnoseCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'diagnose']);
 
-        $this->assertSame(1, $appTester->getStatusCode());
+        self::assertSame(1, $appTester->getStatusCode());
 
         $output = $appTester->getDisplay(true);
-        $this->assertStringContainsString('Checking composer.json: <warning>WARNING</warning>
+        self::assertStringContainsString('Checking composer.json: <warning>WARNING</warning>
 <warning>No license specified, it is recommended to do so. For closed-source software you may use "proprietary" as license.</warning>', $output);
 
-        $this->assertStringContainsString('Checking http connectivity to packagist: OK
+        self::assertStringContainsString('Checking http connectivity to packagist: OK
 Checking https connectivity to packagist: OK
 Checking github.com rate limit: ', $output);
     }
@@ -44,9 +44,9 @@ Checking github.com rate limit: ', $output);
         $appTester->assertCommandIsSuccessful();
 
         $output = $appTester->getDisplay(true);
-        $this->assertStringContainsString('Checking composer.json: OK', $output);
+        self::assertStringContainsString('Checking composer.json: OK', $output);
 
-        $this->assertStringContainsString('Checking http connectivity to packagist: OK
+        self::assertStringContainsString('Checking http connectivity to packagist: OK
 Checking https connectivity to packagist: OK
 Checking github.com rate limit: ', $output);
     }

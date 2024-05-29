@@ -27,7 +27,7 @@ class PharArchiverTest extends ArchiverTestCase
         // Test archive
         $archiver = new PharArchiver();
         $archiver->archive($package->getSourceUrl(), $target, 'tar', ['foo/bar', 'baz', '!/foo/bar/baz']);
-        $this->assertFileExists($target);
+        self::assertFileExists($target);
 
         $this->filesystem->removeDirectory(dirname($target));
     }
@@ -42,7 +42,7 @@ class PharArchiverTest extends ArchiverTestCase
         // Test archive
         $archiver = new PharArchiver();
         $archiver->archive($package->getSourceUrl(), $target, 'zip');
-        $this->assertFileExists($target);
+        self::assertFileExists($target);
 
         $this->filesystem->removeDirectory(dirname($target));
     }

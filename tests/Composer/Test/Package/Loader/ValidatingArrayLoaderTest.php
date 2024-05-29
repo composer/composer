@@ -224,7 +224,7 @@ class ValidatingArrayLoaderTest extends TestCase
             $errors = $e->getErrors();
             sort($expectedErrors);
             sort($errors);
-            $this->assertEquals($expectedErrors, $errors);
+            self::assertEquals($expectedErrors, $errors);
         }
     }
 
@@ -243,7 +243,7 @@ class ValidatingArrayLoaderTest extends TestCase
         $warnings = $loader->getWarnings();
         sort($expectedWarnings);
         sort($warnings);
-        $this->assertEquals($expectedWarnings, $warnings);
+        self::assertEquals($expectedWarnings, $warnings);
     }
 
     /**
@@ -255,7 +255,7 @@ class ValidatingArrayLoaderTest extends TestCase
     public function testLoadSkipsWarningDataWhenIgnoringErrors(array $config, array $expectedWarnings, bool $mustCheck = true): void
     {
         if (!$mustCheck) {
-            $this->assertTrue(true);
+            self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
             return;
         }

@@ -176,12 +176,13 @@ class CurlDownloader
         }
 
         $errorMessage = '';
-        // @phpstan-ignore argument.type
-        set_error_handler(static function ($code, $msg) use (&$errorMessage): void {
+        set_error_handler(static function (int $code, string $msg) use (&$errorMessage): bool {
             if ($errorMessage) {
                 $errorMessage .= "\n";
             }
             $errorMessage .= Preg::replace('{^fopen\(.*?\): }', '', $msg);
+
+            return true;
         });
         $bodyHandle = fopen($bodyTarget, 'w+b');
         restore_error_handler();

@@ -108,7 +108,7 @@ class LibraryInstallerTest extends TestCase
         $this->fs->removeDirectory($this->vendorDir);
 
         new LibraryInstaller($this->io, $this->composer);
-        $this->assertFileDoesNotExist($this->vendorDir);
+        self::assertFileDoesNotExist($this->vendorDir);
     }
 
     public function testInstallerCreationShouldNotCreateBinDirectory(): void
@@ -116,7 +116,7 @@ class LibraryInstallerTest extends TestCase
         $this->fs->removeDirectory($this->binDir);
 
         new LibraryInstaller($this->io, $this->composer);
-        $this->assertFileDoesNotExist($this->binDir);
+        self::assertFileDoesNotExist($this->binDir);
     }
 
     public function testIsInstalled(): void
@@ -125,18 +125,18 @@ class LibraryInstallerTest extends TestCase
         $package = self::getPackage('test/pkg', '1.0.0');
 
         $repository = new InstalledArrayRepository();
-        $this->assertFalse($library->isInstalled($repository, $package));
+        self::assertFalse($library->isInstalled($repository, $package));
 
         // package being in repo is not enough to be installed
         $repository->addPackage($package);
-        $this->assertFalse($library->isInstalled($repository, $package));
+        self::assertFalse($library->isInstalled($repository, $package));
 
         // package being in repo and vendor/pkg/foo dir present means it is seen as installed
         self::ensureDirectoryExistsAndClear($this->vendorDir.'/'.$package->getPrettyName());
-        $this->assertTrue($library->isInstalled($repository, $package));
+        self::assertTrue($library->isInstalled($repository, $package));
 
         $repository->removePackage($package);
-        $this->assertFalse($library->isInstalled($repository, $package));
+        self::assertFalse($library->isInstalled($repository, $package));
     }
 
     /**
@@ -160,8 +160,8 @@ class LibraryInstallerTest extends TestCase
             ->with($package);
 
         $library->install($this->repository, $package);
-        $this->assertFileExists($this->vendorDir, 'Vendor dir should be created');
-        $this->assertFileExists($this->binDir, 'Bin dir should be created');
+        self::assertFileExists($this->vendorDir, 'Vendor dir should be created');
+        self::assertFileExists($this->binDir, 'Bin dir should be created');
     }
 
     /**
@@ -206,8 +206,8 @@ class LibraryInstallerTest extends TestCase
 
         $library = new LibraryInstaller($this->io, $this->composer, 'library', $filesystem);
         $library->update($this->repository, $initial, $target);
-        $this->assertFileExists($this->vendorDir, 'Vendor dir should be created');
-        $this->assertFileExists($this->binDir, 'Bin dir should be created');
+        self::assertFileExists($this->vendorDir, 'Vendor dir should be created');
+        self::assertFileExists($this->binDir, 'Bin dir should be created');
 
         self::expectException('InvalidArgumentException');
 
@@ -248,7 +248,7 @@ class LibraryInstallerTest extends TestCase
         $library = new LibraryInstaller($this->io, $this->composer);
         $package = self::getPackage('Vendor/Pkg', '1.0.0');
 
-        $this->assertEquals($this->vendorDir.'/'.$package->getPrettyName(), $library->getInstallPath($package));
+        self::assertEquals($this->vendorDir.'/'.$package->getPrettyName(), $library->getInstallPath($package));
     }
 
     public function testGetInstallPathWithTargetDir(): void
@@ -257,7 +257,7 @@ class LibraryInstallerTest extends TestCase
         $package = self::getPackage('Foo/Bar', '1.0.0');
         $package->setTargetDir('Some/Namespace');
 
-        $this->assertEquals($this->vendorDir.'/'.$package->getPrettyName().'/Some/Namespace', $library->getInstallPath($package));
+        self::assertEquals($this->vendorDir.'/'.$package->getPrettyName().'/Some/Namespace', $library->getInstallPath($package));
     }
 
     /**

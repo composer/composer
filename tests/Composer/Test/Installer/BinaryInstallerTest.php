@@ -82,8 +82,8 @@ class BinaryInstallerTest extends TestCase
 
         $proc = new ProcessExecutor();
         $proc->execute($this->binDir.'/binary arg', $output);
-        $this->assertEquals('', $proc->getErrorOutput());
-        $this->assertEquals('success arg', $output);
+        self::assertEquals('', $proc->getErrorOutput());
+        self::assertEquals('success arg', $output);
     }
 
     public static function executableBinaryProvider(): array

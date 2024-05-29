@@ -24,13 +24,13 @@ class TarTest extends TestCase
     {
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/invalid.zip');
 
-        $this->assertNull($result);
+        self::assertNull($result);
     }
 
     public function testReturnsNullIfTheTarIsEmpty(): void
     {
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/empty.tar.gz');
-        $this->assertNull($result);
+        self::assertNull($result);
     }
 
     public function testThrowsExceptionIfTheTarHasNoComposerJson(): void
@@ -48,13 +48,13 @@ class TarTest extends TestCase
     public function testReturnsComposerJsonInTarRoot(): void
     {
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/root.tar.gz');
-        $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
+        self::assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
 
     public function testReturnsComposerJsonInFirstFolder(): void
     {
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/folder.tar.gz');
-        $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
+        self::assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
 
     public function testMultipleTopLevelDirsIsInvalid(): void

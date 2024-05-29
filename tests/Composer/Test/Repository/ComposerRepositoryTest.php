@@ -55,7 +55,7 @@ class ComposerRepositoryTest extends TestCase
         $packages = $repository->getPackages();
 
         // Final sanity check, ensure the correct number of packages were added.
-        $this->assertCount(count($expected), $packages);
+        self::assertCount(count($expected), $packages);
 
         foreach ($expected as $index => $pkg) {
             self::assertSame($pkg['name'].' '.$pkg['version'], $packages[$index]->getName().' '.$packages[$index]->getPrettyVersion());
@@ -165,9 +165,9 @@ class ComposerRepositoryTest extends TestCase
         $reflMethod->setAccessible(true);
         $packages = $reflMethod->invoke($repo, 'a');
 
-        $this->assertCount(5, $packages);
-        $this->assertEquals(['1', '1-alias', '2', '2-alias', '3'], array_keys($packages));
-        $this->assertSame($packages['2'], $packages['2-alias']->getAliasOf());
+        self::assertCount(5, $packages);
+        self::assertEquals(['1', '1-alias', '2', '2-alias', '3'], array_keys($packages));
+        self::assertSame($packages['2'], $packages['2-alias']->getAliasOf());
     }
 
     public function testSearchWithType(): void
@@ -202,12 +202,12 @@ class ComposerRepositoryTest extends TestCase
         $config->merge(['config' => ['cache-read-only' => true]]);
         $repository = new ComposerRepository($repoConfig, new NullIO, $config, $httpDownloader, $eventDispatcher);
 
-        $this->assertSame(
+        self::assertSame(
             [['name' => 'foo', 'description' => null]],
             $repository->search('foo', RepositoryInterface::SEARCH_FULLTEXT, 'composer-plugin')
         );
 
-        $this->assertEmpty(
+        self::assertEmpty(
             $repository->search('foo', RepositoryInterface::SEARCH_FULLTEXT, 'library')
         );
     }
@@ -234,7 +234,7 @@ class ComposerRepositoryTest extends TestCase
         $config->merge(['config' => ['cache-read-only' => true]]);
         $repository = new ComposerRepository($repoConfig, new NullIO, $config, $httpDownloader, $eventDispatcher);
 
-        $this->assertEmpty(
+        self::assertEmpty(
             $repository->search('foo bar', RepositoryInterface::SEARCH_FULLTEXT)
         );
     }
@@ -277,7 +277,7 @@ class ComposerRepositoryTest extends TestCase
         $config->merge(['config' => ['cache-read-only' => true]]);
         $repository = new ComposerRepository($repoConfig, new NullIO, $config, $httpDownloader, $eventDispatcher);
 
-        $this->assertSame(
+        self::assertSame(
             [
                 ['name' => 'foo1', 'description' => null, 'abandoned' => true],
                 ['name' => 'foo2', 'description' => null, 'abandoned' => 'bar'],
@@ -312,7 +312,7 @@ class ComposerRepositoryTest extends TestCase
         $property->setAccessible(true);
         $property->setValue($repository, $repositoryUrl);
 
-        $this->assertSame($expected, $method->invoke($repository, $url));
+        self::assertSame($expected, $method->invoke($repository, $url));
     }
 
     public static function provideCanonicalizeUrlTestCases(): array
@@ -379,7 +379,7 @@ class ComposerRepositoryTest extends TestCase
             $httpDownloader
         );
 
-        $this->assertEquals(['foo/bar'], $repository->getPackageNames());
+        self::assertEquals(['foo/bar'], $repository->getPackageNames());
     }
 
     public function testGetSecurityAdvisoriesAssertRepositoryHttpOptionsAreUsed(): void
@@ -425,7 +425,7 @@ class ComposerRepositoryTest extends TestCase
             $httpDownloader
         );
 
-        $this->assertSame([
+        self::assertSame([
             'namesFound' => [],
             'advisories' => [],
         ], $repository->getSecurityAdvisories(['foo/bar' => new Constraint('=', '1.0.0.0')]));

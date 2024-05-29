@@ -33,8 +33,8 @@ class IniHelperTest extends TestCase
         ];
 
         $this->setEnv($paths);
-        $this->assertStringContainsString('does not exist', IniHelper::getMessage());
-        $this->assertEquals($paths, IniHelper::getAll());
+        self::assertStringContainsString('does not exist', IniHelper::getMessage());
+        self::assertEquals($paths, IniHelper::getAll());
     }
 
     public function testWithLoadedIniOnly(): void
@@ -44,7 +44,7 @@ class IniHelperTest extends TestCase
         ];
 
         $this->setEnv($paths);
-        $this->assertStringContainsString('loaded.ini', IniHelper::getMessage());
+        self::assertStringContainsString('loaded.ini', IniHelper::getMessage());
     }
 
     public function testWithLoadedIniAndAdditional(): void
@@ -56,8 +56,8 @@ class IniHelperTest extends TestCase
         ];
 
         $this->setEnv($paths);
-        $this->assertStringContainsString('multiple ini files', IniHelper::getMessage());
-        $this->assertEquals($paths, IniHelper::getAll());
+        self::assertStringContainsString('multiple ini files', IniHelper::getMessage());
+        self::assertEquals($paths, IniHelper::getAll());
     }
 
     public function testWithoutLoadedIniAndAdditional(): void
@@ -69,8 +69,8 @@ class IniHelperTest extends TestCase
         ];
 
         $this->setEnv($paths);
-        $this->assertStringContainsString('multiple ini files', IniHelper::getMessage());
-        $this->assertEquals($paths, IniHelper::getAll());
+        self::assertStringContainsString('multiple ini files', IniHelper::getMessage());
+        self::assertEquals($paths, IniHelper::getAll());
     }
 
     public static function setUpBeforeClass(): void
