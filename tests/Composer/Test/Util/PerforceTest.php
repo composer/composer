@@ -328,7 +328,7 @@ class PerforceTest extends TestCase
     public function testConnectClient(): void
     {
         $this->processExecutor->expects(
-            ['p4 -u user -c composer_perforce_TEST_depot -p port client -i < path/composer_perforce_TEST_depot.p4.spec'],
+            ['p4 -u user -c composer_perforce_TEST_depot -p port client -i < '.ProcessExecutor::escape('path/composer_perforce_TEST_depot.p4.spec')],
             true
         );
 
