@@ -4019,11 +4019,6 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Only booleans are allowed in &&, int\\<0, 65536\\> given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -4759,11 +4754,6 @@ parameters:
 			path: ../tests/Composer/Test/AllFunctionalTest.php
 
 		-
-			message: "#^Dynamic call to static method Composer\\\\Test\\\\Autoload\\\\AutoloadGeneratorTest\\:\\:assertFileContentEquals\\(\\)\\.$#"
-			count: 28
-			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
-
-		-
 			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:ensureDirectoryExistsAndClear\\(\\)\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
@@ -4942,16 +4932,6 @@ parameters:
 			path: ../tests/Composer/Test/Installer/BinaryInstallerTest.php
 
 		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Composer' and Composer\\\\Composer will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Installer/InstallerEventTest.php
-
-		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\IO…' and Composer\\\\IO\\\\IOInterface will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Installer/InstallerEventTest.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 9
 			path: ../tests/Composer/Test/InstallerTest.php
@@ -5022,11 +5002,6 @@ parameters:
 			path: ../tests/Composer/Test/Json/JsonManipulatorTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$expectedJson of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertJsonStringEqualsJsonString\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Json/JsonManipulatorTest.php
-
-		-
 			message: "#^Offset 'ask' might not exist on array\\{ask\\: string, reply\\?\\: string\\}\\|array\\{auth\\: array\\{string, string, string\\|null\\}\\}\\|array\\{text\\: string, verbosity\\?\\: 1\\|2\\|4\\|8\\|16\\}\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/Mock/IOMock.php
@@ -5092,11 +5067,6 @@ parameters:
 			path: ../tests/Composer/Test/Package/Dumper/ArrayDumperTest.php
 
 		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertTrue\\(\\) with true will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Package/Loader/ValidatingArrayLoaderTest.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Package/Version/VersionSelectorTest.php
@@ -5155,11 +5125,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$string of function strlen expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/PathRepositoryTest.php
-
-		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Repository…' and Composer\\\\Repository\\\\RepositoryInterface will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/RepositoryManagerTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$objectOrValue of method ReflectionProperty\\:\\:setValue\\(\\) expects object\\|null, object\\|string given\\.$#"
@@ -5232,29 +5197,14 @@ parameters:
 			path: ../tests/Composer/Test/Util/PerforceTest.php
 
 		-
-			message: "#^Parameter \\#2 \\$string of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertStringStartsWith\\(\\) expects string, string\\|false given\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Util/PerforceTest.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Util/PlatformTest.php
 
 		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertNotNull\\(\\) with string will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Util/ProcessExecutorTest.php
-
-		-
 			message: "#^Dynamic call to static method Composer\\\\Util\\\\ProcessExecutor\\:\\:getTimeout\\(\\)\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Util/ProcessExecutorTest.php
-
-		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertTrue\\(\\) with true and 'callbackGet must…' will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Util/RemoteFilesystemTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$object of method ReflectionProperty\\:\\:getValue\\(\\) expects object, object\\|string given\\.$#"
@@ -5268,16 +5218,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$originUrl of method Composer\\\\Util\\\\RemoteFilesystem\\:\\:getContents\\(\\) expects string, string\\|false\\|null given\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Util/RemoteFilesystemTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$haystack of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertStringContainsString\\(\\) expects string, bool\\|string given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Util/RemoteFilesystemTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$haystack of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertStringContainsString\\(\\) expects string, string\\|false given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/Util/RemoteFilesystemTest.php
 
