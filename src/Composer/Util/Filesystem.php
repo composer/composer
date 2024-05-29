@@ -638,7 +638,13 @@ class Filesystem
      */
     public static function isLocalPath(string $path)
     {
-        return Preg::isMatch('{^(file://(?!//)|/(?!/)|/?[a-z]:[\\\\/]|\.\.[\\\\/]|[a-z0-9_.-]+[\\\\/])}i', $path);
+        // on windows, \\foo indicates network paths so we exclude those from local paths, however it is unsafe
+        // on linux as file:////foo (which would be a network path \\foo on windows) will resolve to /foo which could be a local path
+        if (Platform::isWindows()) {
+            return Preg::isMatch('{^(file://(?!//)|/(?!/)|/?[a-z]:[\\\\/]|\.\.[\\\\/]|[a-z0-9_.-]+[\\\\/])}i', $path);
+        }
+
+        return Preg::isMatch('{^(file://|/|/?[a-z]:[\\\\/]|\.\.[\\\\/]|[a-z0-9_.-]+[\\\\/])}i', $path);
     }
 
     /**
