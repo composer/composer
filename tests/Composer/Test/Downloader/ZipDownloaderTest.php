@@ -167,6 +167,9 @@ class ZipDownloaderTest extends TestCase
         $zipArchive->expects($this->once())
             ->method('extractTo')
             ->will($this->returnValue(true));
+        $zipArchive->expects($this->once())
+            ->method('count')
+            ->will($this->returnValue(0));
 
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
         $promise = $downloader->extract($this->package, $this->filename, 'vendor/dir');
@@ -261,6 +264,9 @@ class ZipDownloaderTest extends TestCase
         $zipArchive->expects($this->once())
             ->method('extractTo')
             ->will($this->returnValue(true));
+        $zipArchive->expects($this->once())
+            ->method('count')
+            ->will($this->returnValue(0));
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);

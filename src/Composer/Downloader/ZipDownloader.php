@@ -213,26 +213,26 @@ class ZipDownloader extends ArchiveDownloader
                 $retval = $zipArchive->open($file);
             }
 
-            $totalSize = 0;
-            $archiveSize = filesize($file);
-            $totalFiles = $zipArchive->count();
-            if ($totalFiles > 0) {
-                for ($i = 0; $i < min($totalFiles, 5); $i++) {
-                    $stat = $zipArchive->statIndex(random_int(0, $totalFiles - 1));
-                    if ($stat === false) {
-                        continue;
+            if (true === $retval) {
+                $totalSize = 0;
+                $archiveSize = filesize($file);
+                $totalFiles = $zipArchive->count();
+                if ($totalFiles > 0) {
+                    for ($i = 0; $i < min($totalFiles, 5); $i++) {
+                        $stat = $zipArchive->statIndex(random_int(0, $totalFiles - 1));
+                        if ($stat === false) {
+                            continue;
+                        }
+                        $totalSize += $stat['size'];
+                        if ($stat['size'] > $stat['comp_size'] * 200) {
+                            throw new \RuntimeException('Invalid zip file with compression ratio >99% (possible zip bomb)');
+                        }
                     }
-                    $totalSize += $stat['size'];
-                    if ($stat['size'] > $stat['comp_size'] * 200) {
+                    if ($archiveSize !== false && $totalSize > $archiveSize * 100 && $totalSize > 50*1024*1024) {
                         throw new \RuntimeException('Invalid zip file with compression ratio >99% (possible zip bomb)');
                     }
                 }
-                if ($archiveSize !== false && $totalSize > $archiveSize * 100 && $totalSize > 50*1024*1024) {
-                    throw new \RuntimeException('Invalid zip file with compression ratio >99% (possible zip bomb)');
-                }
-            }
 
-            if (true === $retval) {
                 $extractResult = $zipArchive->extractTo($path);
 
                 if (true === $extractResult) {
