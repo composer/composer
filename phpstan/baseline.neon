@@ -2046,11 +2046,6 @@ parameters:
 			path: ../src/Composer/Installer.php
 
 		-
-			message: "#^Casting to bool something that's already bool\\.$#"
-			count: 1
-			path: ../src/Composer/Installer.php
-
-		-
 			message: "#^Only booleans are allowed in &&, array\\<array\\<string, string\\>\\> given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Installer.php
@@ -4354,6 +4349,16 @@ parameters:
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
 		-
+			message: "#^Function http_clear_last_response_headers not found\\.$#"
+			count: 1
+			path: ../src/Composer/Util/RemoteFilesystem.php
+
+		-
+			message: "#^Function http_get_last_response_headers not found\\.$#"
+			count: 1
+			path: ../src/Composer/Util/RemoteFilesystem.php
+
+		-
 			message: "#^Method Composer\\\\Util\\\\RemoteFilesystem\\:\\:copy\\(\\) should return bool but returns bool\\|string\\.$#"
 			count: 1
 			path: ../src/Composer/Util/RemoteFilesystem.php
@@ -5095,4 +5100,3 @@ parameters:
 			message: "#^Only booleans are allowed in a ternary operator condition, array\\<string\\> given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Util/TlsHelperTest.php
-
