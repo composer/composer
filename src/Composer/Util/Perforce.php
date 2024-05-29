@@ -428,7 +428,7 @@ class Perforce
     public function connectClient()
     {
         $p4CreateClientCommand = $this->generateP4Command(
-            'client -i < ' . str_replace(" ", "\\ ", $this->getP4ClientSpec())
+            'client -i < ' . ProcessExecutor::escape($this->getP4ClientSpec())
         );
         $this->executeCommand($p4CreateClientCommand);
     }
