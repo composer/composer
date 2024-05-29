@@ -33,7 +33,7 @@ class RequestTest extends TestCase
         $request = new Request();
         $request->requireName('foo');
 
-        $this->assertEquals(
+        self::assertEquals(
             [
                 'foo' => new MatchAllConstraint(),
             ],
@@ -55,7 +55,7 @@ class RequestTest extends TestCase
         $request = new Request();
         $request->requireName('foo', $constraint = self::getVersionConstraint('=', '1'));
 
-        $this->assertEquals(
+        self::assertEquals(
             [
                 'foo' => $constraint,
             ],

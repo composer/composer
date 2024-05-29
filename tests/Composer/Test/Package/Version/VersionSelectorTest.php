@@ -48,7 +48,7 @@ class VersionSelectorTest extends TestCase
         $best = $versionSelector->findBestCandidate($packageName);
 
         // 1.2.2 should be returned because it's the latest of the returned versions
-        $this->assertSame($package2, $best, 'Latest version should be 1.2.2');
+        self::assertSame($package2, $best, 'Latest version should be 1.2.2');
     }
 
     public function testLatestVersionIsReturnedThatMatchesPhpRequirements(): void
@@ -77,12 +77,12 @@ class VersionSelectorTest extends TestCase
 
         $io = new BufferIO();
         $best = $versionSelector->findBestCandidate($packageName, null, 'stable', null, 0, $io);
-        $this->assertSame((string) $package1, (string) $best, 'Latest version supporting php 5.5 should be returned (1.0.0)');
+        self::assertSame((string) $package1, (string) $best, 'Latest version supporting php 5.5 should be returned (1.0.0)');
         self::assertSame("<warning>Cannot use foo/bar's latest version 2.1.0 as it requires php >=5.6 which is not satisfied by your platform.".PHP_EOL, $io->getOutput());
 
         $io = new BufferIO('', StreamOutput::VERBOSITY_VERBOSE);
         $best = $versionSelector->findBestCandidate($packageName, null, 'stable', null, 0, $io);
-        $this->assertSame((string) $package1, (string) $best, 'Latest version supporting php 5.5 should be returned (1.0.0)');
+        self::assertSame((string) $package1, (string) $best, 'Latest version supporting php 5.5 should be returned (1.0.0)');
         self::assertSame(
             "<warning>Cannot use foo/bar's latest version 2.1.0 as it requires php >=5.6 which is not satisfied by your platform.".PHP_EOL
             ."<warning>Cannot use foo/bar 2.0.0 as it requires php >=5.6 which is not satisfied by your platform.".PHP_EOL,
@@ -90,7 +90,7 @@ class VersionSelectorTest extends TestCase
         );
 
         $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
-        $this->assertSame((string) $package3, (string) $best, 'Latest version should be returned when ignoring platform reqs (2.1.0)');
+        self::assertSame((string) $package3, (string) $best, 'Latest version should be returned when ignoring platform reqs (2.1.0)');
     }
 
     public function testLatestVersionIsReturnedThatMatchesExtRequirements(): void
@@ -114,9 +114,9 @@ class VersionSelectorTest extends TestCase
             ->will($this->returnValue($packages));
 
         $best = $versionSelector->findBestCandidate($packageName);
-        $this->assertSame($package1, $best, 'Latest version supporting ext-zip 5.3.0 should be returned (1.0.0)');
+        self::assertSame($package1, $best, 'Latest version supporting ext-zip 5.3.0 should be returned (1.0.0)');
         $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
-        $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
+        self::assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
     }
 
     public function testLatestVersionIsReturnedThatMatchesPlatformExt(): void
@@ -139,9 +139,9 @@ class VersionSelectorTest extends TestCase
             ->will($this->returnValue($packages));
 
         $best = $versionSelector->findBestCandidate($packageName);
-        $this->assertSame($package1, $best, 'Latest version not requiring ext-barfoo should be returned (1.0.0)');
+        self::assertSame($package1, $best, 'Latest version not requiring ext-barfoo should be returned (1.0.0)');
         $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
-        $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
+        self::assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
     }
 
     public function testLatestVersionIsReturnedThatMatchesComposerRequirements(): void
@@ -165,9 +165,9 @@ class VersionSelectorTest extends TestCase
             ->will($this->returnValue($packages));
 
         $best = $versionSelector->findBestCandidate($packageName);
-        $this->assertSame($package1, $best, 'Latest version supporting composer 1 should be returned (1.0.0)');
+        self::assertSame($package1, $best, 'Latest version supporting composer 1 should be returned (1.0.0)');
         $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
-        $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (1.1.0)');
+        self::assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (1.1.0)');
     }
 
     public function testMostStableVersionIsReturned(): void
@@ -187,7 +187,7 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName);
 
-        $this->assertSame($package1, $best, 'Latest most stable version should be returned (1.0.0)');
+        self::assertSame($package1, $best, 'Latest most stable version should be returned (1.0.0)');
     }
 
     public function testMostStableVersionIsReturnedRegardlessOfOrder(): void
@@ -209,10 +209,10 @@ class VersionSelectorTest extends TestCase
 
         $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName);
-        $this->assertSame($package2, $best, 'Expecting 2.0.0-beta3, cause beta is more stable than dev');
+        self::assertSame($package2, $best, 'Expecting 2.0.0-beta3, cause beta is more stable than dev');
 
         $best = $versionSelector->findBestCandidate($packageName);
-        $this->assertSame($package2, $best, 'Expecting 2.0.0-beta3, cause beta is more stable than dev');
+        self::assertSame($package2, $best, 'Expecting 2.0.0-beta3, cause beta is more stable than dev');
     }
 
     public function testHighestVersionIsReturned(): void
@@ -232,7 +232,7 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName, null, 'dev');
 
-        $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
+        self::assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }
 
     public function testHighestVersionMatchingStabilityIsReturned(): void
@@ -253,7 +253,7 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName, null, 'beta');
 
-        $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
+        self::assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }
 
     public function testMostStableUnstableVersionIsReturned(): void
@@ -273,7 +273,7 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName, null, 'stable');
 
-        $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
+        self::assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }
 
     public function testDefaultBranchAliasIsNeverReturned(): void
@@ -294,7 +294,7 @@ class VersionSelectorTest extends TestCase
         $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName, null, 'dev');
 
-        $this->assertSame($package2, $best, 'Latest version should be returned (dev-main)');
+        self::assertSame($package2, $best, 'Latest version should be returned (dev-main)');
     }
 
     public function testFalseReturnedOnNoPackages(): void
@@ -306,7 +306,7 @@ class VersionSelectorTest extends TestCase
 
         $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate('foobaz');
-        $this->assertFalse($best, 'No versions are available returns false');
+        self::assertFalse($best, 'No versions are available returns false');
     }
 
     /**
@@ -327,7 +327,7 @@ class VersionSelectorTest extends TestCase
         $recommended = $versionSelector->findRecommendedRequireVersion($package);
 
         // assert that the recommended version is what we expect
-        $this->assertSame($expectedVersion, $recommended);
+        self::assertSame($expectedVersion, $recommended);
     }
 
     public static function provideRecommendedRequireVersionPackages(): array

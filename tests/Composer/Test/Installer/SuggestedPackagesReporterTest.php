@@ -56,7 +56,7 @@ class SuggestedPackagesReporterTest extends TestCase
      */
     public function testGetPackagesEmptyByDefault(): void
     {
-        $this->assertEmpty($this->suggestedPackagesReporter->getPackages());
+        self::assertEmpty($this->suggestedPackagesReporter->getPackages());
     }
 
     /**
@@ -71,7 +71,7 @@ class SuggestedPackagesReporterTest extends TestCase
             $suggestedPackage['target'],
             $suggestedPackage['reason']
         );
-        $this->assertSame(
+        self::assertSame(
             [$suggestedPackage],
             $this->suggestedPackagesReporter->getPackages()
         );
@@ -99,7 +99,7 @@ class SuggestedPackagesReporterTest extends TestCase
             $suggestedPackageB['target'],
             $suggestedPackageB['reason']
         );
-        $this->assertSame(
+        self::assertSame(
             [$suggestedPackageA, $suggestedPackageB],
             $this->suggestedPackagesReporter->getPackages()
         );
@@ -122,7 +122,7 @@ class SuggestedPackagesReporterTest extends TestCase
             ->will($this->returnValue('package-pretty-name'));
 
         $this->suggestedPackagesReporter->addSuggestionsFromPackage($package);
-        $this->assertSame([
+        self::assertSame([
             [
                 'source' => 'package-pretty-name',
                 'target' => 'target-a',

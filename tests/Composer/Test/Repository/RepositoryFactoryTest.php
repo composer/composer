@@ -30,7 +30,7 @@ class RepositoryFactoryTest extends TestCase
         $ref->setAccessible(true);
         $repositoryClasses = $ref->getValue($manager);
 
-        $this->assertEquals([
+        self::assertEquals([
             'composer',
             'vcs',
             'package',
@@ -60,7 +60,7 @@ class RepositoryFactoryTest extends TestCase
      */
     public function testGenerateRepositoryName($index, array $config, array $existingRepos, string $expected): void
     {
-        $this->assertSame($expected, RepositoryFactory::generateRepositoryName($index, $config, $existingRepos));
+        self::assertSame($expected, RepositoryFactory::generateRepositoryName($index, $config, $existingRepos));
     }
 
     public static function generateRepositoryNameProvider(): array

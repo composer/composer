@@ -139,13 +139,13 @@ class PoolBuilderTest extends TestCase
 
         sort($expect);
         sort($result);
-        $this->assertSame($expect, $result, 'Unoptimized pool does not match expected package set');
+        self::assertSame($expect, $result, 'Unoptimized pool does not match expected package set');
 
         $optimizer = new PoolOptimizer(new DefaultPolicy());
         $result = $this->getPackageResultSet($optimizer->optimize($request, $pool), $packageIds);
         sort($expectOptimized);
         sort($result);
-        $this->assertSame($expectOptimized, $result, 'Optimized pool does not match expected package set');
+        self::assertSame($expectOptimized, $result, 'Optimized pool does not match expected package set');
 
         chdir($oldCwd);
     }

@@ -110,15 +110,15 @@ class JsonFileTest extends TestCase
             $json->validateSchema();
             $this->fail('Expected exception to be thrown (strict)');
         } catch (JsonValidationException $e) {
-            $this->assertEquals($expectedMessage, $e->getMessage());
-            $this->assertContains($expectedError, $e->getErrors());
+            self::assertEquals($expectedMessage, $e->getMessage());
+            self::assertContains($expectedError, $e->getErrors());
         }
         try {
             $json->validateSchema(JsonFile::LAX_SCHEMA);
             $this->fail('Expected exception to be thrown (lax)');
         } catch (JsonValidationException $e) {
-            $this->assertEquals($expectedMessage, $e->getMessage());
-            $this->assertContains($expectedError, $e->getErrors());
+            self::assertEquals($expectedMessage, $e->getMessage());
+            self::assertContains($expectedError, $e->getErrors());
         }
         unlink($file);
     }
@@ -132,8 +132,8 @@ class JsonFileTest extends TestCase
             $json->validateSchema();
             $this->fail('Expected exception to be thrown (strict)');
         } catch (JsonValidationException $e) {
-            $this->assertEquals(sprintf('"%s" does not match the expected JSON schema', $file), $e->getMessage());
-            $this->assertEquals(['The property foo is not defined and the definition does not allow additional properties'], $e->getErrors());
+            self::assertEquals(sprintf('"%s" does not match the expected JSON schema', $file), $e->getMessage());
+            self::assertEquals(['The property foo is not defined and the definition does not allow additional properties'], $e->getErrors());
         }
         $json->validateSchema(JsonFile::LAX_SCHEMA);
         unlink($file);
@@ -151,10 +151,10 @@ class JsonFileTest extends TestCase
             $json->validateSchema();
             $this->fail('Expected exception to be thrown (strict)');
         } catch (JsonValidationException $e) {
-            $this->assertEquals($expectedMessage, $e->getMessage());
+            self::assertEquals($expectedMessage, $e->getMessage());
             $errors = $e->getErrors();
-            $this->assertContains('name : The property name is required', $errors);
-            $this->assertContains('description : The property description is required', $errors);
+            self::assertContains('name : The property name is required', $errors);
+            self::assertContains('description : The property description is required', $errors);
         }
         $json->validateSchema(JsonFile::LAX_SCHEMA);
 
@@ -163,8 +163,8 @@ class JsonFileTest extends TestCase
             $json->validateSchema();
             $this->fail('Expected exception to be thrown (strict)');
         } catch (JsonValidationException $e) {
-            $this->assertEquals($expectedMessage, $e->getMessage());
-            $this->assertEquals(['description : The property description is required'], $e->getErrors());
+            self::assertEquals($expectedMessage, $e->getMessage());
+            self::assertEquals(['description : The property description is required'], $e->getErrors());
         }
         $json->validateSchema(JsonFile::LAX_SCHEMA);
 
@@ -173,8 +173,8 @@ class JsonFileTest extends TestCase
             $json->validateSchema();
             $this->fail('Expected exception to be thrown (strict)');
         } catch (JsonValidationException $e) {
-            $this->assertEquals($expectedMessage, $e->getMessage());
-            $this->assertEquals(['name : The property name is required'], $e->getErrors());
+            self::assertEquals($expectedMessage, $e->getMessage());
+            self::assertEquals(['name : The property name is required'], $e->getErrors());
         }
         $json->validateSchema(JsonFile::LAX_SCHEMA);
 
@@ -183,10 +183,10 @@ class JsonFileTest extends TestCase
             $json->validateSchema();
             $this->fail('Expected exception to be thrown (strict)');
         } catch (JsonValidationException $e) {
-            $this->assertEquals($expectedMessage, $e->getMessage());
+            self::assertEquals($expectedMessage, $e->getMessage());
             $errors = $e->getErrors();
-            $this->assertContains('name : The property name is required', $errors);
-            $this->assertContains('description : The property description is required', $errors);
+            self::assertContains('name : The property name is required', $errors);
+            self::assertContains('description : The property description is required', $errors);
         }
         $json->validateSchema(JsonFile::LAX_SCHEMA);
 
@@ -195,10 +195,10 @@ class JsonFileTest extends TestCase
             $json->validateSchema();
             $this->fail('Expected exception to be thrown (strict)');
         } catch (JsonValidationException $e) {
-            $this->assertEquals($expectedMessage, $e->getMessage());
+            self::assertEquals($expectedMessage, $e->getMessage());
             $errors = $e->getErrors();
-            $this->assertContains('name : The property name is required', $errors);
-            $this->assertContains('description : The property description is required', $errors);
+            self::assertContains('name : The property name is required', $errors);
+            self::assertContains('description : The property description is required', $errors);
         }
         $json->validateSchema(JsonFile::LAX_SCHEMA);
 
@@ -252,8 +252,8 @@ class JsonFileTest extends TestCase
             JsonFile::validateJsonSchema('COMPOSER_AUTH', $json, JsonFile::AUTH_SCHEMA);
             $this->fail('Expected exception to be thrown');
         } catch (JsonValidationException $e) {
-            $this->assertEquals($expectedMessage, $e->getMessage());
-            $this->assertSame([$expectedError], $e->getErrors());
+            self::assertEquals($expectedMessage, $e->getMessage());
+            self::assertSame([$expectedError], $e->getErrors());
         }
     }
 
@@ -282,7 +282,7 @@ class JsonFileTest extends TestCase
         $json = '{
     "name": "composer/composer"
 }';
-        $this->assertJsonFormat($json, $data);
+        self::assertJsonFormat($json, $data);
     }
 
     public function testTrailingBackslash(): void
@@ -291,7 +291,7 @@ class JsonFileTest extends TestCase
         $json = '{
     "Metadata\\\\": "src/"
 }';
-        $this->assertJsonFormat($json, $data);
+        self::assertJsonFormat($json, $data);
     }
 
     public function testFormatEmptyArray(): void
@@ -301,7 +301,7 @@ class JsonFileTest extends TestCase
     "test": [],
     "test2": {}
 }';
-        $this->assertJsonFormat($json, $data);
+        self::assertJsonFormat($json, $data);
     }
 
     public function testEscape(): void
@@ -311,7 +311,7 @@ class JsonFileTest extends TestCase
     "Metadata\\\\\\"": "src/"
 }';
 
-        $this->assertJsonFormat($json, $data);
+        self::assertJsonFormat($json, $data);
     }
 
     public function testUnicode(): void
@@ -321,35 +321,35 @@ class JsonFileTest extends TestCase
     "Žluťoučký \" kůň": "úpěl ďábelské ódy za €"
 }';
 
-        $this->assertJsonFormat($json, $data);
+        self::assertJsonFormat($json, $data);
     }
 
     public function testOnlyUnicode(): void
     {
         $data = "\\/ƌ";
 
-        $this->assertJsonFormat('"\\\\\\/ƌ"', $data, JSON_UNESCAPED_UNICODE);
+        self::assertJsonFormat('"\\\\\\/ƌ"', $data, JSON_UNESCAPED_UNICODE);
     }
 
     public function testEscapedSlashes(): void
     {
         $data = "\\/foo";
 
-        $this->assertJsonFormat('"\\\\\\/foo"', $data, 0);
+        self::assertJsonFormat('"\\\\\\/foo"', $data, 0);
     }
 
     public function testEscapedBackslashes(): void
     {
         $data = "a\\b";
 
-        $this->assertJsonFormat('"a\\\\b"', $data, 0);
+        self::assertJsonFormat('"a\\\\b"', $data, 0);
     }
 
     public function testEscapedUnicode(): void
     {
         $data = "ƌ";
 
-        $this->assertJsonFormat('"\\u018c"', $data, 0);
+        self::assertJsonFormat('"\\u018c"', $data, 0);
     }
 
     public function testDoubleEscapedUnicode(): void
@@ -361,7 +361,7 @@ class JsonFileTest extends TestCase
 
         $decodedData = json_decode($doubleEncodedData, true);
         $doubleData = json_decode($decodedData['t'], true);
-        $this->assertEquals($data, $doubleData);
+        self::assertEquals($data, $doubleData);
     }
 
     public function testPreserveIndentationAfterRead(): void
@@ -393,7 +393,7 @@ class JsonFileTest extends TestCase
             $result = JsonFile::parseJson($json);
             $this->fail(sprintf("Parsing should have failed but didn't.\nExpected:\n\"%s\"\nFor:\n\"%s\"\nGot:\n\"%s\"", $text, $json, var_export($result, true)));
         } catch (ParsingException $e) {
-            $this->assertStringContainsString($text, $e->getMessage());
+            self::assertStringContainsString($text, $e->getMessage());
         }
     }
 
@@ -406,9 +406,9 @@ class JsonFileTest extends TestCase
 
         $json = str_replace("\r", '', $json);
         if (null === $options) {
-            $this->assertEquals($json, $file->encode($data));
+            self::assertEquals($json, $file->encode($data));
         } else {
-            $this->assertEquals($json, $file->encode($data, $options));
+            self::assertEquals($json, $file->encode($data, $options));
         }
     }
 }

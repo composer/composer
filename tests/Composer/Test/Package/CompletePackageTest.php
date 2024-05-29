@@ -42,7 +42,7 @@ class CompletePackageTest extends TestCase
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);
         $package = new Package($name, $normVersion, $version);
-        $this->assertEquals(strtolower($name), $package->getName());
+        self::assertEquals(strtolower($name), $package->getName());
     }
 
     /**
@@ -53,8 +53,8 @@ class CompletePackageTest extends TestCase
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);
         $package = new Package($name, $normVersion, $version);
-        $this->assertEquals($version, $package->getPrettyVersion());
-        $this->assertEquals($normVersion, $package->getVersion());
+        self::assertEquals($version, $package->getPrettyVersion());
+        self::assertEquals($normVersion, $package->getVersion());
     }
 
     /**
@@ -65,34 +65,34 @@ class CompletePackageTest extends TestCase
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);
         $package = new Package($name, $normVersion, $version);
-        $this->assertEquals(strtolower($name).'-'.$normVersion, (string) $package);
+        self::assertEquals(strtolower($name).'-'.$normVersion, (string) $package);
     }
 
     public function testGetTargetDir(): void
     {
         $package = new Package('a', '1.0.0.0', '1.0');
 
-        $this->assertNull($package->getTargetDir());
+        self::assertNull($package->getTargetDir());
 
         $package->setTargetDir('./../foo/');
-        $this->assertEquals('foo/', $package->getTargetDir());
+        self::assertEquals('foo/', $package->getTargetDir());
 
         $package->setTargetDir('foo/../../../bar/');
-        $this->assertEquals('foo/bar/', $package->getTargetDir());
+        self::assertEquals('foo/bar/', $package->getTargetDir());
 
         $package->setTargetDir('../..');
-        $this->assertEquals('', $package->getTargetDir());
+        self::assertEquals('', $package->getTargetDir());
 
         $package->setTargetDir('..');
-        $this->assertEquals('', $package->getTargetDir());
+        self::assertEquals('', $package->getTargetDir());
 
         $package->setTargetDir('/..');
-        $this->assertEquals('', $package->getTargetDir());
+        self::assertEquals('', $package->getTargetDir());
 
         $package->setTargetDir('/foo/..');
-        $this->assertEquals('foo/', $package->getTargetDir());
+        self::assertEquals('foo/', $package->getTargetDir());
 
         $package->setTargetDir('/foo/..//bar');
-        $this->assertEquals('foo/bar', $package->getTargetDir());
+        self::assertEquals('foo/bar', $package->getTargetDir());
     }
 }

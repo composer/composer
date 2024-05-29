@@ -36,9 +36,9 @@ class InstalledRepositoryTest extends TestCase
 
         $repo = new InstalledRepository([$arrayRepoOne, $arrayRepoTwo]);
 
-        $this->assertEquals([$foo2], $repo->findPackagesWithReplacersAndProviders('foo', '2'));
-        $this->assertEquals([$bar], $repo->findPackagesWithReplacersAndProviders('bar', '1'));
-        $this->assertEquals([$foo, $bar2], $repo->findPackagesWithReplacersAndProviders('provided'));
+        self::assertEquals([$foo2], $repo->findPackagesWithReplacersAndProviders('foo', '2'));
+        self::assertEquals([$bar], $repo->findPackagesWithReplacersAndProviders('bar', '1'));
+        self::assertEquals([$foo, $bar2], $repo->findPackagesWithReplacersAndProviders('provided'));
     }
 
     public function testAddRepository(): void

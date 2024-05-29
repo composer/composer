@@ -41,7 +41,7 @@ class RuleSetTest extends TestCase
         $ruleSet->add($rules[RuleSet::TYPE_LEARNED][0], RuleSet::TYPE_LEARNED);
         $ruleSet->add($rules[RuleSet::TYPE_REQUEST][1], RuleSet::TYPE_REQUEST);
 
-        $this->assertEquals($rules, $ruleSet->getRules());
+        self::assertEquals($rules, $ruleSet->getRules());
     }
 
     public function testAddIgnoresDuplicates(): void
@@ -60,7 +60,7 @@ class RuleSetTest extends TestCase
         $ruleSet->add($rules[RuleSet::TYPE_REQUEST][1], RuleSet::TYPE_REQUEST);
         $ruleSet->add($rules[RuleSet::TYPE_REQUEST][2], RuleSet::TYPE_REQUEST);
 
-        $this->assertCount(1, $ruleSet->getIteratorFor([RuleSet::TYPE_REQUEST]));
+        self::assertCount(1, $ruleSet->getIteratorFor([RuleSet::TYPE_REQUEST]));
     }
 
     public function testAddWhenTypeIsNotRecognized(): void
@@ -79,7 +79,7 @@ class RuleSetTest extends TestCase
         $ruleSet->add(new GenericRule([1], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]), RuleSet::TYPE_REQUEST);
         $ruleSet->add(new GenericRule([2], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]), RuleSet::TYPE_REQUEST);
 
-        $this->assertEquals(2, $ruleSet->count());
+        self::assertEquals(2, $ruleSet->count());
     }
 
     public function testRuleById(): void
@@ -89,7 +89,7 @@ class RuleSetTest extends TestCase
         $rule = new GenericRule([], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
         $ruleSet->add($rule, RuleSet::TYPE_REQUEST);
 
-        $this->assertSame($rule, $ruleSet->ruleById[0]);
+        self::assertSame($rule, $ruleSet->ruleById[0]);
     }
 
     public function testGetIterator(): void
@@ -103,9 +103,9 @@ class RuleSetTest extends TestCase
 
         $iterator = $ruleSet->getIterator();
 
-        $this->assertSame($rule1, $iterator->current());
+        self::assertSame($rule1, $iterator->current());
         $iterator->next();
-        $this->assertSame($rule2, $iterator->current());
+        self::assertSame($rule2, $iterator->current());
     }
 
     public function testGetIteratorFor(): void
@@ -119,7 +119,7 @@ class RuleSetTest extends TestCase
 
         $iterator = $ruleSet->getIteratorFor(RuleSet::TYPE_LEARNED);
 
-        $this->assertSame($rule2, $iterator->current());
+        self::assertSame($rule2, $iterator->current());
     }
 
     public function testGetIteratorWithout(): void
@@ -133,7 +133,7 @@ class RuleSetTest extends TestCase
 
         $iterator = $ruleSet->getIteratorWithout(RuleSet::TYPE_REQUEST);
 
-        $this->assertSame($rule2, $iterator->current());
+        self::assertSame($rule2, $iterator->current());
     }
 
     public function testPrettyString(): void
@@ -151,6 +151,6 @@ class RuleSetTest extends TestCase
 
         $ruleSet->add($rule, RuleSet::TYPE_REQUEST);
 
-        $this->assertStringContainsString('REQUEST : No package found to satisfy root composer.json require foo/bar', $ruleSet->getPrettyString($repositorySetMock, $requestMock, $pool));
+        self::assertStringContainsString('REQUEST : No package found to satisfy root composer.json require foo/bar', $ruleSet->getPrettyString($repositorySetMock, $requestMock, $pool));
     }
 }

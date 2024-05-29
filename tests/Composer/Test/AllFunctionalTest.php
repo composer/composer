@@ -93,7 +93,7 @@ class AllFunctionalTest extends TestCase
             $this->fail($proc->getOutput());
         }
 
-        $this->assertFileExists(self::$pharPath);
+        self::assertFileExists(self::$pharPath);
         copy(self::$pharPath, __DIR__.'/../../composer-test.phar');
     }
 
@@ -164,16 +164,16 @@ class AllFunctionalTest extends TestCase
             }
         }
         if (isset($testData['EXPECT-REGEX'])) {
-            $this->assertMatchesRegularExpression($testData['EXPECT-REGEX'], $this->cleanOutput($output));
+            self::assertMatchesRegularExpression($testData['EXPECT-REGEX'], $this->cleanOutput($output));
         }
         if (isset($testData['EXPECT-REGEXES'])) {
             $cleanOutput = $this->cleanOutput($output);
             foreach (explode("\n", $testData['EXPECT-REGEXES']) as $regex) {
-                $this->assertMatchesRegularExpression($regex, $cleanOutput, 'Output: '.$output);
+                self::assertMatchesRegularExpression($regex, $cleanOutput, 'Output: '.$output);
             }
         }
         if (isset($testData['EXPECT-EXIT-CODE'])) {
-            $this->assertSame($testData['EXPECT-EXIT-CODE'], $exitCode);
+            self::assertSame($testData['EXPECT-EXIT-CODE'], $exitCode);
         }
     }
 

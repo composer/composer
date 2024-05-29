@@ -29,7 +29,7 @@ class ConfigValidatorTest extends TestCase
         $configValidator = new ConfigValidator(new NullIO());
         [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_commit-ref.json');
 
-        $this->assertContains(
+        self::assertContains(
             'The package "some/package" is pointing to a commit-ref, this is bad practice and can cause unforeseen issues.',
             $warnings
         );
@@ -40,7 +40,7 @@ class ConfigValidatorTest extends TestCase
         $configValidator = new ConfigValidator(new NullIO());
         [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-descriptions.json');
 
-        $this->assertContains(
+        self::assertContains(
             'Description for non-existent script "phpcsxxx" found in "scripts-descriptions"',
             $warnings
         );
@@ -51,7 +51,7 @@ class ConfigValidatorTest extends TestCase
         $configValidator = new ConfigValidator(new NullIO());
         [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-aliases.json');
 
-        $this->assertContains(
+        self::assertContains(
             'Aliases for non-existent script "phpcsxxx" found in "scripts-aliases"',
             $warnings
         );
@@ -62,15 +62,15 @@ class ConfigValidatorTest extends TestCase
         $configValidator = new ConfigValidator(new NullIO());
         [, , $warnings] = $configValidator->validate(__DIR__ . '/Fixtures/composer_provide-replace-requirements.json');
 
-        $this->assertContains(
+        self::assertContains(
             'The package a/a in require is also listed in provide which satisfies the requirement. Remove it from provide if you wish to install it.',
             $warnings
         );
-        $this->assertContains(
+        self::assertContains(
             'The package b/b in require is also listed in replace which satisfies the requirement. Remove it from replace if you wish to install it.',
             $warnings
         );
-        $this->assertContains(
+        self::assertContains(
             'The package c/c in require-dev is also listed in provide which satisfies the requirement. Remove it from provide if you wish to install it.',
             $warnings
         );

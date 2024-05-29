@@ -304,7 +304,7 @@ class GitDownloaderTest extends TestCase
             if ('RuntimeException' !== get_class($e)) {
                 throw $e;
             }
-            $this->assertEquals('RuntimeException', get_class($e));
+            self::assertEquals('RuntimeException', get_class($e));
         }
     }
 
@@ -461,7 +461,7 @@ composer https://github.com/old/url (push)
             if ('RuntimeException' !== get_class($e)) {
                 throw $e;
             }
-            $this->assertEquals('RuntimeException', get_class($e));
+            self::assertEquals('RuntimeException', get_class($e));
         }
     }
 
@@ -631,7 +631,7 @@ composer https://github.com/old/url (push)
     {
         $downloader = $this->getDownloaderMock();
 
-        $this->assertEquals('source', $downloader->getInstallationSource());
+        self::assertEquals('source', $downloader->getInstallationSource());
     }
 
     private function winCompat(string $cmd): string

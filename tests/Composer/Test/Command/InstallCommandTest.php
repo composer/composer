@@ -42,7 +42,7 @@ class InstallCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'install'], $command));
 
-        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+        self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
     public function errorCaseProvider(): Generator
@@ -118,7 +118,7 @@ OUTPUT
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'install', '--no-progress' => true]);
 
-        $this->assertSame('Installing dependencies from lock file (including require-dev)
+        self::assertSame('Installing dependencies from lock file (including require-dev)
 Verifying lock file contents can be installed on current platform.
 Package operations: 2 installs, 0 updates, 0 removals
   - Installing root/another (1.0.0)
@@ -148,7 +148,7 @@ Generating autoload files', trim($appTester->getDisplay(true)));
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'install', '--no-progress' => true, '--no-dev' => true]);
 
-        $this->assertSame('Installing dependencies from lock file
+        self::assertSame('Installing dependencies from lock file
 Verifying lock file contents can be installed on current platform.
 Package operations: 1 install, 0 updates, 0 removals
   - Installing root/req (1.0.0)
@@ -175,7 +175,7 @@ Generating autoload files', trim($appTester->getDisplay(true)));
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'install', '--no-progress' => true]);
 
-        $this->assertSame('Installing dependencies from lock file (including require-dev)
+        self::assertSame('Installing dependencies from lock file (including require-dev)
 Verifying lock file contents can be installed on current platform.
 Package operations: 1 install, 0 updates, 0 removals
   - Installing root/another (1.0.0)

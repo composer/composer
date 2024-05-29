@@ -47,7 +47,7 @@ class CheckPlatformReqsCommandTest extends TestCase
         $appTester->run(array_merge(['command' => 'check-platform-reqs'], $command));
 
         $appTester->assertCommandIsSuccessful();
-        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+        self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
     public function testExceptionThrownIfNoLockfileFound(): void
@@ -89,7 +89,7 @@ ext-foobar 2.3.4   success'
         ];
     }
 
-    public function testFailedPlatformRequirement(): void 
+    public function testFailedPlatformRequirement(): void
     {
         $this->initTempComposer([
             'require' => [
@@ -137,6 +137,6 @@ ext-foobar 2.3.4   success'
     }
 ]';
 
-        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+        self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 }

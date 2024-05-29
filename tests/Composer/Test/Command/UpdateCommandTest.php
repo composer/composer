@@ -29,7 +29,7 @@ class UpdateCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true], $command));
 
-        $this->assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+        self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
     }
 
     public static function provideUpdates(): \Generator

@@ -81,8 +81,8 @@ class FileDownloaderTest extends TestCase
             } elseif (is_file($path)) {
                 unlink($path);
             }
-            $this->assertInstanceOf('RuntimeException', $e);
-            $this->assertStringContainsString('exists and is not a directory', $e->getMessage());
+            self::assertInstanceOf('RuntimeException', $e);
+            self::assertStringContainsString('exists and is not a directory', $e->getMessage());
         }
     }
 
@@ -96,7 +96,7 @@ class FileDownloaderTest extends TestCase
         $method = new \ReflectionMethod($downloader, 'getFileName');
         $method->setAccessible(true);
 
-        $this->assertMatchesRegularExpression('#/vendor/composer/tmp-[a-z0-9]+\.js#', $method->invoke($downloader, $package, '/path'));
+        self::assertMatchesRegularExpression('#/vendor/composer/tmp-[a-z0-9]+\.js#', $method->invoke($downloader, $package, '/path'));
     }
 
     public function testDownloadButFileIsUnsaved(): void
@@ -134,8 +134,8 @@ class FileDownloaderTest extends TestCase
                 unlink($path);
             }
 
-            $this->assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
-            $this->assertStringContainsString('could not be saved to', $e->getMessage());
+            self::assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
+            self::assertStringContainsString('could not be saved to', $e->getMessage());
         }
     }
 
@@ -176,7 +176,7 @@ class FileDownloaderTest extends TestCase
             ->expects($this->any())
             ->method('copyTo')
             ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
-                $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
+                self::assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
 
                 return false;
             }));
@@ -184,7 +184,7 @@ class FileDownloaderTest extends TestCase
             ->expects($this->any())
             ->method('copyFrom')
             ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
-                $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
+                self::assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
 
                 return false;
             }));
@@ -194,7 +194,7 @@ class FileDownloaderTest extends TestCase
             ->expects($this->any())
             ->method('addCopy')
             ->will($this->returnCallback(function ($url) use ($expectedUrl) {
-                $this->assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
+                self::assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
 
                 return \React\Promise\resolve(
                     new Response(['url' => 'http://example.org/'], 200, [], 'file~')
@@ -217,8 +217,8 @@ class FileDownloaderTest extends TestCase
                 unlink($path);
             }
 
-            $this->assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
-            $this->assertStringContainsString('could not be saved to', $e->getMessage());
+            self::assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
+            self::assertStringContainsString('could not be saved to', $e->getMessage());
         }
     }
 
@@ -260,7 +260,7 @@ class FileDownloaderTest extends TestCase
             ->expects($this->any())
             ->method('copyTo')
             ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
-                $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
+                self::assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
 
                 return false;
             }));
@@ -268,7 +268,7 @@ class FileDownloaderTest extends TestCase
             ->expects($this->any())
             ->method('copyFrom')
             ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
-                $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
+                self::assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
 
                 return false;
             }));
@@ -278,7 +278,7 @@ class FileDownloaderTest extends TestCase
             ->expects($this->any())
             ->method('addCopy')
             ->will($this->returnCallback(function ($url) use ($expectedUrl) {
-                $this->assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
+                self::assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
 
                 return \React\Promise\resolve(
                     new Response(['url' => 'http://example.org/'], 200, [], 'file~')
@@ -301,8 +301,8 @@ class FileDownloaderTest extends TestCase
                 unlink($path);
             }
 
-            $this->assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
-            $this->assertStringContainsString('could not be saved to', $e->getMessage());
+            self::assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
+            self::assertStringContainsString('could not be saved to', $e->getMessage());
         }
     }
 
@@ -364,8 +364,8 @@ class FileDownloaderTest extends TestCase
                 unlink($path);
             }
 
-            $this->assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
-            $this->assertStringContainsString('checksum verification', $e->getMessage());
+            self::assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
+            self::assertStringContainsString('checksum verification', $e->getMessage());
         }
     }
 

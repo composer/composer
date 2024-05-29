@@ -200,7 +200,7 @@ class EventDispatcherTest extends TestCase
             .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
             .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
             .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL;
-        $this->assertEquals($expected, $io->getOutput());
+        self::assertEquals($expected, $io->getOutput());
 
         $dispatcher->removeListener($this);
         $dispatcher->dispatch('ev1');
@@ -208,7 +208,7 @@ class EventDispatcherTest extends TestCase
 
         $expected .= '> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
             .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL;
-        $this->assertEquals($expected, $io->getOutput());
+        self::assertEquals($expected, $io->getOutput());
     }
 
     public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack(): void
@@ -245,7 +245,7 @@ class EventDispatcherTest extends TestCase
         $expected = '> post-install-cmd: echo -n foo'.PHP_EOL.
             '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL.
             '> post-install-cmd: echo -n bar'.PHP_EOL;
-        $this->assertEquals($expected, $io->getOutput());
+        self::assertEquals($expected, $io->getOutput());
     }
 
     public function testDispatcherCanPutEnv(): void
@@ -274,7 +274,7 @@ class EventDispatcherTest extends TestCase
 
         $expected = '> post-install-cmd: @putenv ABC=123'.PHP_EOL.
             '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::getTestEnv'.PHP_EOL;
-        $this->assertEquals($expected, $io->getOutput());
+        self::assertEquals($expected, $io->getOutput());
     }
 
     public function testDispatcherAppendsDirBinOnPathForEveryListener(): void
@@ -386,7 +386,7 @@ class EventDispatcherTest extends TestCase
             '> group: @subgroup'.PHP_EOL.
             '> subgroup: echo -n baz'.PHP_EOL.
             '> group: echo -n bar'.PHP_EOL;
-        $this->assertEquals($expected, $io->getOutput());
+        self::assertEquals($expected, $io->getOutput());
     }
 
     public function testRecursionInScriptsNames(): void
@@ -425,7 +425,7 @@ class EventDispatcherTest extends TestCase
         $expected = "> helloWorld: @hello World".PHP_EOL.
             "> hello: echo Hello " .self::getCmd("'World'").PHP_EOL;
 
-        $this->assertEquals($expected, $io->getOutput());
+        self::assertEquals($expected, $io->getOutput());
     }
 
     public function testDispatcherDetectInfiniteRecursion(): void

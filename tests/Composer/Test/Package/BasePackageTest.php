@@ -54,7 +54,7 @@ class BasePackageTest extends TestCase
         $package->expects($this->once())->method('getPrettyVersion')->will($this->returnValue('PrettyVersion'));
         $package->expects($this->any())->method('getSourceReference')->will($this->returnValue($sourceReference));
 
-        $this->assertSame($expected, $package->getFullPrettyVersion($truncate));
+        self::assertSame($expected, $package->getFullPrettyVersion($truncate));
     }
 
     public static function provideFormattedVersions(): array
@@ -93,7 +93,7 @@ class BasePackageTest extends TestCase
     {
         $regexp = BasePackage::packageNamesToRegexp($packageNames, $wrap);
 
-        $this->assertSame($expectedRegexp, $regexp);
+        self::assertSame($expectedRegexp, $regexp);
     }
 
     /**

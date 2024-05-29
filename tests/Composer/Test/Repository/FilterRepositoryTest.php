@@ -45,7 +45,7 @@ class FilterRepositoryTest extends TestCase
         $repo = new FilterRepository($this->arrayRepo, $config);
         $packages = $repo->getPackages();
 
-        $this->assertSame($expected, array_map(static function ($p): string {
+        self::assertSame($expected, array_map(static function ($p): string {
             return $p->getName();
         }, $packages));
     }
@@ -87,15 +87,15 @@ class FilterRepositoryTest extends TestCase
     {
         $repo = new FilterRepository($this->arrayRepo, []);
         $result = $repo->loadPackages(['foo/aaa' => new MatchAllConstraint], BasePackage::$stabilities, []);
-        $this->assertCount(1, $result['packages']);
-        $this->assertCount(1, $result['namesFound']);
+        self::assertCount(1, $result['packages']);
+        self::assertCount(1, $result['namesFound']);
     }
 
     public function testNonCanonical(): void
     {
         $repo = new FilterRepository($this->arrayRepo, ['canonical' => false]);
         $result = $repo->loadPackages(['foo/aaa' => new MatchAllConstraint], BasePackage::$stabilities, []);
-        $this->assertCount(1, $result['packages']);
-        $this->assertCount(0, $result['namesFound']);
+        self::assertCount(1, $result['packages']);
+        self::assertCount(0, $result['namesFound']);
     }
 }

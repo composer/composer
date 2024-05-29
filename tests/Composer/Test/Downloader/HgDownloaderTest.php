@@ -154,6 +154,6 @@ class HgDownloaderTest extends TestCase
     {
         $downloader = $this->getDownloaderMock(null);
 
-        $this->assertEquals('source', $downloader->getInstallationSource());
+        self::assertEquals('source', $downloader->getInstallationSource());
     }
 }

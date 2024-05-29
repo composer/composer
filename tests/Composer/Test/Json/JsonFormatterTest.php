@@ -30,7 +30,7 @@ class JsonFormatterTest extends TestCase
         $data = '"' . $backslash . $backslash . $backslash . 'u0119"';
         $expected = '"' . $backslash . $backslash . 'ę"';
         /** @phpstan-ignore staticMethod.dynamicCall, staticMethod.deprecatedClass */
-        $this->assertEquals($expected, JsonFormatter::format($data, true, true));
+        self::assertEquals($expected, JsonFormatter::format($data, true, true));
     }
 
     /**
@@ -45,6 +45,6 @@ class JsonFormatterTest extends TestCase
 
         $escaped = '"\ud83d\ude00"';
         /** @phpstan-ignore staticMethod.dynamicCall, staticMethod.deprecatedClass */
-        $this->assertEquals($escaped, JsonFormatter::format($escaped, true, true));
+        self::assertEquals($escaped, JsonFormatter::format($escaped, true, true));
     }
 }

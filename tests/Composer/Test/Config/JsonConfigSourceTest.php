@@ -50,7 +50,7 @@ class JsonConfigSourceTest extends TestCase
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
         $jsonConfigSource->addRepository('example_tld', ['type' => 'git', 'url' => 'example.tld']);
 
-        $this->assertFileEquals(self::fixturePath('config/config-with-exampletld-repository.json'), $config);
+        self::assertFileEquals(self::fixturePath('config/config-with-exampletld-repository.json'), $config);
     }
 
     public function testAddRepositoryWithOptions(): void
@@ -68,7 +68,7 @@ class JsonConfigSourceTest extends TestCase
             ],
         ]);
 
-        $this->assertFileEquals(self::fixturePath('config/config-with-exampletld-repository-and-options.json'), $config);
+        self::assertFileEquals(self::fixturePath('config/config-with-exampletld-repository-and-options.json'), $config);
     }
 
     public function testRemoveRepository(): void
@@ -78,7 +78,7 @@ class JsonConfigSourceTest extends TestCase
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
         $jsonConfigSource->removeRepository('example_tld');
 
-        $this->assertFileEquals(self::fixturePath('composer-repositories.json'), $config);
+        self::assertFileEquals(self::fixturePath('composer-repositories.json'), $config);
     }
 
     public function testAddPackagistRepositoryWithFalseValue(): void
@@ -88,7 +88,7 @@ class JsonConfigSourceTest extends TestCase
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
         $jsonConfigSource->addRepository('packagist', false);
 
-        $this->assertFileEquals(self::fixturePath('config/config-with-packagist-false.json'), $config);
+        self::assertFileEquals(self::fixturePath('config/config-with-packagist-false.json'), $config);
     }
 
     public function testRemovePackagist(): void
@@ -98,7 +98,7 @@ class JsonConfigSourceTest extends TestCase
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
         $jsonConfigSource->removeRepository('packagist');
 
-        $this->assertFileEquals(self::fixturePath('composer-repositories.json'), $config);
+        self::assertFileEquals(self::fixturePath('composer-repositories.json'), $config);
     }
 
     /**
@@ -120,7 +120,7 @@ class JsonConfigSourceTest extends TestCase
 
         $jsonConfigSource->addLink($type, $name, $value);
 
-        $this->assertFileEquals($compareAgainst, $composerJson);
+        self::assertFileEquals($compareAgainst, $composerJson);
     }
 
     /**
@@ -141,7 +141,7 @@ class JsonConfigSourceTest extends TestCase
 
         $jsonConfigSource->removeLink($type, $name);
 
-        $this->assertFileEquals($compareAgainst, $composerJson);
+        self::assertFileEquals($compareAgainst, $composerJson);
     }
 
     /**

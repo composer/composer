@@ -30,7 +30,7 @@ class StatusCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'status']);
 
-        $this->assertSame('No local changes', trim($appTester->getDisplay(true)));
+        self::assertSame('No local changes', trim($appTester->getDisplay(true)));
     }
 
     /**
@@ -73,8 +73,8 @@ class StatusCommandTest extends TestCase
         $expected = 'You have changes in the following dependencies:';
         $actual = trim($appTester->getDisplay(true));
 
-        $this->assertStringContainsString($expected, $actual);
-        $this->assertStringContainsString($packageData['name'], $actual);
+        self::assertStringContainsString($expected, $actual);
+        self::assertStringContainsString($packageData['name'], $actual);
     }
 
     public static function locallyModifiedPackagesUseCaseProvider(): Generator

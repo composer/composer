@@ -29,7 +29,7 @@ class UrlTest extends TestCase
         $config = new Config();
         $config->merge(['config' => $conf]);
 
-        $this->assertSame($expectedUrl, Url::updateDistReference($config, $url, $ref));
+        self::assertSame($expectedUrl, Url::updateDistReference($config, $url, $ref));
     }
 
     public static function distRefsProvider(): array
@@ -67,7 +67,7 @@ class UrlTest extends TestCase
      */
     public function testSanitize(string $expected, string $url): void
     {
-        $this->assertSame($expected, Url::sanitize($url));
+        self::assertSame($expected, Url::sanitize($url));
     }
 
     public static function sanitizeProvider(): array

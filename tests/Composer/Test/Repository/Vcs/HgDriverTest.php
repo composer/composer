@@ -50,7 +50,7 @@ class HgDriverTest extends TestCase
      */
     public function testSupports(string $repositoryUrl): void
     {
-        $this->assertTrue(
+        self::assertTrue(
             HgDriver::supports($this->io, $this->config, $repositoryUrl)
         );
     }
@@ -93,7 +93,7 @@ HG_BOOKMARKS;
             ]]);
 
         $branches = $driver->getBranches();
-        $this->assertSame([
+        self::assertSame([
             'help' => 'dbf6c8acb641',
             'default' => 'dbf6c8acb640',
         ], $branches);
@@ -106,7 +106,7 @@ HG_BOOKMARKS;
         $process = $this->getProcessExecutorMock();
         $driver = new HgDriver(['url' => 'https://example.org/acme.git'], $this->io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
 
-        $this->assertNull($driver->getFileContent('file.txt', 'h'));
+        self::assertNull($driver->getFileContent('file.txt', 'h'));
 
         $driver->getFileContent('file.txt', '-h');
     }

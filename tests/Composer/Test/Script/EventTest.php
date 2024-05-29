@@ -28,15 +28,14 @@ class EventTest extends TestCase
 
         $scriptEvent = new Event('test', $composer, $io, true);
 
-        $this->assertNull(
+        self::assertNull(
             $scriptEvent->getOriginatingEvent(),
             'originatingEvent is initialized as null'
         );
 
         $scriptEvent->setOriginatingEvent($originatingEvent);
 
-        // @phpstan-ignore staticMethod.dynamicCall
-        $this->assertSame(
+        self::assertSame(
             $originatingEvent,
             $scriptEvent->getOriginatingEvent(),
             'getOriginatingEvent() SHOULD return test event'
@@ -55,13 +54,13 @@ class EventTest extends TestCase
         $scriptEvent = new Event('test', $composer, $io, true);
         $scriptEvent->setOriginatingEvent($intermediateEvent);
 
-        $this->assertNotSame(
+        self::assertNotSame(
             $intermediateEvent,
             $scriptEvent->getOriginatingEvent(),
             'getOriginatingEvent() SHOULD NOT return intermediate events'
         );
 
-        $this->assertSame(
+        self::assertSame(
             $originatingEvent,
             $scriptEvent->getOriginatingEvent(),
             'getOriginatingEvent() SHOULD return upper-most event'

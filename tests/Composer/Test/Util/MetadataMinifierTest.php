@@ -39,7 +39,7 @@ class MetadataMinifierTest extends TestCase
 
         $source = [$dumper->dump($package1), $dumper->dump($package2), $dumper->dump($package3)];
 
-        $this->assertSame($minified, MetadataMinifier::minify($source));
-        $this->assertSame($source, MetadataMinifier::expand($minified));
+        self::assertSame($minified, MetadataMinifier::minify($source));
+        self::assertSame($source, MetadataMinifier::expand($minified));
     }
 }

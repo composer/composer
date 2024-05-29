@@ -40,10 +40,10 @@ class SilencerTest extends TestCase
 
             return $a * $b * $c;
         }, 2, 3, 4);
-        $this->assertEquals(24, $result);
+        self::assertEquals(24, $result);
 
         // Check the error reporting setting was restored correctly
-        $this->assertEquals($before, error_reporting());
+        self::assertEquals($before, error_reporting());
     }
 
     /**
