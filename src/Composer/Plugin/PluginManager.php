@@ -475,7 +475,7 @@ class PluginManager
                 continue;
             }
 
-            if (!in_array($package->getType(), ['composer-plugin', 'composer-installer'],true)) {
+            if (!in_array($package->getType(), ['composer-plugin', 'composer-installer'], true)) {
                 continue;
             }
 
@@ -484,7 +484,7 @@ class PluginManager
                 && !in_array($package, $requiredPackages, true)
                 && !$this->isPluginAllowed($package->getName(), false, true, false)
             ) {
-                $this->io->writeError('<warning>The "'.$package->getName().'" plugin was not loaded as it is not in the allow-plugins rules and does not seem required by the root package anymore.</warning>');
+                $this->io->writeError('<warning>The "'.$package->getName().'" plugin was not loaded as it is not listed in allow-plugins and is not required by the root package anymore.</warning>');
                 continue;
             }
 
