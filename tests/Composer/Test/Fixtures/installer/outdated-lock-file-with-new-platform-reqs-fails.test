@@ -1,0 +1,46 @@
+--TEST--
+Test that install checks platform requirements from both composer.json AND composer.lock even if the lock file is outdated.
+Platform requires appearing in both lock and composer.json will be checked using the composer.json as source of truth (see ext-foo).
+--COMPOSER--
+{
+    "require": {
+        "php-64bit": "^25",
+        "ext-foo": "^10"
+    }
+}
+--LOCK--
+{
+    "content-hash": "old",
+    "packages": [
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {"php": "^20", "ext-foo": "^5"},
+    "platform-dev": []
+}
+--RUN--
+install
+--EXPECT-EXIT-CODE--
+2
+--EXPECT-OUTPUT--
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+<warning>Warning: The lock file is not up to date with the latest changes in composer.json. You may be getting outdated dependencies. It is recommended that you run `composer update` or `composer update <package name>`.</warning>
+Your lock file does not contain a compatible set of packages. Please run composer update.
+
+  Problem 1
+    - Root composer.json requires php-64bit ^25 but your php-64bit version (%s) does not satisfy that requirement.
+  Problem 2
+    - Root composer.json requires PHP extension ext-foo ^10 but it is missing from your system. Install or enable PHP's foo extension.
+  Problem 3
+    - Root composer.json requires php ^20 but your php version (%s) does not satisfy that requirement.
+
+To enable extensions, verify that they are enabled in your .ini files:
+__inilist__
+You can also run `php --ini` in a terminal to see which files are used by PHP in CLI mode.
+Alternatively, you can run Composer with `--ignore-platform-req=ext-foo` to temporarily ignore these required extensions.
+--EXPECT--
