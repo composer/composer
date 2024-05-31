@@ -527,18 +527,22 @@ class ClassLoader
             // PEAR-like class name
             $logicalPathPsr0 = strtr($class, '_', DIRECTORY_SEPARATOR) . $ext;
         }
-
-        if (isset($this->prefixesPsr0[$first])) {
-            foreach ($this->prefixesPsr0[$first] as $prefix => $dirs) {
-                if (0 === strpos($class, $prefix)) {
-                    foreach ($dirs as $dir) {
-                        if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr0)) {
-                            return $file;
-                        }
-                    }
-                }
-            }
-        }
+	
+		if (isset($this->prefixesPsr0[$first])) {
+			$subPath = $class;
+			while (false !== $lastPos = strrpos($subPath, '\\')) {
+				$subPath = substr($subPath, 0, $lastPos);
+				$search = $subPath . '\\';
+				if (isset($this->prefixesPsr0[$first][$search])) {
+					$pathEnd = DIRECTORY_SEPARATOR . substr($logicalPathPsr0, $lastPos + 1);
+					foreach ($this->prefixesPsr0[$first][$search] as $dir) {
+						if (file_exists($file = $dir . $pathEnd)) {
+							return $file;
+						}
+					}
+				}
+			}
+		}
 
         // PSR-0 fallback dirs
         foreach ($this->fallbackDirsPsr0 as $dir) {
