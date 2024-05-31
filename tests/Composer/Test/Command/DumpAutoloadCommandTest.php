@@ -62,7 +62,7 @@ class DumpAutoloadCommandTest extends TestCase
         self::assertSame(1, $appTester->run(['command' => 'dump-autoload', '--optimize' => true, '--strict-psr' => true]));
 
         $output = $appTester->getDisplay(true);
-        self::assertMatchesRegularExpression('/Class Application\\\Src\\\Foo located in .*? does not comply with psr-4 autoloading standard. Skipping./', $output);
+        self::assertMatchesRegularExpression('#Class Application\\\\Src\\\\Foo located in .*? does not comply with psr-4 autoloading standard \(rule: Application\\\\ => \./src\)\. Skipping\.#', $output);
     }
 
     public function testUsingClassmapAuthoritative(): void

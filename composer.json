@@ -24,7 +24,7 @@
     "require": {
         "php": "^7.2.5 || ^8.0",
         "composer/ca-bundle": "^1.0",
-        "composer/class-map-generator": "^1.0",
+        "composer/class-map-generator": "^1.3.1",
         "composer/metadata-minifier": "^1.0",
         "composer/semver": "^3.3",
         "composer/spdx-licenses": "^1.5.7",
@@ -81,7 +81,13 @@
     "autoload-dev": {
         "psr-4": {
             "Composer\\Test\\": "tests/Composer/Test/"
-        }
+        },
+        "exclude-from-classmap": [
+            "tests/Composer/Test/Fixtures/",
+            "tests/Composer/Test/Autoload/Fixtures",
+            "tests/Composer/Test/Autoload/MinimumVersionSupport",
+            "tests/Composer/Test/Plugin/Fixtures"
+        ]
     },
     "bin": [
         "bin/composer"
