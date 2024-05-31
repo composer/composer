@@ -24,23 +24,28 @@ class RepositoryUtils
     /**
      * Find all of $packages which are required by $requirer, either directly or transitively
      *
-     * Require-dev is ignored
+     * Require-dev is ignored by default, you can enable the require-dev of the initial $requirer
+     * packages by passing $includeRequireDev=true, but require-dev of transitive dependencies
+     * are always ignored.
      *
      * @template T of PackageInterface
      * @param  array<T> $packages
      * @param  list<T> $bucket Do not pass this in, only used to avoid recursion with circular deps
      * @return list<T>
      */
-    public static function filterRequiredPackages(array $packages, PackageInterface $requirer, array $bucket = []): array
+    public static function filterRequiredPackages(array $packages, PackageInterface $requirer, bool $includeRequireDev = false, array $bucket = []): array
     {
         $requires = $requirer->getRequires();
+        if ($includeRequireDev) {
+            $requires = array_merge($requires, $requirer->getDevRequires());
+        }
 
         foreach ($packages as $candidate) {
             foreach ($candidate->getNames() as $name) {
                 if (isset($requires[$name])) {
                     if (!in_array($candidate, $bucket, true)) {
                         $bucket[] = $candidate;
-                        $bucket = self::filterRequiredPackages($packages, $candidate, $bucket);
+                        $bucket = self::filterRequiredPackages($packages, $candidate, false, $bucket);
                     }
                     break;
                 }
