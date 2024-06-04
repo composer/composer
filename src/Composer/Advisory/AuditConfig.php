@@ -14,6 +14,9 @@ namespace Composer\Advisory;
 
 use Composer\Config;
 
+/**
+ * @readonly
+ */
 class AuditConfig
 {
     /**
@@ -27,6 +30,16 @@ class AuditConfig
     public $abandoned;
 
     /**
+     * @var bool Should insecure versions be blocked during a composer update/required command
+     */
+    public $blockInsecure;
+
+    /**
+     * @var bool Should abandoned packages be blocked during a composer update/required command
+     */
+    public $blockAbandoned;
+
+    /**
      * @var array<string>|array<string,string> List of abandoned package names that are reported but let the audit pass.
      */
     public $ignoreAbandonedPackages;
@@ -36,10 +49,12 @@ class AuditConfig
      * @param Auditor::ABANDONED_* $abandoned
      * @param array<string>|array<string,string> $ignoreAbandonedPackages
     */
-    public function __construct(array $ignoreList, string $abandoned, array $ignoreAbandonedPackages)
+    public function __construct(array $ignoreList, string $abandoned, bool $blockInsecure, bool $blockAbandoned, array $ignoreAbandonedPackages)
     {
         $this->ignoreList = $ignoreList;
         $this->abandoned = $abandoned;
+        $this->blockInsecure = $blockInsecure;
+        $this->blockAbandoned = $blockAbandoned;
         $this->ignoreAbandonedPackages = $ignoreAbandonedPackages;
     }
 
@@ -50,7 +65,9 @@ class AuditConfig
         return new self(
             $auditConfig['ignore'] ?? [],
                 $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL,
-            $auditConfig['ignore-abandoned']
+                (bool) ($auditConfig['block-insecure'] ?? true),
+                (bool) ($auditConfig['block-abandoned'] ?? false),
+                $auditConfig['ignore-abandoned']
         );
     }
 }

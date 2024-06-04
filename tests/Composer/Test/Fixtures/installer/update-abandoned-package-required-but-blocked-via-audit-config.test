@@ -1,0 +1,43 @@
+--TEST--
+Security advisory matching direct dependency preventing a successful update.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "1.0.0"
+    },
+    "config": {
+        "audit": {
+            "block-abandoned": true
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0.0",
+                    "abandoned": true,
+                    "source": { "reference": "some.branch", "type": "git", "url": "" }
+                }
+            ]
+        }
+    ]
+}
+--RUN--
+update -v
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires acme/library 1.0.0 (exact version match: 1.0.0 or 1.0.0.0), found acme/library[1.0.0] but these were not loaded, because they are abandoned.
+
+--EXPECT--

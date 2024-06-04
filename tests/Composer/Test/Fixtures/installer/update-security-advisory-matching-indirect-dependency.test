@@ -7,6 +7,11 @@ Security advisory matching indirect dependency preventing a successful update.
     "require": {
         "acme/library": "1.0.0"
     },
+    "config": {
+        "audit": {
+            "block-insecure": true
+        }
+    },
     "repositories": [
         {
             "type": "package",

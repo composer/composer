@@ -14,10 +14,13 @@ namespace Composer\DependencyResolver;
 
 use Composer\Advisory\AuditConfig;
 use Composer\Advisory\Auditor;
+use Composer\Advisory\PackageWithSecurityAdvisories;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
@@ -42,59 +45,75 @@ class SecurityAdvisoryPoolFilter
      */
     public function filter(Pool $pool, array $repositories): Pool
     {
-        $repoSet = new RepositorySet();
-        foreach ($repositories as $repo) {
-            $repoSet->addRepository($repo);
-        }
-
-        $packagesForAdvisories = [];
-        foreach ($pool->getPackages() as $package) {
-            // @todo Pool contains a list of ext-/lib-/php/composer/composer-plugin-api/composer-runtime-api that need to be filtered out before fetching security advisories. Is there a better way?
-            if (! $package instanceof RootPackageInterface && str_contains($package->getName(), '/')) {
-                $packagesForAdvisories[] = $package;
+        $advisoryMap = [];
+        if ($this->auditConfig->blockInsecure) {
+            $repoSet = new RepositorySet();
+            foreach ($repositories as $repo) {
+                $repoSet->addRepository($repo);
             }
-        }
 
-        $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true);
-        $advisoryMap = $this->auditor->processAdvisories($allAdvisories, $this->auditConfig->ignoreList)['advisories'];
+            $packagesForAdvisories = [];
+            foreach ($pool->getPackages() as $package) {
+                if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName())) {
+                    $packagesForAdvisories[] = $package;
+                }
+            }
+
+            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true);
+            $advisoryMap = $this->auditor->processAdvisories($allAdvisories, $this->auditConfig->ignoreList, [])['advisories'];
+        }
 
         $packages = [];
         $securityRemovedVersions = [];
+        $abandonedRemovedVersions = [];
         foreach ($pool->getPackages() as $package) {
-            if ($this->doesPackageMatchAdvisories($package, $advisoryMap)) {
+            if ($this->auditConfig->blockAbandoned && $package instanceof CompletePackage && $package->isAbandoned()) {
                 foreach ($package->getNames(false) as $packageName) {
-                    $securityRemovedVersions[$packageName][$package->getVersion()] = $package->getPrettyVersion();
+                    $abandonedRemovedVersions[$packageName][$package->getVersion()] = $package->getPrettyVersion();
                 }
-            } else {
-                $packages[] = $package;
+
+                continue;
             }
+
+            $matchingAdvisories = $this->getPackageMatchAdvisories($package, $advisoryMap);
+            if (count($matchingAdvisories) > 0) {
+                foreach ($package->getNames(false) as $packageName) {
+                    $securityRemovedVersions[$packageName][$package->getVersion()] = new PackageWithSecurityAdvisories($packageName, $package->getPrettyVersion(), $matchingAdvisories);
+                }
+
+                continue;
+            }
+
+            $packages[] = $package;
         }
 
-        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), [], [], $securityRemovedVersions);
+        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), [], [], $securityRemovedVersions, $abandonedRemovedVersions);
     }
 
     /**
      * @param array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> $advisoryMap
+     * @return list<PartialSecurityAdvisory|SecurityAdvisory>
      */
-    private function doesPackageMatchAdvisories(PackageInterface $package, array $advisoryMap): bool
+    private function getPackageMatchAdvisories(PackageInterface $package, array $advisoryMap): array
     {
         if ($package->isDev()) {
-            return false;
+            return [];
         }
 
+        $matchingAdvisories = [];
         foreach ($package->getNames(false) as $packageName) {
-            if (! isset($advisoryMap[$packageName])) {
-                return false;
+            if (!isset($advisoryMap[$packageName])) {
+                continue;
             }
 
             $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
             foreach ($advisoryMap[$packageName] as $advisory) {
                 if ($advisory->affectedVersions->matches($packageConstraint)) {
-                    return true;
+                    $matchingAdvisories[] = $advisory;
                 }
             }
         }
 
-        return false;
+        return $matchingAdvisories;
     }
 }
