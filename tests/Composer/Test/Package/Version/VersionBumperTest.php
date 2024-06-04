@@ -37,7 +37,7 @@ class VersionBumperTest extends TestCase
         $newConstraint = $versionBumper->bumpRequirement($versionParser->parseConstraints($requirement), $package);
 
         // assert that the recommended version is what we expect
-        $this->assertSame($expectedRequirement, $newConstraint);
+        self::assertSame($expectedRequirement, $newConstraint);
     }
 
     public static function provideBumpRequirementTests(): Generator

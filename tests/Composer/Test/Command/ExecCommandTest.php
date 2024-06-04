@@ -49,7 +49,7 @@ class ExecCommandTest extends TestCase
 
         $output = $appTester->getDisplay(true);
 
-        $this->assertSame(
+        self::assertSame(
             'Available binaries:
 - b
 - c

@@ -34,7 +34,7 @@ class ClassLoaderTest extends TestCase
         $loader->add('Pearlike_', __DIR__ . '/Fixtures');
         $loader->addPsr4('ShinyVendor\\ShinyPackage\\', __DIR__ . '/Fixtures');
         $loader->loadClass($class);
-        $this->assertTrue(class_exists($class, false), "->loadClass() loads '$class'");
+        self::assertTrue(class_exists($class, false), "->loadClass() loads '$class'");
     }
 
     /**
@@ -57,7 +57,7 @@ class ClassLoaderTest extends TestCase
     public function testGetPrefixesWithNoPSR0Configuration(): void
     {
         $loader = new ClassLoader();
-        $this->assertEmpty($loader->getPrefixes());
+        self::assertEmpty($loader->getPrefixes());
     }
 
     public function testSerializability(): void

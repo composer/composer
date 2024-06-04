@@ -158,8 +158,8 @@ Found 2 abandoned packages:
         }
         $auditor = new Auditor();
         $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly'], [], $data['abandoned'] ?? Auditor::ABANDONED_IGNORE);
-        $this->assertSame($expected, $result);
-        $this->assertSame($output, trim(str_replace("\r", '', $io->getOutput())));
+        self::assertSame($expected, $result);
+        self::assertSame($output, trim(str_replace("\r", '', $io->getOutput())));
     }
 
     public function ignoredIdsProvider(): \Generator {
@@ -311,7 +311,7 @@ Found 2 abandoned packages:
         $auditor = new Auditor();
         $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $packages, Auditor::FORMAT_PLAIN, false, $ignoredIds);
         $io->expects($expectedOutput, true);
-        $this->assertSame($exitCode, $result);
+        self::assertSame($exitCode, $result);
     }
 
     private function getRepoSet(): RepositorySet

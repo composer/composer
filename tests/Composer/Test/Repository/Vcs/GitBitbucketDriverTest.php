@@ -111,12 +111,12 @@ class GitBitbucketDriverTest extends TestCase
             ['url' => $urls[4], 'body' => '{"date": "2016-05-17T13:19:52+00:00"}'],
         ], true);
 
-        $this->assertEquals(
+        self::assertEquals(
             'main',
             $driver->getRootIdentifier()
         );
 
-        $this->assertEquals(
+        self::assertEquals(
             [
                 '1.0.1' => '9b78a3932143497c519e49b8241083838c8ff8a1',
                 '1.0.0' => 'd3393d514318a9267d2f8ebbf463a9aaa389f8eb',
@@ -124,14 +124,14 @@ class GitBitbucketDriverTest extends TestCase
             $driver->getTags()
         );
 
-        $this->assertEquals(
+        self::assertEquals(
             [
                 'main' => '937992d19d72b5116c3e8c4a04f960e5fa270b22',
             ],
             $driver->getBranches()
         );
 
-        $this->assertEquals(
+        self::assertEquals(
             [
                 'name' => 'user/repo',
                 'description' => 'test repo',
@@ -167,9 +167,9 @@ class GitBitbucketDriverTest extends TestCase
     {
         $url = 'https://bitbucket.org/user/repo.git';
 
-        $this->assertEquals($url, $driver->getUrl());
+        self::assertEquals($url, $driver->getUrl());
 
-        $this->assertEquals(
+        self::assertEquals(
             [
                 'type' => 'zip',
                 'url' => 'https://bitbucket.org/user/repo/get/reference.zip',
@@ -179,7 +179,7 @@ class GitBitbucketDriverTest extends TestCase
             $driver->getDist('reference')
         );
 
-        $this->assertEquals(
+        self::assertEquals(
             ['type' => 'git', 'url' => $url, 'reference' => 'reference'],
             $driver->getSource('reference')
         );
@@ -217,22 +217,22 @@ class GitBitbucketDriverTest extends TestCase
         $driver->getRootIdentifier();
         $data = $driver->getComposerInformation('main');
 
-        $this->assertIsArray($data);
-        $this->assertSame('https://bitbucket.org/user/repo/src/937992d19d72b5116c3e8c4a04f960e5fa270b22/?at=main', $data['support']['source']);
+        self::assertIsArray($data);
+        self::assertSame('https://bitbucket.org/user/repo/src/937992d19d72b5116c3e8c4a04f960e5fa270b22/?at=main', $data['support']['source']);
     }
 
     public function testSupports(): void
     {
-        $this->assertTrue(
+        self::assertTrue(
             GitBitbucketDriver::supports($this->io, $this->config, 'https://bitbucket.org/user/repo.git')
         );
 
         // should not be changed, see https://github.com/composer/composer/issues/9400
-        $this->assertFalse(
+        self::assertFalse(
             GitBitbucketDriver::supports($this->io, $this->config, 'git@bitbucket.org:user/repo.git')
         );
 
-        $this->assertFalse(
+        self::assertFalse(
             GitBitbucketDriver::supports($this->io, $this->config, 'https://github.com/user/repo.git')
         );
     }

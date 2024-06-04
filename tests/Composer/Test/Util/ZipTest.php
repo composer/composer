@@ -40,7 +40,7 @@ class ZipTest extends TestCase
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/invalid.zip');
 
-        $this->assertNull($result);
+        self::assertNull($result);
     }
 
     public function testReturnsNullIfTheZipIsEmpty(): void
@@ -51,7 +51,7 @@ class ZipTest extends TestCase
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/empty.zip');
 
-        $this->assertNull($result);
+        self::assertNull($result);
     }
 
     public function testThrowsExceptionIfTheZipHasNoComposerJson(): void
@@ -86,7 +86,7 @@ class ZipTest extends TestCase
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/root.zip');
 
-        $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
+        self::assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
 
     public function testReturnsComposerJsonInFirstFolder(): void
@@ -96,7 +96,7 @@ class ZipTest extends TestCase
         }
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/folder.zip');
-        $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
+        self::assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
 
     public function testMultipleTopLevelDirsIsInvalid(): void
@@ -119,6 +119,6 @@ class ZipTest extends TestCase
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/single-sub.zip');
 
-        $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
+        self::assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
 }

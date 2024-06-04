@@ -160,8 +160,8 @@ class PluginInstallerTest extends TestCase
         $installer->install($this->repository, $this->packages[0]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore staticMethod.dynamicCall, property.notFound
-        $this->assertEquals(
+        self::assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore property.notFound
+        self::assertEquals(
             'activate v1'.PHP_EOL,
             $this->io->getOutput()
         );
@@ -182,11 +182,11 @@ class PluginInstallerTest extends TestCase
         $installer->install($this->repository, $this->packages[0]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertEquals(
+        self::assertEquals(
             'activate v1'.PHP_EOL,
             $this->io->getOutput()
         );
-        $this->assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore staticMethod.dynamicCall, property.notFound
+        self::assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore property.notFound
     }
 
     public function testInstallMultiplePlugins(): void
@@ -201,11 +201,11 @@ class PluginInstallerTest extends TestCase
         $installer->install($this->repository, $this->packages[3]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertEquals('plugin1', $plugins[0]->name); // @phpstan-ignore staticMethod.dynamicCall, property.notFound
-        $this->assertEquals('installer-v4', $plugins[0]->version); // @phpstan-ignore staticMethod.dynamicCall, property.notFound
-        $this->assertEquals('plugin2', $plugins[1]->name); // @phpstan-ignore staticMethod.dynamicCall, property.notFound
-        $this->assertEquals('installer-v4', $plugins[1]->version); // @phpstan-ignore staticMethod.dynamicCall, property.notFound
-        $this->assertEquals('activate v4-plugin1'.PHP_EOL.'activate v4-plugin2'.PHP_EOL, $this->io->getOutput());
+        self::assertEquals('plugin1', $plugins[0]->name); // @phpstan-ignore property.notFound
+        self::assertEquals('installer-v4', $plugins[0]->version); // @phpstan-ignore property.notFound
+        self::assertEquals('plugin2', $plugins[1]->name); // @phpstan-ignore property.notFound
+        self::assertEquals('installer-v4', $plugins[1]->version); // @phpstan-ignore property.notFound
+        self::assertEquals('activate v4-plugin1'.PHP_EOL.'activate v4-plugin2'.PHP_EOL, $this->io->getOutput());
     }
 
     public function testUpgradeWithNewClassName(): void
@@ -224,9 +224,9 @@ class PluginInstallerTest extends TestCase
         $installer->update($this->repository, $this->packages[0], $this->packages[1]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertCount(1, $plugins);
-        $this->assertEquals('installer-v2', $plugins[1]->version); // @phpstan-ignore staticMethod.dynamicCall, property.notFound
-        $this->assertEquals('activate v1'.PHP_EOL.'deactivate v1'.PHP_EOL.'activate v2'.PHP_EOL, $this->io->getOutput());
+        self::assertCount(1, $plugins);
+        self::assertEquals('installer-v2', $plugins[1]->version); // @phpstan-ignore property.notFound
+        self::assertEquals('activate v1'.PHP_EOL.'deactivate v1'.PHP_EOL.'activate v2'.PHP_EOL, $this->io->getOutput());
     }
 
     public function testUninstall(): void
@@ -245,8 +245,8 @@ class PluginInstallerTest extends TestCase
         $installer->uninstall($this->repository, $this->packages[0]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertCount(0, $plugins);
-        $this->assertEquals('activate v1'.PHP_EOL.'deactivate v1'.PHP_EOL.'uninstall v1'.PHP_EOL, $this->io->getOutput());
+        self::assertCount(0, $plugins);
+        self::assertEquals('activate v1'.PHP_EOL.'deactivate v1'.PHP_EOL.'uninstall v1'.PHP_EOL, $this->io->getOutput());
     }
 
     public function testUpgradeWithSameClassName(): void
@@ -265,8 +265,8 @@ class PluginInstallerTest extends TestCase
         $installer->update($this->repository, $this->packages[1], $this->packages[2]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertEquals('installer-v3', $plugins[1]->version); // @phpstan-ignore staticMethod.dynamicCall, property.notFound
-        $this->assertEquals('activate v2'.PHP_EOL.'deactivate v2'.PHP_EOL.'activate v3'.PHP_EOL, $this->io->getOutput());
+        self::assertEquals('installer-v3', $plugins[1]->version); // @phpstan-ignore property.notFound
+        self::assertEquals('activate v2'.PHP_EOL.'deactivate v2'.PHP_EOL.'activate v3'.PHP_EOL, $this->io->getOutput());
     }
 
     public function testRegisterPluginOnlyOneTime(): void
@@ -282,9 +282,9 @@ class PluginInstallerTest extends TestCase
         $installer->install($this->repository, clone $this->packages[0]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertCount(1, $plugins);
-        $this->assertEquals('installer-v1', $plugins[0]->version); // @phpstan-ignore staticMethod.dynamicCall, property.notFound
-        $this->assertEquals('activate v1'.PHP_EOL, $this->io->getOutput());
+        self::assertCount(1, $plugins);
+        self::assertEquals('installer-v1', $plugins[0]->version); // @phpstan-ignore property.notFound
+        self::assertEquals('activate v1'.PHP_EOL, $this->io->getOutput());
     }
 
     /**
@@ -325,16 +325,16 @@ class PluginInstallerTest extends TestCase
         $starVersionPlugin = [$this->packages[4]];
 
         $this->setPluginApiVersionWithPlugins('1.0.0', $starVersionPlugin);
-        $this->assertCount(1, $this->pm->getPlugins());
+        self::assertCount(1, $this->pm->getPlugins());
 
         $this->setPluginApiVersionWithPlugins('1.9.9', $starVersionPlugin);
-        $this->assertCount(1, $this->pm->getPlugins());
+        self::assertCount(1, $this->pm->getPlugins());
 
         $this->setPluginApiVersionWithPlugins('2.0.0-dev', $starVersionPlugin);
-        $this->assertCount(1, $this->pm->getPlugins());
+        self::assertCount(1, $this->pm->getPlugins());
 
         $this->setPluginApiVersionWithPlugins('100.0.0-stable', $starVersionPlugin);
-        $this->assertCount(1, $this->pm->getPlugins());
+        self::assertCount(1, $this->pm->getPlugins());
     }
 
     public function testPluginConstraintWorksOnlyWithCertainAPIVersion(): void
@@ -342,16 +342,16 @@ class PluginInstallerTest extends TestCase
         $pluginWithApiConstraint = [$this->packages[5]];
 
         $this->setPluginApiVersionWithPlugins('1.0.0', $pluginWithApiConstraint);
-        $this->assertCount(0, $this->pm->getPlugins());
+        self::assertCount(0, $this->pm->getPlugins());
 
         $this->setPluginApiVersionWithPlugins('1.1.9', $pluginWithApiConstraint);
-        $this->assertCount(0, $this->pm->getPlugins());
+        self::assertCount(0, $this->pm->getPlugins());
 
         $this->setPluginApiVersionWithPlugins('1.2.0', $pluginWithApiConstraint);
-        $this->assertCount(1, $this->pm->getPlugins());
+        self::assertCount(1, $this->pm->getPlugins());
 
         $this->setPluginApiVersionWithPlugins('1.9.9', $pluginWithApiConstraint);
-        $this->assertCount(1, $this->pm->getPlugins());
+        self::assertCount(1, $this->pm->getPlugins());
     }
 
     public function testPluginRangeConstraintsWorkOnlyWithCertainAPIVersion(): void
@@ -359,13 +359,13 @@ class PluginInstallerTest extends TestCase
         $pluginWithApiConstraint = [$this->packages[6]];
 
         $this->setPluginApiVersionWithPlugins('1.0.0', $pluginWithApiConstraint);
-        $this->assertCount(0, $this->pm->getPlugins());
+        self::assertCount(0, $this->pm->getPlugins());
 
         $this->setPluginApiVersionWithPlugins('3.0.0', $pluginWithApiConstraint);
-        $this->assertCount(1, $this->pm->getPlugins());
+        self::assertCount(1, $this->pm->getPlugins());
 
         $this->setPluginApiVersionWithPlugins('5.5.0', $pluginWithApiConstraint);
-        $this->assertCount(0, $this->pm->getPlugins());
+        self::assertCount(0, $this->pm->getPlugins());
     }
 
     public function testCommandProviderCapability(): void
@@ -379,19 +379,19 @@ class PluginInstallerTest extends TestCase
 
         /** @var \Composer\Plugin\Capability\CommandProvider[] $caps */
         $caps = $this->pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', ['composer' => $this->composer, 'io' => $this->io]);
-        $this->assertCount(1, $caps);
-        $this->assertInstanceOf('Composer\Plugin\Capability\CommandProvider', $caps[0]);
+        self::assertCount(1, $caps);
+        self::assertInstanceOf('Composer\Plugin\Capability\CommandProvider', $caps[0]);
 
         $commands = $caps[0]->getCommands();
-        $this->assertCount(1, $commands);
-        $this->assertInstanceOf('Composer\Command\BaseCommand', $commands[0]);
+        self::assertCount(1, $commands);
+        self::assertInstanceOf('Composer\Command\BaseCommand', $commands[0]);
     }
 
     public function testIncapablePluginIsCorrectlyDetected(): void
     {
         $plugin = $this->getMockBuilder('Composer\Plugin\PluginInterface')
                        ->getMock();
-        $this->assertNull($this->pm->getPluginCapability($plugin, 'Fake\Ability'));
+        self::assertNull($this->pm->getPluginCapability($plugin, 'Fake\Ability'));
     }
 
     public function testCapabilityImplementsComposerPluginApiClassAndIsConstructedWithArgs(): void
@@ -411,9 +411,9 @@ class PluginInstallerTest extends TestCase
         /** @var \Composer\Test\Plugin\Mock\Capability $capability */
         $capability = $this->pm->getPluginCapability($plugin, $capabilityApi, ['a' => 1, 'b' => 2]);
 
-        $this->assertInstanceOf($capabilityApi, $capability);
-        $this->assertInstanceOf($capabilityImplementation, $capability);
-        $this->assertSame(['a' => 1, 'b' => 2, 'plugin' => $plugin], $capability->args);
+        self::assertInstanceOf($capabilityApi, $capability);
+        self::assertInstanceOf($capabilityImplementation, $capability);
+        self::assertSame(['a' => 1, 'b' => 2, 'plugin' => $plugin], $capability->args);
     }
 
     /** @return mixed[] */
@@ -467,7 +467,7 @@ class PluginInstallerTest extends TestCase
                    return [];
                }));
 
-        $this->assertNull($this->pm->getPluginCapability($plugin, $capabilityApi));
+        self::assertNull($this->pm->getPluginCapability($plugin, $capabilityApi));
     }
 
     /** @return mixed[] */

@@ -10,41 +10,41 @@ class DumpAutoloadCommandTest extends TestCase
     public function testDumpAutoload(): void
     {
         $appTester = $this->getApplicationTester();
-        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload']));
+        self::assertSame(0, $appTester->run(['command' => 'dump-autoload']));
 
         $output = $appTester->getDisplay(true);
-        $this->assertStringContainsString('Generating autoload files', $output);
-        $this->assertStringContainsString('Generated autoload files', $output);
+        self::assertStringContainsString('Generating autoload files', $output);
+        self::assertStringContainsString('Generated autoload files', $output);
     }
 
     public function testDumpDevAutoload(): void
     {
         $appTester = $this->getApplicationTester();
-        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload', '--dev' => true]));
+        self::assertSame(0, $appTester->run(['command' => 'dump-autoload', '--dev' => true]));
 
         $output = $appTester->getDisplay(true);
-        $this->assertStringContainsString('Generating autoload files', $output);
-        $this->assertStringContainsString('Generated autoload files', $output);
+        self::assertStringContainsString('Generating autoload files', $output);
+        self::assertStringContainsString('Generated autoload files', $output);
     }
 
     public function testDumpNoDevAutoload(): void
     {
         $appTester = $this->getApplicationTester();
-        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload', '--dev' => true]));
+        self::assertSame(0, $appTester->run(['command' => 'dump-autoload', '--dev' => true]));
 
         $output = $appTester->getDisplay(true);
-        $this->assertStringContainsString('Generating autoload files', $output);
-        $this->assertStringContainsString('Generated autoload files', $output);
+        self::assertStringContainsString('Generating autoload files', $output);
+        self::assertStringContainsString('Generated autoload files', $output);
     }
 
     public function testUsingOptimizeAndStrictPsr(): void
     {
         $appTester = $this->getApplicationTester();
-        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload', '--optimize' => true, '--strict-psr' => true]));
+        self::assertSame(0, $appTester->run(['command' => 'dump-autoload', '--optimize' => true, '--strict-psr' => true]));
 
         $output = $appTester->getDisplay(true);
-        $this->assertStringContainsString('Generating optimized autoload files', $output);
-        $this->assertMatchesRegularExpression('/Generated optimized autoload files containing \d+ classes/', $output);
+        self::assertStringContainsString('Generating optimized autoload files', $output);
+        self::assertMatchesRegularExpression('/Generated optimized autoload files containing \d+ classes/', $output);
     }
 
     public function testFailsUsingStrictPsrIfClassMapViolationsAreFound(): void
@@ -59,30 +59,30 @@ class DumpAutoloadCommandTest extends TestCase
         mkdir($dir . '/src/');
         file_put_contents($dir . '/src/Foo.php', '<?php namespace Application\Src; class Foo {}');
         $appTester = $this->getApplicationTester();
-        $this->assertSame(1, $appTester->run(['command' => 'dump-autoload', '--optimize' => true, '--strict-psr' => true]));
+        self::assertSame(1, $appTester->run(['command' => 'dump-autoload', '--optimize' => true, '--strict-psr' => true]));
 
         $output = $appTester->getDisplay(true);
-        $this->assertMatchesRegularExpression('/Class Application\\\Src\\\Foo located in .*? does not comply with psr-4 autoloading standard. Skipping./', $output);
+        self::assertMatchesRegularExpression('#Class Application\\\\Src\\\\Foo located in .*? does not comply with psr-4 autoloading standard \(rule: Application\\\\ => \./src\)\. Skipping\.#', $output);
     }
 
     public function testUsingClassmapAuthoritative(): void
     {
         $appTester = $this->getApplicationTester();
-        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload', '--classmap-authoritative' => true]));
+        self::assertSame(0, $appTester->run(['command' => 'dump-autoload', '--classmap-authoritative' => true]));
 
         $output = $appTester->getDisplay(true);
-        $this->assertStringContainsString('Generating optimized autoload files (authoritative)', $output);
-        $this->assertMatchesRegularExpression('/Generated optimized autoload files \(authoritative\) containing \d+ classes/', $output);
+        self::assertStringContainsString('Generating optimized autoload files (authoritative)', $output);
+        self::assertMatchesRegularExpression('/Generated optimized autoload files \(authoritative\) containing \d+ classes/', $output);
     }
 
     public function testUsingClassmapAuthoritativeAndStrictPsr(): void
     {
         $appTester = $this->getApplicationTester();
-        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload', '--classmap-authoritative' => true, '--strict-psr' => true]));
+        self::assertSame(0, $appTester->run(['command' => 'dump-autoload', '--classmap-authoritative' => true, '--strict-psr' => true]));
 
         $output = $appTester->getDisplay(true);
-        $this->assertStringContainsString('Generating optimized autoload files', $output);
-        $this->assertMatchesRegularExpression('/Generated optimized autoload files \(authoritative\) containing \d+ classes/', $output);
+        self::assertStringContainsString('Generating optimized autoload files', $output);
+        self::assertMatchesRegularExpression('/Generated optimized autoload files \(authoritative\) containing \d+ classes/', $output);
     }
 
     public function testStrictPsrDoesNotWorkWithoutOptimizedAutoloader(): void
@@ -112,7 +112,7 @@ class DumpAutoloadCommandTest extends TestCase
         ]);
 
         $appTester = $this->getApplicationTester();
-        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload']));
+        self::assertSame(0, $appTester->run(['command' => 'dump-autoload']));
 
         self::assertStringContainsString('ComposerAutoloaderInitFoobar', (string) file_get_contents($dir . '/vendor/autoload.php'));
     }
@@ -147,7 +147,7 @@ class DumpAutoloadCommandTest extends TestCase
         );
 
         $appTester = $this->getApplicationTester();
-        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload']));
+        self::assertSame(0, $appTester->run(['command' => 'dump-autoload']));
 
         self::assertStringContainsString('ComposerAutoloaderInitFoobar', (string) file_get_contents($dir . '/vendor/autoload.php'));
     }
@@ -180,7 +180,7 @@ class DumpAutoloadCommandTest extends TestCase
         );
 
         $appTester = $this->getApplicationTester();
-        $this->assertSame(0, $appTester->run(['command' => 'dump-autoload']));
+        self::assertSame(0, $appTester->run(['command' => 'dump-autoload']));
 
         self::assertStringContainsString('ComposerAutoloaderInit2d4a6be9a93712c5d6a119b26734a047', (string) file_get_contents($dir . '/vendor/autoload.php'));
     }

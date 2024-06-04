@@ -58,7 +58,7 @@ class RuleSetIteratorTest extends TestCase
             $this->rules[RuleSet::TYPE_LEARNED][0],
         ];
 
-        $this->assertEquals($expected, $result);
+        self::assertEquals($expected, $result);
     }
 
     public function testKeys(): void
@@ -76,6 +76,6 @@ class RuleSetIteratorTest extends TestCase
             RuleSet::TYPE_LEARNED,
         ];
 
-        $this->assertEquals($expected, $result);
+        self::assertEquals($expected, $result);
     }
 }

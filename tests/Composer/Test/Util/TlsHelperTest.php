@@ -31,11 +31,11 @@ class TlsHelperTest extends TestCase
         $result = TlsHelper::checkCertificateHost($certificate, $hostname, $foundCn);
 
         if (true === $expectedResult) {
-            $this->assertTrue($result);
-            $this->assertSame($expectedCn, $foundCn);
+            self::assertTrue($result);
+            self::assertSame($expectedCn, $foundCn);
         } else {
-            $this->assertFalse($result);
-            $this->assertNull($foundCn);
+            self::assertFalse($result);
+            self::assertNull($foundCn);
         }
     }
 
@@ -74,8 +74,8 @@ class TlsHelperTest extends TestCase
         $names = TlsHelper::getCertificateNames($certificate);
 
         self::assertIsArray($names);
-        $this->assertSame('example.net', $names['cn']);
-        $this->assertSame([
+        self::assertSame('example.net', $names['cn']);
+        self::assertSame([
             'example.com',
             'getcomposer.org',
             'composer.example.org',

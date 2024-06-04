@@ -55,7 +55,7 @@ class GitHubTest extends TestCase
 
         $github = new GitHub($io, $config, null, $httpDownloader);
 
-        $this->assertTrue($github->authorizeOAuthInteractively($this->origin, $this->message));
+        self::assertTrue($github->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
     public function testUsernamePasswordFailure(): void
@@ -80,7 +80,7 @@ class GitHubTest extends TestCase
 
         $github = new GitHub($io, $config, null, $httpDownloader);
 
-        $this->assertFalse($github->authorizeOAuthInteractively($this->origin));
+        self::assertFalse($github->authorizeOAuthInteractively($this->origin));
     }
 
     /**

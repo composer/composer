@@ -96,9 +96,9 @@ Installation failed, reverting ./composer.json to its original content.
 
         if (str_contains($expected, '%d')) {
             $pattern = '{^'.str_replace('%d', '[0-9.]+', preg_quote(trim($expected))).'$}';
-            $this->assertMatchesRegularExpression($pattern, trim($appTester->getDisplay(true)));
+            self::assertMatchesRegularExpression($pattern, trim($appTester->getDisplay(true)));
         } else {
-            $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+            self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
         }
     }
 

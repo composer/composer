@@ -24,11 +24,9 @@ class InstallerEventTest extends TestCase
         $transaction = $this->getMockBuilder('Composer\DependencyResolver\LockTransaction')->disableOriginalConstructor()->getMock();
         $event = new InstallerEvent('EVENT_NAME', $composer, $io, true, true, $transaction);
 
-        $this->assertSame('EVENT_NAME', $event->getName());
-        $this->assertInstanceOf('Composer\Composer', $event->getComposer());
-        $this->assertInstanceOf('Composer\IO\IOInterface', $event->getIO());
-        $this->assertTrue($event->isDevMode());
-        $this->assertTrue($event->isExecutingOperations());
-        $this->assertInstanceOf('Composer\DependencyResolver\Transaction', $event->getTransaction());
+        self::assertSame('EVENT_NAME', $event->getName());
+        self::assertTrue($event->isDevMode());
+        self::assertTrue($event->isExecutingOperations());
+        self::assertInstanceOf('Composer\DependencyResolver\Transaction', $event->getTransaction());
     }
 }

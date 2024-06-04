@@ -33,7 +33,7 @@ class SvnTest extends TestCase
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
         $reflMethod->setAccessible(true);
 
-        $this->assertEquals($expect, $reflMethod->invoke($svn));
+        self::assertEquals($expect, $reflMethod->invoke($svn));
     }
 
     public static function urlProvider(): array
@@ -53,7 +53,7 @@ class SvnTest extends TestCase
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCommand');
         $reflMethod->setAccessible(true);
 
-        $this->assertEquals(
+        self::assertEquals(
             self::getCmd("svn ls --non-interactive  -- 'http://svn.example.org'"),
             $reflMethod->invokeArgs($svn, ['svn ls', $url])
         );
@@ -76,7 +76,7 @@ class SvnTest extends TestCase
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
         $reflMethod->setAccessible(true);
 
-        $this->assertEquals(self::getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
+        self::assertEquals(self::getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 
     public function testCredentialsFromConfigWithCacheCredentialsTrue(): void
@@ -99,7 +99,7 @@ class SvnTest extends TestCase
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
         $reflMethod->setAccessible(true);
 
-        $this->assertEquals(self::getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
+        self::assertEquals(self::getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 
     public function testCredentialsFromConfigWithCacheCredentialsFalse(): void
@@ -122,6 +122,6 @@ class SvnTest extends TestCase
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
         $reflMethod->setAccessible(true);
 
-        $this->assertEquals(self::getCmd(" --no-auth-cache --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
+        self::assertEquals(self::getCmd(" --no-auth-cache --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 }

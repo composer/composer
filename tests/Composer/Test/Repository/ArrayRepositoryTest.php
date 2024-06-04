@@ -23,7 +23,7 @@ class ArrayRepositoryTest extends TestCase
         $repo = new ArrayRepository;
         $repo->addPackage(self::getPackage('foo', '1'));
 
-        $this->assertCount(1, $repo);
+        self::assertCount(1, $repo);
     }
 
     public function testRemovePackage(): void
@@ -34,12 +34,12 @@ class ArrayRepositoryTest extends TestCase
         $repo->addPackage(self::getPackage('foo', '1'));
         $repo->addPackage($package);
 
-        $this->assertCount(2, $repo);
+        self::assertCount(2, $repo);
 
         $repo->removePackage(self::getPackage('foo', '1'));
 
-        $this->assertCount(1, $repo);
-        $this->assertEquals([$package], $repo->getPackages());
+        self::assertCount(1, $repo);
+        self::assertEquals([$package], $repo->getPackages());
     }
 
     public function testHasPackage(): void
@@ -48,8 +48,8 @@ class ArrayRepositoryTest extends TestCase
         $repo->addPackage(self::getPackage('foo', '1'));
         $repo->addPackage(self::getPackage('bar', '2'));
 
-        $this->assertTrue($repo->hasPackage(self::getPackage('foo', '1')));
-        $this->assertFalse($repo->hasPackage(self::getPackage('bar', '1')));
+        self::assertTrue($repo->hasPackage(self::getPackage('foo', '1')));
+        self::assertFalse($repo->hasPackage(self::getPackage('bar', '1')));
     }
 
     public function testFindPackages(): void
@@ -60,12 +60,12 @@ class ArrayRepositoryTest extends TestCase
         $repo->addPackage(self::getPackage('bar', '3'));
 
         $foo = $repo->findPackages('foo');
-        $this->assertCount(1, $foo);
-        $this->assertEquals('foo', $foo[0]->getName());
+        self::assertCount(1, $foo);
+        self::assertEquals('foo', $foo[0]->getName());
 
         $bar = $repo->findPackages('bar');
-        $this->assertCount(2, $bar);
-        $this->assertEquals('bar', $bar[0]->getName());
+        self::assertCount(2, $bar);
+        self::assertEquals('bar', $bar[0]->getName());
     }
 
     public function testAutomaticallyAddAliasedPackageButNotRemove(): void
@@ -77,13 +77,13 @@ class ArrayRepositoryTest extends TestCase
 
         $repo->addPackage($alias);
 
-        $this->assertCount(2, $repo);
-        $this->assertTrue($repo->hasPackage(self::getPackage('foo', '1')));
-        $this->assertTrue($repo->hasPackage(self::getPackage('foo', '2')));
+        self::assertCount(2, $repo);
+        self::assertTrue($repo->hasPackage(self::getPackage('foo', '1')));
+        self::assertTrue($repo->hasPackage(self::getPackage('foo', '2')));
 
         $repo->removePackage($alias);
 
-        $this->assertCount(1, $repo);
+        self::assertCount(1, $repo);
     }
 
     public function testSearch(): void
@@ -93,17 +93,17 @@ class ArrayRepositoryTest extends TestCase
         $repo->addPackage(self::getPackage('foo', '1'));
         $repo->addPackage(self::getPackage('bar', '1'));
 
-        $this->assertSame(
+        self::assertSame(
             [['name' => 'foo', 'description' => null]],
             $repo->search('foo', RepositoryInterface::SEARCH_FULLTEXT)
         );
 
-        $this->assertSame(
+        self::assertSame(
             [['name' => 'bar', 'description' => null]],
             $repo->search('bar')
         );
 
-        $this->assertEmpty(
+        self::assertEmpty(
             $repo->search('foobar')
         );
     }
@@ -119,14 +119,14 @@ class ArrayRepositoryTest extends TestCase
         $package->setType('composer-plugin');
         $repo->addPackage($package);
 
-        $this->assertSame(
+        self::assertSame(
             [['name' => 'foo', 'description' => null]],
             $repo->search('foo', RepositoryInterface::SEARCH_FULLTEXT, 'library')
         );
 
-        $this->assertEmpty($repo->search('bar', RepositoryInterface::SEARCH_FULLTEXT, 'package'));
+        self::assertEmpty($repo->search('bar', RepositoryInterface::SEARCH_FULLTEXT, 'package'));
 
-        $this->assertSame(
+        self::assertSame(
             [['name' => 'foobar', 'description' => null]],
             $repo->search('foo', 0, 'composer-plugin')
         );
@@ -143,7 +143,7 @@ class ArrayRepositoryTest extends TestCase
         $package2->setAbandoned('bar');
         $repo->addPackage($package2);
 
-        $this->assertSame(
+        self::assertSame(
             [
                 ['name' => 'foo1', 'description' => null, 'abandoned' => true],
                 ['name' => 'foo2', 'description' => null, 'abandoned' => 'bar'],

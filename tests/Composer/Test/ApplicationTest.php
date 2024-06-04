@@ -49,7 +49,7 @@ class ApplicationTest extends TestCase
         $application->doRun(new ArrayInput(['command' => 'about']), $output);
 
         $expectedOutput = sprintf('<warning>Warning: This development build of Composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']).PHP_EOL;
-        $this->assertStringContainsString($expectedOutput, $output->fetch());
+        self::assertStringContainsString($expectedOutput, $output->fetch());
     }
 
     /**
@@ -72,6 +72,6 @@ class ApplicationTest extends TestCase
         $output = new BufferedOutput();
         $application->doRun(new ArrayInput(['command' => 'self-update']), $output);
 
-        $this->assertSame('', $output->fetch());
+        self::assertSame('', $output->fetch());
     }
 }

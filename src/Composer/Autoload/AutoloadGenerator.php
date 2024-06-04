@@ -319,7 +319,7 @@ EOF;
 EOF;
         }
 
-        $excluded = null;
+        $excluded = [];
         if (!empty($autoloads['exclude-from-classmap'])) {
             $excluded = $autoloads['exclude-from-classmap'];
         }
@@ -348,7 +348,14 @@ EOF;
                             continue;
                         }
 
-                        $classMapGenerator->scanPaths($dir, $this->buildExclusionRegex($dir, $excluded), $group['type'], $namespace);
+                        // if the vendor dir is contained within a psr-0/psr-4 dir being scanned we exclude it
+                        if (str_contains($vendorPath, $dir.'/')) {
+                            $exclusionRegex = $this->buildExclusionRegex($dir, array_merge($excluded, [$vendorPath.'/']));
+                        } else {
+                            $exclusionRegex = $this->buildExclusionRegex($dir, $excluded);
+                        }
+
+                        $classMapGenerator->scanPaths($dir, $exclusionRegex, $group['type'], $namespace);
                     }
                 }
             }
@@ -368,6 +375,9 @@ EOF;
                 );
             }
         }
+
+        // output PSR violations which are not coming from the vendor dir
+        $classMap->clearPsrViolationsByPath($vendorPath);
         foreach ($classMap->getPsrViolations() as $msg) {
             $this->io->writeError("<warning>$msg</warning>");
         }
@@ -460,12 +470,12 @@ EOF;
     }
 
     /**
-     * @param array<string>|null $excluded
+     * @param array<string> $excluded
      * @return non-empty-string|null
      */
-    private function buildExclusionRegex(string $dir, ?array $excluded): ?string
+    private function buildExclusionRegex(string $dir, array $excluded): ?string
     {
-        if (null === $excluded) {
+        if ([] === $excluded) {
             return null;
         }
 
@@ -602,7 +612,7 @@ EOF;
         }
 
         if (isset($autoloads['classmap'])) {
-            $excluded = null;
+            $excluded = [];
             if (!empty($autoloads['exclude-from-classmap'])) {
                 $excluded = $autoloads['exclude-from-classmap'];
             }

@@ -57,7 +57,7 @@ class GitLabTest extends TestCase
 
         $gitLab = new GitLab($io, $config, null, $httpDownloader);
 
-        $this->assertTrue($gitLab->authorizeOAuthInteractively('http', $this->origin, $this->message));
+        self::assertTrue($gitLab->authorizeOAuthInteractively('http', $this->origin, $this->message));
     }
 
     public function testUsernamePasswordFailure(): void

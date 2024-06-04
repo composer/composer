@@ -30,7 +30,7 @@ class ValidateCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'validate'], $command));
 
-        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+        self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
     public function testValidateOnFileIssues(): void
@@ -42,7 +42,7 @@ class ValidateCommandTest extends TestCase
         $appTester->run(['command' => 'validate']);
         $expected = './composer.json not found.';
 
-        $this->assertSame($expected, trim($appTester->getDisplay(true)));
+        self::assertSame($expected, trim($appTester->getDisplay(true)));
     }
 
     public function testWithComposerLock(): void
@@ -63,7 +63,7 @@ Read more about correctly resolving merge conflicts https://getcomposer.org/doc/
 and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require-r
 OUTPUT;
 
-        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+        self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
     public function testUnaccessibleFile(): void
@@ -79,8 +79,8 @@ OUTPUT;
         $appTester->run(['command' => 'validate']);
         $expected = './composer.json is not readable.';
 
-        $this->assertSame($expected, trim($appTester->getDisplay(true)));
-        $this->assertSame(3, $appTester->getStatusCode());
+        self::assertSame($expected, trim($appTester->getDisplay(true)));
+        self::assertSame(3, $appTester->getStatusCode());
         chmod($directory.'/composer.json', 0700);
     }
 

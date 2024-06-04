@@ -22,6 +22,6 @@ class DefaultConfigTest extends TestCase
     public function testDefaultValuesAreAsExpected(): void
     {
         $config = new Config;
-        $this->assertFalse($config->get('disable-tls'));
+        self::assertFalse($config->get('disable-tls'));
     }
 }

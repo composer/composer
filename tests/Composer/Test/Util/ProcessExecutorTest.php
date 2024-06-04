@@ -29,7 +29,7 @@ class ProcessExecutorTest extends TestCase
     {
         $process = new ProcessExecutor;
         $process->execute('echo foo', $output);
-        $this->assertEquals("foo".PHP_EOL, $output);
+        self::assertEquals("foo".PHP_EOL, $output);
     }
 
     public function testExecuteOutputsIfNotCaptured(): void
@@ -38,7 +38,7 @@ class ProcessExecutorTest extends TestCase
         ob_start();
         $process->execute('echo foo');
         $output = ob_get_clean();
-        $this->assertEquals("foo".PHP_EOL, $output);
+        self::assertEquals("foo".PHP_EOL, $output);
     }
 
     public function testUseIOIsNotNullAndIfNotCaptured(): void
@@ -56,14 +56,14 @@ class ProcessExecutorTest extends TestCase
     {
         $process = new ProcessExecutor;
         $process->execute('cat foo', $output);
-        $this->assertNotNull($process->getErrorOutput());
+        self::assertStringContainsString('foo: No such file or directory', $process->getErrorOutput());
     }
 
     public function testTimeout(): void
     {
         ProcessExecutor::setTimeout(1);
         $process = new ProcessExecutor;
-        $this->assertEquals(1, $process->getTimeout());
+        self::assertEquals(1, $process->getTimeout());
         ProcessExecutor::setTimeout(60);
     }
 
@@ -74,7 +74,7 @@ class ProcessExecutorTest extends TestCase
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
         $process->execute($command, $output);
-        $this->assertEquals('Executing command (CWD): ' . $expectedCommandOutput, trim($buffer->getOutput()));
+        self::assertEquals('Executing command (CWD): ' . $expectedCommandOutput, trim($buffer->getOutput()));
     }
 
     public static function hidePasswordProvider(): array
@@ -92,18 +92,18 @@ class ProcessExecutorTest extends TestCase
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
         $process->execute('echo https://localhost:1234/', $output);
-        $this->assertEquals('Executing command (CWD): echo https://localhost:1234/', trim($buffer->getOutput()));
+        self::assertEquals('Executing command (CWD): echo https://localhost:1234/', trim($buffer->getOutput()));
     }
 
     public function testSplitLines(): void
     {
         $process = new ProcessExecutor;
-        $this->assertEquals([], $process->splitLines(''));
-        $this->assertEquals([], $process->splitLines(null));
-        $this->assertEquals(['foo'], $process->splitLines('foo'));
-        $this->assertEquals(['foo', 'bar'], $process->splitLines("foo\nbar"));
-        $this->assertEquals(['foo', 'bar'], $process->splitLines("foo\r\nbar"));
-        $this->assertEquals(['foo', 'bar'], $process->splitLines("foo\r\nbar\n"));
+        self::assertEquals([], $process->splitLines(''));
+        self::assertEquals([], $process->splitLines(null));
+        self::assertEquals(['foo'], $process->splitLines('foo'));
+        self::assertEquals(['foo', 'bar'], $process->splitLines("foo\nbar"));
+        self::assertEquals(['foo', 'bar'], $process->splitLines("foo\r\nbar"));
+        self::assertEquals(['foo', 'bar'], $process->splitLines("foo\r\nbar\n"));
     }
 
     public function testConsoleIODoesNotFormatSymfonyConsoleStyle(): void
@@ -112,7 +112,7 @@ class ProcessExecutorTest extends TestCase
         $process = new ProcessExecutor(new ConsoleIO(new ArrayInput([]), $output, new HelperSet([])));
 
         $process->execute('php -ddisplay_errors=0 -derror_reporting=0 -r "echo \'<error>foo</error>\'.PHP_EOL;"');
-        $this->assertSame('<error>foo</error>'.PHP_EOL, $output->fetch());
+        self::assertSame('<error>foo</error>'.PHP_EOL, $output->fetch());
     }
 
     public function testExecuteAsyncCancel(): void
@@ -121,12 +121,12 @@ class ProcessExecutorTest extends TestCase
         $process->enableAsync();
         $start = microtime(true);
         $promise = $process->executeAsync('sleep 2');
-        $this->assertEquals(1, $process->countActiveJobs());
+        self::assertEquals(1, $process->countActiveJobs());
         $promise->cancel();
-        $this->assertEquals(0, $process->countActiveJobs());
+        self::assertEquals(0, $process->countActiveJobs());
         $process->wait();
         $end = microtime(true);
-        $this->assertTrue($end - $start < 2, 'Canceling took longer than it should, lasted '.($end - $start));
+        self::assertTrue($end - $start < 2, 'Canceling took longer than it should, lasted '.($end - $start));
     }
 
     /**
@@ -139,7 +139,7 @@ class ProcessExecutorTest extends TestCase
     public function testEscapeArgument($argument, string $win, string $unix): void
     {
         $expected = defined('PHP_WINDOWS_VERSION_BUILD') ? $win : $unix;
-        $this->assertSame($expected, ProcessExecutor::escape($argument));
+        self::assertSame($expected, ProcessExecutor::escape($argument));
     }
 
     /**

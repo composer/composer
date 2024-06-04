@@ -432,8 +432,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $uniques = [];
         foreach ($names as $name) {
-            // @phpstan-ignore argument.type
-            $uniques[substr($name, 0, strpos($name, '/'))] = true;
+            $uniques[explode('/', $name, 2)[0]] = true;
         }
 
         $vendors = array_keys($uniques);

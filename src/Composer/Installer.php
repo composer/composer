@@ -538,10 +538,7 @@ class Installer
             return $exitCode;
         }
 
-        // exists as of composer/semver 3.3.0
-        if (method_exists('Composer\Semver\CompilingMatcher', 'clear')) { // @phpstan-ignore function.alreadyNarrowedType
-            \Composer\Semver\CompilingMatcher::clear();
-        }
+        \Composer\Semver\CompilingMatcher::clear();
 
         // write lock
         $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
@@ -752,9 +749,22 @@ class Installer
                 $request->fixLockedPackage($package);
             }
 
-            foreach ($this->locker->getPlatformRequirements($this->devMode) as $link) {
-                $request->requireName($link->getTarget(), $link->getConstraint());
+            $rootRequires = $this->package->getRequires();
+            if ($this->devMode) {
+                $rootRequires = array_merge($rootRequires, $this->package->getDevRequires());
             }
+            foreach ($rootRequires as $link) {
+                if (PlatformRepository::isPlatformPackage($link->getTarget())) {
+                    $request->requireName($link->getTarget(), $link->getConstraint());
+                }
+            }
+
+            foreach ($this->locker->getPlatformRequirements($this->devMode) as $link) {
+                if (!isset($rootRequires[$link->getTarget()])) {
+                    $request->requireName($link->getTarget(), $link->getConstraint());
+                }
+            }
+            unset($rootRequires, $link);
 
             $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes);
 

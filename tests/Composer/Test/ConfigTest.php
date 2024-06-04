@@ -33,7 +33,7 @@ class ConfigTest extends TestCase
         }
         $config->merge(['repositories' => $localConfig]);
 
-        $this->assertEquals($expected, $config->getRepositories());
+        self::assertEquals($expected, $config->getRepositories());
     }
 
     public static function dataAddPackagistRepository(): array
@@ -149,7 +149,7 @@ class ConfigTest extends TestCase
         $config->merge(['config' => ['preferred-install' => 'source']]);
         $config->merge(['config' => ['preferred-install' => 'dist']]);
 
-        $this->assertEquals('dist', $config->get('preferred-install'));
+        self::assertEquals('dist', $config->get('preferred-install'));
     }
 
     public function testMergePreferredInstall(): void
@@ -161,7 +161,7 @@ class ConfigTest extends TestCase
         // This assertion needs to make sure full wildcard preferences are placed last
         // Handled by composer because we convert string preferences for BC, all other
         // care for ordering and collision prevention is up to the user
-        $this->assertEquals(['foo/*' => 'source', '*' => 'dist'], $config->get('preferred-install'));
+        self::assertEquals(['foo/*' => 'source', '*' => 'dist'], $config->get('preferred-install'));
     }
 
     public function testMergeGithubOauth(): void
@@ -170,7 +170,7 @@ class ConfigTest extends TestCase
         $config->merge(['config' => ['github-oauth' => ['foo' => 'bar']]]);
         $config->merge(['config' => ['github-oauth' => ['bar' => 'baz']]]);
 
-        $this->assertEquals(['foo' => 'bar', 'bar' => 'baz'], $config->get('github-oauth'));
+        self::assertEquals(['foo' => 'bar', 'bar' => 'baz'], $config->get('github-oauth'));
     }
 
     public function testVarReplacement(): void
@@ -180,9 +180,9 @@ class ConfigTest extends TestCase
         $config->merge(['config' => ['bin-dir' => '$HOME', 'cache-dir' => '~/foo/']]);
 
         $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '\\/');
-        $this->assertEquals('b', $config->get('c'));
-        $this->assertEquals($home, $config->get('bin-dir'));
-        $this->assertEquals($home.'/foo', $config->get('cache-dir'));
+        self::assertEquals('b', $config->get('c'));
+        self::assertEquals($home, $config->get('bin-dir'));
+        self::assertEquals($home.'/foo', $config->get('cache-dir'));
     }
 
     public function testRealpathReplacement(): void
@@ -195,9 +195,9 @@ class ConfigTest extends TestCase
         ]]);
 
         $home = rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '\\/');
-        $this->assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
-        $this->assertEquals($home.'/foo', $config->get('bin-dir'));
-        $this->assertEquals('/baz', $config->get('cache-dir'));
+        self::assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
+        self::assertEquals($home.'/foo', $config->get('bin-dir'));
+        self::assertEquals('/baz', $config->get('cache-dir'));
     }
 
     public function testStreamWrapperDirs(): void
@@ -207,7 +207,7 @@ class ConfigTest extends TestCase
             'cache-dir' => 's3://baz/',
         ]]);
 
-        $this->assertEquals('s3://baz', $config->get('cache-dir'));
+        self::assertEquals('s3://baz', $config->get('cache-dir'));
     }
 
     public function testFetchingRelativePaths(): void
@@ -218,10 +218,10 @@ class ConfigTest extends TestCase
             'vendor-dir' => 'vendor',
         ]]);
 
-        $this->assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
-        $this->assertEquals('/foo/bar/vendor/foo', $config->get('bin-dir'));
-        $this->assertEquals('vendor', $config->get('vendor-dir', Config::RELATIVE_PATHS));
-        $this->assertEquals('vendor/foo', $config->get('bin-dir', Config::RELATIVE_PATHS));
+        self::assertEquals('/foo/bar/vendor', $config->get('vendor-dir'));
+        self::assertEquals('/foo/bar/vendor/foo', $config->get('bin-dir'));
+        self::assertEquals('vendor', $config->get('vendor-dir', Config::RELATIVE_PATHS));
+        self::assertEquals('vendor/foo', $config->get('bin-dir', Config::RELATIVE_PATHS));
     }
 
     public function testOverrideGithubProtocols(): void
@@ -230,17 +230,17 @@ class ConfigTest extends TestCase
         $config->merge(['config' => ['github-protocols' => ['https', 'ssh']]]);
         $config->merge(['config' => ['github-protocols' => ['https']]]);
 
-        $this->assertEquals(['https'], $config->get('github-protocols'));
+        self::assertEquals(['https'], $config->get('github-protocols'));
     }
 
     public function testGitDisabledByDefaultInGithubProtocols(): void
     {
         $config = new Config(false);
         $config->merge(['config' => ['github-protocols' => ['https', 'git']]]);
-        $this->assertEquals(['https'], $config->get('github-protocols'));
+        self::assertEquals(['https'], $config->get('github-protocols'));
 
         $config->merge(['config' => ['secure-http' => false]]);
-        $this->assertEquals(['https', 'git'], $config->get('github-protocols'));
+        self::assertEquals(['https', 'git'], $config->get('github-protocols'));
     }
 
     /**
@@ -330,11 +330,11 @@ class ConfigTest extends TestCase
         $config->merge(
             ['config' => ['disable-tls' => 'false']]
         );
-        $this->assertFalse($config->get('disable-tls'));
+        self::assertFalse($config->get('disable-tls'));
         $config->merge(
             ['config' => ['disable-tls' => 'true']]
         );
-        $this->assertTrue($config->get('disable-tls'));
+        self::assertTrue($config->get('disable-tls'));
     }
 
     public function testProcessTimeout(): void
@@ -344,7 +344,7 @@ class ConfigTest extends TestCase
         $result = $config->get('process-timeout');
         Platform::clearEnv('COMPOSER_PROCESS_TIMEOUT');
 
-        $this->assertEquals(0, $result);
+        self::assertEquals(0, $result);
     }
 
     public function testHtaccessProtect(): void
@@ -354,7 +354,7 @@ class ConfigTest extends TestCase
         $result = $config->get('htaccess-protect');
         Platform::clearEnv('COMPOSER_HTACCESS_PROTECT');
 
-        $this->assertEquals(0, $result);
+        self::assertEquals(0, $result);
     }
 
     public function testGetSourceOfValue(): void
@@ -363,14 +363,14 @@ class ConfigTest extends TestCase
 
         $config = new Config;
 
-        $this->assertSame(Config::SOURCE_DEFAULT, $config->getSourceOfValue('process-timeout'));
+        self::assertSame(Config::SOURCE_DEFAULT, $config->getSourceOfValue('process-timeout'));
 
         $config->merge(
             ['config' => ['process-timeout' => 1]],
             'phpunit-test'
         );
 
-        $this->assertSame('phpunit-test', $config->getSourceOfValue('process-timeout'));
+        self::assertSame('phpunit-test', $config->getSourceOfValue('process-timeout'));
     }
 
     public function testGetSourceOfValueEnvVariables(): void
@@ -380,7 +380,7 @@ class ConfigTest extends TestCase
         $result = $config->getSourceOfValue('htaccess-protect');
         Platform::clearEnv('COMPOSER_HTACCESS_PROTECT');
 
-        $this->assertEquals('COMPOSER_HTACCESS_PROTECT', $result);
+        self::assertEquals('COMPOSER_HTACCESS_PROTECT', $result);
     }
 
     public function testAudit(): void
@@ -420,8 +420,8 @@ class ConfigTest extends TestCase
         ];
         foreach ($keys as $key) {
             $value = $config->get($key);
-            $this->assertIsArray($value); // @phpstan-ignore staticMethod.dynamicCall (- PHPStan knows that its an array for all given keys)
-            $this->assertCount(0, $value);
+            self::assertIsArray($value);
+            self::assertCount(0, $value);
         }
     }
 
@@ -429,29 +429,29 @@ class ConfigTest extends TestCase
     {
         $config = new Config(false);
         $config->merge(['config' => ['allow-plugins' => ['some/plugin' => true]]]);
-        $this->assertEquals(['some/plugin' => true], $config->get('allow-plugins'));
+        self::assertEquals(['some/plugin' => true], $config->get('allow-plugins'));
 
         $config->merge(['config' => ['allow-plugins' => ['another/plugin' => true]]]);
-        $this->assertEquals(['some/plugin' => true, 'another/plugin' => true], $config->get('allow-plugins'));
+        self::assertEquals(['some/plugin' => true, 'another/plugin' => true], $config->get('allow-plugins'));
     }
 
     public function testOverridesGlobalBooleanPluginsConfig(): void
     {
         $config = new Config(false);
         $config->merge(['config' => ['allow-plugins' => true]]);
-        $this->assertEquals(true, $config->get('allow-plugins'));
+        self::assertEquals(true, $config->get('allow-plugins'));
 
         $config->merge(['config' => ['allow-plugins' => ['another/plugin' => true]]]);
-        $this->assertEquals(['another/plugin' => true], $config->get('allow-plugins'));
+        self::assertEquals(['another/plugin' => true], $config->get('allow-plugins'));
     }
 
     public function testAllowsAllPluginsFromLocalBoolean(): void
     {
         $config = new Config(false);
         $config->merge(['config' => ['allow-plugins' => ['some/plugin' => true]]]);
-        $this->assertEquals(['some/plugin' => true], $config->get('allow-plugins'));
+        self::assertEquals(['some/plugin' => true], $config->get('allow-plugins'));
 
         $config->merge(['config' => ['allow-plugins' => true]]);
-        $this->assertEquals(true, $config->get('allow-plugins'));
+        self::assertEquals(true, $config->get('allow-plugins'));
     }
 }
