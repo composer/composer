@@ -117,7 +117,7 @@ class VersionGuesserTest extends TestCase
                 'stdout' => "  arbitrary $commitHash Commit message\n* feature $anotherCommitHash Another message\n",
             ],
             [
-                'cmd' => 'git rev-list arbitrary..feature',
+                'cmd' => ['git', 'rev-list', 'arbitrary..feature'],
                 'stdout' => "$anotherCommitHash\n",
             ],
         ], true);
@@ -147,7 +147,7 @@ class VersionGuesserTest extends TestCase
                 'stdout' => "  latest-testing $commitHash Commit message\n* feature $anotherCommitHash Another message\n",
             ],
             [
-                'cmd' => 'git rev-list latest-testing..feature',
+                'cmd' => ['git', 'rev-list', 'latest-testing..feature'],
                 'stdout' => "$anotherCommitHash\n",
             ],
         ], true);
@@ -352,7 +352,7 @@ class VersionGuesserTest extends TestCase
                         "remotes/origin/1.5 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n",
             ],
             [
-                'cmd' => 'git rev-list remotes/origin/1.5..feature-branch',
+                'cmd' => ['git', 'rev-list', 'remotes/origin/1.5..feature-branch'],
                 'stdout' => "\n",
             ],
         ], true);
