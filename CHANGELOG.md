@@ -1,3 +1,21 @@
+### [2.7.7] 2024-06-10
+
+  * Security: Fixed command injection via malicious git branch name (GHSA-47f6-5gq3-vx9c / CVE-2024-35241)
+  * Security: Fixed multiple command injections via malicious git/hg branch names (GHSA-v9qv-c7wm-wgmf / CVE-2024-35242)
+  * Fixed PSR violations for classes not matching the namespace of a rule being hidden, this may lead to new violations being shown (#11957)
+  * Fixed UX when a plugin is still in vendor dir but is not required nor allowed anymore after changing branches (#12000)
+  * Fixed new platform requirements from composer.json not being checked if the lock file is outdated (#12001)
+  * Fixed secure-http checks that could be bypassed by using malformed URL formats (fa3b9582c)
+  * Fixed Filesystem::isLocalPath including windows-specific checks on linux (3c37a67c)
+  * Fixed perforce argument escaping (3773f775)
+  * Fixed handling of zip bombs when extracting archives (de5f7e32)
+  * Fixed Windows command parameter escaping to prevent abuse of unicode characters with best fit encoding conversion (3130a7455)
+  * Fixed ability for `config` command to remove autoload keys (#11967)
+  * Fixed empty `type` support in `init` command (#11999)
+  * Fixed git clone errors when `safe.bareRepository` is set to `strict` in the git config (#11969)
+  * Fixed regression showing network errors on PHP <8.1 (#11974)
+  * Fixed some color bleed from a few warnings (#11972)
+
 ### [2.7.6] 2024-05-04
 
   * Fixed regression when script handlers add an autoloader which uses a private callback (#11960)
@@ -1870,6 +1888,7 @@
 
   * Initial release
 
+[2.7.7]: https://github.com/composer/composer/compare/2.7.6...2.7.7
 [2.7.6]: https://github.com/composer/composer/compare/2.7.5...2.7.6
 [2.7.5]: https://github.com/composer/composer/compare/2.7.4...2.7.5
 [2.7.4]: https://github.com/composer/composer/compare/2.7.3...2.7.4
