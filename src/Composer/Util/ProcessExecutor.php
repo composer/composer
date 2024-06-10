@@ -490,7 +490,7 @@ class ProcessExecutor
         // New lines break cmd.exe command parsing
         // and special chars like the fullwidth quote can be used to break out
         // of parameter encoding via "Best Fit" encoding conversion
-        $argument = strtr($argument, [
+        $argument = strtr($argument, array(
             "\n" => ' ',
             "\u{ff02}" => '"',
             "\u{02ba}" => '"',
@@ -504,7 +504,7 @@ class ProcessExecutor
             "\u{2044}" => '/',
             "\u{2215}" => '/',
             "\u{00b4}" => '/',
-        ]);
+        ));
 
         // In addition to whitespace, commas need quoting to preserve paths
         $quote = strpbrk($argument, " \t,") !== false;
