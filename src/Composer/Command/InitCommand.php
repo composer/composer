@@ -378,11 +378,14 @@ EOT
         );
         $input->setOption('stability', $minimumStability);
 
-        $type = $input->getOption('type') ?: false;
+        $type = $input->getOption('type');
         $type = $io->ask(
             'Package Type (e.g. library, project, metapackage, composer-plugin) [<comment>'.$type.'</comment>]: ',
             $type
         );
+        if ($type === '' || $type === false) {
+            $type = null;
+        }
         $input->setOption('type', $type);
 
         if (null === $license = $input->getOption('license')) {
