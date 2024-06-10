@@ -1,3 +1,13 @@
+### [2.2.24] 2024-06-10
+
+  * Security: Fixed command injection via malicious git branch name (GHSA-47f6-5gq3-vx9c / CVE-2024-35241)
+  * Security: Fixed multiple command injections via malicious git/hg branch names (GHSA-v9qv-c7wm-wgmf / CVE-2024-35242)
+  * Security: Fixed secure-http checks that could be bypassed by using malformed URL formats (fa3b9582c)
+  * Security: Fixed Filesystem::isLocalPath including windows-specific checks on linux (3c37a67c)
+  * Security: Fixed perforce argument escaping (3773f775)
+  * Security: Fixed handling of zip bombs when extracting archives (de5f7e32)
+  * Security: Fixed Windows command parameter escaping to prevent abuse of unicode characters with best fit encoding conversion (3130a7455, 04a63b324)
+
 ### [2.2.23] 2024-02-08
 
   * Security: Fixed code execution and possible privilege escalation via compromised vendor dir contents (GHSA-7c6p-848j-wh5h / CVE-2024-24821)
@@ -1507,6 +1517,7 @@
 
   * Initial release
 
+[2.2.24]: https://github.com/composer/composer/compare/2.2.23...2.2.24
 [2.2.23]: https://github.com/composer/composer/compare/2.2.22...2.2.23
 [2.2.22]: https://github.com/composer/composer/compare/2.2.21...2.2.22
 [2.2.21]: https://github.com/composer/composer/compare/2.2.20...2.2.21
