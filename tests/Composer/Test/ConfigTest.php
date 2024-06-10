@@ -298,6 +298,7 @@ class ConfigTest extends TestCase
             'http://packagist.org',
             'http://10.1.0.1/satis',
             'http://127.0.0.1/satis',
+            'http://💛@example.org',
             'svn://localhost/trunk',
             'svn://will.not.resolve/trunk',
             'svn://192.168.0.1/trunk',
