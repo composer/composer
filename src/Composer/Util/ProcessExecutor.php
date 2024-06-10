@@ -488,7 +488,9 @@ class ProcessExecutor
         }
 
         // New lines break cmd.exe command parsing
-        $argument = strtr($argument, "\n", ' ');
+        // and special chars like the fullwidth quote can be used to break out
+        // of parameter encoding via "Best Fit" encoding conversion
+        $argument = strtr($argument, ["\n" => ' ', '＂' => '"', '：' => ':', '／' => '/']);
 
         // In addition to whitespace, commas need quoting to preserve paths
         $quote = strpbrk($argument, " \t,") !== false;
