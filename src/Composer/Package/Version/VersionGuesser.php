@@ -176,7 +176,7 @@ class VersionGuesser
                 $featurePrettyVersion = $prettyVersion;
 
                 // try to find the best (nearest) version branch to assume this feature's version
-                $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path);
+                $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list -- %candidate%..%branch%', $path, '%candidate%..%branch%');
                 $version = $result['version'];
                 $prettyVersion = $result['pretty_version'];
             }
@@ -254,7 +254,7 @@ class VersionGuesser
             $branches = array_map('strval', array_keys($driver->getBranches()));
 
             // try to find the best (nearest) version branch to assume this feature's version
-            $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path);
+            $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path, '"not ancestors(\'%candidate%\') and ancestors(\'%branch%\')"');
             $result['commit'] = '';
             $result['feature_version'] = $version;
             $result['feature_pretty_version'] = $version;
@@ -271,12 +271,13 @@ class VersionGuesser
      * @param string[]                 $branches
      * @param string                   $scmCmdline
      * @param string                   $path
+     * @param string                   $arg
      *
      * @phpstan-param non-empty-string $scmCmdline
      *
      * @return array{version: string|null, pretty_version: string|null}
      */
-    private function guessFeatureVersion(array $packageConfig, $version, array $branches, $scmCmdline, $path)
+    private function guessFeatureVersion(array $packageConfig, $version, array $branches, $scmCmdline, $path, $arg)
     {
         $prettyVersion = $version;
 
@@ -315,7 +316,7 @@ class VersionGuesser
                     continue;
                 }
 
-                $cmdLine = str_replace(array('%candidate%', '%branch%'), array($candidate, $branch), $scmCmdline);
+                $cmdLine = str_replace($arg, str_replace(array('%candidate%', '%branch%'), array($candidate, $branch), $arg), $scmCmdline);
                 if (0 !== $this->process->execute($cmdLine, $output, $path)) {
                     continue;
                 }
