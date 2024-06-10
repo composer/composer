@@ -9,7 +9,7 @@
   * Fixed Filesystem::isLocalPath including windows-specific checks on linux (3c37a67c)
   * Fixed perforce argument escaping (3773f775)
   * Fixed handling of zip bombs when extracting archives (de5f7e32)
-  * Fixed Windows command parameter escaping to prevent abuse of unicode characters with best fit encoding conversion (3130a7455)
+  * Fixed Windows command parameter escaping to prevent abuse of unicode characters with best fit encoding conversion (3130a7455, 04a63b324)
   * Fixed ability for `config` command to remove autoload keys (#11967)
   * Fixed empty `type` support in `init` command (#11999)
   * Fixed git clone errors when `safe.bareRepository` is set to `strict` in the git config (#11969)
