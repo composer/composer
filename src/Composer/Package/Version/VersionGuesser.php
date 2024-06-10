@@ -176,7 +176,7 @@ class VersionGuesser
                 $featurePrettyVersion = $prettyVersion;
 
                 // try to find the best (nearest) version branch to assume this feature's version
-                $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list -- %candidate%..%branch%', $path, '%candidate%..%branch%');
+                $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path, '%candidate%..%branch%');
                 $version = $result['version'];
                 $prettyVersion = $result['pretty_version'];
             }
