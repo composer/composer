@@ -130,7 +130,7 @@ class RootPackageLoaderTest extends TestCase
                 'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n",
             ],
-            'git rev-list master..latest-production',
+            ['cmd' => ['git', 'rev-list', 'master..latest-production']],
         ], true);
 
         $config = new Config;
