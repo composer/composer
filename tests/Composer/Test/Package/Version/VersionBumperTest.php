@@ -66,6 +66,7 @@ class VersionBumperTest extends TestCase
         yield 'leave patch wildcard alone' => ['2.4.3.*', '2.4.3.2', '2.4.3.*'];
         yield 'upgrade tilde to caret when compatible' => ['~2.2', '2.4.3', '^2.4.3'];
         yield 'update patch-only-tilde alone' => ['~2.2.3', '2.2.6', '~2.2.6'];
+        yield 'update patch-only-tilde alone, also .0s' => ['~2.0.0', '2.0.0', '~2.0.0'];
         yield 'leave extra-only-tilde alone' => ['~2.2.3.1', '2.2.4.5', '~2.2.3.1'];
         yield 'upgrade bigger-or-eq to latest' => ['>=3.0', '3.4.5', '>=3.4.5'];
         yield 'upgrade bigger-or-eq to latest with v' => ['>=v3.0', '3.4.5', '>=3.4.5'];
