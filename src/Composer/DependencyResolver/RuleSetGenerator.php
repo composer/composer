@@ -17,6 +17,7 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
+use Composer\Package\RootPackageInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -203,6 +204,16 @@ class RuleSetGenerator
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, $possibleRequires, Rule::RULE_PACKAGE_REQUIRES, $link));
 
                 foreach ($possibleRequires as $require) {
+                    $requirers = [];
+                    foreach ($this->pool->getPackages() as $pkg) {
+                        if (isset($pkg->getRequires()[$require->getName()])) {
+                            $requirers[] = $pkg;
+                        }
+                    }
+                    if ($requirers) {
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, $requirers, Rule::RULE_PACKAGE_REQUIRES, null));
+                    }
+
                     $workQueue->enqueue($require);
                 }
             }
@@ -279,6 +290,16 @@ class RuleSetGenerator
             if ($packages) {
                 foreach ($packages as $package) {
                     $this->addRulesForPackage($package, $platformRequirementFilter);
+
+                    $requirers = [];
+                    foreach ($this->pool->getPackages() as $pkg) {
+                        if (isset($pkg->getRequires()[$package->getName()])) {
+                            $requirers[] = $pkg;
+                        }
+                    }
+                    if ($requirers) {
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, $requirers, Rule::RULE_PACKAGE_REQUIRES, null));
+                    }
                 }
 
                 $rule = $this->createInstallOneOfRule($packages, Rule::RULE_ROOT_REQUIRE, [
