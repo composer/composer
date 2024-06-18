@@ -29,7 +29,8 @@ class OutdatedCommand extends BaseCommand
     {
         $this
             ->setName('outdated')
-            ->setDescription('[out] Shows a list of installed packages that have updates available, including their latest version')
+            ->setAliases(['out'])
+            ->setDescription('Shows a list of installed packages that have updates available, including their latest version')
             ->setDefinition([
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.', null, $this->suggestInstalledPackage(false)),
                 new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show only packages that are outdated (this is the default, but present here for compat with `show`'),
