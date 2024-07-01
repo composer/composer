@@ -255,7 +255,7 @@ class ConsoleIOTest extends TestCase
         self::assertEquals(['1'], $result);
     }
 
-    public function testSetAndgetAuthentication(): void
+    public function testSetAndGetAuthentication(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
