@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Advisory\AuditConfig;
 use Composer\Composer;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\RepositoryUtils;
@@ -63,9 +64,9 @@ EOT
             $repoSet->addRepository($repo);
         }
 
-        $auditConfig = $composer->getConfig()->get('audit');
+        $auditConfig = AuditConfig::fromConfig($composer->getConfig());
 
-        return min(255, $auditor->audit($this->getIO(), $repoSet, $packages, $this->getAuditFormat($input, 'format'), false, $auditConfig['ignore'] ?? [], $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL));
+        return min(255, $auditor->audit($this->getIO(), $repoSet, $packages, $this->getAuditFormat($input, 'format'), false, $auditConfig->ignoreList, $auditConfig->abandoned));
     }
 
     /**
