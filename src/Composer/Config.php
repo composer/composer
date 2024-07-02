@@ -84,6 +84,7 @@ class Config
         'gitlab-token' => [],
         'http-basic' => [],
         'bearer' => [],
+        'bump-after-update' => false,
     ];
 
     /** @var array<string, mixed> */
