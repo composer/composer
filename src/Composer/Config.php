@@ -125,7 +125,7 @@ class Config
         $this->config = static::$defaultConfig;
 
         $this->repositories = static::$defaultRepositories;
-        $this->useEnvironment = (bool) $useEnvironment;
+        $this->useEnvironment = $useEnvironment;
         $this->baseDir = is_string($baseDir) && '' !== $baseDir ? $baseDir : null;
 
         foreach ($this->config as $configKey => $configValue) {

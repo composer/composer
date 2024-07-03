@@ -53,7 +53,7 @@ class Cache
         $this->root = rtrim($cacheDir, '/\\') . '/';
         $this->allowlist = $allowlist;
         $this->filesystem = $filesystem ?: new Filesystem();
-        $this->readOnly = (bool) $readOnly;
+        $this->readOnly = $readOnly;
 
         if (!self::isUsable($cacheDir)) {
             $this->enabled = false;
@@ -65,7 +65,7 @@ class Cache
      */
     public function setReadOnly(bool $readOnly)
     {
-        $this->readOnly = (bool) $readOnly;
+        $this->readOnly = $readOnly;
     }
 
     /**
