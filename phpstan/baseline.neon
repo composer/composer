@@ -497,7 +497,7 @@ parameters:
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 7
+			count: 6
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
@@ -1276,7 +1276,7 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Rule.php
 
 		-
-			message: "#^Method Composer\\\\DependencyResolver\\\\Rule\\:\\:getReason\\(\\) should return 2\\|3\\|6\\|7\\|10\\|12\\|13\\|14 but returns int\\.$#"
+			message: "#^Method Composer\\\\DependencyResolver\\\\Rule\\:\\:getReason\\(\\) should return 2\\|3\\|6\\|7\\|10\\|12\\|13\\|14 but returns int\\<0, 255\\>\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Rule.php
 
@@ -1292,11 +1292,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, array\\<Composer\\\\Package\\\\BasePackage\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Rule.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, int given\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Rule.php
 
@@ -2482,6 +2477,16 @@ parameters:
 
 		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
+			count: 1
+			path: ../src/Composer/Package/BasePackage.php
+
+		-
+			message: "#^Method Composer\\\\Package\\\\BasePackage\\:\\:packageNameToRegexp\\(\\) should return non\\-empty\\-string but returns string\\.$#"
+			count: 1
+			path: ../src/Composer/Package/BasePackage.php
+
+		-
+			message: "#^Method Composer\\\\Package\\\\BasePackage\\:\\:packageNamesToRegexp\\(\\) should return non\\-empty\\-string but returns string\\.$#"
 			count: 1
 			path: ../src/Composer/Package/BasePackage.php
 
@@ -4404,17 +4409,7 @@ parameters:
 			path: ../src/Composer/Util/Perforce.php
 
 		-
-			message: "#^Cannot access offset 'dir' on array\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Platform.php
-
-		-
 			message: "#^Casting to string something that's already string\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Platform.php
-
-		-
-			message: "#^Only booleans are allowed in &&, array\\|false given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Platform.php
 
@@ -4575,11 +4570,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#5 \\$maxlen of function file_get_contents expects int\\<0, max\\>, int given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/RemoteFilesystem.php
-
-		-
-			message: "#^Parameter &\\$responseHeaders @param\\-out type of method Composer\\\\Util\\\\RemoteFilesystem\\:\\:getRemoteContents\\(\\) expects list\\<string\\>, array\\<int, string\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/RemoteFilesystem.php
 

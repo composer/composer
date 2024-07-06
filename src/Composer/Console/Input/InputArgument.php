@@ -26,7 +26,7 @@ use Symfony\Component\Console\Input\InputArgument as BaseInputArgument;
  *
  * @internal
  *
- * TODO drop when PHP 8.1 / symfony 6.1+ can be required
+ * TODO symfony/console:6.1 drop when PHP 8.1 / symfony 6.1+ can be required
  */
 class InputArgument extends BaseInputArgument
 {

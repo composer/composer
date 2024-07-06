@@ -146,7 +146,7 @@ EOT
             $homeDirOwnerId = fileowner($home);
             if (is_array($composerUser) && $homeDirOwnerId !== false) {
                 $homeOwner = posix_getpwuid($homeDirOwnerId);
-                if (is_array($homeOwner) && isset($composerUser['name'], $homeOwner['name']) && $composerUser['name'] !== $homeOwner['name']) {
+                if (is_array($homeOwner) && $composerUser['name'] !== $homeOwner['name']) {
                     $io->writeError('<warning>You are running Composer as "'.$composerUser['name'].'", while "'.$home.'" is owned by "'.$homeOwner['name'].'"</warning>');
                 }
             }

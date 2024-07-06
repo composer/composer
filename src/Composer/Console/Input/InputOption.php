@@ -26,7 +26,7 @@ use Symfony\Component\Console\Input\InputOption as BaseInputOption;
  *
  * @internal
  *
- * TODO drop when PHP 8.1 / symfony 6.1+ can be required
+ * TODO symfony/console:6.1 drop when PHP 8.1 / symfony 6.1+ can be required
  */
 class InputOption extends BaseInputOption
 {

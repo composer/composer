@@ -129,7 +129,9 @@ class Platform
         if (\function_exists('posix_getuid') && \function_exists('posix_getpwuid')) {
             $info = posix_getpwuid(posix_getuid());
 
-            return $info['dir'];
+            if (is_array($info)) {
+                return $info['dir'];
+            }
         }
 
         throw new \RuntimeException('Could not determine user directory');
@@ -252,7 +254,7 @@ class Platform
 
             if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
                 $processUser = posix_getpwuid(posix_geteuid());
-                if ($processUser && $processUser['name'] === 'vagrant') {
+                if (is_array($processUser) && $processUser['name'] === 'vagrant') {
                     return self::$isVirtualBoxGuest = true;
                 }
             }
