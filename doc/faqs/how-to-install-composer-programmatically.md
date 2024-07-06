@@ -1,4 +1,4 @@
-# How do I install Composer programmatically?
+ # How do I install Composer programmatically?
 
 As noted on the download page, the installer script contains a
 checksum which changes when the installer code changes and as such
