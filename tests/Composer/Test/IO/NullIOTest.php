@@ -24,7 +24,7 @@ class NullIOTest extends TestCase
         self::assertFalse($io->isInteractive());
     }
 
-    public function testhasAuthentication(): void
+    public function testHasAuthentication(): void
     {
         $io = new NullIO();
 
@@ -38,7 +38,7 @@ class NullIOTest extends TestCase
         self::assertNull($io->askAndHideAnswer('foo'));
     }
 
-    public function testgetAuthentications(): void
+    public function testGetAuthentications(): void
     {
         $io = new NullIO();
 
@@ -58,7 +58,7 @@ class NullIOTest extends TestCase
     {
         $io = new NullIO();
 
-        self::assertEquals(false, $io->askConfirmation('bar', false));
+        self::assertFalse($io->askConfirmation('bar', false));
     }
 
     public function testAskAndValidate(): void

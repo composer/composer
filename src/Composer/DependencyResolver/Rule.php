@@ -137,12 +137,12 @@ abstract class Rule
 
     public function isDisabled(): bool
     {
-        return (bool) (($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
+        return 0 !== (($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
     public function isEnabled(): bool
     {
-        return !(($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
+        return 0 === (($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
     abstract public function isAssertion(): bool;
