@@ -431,7 +431,7 @@ class Locker
 
             $spec = $this->dumper->dump($package);
             unset($spec['version_normalized']);
-            // remove transport-options.ssl from lock file
+            // remove `transport-options.ssl` from lock file to prevent storing registry configuration in the lock file
             if (isset($spec['transport-options'])) {
                 if (isset($spec['transport-options']['ssl'])) {
                     unset($spec['transport-options']['ssl']);
