@@ -29,7 +29,7 @@
         "composer/semver": "^3.3",
         "composer/spdx-licenses": "^1.5.7",
         "composer/xdebug-handler": "^2.0.2 || ^3.0.3",
-        "justinrainbow/json-schema": "^5.3",
+        "justinrainbow/json-schema": "6.0.0-beta",
         "psr/log": "^1.0 || ^2.0 || ^3.0",
         "seld/jsonlint": "^1.4",
         "seld/phar-utils": "^1.2",
