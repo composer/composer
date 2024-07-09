@@ -97,7 +97,8 @@ class ComposerSchemaTest extends TestCase
     private function check(string $json)
     {
         $validator = new Validator();
-        $validator->check(json_decode($json), (object) ['$ref' => 'file://' . JsonFile::COMPOSER_SCHEMA_PATH]);
+        $value = json_decode($json);
+        $validator->validate($value, (object) ['$ref' => 'file://' . JsonFile::COMPOSER_SCHEMA_PATH]);
 
         if (!$validator->isValid()) {
             $errors = $validator->getErrors();
