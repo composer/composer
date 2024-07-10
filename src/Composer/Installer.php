@@ -1173,7 +1173,7 @@ class Installer
      */
     public function setDryRun(bool $dryRun = true): self
     {
-        $this->dryRun = (bool) $dryRun;
+        $this->dryRun = $dryRun;
 
         return $this;
     }
@@ -1205,7 +1205,7 @@ class Installer
      */
     public function setPreferSource(bool $preferSource = true): self
     {
-        $this->preferSource = (bool) $preferSource;
+        $this->preferSource = $preferSource;
 
         return $this;
     }
@@ -1217,7 +1217,7 @@ class Installer
      */
     public function setPreferDist(bool $preferDist = true): self
     {
-        $this->preferDist = (bool) $preferDist;
+        $this->preferDist = $preferDist;
 
         return $this;
     }
@@ -1229,7 +1229,7 @@ class Installer
      */
     public function setOptimizeAutoloader(bool $optimizeAutoloader): self
     {
-        $this->optimizeAutoloader = (bool) $optimizeAutoloader;
+        $this->optimizeAutoloader = $optimizeAutoloader;
         if (!$this->optimizeAutoloader) {
             // Force classMapAuthoritative off when not optimizing the
             // autoloader
@@ -1247,7 +1247,7 @@ class Installer
      */
     public function setClassMapAuthoritative(bool $classMapAuthoritative): self
     {
-        $this->classMapAuthoritative = (bool) $classMapAuthoritative;
+        $this->classMapAuthoritative = $classMapAuthoritative;
         if ($this->classMapAuthoritative) {
             // Force optimizeAutoloader when classmap is authoritative
             $this->setOptimizeAutoloader(true);
@@ -1276,7 +1276,7 @@ class Installer
      */
     public function setUpdate(bool $update): self
     {
-        $this->update = (bool) $update;
+        $this->update = $update;
 
         return $this;
     }
@@ -1288,7 +1288,7 @@ class Installer
      */
     public function setInstall(bool $install): self
     {
-        $this->install = (bool) $install;
+        $this->install = $install;
 
         return $this;
     }
@@ -1300,7 +1300,7 @@ class Installer
      */
     public function setDevMode(bool $devMode = true): self
     {
-        $this->devMode = (bool) $devMode;
+        $this->devMode = $devMode;
 
         return $this;
     }
@@ -1314,7 +1314,7 @@ class Installer
      */
     public function setDumpAutoloader(bool $dumpAutoloader = true): self
     {
-        $this->dumpAutoloader = (bool) $dumpAutoloader;
+        $this->dumpAutoloader = $dumpAutoloader;
 
         return $this;
     }
@@ -1353,7 +1353,7 @@ class Installer
      */
     public function setVerbose(bool $verbose = true): self
     {
-        $this->verbose = (bool) $verbose;
+        $this->verbose = $verbose;
 
         return $this;
     }

@@ -40,7 +40,7 @@ class StrictConfirmationQuestion extends Question
      */
     public function __construct(string $question, bool $default = true, string $trueAnswerRegex = '/^y(?:es)?$/i', string $falseAnswerRegex = '/^no?$/i')
     {
-        parent::__construct($question, (bool) $default);
+        parent::__construct($question, $default);
 
         $this->trueAnswerRegex = $trueAnswerRegex;
         $this->falseAnswerRegex = $falseAnswerRegex;

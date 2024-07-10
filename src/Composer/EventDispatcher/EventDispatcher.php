@@ -90,7 +90,7 @@ class EventDispatcher
      */
     public function setRunScripts(bool $runScripts = true): self
     {
-        $this->runScripts = (bool) $runScripts;
+        $this->runScripts = $runScripts;
 
         return $this;
     }
