@@ -431,12 +431,11 @@ class Locker
 
             $spec = $this->dumper->dump($package);
             unset($spec['version_normalized']);
-            // remove `transport-options.ssl` from lock file to prevent storing registry configuration in the lock file
-            if (isset($spec['transport-options'])) {
-                if (isset($spec['transport-options']['ssl'])) {
-                    unset($spec['transport-options']['ssl']);
-                }
-                if (empty($spec['transport-options'])) {
+            // remove `transport-options.ssl` from lock file to prevent storing 
+            // local-filesystem repo config paths in the lock file as that makes it less portable
+            if (isset($spec['transport-options']['ssl'])) {
+                unset($spec['transport-options']['ssl']);
+                if (\count($spec['transport-options']) === 0) {
                     unset($spec['transport-options']);
                 }
             }
