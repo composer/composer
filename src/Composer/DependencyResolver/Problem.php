@@ -25,6 +25,7 @@ use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\MultiConstraint;
 
 /**
  * Represents a problem detected while solving dependencies
@@ -259,6 +260,17 @@ class Problem
                     return ["- ", $package->getPrettyName().' is fixed to '.$package->getPrettyVersion().' (lock file version) by a partial update but that version is rejected by your minimum-stability. Make sure you list it as an argument for the update command.'];
                 }
                 break;
+            }
+        }
+
+        if ($constraint instanceof Constraint && $constraint->getOperator() === Constraint::STR_OP_EQ && Preg::isMatch('{^dev-.*#.*}', $constraint->getPrettyString())) {
+            $newConstraint = Preg::replace('{ +as +([^,\s|]+)$}', '', $constraint->getPrettyString());
+            $packages = $repositorySet->findPackages($packageName, new MultiConstraint([
+                new Constraint(Constraint::STR_OP_EQ, $newConstraint),
+                new Constraint(Constraint::STR_OP_EQ, str_replace('#', '+', $newConstraint))
+            ], false));
+            if (\count($packages) > 0) {
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these' : 'it').' had a # in the branch name which was replaced by +. Make sure to require it as "'.str_replace('#', '+', $constraint->getPrettyString()).'".'];
             }
         }
 
