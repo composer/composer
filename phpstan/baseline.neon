@@ -2712,7 +2712,7 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 6
+			count: 5
 			path: ../src/Composer/Package/Locker.php
 
 		-
