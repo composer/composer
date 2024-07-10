@@ -213,7 +213,7 @@ class BinaryInstaller
         $binDir = ProcessExecutor::escape(dirname($binPath));
         $binFile = basename($binPath);
 
-        $binContents = file_get_contents($bin);
+        $binContents = file_get_contents($bin, false, null, 0, 500);
         // For php files, we generate a PHP proxy instead of a shell one,
         // which allows calling the proxy with a custom php process
         if (Preg::isMatch('{^(#!.*\r?\n)?[\r\n\t ]*<\?php}', $binContents, $match)) {
