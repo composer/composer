@@ -23,11 +23,11 @@ class StabilityFilter
      * Checks if any of the provided package names in the given stability match the configured acceptable stability and flags
      *
      * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
-     * @phpstan-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
+     * @phpstan-param array<key-of<BasePackage::STABILITIES>, BasePackage::STABILITY_*> $acceptableStabilities
      * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
      * @phpstan-param array<string, BasePackage::STABILITY_*> $stabilityFlags
      * @param  string[] $names     The package name(s) to check for stability flags
-     * @param  string   $stability one of 'stable', 'RC', 'beta', 'alpha' or 'dev'
+     * @param  key-of<BasePackage::STABILITIES> $stability one of 'stable', 'RC', 'beta', 'alpha' or 'dev'
      * @return bool     true if any package name is acceptable
      */
     public static function isPackageAcceptable(array $acceptableStabilities, array $stabilityFlags, array $names, string $stability): bool
@@ -35,7 +35,7 @@ class StabilityFilter
         foreach ($names as $name) {
             // allow if package matches the package-specific stability flag
             if (isset($stabilityFlags[$name])) {
-                if (BasePackage::$stabilities[$stability] <= $stabilityFlags[$name]) {
+                if (BasePackage::STABILITIES[$stability] <= $stabilityFlags[$name]) {
                     return true;
                 }
             } elseif (isset($acceptableStabilities[$stability])) {

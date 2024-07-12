@@ -53,7 +53,7 @@ class DefaultPolicy implements PolicyInterface
     public function versionCompare(PackageInterface $a, PackageInterface $b, string $operator): bool
     {
         if ($this->preferStable && ($stabA = $a->getStability()) !== ($stabB = $b->getStability())) {
-            return BasePackage::$stabilities[$stabA] < BasePackage::$stabilities[$stabB];
+            return BasePackage::STABILITIES[$stabA] < BasePackage::STABILITIES[$stabB];
         }
 
         // dev versions need to be compared as branches via matchSpecific's special treatment, the rest can be optimized with compiling matcher

@@ -71,7 +71,7 @@ class VersionSelector
      */
     public function findBestCandidate(string $packageName, ?string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0, ?IOInterface $io = null, $showWarnings = true)
     {
-        if (!isset(BasePackage::$stabilities[$preferredStability])) {
+        if (!isset(BasePackage::STABILITIES[$preferredStability])) {
             // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
             throw new \UnexpectedValueException('Expected a valid stability name as 3rd argument, got '.$preferredStability);
         }
@@ -86,7 +86,7 @@ class VersionSelector
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
         $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint, $repoSetFlags);
 
-        $minPriority = BasePackage::$stabilities[$preferredStability];
+        $minPriority = BasePackage::STABILITIES[$preferredStability];
         usort($candidates, static function (PackageInterface $a, PackageInterface $b) use ($minPriority) {
             $aPriority = $a->getStabilityPriority();
             $bPriority = $b->getStabilityPriority();

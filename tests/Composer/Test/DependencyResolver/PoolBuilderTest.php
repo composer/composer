@@ -50,7 +50,10 @@ class PoolBuilderTest extends TestCase
         $stabilityFlags = !empty($root['stability-flags']) ? $root['stability-flags'] : [];
         $rootReferences = !empty($root['references']) ? $root['references'] : [];
         $stabilityFlags = array_map(static function ($stability): int {
-            return BasePackage::$stabilities[$stability];
+            if (!isset(BasePackage::STABILITIES[$stability])) {
+                throw new \LogicException('Invalid stability given: '.$stability);
+            }
+            return BasePackage::STABILITIES[$stability];
         }, $stabilityFlags);
 
         $parser = new VersionParser();

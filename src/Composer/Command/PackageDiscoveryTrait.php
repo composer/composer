@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\IO\IOInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -52,6 +53,9 @@ trait PackageDiscoveryTrait
         return $this->repos;
     }
 
+    /**
+     * @param key-of<BasePackage::STABILITIES>|null $minimumStability
+     */
     private function getRepositorySet(InputInterface $input, ?string $minimumStability = null): RepositorySet
     {
         $key = $minimumStability ?? 'default';
@@ -64,6 +68,9 @@ trait PackageDiscoveryTrait
         return $this->repositorySets[$key];
     }
 
+    /**
+     * @return key-of<BasePackage::STABILITIES>
+     */
     private function getMinimumStability(InputInterface $input): string
     {
         if ($input->hasOption('stability')) { // @phpstan-ignore-line as InitCommand does have this option but not all classes using this trait do

@@ -86,7 +86,7 @@ class FilterRepositoryTest extends TestCase
     public function testCanonicalDefaultTrue(): void
     {
         $repo = new FilterRepository($this->arrayRepo, []);
-        $result = $repo->loadPackages(['foo/aaa' => new MatchAllConstraint], BasePackage::$stabilities, []);
+        $result = $repo->loadPackages(['foo/aaa' => new MatchAllConstraint], BasePackage::STABILITIES, []);
         self::assertCount(1, $result['packages']);
         self::assertCount(1, $result['namesFound']);
     }
@@ -94,7 +94,7 @@ class FilterRepositoryTest extends TestCase
     public function testNonCanonical(): void
     {
         $repo = new FilterRepository($this->arrayRepo, ['canonical' => false]);
-        $result = $repo->loadPackages(['foo/aaa' => new MatchAllConstraint], BasePackage::$stabilities, []);
+        $result = $repo->loadPackages(['foo/aaa' => new MatchAllConstraint], BasePackage::STABILITIES, []);
         self::assertCount(1, $result['packages']);
         self::assertCount(0, $result['namesFound']);
     }

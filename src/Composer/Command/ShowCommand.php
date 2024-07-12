@@ -1454,7 +1454,7 @@ EOT
         $stability = $composer->getPackage()->getMinimumStability();
         $flags = $composer->getPackage()->getStabilityFlags();
         if (isset($flags[$name])) {
-            $stability = array_search($flags[$name], BasePackage::$stabilities, true);
+            $stability = array_search($flags[$name], BasePackage::STABILITIES, true);
         }
 
         $bestStability = $stability;

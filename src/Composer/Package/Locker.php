@@ -247,6 +247,9 @@ class Locker
         return $requirements;
     }
 
+    /**
+     * @return key-of<BasePackage::STABILITIES>
+     */
     public function getMinimumStability(): string
     {
         $lockData = $this->getLockData();
@@ -431,7 +434,7 @@ class Locker
 
             $spec = $this->dumper->dump($package);
             unset($spec['version_normalized']);
-            // remove `transport-options.ssl` from lock file to prevent storing 
+            // remove `transport-options.ssl` from lock file to prevent storing
             // local-filesystem repo config paths in the lock file as that makes it less portable
             if (isset($spec['transport-options']['ssl'])) {
                 unset($spec['transport-options']['ssl']);

@@ -910,7 +910,7 @@ class Installer
         $this->fixedRootPackage->setRequires([]);
         $this->fixedRootPackage->setDevRequires([]);
 
-        $stabilityFlags[$this->package->getName()] = BasePackage::$stabilities[VersionParser::parseStability($this->package->getVersion())];
+        $stabilityFlags[$this->package->getName()] = BasePackage::STABILITIES[VersionParser::parseStability($this->package->getVersion())];
 
         $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $this->package->getReferences(), $rootRequires, $this->temporaryConstraints);
         $repositorySet->addRepository(new RootPackageRepository($this->fixedRootPackage));

@@ -664,7 +664,7 @@ EOT
             }],
             'minimum-stability' => [
                 static function ($val): bool {
-                    return isset(BasePackage::$stabilities[VersionParser::normalizeStability($val)]);
+                    return isset(BasePackage::STABILITIES[VersionParser::normalizeStability($val)]);
                 },
                 static function ($val): string {
                     return VersionParser::normalizeStability($val);
