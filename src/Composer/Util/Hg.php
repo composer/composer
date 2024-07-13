@@ -60,17 +60,17 @@ class Hg
         // Try with the authentication information available
         if (
             Preg::isMatch('{^(?P<proto>ssh|https?)://(?:(?P<user>[^:@]+)(?::(?P<pass>[^:@]+))?@)?(?P<host>[^/]+)(?P<path>/.*)?}mi', $url, $matches)
-            && $this->io->hasAuthentication((string) $matches['host'])
+            && $this->io->hasAuthentication($matches['host'])
         ) {
             if ($matches['proto'] === 'ssh') {
                 $user = '';
-                if ($matches['user'] !== '' && $matches['user'] !== null) {
+                if ($matches['user'] !== null) {
                     $user = rawurlencode($matches['user']) . '@';
                 }
                 $authenticatedUrl = $matches['proto'] . '://' . $user . $matches['host'] . $matches['path'];
             } else {
-                $auth = $this->io->getAuthentication((string) $matches['host']);
-                $authenticatedUrl = $matches['proto'] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $matches['host'] . $matches['path'];
+                $auth = $this->io->getAuthentication($matches['host']);
+                $authenticatedUrl = $matches['proto'] . '://' . rawurlencode((string) $auth['username']) . ':' . rawurlencode((string) $auth['password']) . '@' . $matches['host'] . $matches['path'];
             }
             $command = $commandCallable($authenticatedUrl);
 

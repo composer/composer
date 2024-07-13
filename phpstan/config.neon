@@ -4,6 +4,7 @@ includes:
     - ../vendor/phpstan/phpstan-deprecation-rules/rules.neon
     - ../vendor/phpstan/phpstan-strict-rules/rules.neon
     - ../vendor/phpstan/phpstan-symfony/extension.neon
+    - ../vendor/composer/pcre/extension.neon
     - ../vendor/phpstan/phpstan-symfony/rules.neon
     # TODO when requiring php 7.4+ we can use this
     #- ../vendor/staabm/phpstan-todo-by/extension.neon

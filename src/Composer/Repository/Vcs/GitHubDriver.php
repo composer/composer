@@ -63,8 +63,6 @@ class GitHubDriver extends VcsDriver
             throw new \InvalidArgumentException(sprintf('The GitHub repository URL %s is invalid.', $this->url));
         }
 
-        assert(is_string($match[3]));
-        assert(is_string($match[4]));
         $this->owner = $match[3];
         $this->repository = $match[4];
         $this->originUrl = strtolower($match[1] ?? (string) $match[2]);

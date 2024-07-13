@@ -350,16 +350,18 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'imagick':
+                    // @phpstan-ignore staticMethod.dynamicCall (called like this for mockability)
                     $imageMagickVersion = $this->runtime->construct('Imagick')->getVersion();
                     // 6.x: ImageMagick 6.2.9 08/24/06 Q16 http://www.imagemagick.org
                     // 7.x: ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org
-                    Preg::match('/^ImageMagick (?<version>[\d.]+)(?:-(?<patch>\d+))?/', $imageMagickVersion['versionString'], $matches);
-                    $version = $matches['version'];
-                    if (isset($matches['patch'])) {
-                        $version .= '.'.$matches['patch'];
-                    }
+                    if (Preg::isMatch('/^ImageMagick (?<version>[\d.]+)(?:-(?<patch>\d+))?/', $imageMagickVersion['versionString'], $matches)) {
+                        $version = $matches['version'];
+                        if (isset($matches['patch'])) {
+                            $version .= '.'.$matches['patch'];
+                        }
 
-                    $this->addLibrary($name.'-imagemagick', $version, null, ['imagick']);
+                        $this->addLibrary($name.'-imagemagick', $version, null, ['imagick']);
+                    }
                     break;
 
                 case 'ldap':

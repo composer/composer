@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6a83e69e5c06f06ecba7db6c83213f9d",
+    "content-hash": "80ca8443ea33a96788fbb309b8eccc9f",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -226,25 +226,28 @@
         },
         {
             "name": "composer/pcre",
-            "version": "2.1.3",
+            "version": "2.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/pcre.git",
-                "reference": "540af382c97b83c628227d5f87cf56466d476191"
+                "reference": "5b103b3664aa6dde0563a4fc245b2bf20b8f2620"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/pcre/zipball/540af382c97b83c628227d5f87cf56466d476191",
-                "reference": "540af382c97b83c628227d5f87cf56466d476191",
+                "url": "https://api.github.com/repos/composer/pcre/zipball/5b103b3664aa6dde0563a4fc245b2bf20b8f2620",
+                "reference": "5b103b3664aa6dde0563a4fc245b2bf20b8f2620",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.2 || ^8.0"
             },
+            "conflict": {
+                "phpstan/phpstan": "<1.11.8"
+            },
             "require-dev": {
-                "phpstan/phpstan": "^1.3",
+                "phpstan/phpstan": "^1.11.8@dev",
                 "phpstan/phpstan-strict-rules": "^1.1",
-                "symfony/phpunit-bridge": "^5"
+                "phpunit/phpunit": "^8 || ^9"
             },
             "type": "library",
             "extra": {
@@ -277,7 +280,7 @@
             ],
             "support": {
                 "issues": "https://github.com/composer/pcre/issues",
-                "source": "https://github.com/composer/pcre/tree/2.1.3"
+                "source": "https://github.com/composer/pcre/tree/2.x"
             },
             "funding": [
                 {
@@ -293,20 +296,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-03-19T09:03:05+00:00"
+            "time": "2024-07-13T11:21:42+00:00"
         },
         {
             "name": "composer/semver",
-            "version": "3.4.1",
+            "version": "3.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "8536c1b9103405bcbd310c69e7a5739a1c2b1f0b"
+                "reference": "c51258e759afdb17f1fd1fe83bc12baaef6309d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/8536c1b9103405bcbd310c69e7a5739a1c2b1f0b",
-                "reference": "8536c1b9103405bcbd310c69e7a5739a1c2b1f0b",
+                "url": "https://api.github.com/repos/composer/semver/zipball/c51258e759afdb17f1fd1fe83bc12baaef6309d6",
+                "reference": "c51258e759afdb17f1fd1fe83bc12baaef6309d6",
                 "shasum": ""
             },
             "require": {
@@ -358,7 +361,7 @@
             "support": {
                 "irc": "ircs://irc.libera.chat:6697/composer",
                 "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/composer/semver/tree/3.4.1"
+                "source": "https://github.com/composer/semver/tree/3.4.2"
             },
             "funding": [
                 {
@@ -374,7 +377,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-12T09:13:09+00:00"
+            "time": "2024-07-12T11:35:52+00:00"
         },
         {
             "name": "composer/spdx-licenses",
@@ -2012,16 +2015,16 @@
     "packages-dev": [
         {
             "name": "phpstan/phpstan",
-            "version": "1.11.7",
+            "version": "1.11.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "52d2bbfdcae7f895915629e4694e9497d0f8e28d"
+                "reference": "062d8a04d8888e3acdf6e50ae9b508a40e0e2f50"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/52d2bbfdcae7f895915629e4694e9497d0f8e28d",
-                "reference": "52d2bbfdcae7f895915629e4694e9497d0f8e28d",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/062d8a04d8888e3acdf6e50ae9b508a40e0e2f50",
+                "reference": "062d8a04d8888e3acdf6e50ae9b508a40e0e2f50",
                 "shasum": ""
             },
             "require": {
@@ -2066,7 +2069,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-07-06T11:17:41+00:00"
+            "time": "2024-07-14T12:02:14+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -2373,7 +2376,10 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "composer/pcre": 20,
+        "phpstan/phpstan": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

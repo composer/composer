@@ -38,7 +38,7 @@
         "symfony/finder": "^5.4 || ^6.0 || ^7",
         "symfony/process": "^5.4 || ^6.0 || ^7",
         "react/promise": "^2.8 || ^3",
-        "composer/pcre": "^2.1 || ^3.1",
+        "composer/pcre": "^2.2@dev",
         "symfony/polyfill-php73": "^1.24",
         "symfony/polyfill-php80": "^1.24",
         "symfony/polyfill-php81": "^1.24",
@@ -46,7 +46,7 @@
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^6.4.1 || ^7.0.1",
-        "phpstan/phpstan": "^1.11.0",
+        "phpstan/phpstan": "1.11.x-dev",
         "phpstan/phpstan-phpunit": "^1.4.0",
         "phpstan/phpstan-deprecation-rules": "^1.2.0",
         "phpstan/phpstan-strict-rules": "^1.6.0",
