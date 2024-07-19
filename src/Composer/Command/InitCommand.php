@@ -468,8 +468,6 @@ EOT
     private function parseAuthorString(string $author): array
     {
         if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+)(?:\s+<(?P<email>.+?)>)?$/u', $author, $match)) {
-            assert(is_string($match['name']));
-
             if (null !== $match['email'] && !$this->isValidEmail($match['email'])) {
                 throw new \InvalidArgumentException('Invalid email "'.$match['email'].'"');
             }

@@ -230,12 +230,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/pcre.git",
-                "reference": "5b103b3664aa6dde0563a4fc245b2bf20b8f2620"
+                "reference": "bd3aec33e8d3fb8103b66678ef8b9ccac2f04178"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/pcre/zipball/5b103b3664aa6dde0563a4fc245b2bf20b8f2620",
-                "reference": "5b103b3664aa6dde0563a4fc245b2bf20b8f2620",
+                "url": "https://api.github.com/repos/composer/pcre/zipball/bd3aec33e8d3fb8103b66678ef8b9ccac2f04178",
+                "reference": "bd3aec33e8d3fb8103b66678ef8b9ccac2f04178",
                 "shasum": ""
             },
             "require": {
@@ -296,7 +296,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-13T11:21:42+00:00"
+            "time": "2024-07-18T12:56:51+00:00"
         },
         {
             "name": "composer/semver",
@@ -2019,12 +2019,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "062d8a04d8888e3acdf6e50ae9b508a40e0e2f50"
+                "reference": "fc75deb9302e0fe57fda2b5ea35ae78399a6df51"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/062d8a04d8888e3acdf6e50ae9b508a40e0e2f50",
-                "reference": "062d8a04d8888e3acdf6e50ae9b508a40e0e2f50",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/fc75deb9302e0fe57fda2b5ea35ae78399a6df51",
+                "reference": "fc75deb9302e0fe57fda2b5ea35ae78399a6df51",
                 "shasum": ""
             },
             "require": {
@@ -2069,7 +2069,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-07-14T12:02:14+00:00"
+            "time": "2024-07-19T12:09:59+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -2221,22 +2221,22 @@
         },
         {
             "name": "phpstan/phpstan-symfony",
-            "version": "1.4.5",
+            "version": "1.4.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-symfony.git",
-                "reference": "1bd7c339f622dfb5a1a97dcaf1a862734eabfa1d"
+                "reference": "e909a075d69e0d4db262ac3407350ae2c6b6ab5f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-symfony/zipball/1bd7c339f622dfb5a1a97dcaf1a862734eabfa1d",
-                "reference": "1bd7c339f622dfb5a1a97dcaf1a862734eabfa1d",
+                "url": "https://api.github.com/repos/phpstan/phpstan-symfony/zipball/e909a075d69e0d4db262ac3407350ae2c6b6ab5f",
+                "reference": "e909a075d69e0d4db262ac3407350ae2c6b6ab5f",
                 "shasum": ""
             },
             "require": {
                 "ext-simplexml": "*",
                 "php": "^7.2 || ^8.0",
-                "phpstan/phpstan": "^1.11"
+                "phpstan/phpstan": "^1.11.7"
             },
             "conflict": {
                 "symfony/framework-bundle": "<3.0"
@@ -2287,9 +2287,9 @@
             "description": "Symfony Framework extensions and rules for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-symfony/issues",
-                "source": "https://github.com/phpstan/phpstan-symfony/tree/1.4.5"
+                "source": "https://github.com/phpstan/phpstan-symfony/tree/1.4.6"
             },
-            "time": "2024-06-26T12:19:42+00:00"
+            "time": "2024-07-16T11:48:54+00:00"
         },
         {
             "name": "symfony/phpunit-bridge",
