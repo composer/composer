@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6a83e69e5c06f06ecba7db6c83213f9d",
+    "content-hash": "322a9597b471695418a9229f290649c8",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -523,24 +523,141 @@
             "time": "2024-05-06T16:37:16+00:00"
         },
         {
-            "name": "justinrainbow/json-schema",
-            "version": "5.3.0",
+            "name": "icecave/parity",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/jsonrainbow/json-schema.git",
-                "reference": "feb2ca6dd1cebdaf1ed60a4c8de2e53ce11c4fd8"
+                "url": "https://github.com/icecave/parity.git",
+                "reference": "0109fef58b3230d23b20b2ac52ecdf477218d300"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/feb2ca6dd1cebdaf1ed60a4c8de2e53ce11c4fd8",
-                "reference": "feb2ca6dd1cebdaf1ed60a4c8de2e53ce11c4fd8",
+                "url": "https://api.github.com/repos/icecave/parity/zipball/0109fef58b3230d23b20b2ac52ecdf477218d300",
+                "reference": "0109fef58b3230d23b20b2ac52ecdf477218d300",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1"
+                "icecave/repr": "~1",
+                "php": ">=5.3"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "~2.2.20||~2.15.1",
+                "eloquent/liberator": "~1",
+                "icecave/archer": "~1"
+            },
+            "suggest": {
+                "eloquent/asplode": "Drop-in exception-based error handling."
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Icecave\\Parity": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "James Harris",
+                    "email": "james.harris@icecave.com.au",
+                    "homepage": "https://github.com/jmalloc"
+                }
+            ],
+            "description": "A customizable deep comparison library.",
+            "homepage": "https://github.com/IcecaveStudios/parity",
+            "keywords": [
+                "compare",
+                "comparison",
+                "equal",
+                "equality",
+                "greater",
+                "less",
+                "sort",
+                "sorting"
+            ],
+            "support": {
+                "issues": "https://github.com/icecave/parity/issues",
+                "source": "https://github.com/icecave/parity/tree/1.0.0"
+            },
+            "time": "2014-01-17T05:56:27+00:00"
+        },
+        {
+            "name": "icecave/repr",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/icecave/repr.git",
+                "reference": "8a3d2953adf5f464a06e3e2587aeacc97e2bed07"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/icecave/repr/zipball/8a3d2953adf5f464a06e3e2587aeacc97e2bed07",
+                "reference": "8a3d2953adf5f464a06e3e2587aeacc97e2bed07",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "require-dev": {
+                "icecave/archer": "~1"
+            },
+            "suggest": {
+                "eloquent/asplode": "Drop-in exception-based error handling."
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Icecave\\Repr\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "James Harris",
+                    "email": "james.harris@icecave.com.au",
+                    "homepage": "https://github.com/jmalloc"
+                }
+            ],
+            "description": "A library for generating string representations of any value, inspired by Python's reprlib library.",
+            "homepage": "https://github.com/IcecaveStudios/repr",
+            "keywords": [
+                "human",
+                "readable",
+                "repr",
+                "representation",
+                "string"
+            ],
+            "support": {
+                "issues": "https://github.com/icecave/repr/issues",
+                "source": "https://github.com/icecave/repr/tree/1.0.1"
+            },
+            "time": "2014-07-25T05:44:41+00:00"
+        },
+        {
+            "name": "justinrainbow/json-schema",
+            "version": "6.0.0-beta",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jsonrainbow/json-schema.git",
+                "reference": "957ac43c49c92604221bafb8da48229edebe9380"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/957ac43c49c92604221bafb8da48229edebe9380",
+                "reference": "957ac43c49c92604221bafb8da48229edebe9380",
+                "shasum": ""
+            },
+            "require": {
+                "icecave/parity": "1.0.0",
+                "marc-mabe/php-enum": "^2.0 || ^3.0 || ^4.0",
+                "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "~2.2.20 || ~2.19.0",
                 "json-schema/json-schema-test-suite": "1.2.0",
                 "phpunit/phpunit": "^4.8.35"
             },
@@ -548,6 +665,11 @@
                 "bin/validate-json"
             ],
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "6.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "JsonSchema\\": "src/JsonSchema/"
@@ -576,16 +698,89 @@
                 }
             ],
             "description": "A library to validate a json schema.",
-            "homepage": "https://github.com/justinrainbow/json-schema",
+            "homepage": "https://github.com/jsonrainbow/json-schema",
             "keywords": [
                 "json",
                 "schema"
             ],
             "support": {
                 "issues": "https://github.com/jsonrainbow/json-schema/issues",
-                "source": "https://github.com/jsonrainbow/json-schema/tree/5.3.0"
+                "source": "https://github.com/jsonrainbow/json-schema/tree/6.0.0-beta"
             },
-            "time": "2024-07-06T21:00:26+00:00"
+            "time": "2024-07-09T07:19:24+00:00"
+        },
+        {
+            "name": "marc-mabe/php-enum",
+            "version": "v4.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/marc-mabe/php-enum.git",
+                "reference": "3da42cc1daceaf98c858e56f59d1ccd52b011fdc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/marc-mabe/php-enum/zipball/3da42cc1daceaf98c858e56f59d1ccd52b011fdc",
+                "reference": "3da42cc1daceaf98c858e56f59d1ccd52b011fdc",
+                "shasum": ""
+            },
+            "require": {
+                "ext-reflection": "*",
+                "php": "^7.1 | ^8.0"
+            },
+            "require-dev": {
+                "phpbench/phpbench": "^0.16.10 || ^1.0.4",
+                "phpstan/phpstan": "^1.3.1",
+                "phpunit/phpunit": "^7.5.20 | ^8.5.22 | ^9.5.11",
+                "vimeo/psalm": "^4.17.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.6-dev",
+                    "dev-3.x": "3.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MabeEnum\\": "src/"
+                },
+                "classmap": [
+                    "stubs/Stringable.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Marc Bennewitz",
+                    "email": "dev@mabe.berlin",
+                    "homepage": "https://mabe.berlin/",
+                    "role": "Lead"
+                }
+            ],
+            "description": "Simple and fast implementation of enumerations with native PHP",
+            "homepage": "https://github.com/marc-mabe/php-enum",
+            "keywords": [
+                "enum",
+                "enum-map",
+                "enum-set",
+                "enumeration",
+                "enumerator",
+                "enummap",
+                "enumset",
+                "map",
+                "set",
+                "type",
+                "type-hint",
+                "typehint"
+            ],
+            "support": {
+                "issues": "https://github.com/marc-mabe/php-enum/issues",
+                "source": "https://github.com/marc-mabe/php-enum/tree/v4.7.0"
+            },
+            "time": "2022-04-19T02:21:46+00:00"
         },
         {
             "name": "psr/container",
@@ -2373,7 +2568,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "justinrainbow/json-schema": 10
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

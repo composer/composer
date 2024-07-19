@@ -250,7 +250,7 @@ class JsonFile
         }
 
         $validator = new Validator();
-        $validator->check($data, $schemaData);
+        $validator->validate($data, $schemaData);
 
         if (!$validator->isValid()) {
             $errors = [];
