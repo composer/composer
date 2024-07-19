@@ -230,12 +230,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/pcre.git",
-                "reference": "bd3aec33e8d3fb8103b66678ef8b9ccac2f04178"
+                "reference": "744502afa19d883b8b252397e4eb28a8f51f6122"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/pcre/zipball/bd3aec33e8d3fb8103b66678ef8b9ccac2f04178",
-                "reference": "bd3aec33e8d3fb8103b66678ef8b9ccac2f04178",
+                "url": "https://api.github.com/repos/composer/pcre/zipball/744502afa19d883b8b252397e4eb28a8f51f6122",
+                "reference": "744502afa19d883b8b252397e4eb28a8f51f6122",
                 "shasum": ""
             },
             "require": {
@@ -296,7 +296,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-18T12:56:51+00:00"
+            "time": "2024-07-19T12:55:39+00:00"
         },
         {
             "name": "composer/semver",
