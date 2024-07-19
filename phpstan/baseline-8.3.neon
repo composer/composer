@@ -182,13 +182,8 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
-			count: 15
+			count: 8
 			path: ../src/Composer/Util/Git.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
-			count: 2
-			path: ../src/Composer/Util/Hg.php
 
 		-
 			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_add_handle expects CurlMultiHandle, resource\\|null given\\.$#"
