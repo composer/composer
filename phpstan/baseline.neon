@@ -671,17 +671,17 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
+			message: "#^Only booleans are allowed in &&, array given on the right side\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ShowCommand.php
+
+		-
 			message: "#^Only booleans are allowed in &&, array\\<Composer\\\\Package\\\\BasePackage\\|int\\> given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
 			message: "#^Only booleans are allowed in &&, array\\<int\\> given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Only booleans are allowed in &&, array\\<string, array\\<int, array\\<string, bool\\|string\\|null\\>\\>\\> given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
@@ -757,6 +757,11 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ShowCommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$array \\(array\\<'available'\\|'installed'\\|'locked'\\|'platform', list\\<non\\-empty\\-array\\<literal\\-string&non\\-falsy\\-string, mixed\\>\\>\\>\\) to function array_filter contains falsy values only, the result will always be an empty array\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 

@@ -570,7 +570,6 @@ EOT
                             } else {
                                 $packageViewData['latest-release-date'] = '';
                             }
-
                         } elseif ($writeLatest) {
                             $packageViewData['latest'] = '[none matched]';
                             $packageViewData['latest-status'] = 'up-to-date';
