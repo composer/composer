@@ -43,6 +43,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Semver;
 use Composer\Spdx\SpdxLicenses;
 use Composer\Util\PackageInfo;
+use DateTimeInterface;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
@@ -550,8 +551,10 @@ EOT
                                     $packageViewData['release-age'] = 'from '.$packageViewData['release-age'];
                                 }
                                 $releaseDateLength = max($releaseDateLength, strlen($packageViewData['release-age']));
+                                $packageViewData['release-date'] = $package->getReleaseDate()->format(DateTimeInterface::ATOM);
                             } else {
                                 $packageViewData['release-age'] = '';
+                                $packageViewData['release-date'] = '';
                             }
                         }
                         if ($writeLatest && $latestPackage) {
@@ -561,6 +564,13 @@ EOT
                             }
                             $packageViewData['latest-status'] = $this->getUpdateStatus($latestPackage, $package);
                             $latestLength = max($latestLength, strlen($packageViewData['latest']));
+
+                            if ($latestPackage->getReleaseDate() !== null) {
+                                $packageViewData['latest-release-date'] = $latestPackage->getReleaseDate()->format(DateTimeInterface::ATOM);
+                            } else {
+                                $packageViewData['latest-release-date'] = '';
+                            }
+
                         } elseif ($writeLatest) {
                             $packageViewData['latest'] = '[none matched]';
                             $packageViewData['latest-status'] = 'up-to-date';
