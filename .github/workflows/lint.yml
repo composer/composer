@@ -21,7 +21,7 @@ jobs:
       matrix:
         php-version:
           - "7.2"
-          - "latest"
+          - "nightly"
 
     steps:
       - name: "Checkout"
@@ -36,4 +36,16 @@ jobs:
           php-version: "${{ matrix.php-version }}"
 
       - name: "Lint PHP files"
-        run: "find src/ -type f -name '*.php' -print0 | xargs -0 -L1 -P4 -- php -l -f"
+        run: |
+          hasErrors=0
+          for f in $(find src/ tests/ -type f -name '*.php' ! -path '*/vendor/*')
+          do
+            { error="$(php -derror_reporting=-1 -ddisplay_errors=1 -l -f $f 2>&1 1>&3 3>&-)"; } 3>&1;
+            if [ "$error" != "" ]; then
+              while IFS= read -r line; do echo "::error file=$f::$line"; done <<< "$error"
+              hasErrors=1
+            fi
+          done
+          if [ $hasErrors -eq 1 ]; then
+            exit 1
+          fi
