@@ -25,6 +25,8 @@ class Platform
     private static $isVirtualBoxGuest = null;
     /** @var ?bool */
     private static $isWindowsSubsystemForLinux = null;
+    /** @var ?bool */
+    private static $isDocker = null;
 
     /**
      * getcwd() equivalent which always returns a string
@@ -151,12 +153,10 @@ class Platform
             }
 
             if (
-                !ini_get('open_basedir')
+                !(bool) ini_get('open_basedir')
                 && is_readable('/proc/version')
                 && false !== stripos((string)Silencer::call('file_get_contents', '/proc/version'), 'microsoft')
-                && !file_exists('/.dockerenv') // Docker and Podman running inside WSL should not be seen as WSL
-                && !file_exists('/run/.containerenv')
-                && !file_exists('/var/run/.containerenv')
+                && !self::isDocker() // Docker and Podman running inside WSL should not be seen as WSL
             ) {
                 return self::$isWindowsSubsystemForLinux = true;
             }
@@ -171,6 +171,53 @@ class Platform
     public static function isWindows(): bool
     {
         return \defined('PHP_WINDOWS_VERSION_BUILD');
+    }
+
+    public static function isDocker(): bool
+    {
+        if (null !== self::$isDocker) {
+            return self::$isDocker;
+        }
+
+        // cannot check so assume no
+        if ((bool) ini_get('open_basedir')) {
+            return self::$isDocker = false;
+        }
+
+        // .dockerenv and .containerenv are present in some cases but not reliably
+        if (!file_exists('/.dockerenv') || file_exists('/run/.containerenv') || file_exists('/var/run/.containerenv')) {
+            return self::$isDocker = true;
+        }
+
+        // see https://www.baeldung.com/linux/is-process-running-inside-container
+        $cgroups = [
+            '/proc/self/mountinfo', // cgroup v2
+            '/proc/1/cgroup', // cgroup v1
+        ];
+        foreach($cgroups as $cgroup) {
+            if (!is_readable($cgroup)) {
+                continue;
+            }
+            $data = file_get_contents($cgroup);
+            if (is_string($data) && str_contains($data, '/var/lib/docker/')) {
+                return self::$isDocker = true;
+            }
+        }
+
+        $cgroupDir = '/sys/fs/cgroup/system.slice/';
+        if (is_dir($cgroupDir) && is_readable($cgroupDir)) {
+            $files = scandir($cgroupDir);
+            if (is_array($files)) {
+                foreach ($files as $file) {
+                    // indicates we're running in docker build
+                    if (str_starts_with($file, 'docker-')) {
+                        return self::$isDocker = true;
+                    }
+                }
+            }
+        }
+
+        return self::$isDocker = false;
     }
 
     /**
