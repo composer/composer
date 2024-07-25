@@ -78,7 +78,7 @@ class AllFunctionalTest extends TestCase
         $ri = new \RecursiveIteratorIterator($it, \RecursiveIteratorIterator::SELF_FIRST);
 
         foreach ($ri as $file) {
-            $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
+            $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathname();
             if ($file->isDir()) {
                 $fs->ensureDirectoryExists($targetPath);
             } else {
@@ -89,7 +89,7 @@ class AllFunctionalTest extends TestCase
         $proc = new Process([PHP_BINARY, '-dphar.readonly=0', './bin/compile'], $target);
         $exitcode = $proc->run();
 
-        if ($exitcode !== 0 || trim($proc->getOutput())) {
+        if ($exitcode !== 0 || trim($proc->getOutput()) !== '') {
             $this->fail($proc->getOutput());
         }
 
@@ -136,7 +136,9 @@ class AllFunctionalTest extends TestCase
                     $line++;
                 }
                 if ($expected[$i] === '%') {
-                    Preg::isMatchStrictGroups('{%(.+?)%}', substr($expected, $i), $match);
+                    if (!Preg::isMatchStrictGroups('{%(.+?)%}', substr($expected, $i), $match)) {
+                        throw new \LogicException('Failed to match %...% in '.substr($expected, $i));
+                    }
                     $regex = $match[1];
 
                     if (Preg::isMatch('{'.$regex.'}', substr($output, $j), $match)) {
@@ -146,7 +148,7 @@ class AllFunctionalTest extends TestCase
                     } else {
                         $this->fail(
                             'Failed to match pattern '.$regex.' at line '.$line.' / abs offset '.$i.': '
-                            .substr($output, $j, min(strpos($output, "\n", $j) - $j, 100)).PHP_EOL.PHP_EOL.
+                            .substr($output, $j, min(((int) strpos($output, "\n", $j)) - $j, 100)).PHP_EOL.PHP_EOL.
                             'Output:'.PHP_EOL.$output
                         );
                     }
@@ -154,8 +156,8 @@ class AllFunctionalTest extends TestCase
                 if ($expected[$i] !== $output[$j]) {
                     $this->fail(
                         'Output does not match expectation at line '.$line.' / abs offset '.$i.': '.PHP_EOL
-                        .'-'.substr($expected, $i, min(strpos($expected, "\n", $i) - $i, 100)).PHP_EOL
-                        .'+'.substr($output, $j, min(strpos($output, "\n", $j) - $j, 100)).PHP_EOL.PHP_EOL
+                        .'-'.substr($expected, $i, min(((int) strpos($expected, "\n", $i)) - $i, 100)).PHP_EOL
+                        .'+'.substr($output, $j, min(((int) strpos($output, "\n", $j)) - $j, 100)).PHP_EOL.PHP_EOL
                         .'Output:'.PHP_EOL.$output
                     );
                 }
@@ -195,7 +197,7 @@ class AllFunctionalTest extends TestCase
      */
     private function parseTestFile(string $file): array
     {
-        $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', (string) file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
         $data = [];
         $section = null;
 

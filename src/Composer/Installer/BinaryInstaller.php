@@ -213,7 +213,7 @@ class BinaryInstaller
         $binDir = ProcessExecutor::escape(dirname($binPath));
         $binFile = basename($binPath);
 
-        $binContents = file_get_contents($bin, false, null, 0, 500);
+        $binContents = (string) file_get_contents($bin, false, null, 0, 500);
         // For php files, we generate a PHP proxy instead of a shell one,
         // which allows calling the proxy with a custom php process
         if (Preg::isMatch('{^(#!.*\r?\n)?[\r\n\t ]*<\?php}', $binContents, $match)) {
@@ -224,7 +224,7 @@ class BinaryInstaller
             $globalsCode = '$GLOBALS[\'_composer_bin_dir\'] = __DIR__;'."\n";
             $phpunitHack1 = $phpunitHack2 = '';
             // Don't expose autoload path when vendor dir was not set in custom installers
-            if ($this->vendorDir) {
+            if ($this->vendorDir !== null) {
                 // ensure comparisons work accurately if the CWD is a symlink, as $link is realpath'd already
                 $vendorDirReal = realpath($this->vendorDir);
                 if ($vendorDirReal === false) {
@@ -242,7 +242,7 @@ class BinaryInstaller
                 $data = str_replace(\'__DIR__\', var_export(dirname($this->realpath), true), $data);
                 $data = str_replace(\'__FILE__\', var_export($this->realpath, true), $data);';
             }
-            if (trim((string) $match[0]) !== '<?php') {
+            if (trim($match[0]) !== '<?php') {
                 $streamHint = ' using a stream wrapper to prevent the shebang from being output on PHP<8'."\n *";
                 $streamProxyCode = <<<STREAMPROXY
 if (PHP_VERSION_ID < 80000) {

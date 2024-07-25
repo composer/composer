@@ -291,7 +291,7 @@ EOT
             $source = $this->config->getSourceOfValue($settingKey);
 
             if (Preg::isMatch('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
-                if (!isset($matches[1]) || $matches[1] === '') {
+                if (!isset($matches[1])) {
                     $value = $data['repositories'] ?? [];
                 } else {
                     if (!isset($data['repositories'][$matches[1]])) {

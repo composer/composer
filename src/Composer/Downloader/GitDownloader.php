@@ -255,7 +255,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         $headRef = $match[1];
-        if (!Preg::isMatchAllStrictGroups('{^'.$headRef.' refs/heads/(.+)$}mi', $refs, $matches)) {
+        if (!Preg::isMatchAllStrictGroups('{^'.preg_quote($headRef).' refs/heads/(.+)$}mi', $refs, $matches)) {
             // not on a branch, we are either on a not-modified tag or some sort of detached head, so skip this
             return null;
         }

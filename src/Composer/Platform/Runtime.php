@@ -56,8 +56,11 @@ class Runtime
     }
 
     /**
-     * @param class-string $class
+     * @template T of object
      * @param mixed[] $arguments
+     *
+     * @phpstan-param class-string<T> $class
+     * @phpstan-return T
      *
      * @throws \ReflectionException
      */
