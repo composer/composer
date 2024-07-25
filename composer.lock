@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "80ca8443ea33a96788fbb309b8eccc9f",
+    "content-hash": "715b9529f60660d59b08b12c74c828c6",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -226,16 +226,16 @@
         },
         {
             "name": "composer/pcre",
-            "version": "2.x-dev",
+            "version": "2.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/pcre.git",
-                "reference": "744502afa19d883b8b252397e4eb28a8f51f6122"
+                "reference": "0e455b78ac53637929b29d5ab5bf3c978329c1eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/pcre/zipball/744502afa19d883b8b252397e4eb28a8f51f6122",
-                "reference": "744502afa19d883b8b252397e4eb28a8f51f6122",
+                "url": "https://api.github.com/repos/composer/pcre/zipball/0e455b78ac53637929b29d5ab5bf3c978329c1eb",
+                "reference": "0e455b78ac53637929b29d5ab5bf3c978329c1eb",
                 "shasum": ""
             },
             "require": {
@@ -245,7 +245,7 @@
                 "phpstan/phpstan": "<1.11.8"
             },
             "require-dev": {
-                "phpstan/phpstan": "^1.11.8@dev",
+                "phpstan/phpstan": "^1.11.8",
                 "phpstan/phpstan-strict-rules": "^1.1",
                 "phpunit/phpunit": "^8 || ^9"
             },
@@ -253,6 +253,11 @@
             "extra": {
                 "branch-alias": {
                     "dev-main": "2.x-dev"
+                },
+                "phpstan": {
+                    "includes": [
+                        "extension.neon"
+                    ]
                 }
             },
             "autoload": {
@@ -280,7 +285,7 @@
             ],
             "support": {
                 "issues": "https://github.com/composer/pcre/issues",
-                "source": "https://github.com/composer/pcre/tree/2.x"
+                "source": "https://github.com/composer/pcre/tree/2.2.0"
             },
             "funding": [
                 {
@@ -296,7 +301,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-19T12:55:39+00:00"
+            "time": "2024-07-25T09:28:32+00:00"
         },
         {
             "name": "composer/semver",
@@ -2015,16 +2020,16 @@
     "packages-dev": [
         {
             "name": "phpstan/phpstan",
-            "version": "1.11.x-dev",
+            "version": "1.11.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "fc75deb9302e0fe57fda2b5ea35ae78399a6df51"
+                "reference": "6adbd118e6c0515dd2f36b06cde1d6da40f1b8ec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/fc75deb9302e0fe57fda2b5ea35ae78399a6df51",
-                "reference": "fc75deb9302e0fe57fda2b5ea35ae78399a6df51",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/6adbd118e6c0515dd2f36b06cde1d6da40f1b8ec",
+                "reference": "6adbd118e6c0515dd2f36b06cde1d6da40f1b8ec",
                 "shasum": ""
             },
             "require": {
@@ -2069,7 +2074,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-07-19T12:09:59+00:00"
+            "time": "2024-07-24T07:01:22+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -2376,10 +2381,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "composer/pcre": 20,
-        "phpstan/phpstan": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
