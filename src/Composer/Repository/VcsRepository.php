@@ -341,7 +341,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
             // make sure branch packages have a dev flag
             if (strpos($parsedBranch, 'dev-') === 0 || VersionParser::DEFAULT_BRANCH_ALIAS === $parsedBranch) {
-                $version = 'dev-' . $branch;
+                $version = 'dev-' . str_replace('#', '+', $branch);
+                $parsedBranch = str_replace('#', '+', $parsedBranch);
             } else {
                 $prefix = strpos($branch, 'v') === 0 ? 'v' : '';
                 $version = $prefix . Preg::replace('{(\.9{7})+}', '.x', $parsedBranch);

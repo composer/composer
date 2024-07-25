@@ -1,0 +1,40 @@
+--TEST--
+Test the problem output suggests fixes for branch names where the # was replaced by +
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "package/found", "version": "dev-foo+bar" },
+                { "name": "package/found2", "version": "dev-foo+abcd09832478" },
+                { "name": "package/works", "version": "dev-foo+abcd09832478" },
+                { "name": "package/works2", "version": "dev-+123" }
+            ]
+        }
+    ],
+    "require": {
+        "package/found": "dev-foo#bar",
+        "package/found2": "dev-foo#abcd09832478",
+        "package/works": "dev-foo+abcd09832478",
+        "package/works2": "dev-+123"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires package/found dev-foo#bar, found package/found[dev-foo+bar]. The # character in branch names is replaced by a + character. Make sure to require it as "dev-foo+bar".
+  Problem 2
+    - Root composer.json requires package/found2 dev-foo#abcd09832478, found package/found2[dev-foo+abcd09832478]. The # character in branch names is replaced by a + character. Make sure to require it as "dev-foo+abcd09832478".
+
+--EXPECT--
