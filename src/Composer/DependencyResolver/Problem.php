@@ -270,7 +270,7 @@ class Problem
                 new Constraint(Constraint::STR_OP_EQ, str_replace('#', '+', $newConstraint))
             ], false));
             if (\count($packages) > 0) {
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these' : 'it').' had a # in the branch name which was replaced by +. Make sure to require it as "'.str_replace('#', '+', $constraint->getPrettyString()).'".'];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).'. The # character in branch names is replaced by a + character. Make sure to require it as "'.str_replace('#', '+', $constraint->getPrettyString()).'".'];
             }
         }
 

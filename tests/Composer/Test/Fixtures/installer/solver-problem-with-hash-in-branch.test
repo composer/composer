@@ -33,8 +33,8 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - Root composer.json requires package/found dev-foo#bar, found package/found[dev-foo+bar] but it had a # in the branch name which was replaced by +. Make sure to require it as "dev-foo+bar".
+    - Root composer.json requires package/found dev-foo#bar, found package/found[dev-foo+bar]. The # character in branch names is replaced by a + character. Make sure to require it as "dev-foo+bar".
   Problem 2
-    - Root composer.json requires package/found2 dev-foo#abcd09832478, found package/found2[dev-foo+abcd09832478] but it had a # in the branch name which was replaced by +. Make sure to require it as "dev-foo+abcd09832478".
+    - Root composer.json requires package/found2 dev-foo#abcd09832478, found package/found2[dev-foo+abcd09832478]. The # character in branch names is replaced by a + character. Make sure to require it as "dev-foo+abcd09832478".
 
 --EXPECT--
