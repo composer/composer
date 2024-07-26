@@ -76,7 +76,6 @@ class Platform
      */
     public static function putEnv(string $name, string $value): void
     {
-        $value = (string) $value;
         putenv($name . '=' . $value);
         $_SERVER[$name] = $_ENV[$name] = $value;
     }
@@ -105,7 +104,10 @@ class Platform
 
             // Treat HOME as an alias for USERPROFILE on Windows for legacy reasons
             if (Platform::isWindows() && $matches['var'] === 'HOME') {
-                return (Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE')) . $matches['path'];
+                if ((bool) Platform::getEnv('HOME')) {
+                    return Platform::getEnv('HOME') . $matches['path'];
+                }
+                return Platform::getEnv('USERPROFILE') . $matches['path'];
             }
 
             return Platform::getEnv($matches['var']) . $matches['path'];
@@ -180,7 +182,7 @@ class Platform
     {
         static $useMbString = null;
         if (null === $useMbString) {
-            $useMbString = \function_exists('mb_strlen') && ini_get('mbstring.func_overload');
+            $useMbString = \function_exists('mb_strlen') && (bool) ini_get('mbstring.func_overload');
         }
 
         if ($useMbString) {
@@ -204,7 +206,7 @@ class Platform
 
         // detect msysgit/mingw and assume this is a tty because detection
         // does not work correctly, see https://github.com/composer/composer/issues/9690
-        if (in_array(strtoupper(self::getEnv('MSYSTEM') ?: ''), ['MINGW32', 'MINGW64'], true)) {
+        if (in_array(strtoupper((string) self::getEnv('MSYSTEM')), ['MINGW32', 'MINGW64'], true)) {
             return true;
         }
 
@@ -220,8 +222,11 @@ class Platform
         }
 
         $stat = @fstat($fd);
+        if ($stat === false) {
+            return false;
+        }
         // Check if formatted mode is S_IFCHR
-        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
+        return 0020000 === ($stat['mode'] & 0170000);
     }
 
     /**
