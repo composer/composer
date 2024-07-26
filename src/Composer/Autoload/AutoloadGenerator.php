@@ -1241,6 +1241,10 @@ INITIALIZER;
             }
 
             foreach ($autoload[$type] as $namespace => $paths) {
+                if (in_array($type, ['psr-4', 'psr-0'], true)) {
+                    // normalize namespaces to ensure "\" becomes "" and others do not have leading separators as they are not needed
+                    $namespace = ltrim($namespace, '\\');
+                }
                 foreach ((array) $paths as $path) {
                     if (($type === 'files' || $type === 'classmap' || $type === 'exclude-from-classmap') && $package->getTargetDir() && !Filesystem::isReadable($installPath.'/'.$path)) {
                         // remove target-dir from file paths of the root package
