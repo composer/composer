@@ -218,11 +218,7 @@ class Application extends BaseApplication
         $needsSudoCheck = !Platform::isWindows()
             && function_exists('exec')
             && !Platform::getEnv('COMPOSER_ALLOW_SUPERUSER')
-            && (ini_get('open_basedir') || (
-                !file_exists('/.dockerenv')
-                && !file_exists('/run/.containerenv')
-                && !file_exists('/var/run/.containerenv')
-            ));
+            && !Platform::isDocker();
         $isNonAllowedRoot = false;
 
         // Clobber sudo credentials if COMPOSER_ALLOW_SUPERUSER is not set before loading plugins
