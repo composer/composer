@@ -185,7 +185,7 @@ class Platform
         }
 
         // .dockerenv and .containerenv are present in some cases but not reliably
-        if (!file_exists('/.dockerenv') || file_exists('/run/.containerenv') || file_exists('/var/run/.containerenv')) {
+        if (file_exists('/.dockerenv') || file_exists('/run/.containerenv') || file_exists('/var/run/.containerenv')) {
             return self::$isDocker = true;
         }
 
@@ -201,19 +201,6 @@ class Platform
             $data = file_get_contents($cgroup);
             if (is_string($data) && str_contains($data, '/var/lib/docker/')) {
                 return self::$isDocker = true;
-            }
-        }
-
-        $cgroupDir = '/sys/fs/cgroup/system.slice/';
-        if (is_dir($cgroupDir) && is_readable($cgroupDir)) {
-            $files = scandir($cgroupDir);
-            if (is_array($files)) {
-                foreach ($files as $file) {
-                    // indicates we're running in docker build
-                    if (str_starts_with($file, 'docker-')) {
-                        return self::$isDocker = true;
-                    }
-                }
             }
         }
 
