@@ -15,7 +15,6 @@ namespace Composer\Test\Command;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
-use Generator;
 use InvalidArgumentException;
 
 class UpdateCommandTest extends TestCase
@@ -35,7 +34,7 @@ class UpdateCommandTest extends TestCase
         self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
     }
 
-    public static function provideUpdates(): Generator
+    public static function provideUpdates(): \Generator
     {
         $rootDepAndTransitiveDep = [
             'repositories' => [
@@ -201,11 +200,11 @@ OUTPUT
 
         self::assertStringEndsWith(
             trim($expected),
-            trim($appTester->getDisplay())
+            trim($appTester->getDisplay(true))
         );
     }
 
-    public function provideInteractiveUpdates(): Generator
+    public function provideInteractiveUpdates(): \Generator
     {
         yield [
             ['dep/pkg' => '1.0.1'],
