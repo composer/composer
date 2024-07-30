@@ -142,7 +142,7 @@ OUTPUT
     /**
      * @dataProvider provideInteractiveUpdates
      * @param array<mixed> $packageNames
-     * @param array<mixed> $expected
+     * @param string $expected
      */
     public function testInteractiveTmp(array $packageNames, string $expected): void
     {
@@ -202,7 +202,7 @@ OUTPUT
 
         self::assertStringEndsWith(
             trim($expected),
-            trim($appTester->getDisplay()),
+            trim($appTester->getDisplay())
         );
     }
 
