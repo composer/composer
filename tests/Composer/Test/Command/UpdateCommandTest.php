@@ -35,7 +35,7 @@ class UpdateCommandTest extends TestCase
         self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
     }
 
-    public static function provideUpdates(): \Generator
+    public static function provideUpdates(): Generator
     {
         $rootDepAndTransitiveDep = [
             'repositories' => [
@@ -142,7 +142,6 @@ OUTPUT
     /**
      * @dataProvider provideInteractiveUpdates
      * @param array<mixed> $packageNames
-     * @param string $expected
      */
     public function testInteractiveTmp(array $packageNames, string $expected): void
     {
