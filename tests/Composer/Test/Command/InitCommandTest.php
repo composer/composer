@@ -696,4 +696,61 @@ class InitCommandTest extends TestCase
         $file = new JsonFile($dir . '/composer.json');
         self::assertEquals($expected, $file->read());
     }
+
+    public function testInteractiveRunDescription()
+    {
+        $dir = $this->initTempComposer();
+        unlink($dir . '/composer.json');
+        unlink($dir . '/auth.json');
+
+        $appTester = $this->getApplicationTester();
+
+        $inputs = self::generateInteractiveInputs([
+            'package_name' => ['vendor/my-package'],
+        ]);
+        $appTester->setInputs($inputs);
+
+        $appTester->run(['command' => 'init']);
+
+        self::assertSame(0, $appTester->getStatusCode());
+
+        $expected = [
+            "name" => "vendor/my-package",
+            "description" => "my desciption",
+            "type" => "library",
+            "license" => "Custom Liscence",
+            "authors" => [["name" => "Mr. Test", "email" => "test@example.org"]],
+            "minimum-stability" => "stable",
+            "require" => [],
+        ];
+
+        $file = new JsonFile($dir . '/composer.json');
+        self::assertEquals($expected, $file->read());
+    }
+
+    static public function generateInteractiveInputs(array $inputs)
+    {
+        $default_inputs = [
+            'package_name' => ['pkg/dep'],
+            'description' => ['my desciption'],
+            'author' => ['Mr. Test <test@example.org>'],
+            'minimum_stability' => ['stable'],
+            'type' => ['library'],
+            'liscene' => ['Custom Liscence'],
+            'define_dep' => ['no'],
+            'define_dev_dependencies' => ['no'],
+            // Add PSR-4 autoload mapping
+            'add_psr' => ['n'],
+            'confirm' => [''],
+        ];
+        $flat_inputs = [];
+
+        foreach (array_keys($default_inputs) as $key) {
+            $flat_inputs = array_merge(
+                $flat_inputs,
+                $inputs[$key] ?? $default_inputs[$key],
+            );
+
+        return $flat_inputs;
+    }
 }
