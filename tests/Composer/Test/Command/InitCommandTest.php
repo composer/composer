@@ -748,8 +748,9 @@ class InitCommandTest extends TestCase
         foreach (array_keys($default_inputs) as $key) {
             $flat_inputs = array_merge(
                 $flat_inputs,
-                $inputs[$key] ?? $default_inputs[$key],
+                $inputs[$key] ?? $default_inputs[$key]
             );
+        }
 
         return $flat_inputs;
     }
