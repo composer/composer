@@ -697,7 +697,7 @@ class InitCommandTest extends TestCase
         self::assertEquals($expected, $file->read());
     }
 
-    public function testInteractiveRunDescription()
+    public function testInteractiveRunDescription(): void
     {
         $dir = $this->initTempComposer();
         unlink($dir . '/composer.json');
@@ -728,7 +728,11 @@ class InitCommandTest extends TestCase
         self::assertEquals($expected, $file->read());
     }
 
-    static public function generateInteractiveInputs(array $inputs)
+    /**
+     * @param array<string, array<string>> $inputs
+     * @return array<string>
+     */
+    static public function generateInteractiveInputs(array $inputs): array
     {
         $default_inputs = [
             'package_name' => ['pkg/dep'],
