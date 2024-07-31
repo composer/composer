@@ -696,4 +696,43 @@ class InitCommandTest extends TestCase
         $file = new JsonFile($dir . '/composer.json');
         self::assertEquals($expected, $file->read());
     }
+
+    public function testInteractiveRun(): void
+    {
+        $dir = $this->initTempComposer();
+        unlink($dir . '/composer.json');
+        unlink($dir . '/auth.json');
+
+        $appTester = $this->getApplicationTester();
+
+        $appTester->setInputs([
+            'vendor/pkg',                   // Pkg name
+            'my desciption',                // Description
+            'Mr. Test <test@example.org>',  // Author
+            'stable',                       // Minimum stability
+            'library',                      // Type
+            'Custom Liscence',              // Liscene
+            'no',                           // Define dependencies
+            'no',                           // Define dev dependencies
+            'n',                            // Add PSR-4 autoload mapping
+            '',                             // Confirm generation
+        ]);
+
+        $appTester->run(['command' => 'init']);
+
+        self::assertSame(0, $appTester->getStatusCode());
+
+        $expected = [
+            "name" => "vendor/pkg",
+            "description" => "my desciption",
+            "type" => "library",
+            "license" => "Custom Liscence",
+            "authors" => [["name" => "Mr. Test", "email" => "test@example.org"]],
+            "minimum-stability" => "stable",
+            "require" => [],
+        ];
+
+        $file = new JsonFile($dir . '/composer.json');
+        self::assertEquals($expected, $file->read());
+    }
 }
