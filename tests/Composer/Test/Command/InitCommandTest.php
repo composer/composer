@@ -711,7 +711,7 @@ class InitCommandTest extends TestCase
             'Mr. Test <test@example.org>',  // Author
             'stable',                       // Minimum stability
             'library',                      // Type
-            'Custom Liscence',              // Liscene
+            'Custom License',               // License
             'no',                           // Define dependencies
             'no',                           // Define dev dependencies
             'n',                            // Add PSR-4 autoload mapping
@@ -723,13 +723,13 @@ class InitCommandTest extends TestCase
         self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
-            "name" => "vendor/pkg",
-            "description" => "my desciption",
-            "type" => "library",
-            "license" => "Custom Liscence",
-            "authors" => [["name" => "Mr. Test", "email" => "test@example.org"]],
-            "minimum-stability" => "stable",
-            "require" => [],
+            'name' => 'vendor/pkg',
+            'description' => 'my desciption',
+            'type' => 'library',
+            'license' => 'Custom Liscence',
+            'authors' => [['name' => 'Mr. Test', 'email' => 'test@example.org']],
+            'minimum-stability' => 'stable',
+            'require' => [],
         ];
 
         $file = new JsonFile($dir . '/composer.json');
