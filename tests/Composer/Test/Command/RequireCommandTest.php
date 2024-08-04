@@ -300,12 +300,14 @@ OUTPUT
         }
 
         $appTester = $this->getApplicationTester();
+        if ($isInteractive)
+            $appTester->setInputs(['yes']);
         $appTester->run([
             'command' => 'require',
             '--no-audit' => true,
             '--dev' => $isDev,
             '--no-install' => true,
-            '--no-interaction' => true,
+            '--no-interaction' => !$isInteractive,
             'packages' => ['required/pkg']
         ]);
 
@@ -330,6 +332,18 @@ OUTPUT
         yield [
             false,
             false,
+            '<warning>required/pkg is currently present in the require-dev key and you ran the command without the --dev flag, which will move it to the require key.</warning>'
+        ];
+
+        yield [
+            true,
+            true,
+            '<warning>required/pkg is currently present in the require key and you ran the command with the --dev flag, which will move it to the require-dev key.</warning>'
+        ];
+
+        yield [
+            false,
+            true,
             '<warning>required/pkg is currently present in the require-dev key and you ran the command without the --dev flag, which will move it to the require key.</warning>'
         ];
     }
