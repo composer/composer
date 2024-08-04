@@ -317,7 +317,7 @@ OUTPUT
 
         self::assertStringContainsString(
             $expectedWarning,
-            $appTester->getDisplay(true),
+            $appTester->getDisplay(true)
         );
 
         $composer_content = (new JsonFile($dir . '/composer.json'))->read();
