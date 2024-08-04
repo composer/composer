@@ -300,16 +300,20 @@ OUTPUT
         }
 
         $appTester = $this->getApplicationTester();
-        if ($isInteractive)
-            $appTester->setInputs(['yes']);
-        $appTester->run([
+        $command = [
             'command' => 'require',
             '--no-audit' => true,
             '--dev' => $isDev,
             '--no-install' => true,
-            '--no-interaction' => !$isInteractive,
             'packages' => ['required/pkg']
-        ]);
+        ];
+
+        if ($isInteractive)
+            $appTester->setInputs(['yes']);
+        else
+            $command['--no-interaction'] = true;
+
+        $appTester->run($command);
 
         self::assertStringContainsString(
             $expectedWarning,
