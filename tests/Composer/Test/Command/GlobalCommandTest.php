@@ -49,7 +49,7 @@ class GlobalCommandTest extends TestCase
             $display
         );
         self::assertStringContainsString($script, $display);
-        self::assertStringNotContainsString($fake_composer, $display);
+        self::assertStringNotContainsString($fake_composer, $display, '$COMPOSER is not unset by global command');
     }
 
     public function testNotCreateHome(): void
