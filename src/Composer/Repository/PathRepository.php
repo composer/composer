@@ -218,7 +218,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
                     $package['version'] = $versionData['pretty_version'];
                 } else {
-                    $package['version'] = 'dev-main';
+                    $package['version'] = 'dev-master';
                 }
             }
 
