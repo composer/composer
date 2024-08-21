@@ -23,7 +23,7 @@
     ],
     "require": {
         "php": "^7.2.5 || ^8.0",
-        "composer/ca-bundle": "^1.0",
+        "composer/ca-bundle": "^1.5",
         "composer/class-map-generator": "^1.3.3",
         "composer/metadata-minifier": "^1.0",
         "composer/semver": "^3.3",
@@ -37,7 +37,7 @@
         "symfony/filesystem": "^5.4.35 || ^6.3.12 || ^7.0.3",
         "symfony/finder": "^5.4.35 || ^6.3.12 || ^7.0.3",
         "symfony/process": "^5.4.35 || ^6.3.12 || ^7.0.3",
-        "react/promise": "^2.8 || ^3",
+        "react/promise": "^3.2",
         "composer/pcre": "^2.2 || ^3.2",
         "symfony/polyfill-php73": "^1.24",
         "symfony/polyfill-php80": "^1.24",
