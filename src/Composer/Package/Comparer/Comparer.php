@@ -136,7 +136,7 @@ class Comparer
                             return false;
                         }
                     } elseif (is_file($dir.'/'.$file) && filesize($dir.'/'.$file)) {
-                        $array[$dir][$file] = md5_file($dir.'/'.$file);
+                        $array[$dir][$file] = hash_file(PHP_VERSION_ID > 80100 ? 'xxh3' : 'sha1', $dir.'/'.$file);
                     }
                 }
             }

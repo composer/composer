@@ -46,7 +46,7 @@ class GenericRule extends Rule
      */
     public function getHash()
     {
-        $data = unpack('ihash', md5(implode(',', $this->literals), true));
+        $data = unpack('ihash', hash(PHP_VERSION_ID > 80100 ? 'xxh3' : 'sha1', implode(',', $this->literals), true));
 
         return $data['hash'];
     }

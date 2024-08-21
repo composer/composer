@@ -144,7 +144,7 @@ class Cache
 
             $this->io->writeError('Writing '.$this->root . $file.' into cache', true, IOInterface::DEBUG);
 
-            $tempFileName = $this->root . $file . uniqid('.', true) . '.tmp';
+            $tempFileName = $this->root . $file . bin2hex(random_bytes(5)) . '.tmp';
             try {
                 return file_put_contents($tempFileName, $contents) !== false && rename($tempFileName, $this->root . $file);
             } catch (\ErrorException $e) {
@@ -357,7 +357,7 @@ class Cache
         if ($this->isEnabled()) {
             $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
             if (file_exists($this->root . $file)) {
-                return sha1_file($this->root . $file);
+                return hash_file('sha1', $this->root . $file);
             }
         }
 

@@ -156,7 +156,7 @@ class PathRepositoryTest extends TestCase
         foreach ($packages as $package) {
             self::assertEquals(
                 $package->getDistReference(),
-                sha1(file_get_contents($package->getDistUrl() . '/composer.json') . serialize($options))
+                hash('sha1', file_get_contents($package->getDistUrl() . '/composer.json') . serialize($options))
             );
         }
     }

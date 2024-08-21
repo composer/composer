@@ -158,7 +158,7 @@ class FileDownloaderTest extends TestCase
         $composer->setConfig($config);
 
         $expectedUrl = 'foobar';
-        $expectedCacheKey = 'dummy/pkg/'.sha1($expectedUrl).'.';
+        $expectedCacheKey = 'dummy/pkg/'.hash('sha1', $expectedUrl).'.';
 
         $dispatcher = new EventDispatcher(
             $composer,
@@ -242,7 +242,7 @@ class FileDownloaderTest extends TestCase
 
         $expectedUrl = 'url';
         $customCacheKey = 'xyzzy';
-        $expectedCacheKey = 'dummy/pkg/'.sha1($customCacheKey).'.';
+        $expectedCacheKey = 'dummy/pkg/'.hash('sha1', $customCacheKey).'.';
 
         $dispatcher = new EventDispatcher(
             $composer,

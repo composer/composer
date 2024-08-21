@@ -52,7 +52,7 @@ class MultiConflictRule extends Rule
      */
     public function getHash()
     {
-        $data = unpack('ihash', md5('c:'.implode(',', $this->literals), true));
+        $data = unpack('ihash', hash(PHP_VERSION_ID > 80100 ? 'xxh3' : 'sha1', 'c:'.implode(',', $this->literals), true));
 
         return $data['hash'];
     }
