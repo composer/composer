@@ -36,7 +36,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerCaptureNotice(): void
     {
-        if (PHP_VERSION_ID >= 80000) {
+        if (\PHP_VERSION_ID >= 80000) {
             self::expectException('\ErrorException');
             self::expectExceptionMessage('Undefined array key "baz"');
         } else {
@@ -54,7 +54,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerCaptureWarning(): void
     {
-        if (PHP_VERSION_ID >= 80000) {
+        if (\PHP_VERSION_ID >= 80000) {
             self::expectException('TypeError');
             self::expectExceptionMessage('array_merge');
         } else {

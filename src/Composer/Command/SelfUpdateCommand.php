@@ -328,7 +328,7 @@ TAGSPUBKEY
             $verified = 1 === openssl_verify((string) file_get_contents($tempFilename), $signatureSha384, $pubkeyid, $algo);
 
             // PHP 8 automatically frees the key instance and deprecates the function
-            if (PHP_VERSION_ID < 80000) {
+            if (\PHP_VERSION_ID < 80000) {
                 // @phpstan-ignore function.deprecated
                 openssl_free_key($pubkeyid);
             }
