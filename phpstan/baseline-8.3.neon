@@ -66,6 +66,16 @@ parameters:
 			path: ../src/Composer/Console/Input/InputOption.php
 
 		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/GenericRule.php
+
+		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/MultiConflictRule.php
+
+		-
 			message: "#^Parameter \\#2 \\$callback of function uksort expects callable\\(string, string\\)\\: int, 'version_compare' given\\.$#"
 			count: 2
 			path: ../src/Composer/DependencyResolver/Problem.php
@@ -259,6 +269,11 @@ parameters:
 			message: "#^Parameter \\#1 \\$string of function rtrim expects string, string\\|false given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/ConfigTest.php
+
+		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/DependencyResolver/RuleTest.php
 
 		-
 			message: "#^Call to function method_exists\\(\\) with Composer\\\\Console\\\\Application and 'setCatchErrors' will always evaluate to true\\.$#"

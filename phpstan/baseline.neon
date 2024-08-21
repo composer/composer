@@ -86,11 +86,6 @@ parameters:
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
 
 		-
-			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:isMatch\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Autoload/AutoloadGenerator.php
-
-		-
 			message: "#^Parameter \\#2 \\$to of method Composer\\\\Util\\\\Filesystem\\:\\:findShortestPathCode\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
@@ -1052,7 +1047,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in \\|\\|, string\\|false given on the left side\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Console/Application.php
 
 		-
@@ -4192,11 +4187,6 @@ parameters:
 			message: "#^Parameter \\#3 \\$length of function substr expects int, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Perforce.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Platform.php
 
 		-
 			message: "#^Method Composer\\\\Util\\\\ProcessExecutor\\:\\:doExecute\\(\\) should return int but returns int\\|null\\.$#"
