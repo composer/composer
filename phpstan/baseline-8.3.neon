@@ -106,16 +106,6 @@ parameters:
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
-			message: "#^Parameter \\#1 \\$stream of function fwrite expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of function rewind expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
 			message: "#^Parameter \\#1 \\$stream of function fclose expects resource, resource\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/BinaryInstaller.php

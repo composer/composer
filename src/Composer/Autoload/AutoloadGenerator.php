@@ -410,7 +410,7 @@ EOF;
 
             // carry over existing autoload.php's suffix if possible and none is configured
             if (null === $suffix && Filesystem::isReadable($vendorPath.'/autoload.php')) {
-                $content = file_get_contents($vendorPath.'/autoload.php');
+                $content = (string) file_get_contents($vendorPath.'/autoload.php');
                 if (Preg::isMatch('{ComposerAutoloaderInit([^:\s]+)::}', $content, $match)) {
                     $suffix = $match[1];
                 }
@@ -1269,10 +1269,8 @@ INITIALIZER;
                         $path = Preg::replaceCallback(
                             '{^((?:(?:\\\\\\.){1,2}+/)+)}',
                             static function ($matches) use (&$updir): string {
-                                if (isset($matches[1])) {
-                                    // undo preg_quote for the matched string
-                                    $updir = str_replace('\\.', '.', $matches[1]);
-                                }
+                                // undo preg_quote for the matched string
+                                $updir = str_replace('\\.', '.', $matches[1]);
 
                                 return '';
                             },

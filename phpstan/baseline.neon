@@ -1886,11 +1886,6 @@ parameters:
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, array\\<string\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/EventDispatcher/EventDispatcher.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
 			count: 2
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
@@ -1984,46 +1979,6 @@ parameters:
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 1
 			path: ../src/Composer/IO/BaseIO.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, Symfony\\\\Component\\\\Console\\\\Formatter\\\\OutputFormatterInterface\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
-			message: "#^PHPDoc type Symfony\\\\Component\\\\Console\\\\Input\\\\StringInput of property Composer\\\\IO\\\\BufferIO\\:\\:\\$input is not the same as PHPDoc type Symfony\\\\Component\\\\Console\\\\Input\\\\InputInterface of overridden property Composer\\\\IO\\\\ConsoleIO\\:\\:\\$input\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
-			message: "#^PHPDoc type Symfony\\\\Component\\\\Console\\\\Output\\\\StreamOutput of property Composer\\\\IO\\\\BufferIO\\:\\:\\$output is not the same as PHPDoc type Symfony\\\\Component\\\\Console\\\\Output\\\\OutputInterface of overridden property Composer\\\\IO\\\\ConsoleIO\\:\\:\\$output\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
-			message: "#^Parameter \\#1 \\$fp of function fwrite expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
-			message: "#^Parameter \\#1 \\$fp of function rewind expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of class Symfony\\\\Component\\\\Console\\\\Output\\\\StreamOutput constructor expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of method Symfony\\\\Component\\\\Console\\\\Input\\\\Input\\:\\:setStream\\(\\) expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
-			message: "#^Parameter \\#3 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:replaceCallback\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
 
 		-
 			message: "#^Parameter \\#1 \\$attempts of method Symfony\\\\Component\\\\Console\\\\Question\\\\Question\\:\\:setMaxAttempts\\(\\) expects int\\|null, int\\<min, \\-1\\>\\|int\\<1, max\\>\\|true\\|null given\\.$#"
@@ -2144,71 +2099,6 @@ parameters:
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/BinaryInstaller.php
-
-		-
-			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
-			count: 2
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Foreach overwrites \\$batch with its value variable\\.$#"
-			count: 2
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Only booleans are allowed in &&, Composer\\\\EventDispatcher\\\\EventDispatcher\\|null given on the right side\\.$#"
-			count: 2
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Only booleans are allowed in &&, array given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, Symfony\\\\Component\\\\Console\\\\Helper\\\\ProgressBar\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, array\\<Composer\\\\DependencyResolver\\\\Operation\\\\OperationInterface\\> given\\.$#"
-			count: 4
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, int\\<0, max\\> given\\.$#"
-			count: 2
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, int\\<0, max\\>\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Parameter \\#2 \\$offset of function array_splice expects int, int\\|string given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
 			message: "#^Variable method call on \\$this\\(Composer\\\\Installer\\\\InstallationManager\\)\\.$#"
@@ -4304,28 +4194,8 @@ parameters:
 			path: ../src/Composer/Util/Perforce.php
 
 		-
-			message: "#^Casting to string something that's already string\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Platform.php
-
-		-
-			message: "#^Only booleans are allowed in &&, string\\|false given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Platform.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, string\\|false given\\.$#"
 			count: 1
-			path: ../src/Composer/Util/Platform.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, array\\<int\\|string, int\\>\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Platform.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 2
 			path: ../src/Composer/Util/Platform.php
 
 		-

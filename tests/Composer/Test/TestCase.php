@@ -355,7 +355,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         if (Platform::isWindows()) {
             $cmd = Preg::replaceCallback("/('[^']*')/", static function ($m) {
-                assert(is_string($m[1]));
                 // Double-quotes are used only when needed
                 $char = (strpbrk($m[1], " \t^&|<>()") !== false || $m[1] === "''") ? '"' : '';
 
