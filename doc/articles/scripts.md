@@ -273,7 +273,7 @@ class MyCommand extends Command
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('arbitrary-flag')) {
-            $output->writeln('The flag was used')
+            $output->writeln('The flag was used');
         }
 
         return 0;
