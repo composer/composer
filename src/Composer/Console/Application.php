@@ -321,7 +321,7 @@ class Application extends BaseApplication
                 function_exists('php_uname') ? php_uname('s') . ' / ' . php_uname('r') : 'Unknown OS'
             ), true, IOInterface::DEBUG);
 
-            if (PHP_VERSION_ID < 70205) {
+            if (\PHP_VERSION_ID < 70205) {
                 $io->writeError('<warning>Composer supports PHP 7.2.5 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.'. Upgrading is strongly recommended but you can use Composer 2.2.x LTS as a fallback.</warning>');
             }
 
@@ -348,7 +348,7 @@ class Application extends BaseApplication
             // Check system temp folder for usability as it can cause weird runtime issues otherwise
             Silencer::call(static function () use ($io): void {
                 $pid = function_exists('getmypid') ? getmypid() . '-' : '';
-                $tempfile = sys_get_temp_dir() . '/temp-' . $pid . md5(microtime());
+                $tempfile = sys_get_temp_dir() . '/temp-' . $pid . bin2hex(random_bytes(5));
                 if (!(file_put_contents($tempfile, __FILE__) && (file_get_contents($tempfile) === __FILE__) && unlink($tempfile) && !file_exists($tempfile))) {
                     $io->writeError(sprintf('<error>PHP temp directory (%s) does not exist or is not writable to Composer. Set sys_temp_dir in your php.ini</error>', sys_get_temp_dir()));
                 }

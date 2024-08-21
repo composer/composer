@@ -96,7 +96,7 @@ class LockerTest extends TestCase
         $package1 = self::getPackage('pkg1', '1.0.0-beta');
         $package2 = self::getPackage('pkg2', '0.1.10');
 
-        $contentHash = md5(trim($jsonContent));
+        $contentHash = hash('md5', trim($jsonContent));
 
         $json
             ->expects($this->once())
@@ -154,7 +154,7 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(['hash' => md5($jsonContent)]));
+            ->will($this->returnValue(['hash' => hash('md5', $jsonContent)]));
 
         self::assertTrue($locker->isFresh());
     }
@@ -185,7 +185,7 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(['hash' => md5($jsonContent . '  '), 'content-hash' => md5($jsonContent)]));
+            ->will($this->returnValue(['hash' => hash('md5', $jsonContent . '  '), 'content-hash' => hash('md5', $jsonContent)]));
 
         self::assertTrue($locker->isFresh());
     }
@@ -201,7 +201,7 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(['content-hash' => md5($jsonContent)]));
+            ->will($this->returnValue(['content-hash' => hash('md5', $jsonContent)]));
 
         self::assertTrue($locker->isFresh());
     }
@@ -213,7 +213,7 @@ class LockerTest extends TestCase
 
         $locker = new Locker(new NullIO, $json, $inst, $this->getJsonContent());
 
-        $differentHash = md5($this->getJsonContent(['name' => 'test2']));
+        $differentHash = hash('md5', $this->getJsonContent(['name' => 'test2']));
 
         $json
             ->expects($this->once())

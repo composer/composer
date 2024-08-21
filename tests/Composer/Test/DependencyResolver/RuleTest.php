@@ -26,7 +26,7 @@ class RuleTest extends TestCase
     {
         $rule = new GenericRule([123], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
 
-        $hash = unpack('ihash', md5('123', true));
+        $hash = unpack('ihash', (string) hash(\PHP_VERSION_ID > 80100 ? 'xxh3' : 'sha1', '123', true));
         self::assertEquals($hash['hash'], $rule->getHash());
     }
 

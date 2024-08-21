@@ -299,7 +299,7 @@ class EventDispatcher
                         // it does not hurt to keep the same stream as the current Application
                         if ($this->io instanceof ConsoleIO) {
                             $reflProp = new \ReflectionProperty($this->io, 'output');
-                            if (PHP_VERSION_ID < 80100) {
+                            if (\PHP_VERSION_ID < 80100) {
                                 $reflProp->setAccessible(true);
                             }
                             $output = $reflProp->getValue($this->io);

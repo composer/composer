@@ -417,7 +417,7 @@ EOF;
             }
 
             if (null === $suffix) {
-                $suffix = $locker !== null && $locker->isLocked() ? $locker->getLockData()['content-hash'] : md5(uniqid('', true));
+                $suffix = $locker !== null && $locker->isLocked() ? $locker->getLockData()['content-hash'] : bin2hex(random_bytes(16));
             }
         }
 
@@ -1052,7 +1052,7 @@ CLASSMAPAUTHORITATIVE;
         }
 
         if ($this->apcu) {
-            $apcuPrefix = var_export(($this->apcuPrefix !== null ? $this->apcuPrefix : substr(base64_encode(md5(uniqid('', true), true)), 0, -3)), true);
+            $apcuPrefix = var_export(($this->apcuPrefix !== null ? $this->apcuPrefix : bin2hex(random_bytes(10))), true);
             $file .= <<<APCU
         \$loader->setApcuPrefix($apcuPrefix);
 
@@ -1312,7 +1312,8 @@ INITIALIZER;
      */
     protected function getFileIdentifier(PackageInterface $package, string $path)
     {
-        return md5($package->getName() . ':' . $path);
+        // TODO composer v3 change this to sha1 or xxh3? Possibly not worth the potential breakage though
+        return hash('md5', $package->getName() . ':' . $path);
     }
 
     /**

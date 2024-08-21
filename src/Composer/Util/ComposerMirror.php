@@ -28,9 +28,9 @@ class ComposerMirror
     public static function processUrl(string $mirrorUrl, string $packageName, string $version, ?string $reference, ?string $type, ?string $prettyVersion = null): string
     {
         if ($reference) {
-            $reference = Preg::isMatch('{^([a-f0-9]*|%reference%)$}', $reference) ? $reference : md5($reference);
+            $reference = Preg::isMatch('{^([a-f0-9]*|%reference%)$}', $reference) ? $reference : hash('md5', $reference);
         }
-        $version = strpos($version, '/') === false ? $version : md5($version);
+        $version = strpos($version, '/') === false ? $version : hash('md5', $version);
 
         $from = ['%package%', '%version%', '%reference%', '%type%'];
         $to = [$packageName, $version, $reference, $type];

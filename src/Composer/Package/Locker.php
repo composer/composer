@@ -66,7 +66,7 @@ class Locker
     {
         $this->lockFile = $lockFile;
         $this->installationManager = $installationManager;
-        $this->hash = md5($composerFileContents);
+        $this->hash = hash('md5', $composerFileContents);
         $this->contentHash = self::getContentHash($composerFileContents);
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
@@ -107,7 +107,7 @@ class Locker
 
         ksort($relevantContent);
 
-        return md5(JsonFile::encode($relevantContent, 0));
+        return hash('md5', JsonFile::encode($relevantContent, 0));
     }
 
     /**

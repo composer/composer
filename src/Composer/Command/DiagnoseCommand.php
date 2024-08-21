@@ -630,7 +630,7 @@ EOT
             $errors['ioncube'] = ioncube_loader_version();
         }
 
-        if (PHP_VERSION_ID < 70205) {
+        if (\PHP_VERSION_ID < 70205) {
             $errors['php'] = PHP_VERSION;
         }
 

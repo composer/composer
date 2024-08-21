@@ -121,7 +121,7 @@ EOL
     protected function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')
-            ->setConstructorArgs([md5((string) mt_rand()), '1.0.0.0', '1.0.0'])
+            ->setConstructorArgs([bin2hex(random_bytes(5)), '1.0.0.0', '1.0.0'])
             ->getMock();
     }
 }

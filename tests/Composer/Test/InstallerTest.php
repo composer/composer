@@ -533,7 +533,7 @@ class InstallerTest extends TestCase
                 if (!empty($testData['LOCK'])) {
                     $lock = JsonFile::parseJson($testData['LOCK']);
                     if (!isset($lock['hash'])) {
-                        $lock['hash'] = md5(JsonFile::encode($composer, 0));
+                        $lock['hash'] = hash('md5', JsonFile::encode($composer, 0));
                     }
                 }
                 if (!empty($testData['INSTALLED'])) {

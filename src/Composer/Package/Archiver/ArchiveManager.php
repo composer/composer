@@ -96,7 +96,7 @@ class ArchiveManager
 
         $sourceReference = $package->getSourceReference();
         if (null !== $sourceReference) {
-            $parts['source_reference'] = substr(sha1($sourceReference), 0, 6);
+            $parts['source_reference'] = substr(hash('sha1', $sourceReference), 0, 6);
         }
 
         $parts = array_filter($parts, function (?string $part) {
@@ -171,7 +171,7 @@ class ArchiveManager
             $sourcePath = realpath('.');
         } else {
             // Directory used to download the sources
-            $sourcePath = sys_get_temp_dir().'/composer_archive'.uniqid();
+            $sourcePath = sys_get_temp_dir().'/composer_archive'.bin2hex(random_bytes(5));
             $filesystem->ensureDirectoryExists($sourcePath);
 
             try {
@@ -216,7 +216,7 @@ class ArchiveManager
         }
 
         // Create the archive
-        $tempTarget = sys_get_temp_dir().'/composer_archive'.uniqid().'.'.$format;
+        $tempTarget = sys_get_temp_dir().'/composer_archive'.bin2hex(random_bytes(5)).'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($tempTarget));
 
         $archivePath = $usableArchiver->archive(

@@ -129,7 +129,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         $package['dist'] = [
             'type' => $fileType,
             'url' => strtr($file->getPathname(), '\\', '/'),
-            'shasum' => sha1_file($file->getRealPath()),
+            'shasum' => hash_file('sha1', $file->getRealPath()),
         ];
 
         try {

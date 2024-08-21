@@ -102,7 +102,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         $root = sys_get_temp_dir();
 
         do {
-            $unique = $root . DIRECTORY_SEPARATOR . uniqid('composer-test-' . random_int(1000, 9000));
+            $unique = $root . DIRECTORY_SEPARATOR . 'composer-test-' . bin2hex(random_bytes(10));
 
             if (!file_exists($unique) && Silencer::call('mkdir', $unique, 0777)) {
                 return realpath($unique);
