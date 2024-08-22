@@ -1,3 +1,20 @@
+### [2.7.8] 2024-08-22
+
+  * Added `release-age`, `release-date` and `latest-release-date` in the JSON output of `outdated` (#12053)
+  * Fixed PHP 8.4 deprecation warnings
+  * Fixed addressability of branches containing `#` signs (#12042)
+  * Fixed `bump` command not handling some `~` constraints correctly (#12038)
+  * Fixed COMPOSER_AUTH not taking precedence over ./auth.json (#12084)
+  * Fixed `relative: true` sometimes not being respected in path repo symlinks (#12092)
+  * Fixed copy from cache sometimes failing on VirtualBox shared folders (#12057)
+  * Fixed PSR-4 autoloading order regression in some edge case (#12063)
+  * Fixed duplicate lib-* packages causing issues when having pecl + core versions of the same PHP extension (#12093)
+  * Fixed transport-options.ssl for local cert authorization being stored in lock file making them less portable (#12019)
+  * Fixed memory issues when installing large binaries (#12032)
+  * Fixed `archive` command crashing when a path cannot be realpath'd on windows (#11544)
+  * API: Deprecated BasePackage::$stabilities in favor of BasePackage::STABILITIES (685add70ec)
+  * Improved Docker detection (#12062)
+
 ### [2.7.7] 2024-06-10
 
   * Security: Fixed command injection via malicious git branch name (GHSA-47f6-5gq3-vx9c / CVE-2024-35241)
@@ -1888,6 +1905,7 @@
 
   * Initial release
 
+[2.7.8]: https://github.com/composer/composer/compare/2.7.7...2.7.8
 [2.7.7]: https://github.com/composer/composer/compare/2.7.6...2.7.7
 [2.7.6]: https://github.com/composer/composer/compare/2.7.5...2.7.6
 [2.7.5]: https://github.com/composer/composer/compare/2.7.4...2.7.5
