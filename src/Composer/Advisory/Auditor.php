@@ -47,6 +47,12 @@ class Auditor
     public const ABANDONED_REPORT = 'report';
     public const ABANDONED_FAIL = 'fail';
 
+    public const ABANDONEDS = [
+        self::ABANDONED_IGNORE,
+        self::ABANDONED_REPORT,
+        self::ABANDONED_FAIL,
+    ];
+
     /**
      * @param PackageInterface[] $packages
      * @param self::FORMAT_* $format The format that will be used to output audit results.
