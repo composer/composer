@@ -54,10 +54,10 @@ class FilesystemTest extends TestCase
     /**
      * @dataProvider providePathCouplesAsCode
      */
-    public function testFindShortestPathCode(string $a, string $b, bool $directory, string $expected, bool $static = false): void
+    public function testFindShortestPathCode(string $a, string $b, bool $directory, string $expected, bool $static = false, bool $preferRelative = false): void
     {
         $fs = new Filesystem;
-        self::assertEquals($expected, $fs->findShortestPathCode($a, $b, $directory, $static));
+        self::assertEquals($expected, $fs->findShortestPathCode($a, $b, $directory, $static, $preferRelative));
     }
 
     public static function providePathCouplesAsCode(): array
@@ -77,6 +77,7 @@ class FilesystemTest extends TestCase
             ['/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"],
             ['/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"],
             ['/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"],
+            ['/app/vendor/foo/bar', '/lib', true, "dirname(dirname(dirname(dirname(__DIR__)))).'/lib'", false, true],
             ['/bin/run', '/bin/run', true, "__DIR__"],
             ['c:/bin/run', 'C:\\bin/run', true, "__DIR__"],
             ['c:/bin/run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"],
@@ -113,10 +114,10 @@ class FilesystemTest extends TestCase
     /**
      * @dataProvider providePathCouples
      */
-    public function testFindShortestPath(string $a, string $b, string $expected, bool $directory = false): void
+    public function testFindShortestPath(string $a, string $b, string $expected, bool $directory = false, bool $preferRelative = false): void
     {
         $fs = new Filesystem;
-        self::assertEquals($expected, $fs->findShortestPath($a, $b, $directory));
+        self::assertEquals($expected, $fs->findShortestPath($a, $b, $directory, $preferRelative));
     }
 
     public static function providePathCouples(): array
@@ -152,6 +153,7 @@ class FilesystemTest extends TestCase
             ['C:/Temp', 'c:\Temp\..\..\test', "../test", true],
             ['C:/Temp/../..', 'c:\Temp\..\..\test', "./test", true],
             ['C:/Temp/../..', 'D:\Temp\..\..\test', "D:/test", true],
+            ['/app/vendor/foo/bar', '/lib', '../../../../lib', true, true],
             ['/tmp', '/tmp/../../test', '../test', true],
             ['/tmp', '/test', '../test', true],
             ['/foo/bar', '/foo/bar_vendor', '../bar_vendor', true],

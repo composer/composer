@@ -43,6 +43,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     {
         $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
+        if (null === $url) {
+            throw new \RuntimeException('The package '.$package->getPrettyName().' has no dist url configured, cannot download.');
+        }
         $realUrl = realpath($url);
         if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
             throw new \RuntimeException(sprintf(
@@ -79,7 +82,13 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     {
         $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
+        if (null === $url) {
+            throw new \RuntimeException('The package '.$package->getPrettyName().' has no dist url configured, cannot install.');
+        }
         $realUrl = realpath($url);
+        if (false === $realUrl) {
+            throw new \RuntimeException('Failed to realpath '.$url);
+        }
 
         if (realpath($path) === $realUrl) {
             if ($output) {
@@ -111,16 +120,16 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     }
                     $this->filesystem->junction($realUrl, $path);
                 } else {
-                    $absolutePath = $path;
-                    if (!$this->filesystem->isAbsolutePath($absolutePath)) {
-                        $absolutePath = Platform::getCwd() . DIRECTORY_SEPARATOR . $path;
-                    }
-                    $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
                     $path = rtrim($path, "/");
                     if ($output) {
                         $this->io->writeError(sprintf('Symlinking from %s', $url), false);
                     }
-                    if ($transportOptions['relative']) {
+                    if ($transportOptions['relative'] === true) {
+                        $absolutePath = $path;
+                        if (!$this->filesystem->isAbsolutePath($absolutePath)) {
+                            $absolutePath = Platform::getCwd() . DIRECTORY_SEPARATOR . $path;
+                        }
+                        $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl, false, true);
                         $symfonyFilesystem->symlink($shortestPath.'/', $path);
                     } else {
                         $symfonyFilesystem->symlink($realUrl.'/', $path);
@@ -185,13 +194,18 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             return \React\Promise\resolve(null);
         }
 
+        $url = $package->getDistUrl();
+        if (null === $url) {
+            throw new \RuntimeException('The package '.$package->getPrettyName().' has no dist url configured, cannot remove.');
+        }
+
         // ensure that the source path (dist url) is not the same as the install path, which
         // can happen when using custom installers, see https://github.com/composer/composer/pull/9116
         // not using realpath here as we do not want to resolve the symlink to the original dist url
         // it points to
         $fs = new Filesystem;
         $absPath = $fs->isAbsolutePath($path) ? $path : Platform::getCwd() . '/' . $path;
-        $absDistUrl = $fs->isAbsolutePath($package->getDistUrl()) ? $package->getDistUrl() : Platform::getCwd() . '/' . $package->getDistUrl();
+        $absDistUrl = $fs->isAbsolutePath($url) ? $url : Platform::getCwd() . '/' . $url;
         if ($fs->normalizePath($absPath) === $fs->normalizePath($absDistUrl)) {
             if ($output) {
                 $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
@@ -214,7 +228,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         $dumper = new ArrayDumper;
 
         $packageConfig = $dumper->dump($package);
-        if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {
+        $packageVersion = $guesser->guessVersion($packageConfig, $path);
+        if ($packageVersion !== null) {
             return $packageVersion['commit'];
         }
 
@@ -226,7 +241,14 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      */
     protected function getInstallOperationAppendix(PackageInterface $package, string $path): string
     {
-        $realUrl = realpath($package->getDistUrl());
+        $url = $package->getDistUrl();
+        if (null === $url) {
+            throw new \RuntimeException('The package '.$package->getPrettyName().' has no dist url configured, cannot install.');
+        }
+        $realUrl = realpath($url);
+        if (false === $realUrl) {
+            throw new \RuntimeException('Failed to realpath '.$url);
+        }
 
         if (realpath($path) === $realUrl) {
             return ': Source already present';
@@ -257,7 +279,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         $allowedStrategies = [self::STRATEGY_SYMLINK, self::STRATEGY_MIRROR];
 
         $mirrorPathRepos = Platform::getEnv('COMPOSER_MIRROR_PATH_REPOS');
-        if ($mirrorPathRepos) {
+        if ((bool) $mirrorPathRepos) {
             $currentStrategy = self::STRATEGY_MIRROR;
         }
 
