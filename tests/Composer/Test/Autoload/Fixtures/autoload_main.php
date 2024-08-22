@@ -7,5 +7,5 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Main' => array($baseDir . '/src'),
-    'Lala' => array($baseDir . '/src', $baseDir . '/lib'),
+    'Lala' => array($baseDir . '/lib', $baseDir . '/src'),
 );

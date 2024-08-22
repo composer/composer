@@ -7,5 +7,5 @@ $baseDir = dirname(dirname($vendorDir));
 
 return array(
     'Acme\\Fruit\\' => array($baseDir . '/src-fruit'),
-    'Acme\\Cake\\' => array($baseDir . '/src-cake', $baseDir . '/lib-cake'),
+    'Acme\\Cake\\' => array($baseDir . '/lib-cake', $baseDir . '/src-cake'),
 );
