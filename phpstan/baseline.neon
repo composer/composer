@@ -1656,51 +1656,6 @@ parameters:
 			path: ../src/Composer/Downloader/HgDownloader.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, array\\<string, string\\|null\\>\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of function realpath expects string, string\\|null given\\.$#"
-			count: 3
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of method Composer\\\\Util\\\\Filesystem\\:\\:isAbsolutePath\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of method Composer\\\\Util\\\\Filesystem\\:\\:normalizePath\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of method Composer\\\\Util\\\\Filesystem\\:\\:normalizePath\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$target of method Composer\\\\Util\\\\Filesystem\\:\\:junction\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
-			message: "#^Parameter \\#2 \\$to of method Composer\\\\Util\\\\Filesystem\\:\\:findShortestPath\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
 			message: "#^Cannot call method cleanupClientSpec\\(\\) on Composer\\\\Util\\\\Perforce\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/PerforceDownloader.php
@@ -1947,7 +1902,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
-			count: 6
+			count: 5
 			path: ../src/Composer/Factory.php
 
 		-
@@ -1967,7 +1922,7 @@ parameters:
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 3
+			count: 2
 			path: ../src/Composer/Factory.php
 
 		-
@@ -3712,6 +3667,11 @@ parameters:
 			message: "#^Only booleans are allowed in &&, int\\<0, 1\\> given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Util/ConfigValidator.php
+
+		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Filesystem.php
 
 		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"

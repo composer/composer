@@ -177,7 +177,7 @@ parameters:
 
 		-
 			message: "#^Casting to string something that's already string\\.$#"
-			count: 4
+			count: 3
 			path: ../src/Composer/Util/Filesystem.php
 
 		-
