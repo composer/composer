@@ -466,25 +466,4 @@ abstract class BaseCommand extends Command
 
         return $val;
     }
-
-    /**
-     * @internal
-     * @param Auditor::ABANDONED_*|null $fallback
-     * @return Auditor::ABANDONED_*
-     */
-    protected function getAuditAbandoned(InputInterface $input, $fallback): string
-    {
-        $optName = 'abandoned';
-
-        if (!$input->hasOption($optName)) {
-            throw new \LogicException('This should not be called on a Command which has no '.$optName.' option defined.');
-        }
-
-        $val = $input->getOption($optName);
-        if ($val !== null && !in_array($val, Auditor::ABANDONEDS, true)) {
-            throw new \InvalidArgumentException('--'.$optName.' must be one of '.implode(', ', Auditor::ABANDONEDS).'.');
-        }
-
-        return $val ?? $fallback ?? Auditor::ABANDONED_FAIL;
-    }
 }

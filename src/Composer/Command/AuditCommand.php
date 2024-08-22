@@ -66,6 +66,13 @@ EOT
 
         $auditConfig = $composer->getConfig()->get('audit');
 
+        $abandoned = $input->getOption('abandoned');
+        if ($abandoned !== null && !in_array($abandoned, Auditor::ABANDONEDS, true)) {
+            throw new \InvalidArgumentException('--audit must be one of '.implode(', ', Auditor::ABANDONEDS).'.');
+        }
+
+        $abandoned = $abandoned ?? $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL;
+
         return min(255, $auditor->audit(
             $this->getIO(),
             $repoSet,
@@ -73,7 +80,7 @@ EOT
             $this->getAuditFormat($input, 'format'),
             false,
             $auditConfig['ignore'] ?? [],
-            $this->getAuditAbandoned($input, $auditConfig['abandoned'])
+            $abandoned
         ));
     }
 

@@ -47,6 +47,7 @@ class Auditor
     public const ABANDONED_REPORT = 'report';
     public const ABANDONED_FAIL = 'fail';
 
+    /** @internal */
     public const ABANDONEDS = [
         self::ABANDONED_IGNORE,
         self::ABANDONED_REPORT,
