@@ -726,7 +726,7 @@ class InitCommandTest extends TestCase
             'name' => 'vendor/pkg',
             'description' => 'my desciption',
             'type' => 'library',
-            'license' => 'Custom Liscence',
+            'license' => 'Custom License',
             'authors' => [['name' => 'Mr. Test', 'email' => 'test@example.org']],
             'minimum-stability' => 'stable',
             'require' => [],
