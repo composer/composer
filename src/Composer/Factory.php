@@ -223,7 +223,19 @@ class Factory
 
     public static function getComposerFile(): string
     {
-        return trim((string) Platform::getEnv('COMPOSER')) ?: './composer.json';
+        $env = Platform::getEnv('COMPOSER');
+        if (is_string($env)) {
+            $env = trim($env);
+            if ('' !== $env) {
+                if (is_dir($env)) {
+                    throw new \RuntimeException('The COMPOSER environment variable is set to '.$env.' which is a directory, this variable should point to a composer.json or be left unset.');
+                }
+
+                return $env;
+            }
+        }
+
+        return './composer.json';
     }
 
     public static function getLockFile(string $composerFile): string
