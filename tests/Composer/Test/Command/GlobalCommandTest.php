@@ -17,11 +17,18 @@ use Composer\Util\Platform;
 
 class GlobalCommandTest extends TestCase
 {
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        Platform::clearEnv('COMPOSER_HOME');
+        Platform::clearEnv('COMPOSER');
+    }
+    
     public function testGlobal(): void
     {
         $script = '@php -r \'echo getenv("COMPOSER") . PHP_EOL;\'';
-        $fake_composer = 'TMP_COMPOSER.JSON';
-        $composer_home = $this->initTempComposer(
+        $fakeComposer = 'TMP_COMPOSER.JSON';
+        $composerHome = $this->initTempComposer(
             [
                 "scripts" => [
                     "test-script" => $script,
@@ -29,8 +36,8 @@ class GlobalCommandTest extends TestCase
             ]
         );
 
-        Platform::putEnv('COMPOSER_HOME', $composer_home);
-        Platform::putEnv('COMPOSER', $fake_composer);
+        Platform::putEnv('COMPOSER_HOME', $composerHome);
+        Platform::putEnv('COMPOSER', $fakeComposer);
 
         $dir = self::getUniqueTmpDirectory();
         chdir($dir);
@@ -45,14 +52,14 @@ class GlobalCommandTest extends TestCase
         $display = $appTester->getDisplay(true);
 
         self::assertStringContainsString(
-            'Changed current directory to ' . $composer_home,
+            'Changed current directory to ' . $composerHome,
             $display
         );
         self::assertStringContainsString($script, $display);
-        self::assertStringNotContainsString($fake_composer, $display, '$COMPOSER is not unset by global command');
+        self::assertStringNotContainsString($fakeComposer, $display, '$COMPOSER is not unset by global command');
     }
 
-    public function testNotCreateHome(): void
+    public function testCannotCreateHome(): void
     {
         $dir = self::getUniqueTmpDirectory();
         $filename = $dir . '/file';
