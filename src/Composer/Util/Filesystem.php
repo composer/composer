@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\Pcre\Preg;
+use ErrorException;
 use React\Promise\PromiseInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -367,7 +368,29 @@ class Filesystem
         $target = $this->normalizePath($target);
 
         if (!is_dir($source)) {
-            return copy($source, $target);
+            try {
+                return copy($source, $target);
+            } catch (ErrorException $e) {
+                // if copy fails we attempt to copy it manually as this can help bypass issues with VirtualBox shared folders
+                // see https://github.com/composer/composer/issues/12057
+                if (str_contains($e->getMessage(), 'Bad address')) {
+                    $sourceHandle = fopen($source, 'r');
+                    $targetHandle = fopen($target, 'w');
+                    if (false === $sourceHandle || false === $targetHandle) {
+                        throw $e;
+                    }
+                    while (!feof($sourceHandle)) {
+                        if (false === fwrite($targetHandle, (string) fread($sourceHandle, 1024 * 1024))) {
+                            throw $e;
+                        }
+                    }
+                    fclose($sourceHandle);
+                    fclose($targetHandle);
+
+                    return true;
+                }
+                throw $e;
+            }
         }
 
         $it = new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS);

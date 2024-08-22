@@ -198,7 +198,7 @@ class Cache
                 $this->io->writeError('Writing '.$this->root . $file.' into cache from '.$source);
             }
 
-            return copy($source, $this->root . $file);
+            return $this->filesystem->copy($source, $this->root . $file);
         }
 
         return false;
@@ -224,7 +224,7 @@ class Cache
 
                 $this->io->writeError('Reading '.$this->root . $file.' from cache', true, IOInterface::DEBUG);
 
-                return copy($this->root . $file, $target);
+                return $this->filesystem->copy($this->root . $file, $target);
             }
         }
 
