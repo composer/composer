@@ -34,9 +34,9 @@ use Symfony\Component\HttpFoundation\IpUtils;
  */
 class CurlDownloader
 {
-    /** @var ?resource */
+    /** @var \CurlMultiHandle */
     private $multiHandle;
-    /** @var ?resource */
+    /** @var \CurlShareHandle */
     private $shareHandle;
     /** @var Job[] */
     private $jobs = [];

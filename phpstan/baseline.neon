@@ -3819,27 +3819,27 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_add_handle expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$mh of function curl_multi_add_handle expects resource, CurlMultiHandle given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_exec expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$mh of function curl_multi_exec expects resource, CurlMultiHandle given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_info_read expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$mh of function curl_multi_info_read expects resource, CurlMultiHandle given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_remove_handle expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$mh of function curl_multi_remove_handle expects resource, CurlMultiHandle given\\.$#"
 			count: 2
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_select expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$mh of function curl_multi_select expects resource, CurlMultiHandle given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -3924,7 +3924,32 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$multiHandle \\(CurlMultiHandle\\) does not accept resource\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$multiHandle has unknown class CurlMultiHandle as its type\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$shareHandle \\(CurlShareHandle\\) does not accept resource\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$shareHandle has unknown class CurlShareHandle as its type\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Type alias Job contains unknown class CurlHandle\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
