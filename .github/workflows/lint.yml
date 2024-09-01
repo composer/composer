@@ -24,16 +24,16 @@ jobs:
           - "nightly"
 
     steps:
-      - name: "Checkout"
-        uses: "actions/checkout@v4"
+      - uses: actions/checkout@v4
 
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+      - uses: shivammathur/setup-php@v2
         with:
-          coverage: "none"
-          extensions: "intl"
-          ini-values: "memory_limit=-1, error_reporting=E_ALL, display_errors=On"
           php-version: "${{ matrix.php-version }}"
+          coverage: none
+
+      - uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: highest
 
       - name: "Lint PHP files"
         run: |
