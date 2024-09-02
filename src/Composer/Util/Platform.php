@@ -193,11 +193,17 @@ class Platform
             '/proc/self/mountinfo', // cgroup v2
             '/proc/1/cgroup', // cgroup v1
         ];
-        foreach($cgroups as $cgroup) {
+        foreach ($cgroups as $cgroup) {
             if (!is_readable($cgroup)) {
                 continue;
             }
-            $data = file_get_contents($cgroup);
+            // suppress errors as some environments have these files as readable but system restrictions prevent the read from succeeding
+            // see https://github.com/composer/composer/issues/12095
+            try {
+                $data = @file_get_contents($cgroup);
+            } catch (\Throwable $e) {
+                break;
+            }
             if (is_string($data) && str_contains($data, '/var/lib/docker/')) {
                 return self::$isDocker = true;
             }
