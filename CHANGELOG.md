@@ -1,3 +1,8 @@
+### [2.7.9] 2024-09-04
+
+  * Fixed Docker detection breaking on constrained environments (#12095)
+  * Fixed upstream issue in bash completion script, it is recommended to update it using the `completion` command (#12015)
+
 ### [2.7.8] 2024-08-22
 
   * Added `release-age`, `release-date` and `latest-release-date` in the JSON output of `outdated` (#12053)
@@ -1905,6 +1910,7 @@
 
   * Initial release
 
+[2.7.9]: https://github.com/composer/composer/compare/2.7.8...2.7.9
 [2.7.8]: https://github.com/composer/composer/compare/2.7.7...2.7.8
 [2.7.7]: https://github.com/composer/composer/compare/2.7.6...2.7.7
 [2.7.6]: https://github.com/composer/composer/compare/2.7.5...2.7.6
