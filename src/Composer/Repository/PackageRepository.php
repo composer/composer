@@ -12,8 +12,11 @@
 
 namespace Composer\Repository;
 
+use Composer\Advisory\PartialSecurityAdvisory;
+use Composer\Advisory\SecurityAdvisory;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
+use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
 
 /**
@@ -21,10 +24,13 @@ use Composer\Pcre\Preg;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class PackageRepository extends ArrayRepository
+class PackageRepository extends ArrayRepository implements AdvisoryProviderInterface
 {
     /** @var mixed[] */
     private $config;
+
+    /** @var mixed[] */
+    private $securityAdvisories;
 
     /**
      * Initializes filesystem repository.
@@ -40,6 +46,8 @@ class PackageRepository extends ArrayRepository
         if (!is_numeric(key($this->config))) {
             $this->config = [$this->config];
         }
+
+        $this->securityAdvisories = $config['security-advisories'] ?? [];
     }
 
     /**
@@ -64,5 +72,38 @@ class PackageRepository extends ArrayRepository
     public function getRepoName(): string
     {
         return Preg::replace('{^array }', 'package ', parent::getRepoName());
+    }
+
+    public function hasSecurityAdvisories(): bool
+    {
+        return count($this->securityAdvisories) > 0;
+    }
+
+    /**
+     * @todo not sure if this is a good idea, just helped setting up the test fixtures
+     */
+    public function getSecurityAdvisories(array $packageConstraintMap, bool $allowPartialAdvisories = false): array
+    {
+        $parser = new VersionParser();
+
+        $advisories = [];
+        foreach ($this->securityAdvisories as $packageName => $packageAdvisories) {
+            if (isset($packageConstraintMap[$packageName])) {
+                $advisories[$packageName] = array_filter(array_map(function (array $data) use ($packageName, $allowPartialAdvisories, $packageConstraintMap, $parser) {
+                    $advisory = PartialSecurityAdvisory::create($packageName, $data, $parser);
+                    if (!$allowPartialAdvisories && !$advisory instanceof SecurityAdvisory) {
+                        throw new \RuntimeException('Advisory for '.$packageName.' could not be loaded as a full advisory from '.$this->getRepoName() . PHP_EOL . var_export($data, true));
+                    }
+
+                    if (!$advisory->affectedVersions->matches($packageConstraintMap[$packageName])) {
+                        return null;
+                    }
+
+                    return $advisory;
+                }, $packageAdvisories));
+            }
+        }
+
+        return ['advisories' => $advisories, 'namesFound' => array_keys($advisories)];
     }
 }

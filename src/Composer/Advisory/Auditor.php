@@ -141,7 +141,7 @@ class Auditor
      * @param array<string>|array<string,string> $ignoreList List of advisory IDs, remote IDs or CVE IDs that reported but not listed as vulnerabilities.
      * @phpstan-return array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, ignoredAdvisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>}
      */
-    private function processAdvisories(array $allAdvisories, array $ignoreList): array
+    public function processAdvisories(array $allAdvisories, array $ignoreList): array
     {
         if ($ignoreList === []) {
             return ['advisories' => $allAdvisories, 'ignoredAdvisories' => []];

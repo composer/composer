@@ -92,6 +92,7 @@ class InstallerTest extends TestCase
                     case 'notify-on-install':
                         return true;
                     case 'platform':
+                    case 'audit':
                         return [];
                 }
 
