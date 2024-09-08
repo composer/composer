@@ -142,7 +142,7 @@ class Git
 
                 $domain = $match[2];
 
-                // First we try to athenticate with whatever we have stored.
+                // First we try to authenticate with whatever we have stored.
                 // This will be successful if there is for example an app
                 // password in there.
                 if ($this->io->hasAuthentication($domain)) {
