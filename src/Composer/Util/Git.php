@@ -131,42 +131,59 @@ class Git
                     $errorMsg = $this->process->getErrorOutput();
                 }
             // @phpstan-ignore composerPcre.maybeUnsafeStrictGroups
-            } elseif (Preg::isMatchStrictGroups('{^https://(bitbucket\.org)/(.*?)(?:\.git)?$}i', $url, $match)) { //bitbucket oauth
+            } elseif (
+                Preg::isMatchStrictGroups('{^(https?)://(bitbucket\.org)/(.*)}i', $url, $match)
+                || Preg::isMatchStrictGroups('{^(git)@(bitbucket\.org):(.+?\.git)$}i', $url, $match)
+            ) { //bitbucket either through oauth or app password, with fallback to ssh.
+                if ($match[1] === 'git') {
+                    $match[1] = 'https';
+                }
                 $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process);
 
-                if (!$this->io->hasAuthentication($match[1])) {
+                $domain = $match[2];
+
+                // First we try to athenticate with whatever we have stored.
+                // This will be successful if there is for example an app
+                // password in there.
+                if ($this->io->hasAuthentication($domain)) {
+                    $auth = $this->io->getAuthentication($domain);
+                    $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $domain . '/' . $match[3];
+
+                    $command = $commandCallable($authUrl);
+                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
+                        // Well if that succeeded on our first try, let's just
+                        // take the win.
+                        return;
+                    }
+                    $credentials = [
+                        rawurlencode($auth['username']),
+                        rawurlencode($auth['password'])
+                    ];
+                    $errorMsg = $this->process->getErrorOutput();
+                }
+
+                if (!$this->io->hasAuthentication($domain)) {
                     $message = 'Enter your Bitbucket credentials to access private repos';
 
-                    if (!$bitbucketUtil->authorizeOAuth($match[1]) && $this->io->isInteractive()) {
+                    if (!$bitbucketUtil->authorizeOAuth($domain) && $this->io->isInteractive()) {
                         $bitbucketUtil->authorizeOAuthInteractively($match[1], $message);
                         $accessToken = $bitbucketUtil->getToken();
-                        $this->io->setAuthentication($match[1], 'x-token-auth', $accessToken);
+                        $this->io->setAuthentication($domain, 'x-token-auth', $accessToken);
                     }
                 } else { //We're authenticating with a locally stored consumer.
-                    $auth = $this->io->getAuthentication($match[1]);
+                    $auth = $this->io->getAuthentication($domain);
 
                     //We already have an access_token from a previous request.
                     if ($auth['username'] !== 'x-token-auth') {
-                        $accessToken = $bitbucketUtil->requestToken($match[1], $auth['username'], $auth['password']);
+                        $accessToken = $bitbucketUtil->requestToken($domain, $auth['username'], $auth['password']);
                         if (!empty($accessToken)) {
-                            $this->io->setAuthentication($match[1], 'x-token-auth', $accessToken);
+                            $this->io->setAuthentication($domain, 'x-token-auth', $accessToken);
                         }
                     }
                 }
 
-                if ($this->io->hasAuthentication($match[1])) {
-                    $auth = $this->io->getAuthentication($match[1]);
-                    $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
-
-                    $command = $commandCallable($authUrl);
-                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
-                        return;
-                    }
-
-                    $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
-                    $errorMsg = $this->process->getErrorOutput();
-                } else { // Falling back to ssh
-                    $sshUrl = 'git@bitbucket.org:' . $match[2] . '.git';
+                if (!$this->io->hasAuthentication($domain)) {//Falling back to ssh
+                    $sshUrl = 'git@bitbucket.org:' . $match[3];
                     $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
                     $command = $commandCallable($sshUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
