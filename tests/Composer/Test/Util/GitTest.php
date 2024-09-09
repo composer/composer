@@ -147,11 +147,11 @@ class GitTest extends TestCase
             ]);
 
         $expectedCalls = array_fill(0, $expectedFailuresBeforeSuccess, ['cmd' => 'git command failing', 'return' => 1]);
-        if ($bitbucket_git_auth_calls) {
+        if ($bitbucket_git_auth_calls > 0) {
             // When we are testing what happens without auth saved, and URLs
             // with https, there will also be an attempt to find the token in
             // the git config for the folder and repo, locally.
-            $expectedCalls[] = ['cmd' => 'git config bitbucket.accesstoken', 'return' => 1];
+            $expectedCalls = array_merge($expectedCalls, array_fill(0, $bitbucket_git_auth_calls, ['cmd' => 'git config bitbucket.accesstoken', 'return' => 1]));
         }
         $expectedCalls[] = ['cmd' => 'git command ok', 'return' => 0];
 
@@ -161,7 +161,7 @@ class GitTest extends TestCase
             ->method('isInteractive')
             ->willReturn(false);
 
-        if ($bitbucketToken) {
+        if (null !== $bitbucketToken) {
             $this->io
                 ->expects($this->atLeastOnce())
                 ->method('hasAuthentication')
