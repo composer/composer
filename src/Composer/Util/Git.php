@@ -135,9 +135,6 @@ class Git
                 Preg::isMatchStrictGroups('{^(https?)://(bitbucket\.org)/(.*?)(?:\.git)?$}i', $url, $match)
                 || Preg::isMatchStrictGroups('{^(git)@(bitbucket\.org):(.+?\.git)$}i', $url, $match)
             ) { //bitbucket either through oauth or app password, with fallback to ssh.
-                if ($match[1] === 'git') {
-                    $match[1] = 'https';
-                }
                 $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process);
 
                 $domain = $match[2];
