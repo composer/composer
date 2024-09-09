@@ -132,7 +132,7 @@ class Git
                 }
             // @phpstan-ignore composerPcre.maybeUnsafeStrictGroups
             } elseif (
-                Preg::isMatchStrictGroups('{^(https?)://(bitbucket\.org)/(.*)}i', $url, $match)
+                Preg::isMatchStrictGroups('{^(https?)://(bitbucket\.org)/(.*?)(?:\.git)?$}i', $url, $match)
                 || Preg::isMatchStrictGroups('{^(git)@(bitbucket\.org):(.+?\.git)$}i', $url, $match)
             ) { //bitbucket either through oauth or app password, with fallback to ssh.
                 if ($match[1] === 'git') {
@@ -141,13 +141,17 @@ class Git
                 $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process);
 
                 $domain = $match[2];
+                $repo_with_git_part = $match[3];
+                if (!str_ends_with($repo_with_git_part, '.git')) {
+                    $repo_with_git_part .= '.git';
+                }
 
                 // First we try to authenticate with whatever we have stored.
                 // This will be successful if there is for example an app
                 // password in there.
                 if ($this->io->hasAuthentication($domain)) {
                     $auth = $this->io->getAuthentication($domain);
-                    $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $domain . '/' . $match[3];
+                    $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $domain . '/' . $repo_with_git_part;
 
                     $command = $commandCallable($authUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
@@ -183,7 +187,7 @@ class Git
                 }
 
                 if (!$this->io->hasAuthentication($domain)) {//Falling back to ssh
-                    $sshUrl = 'git@bitbucket.org:' . $match[3];
+                    $sshUrl = 'git@bitbucket.org:' . $repo_with_git_part;
                     $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
                     $command = $commandCallable($sshUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
