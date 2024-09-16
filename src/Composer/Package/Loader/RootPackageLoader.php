@@ -88,7 +88,7 @@ class RootPackageLoader extends ArrayLoader
 
             // override with env var if available
             if (Platform::getEnv('COMPOSER_ROOT_VERSION')) {
-                $config['version'] = Platform::getEnv('COMPOSER_ROOT_VERSION');
+                $config['version'] = $this->versionGuesser->getRootVersionFromEnv();
             } else {
                 $versionData = $this->versionGuesser->guessVersion($config, $cwd ?? Platform::getCwd(true));
                 if ($versionData) {

@@ -17,6 +17,7 @@ use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
 use Composer\Util\Git as GitUtil;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 
 class VersionGuesserTest extends TestCase
@@ -364,5 +365,30 @@ class VersionGuesserTest extends TestCase
         self::assertIsArray($versionData);
         self::assertEquals("1.5.x-dev", $versionData['pretty_version']);
         self::assertEquals("1.5.9999999.9999999-dev", $versionData['version']);
+    }
+
+    /**
+     * @dataProvider rootEnvVersionsProvider
+     */
+    public function testGetRootVersionFromEnv(string $env, string $expectedVersion): void
+    {
+        Platform::putEnv('COMPOSER_ROOT_VERSION', $env);
+        $guesser = new VersionGuesser(new Config, $this->getProcessExecutorMock(), new VersionParser());
+        self::assertSame($expectedVersion, $guesser->getRootVersionFromEnv());
+        Platform::clearEnv('COMPOSER_ROOT_VERSION');
+    }
+
+    /**
+     * @return array<array{string, string}>
+     */
+    public function rootEnvVersionsProvider(): array
+    {
+        return [
+            ['1.0-dev', '1.0.x-dev'],
+            ['1.0.x-dev', '1.0.x-dev'],
+            ['1-dev', '1.x-dev'],
+            ['1.x-dev', '1.x-dev'],
+            ['1.0.0', '1.0.0'],
+        ];
     }
 }
