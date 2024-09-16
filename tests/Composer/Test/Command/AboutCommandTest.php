@@ -8,6 +8,9 @@ use Composer\Test\TestCase;
 class AboutCommandTest extends TestCase
 {
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testAbout(): void
     {
         $composerVersion = Composer::getVersion();
@@ -17,5 +20,7 @@ class AboutCommandTest extends TestCase
 
         self::assertStringContainsString("Composer is a dependency manager tracking local dependencies of your projects and libraries.", $appTester->getDisplay());
         self::assertStringContainsString("See https://getcomposer.org/ for more information.", $appTester->getDisplay());
+
+        self::assertSame(0, $appTester->run(['command' => 'about']));
     }
 }
