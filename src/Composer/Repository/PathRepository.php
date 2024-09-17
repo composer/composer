@@ -198,7 +198,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                     && 0 === $this->process->execute('git rev-parse HEAD', $ref2)
                     && $ref1 === $ref2
                 ) {
-                    $package['version'] = $rootVersion;
+                    $package['version'] = $this->versionGuesser->getRootVersionFromEnv();
                 }
             }
 
