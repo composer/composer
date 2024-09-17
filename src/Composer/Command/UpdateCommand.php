@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionSelector;
@@ -24,6 +25,8 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Intervals;
 use Composer\Util\HttpDownloader;
@@ -264,24 +267,34 @@ EOT
             throw new \InvalidArgumentException('--interactive cannot be used in non-interactive terminals.');
         }
 
+        $platformReqFilter = $this->getPlatformRequirementFilter($input);
+        $stabilityFlags = $composer->getPackage()->getStabilityFlags();
         $requires = array_merge(
             $composer->getPackage()->getRequires(),
             $composer->getPackage()->getDevRequires()
         );
-        $autocompleterValues = [];
-        foreach ($requires as $require) {
-            $target = $require->getTarget();
-            $autocompleterValues[strtolower($target)] = $target;
-        }
 
+        $filter = \count($packages) > 0 ? BasePackage::packageNamesToRegexp($packages) : null;
+
+        $io->writeError('<info>Loading packages that can be updated...</info>');
+        $autocompleterValues = [];
         $installedPackages = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
         $versionSelector = $this->createVersionSelector($composer);
         foreach ($installedPackages as $package) {
-            $currentVersion = $package->getPrettyVersion();
-            $latestVersion = $versionSelector->findBestCandidate($package->getName());
-            if ($latestVersion !== false) {
-                $autocompleterValues[$package->getName()] = '<info>' . $package->getPrettyName() . '</info> (<comment>' . $currentVersion . '</comment> => <comment>' . $latestVersion . '</comment>)';
+            if ($filter !== null && !Preg::isMatch($filter, $package->getName())) {
+                continue;
             }
+            $currentVersion = $package->getPrettyVersion();
+            $constraint = isset($requires[$package->getName()]) ? $requires[$package->getName()]->getPrettyConstraint() : null;
+            $stability = isset($stabilityFlags[$package->getName()]) ? (string) array_search($stabilityFlags[$package->getName()], BasePackage::STABILITIES, true) : $composer->getPackage()->getMinimumStability();
+            $latestVersion = $versionSelector->findBestCandidate($package->getName(), $constraint, $stability, $platformReqFilter);
+            if ($latestVersion !== false && ($package->getVersion() !== $latestVersion->getVersion() || $latestVersion->isDev())) {
+                $autocompleterValues[$package->getName()] = '<comment>' . $currentVersion . '</comment> => <comment>' . $latestVersion->getPrettyVersion() . '</comment>';
+            }
+        }
+
+        if (0 === \count($autocompleterValues)) {
+            throw new \RuntimeException('Could not find any package with new versions available');
         }
 
         $packages = $io->select(
@@ -292,8 +305,6 @@ EOT
             'No package named "%s" is installed.',
             true
         );
-
-        $io->writeError('<info>Press enter without value to end submission</info>');
 
         $table = new Table($output);
         $table->setHeaders(['Selected packages']);
@@ -315,8 +326,10 @@ EOT
     private function createVersionSelector(Composer $composer): VersionSelector
     {
         $repositorySet = new RepositorySet();
-        $repositorySet->addRepository(new CompositeRepository($composer->getRepositoryManager()->getRepositories()));
+        $repositorySet->addRepository(new CompositeRepository(array_filter($composer->getRepositoryManager()->getRepositories(), function (RepositoryInterface $repository) {
+            return !$repository instanceof PlatformRepository;
+        })));
+
         return new VersionSelector($repositorySet);
     }
-
 }
