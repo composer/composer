@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Package\Link;
+use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\RootPackage;
@@ -24,6 +25,8 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Semver\Constraint\Bound;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Package\Version\VersionParser;
@@ -102,13 +105,27 @@ abstract class BaseDependencyCommand extends BaseCommand
 
         // If the version we ask for is not installed then we need to locate it in remote repos and add it.
         // This is needed for why-not to resolve conflicts from an uninstalled version against installed packages.
-        if (!$installedRepo->findPackage($needle, $textConstraint)) {
+        $matchedPackage = $installedRepo->findPackage($needle, $textConstraint);
+        if (!$matchedPackage) {
             $defaultRepos = new CompositeRepository(RepositoryFactory::defaultRepos($this->getIO(), $composer->getConfig(), $composer->getRepositoryManager()));
             if ($match = $defaultRepos->findPackage($needle, $textConstraint)) {
                 $installedRepo->addRepository(new InstalledArrayRepository([clone $match]));
+            } elseif (PlatformRepository::isPlatformPackage($needle)) {
+                $parser = new VersionParser();
+                $constraint = $parser->parseConstraints($textConstraint);
+                if ($constraint->getLowerBound() !== Bound::zero()) {
+                    $tempPlatformPkg = new Package($needle, $constraint->getLowerBound()->getVersion(), $constraint->getLowerBound()->getVersion());
+                    $installedRepo->addRepository(new InstalledArrayRepository([$tempPlatformPkg]));
+                }
             } else {
                 $this->getIO()->writeError('<error>Package "'.$needle.'" could not be found with constraint "'.$textConstraint.'", results below will most likely be incomplete.</error>');
             }
+        } elseif (PlatformRepository::isPlatformPackage($needle)) {
+            $extraNotice = '';
+            if (($matchedPackage->getExtra()['config.platform'] ?? false) === true) {
+                $extraNotice = ' (version provided by config.platform)';
+            }
+            $this->getIO()->writeError('<info>Package "'.$needle.' '.$textConstraint.'" found in version "'.$matchedPackage->getPrettyVersion().'"'.$extraNotice.'.</info>');
         }
 
         // Include replaced packages for inverted lookups as they are then the actual starting point to consider
@@ -154,7 +171,7 @@ abstract class BaseDependencyCommand extends BaseCommand
             $this->printTable($output, $results);
         }
 
-        if ($inverted && $input->hasArgument(self::ARGUMENT_CONSTRAINT)) {
+        if ($inverted && $input->hasArgument(self::ARGUMENT_CONSTRAINT) && !PlatformRepository::isPlatformPackage($needle)) {
             $composerCommand = 'update';
 
             foreach ($composer->getPackage()->getRequires() as $rootRequirement) {
