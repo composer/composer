@@ -1186,12 +1186,22 @@ parameters:
 			path: ../src/Composer/DependencyResolver/PoolOptimizer.php
 
 		-
+			message: "#^Cannot call method getPrettyString\\(\\) on array\\<string, Composer\\\\Package\\\\BasePackage\\|Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|string\\>\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/Problem.php
+
+		-
 			message: "#^Cannot call method getRepoName\\(\\) on Composer\\\\Repository\\\\RepositoryInterface\\|null\\.$#"
 			count: 3
 			path: ../src/Composer/DependencyResolver/Problem.php
 
 		-
 			message: "#^Cannot call method getRepository\\(\\) on Composer\\\\Package\\\\PackageInterface\\|false\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/Problem.php
+
+		-
+			message: "#^Cannot cast array\\{package\\: Composer\\\\Package\\\\BasePackage\\}\\|array\\{packageName\\: string, constraint\\: Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\}\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|non\\-empty\\-string to string\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Problem.php
 

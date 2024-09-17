@@ -43,9 +43,8 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - locked/pkg dev-master requires locked/dependency 1.0.0 -> found locked/dependency[1.0.0] in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.
     - locked/pkg is locked to version dev-master and an update of this package was not requested.
+    - locked/pkg dev-master requires locked/dependency 1.0.0 -> found locked/dependency[1.0.0] in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.
 
 Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
 --EXPECT--
-

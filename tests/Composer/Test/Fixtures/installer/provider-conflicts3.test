@@ -37,12 +37,12 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - Conclusion: don't install regular/pkg 1.0.1 (conflict analysis result)
-    - Conclusion: don't install regular/pkg 1.0.2 (conflict analysis result)
-    - Conclusion: don't install regular/pkg 1.0.3 (conflict analysis result)
-    - Only one of these can be installed: regular/pkg[1.0.0, 1.0.1, 1.0.2, 1.0.3], replacer/pkg[2.0.0, 2.0.1, 2.0.2, 2.0.3]. replacer/pkg replaces regular/pkg and thus cannot coexist with it.
     - Root composer.json requires regular/pkg 1.* -> satisfiable by regular/pkg[1.0.0, 1.0.1, 1.0.2, 1.0.3].
     - Root composer.json requires replacer/pkg 2.* -> satisfiable by replacer/pkg[2.0.0, 2.0.1, 2.0.2, 2.0.3].
+    - Conclusion: don't install regular/pkg 1.0.3 (conflict analysis result)
+    - Conclusion: don't install regular/pkg 1.0.2 (conflict analysis result)
+    - Conclusion: don't install regular/pkg 1.0.1 (conflict analysis result)
+    - Only one of these can be installed: regular/pkg[1.0.0, 1.0.1, 1.0.2, 1.0.3], replacer/pkg[2.0.0, 2.0.1, 2.0.2, 2.0.3]. replacer/pkg replaces regular/pkg and thus cannot coexist with it.
 
 --EXPECT-OUTPUT-OPTIMIZED--
 Loading composer repositories with package information
@@ -50,9 +50,8 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - Only one of these can be installed: regular/pkg[1.0.0, 1.0.1, 1.0.2, 1.0.3], replacer/pkg[2.0.0, 2.0.1, 2.0.2, 2.0.3]. replacer/pkg replaces regular/pkg and thus cannot coexist with it.
     - Root composer.json requires regular/pkg 1.* -> satisfiable by regular/pkg[1.0.0, 1.0.1, 1.0.2, 1.0.3].
     - Root composer.json requires replacer/pkg 2.* -> satisfiable by replacer/pkg[2.0.0, 2.0.1, 2.0.2, 2.0.3].
+    - Only one of these can be installed: regular/pkg[1.0.0, 1.0.1, 1.0.2, 1.0.3], replacer/pkg[2.0.0, 2.0.1, 2.0.2, 2.0.3]. replacer/pkg replaces regular/pkg and thus cannot coexist with it.
 
 --EXPECT--
-
