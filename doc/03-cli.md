@@ -1086,8 +1086,8 @@ php composer.phar help install
 
 ## Command-line completion
 
-Command-line completion can be enabled by following instructions
-[on this page](https://github.com/bamarni/symfony-console-autocomplete).
+Command-line completion can be enabled by running the `composer completion --help` command and
+following the instructions.
 
 ## Environment variables
 
