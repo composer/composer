@@ -561,10 +561,16 @@ EOT
                 }
                 $lockFile = Factory::getLockFile($this->json->getPath());
                 if (file_exists($lockFile)) {
+                    $stabilityFlags = RootPackageLoader::extractStabilityFlags($requirements, $composer->getPackage()->getMinimumStability(), []);
+
                     $lockMtime = filemtime($lockFile);
                     $lock = new JsonFile($lockFile);
                     $lockData = $lock->read();
                     $lockData['content-hash'] = Locker::getContentHash($contents);
+                    foreach ($stabilityFlags as $packageName => $flag) {
+                        $lockData['stability-flags'][$packageName] = $flag;
+                    }
+                    ksort($lockData['stability-flags']);
                     $lock->write($lockData);
                     if (is_int($lockMtime)) {
                         @touch($lockFile, $lockMtime);
