@@ -278,14 +278,19 @@ class Problem
 
                 $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) ?: '0');
                 if (null === $version) {
+                    $providersStr = self::getProvidersList($repositorySet, $packageName, 5);
+                    if ($providersStr !== null) {
+                        $providersStr = "\n\n      Alternatively you can require one of these packages that provide the extension (or parts of it):\n$providersStr";
+                    }
+
                     if (extension_loaded($ext)) {
                         return [
                             $msg,
-                            'the '.$packageName.' package is disabled by your platform config. Enable it again with "composer config platform.'.$packageName.' --unset".',
+                            'the '.$packageName.' package is disabled by your platform config. Enable it again with "composer config platform.'.$packageName.' --unset".' . $providersStr,
                         ];
                     }
 
-                    return [$msg, 'it is missing from your system. Install or enable PHP\'s '.$ext.' extension.'];
+                    return [$msg, 'it is missing from your system. Install or enable PHP\'s '.$ext.' extension.' . $providersStr];
                 }
 
                 return [$msg, 'it has the wrong version installed ('.$version.').'];
@@ -299,7 +304,12 @@ class Problem
                     return ["- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', $error];
                 }
 
-                return ["- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', 'it has the wrong version installed or is missing from your system, make sure to load the extension providing it.'];
+                $providersStr = self::getProvidersList($repositorySet, $packageName, 5);
+                if ($providersStr !== null) {
+                    $providersStr = "\n\n      Alternatively you can require one of these packages that provide the library (or parts of it):\n$providersStr";
+                }
+
+                return ["- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', 'it has the wrong version installed or is missing from your system, make sure to load the extension providing it.'.$providersStr];
             }
         }
 
@@ -412,17 +422,8 @@ class Problem
             return ["- Root composer.json requires $packageName, it ", 'could not be found, it looks like its name is invalid, "'.$illegalChars.'" is not allowed in package names.'];
         }
 
-        if ($providers = $repositorySet->getProviders($packageName)) {
-            $maxProviders = 20;
-            $providersStr = implode(array_map(static function ($p): string {
-                $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
-
-                return '      - '.$p['name'].$description."\n";
-            }, count($providers) > $maxProviders + 1 ? array_slice($providers, 0, $maxProviders) : $providers));
-            if (count($providers) > $maxProviders + 1) {
-                $providersStr .= '      ... and '.(count($providers) - $maxProviders).' more.'."\n";
-            }
-
+        $providersStr = self::getProvidersList($repositorySet, $packageName, 15);
+        if ($providersStr !== null) {
             return ["- Root composer.json requires $packageName".self::constraintToText($constraint).", it ", "could not be found in any version, but the following packages provide it:\n".$providersStr."      Consider requiring one of these to satisfy the $packageName requirement."];
         }
 
@@ -634,5 +635,24 @@ class Problem
         }
 
         return $constraint ? ' '.$constraint->getPrettyString() : '';
+    }
+
+    private static function getProvidersList(RepositorySet $repositorySet, string $packageName, int $maxProviders): ?string
+    {
+        $providers = $repositorySet->getProviders($packageName);
+        if (\count($providers) > 0) {
+            $providersStr = implode(array_map(static function ($p): string {
+                $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
+
+                return '      - '.$p['name'].$description."\n";
+            }, count($providers) > $maxProviders + 1 ? array_slice($providers, 0, $maxProviders) : $providers));
+            if (count($providers) > $maxProviders + 1) {
+                $providersStr .= '      ... and '.(count($providers) - $maxProviders).' more.'."\n";
+            }
+
+            return $providersStr;
+        }
+
+        return null;
     }
 }
