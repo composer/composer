@@ -616,6 +616,8 @@ class PoolBuilder
     private function warnAboutNonMatchingUpdateAllowList(Request $request): void
     {
         foreach ($this->updateAllowList as $pattern) {
+            $matchedPlatformPackage = false;
+
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
             // update pattern matches a locked package? => all good
             foreach ($request->getLockedRepository()->getPackages() as $package) {
@@ -626,10 +628,16 @@ class PoolBuilder
             // update pattern matches a root require? => all good, probably a new package
             foreach ($request->getRequires() as $packageName => $constraint) {
                 if (Preg::isMatch($patternRegexp, $packageName)) {
+                    if (PlatformRepository::isPlatformPackage($packageName)) {
+                        $matchedPlatformPackage = true;
+                        continue;
+                    }
                     continue 2;
                 }
             }
-            if (strpos($pattern, '*') !== false) {
+            if ($matchedPlatformPackage) {
+                $this->io->writeError('<warning>Pattern "' . $pattern . '" listed for update matches platform packages, but these cannot be updated by Composer.</warning>');
+            } elseif (strpos($pattern, '*') !== false) {
                 $this->io->writeError('<warning>Pattern "' . $pattern . '" listed for update does not match any locked packages.</warning>');
             } else {
                 $this->io->writeError('<warning>Package "' . $pattern . '" listed for update is not locked.</warning>');
