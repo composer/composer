@@ -440,9 +440,9 @@ class Config
                 $result = $this->config[$key];
                 $abandonedEnv = $this->getComposerEnv('COMPOSER_AUDIT_ABANDONED');
                 if (false !== $abandonedEnv) {
-                    if (!in_array($abandonedEnv, $validChoices = [Auditor::ABANDONED_IGNORE, Auditor::ABANDONED_REPORT, Auditor::ABANDONED_FAIL], true)) {
+                    if (!in_array($abandonedEnv, $validChoices = Auditor::ABANDONEDS, true)) {
                         throw new \RuntimeException(
-                            "Invalid value for COMPOSER_AUDIT_ABANDONED: {$abandonedEnv}. Expected ".Auditor::ABANDONED_IGNORE.", ".Auditor::ABANDONED_REPORT." or ".Auditor::ABANDONED_FAIL
+                            "Invalid value for COMPOSER_AUDIT_ABANDONED: {$abandonedEnv}. Expected one of ".implode(', ', Auditor::ABANDONEDS)."."
                         );
                     }
                     $result['abandoned'] = $abandonedEnv;

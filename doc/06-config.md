@@ -153,7 +153,12 @@ Defaults to `report` in Composer 2.6, and defaults to `fail` from Composer 2.7 o
 }
 ```
 
-Since Composer 2.7 the option can be overridden via the [`COMPOSER_AUDIT_ABANDONED`](03-cli.md#composer-audit-abandoned) environment variable.
+Since Composer 2.7, the option can be overridden via the [`COMPOSER_AUDIT_ABANDONED`](03-cli.md#composer-audit-abandoned) environment variable.
+
+Since Composer 2.8, the option can be overridden via the
+[`--abandoned`](03-cli.md#audit) command line option, which overrides both the
+config value and the environment variable.
+
 
 ## use-parent-dir
 
