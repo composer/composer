@@ -141,9 +141,9 @@ Your requirements could not be resolved to an installable set of packages.
     - Root composer.json requires requirer/pkg 1.* -> satisfiable by requirer/pkg[1.0.0].
     - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> found dependency/pkg[1.0.0] but it conflicts with your root composer.json require (2.*).
   Problem 15
-    - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> found dependency/pkg[1.0.0] but it conflicts with your root composer.json require (2.*).
-    - package/found5 2.0.0 requires requirer/pkg 1.* -> satisfiable by requirer/pkg[1.0.0].
     - Root composer.json requires package/found5 2.* -> satisfiable by package/found5[2.0.0].
+    - package/found5 2.0.0 requires requirer/pkg 1.* -> satisfiable by requirer/pkg[1.0.0].
+    - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> found dependency/pkg[1.0.0] but it conflicts with your root composer.json require (2.*).
 
 Potential causes:
  - A typo in the package name

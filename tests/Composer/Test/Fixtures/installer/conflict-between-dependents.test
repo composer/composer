@@ -31,8 +31,7 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - Root composer.json requires conflicter/pkg 1.0.0 -> satisfiable by conflicter/pkg[1.0.0].
-    - conflicter/pkg 1.0.0 conflicts with victim/pkg 1.0.0.
     - Root composer.json requires victim/pkg 1.0.0 -> satisfiable by victim/pkg[1.0.0].
+    - conflicter/pkg 1.0.0 conflicts with victim/pkg 1.0.0.
 
 --EXPECT--
-

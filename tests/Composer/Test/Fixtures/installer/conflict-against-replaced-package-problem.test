@@ -38,8 +38,7 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - __root__ is present at version 1.2.3 and cannot be modified by Composer
-    - conflicting/pkg 1.0.0 conflicts with replaced/pkg 2.* (__root__ 1.2.3 replaces replaced/pkg 2.*).
     - Root composer.json requires conflicting/pkg * -> satisfiable by conflicting/pkg[1.0.0].
+    - conflicting/pkg 1.0.0 conflicts with replaced/pkg 2.* (__root__ 1.2.3 replaces replaced/pkg 2.*).
 
 --EXPECT--
-

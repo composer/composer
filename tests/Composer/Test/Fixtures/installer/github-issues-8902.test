@@ -34,11 +34,11 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - Root composer.json requires beyondcode/laravel-dump-server ^1.3 -> satisfiable by beyondcode/laravel-dump-server[1.4.0].
+    - Root composer.json requires laravel/framework ^6.8 -> satisfiable by laravel/framework[6.8.14].
+    - beyondcode/laravel-dump-server 1.4.0 requires symfony/var-dumper ^5.0 -> satisfiable by symfony/var-dumper[5.2.x-dev (alias of dev-master)].
+    - laravel/framework 6.8.14 requires symfony/var-dumper ^4.3.4 -> satisfiable by symfony/var-dumper[4.4.0].
     - You can only install one version of a package, so only one of these can be installed: symfony/var-dumper[dev-master, 4.4.0].
     - symfony/var-dumper 5.2.x-dev is an alias of symfony/var-dumper dev-master and thus requires it to be installed too.
-    - laravel/framework 6.8.14 requires symfony/var-dumper ^4.3.4 -> satisfiable by symfony/var-dumper[4.4.0].
-    - beyondcode/laravel-dump-server 1.4.0 requires symfony/var-dumper ^5.0 -> satisfiable by symfony/var-dumper[5.2.x-dev (alias of dev-master)].
-    - Root composer.json requires laravel/framework ^6.8 -> satisfiable by laravel/framework[6.8.14].
 
 --EXPECT--
 

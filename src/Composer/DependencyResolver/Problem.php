@@ -98,7 +98,58 @@ class Problem
             }
         }
 
+        usort($reasons, function (Rule $rule1, Rule $rule2) use ($pool) {
+            $rule1Prio = $this->getRulePriority($rule1);
+            $rule2Prio = $this->getRulePriority($rule2);
+            if ($rule1Prio !== $rule2Prio) {
+                return $rule2Prio - $rule1Prio;
+            }
+
+            return $this->getSortableString($pool, $rule1) <=> $this->getSortableString($pool, $rule2);
+        });
+
         return self::formatDeduplicatedRules($reasons, '    ', $repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
+    }
+
+    private function getSortableString(Pool $pool, Rule $rule): string
+    {
+        switch ($rule->getReason()) {
+            case Rule::RULE_ROOT_REQUIRE:
+                return $rule->getReasonData()['packageName'];
+            case Rule::RULE_FIXED:
+                return (string) $rule->getReasonData()['package'];
+            case Rule::RULE_PACKAGE_CONFLICT:
+            case Rule::RULE_PACKAGE_REQUIRES:
+                return $rule->getSourcePackage($pool) . '//' . $rule->getReasonData()->getPrettyString($rule->getSourcePackage($pool));
+            case Rule::RULE_PACKAGE_SAME_NAME:
+            case Rule::RULE_PACKAGE_ALIAS:
+            case Rule::RULE_PACKAGE_INVERSE_ALIAS:
+                return (string) $rule->getReasonData();
+            case Rule::RULE_LEARNED:
+                return implode('-', $rule->getLiterals());
+        }
+
+        throw new \LogicException('Unknown rule type: '.$rule->getReason());
+    }
+
+    private function getRulePriority(Rule $rule): int
+    {
+        switch ($rule->getReason()) {
+            case Rule::RULE_FIXED:
+                return 3;
+            case Rule::RULE_ROOT_REQUIRE:
+                return 2;
+            case Rule::RULE_PACKAGE_CONFLICT:
+            case Rule::RULE_PACKAGE_REQUIRES:
+                return 1;
+            case Rule::RULE_PACKAGE_SAME_NAME:
+            case Rule::RULE_LEARNED:
+            case Rule::RULE_PACKAGE_ALIAS:
+            case Rule::RULE_PACKAGE_INVERSE_ALIAS:
+                return 0;
+        }
+
+        throw new \LogicException('Unknown rule type: '.$rule->getReason());
     }
 
     /**
