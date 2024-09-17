@@ -7,32 +7,32 @@
 ## Why aliases?
 
 When you are using a VCS repository, you will only get comparable versions for
-branches that look like versions, such as `2.0` or `2.0.x`. For your `master` branch, you
-will get a `dev-master` version. For your `bugfix` branch, you will get a
+branches that look like versions, such as `2.0` or `2.0.x`. For your `main` branch, you
+will get a `dev-main` version. For your `bugfix` branch, you will get a
 `dev-bugfix` version.
 
-If your `master` branch is used to tag releases of the `1.0` development line,
+If your `main` branch is used to tag releases of the `1.0` development line,
 i.e. `1.0.1`, `1.0.2`, `1.0.3`, etc., any package depending on it will
 probably require version `1.0.*`.
 
-If anyone wants to require the latest `dev-master`, they have a problem: Other
+If anyone wants to require the latest `dev-main`, they have a problem: Other
 packages may require `1.0.*`, so requiring that dev version will lead to
-conflicts, since `dev-master` does not match the `1.0.*` constraint.
+conflicts, since `dev-main` does not match the `1.0.*` constraint.
 
 Enter aliases.
 
 ## Branch alias
 
-The `dev-master` branch is one in your main VCS repo. It is rather common that
-someone will want the latest master dev version. Thus, Composer allows you to
-alias your `dev-master` branch to a `1.0.x-dev` version. It is done by
+The `dev-main` branch is one in your main VCS repo. It is rather common that
+someone will want the latest main dev version. Thus, Composer allows you to
+alias your `dev-main` branch to a `1.0.x-dev` version. It is done by
 specifying a `branch-alias` field under `extra` in `composer.json`:
 
 ```json
 {
     "extra": {
         "branch-alias": {
-            "dev-master": "1.0.x-dev"
+            "dev-main": "1.0.x-dev"
         }
     }
 }
@@ -41,14 +41,16 @@ specifying a `branch-alias` field under `extra` in `composer.json`:
 If you alias a non-comparable version (such as dev-develop) `dev-` must prefix the
 branch name. You may also alias a comparable version (i.e. start with numbers,
 and end with `.x-dev`), but only as a more specific version.
-For example, 1.x-dev could be aliased as 1.2.x-dev.
+For example, a `1.x` or `1.x-dev` branch could be aliased from `1.x-dev` to
+`1.2.x-dev` as that is more specific.
 
-The alias must be a comparable dev version, and the `branch-alias` must be present on
-the branch that it references. For `dev-master`, you need to commit it on the
-`master` branch.
+The alias must be a comparable dev version (you cannot alias `dev-main`
+to `dev-master` for example), and the `branch-alias` must be present on
+the branch that it references. To alias `dev-main`, you need to define and
+commit it on the `main` branch.
 
 As a result, anyone can now require `1.0.*` and it will happily install
-`dev-master`.
+`dev-main`.
 
 In order to use branch aliasing, you must own the repository of the package
 being aliased. If you want to alias a third party package without maintaining
