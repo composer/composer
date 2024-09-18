@@ -368,20 +368,22 @@ class Locker
             'packages-dev' => null,
             'aliases' => $aliases,
             'minimum-stability' => $minimumStability,
-            'stability-flags' => $stabilityFlags,
+            'stability-flags' => \count($stabilityFlags) > 0 ? $stabilityFlags : new \stdClass,
             'prefer-stable' => $preferStable,
             'prefer-lowest' => $preferLowest,
         ];
 
-        ksort($lock['stability-flags']);
+        if (is_array($lock['stability-flags'])) {
+            ksort($lock['stability-flags']);
+        }
 
         $lock['packages'] = $this->lockPackages($packages);
         if (null !== $devPackages) {
             $lock['packages-dev'] = $this->lockPackages($devPackages);
         }
 
-        $lock['platform'] = $platformReqs;
-        $lock['platform-dev'] = $platformDevReqs;
+        $lock['platform'] = \count($platformReqs) > 0 ? $platformReqs : new \stdClass;
+        $lock['platform-dev'] = \count($platformDevReqs) > 0 ? $platformDevReqs : new \stdClass;
         if (\count($platformOverrides) > 0) {
             $lock['platform-overrides'] = $platformOverrides;
         }
