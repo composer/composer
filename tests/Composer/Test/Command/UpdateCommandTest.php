@@ -24,9 +24,13 @@ class UpdateCommandTest extends TestCase
      * @param array<mixed> $composerJson
      * @param array<mixed> $command
      */
-    public function testUpdate(array $composerJson, array $command, string $expected): void
+    public function testUpdate(array $composerJson, array $command, string $expected, bool $createLock = false): void
     {
         $this->initTempComposer($composerJson);
+
+        if ($createLock) {
+            $this->createComposerLock();
+        }
 
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true], $command));
@@ -126,6 +130,62 @@ The temporary constraint "^2" for "root/req" must be a subset of the constraint 
 Run `composer require root/req` or `composer require root/req:^2` instead to replace the constraint
 OUTPUT
         ];
+
+        yield 'update & bump' => [
+            $rootDepAndTransitiveDep,
+            ['--bump-after-update' => true],
+            <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 2 installs, 0 updates, 0 removals
+  - Locking dep/pkg (1.0.2)
+  - Locking root/req (1.0.0)
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
+  - Installing dep/pkg (1.0.2)
+  - Installing root/req (1.0.0)
+Bumping dependencies
+<warning>Warning: Bumping dependency constraints is not recommended for libraries as it will narrow down your dependencies and may cause problems for your users.</warning>
+<warning>If your package is not a library, you can explicitly specify the "type" by using "composer config type project".</warning>
+<warning>Alternatively you can use --dev-only to only bump dependencies within "require-dev".</warning>
+No requirements to update in ./composer.json.
+OUTPUT
+            , true
+        ];
+
+        yield 'update & bump dev only' => [
+            $rootDepAndTransitiveDep,
+            ['--bump-after-update' => 'dev'],
+            <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 2 installs, 0 updates, 0 removals
+  - Locking dep/pkg (1.0.2)
+  - Locking root/req (1.0.0)
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
+  - Installing dep/pkg (1.0.2)
+  - Installing root/req (1.0.0)
+Bumping dependencies
+No requirements to update in ./composer.json.
+OUTPUT
+            , true
+        ];
+
+        yield 'update & dump with failing update' => [
+            $rootDepAndTransitiveDep,
+            ['--with' => ['dep/pkg:^2'], '--bump-after-update' => true],
+            <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires root/req 1.* -> satisfiable by root/req[1.0.0].
+    - root/req 1.0.0 requires dep/pkg ^1 -> found dep/pkg[1.0.0, 1.0.1, 1.0.2] but it conflicts with your temporary update constraint (dep/pkg:^2).
+OUTPUT
+        ];
+
     }
 
     public function testInteractiveModeThrowsIfNoPackageToUpdate(): void
