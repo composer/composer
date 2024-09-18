@@ -49,11 +49,11 @@ Updating transitive dependencies only updates what is really required when a min
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --RUN--
 update allowed/pkg --with-all-dependencies --minimal-changes

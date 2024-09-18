@@ -29,11 +29,11 @@ Ensure that a package gets loaded which was previously skipped due to replacemen
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --RUN--
 update root/dep --with-all-dependencies
@@ -42,4 +42,3 @@ Installing replacer/pkg (1.1.0)
 Installing root/dep (1.2.0)
 Installing replaced/pkg (1.0.0)
 Installing root/no-update (1.0.0)
-

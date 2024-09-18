@@ -74,8 +74,8 @@ Ensure that a partial update of a dependency does not conflict if the only way t
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --RUN--
 update update/pkg1 --with-dependencies
@@ -101,11 +101,11 @@ update update/pkg1 --with-dependencies
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --EXPECT-OUTPUT--
 Loading composer repositories with package information

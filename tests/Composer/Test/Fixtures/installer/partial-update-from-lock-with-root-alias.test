@@ -36,11 +36,11 @@ Partial update from lock file with root aliases should work
         }
     ],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --INSTALLED--
 [
@@ -67,11 +67,11 @@ update --lock
         }
     ],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --EXPECT--
 Marking c/aliased (2.0.0) as installed, alias of c/aliased (1.0.0)

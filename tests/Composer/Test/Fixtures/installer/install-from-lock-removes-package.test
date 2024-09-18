@@ -28,7 +28,7 @@ Install from a lock file that deleted a package
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false
 }
 --INSTALLED--

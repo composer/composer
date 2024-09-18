@@ -36,8 +36,8 @@ Ensure that a partial update of a dependency does not conflict if the only way t
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --RUN--
 update dep/pkg2 --with-dependencies
@@ -52,11 +52,11 @@ update dep/pkg2 --with-dependencies
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --EXPECT--
 Installing dep/pkg1 (1.0.0)

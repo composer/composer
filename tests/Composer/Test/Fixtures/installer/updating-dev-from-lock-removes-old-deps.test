@@ -20,7 +20,7 @@ Installing locked dev packages should remove old dependencies
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false
 }

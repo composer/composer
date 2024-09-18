@@ -35,11 +35,11 @@ Newly defined root aliases end up in lock file only if the package is updated
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --RUN--
 update a/aliased
@@ -63,11 +63,11 @@ update a/aliased
         "alias_normalized": "3.0.3.0"
     }],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --EXPECT--
 Installing a/aliased (3.0.2)

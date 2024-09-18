@@ -24,7 +24,7 @@ Requirements from the composer file are not installed if the lock file is presen
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false
 }

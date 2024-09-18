@@ -28,7 +28,7 @@ is issued when allow-missing-requirements if enabled
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false
 }

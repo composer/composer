@@ -444,6 +444,11 @@ class InstallerTest extends TestCase
         self::assertEquals($expectResult, $result, $output . stream_get_contents($appOutput));
         if ($expectLock && isset($actualLock)) {
             unset($actualLock['hash'], $actualLock['content-hash'], $actualLock['_readme'], $actualLock['plugin-api-version']);
+            foreach (['stability-flags', 'platform', 'platform-dev'] as $key) {
+                if ($expectLock[$key] === []) {
+                    $expectLock[$key] = new \stdClass;
+                }
+            }
             self::assertEquals($expectLock, $actualLock);
         }
 

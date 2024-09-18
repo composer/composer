@@ -62,11 +62,11 @@ Partial update installs from lock even if package don't exist in public repo any
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --RUN--
 update b/b
@@ -90,11 +90,11 @@ update b/b
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --EXPECT--
 Marking a/a (2.1.x-dev oldmaster-a) as uninstalled, alias of a/a (dev-master oldmaster-a)
