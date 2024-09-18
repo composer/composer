@@ -331,10 +331,11 @@ class EventDispatcherTest extends TestCase
         }
         $phpCmd = $reflMethod->invoke($dispatcher);
 
+        $args = ProcessExecutor::escape('ARG').' '.ProcessExecutor::escape('ARG2').' '.ProcessExecutor::escape('--arg');
         $process->expects([
             'echo -n foo',
-            $phpCmd.' foo.php \'ARG\' \'ARG2\' \'--arg\' then the rest',
-            'echo -n bar \'ARG\' \'ARG2\' \'--arg\'',
+            $phpCmd.' foo.php '.$args.' then the rest',
+            'echo -n bar '.$args,
         ], true);
 
         $listeners = [
@@ -350,8 +351,8 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false, ['ARG', 'ARG2', '--arg']);
 
         $expected = '> post-install-cmd: echo -n foo'.PHP_EOL.
-            '> post-install-cmd: @php foo.php \'ARG\' \'ARG2\' \'--arg\' then the rest'.PHP_EOL.
-            '> post-install-cmd: echo -n bar \'ARG\' \'ARG2\' \'--arg\''.PHP_EOL;
+            '> post-install-cmd: @php foo.php '.$args.' then the rest'.PHP_EOL.
+            '> post-install-cmd: echo -n bar '.$args.PHP_EOL;
         self::assertEquals($expected, $io->getOutput());
     }
 
