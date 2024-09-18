@@ -33,7 +33,7 @@ class Silencer
     public static function suppress(?int $mask = null): int
     {
         if (!isset($mask)) {
-            $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT;
+            $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED;
         }
         $old = error_reporting();
         self::$stack[] = $old;
