@@ -21,6 +21,7 @@ use Composer\Pcre\Preg;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
+use Composer\Spdx\SpdxLicenses;
 use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -398,6 +399,10 @@ EOT
             'License [<comment>'.$license.'</comment>]: ',
             $license
         );
+        $spdx = new SpdxLicenses();
+        if (!$spdx->validate($license)) {
+            throw new \InvalidArgumentException('Invalid license provided: '.$license.'. Only SPDX license identifiers (https://spdx.org/licenses/) or "proprietary" are accepted.');
+        }
         $input->setOption('license', $license);
 
         $io->writeError(['', 'Define your dependencies.', '']);

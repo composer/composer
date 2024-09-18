@@ -711,7 +711,7 @@ class InitCommandTest extends TestCase
             'Mr. Test <test@example.org>',  // Author
             'stable',                       // Minimum stability
             'library',                      // Type
-            'Custom License',               // License
+            'AGPL-3.0-only',               // License
             'no',                           // Define dependencies
             'no',                           // Define dev dependencies
             'n',                            // Add PSR-4 autoload mapping
@@ -726,7 +726,7 @@ class InitCommandTest extends TestCase
             'name' => 'vendor/pkg',
             'description' => 'my desciption',
             'type' => 'library',
-            'license' => 'Custom License',
+            'license' => 'AGPL-3.0-only',
             'authors' => [['name' => 'Mr. Test', 'email' => 'test@example.org']],
             'minimum-stability' => 'stable',
             'require' => [],
