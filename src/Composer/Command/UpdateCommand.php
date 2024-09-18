@@ -31,6 +31,7 @@ use Composer\Repository\RepositorySet;
 use Composer\Semver\Intervals;
 use Composer\Util\HttpDownloader;
 use Composer\Advisory\Auditor;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
@@ -278,7 +279,7 @@ EOT
 
         $io->writeError('<info>Loading packages that can be updated...</info>');
         $autocompleterValues = [];
-        $installedPackages = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
+        $installedPackages = $composer->getLocker()->isLocked() ? $composer->getLocker()->getLockedRepository(true)->getPackages() : $composer->getRepositoryManager()->getLocalRepository()->getPackages();
         $versionSelector = $this->createVersionSelector($composer);
         foreach ($installedPackages as $package) {
             if ($filter !== null && !Preg::isMatch($filter, $package->getName())) {
@@ -290,6 +291,14 @@ EOT
             $latestVersion = $versionSelector->findBestCandidate($package->getName(), $constraint, $stability, $platformReqFilter);
             if ($latestVersion !== false && ($package->getVersion() !== $latestVersion->getVersion() || $latestVersion->isDev())) {
                 $autocompleterValues[$package->getName()] = '<comment>' . $currentVersion . '</comment> => <comment>' . $latestVersion->getPrettyVersion() . '</comment>';
+            }
+        }
+        if (0 === \count($installedPackages)) {
+            foreach ($requires as $req => $constraint) {
+                if (PlatformRepository::isPlatformPackage($req)) {
+                    continue;
+                }
+                $autocompleterValues[$req] = '';
             }
         }
 

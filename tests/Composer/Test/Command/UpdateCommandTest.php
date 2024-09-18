@@ -128,9 +128,47 @@ OUTPUT
         ];
     }
 
+    public function testInteractiveModeThrowsIfNoPackageToUpdate(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/req', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/req' => '1.*',
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('root/req', '1.0.0')]);
+        self::expectExceptionMessage('Could not find any package with new versions available');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->setInputs(['']);
+        $appTester->run(['command' => 'update', '--interactive' => true]);
+    }
+
     public function testInteractiveModeThrowsIfNoPackageEntered(): void
     {
-        $this->expectExceptionMessage('No package named "" is installed.');
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/req', 'version' => '1.0.0'],
+                        ['name' => 'root/req', 'version' => '1.0.1'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/req' => '1.*',
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('root/req', '1.0.0')]);
+        self::expectExceptionMessage('No package named "" is installed.');
 
         $appTester = $this->getApplicationTester();
         $appTester->setInputs(['']);
