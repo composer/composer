@@ -56,6 +56,26 @@ parameters:
 			path: ../src/Composer/Console/Application.php
 
 		-
+			message: "#^Parameter \\#2 \\$mode of method Symfony\\\\Component\\\\Console\\\\Input\\\\InputArgument\\:\\:__construct\\(\\) expects int\\<0, 7\\>\\|null, int\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Console/Input/InputArgument.php
+
+		-
+			message: "#^Parameter \\#3 \\$mode of method Symfony\\\\Component\\\\Console\\\\Input\\\\InputOption\\:\\:__construct\\(\\) expects int\\<0, 31\\>\\|null, int\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Console/Input/InputOption.php
+
+		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/GenericRule.php
+
+		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/MultiConflictRule.php
+
+		-
 			message: "#^Parameter \\#2 \\$callback of function uksort expects callable\\(string, string\\)\\: int, 'version_compare' given\\.$#"
 			count: 2
 			path: ../src/Composer/DependencyResolver/Problem.php
@@ -94,16 +114,6 @@ parameters:
 			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of function fwrite expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of function rewind expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
 
 		-
 			message: "#^Parameter \\#1 \\$stream of function fclose expects resource, resource\\|false given\\.$#"
@@ -167,56 +177,16 @@ parameters:
 
 		-
 			message: "#^Casting to string something that's already string\\.$#"
-			count: 4
+			count: 3
 			path: ../src/Composer/Util/Filesystem.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
-			count: 15
+			count: 8
 			path: ../src/Composer/Util/Git.php
 
 		-
-			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
-			count: 2
-			path: ../src/Composer/Util/Hg.php
-
-		-
-			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_add_handle expects CurlMultiHandle, resource\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_exec expects CurlMultiHandle, resource\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_info_read expects CurlMultiHandle, resource\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_remove_handle expects CurlMultiHandle, resource\\|null given\\.$#"
-			count: 2
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_select expects CurlMultiHandle, resource\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Parameter \\#1 \\$string of function rtrim expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$multiHandle \\(resource\\|null\\) does not accept CurlMultiHandle\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$shareHandle \\(resource\\|null\\) does not accept CurlShareHandle\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -264,6 +234,11 @@ parameters:
 			message: "#^Parameter \\#1 \\$string of function rtrim expects string, string\\|false given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/ConfigTest.php
+
+		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/DependencyResolver/RuleTest.php
 
 		-
 			message: "#^Call to function method_exists\\(\\) with Composer\\\\Console\\\\Application and 'setCatchErrors' will always evaluate to true\\.$#"

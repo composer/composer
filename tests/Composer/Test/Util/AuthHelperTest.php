@@ -57,7 +57,7 @@ class AuthHelperTest extends TestCase
             ->with($origin)
             ->willReturn(false);
 
-        $this->assertSame(
+        self::assertSame(
             $headers,
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
@@ -80,7 +80,7 @@ class AuthHelperTest extends TestCase
 
         $expectedHeaders = array_merge($headers, ['Authorization: Bearer ' . $auth['username']]);
 
-        $this->assertSame(
+        self::assertSame(
             $expectedHeaders,
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
@@ -107,7 +107,7 @@ class AuthHelperTest extends TestCase
 
         $expectedHeaders = array_merge($headers, ['Authorization: token ' . $auth['username']]);
 
-        $this->assertSame(
+        self::assertSame(
             $expectedHeaders,
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
@@ -139,7 +139,7 @@ class AuthHelperTest extends TestCase
 
         $expectedHeaders = array_merge($headers, ['Authorization: Bearer ' . $auth['username']]);
 
-        $this->assertSame(
+        self::assertSame(
             $expectedHeaders,
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
@@ -182,7 +182,7 @@ class AuthHelperTest extends TestCase
 
         $expectedHeaders = array_merge($headers, ['PRIVATE-TOKEN: ' . $auth['username']]);
 
-        $this->assertSame(
+        self::assertSame(
             $expectedHeaders,
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
@@ -214,7 +214,7 @@ class AuthHelperTest extends TestCase
 
         $expectedHeaders = array_merge($headers, ['Authorization: Bearer ' . $auth['password']]);
 
-        $this->assertSame(
+        self::assertSame(
             $expectedHeaders,
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
@@ -250,7 +250,7 @@ class AuthHelperTest extends TestCase
             ->with('gitlab-domains')
             ->willReturn([]);
 
-        $this->assertSame(
+        self::assertSame(
             $headers,
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
@@ -320,7 +320,7 @@ class AuthHelperTest extends TestCase
             ['Authorization: Basic ' . base64_encode($auth['username'] . ':' . $auth['password'])]
         );
 
-        $this->assertSame(
+        self::assertSame(
             $expectedHeaders,
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
@@ -331,12 +331,12 @@ class AuthHelperTest extends TestCase
      */
     public function testIsPublicBitBucketDownloadWithBitbucketPublicUrl(string $url): void
     {
-        $this->assertTrue($this->authHelper->isPublicBitBucketDownload($url));
+        self::assertTrue($this->authHelper->isPublicBitBucketDownload($url));
     }
 
     public function testIsPublicBitBucketDownloadWithNonBitbucketPublicUrl(): void
     {
-        $this->assertFalse(
+        self::assertFalse(
             $this->authHelper->isPublicBitBucketDownload(
                 'https://bitbucket.org/site/oauth2/authorize'
             )
@@ -592,12 +592,12 @@ class AuthHelperTest extends TestCase
         $result1 = $this->authHelper->promptAuthIfNeeded('https://bitbucket.org/workspace/repo1/get/hash1.zip', $origin, 401, 'HTTP/2 401 ');
         $result2 = $this->authHelper->promptAuthIfNeeded('https://bitbucket.org/workspace/repo2/get/hash2.zip', $origin, 401, 'HTTP/2 401 ');
 
-        $this->assertSame(
+        self::assertSame(
             $expectedResult,
             $result1
         );
 
-        $this->assertSame(
+        self::assertSame(
             $expectedResult,
             $result2
         );

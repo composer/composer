@@ -89,7 +89,7 @@ class Versions
         $versions = $this->getVersionsData();
 
         foreach ($versions[$channel ?: $this->getChannel()] as $version) {
-            if ($version['min-php'] <= PHP_VERSION_ID) {
+            if ($version['min-php'] <= \PHP_VERSION_ID) {
                 return $version;
             }
         }

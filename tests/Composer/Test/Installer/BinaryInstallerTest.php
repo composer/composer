@@ -82,8 +82,8 @@ class BinaryInstallerTest extends TestCase
 
         $proc = new ProcessExecutor();
         $proc->execute($this->binDir.'/binary arg', $output);
-        $this->assertEquals('', $proc->getErrorOutput());
-        $this->assertEquals('success arg', $output);
+        self::assertEquals('', $proc->getErrorOutput());
+        self::assertEquals('success arg', $output);
     }
 
     public static function executableBinaryProvider(): array
@@ -121,7 +121,7 @@ EOL
     protected function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')
-            ->setConstructorArgs([md5((string) mt_rand()), '1.0.0.0', '1.0.0'])
+            ->setConstructorArgs([bin2hex(random_bytes(5)), '1.0.0.0', '1.0.0'])
             ->getMock();
     }
 }

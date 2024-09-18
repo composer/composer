@@ -61,7 +61,7 @@ class InitCommand extends BaseCommand
                 new InputOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"', null, $this->suggestAvailablePackageInclPlatform()),
                 new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"', null, $this->suggestAvailablePackageInclPlatform()),
-                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
+                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::STABILITIES)).')'),
                 new InputOption('license', 'l', InputOption::VALUE_REQUIRED, 'License of package'),
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories, either by URL or using JSON arrays'),
                 new InputOption('autoload', 'a', InputOption::VALUE_REQUIRED, 'Add PSR-4 autoload mapping. Maps your package\'s namespace to the provided directory. (Expects a relative path, e.g. src/)'),
@@ -364,10 +364,10 @@ EOT
                     return $minimumStability;
                 }
 
-                if (!isset(BasePackage::$stabilities[$value])) {
+                if (!isset(BasePackage::STABILITIES[$value])) {
                     throw new \InvalidArgumentException(
                         'Invalid minimum stability "'.$value.'". Must be empty or one of: '.
-                        implode(', ', array_keys(BasePackage::$stabilities))
+                        implode(', ', array_keys(BasePackage::STABILITIES))
                     );
                 }
 
@@ -378,11 +378,14 @@ EOT
         );
         $input->setOption('stability', $minimumStability);
 
-        $type = $input->getOption('type') ?: false;
+        $type = $input->getOption('type');
         $type = $io->ask(
             'Package Type (e.g. library, project, metapackage, composer-plugin) [<comment>'.$type.'</comment>]: ',
             $type
         );
+        if ($type === '' || $type === false) {
+            $type = null;
+        }
         $input->setOption('type', $type);
 
         if (null === $license = $input->getOption('license')) {
@@ -465,8 +468,6 @@ EOT
     private function parseAuthorString(string $author): array
     {
         if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+)(?:\s+<(?P<email>.+?)>)?$/u', $author, $match)) {
-            assert(is_string($match['name']));
-
             if (null !== $match['email'] && !$this->isValidEmail($match['email'])) {
                 throw new \InvalidArgumentException('Invalid email "'.$match['email'].'"');
             }

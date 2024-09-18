@@ -1,0 +1,47 @@
+--TEST--
+Requirements from the composer file are not installed if the lock file is present and missing requirements warning
+is issued when allow-missing-requirements if enabled
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "required/pkg", "version": "1.0.0" },
+                { "name": "newly-required/pkg", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "required/pkg": "1.0.0",
+        "newly-required/pkg": "1.0.0"
+    },
+    "config": {
+        "allow-missing-requirements": true
+    }
+}
+--LOCK--
+{
+    "packages": [
+        { "name": "required/pkg", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false
+}
+--RUN--
+install
+--EXPECT-OUTPUT--
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+- Required package "newly-required/pkg" is not present in the lock file.
+This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.
+Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md
+and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require-r
+Package operations: 1 install, 0 updates, 0 removals
+Generating autoload files
+--EXPECT--
+Installing required/pkg (1.0.0)

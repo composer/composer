@@ -34,7 +34,7 @@ class RemoteFilesystemTest extends TestCase
         ;
 
         $res = $this->callGetOptionsForUrl($io, ['http://example.org', []]);
-        $this->assertTrue(isset($res['http']['header']) && is_array($res['http']['header']), 'getOptions must return an array with headers');
+        self::assertTrue(isset($res['http']['header']) && is_array($res['http']['header']), 'getOptions must return an array with headers');
     }
 
     public function testGetOptionsForUrlWithAuthorization(): void
@@ -59,7 +59,7 @@ class RemoteFilesystemTest extends TestCase
                 $found = true;
             }
         }
-        $this->assertTrue($found, 'getOptions must have an Authorization header');
+        self::assertTrue($found, 'getOptions must have an Authorization header');
     }
 
     public function testGetOptionsForUrlWithStreamOptions(): void
@@ -82,7 +82,7 @@ class RemoteFilesystemTest extends TestCase
         ]];
 
         $res = $this->callGetOptionsForUrl($io, ['https://example.org', []], $streamOptions);
-        $this->assertTrue(
+        self::assertTrue(
             isset($res['ssl'], $res['ssl']['allow_self_signed']) && true === $res['ssl']['allow_self_signed'],
             'getOptions must return an array with a allow_self_signed set to true'
         );
@@ -108,7 +108,7 @@ class RemoteFilesystemTest extends TestCase
         ]];
 
         $res = $this->callGetOptionsForUrl($io, ['https://example.org', $streamOptions]);
-        $this->assertTrue(isset($res['http']['header']), 'getOptions must return an array with a http.header key');
+        self::assertTrue(isset($res['http']['header']), 'getOptions must return an array with a http.header key');
 
         $found = false;
         foreach ($res['http']['header'] as $header) {
@@ -117,15 +117,15 @@ class RemoteFilesystemTest extends TestCase
             }
         }
 
-        $this->assertTrue($found, 'getOptions must have a Foo: bar header');
-        $this->assertGreaterThan(1, count($res['http']['header']));
+        self::assertTrue($found, 'getOptions must have a Foo: bar header');
+        self::assertGreaterThan(1, count($res['http']['header']));
     }
 
     public function testCallbackGetFileSize(): void
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
         $this->callCallbackGet($fs, STREAM_NOTIFY_FILE_SIZE_IS, 0, '', 0, 0, 20);
-        $this->assertAttributeEqualsCustom(20, 'bytesMax', $fs);
+        self::assertAttributeEqualsCustom(20, 'bytesMax', $fs);
     }
 
     public function testCallbackGetNotifyProgress(): void
@@ -141,22 +141,24 @@ class RemoteFilesystemTest extends TestCase
         $this->setAttribute($fs, 'progress', true);
 
         $this->callCallbackGet($fs, STREAM_NOTIFY_PROGRESS, 0, '', 0, 10, 20);
-        $this->assertAttributeEqualsCustom(50, 'lastProgress', $fs);
+        self::assertAttributeEqualsCustom(50, 'lastProgress', $fs);
     }
 
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testCallbackGetPassesThrough404(): void
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
         $this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0);
-        $this->assertTrue(true, 'callbackGet must pass through 404');
     }
 
     public function testGetContents(): void
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
-        $this->assertStringContainsString('testGetContents', $fs->getContents('http://example.org', 'file://'.__FILE__));
+        self::assertStringContainsString('testGetContents', (string) $fs->getContents('http://example.org', 'file://'.__FILE__));
     }
 
     public function testCopy(): void
@@ -164,9 +166,9 @@ class RemoteFilesystemTest extends TestCase
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
         $file = $this->createTempFile();
-        $this->assertTrue($fs->copy('http://example.org', 'file://'.__FILE__, $file));
-        $this->assertFileExists($file);
-        $this->assertStringContainsString('testCopy', file_get_contents($file));
+        self::assertTrue($fs->copy('http://example.org', 'file://'.__FILE__, $file));
+        self::assertFileExists($file);
+        self::assertStringContainsString('testCopy', (string) file_get_contents($file));
         unlink($file);
     }
 
@@ -231,9 +233,9 @@ class RemoteFilesystemTest extends TestCase
             ['retry-auth-failure' => true]
         );
 
-        $this->assertTrue($copyResult);
-        $this->assertFileExists($file);
-        $this->assertStringContainsString('Copied', file_get_contents($file));
+        self::assertTrue($copyResult);
+        self::assertFileExists($file);
+        self::assertStringContainsString('Copied', (string) file_get_contents($file));
 
         unlink($file);
     }
@@ -247,16 +249,16 @@ class RemoteFilesystemTest extends TestCase
 
         $res = $this->callGetOptionsForUrl($io, ['example.org', ['ssl' => ['cafile' => '/some/path/file.crt']]], [], 'http://www.example.org');
 
-        $this->assertTrue(isset($res['ssl']['ciphers']));
-        $this->assertMatchesRegularExpression('|!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA|', $res['ssl']['ciphers']);
-        $this->assertTrue($res['ssl']['verify_peer']);
-        $this->assertTrue($res['ssl']['SNI_enabled']);
-        $this->assertEquals(7, $res['ssl']['verify_depth']);
-        $this->assertEquals('/some/path/file.crt', $res['ssl']['cafile']);
+        self::assertTrue(isset($res['ssl']['ciphers']));
+        self::assertMatchesRegularExpression('|!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA|', $res['ssl']['ciphers']);
+        self::assertTrue($res['ssl']['verify_peer']);
+        self::assertTrue($res['ssl']['SNI_enabled']);
+        self::assertEquals(7, $res['ssl']['verify_depth']);
+        self::assertEquals('/some/path/file.crt', $res['ssl']['cafile']);
         if (version_compare(PHP_VERSION, '5.4.13') >= 0) {
-            $this->assertTrue($res['ssl']['disable_compression']);
+            self::assertTrue($res['ssl']['disable_compression']);
         } else {
-            $this->assertFalse(isset($res['ssl']['disable_compression']));
+            self::assertFalse(isset($res['ssl']['disable_compression']));
         }
     }
 
@@ -291,7 +293,7 @@ class RemoteFilesystemTest extends TestCase
 
         $result = $rfs->getContents($hostname, $url, false);
 
-        $this->assertEquals($contents, $result);
+        self::assertEquals($contents, $result);
     }
 
     /**
@@ -331,8 +333,8 @@ class RemoteFilesystemTest extends TestCase
 
         $result = $rfs->getContents($hostname, $url, false);
 
-        $this->assertEquals($contents, $result);
-        $this->assertEquals(['bitbucket.org', 'bbuseruploads.s3.amazonaws.com'], $domains);
+        self::assertEquals($contents, $result);
+        self::assertEquals(['bitbucket.org', 'bbuseruploads.s3.amazonaws.com'], $domains);
     }
 
     /**
@@ -399,7 +401,7 @@ class RemoteFilesystemTest extends TestCase
     {
         $attr = new ReflectionProperty($object, $attribute);
         $attr->setAccessible(true);
-        $this->assertSame($value, $attr->getValue($object));
+        self::assertSame($value, $attr->getValue($object));
     }
 
     /**

@@ -52,7 +52,7 @@ class GitDriver extends VcsDriver
                 throw new \RuntimeException('GitDriver requires a usable cache directory, and it looks like you set it to be disabled');
             }
 
-            $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . Preg::replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
+            $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($this->url)) . '/';
 
             GitUtil::cleanEnv();
 
@@ -153,7 +153,7 @@ class GitDriver extends VcsDriver
         $resource = sprintf('%s:%s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
         $this->process->execute(sprintf('git show %s', $resource), $content, $this->repoDir);
 
-        if (!trim($content)) {
+        if (trim($content) === '') {
             return null;
         }
 
@@ -182,9 +182,9 @@ class GitDriver extends VcsDriver
             $this->tags = [];
 
             $this->process->execute('git show-ref --tags --dereference', $output, $this->repoDir);
-            foreach ($output = $this->process->splitLines($output) as $tag) {
-                if ($tag && Preg::isMatch('{^([a-f0-9]{40}) refs/tags/(\S+?)(\^\{\})?$}', $tag, $match)) {
-                    $this->tags[$match[2]] = (string) $match[1];
+            foreach ($this->process->splitLines($output) as $tag) {
+                if ($tag !== '' && Preg::isMatch('{^([a-f0-9]{40}) refs/tags/(\S+?)(\^\{\})?$}', $tag, $match)) {
+                    $this->tags[$match[2]] = $match[1];
                 }
             }
         }
@@ -202,7 +202,7 @@ class GitDriver extends VcsDriver
 
             $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && !Preg::isMatch('{^ *[^/]+/HEAD }', $branch)) {
+                if ($branch !== '' && !Preg::isMatch('{^ *[^/]+/HEAD }', $branch)) {
                     if (Preg::isMatchStrictGroups('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match) && $match[1][0] !== '-') {
                         $branches[$match[1]] = $match[2];
                     }

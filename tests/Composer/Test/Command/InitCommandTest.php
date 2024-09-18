@@ -23,24 +23,24 @@ class InitCommandTest extends TestCase
     {
         $command = new InitCommand;
         $author = $this->callParseAuthorString($command, 'John Smith <john@example.com>');
-        $this->assertEquals('John Smith', $author['name']);
-        $this->assertEquals('john@example.com', $author['email']);
+        self::assertEquals('John Smith', $author['name']);
+        self::assertEquals('john@example.com', $author['email']);
     }
 
     public function testParseValidAuthorStringWithoutEmail(): void
     {
         $command = new InitCommand;
         $author = $this->callParseAuthorString($command, 'John Smith');
-        $this->assertEquals('John Smith', $author['name']);
-        $this->assertNull($author['email']);
+        self::assertEquals('John Smith', $author['name']);
+        self::assertNull($author['email']);
     }
 
     public function testParseValidUtf8AuthorString(): void
     {
         $command = new InitCommand;
         $author = $this->callParseAuthorString($command, 'Matti Meikäläinen <matti@example.com>');
-        $this->assertEquals('Matti Meikäläinen', $author['name']);
-        $this->assertEquals('matti@example.com', $author['email']);
+        self::assertEquals('Matti Meikäläinen', $author['name']);
+        self::assertEquals('matti@example.com', $author['email']);
     }
 
     public function testParseValidUtf8AuthorStringWithNonSpacingMarks(): void
@@ -49,16 +49,16 @@ class InitCommandTest extends TestCase
         $utf8_expected = "Matti Meika\xCC\x88la\xCC\x88inen";
         $command = new InitCommand;
         $author = $this->callParseAuthorString($command, $utf8_expected." <matti@example.com>");
-        $this->assertEquals($utf8_expected, $author['name']);
-        $this->assertEquals('matti@example.com', $author['email']);
+        self::assertEquals($utf8_expected, $author['name']);
+        self::assertEquals('matti@example.com', $author['email']);
     }
 
     public function testParseNumericAuthorString(): void
     {
         $command = new InitCommand;
         $author = $this->callParseAuthorString($command, 'h4x0r <h4x@example.com>');
-        $this->assertEquals('h4x0r', $author['name']);
-        $this->assertEquals('h4x@example.com', $author['email']);
+        self::assertEquals('h4x0r', $author['name']);
+        self::assertEquals('h4x@example.com', $author['email']);
     }
 
     /**
@@ -72,8 +72,8 @@ class InitCommandTest extends TestCase
             $command,
             'Johnathon "Johnny" Smith <john@example.com>'
         );
-        $this->assertEquals('Johnathon "Johnny" Smith', $author['name']);
-        $this->assertEquals('john@example.com', $author['email']);
+        self::assertEquals('Johnathon "Johnny" Smith', $author['name']);
+        self::assertEquals('john@example.com', $author['email']);
     }
 
     /**
@@ -87,8 +87,8 @@ class InitCommandTest extends TestCase
             $command,
             'Johnathon (Johnny) Smith <john@example.com>'
         );
-        $this->assertEquals('Johnathon (Johnny) Smith', $author['name']);
-        $this->assertEquals('john@example.com', $author['email']);
+        self::assertEquals('Johnathon (Johnny) Smith', $author['name']);
+        self::assertEquals('john@example.com', $author['email']);
     }
 
     public function testParseEmptyAuthorString(): void
@@ -109,21 +109,21 @@ class InitCommandTest extends TestCase
     {
         $command = new InitCommand;
         $namespace = $command->namespaceFromPackageName('new_projects.acme-extra/package-name');
-        $this->assertEquals('NewProjectsAcmeExtra\PackageName', $namespace);
+        self::assertEquals('NewProjectsAcmeExtra\PackageName', $namespace);
     }
 
     public function testNamespaceFromInvalidPackageName(): void
     {
         $command = new InitCommand;
         $namespace = $command->namespaceFromPackageName('invalid-package-name');
-        $this->assertNull($namespace);
+        self::assertNull($namespace);
     }
 
     public function testNamespaceFromMissingPackageName(): void
     {
         $command = new InitCommand;
         $namespace = $command->namespaceFromPackageName('');
-        $this->assertNull($namespace);
+        self::assertNull($namespace);
     }
 
     /**
@@ -168,7 +168,7 @@ class InitCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'init', '--no-interaction' => true, '--name' => 'test/pkg']);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -176,7 +176,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunInvalidAuthorArgumentInvalidEmail(): void
@@ -210,7 +210,7 @@ class InitCommandTest extends TestCase
             '--author' => 'Mr. Test <test@example.org>',
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -224,7 +224,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunAuthorArgumentMissingEmail(): void
@@ -241,7 +241,7 @@ class InitCommandTest extends TestCase
             '--author' => 'Mr. Test',
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -254,7 +254,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunSingleRepositoryArgument(): void
@@ -273,7 +273,7 @@ class InitCommandTest extends TestCase
             ],
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -287,7 +287,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunMultipleRepositoryArguments(): void
@@ -308,7 +308,7 @@ class InitCommandTest extends TestCase
             ],
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -335,7 +335,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunStability(): void
@@ -352,7 +352,7 @@ class InitCommandTest extends TestCase
             '--stability' => 'dev',
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -361,7 +361,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunInvalidStability(): void
@@ -378,9 +378,9 @@ class InitCommandTest extends TestCase
             '--stability' => 'bogus',
         ], ['capture_stderr_separately' => true]);
 
-        $this->assertSame(1, $appTester->getStatusCode());
+        self::assertSame(1, $appTester->getStatusCode());
 
-        $this->assertMatchesRegularExpression("/minimum-stability\s+:\s+Does not have a value in the enumeration/", $appTester->getErrorOutput());
+        self::assertMatchesRegularExpression("/minimum-stability\s+:\s+Does not have a value in the enumeration/", $appTester->getErrorOutput());
     }
 
     public function testRunRequireOne(): void
@@ -399,7 +399,7 @@ class InitCommandTest extends TestCase
             ],
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -409,7 +409,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunRequireMultiple(): void
@@ -429,7 +429,7 @@ class InitCommandTest extends TestCase
             ],
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -440,7 +440,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunInvalidRequire(): void
@@ -479,7 +479,7 @@ class InitCommandTest extends TestCase
             ],
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -490,7 +490,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunRequireDevMultiple(): void
@@ -510,7 +510,7 @@ class InitCommandTest extends TestCase
             ],
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -522,7 +522,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunInvalidRequireDev(): void
@@ -559,7 +559,7 @@ class InitCommandTest extends TestCase
             '--autoload' => 'testMapping/'
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -572,7 +572,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunHomepage(): void
@@ -589,7 +589,7 @@ class InitCommandTest extends TestCase
             '--homepage' => 'https://example.org/'
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -598,7 +598,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunInvalidHomepage(): void
@@ -615,8 +615,8 @@ class InitCommandTest extends TestCase
             '--homepage' => 'not-a-url',
         ], ['capture_stderr_separately' => true]);
 
-        $this->assertSame(1, $appTester->getStatusCode());
-        $this->assertMatchesRegularExpression("/homepage\s*:\s*Invalid URL format/", $appTester->getErrorOutput());
+        self::assertSame(1, $appTester->getStatusCode());
+        self::assertMatchesRegularExpression("/homepage\s*:\s*Invalid URL format/", $appTester->getErrorOutput());
     }
 
     public function testRunDescription(): void
@@ -633,7 +633,7 @@ class InitCommandTest extends TestCase
             '--description' => 'My first example package'
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -642,7 +642,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunType(): void
@@ -659,7 +659,7 @@ class InitCommandTest extends TestCase
             '--type' => 'library'
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -668,7 +668,7 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
     }
 
     public function testRunLicense(): void
@@ -685,7 +685,7 @@ class InitCommandTest extends TestCase
             '--license' => 'MIT'
         ]);
 
-        $this->assertSame(0, $appTester->getStatusCode());
+        self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'test/pkg',
@@ -694,6 +694,45 @@ class InitCommandTest extends TestCase
         ];
 
         $file = new JsonFile($dir . '/composer.json');
-        $this->assertEquals($expected, $file->read());
+        self::assertEquals($expected, $file->read());
+    }
+
+    public function testInteractiveRun(): void
+    {
+        $dir = $this->initTempComposer();
+        unlink($dir . '/composer.json');
+        unlink($dir . '/auth.json');
+
+        $appTester = $this->getApplicationTester();
+
+        $appTester->setInputs([
+            'vendor/pkg',                   // Pkg name
+            'my desciption',                // Description
+            'Mr. Test <test@example.org>',  // Author
+            'stable',                       // Minimum stability
+            'library',                      // Type
+            'Custom License',               // License
+            'no',                           // Define dependencies
+            'no',                           // Define dev dependencies
+            'n',                            // Add PSR-4 autoload mapping
+            '',                             // Confirm generation
+        ]);
+
+        $appTester->run(['command' => 'init']);
+
+        self::assertSame(0, $appTester->getStatusCode());
+
+        $expected = [
+            'name' => 'vendor/pkg',
+            'description' => 'my desciption',
+            'type' => 'library',
+            'license' => 'Custom License',
+            'authors' => [['name' => 'Mr. Test', 'email' => 'test@example.org']],
+            'minimum-stability' => 'stable',
+            'require' => [],
+        ];
+
+        $file = new JsonFile($dir . '/composer.json');
+        self::assertEquals($expected, $file->read());
     }
 }

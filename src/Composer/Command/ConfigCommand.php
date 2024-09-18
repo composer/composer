@@ -291,7 +291,7 @@ EOT
             $source = $this->config->getSourceOfValue($settingKey);
 
             if (Preg::isMatch('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
-                if (!isset($matches[1]) || $matches[1] === '') {
+                if (!isset($matches[1])) {
                     $value = $data['repositories'] ?? [];
                 } else {
                     if (!isset($data['repositories'][$matches[1]])) {
@@ -676,7 +676,7 @@ EOT
             }],
             'minimum-stability' => [
                 static function ($val): bool {
-                    return isset(BasePackage::$stabilities[VersionParser::normalizeStability($val)]);
+                    return isset(BasePackage::STABILITIES[VersionParser::normalizeStability($val)]);
                 },
                 static function ($val): string {
                     return VersionParser::normalizeStability($val);

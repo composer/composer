@@ -66,7 +66,7 @@ class Locker
     {
         $this->lockFile = $lockFile;
         $this->installationManager = $installationManager;
-        $this->hash = md5($composerFileContents);
+        $this->hash = hash('md5', $composerFileContents);
         $this->contentHash = self::getContentHash($composerFileContents);
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
@@ -107,7 +107,7 @@ class Locker
 
         ksort($relevantContent);
 
-        return md5(JsonFile::encode($relevantContent, 0));
+        return hash('md5', JsonFile::encode($relevantContent, 0));
     }
 
     /**
@@ -247,6 +247,9 @@ class Locker
         return $requirements;
     }
 
+    /**
+     * @return key-of<BasePackage::STABILITIES>
+     */
     public function getMinimumStability(): string
     {
         $lockData = $this->getLockData();
@@ -369,6 +372,8 @@ class Locker
             'prefer-stable' => $preferStable,
             'prefer-lowest' => $preferLowest,
         ];
+
+        ksort($lock['stability-flags']);
 
         $lock['packages'] = $this->lockPackages($packages);
         if (null !== $devPackages) {

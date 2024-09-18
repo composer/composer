@@ -24,13 +24,13 @@ class RepositoryUtilsTest extends TestCase
      * @param PackageInterface[] $pkgs
      * @param string[] $expected
      */
-    public function testFilterRequiredPackages(array $pkgs, PackageInterface $requirer, array $expected): void
+    public function testFilterRequiredPackages(array $pkgs, PackageInterface $requirer, array $expected, bool $includeRequireDev = false): void
     {
         $expected = array_map(static function (string $name) use ($pkgs): PackageInterface {
             return $pkgs[$name];
         }, $expected);
 
-        self::assertSame($expected, RepositoryUtils::filterRequiredPackages($pkgs, $requirer));
+        self::assertSame($expected, RepositoryUtils::filterRequiredPackages($pkgs, $requirer, $includeRequireDev));
     }
 
     /**
@@ -71,6 +71,10 @@ class RepositoryUtilsTest extends TestCase
         $requirer = self::getPackage('requirer/pkg');
         self::configureLinks($requirer, ['require-dev' => ['required/a' => '*']]);
         yield 'require-dev has no effect' => [$pkgs, $requirer, []];
+
+        $requirer = self::getPackage('requirer/pkg');
+        self::configureLinks($requirer, ['require-dev' => ['required/a' => '*']]);
+        yield 'require-dev works if called with it enabled' => [$pkgs, $requirer, ['a'], true];
 
         $requirer = self::getPackage('requirer/pkg');
         self::configureLinks($requirer, ['require' => ['required/a' => '*']]);

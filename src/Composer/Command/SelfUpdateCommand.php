@@ -146,7 +146,7 @@ EOT
             $homeDirOwnerId = fileowner($home);
             if (is_array($composerUser) && $homeDirOwnerId !== false) {
                 $homeOwner = posix_getpwuid($homeDirOwnerId);
-                if (is_array($homeOwner) && isset($composerUser['name'], $homeOwner['name']) && $composerUser['name'] !== $homeOwner['name']) {
+                if (is_array($homeOwner) && $composerUser['name'] !== $homeOwner['name']) {
                     $io->writeError('<warning>You are running Composer as "'.$composerUser['name'].'", while "'.$home.'" is owned by "'.$homeOwner['name'].'"</warning>');
                 }
             }
@@ -328,8 +328,8 @@ TAGSPUBKEY
             $verified = 1 === openssl_verify((string) file_get_contents($tempFilename), $signatureSha384, $pubkeyid, $algo);
 
             // PHP 8 automatically frees the key instance and deprecates the function
-            if (PHP_VERSION_ID < 80000) {
-                // @phpstan-ignore-next-line
+            if (\PHP_VERSION_ID < 80000) {
+                // @phpstan-ignore function.deprecated
                 openssl_free_key($pubkeyid);
             }
 

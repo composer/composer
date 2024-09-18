@@ -26,8 +26,8 @@ class RuleTest extends TestCase
     {
         $rule = new GenericRule([123], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
 
-        $hash = unpack('ihash', md5('123', true));
-        $this->assertEquals($hash['hash'], $rule->getHash());
+        $hash = unpack('ihash', (string) hash(\PHP_VERSION_ID > 80100 ? 'xxh3' : 'sha1', '123', true));
+        self::assertEquals($hash['hash'], $rule->getHash());
     }
 
     public function testEqualsForRulesWithDifferentHashes(): void
@@ -35,7 +35,7 @@ class RuleTest extends TestCase
         $rule = new GenericRule([1, 2], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
         $rule2 = new GenericRule([1, 3], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
 
-        $this->assertFalse($rule->equals($rule2));
+        self::assertFalse($rule->equals($rule2));
     }
 
     public function testEqualsForRulesWithDifferLiteralsQuantity(): void
@@ -43,7 +43,7 @@ class RuleTest extends TestCase
         $rule = new GenericRule([1, 12], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
         $rule2 = new GenericRule([1], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
 
-        $this->assertFalse($rule->equals($rule2));
+        self::assertFalse($rule->equals($rule2));
     }
 
     public function testEqualsForRulesWithSameLiterals(): void
@@ -51,7 +51,7 @@ class RuleTest extends TestCase
         $rule = new GenericRule([1, 12], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
         $rule2 = new GenericRule([1, 12], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
 
-        $this->assertTrue($rule->equals($rule2));
+        self::assertTrue($rule->equals($rule2));
     }
 
     public function testSetAndGetType(): void
@@ -59,7 +59,7 @@ class RuleTest extends TestCase
         $rule = new GenericRule([], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
         $rule->setType(RuleSet::TYPE_REQUEST);
 
-        $this->assertEquals(RuleSet::TYPE_REQUEST, $rule->getType());
+        self::assertEquals(RuleSet::TYPE_REQUEST, $rule->getType());
     }
 
     public function testEnable(): void
@@ -68,8 +68,8 @@ class RuleTest extends TestCase
         $rule->disable();
         $rule->enable();
 
-        $this->assertTrue($rule->isEnabled());
-        $this->assertFalse($rule->isDisabled());
+        self::assertTrue($rule->isEnabled());
+        self::assertFalse($rule->isDisabled());
     }
 
     public function testDisable(): void
@@ -78,8 +78,8 @@ class RuleTest extends TestCase
         $rule->enable();
         $rule->disable();
 
-        $this->assertTrue($rule->isDisabled());
-        $this->assertFalse($rule->isEnabled());
+        self::assertTrue($rule->isDisabled());
+        self::assertFalse($rule->isEnabled());
     }
 
     public function testIsAssertions(): void
@@ -87,8 +87,8 @@ class RuleTest extends TestCase
         $rule = new GenericRule([1, 12], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
         $rule2 = new GenericRule([1], Rule::RULE_ROOT_REQUIRE, ['packageName' => '', 'constraint' => new MatchAllConstraint]);
 
-        $this->assertFalse($rule->isAssertion());
-        $this->assertTrue($rule2->isAssertion());
+        self::assertFalse($rule->isAssertion());
+        self::assertTrue($rule2->isAssertion());
     }
 
     public function testPrettyString(): void
@@ -106,6 +106,6 @@ class RuleTest extends TestCase
 
         $rule = new GenericRule([$p1->getId(), -$p2->getId()], Rule::RULE_PACKAGE_REQUIRES, new Link('baz', 'foo', $emptyConstraint));
 
-        $this->assertEquals('baz 1.1 relates to foo * -> satisfiable by foo[2.1].', $rule->getPrettyString($repositorySetMock, $requestMock, $pool, false));
+        self::assertEquals('baz 1.1 relates to foo * -> satisfiable by foo[2.1].', $rule->getPrettyString($repositorySetMock, $requestMock, $pool, false));
     }
 }

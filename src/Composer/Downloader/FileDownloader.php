@@ -126,7 +126,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
 
         $cacheKeyGenerator = static function (PackageInterface $package, $key): string {
-            $cacheKey = sha1($key);
+            $cacheKey = hash('sha1', $key);
 
             return $package->getName().'/'.$cacheKey.'.'.$package->getDistType();
         };
@@ -441,7 +441,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $extension = $package->getDistType();
         }
 
-        return rtrim($this->config->get('vendor-dir') . '/composer/tmp-' . md5($package . spl_object_hash($package)) . '.' . $extension, '.');
+        return rtrim($this->config->get('vendor-dir') . '/composer/tmp-' . hash('md5', $package . spl_object_hash($package)) . '.' . $extension, '.');
     }
 
     /**

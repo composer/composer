@@ -54,10 +54,10 @@ class FilesystemTest extends TestCase
     /**
      * @dataProvider providePathCouplesAsCode
      */
-    public function testFindShortestPathCode(string $a, string $b, bool $directory, string $expected, bool $static = false): void
+    public function testFindShortestPathCode(string $a, string $b, bool $directory, string $expected, bool $static = false, bool $preferRelative = false): void
     {
         $fs = new Filesystem;
-        $this->assertEquals($expected, $fs->findShortestPathCode($a, $b, $directory, $static));
+        self::assertEquals($expected, $fs->findShortestPathCode($a, $b, $directory, $static, $preferRelative));
     }
 
     public static function providePathCouplesAsCode(): array
@@ -77,6 +77,7 @@ class FilesystemTest extends TestCase
             ['/foo/bar', '/foo/baz', true, "dirname(__DIR__).'/baz'"],
             ['/foo/bin/run', '/foo/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"],
             ['/foo/bin/run', '/bar/bin/run', true, "'/bar/bin/run'"],
+            ['/app/vendor/foo/bar', '/lib', true, "dirname(dirname(dirname(dirname(__DIR__)))).'/lib'", false, true],
             ['/bin/run', '/bin/run', true, "__DIR__"],
             ['c:/bin/run', 'C:\\bin/run', true, "__DIR__"],
             ['c:/bin/run', 'c:/vendor/acme/bin/run', true, "dirname(dirname(__DIR__)).'/vendor/acme/bin/run'"],
@@ -113,10 +114,10 @@ class FilesystemTest extends TestCase
     /**
      * @dataProvider providePathCouples
      */
-    public function testFindShortestPath(string $a, string $b, string $expected, bool $directory = false): void
+    public function testFindShortestPath(string $a, string $b, string $expected, bool $directory = false, bool $preferRelative = false): void
     {
         $fs = new Filesystem;
-        $this->assertEquals($expected, $fs->findShortestPath($a, $b, $directory));
+        self::assertEquals($expected, $fs->findShortestPath($a, $b, $directory, $preferRelative));
     }
 
     public static function providePathCouples(): array
@@ -152,6 +153,7 @@ class FilesystemTest extends TestCase
             ['C:/Temp', 'c:\Temp\..\..\test', "../test", true],
             ['C:/Temp/../..', 'c:\Temp\..\..\test', "./test", true],
             ['C:/Temp/../..', 'D:\Temp\..\..\test', "D:/test", true],
+            ['/app/vendor/foo/bar', '/lib', '../../../../lib', true, true],
             ['/tmp', '/tmp/../../test', '../test', true],
             ['/tmp', '/test', '../test', true],
             ['/foo/bar', '/foo/bar_vendor', '../bar_vendor', true],
@@ -171,8 +173,8 @@ class FilesystemTest extends TestCase
         file_put_contents($this->workingDir . "/level1/level2/hello.txt", "hello world");
 
         $fs = new Filesystem;
-        $this->assertTrue($fs->removeDirectoryPhp($this->workingDir));
-        $this->assertFileDoesNotExist($this->workingDir . "/level1/level2/hello.txt");
+        self::assertTrue($fs->removeDirectoryPhp($this->workingDir));
+        self::assertFileDoesNotExist($this->workingDir . "/level1/level2/hello.txt");
     }
 
     public function testFileSize(): void
@@ -180,7 +182,7 @@ class FilesystemTest extends TestCase
         file_put_contents($this->testFile, 'Hello');
 
         $fs = new Filesystem;
-        $this->assertGreaterThanOrEqual(5, $fs->size($this->testFile));
+        self::assertGreaterThanOrEqual(5, $fs->size($this->testFile));
     }
 
     public function testDirectorySize(): void
@@ -190,7 +192,7 @@ class FilesystemTest extends TestCase
         file_put_contents($this->workingDir."/file2.txt", 'World');
 
         $fs = new Filesystem;
-        $this->assertGreaterThanOrEqual(10, $fs->size($this->workingDir));
+        self::assertGreaterThanOrEqual(10, $fs->size($this->workingDir));
     }
 
     /**
@@ -199,7 +201,7 @@ class FilesystemTest extends TestCase
     public function testNormalizePath(string $expected, string $actual): void
     {
         $fs = new Filesystem;
-        $this->assertEquals($expected, $fs->normalizePath($actual));
+        self::assertEquals($expected, $fs->normalizePath($actual));
     }
 
     public static function provideNormalizedPaths(): array
@@ -251,8 +253,8 @@ class FilesystemTest extends TestCase
 
         $fs = new Filesystem();
         $result = $fs->unlink($symlinked);
-        $this->assertTrue($result);
-        $this->assertFileDoesNotExist($symlinked);
+        self::assertTrue($result);
+        self::assertFileDoesNotExist($symlinked);
     }
 
     /**
@@ -283,9 +285,9 @@ class FilesystemTest extends TestCase
         $fs = new Filesystem();
 
         $result = $fs->removeDirectory($symlinkedTrailingSlash);
-        $this->assertTrue($result);
-        $this->assertFileDoesNotExist($symlinkedTrailingSlash);
-        $this->assertFileDoesNotExist($symlinked);
+        self::assertTrue($result);
+        self::assertFileDoesNotExist($symlinkedTrailingSlash);
+        self::assertFileDoesNotExist($symlinked);
     }
 
     public function testJunctions(): void
@@ -295,8 +297,8 @@ class FilesystemTest extends TestCase
 
         // Non-Windows systems do not support this and will return false on all tests, and an exception on creation
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
-            $this->assertFalse($fs->isJunction($this->workingDir));
-            $this->assertFalse($fs->removeJunction($this->workingDir));
+            self::assertFalse($fs->isJunction($this->workingDir));
+            self::assertFalse($fs->removeJunction($this->workingDir));
             self::expectException('LogicException');
             self::expectExceptionMessage('not available on non-Windows platform');
         }
@@ -306,16 +308,16 @@ class FilesystemTest extends TestCase
 
         // Create and detect junction
         $fs->junction($target, $junction);
-        $this->assertTrue($fs->isJunction($junction), $junction . ': is a junction');
-        $this->assertFalse($fs->isJunction($target), $target . ': is not a junction');
-        $this->assertTrue($fs->isJunction($target . '/../../junction'), $target . '/../../junction: is a junction');
-        $this->assertFalse($fs->isJunction($junction . '/../real'), $junction . '/../real: is not a junction');
-        $this->assertTrue($fs->isJunction($junction . '/../junction'), $junction . '/../junction: is a junction');
+        self::assertTrue($fs->isJunction($junction), $junction . ': is a junction');
+        self::assertFalse($fs->isJunction($target), $target . ': is not a junction');
+        self::assertTrue($fs->isJunction($target . '/../../junction'), $target . '/../../junction: is a junction');
+        self::assertFalse($fs->isJunction($junction . '/../real'), $junction . '/../real: is not a junction');
+        self::assertTrue($fs->isJunction($junction . '/../junction'), $junction . '/../junction: is a junction');
 
         // Remove junction
-        $this->assertDirectoryExists($junction, $junction . ' is a directory');
-        $this->assertTrue($fs->removeJunction($junction), $junction . ' has been removed');
-        $this->assertDirectoryDoesNotExist($junction, $junction . ' is not a directory');
+        self::assertDirectoryExists($junction, $junction . ' is a directory');
+        self::assertTrue($fs->removeJunction($junction), $junction . ' has been removed');
+        self::assertDirectoryDoesNotExist($junction, $junction . ' is not a directory');
     }
 
     public function testOverrideJunctions(): void
@@ -335,19 +337,19 @@ class FilesystemTest extends TestCase
         $fs->junction($old_target, $junction);
         $fs->junction($target, $junction);
 
-        $this->assertTrue($fs->isJunction($junction), $junction.': is a junction');
-        $this->assertTrue($fs->isJunction($target.'/../../junction'), $target.'/../../junction: is a junction');
+        self::assertTrue($fs->isJunction($junction), $junction.': is a junction');
+        self::assertTrue($fs->isJunction($target.'/../../junction'), $target.'/../../junction: is a junction');
 
         //Remove junction
-        $this->assertTrue($fs->removeJunction($junction), $junction . ' has been removed');
+        self::assertTrue($fs->removeJunction($junction), $junction . ' has been removed');
 
         // Override broken junction
         $fs->junction($old_target, $junction);
         $fs->removeDirectory($old_target);
         $fs->junction($target, $junction);
 
-        $this->assertTrue($fs->isJunction($junction), $junction.': is a junction');
-        $this->assertTrue($fs->isJunction($target.'/../../junction'), $target.'/../../junction: is a junction');
+        self::assertTrue($fs->isJunction($junction), $junction.': is a junction');
+        self::assertTrue($fs->isJunction($target.'/../../junction'), $target.'/../../junction: is a junction');
     }
 
     public function testCopy(): void
@@ -362,17 +364,17 @@ class FilesystemTest extends TestCase
         $fs = new Filesystem();
 
         $result1 = $fs->copy($this->workingDir . '/foo', $this->workingDir . '/foop');
-        $this->assertTrue($result1, 'Copying directory failed.');
-        $this->assertDirectoryExists($this->workingDir . '/foop', 'Not a directory: ' . $this->workingDir . '/foop');
-        $this->assertDirectoryExists($this->workingDir . '/foop/bar', 'Not a directory: ' . $this->workingDir . '/foop/bar');
-        $this->assertDirectoryExists($this->workingDir . '/foop/baz', 'Not a directory: ' . $this->workingDir . '/foop/baz');
-        $this->assertFileExists($this->workingDir . '/foop/foo.file', 'Not a file: ' . $this->workingDir . '/foop/foo.file');
-        $this->assertFileExists($this->workingDir . '/foop/bar/foobar.file', 'Not a file: ' . $this->workingDir . '/foop/bar/foobar.file');
-        $this->assertFileExists($this->workingDir . '/foop/baz/foobaz.file', 'Not a file: ' . $this->workingDir . '/foop/baz/foobaz.file');
+        self::assertTrue($result1, 'Copying directory failed.');
+        self::assertDirectoryExists($this->workingDir . '/foop', 'Not a directory: ' . $this->workingDir . '/foop');
+        self::assertDirectoryExists($this->workingDir . '/foop/bar', 'Not a directory: ' . $this->workingDir . '/foop/bar');
+        self::assertDirectoryExists($this->workingDir . '/foop/baz', 'Not a directory: ' . $this->workingDir . '/foop/baz');
+        self::assertFileExists($this->workingDir . '/foop/foo.file', 'Not a file: ' . $this->workingDir . '/foop/foo.file');
+        self::assertFileExists($this->workingDir . '/foop/bar/foobar.file', 'Not a file: ' . $this->workingDir . '/foop/bar/foobar.file');
+        self::assertFileExists($this->workingDir . '/foop/baz/foobaz.file', 'Not a file: ' . $this->workingDir . '/foop/baz/foobaz.file');
 
         $result2 = $fs->copy($this->testFile, $this->workingDir . '/testfile.file');
-        $this->assertTrue($result2);
-        $this->assertFileExists($this->workingDir . '/testfile.file');
+        self::assertTrue($result2);
+        self::assertFileExists($this->workingDir . '/testfile.file');
     }
 
     public function testCopyThenRemove(): void
@@ -387,14 +389,14 @@ class FilesystemTest extends TestCase
         $fs = new Filesystem();
 
         $fs->copyThenRemove($this->testFile, $this->workingDir . '/testfile.file');
-        $this->assertFileDoesNotExist($this->testFile, 'Still a file: ' . $this->testFile);
+        self::assertFileDoesNotExist($this->testFile, 'Still a file: ' . $this->testFile);
 
         $fs->copyThenRemove($this->workingDir . '/foo', $this->workingDir . '/foop');
-        $this->assertFileDoesNotExist($this->workingDir . '/foo/baz/foobaz.file', 'Still a file: ' . $this->workingDir . '/foo/baz/foobaz.file');
-        $this->assertFileDoesNotExist($this->workingDir . '/foo/bar/foobar.file', 'Still a file: ' . $this->workingDir . '/foo/bar/foobar.file');
-        $this->assertFileDoesNotExist($this->workingDir . '/foo/foo.file', 'Still a file: ' . $this->workingDir . '/foo/foo.file');
-        $this->assertDirectoryDoesNotExist($this->workingDir . '/foo/baz', 'Still a directory: ' . $this->workingDir . '/foo/baz');
-        $this->assertDirectoryDoesNotExist($this->workingDir . '/foo/bar', 'Still a directory: ' . $this->workingDir . '/foo/bar');
-        $this->assertDirectoryDoesNotExist($this->workingDir . '/foo', 'Still a directory: ' . $this->workingDir . '/foo');
+        self::assertFileDoesNotExist($this->workingDir . '/foo/baz/foobaz.file', 'Still a file: ' . $this->workingDir . '/foo/baz/foobaz.file');
+        self::assertFileDoesNotExist($this->workingDir . '/foo/bar/foobar.file', 'Still a file: ' . $this->workingDir . '/foo/bar/foobar.file');
+        self::assertFileDoesNotExist($this->workingDir . '/foo/foo.file', 'Still a file: ' . $this->workingDir . '/foo/foo.file');
+        self::assertDirectoryDoesNotExist($this->workingDir . '/foo/baz', 'Still a directory: ' . $this->workingDir . '/foo/baz');
+        self::assertDirectoryDoesNotExist($this->workingDir . '/foo/bar', 'Still a directory: ' . $this->workingDir . '/foo/bar');
+        self::assertDirectoryDoesNotExist($this->workingDir . '/foo', 'Still a directory: ' . $this->workingDir . '/foo');
     }
 }

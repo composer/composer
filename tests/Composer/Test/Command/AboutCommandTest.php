@@ -12,10 +12,10 @@ class AboutCommandTest extends TestCase
     {
         $composerVersion = Composer::getVersion();
         $appTester = $this->getApplicationTester();
-        $this->assertSame(0, $appTester->run(['command' => 'about']));
-        $this->assertStringContainsString("Composer - Dependency Manager for PHP - version $composerVersion", $appTester->getDisplay());
+        self::assertSame(0, $appTester->run(['command' => 'about']));
+        self::assertStringContainsString("Composer - Dependency Manager for PHP - version $composerVersion", $appTester->getDisplay());
 
-        $this->assertStringContainsString("Composer is a dependency manager tracking local dependencies of your projects and libraries.", $appTester->getDisplay());
-        $this->assertStringContainsString("See https://getcomposer.org/ for more information.", $appTester->getDisplay());
+        self::assertStringContainsString("Composer is a dependency manager tracking local dependencies of your projects and libraries.", $appTester->getDisplay());
+        self::assertStringContainsString("See https://getcomposer.org/ for more information.", $appTester->getDisplay());
     }
 }

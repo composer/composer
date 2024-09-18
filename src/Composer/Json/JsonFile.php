@@ -284,7 +284,7 @@ class JsonFile
             return Preg::replaceCallback(
                 '#^ {4,}#m',
                 static function ($match) use ($indent): string {
-                    return str_repeat($indent, (int)(strlen($match[0] ?? '') / 4));
+                    return str_repeat($indent, (int)(strlen($match[0]) / 4));
                 },
                 $json
             );

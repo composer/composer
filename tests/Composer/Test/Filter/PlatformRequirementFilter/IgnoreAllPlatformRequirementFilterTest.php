@@ -24,8 +24,8 @@ final class IgnoreAllPlatformRequirementFilterTest extends TestCase
     {
         $platformRequirementFilter = new IgnoreAllPlatformRequirementFilter();
 
-        $this->assertSame($expectIgnored, $platformRequirementFilter->isIgnored($req));
-        $this->assertSame($expectIgnored, $platformRequirementFilter->isUpperBoundIgnored($req));
+        self::assertSame($expectIgnored, $platformRequirementFilter->isIgnored($req));
+        self::assertSame($expectIgnored, $platformRequirementFilter->isUpperBoundIgnored($req));
     }
 
     /**

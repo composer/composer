@@ -36,8 +36,8 @@ class PathRepositoryTest extends TestCase
         $repository = $this->createPathRepo(['url' => $repositoryUrl]);
         $repository->getPackages();
 
-        $this->assertSame(1, $repository->count());
-        $this->assertTrue($repository->hasPackage(self::getPackage('test/path-versioned', '0.0.2')));
+        self::assertSame(1, $repository->count());
+        self::assertTrue($repository->hasPackage(self::getPackage('test/path-versioned', '0.0.2')));
     }
 
     public function testLoadPackageFromFileSystemWithoutVersion(): void
@@ -46,13 +46,13 @@ class PathRepositoryTest extends TestCase
         $repository = $this->createPathRepo(['url' => $repositoryUrl]);
         $packages = $repository->getPackages();
 
-        $this->assertGreaterThanOrEqual(1, $repository->count());
+        self::assertGreaterThanOrEqual(1, $repository->count());
 
         $package = $packages[0];
-        $this->assertSame('test/path-unversioned', $package->getName());
+        self::assertSame('test/path-unversioned', $package->getName());
 
         $packageVersion = $package->getVersion();
-        $this->assertNotEmpty($packageVersion);
+        self::assertNotEmpty($packageVersion);
     }
 
     public function testLoadPackageFromFileSystemWithWildcard(): void
@@ -62,7 +62,7 @@ class PathRepositoryTest extends TestCase
         $packages = $repository->getPackages();
         $names = [];
 
-        $this->assertGreaterThanOrEqual(2, $repository->count());
+        self::assertGreaterThanOrEqual(2, $repository->count());
 
         $package = $packages[0];
         $names[] = $package->getName();
@@ -71,7 +71,7 @@ class PathRepositoryTest extends TestCase
         $names[] = $package->getName();
 
         sort($names);
-        $this->assertEquals(['test/path-unversioned', 'test/path-versioned'], $names);
+        self::assertEquals(['test/path-unversioned', 'test/path-versioned'], $names);
     }
 
     public function testLoadPackageWithExplicitVersions(): void
@@ -88,7 +88,7 @@ class PathRepositoryTest extends TestCase
 
         $versions = [];
 
-        $this->assertEquals(2, $repository->count());
+        self::assertEquals(2, $repository->count());
 
         $package = $packages[0];
         $versions[$package->getName()] = $package->getVersion();
@@ -97,7 +97,7 @@ class PathRepositoryTest extends TestCase
         $versions[$package->getName()] = $package->getVersion();
 
         ksort($versions);
-        $this->assertSame(['test/path-unversioned' => '4.3.2.1', 'test/path-versioned' => '3.2.1.0'], $versions);
+        self::assertSame(['test/path-unversioned' => '4.3.2.1', 'test/path-versioned' => '3.2.1.0'], $versions);
     }
 
     /**
@@ -115,14 +115,14 @@ class PathRepositoryTest extends TestCase
         $repository = $this->createPathRepo(['url' => $relativeUrl]);
         $packages = $repository->getPackages();
 
-        $this->assertSame(1, $repository->count());
+        self::assertSame(1, $repository->count());
 
         $package = $packages[0];
-        $this->assertSame('test/path-versioned', $package->getName());
+        self::assertSame('test/path-versioned', $package->getName());
 
         // Convert platform specific separators back to generic URL slashes
         $relativeUrl = str_replace(DIRECTORY_SEPARATOR, '/', $relativeUrl);
-        $this->assertSame($relativeUrl, $package->getDistUrl());
+        self::assertSame($relativeUrl, $package->getDistUrl());
     }
 
     public function testReferenceNone(): void
@@ -134,10 +134,10 @@ class PathRepositoryTest extends TestCase
         $repository = $this->createPathRepo(['url' => $repositoryUrl, 'options' => $options]);
         $packages = $repository->getPackages();
 
-        $this->assertGreaterThanOrEqual(2, $repository->count());
+        self::assertGreaterThanOrEqual(2, $repository->count());
 
         foreach ($packages as $package) {
-            $this->assertEquals($package->getDistReference(), null);
+            self::assertEquals($package->getDistReference(), null);
         }
     }
 
@@ -151,12 +151,12 @@ class PathRepositoryTest extends TestCase
         $repository = $this->createPathRepo(['url' => $repositoryUrl, 'options' => $options]);
         $packages = $repository->getPackages();
 
-        $this->assertGreaterThanOrEqual(2, $repository->count());
+        self::assertGreaterThanOrEqual(2, $repository->count());
 
         foreach ($packages as $package) {
-            $this->assertEquals(
+            self::assertEquals(
                 $package->getDistReference(),
-                sha1(file_get_contents($package->getDistUrl() . '/composer.json') . serialize($options))
+                hash('sha1', file_get_contents($package->getDistUrl() . '/composer.json') . serialize($options))
             );
         }
     }

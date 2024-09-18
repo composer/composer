@@ -273,7 +273,7 @@ class MyCommand extends Command
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('arbitrary-flag')) {
-            $output->writeln('The flag was used')
+            $output->writeln('The flag was used');
         }
 
         return 0;
@@ -409,6 +409,38 @@ JSON array of commands.
 
 You can also call a shell/bash script, which will have the path to
 the PHP executable available in it as a `PHP_BINARY` env var.
+
+## Controlling additional arguments
+
+When running scripts like `composer script-name arg arg2` or `composer script-name -- --option`,
+Composer will by default append `arg`, `arg2` and `--option` to the script's command.
+
+If you do not want these args in a given command, you can put `@no_additional_args`
+anywhere in it, that will remove the default behavior and that flag will be removed
+as well before running the command.
+
+If you want the args to be added somewhere else than at the very end, then you can put
+`@additional_args` to be able to choose exactly where they go.
+
+For example running `composer run-commands ARG` with the below config:
+
+```json
+{
+    "scripts": {
+        "run-commands": [
+            "echo hello @no_additional_args",
+            "command-with-args @additional_args && do-something-without-args --here"
+        ]
+    }
+}
+```
+
+Would end up executing these commands:
+
+```
+echo hello
+command-with-args ARG && do-something-without-args --here
+```
 
 ## Setting environment variables
 

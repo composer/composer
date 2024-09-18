@@ -4,7 +4,10 @@ includes:
     - ../vendor/phpstan/phpstan-deprecation-rules/rules.neon
     - ../vendor/phpstan/phpstan-strict-rules/rules.neon
     - ../vendor/phpstan/phpstan-symfony/extension.neon
+    - ../vendor/composer/pcre/extension.neon
     - ../vendor/phpstan/phpstan-symfony/rules.neon
+    # TODO when requiring php 7.4+ we can use this
+    #- ../vendor/staabm/phpstan-todo-by/extension.neon
     - ./rules.neon # Composer-specific PHPStan extensions, can be reused by third party packages by including 'vendor/composer/composer/phpstan/rules.neon' in your phpstan config
     - ./baseline.neon
     - ./ignore-by-php-version.neon.php
@@ -15,12 +18,12 @@ parameters:
     excludePaths:
        - '../tests/Composer/Test/Fixtures/*'
        - '../tests/Composer/Test/Autoload/Fixtures/*'
-       - '../tests/Composer/Test/Autoload/MinimumVersionSupport/vendor/'
+       - '../tests/Composer/Test/Autoload/MinimumVersionSupport/vendor/*'
        - '../tests/Composer/Test/Plugin/Fixtures/*'
-       - '../tests/Composer/Test/PolyfillTestCase.php'
 
     reportUnmatchedIgnoredErrors: false
     treatPhpDocTypesAsCertain: false
+    reportPossiblyNonexistentConstantArrayOffset: true
 
     ignoreErrors:
         # unused parameters

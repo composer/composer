@@ -51,14 +51,14 @@ class ArtifactRepositoryTest extends TestCase
         sort($expectedPackages);
         sort($foundPackages);
 
-        $this->assertSame($expectedPackages, $foundPackages);
+        self::assertSame($expectedPackages, $foundPackages);
 
         $tarPackage = array_filter($repo->getPackages(), static function (BasePackage $package): bool {
             return $package->getPrettyName() === 'test/jsonInRootTarFile';
         });
-        $this->assertCount(1, $tarPackage);
+        self::assertCount(1, $tarPackage);
         $tarPackage = array_pop($tarPackage);
-        $this->assertSame('tar', $tarPackage->getDistType());
+        self::assertSame('tar', $tarPackage->getDistType());
     }
 
     public function testAbsoluteRepoUrlCreatesAbsoluteUrlPackages(): void
@@ -68,7 +68,7 @@ class ArtifactRepositoryTest extends TestCase
         $repo = new ArtifactRepository($coordinates, new NullIO());
 
         foreach ($repo->getPackages() as $package) {
-            $this->assertSame(strpos($package->getDistUrl(), strtr($absolutePath, '\\', '/')), 0);
+            self::assertSame(strpos($package->getDistUrl(), strtr($absolutePath, '\\', '/')), 0);
         }
     }
 
@@ -79,7 +79,7 @@ class ArtifactRepositoryTest extends TestCase
         $repo = new ArtifactRepository($coordinates, new NullIO());
 
         foreach ($repo->getPackages() as $package) {
-            $this->assertSame(strpos($package->getDistUrl(), $relativePath), 0);
+            self::assertSame(strpos($package->getDistUrl(), $relativePath), 0);
         }
     }
 }

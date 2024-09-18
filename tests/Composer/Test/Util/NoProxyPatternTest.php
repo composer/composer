@@ -24,7 +24,7 @@ class NoProxyPatternTest extends TestCase
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);
-        $this->assertEquals($expected, $matcher->test($url));
+        self::assertEquals($expected, $matcher->test($url));
     }
 
     public static function dataHostName(): array
@@ -51,7 +51,7 @@ class NoProxyPatternTest extends TestCase
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);
-        $this->assertEquals($expected, $matcher->test($url));
+        self::assertEquals($expected, $matcher->test($url));
     }
 
     public static function dataIpAddress(): array
@@ -76,7 +76,7 @@ class NoProxyPatternTest extends TestCase
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);
-        $this->assertEquals($expected, $matcher->test($url));
+        self::assertEquals($expected, $matcher->test($url));
     }
 
     public static function dataIpRange(): array
@@ -101,7 +101,7 @@ class NoProxyPatternTest extends TestCase
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);
-        $this->assertEquals($expected, $matcher->test($url));
+        self::assertEquals($expected, $matcher->test($url));
     }
 
     public static function dataPort(): array

@@ -324,6 +324,12 @@
                                 "example": "without-xdebug-compression",
                                 "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]*$"
                             },
+                            "needs-value": {
+                                "type": "boolean",
+                                "description": "If this is set to true, the flag needs a value (e.g. --with-somelib=<path>), otherwise it is a flag without a value (e.g. --enable-some-feature).",
+                                "example": false,
+                                "default": false
+                            },
                             "description": {
                                 "type": "string",
                                 "description": "The description of what the flag does or means.",
@@ -660,6 +666,10 @@
                 "bump-after-update": {
                     "type": ["string", "boolean"],
                     "description": "Defaults to false and can be any of true, false, \"dev\"` or \"no-dev\"`. If set to true, Composer will run the bump command after running the update command. If set to \"dev\" or \"no-dev\" then only the corresponding dependencies will be bumped."
+                },
+                "allow-missing-requirements": {
+                    "type": ["boolean"],
+                    "description": "Defaults to false. If set to true, Composer will allow install when lock file is not up to date with the latest changes in composer.json."
                 }
             }
         },

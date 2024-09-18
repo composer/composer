@@ -12,6 +12,8 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Package\Link;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 use InvalidArgumentException;
 
@@ -33,7 +35,7 @@ class UpdateCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true], $command));
 
-        $this->assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+        self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
     }
 
     public static function provideUpdates(): \Generator
@@ -186,13 +188,143 @@ OUTPUT
 
     }
 
-    public function testInteractiveModeThrowsIfNoPackageEntered(): void
+    public function testInteractiveModeThrowsIfNoPackageToUpdate(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('You must enter minimum one package.');
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/req', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/req' => '1.*',
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('root/req', '1.0.0')]);
+        self::expectExceptionMessage('Could not find any package with new versions available');
 
         $appTester = $this->getApplicationTester();
         $appTester->setInputs(['']);
         $appTester->run(['command' => 'update', '--interactive' => true]);
+    }
+
+    public function testInteractiveModeThrowsIfNoPackageEntered(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/req', 'version' => '1.0.0'],
+                        ['name' => 'root/req', 'version' => '1.0.1'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/req' => '1.*',
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('root/req', '1.0.0')]);
+        self::expectExceptionMessage('No package named "" is installed.');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->setInputs(['']);
+        $appTester->run(['command' => 'update', '--interactive' => true]);
+    }
+
+    /**
+     * @dataProvider provideInteractiveUpdates
+     * @param array<mixed> $packageNames
+     */
+    public function testInteractiveTmp(array $packageNames, string $expected): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/req', 'version' => '1.0.0', 'require' => ['dep/pkg' => '^1']],
+                        ['name' => 'dep/pkg', 'version' => '1.0.0'],
+                        ['name' => 'dep/pkg', 'version' => '1.0.1'],
+                        ['name' => 'dep/pkg', 'version' => '1.0.2'],
+                        ['name' => 'another-dep/pkg', 'version' => '1.0.2'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/req' => '1.*',
+            ],
+        ]);
+
+        $rootPackage = self::getPackage('root/req');
+        $packages = [$rootPackage];
+
+        foreach ($packageNames as $pkg => $ver) {
+            $currentPkg = self::getPackage($pkg, $ver);
+            array_push($packages, $currentPkg);
+        }
+
+        $rootPackage->setRequires([
+            'dep/pkg' => new Link(
+                'root/req',
+                'dep/pkg',
+                new MatchAllConstraint(),
+                Link::TYPE_REQUIRE,
+                '^1'
+            ),
+            'another-dep/pkg' => new Link(
+                'root/req',
+                'another-dep/pkg',
+                new MatchAllConstraint(),
+                Link::TYPE_REQUIRE,
+                '^1'
+            ),
+        ]);
+
+        $this->createComposerLock($packages);
+        $this->createInstalledJson($packages);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->setInputs(array_merge(array_keys($packageNames), ['', 'yes']));
+        $appTester->run([
+            'command' => 'update', '--interactive' => true,
+            '--no-audit' => true,
+            '--dry-run' => true,
+        ]);
+
+        self::assertStringEndsWith(
+            trim($expected),
+            trim($appTester->getDisplay(true))
+        );
+    }
+
+    public function provideInteractiveUpdates(): \Generator
+    {
+        yield [
+            ['dep/pkg' => '1.0.1'],
+            <<<OUTPUT
+Lock file operations: 1 install, 1 update, 0 removals
+  - Locking another-dep/pkg (1.0.2)
+  - Upgrading dep/pkg (1.0.1 => 1.0.2)
+Installing dependencies from lock file (including require-dev)
+Package operations: 1 install, 1 update, 0 removals
+  - Upgrading dep/pkg (1.0.1 => 1.0.2)
+  - Installing another-dep/pkg (1.0.2)
+OUTPUT
+        ];
+
+        yield [
+            ['dep/pkg' => '1.0.1', 'another-dep/pkg' => '1.0.2'],
+            <<<OUTPUT
+Lock file operations: 0 installs, 1 update, 0 removals
+  - Upgrading dep/pkg (1.0.1 => 1.0.2)
+Installing dependencies from lock file (including require-dev)
+Package operations: 0 installs, 1 update, 0 removals
+  - Upgrading dep/pkg (1.0.1 => 1.0.2)
+OUTPUT
+        ];
     }
 }

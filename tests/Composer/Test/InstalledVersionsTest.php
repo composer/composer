@@ -41,7 +41,7 @@ class InstalledVersionsTest extends TestCase
         $prop = new \ReflectionProperty('Composer\Autoload\ClassLoader', 'registeredLoaders');
         $prop->setAccessible(true);
         $prop->setValue(null, self::$previousRegisteredLoaders);
-        InstalledVersions::reload(null); // @phpstan-ignore-line
+        InstalledVersions::reload(null); // @phpstan-ignore argument.type
     }
 
     public function setUp(): void
@@ -65,7 +65,7 @@ class InstalledVersionsTest extends TestCase
             'foo/replaced',
             'meta/package',
         ];
-        $this->assertSame($names, InstalledVersions::getInstalledPackages());
+        self::assertSame($names, InstalledVersions::getInstalledPackages());
     }
 
     /**
@@ -73,7 +73,7 @@ class InstalledVersionsTest extends TestCase
      */
     public function testIsInstalled(bool $expected, string $name, bool $includeDevRequirements = true): void
     {
-        $this->assertSame($expected, InstalledVersions::isInstalled($name, $includeDevRequirements));
+        self::assertSame($expected, InstalledVersions::isInstalled($name, $includeDevRequirements));
     }
 
     public static function isInstalledProvider(): array
@@ -95,7 +95,7 @@ class InstalledVersionsTest extends TestCase
      */
     public function testSatisfies(bool $expected, string $name, string $constraint): void
     {
-        $this->assertSame($expected, InstalledVersions::satisfies(new VersionParser, $name, $constraint));
+        self::assertSame($expected, InstalledVersions::satisfies(new VersionParser, $name, $constraint));
     }
 
     public static function satisfiesProvider(): array
@@ -133,7 +133,7 @@ class InstalledVersionsTest extends TestCase
      */
     public function testGetVersionRanges(string $expected, string $name): void
     {
-        $this->assertSame($expected, InstalledVersions::getVersionRanges($name));
+        self::assertSame($expected, InstalledVersions::getVersionRanges($name));
     }
 
     public static function getVersionRangesProvider(): array
@@ -155,7 +155,7 @@ class InstalledVersionsTest extends TestCase
      */
     public function testGetVersion(?string $expected, string $name): void
     {
-        $this->assertSame($expected, InstalledVersions::getVersion($name));
+        self::assertSame($expected, InstalledVersions::getVersion($name));
     }
 
     public static function getVersionProvider(): array
@@ -177,7 +177,7 @@ class InstalledVersionsTest extends TestCase
      */
     public function testGetPrettyVersion(?string $expected, string $name): void
     {
-        $this->assertSame($expected, InstalledVersions::getPrettyVersion($name));
+        self::assertSame($expected, InstalledVersions::getPrettyVersion($name));
     }
 
     public static function getPrettyVersionProvider(): array
@@ -202,7 +202,7 @@ class InstalledVersionsTest extends TestCase
 
     public function testGetRootPackage(): void
     {
-        $this->assertSame([
+        self::assertSame([
             'name' => '__root__',
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
@@ -222,7 +222,7 @@ class InstalledVersionsTest extends TestCase
     public function testGetRawData(): void
     {
         $dir = $this->root;
-        $this->assertSame(require __DIR__.'/Repository/Fixtures/installed_relative.php', InstalledVersions::getRawData());
+        self::assertSame(require __DIR__.'/Repository/Fixtures/installed_relative.php', InstalledVersions::getRawData());
     }
 
     /**
@@ -230,7 +230,7 @@ class InstalledVersionsTest extends TestCase
      */
     public function testGetReference(?string $expected, string $name): void
     {
-        $this->assertSame($expected, InstalledVersions::getReference($name));
+        self::assertSame($expected, InstalledVersions::getReference($name));
     }
 
     public static function getReferenceProvider(): array
@@ -257,13 +257,13 @@ class InstalledVersionsTest extends TestCase
             'c/c',
         ];
 
-        $this->assertSame($names, \Composer\InstalledVersions::getInstalledPackagesByType('library'));
+        self::assertSame($names, \Composer\InstalledVersions::getInstalledPackagesByType('library'));
     }
 
     public function testGetInstallPath(): void
     {
-        $this->assertSame(realpath($this->root), realpath(\Composer\InstalledVersions::getInstallPath('__root__')));
-        $this->assertSame('/foo/bar/vendor/c/c', \Composer\InstalledVersions::getInstallPath('c/c'));
-        $this->assertNull(\Composer\InstalledVersions::getInstallPath('foo/impl'));
+        self::assertSame(realpath($this->root), realpath(\Composer\InstalledVersions::getInstallPath('__root__')));
+        self::assertSame('/foo/bar/vendor/c/c', \Composer\InstalledVersions::getInstallPath('c/c'));
+        self::assertNull(\Composer\InstalledVersions::getInstallPath('foo/impl'));
     }
 }

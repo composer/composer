@@ -77,9 +77,9 @@ class CacheTest extends TestCase
         $this->cache->gc(600, 1024 * 1024 * 1024);
 
         for ($i = 1; $i < 4; $i++) {
-            $this->assertFileDoesNotExist("{$this->root}/cached.file{$i}.zip");
+            self::assertFileDoesNotExist("{$this->root}/cached.file{$i}.zip");
         }
-        $this->assertFileExists("{$this->root}/cached.file0.zip");
+        self::assertFileExists("{$this->root}/cached.file0.zip");
     }
 
     public function testRemoveFilesWhenCacheIsTooLarge(): void
@@ -106,15 +106,15 @@ class CacheTest extends TestCase
         $this->cache->gc(600, 1500);
 
         for ($i = 0; $i < 3; $i++) {
-            $this->assertFileDoesNotExist("{$this->root}/cached.file{$i}.zip");
+            self::assertFileDoesNotExist("{$this->root}/cached.file{$i}.zip");
         }
-        $this->assertFileExists("{$this->root}/cached.file3.zip");
+        self::assertFileExists("{$this->root}/cached.file3.zip");
     }
 
     public function testClearCache(): void
     {
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $cache = new Cache($io, $this->root, 'a-z0-9.', $this->filesystem);
-        $this->assertTrue($cache->clear());
+        self::assertTrue($cache->clear());
     }
 }

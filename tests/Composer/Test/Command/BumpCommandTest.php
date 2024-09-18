@@ -41,10 +41,10 @@ class BumpCommandTest extends TestCase
         }
 
         $appTester = $this->getApplicationTester();
-        $this->assertSame($exitCode, $appTester->run(array_merge(['command' => 'bump'], $command)));
+        self::assertSame($exitCode, $appTester->run(array_merge(['command' => 'bump'], $command)));
 
         $json = new JsonFile('./composer.json');
-        $this->assertSame($expected, $json->read());
+        self::assertSame($expected, $json->read());
     }
 
     public function testBumpFailsOnNonExistingComposerFile(): void
@@ -54,9 +54,9 @@ class BumpCommandTest extends TestCase
         unlink($composerJsonPath);
 
         $appTester = $this->getApplicationTester();
-        $this->assertSame(1, $appTester->run(['command' => 'bump'], ['capture_stderr_separately' => true]));
+        self::assertSame(1, $appTester->run(['command' => 'bump'], ['capture_stderr_separately' => true]));
 
-        $this->assertStringContainsString("./composer.json is not readable.", $appTester->getErrorOutput());
+        self::assertStringContainsString("./composer.json is not readable.", $appTester->getErrorOutput());
     }
 
     public function testBumpFailsOnWriteErrorToComposerFile(): void
@@ -66,9 +66,9 @@ class BumpCommandTest extends TestCase
         chmod($composerJsonPath, 0444);
 
         $appTester = $this->getApplicationTester();
-        $this->assertSame(1, $appTester->run(['command' => 'bump'], ['capture_stderr_separately' => true]));
+        self::assertSame(1, $appTester->run(['command' => 'bump'], ['capture_stderr_separately' => true]));
 
-        $this->assertStringContainsString("./composer.json is not writable.", $appTester->getErrorOutput());
+        self::assertStringContainsString("./composer.json is not writable.", $appTester->getErrorOutput());
     }
 
     public static function provideTests(): \Generator

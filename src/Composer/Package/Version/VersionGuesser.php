@@ -173,7 +173,7 @@ class VersionGuesser
                 $featurePrettyVersion = $prettyVersion;
 
                 // try to find the best (nearest) version branch to assume this feature's version
-                $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path);
+                $result = $this->guessFeatureVersion($packageConfig, $version, $branches, ['git', 'rev-list', '%candidate%..%branch%'], $path);
                 $version = $result['version'];
                 $prettyVersion = $result['pretty_version'];
             }
@@ -248,7 +248,7 @@ class VersionGuesser
             $branches = array_map('strval', array_keys($driver->getBranches()));
 
             // try to find the best (nearest) version branch to assume this feature's version
-            $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path);
+            $result = $this->guessFeatureVersion($packageConfig, $version, $branches, ['hg', 'log', '-r', 'not ancestors(\'%candidate%\') and ancestors(\'%branch%\')', '--template', '"{node}\\n"'], $path);
             $result['commit'] = '';
             $result['feature_version'] = $version;
             $result['feature_pretty_version'] = $version;
@@ -261,13 +261,12 @@ class VersionGuesser
 
     /**
      * @param array<string, mixed>     $packageConfig
-     * @param string[]                 $branches
-     *
-     * @phpstan-param non-empty-string $scmCmdline
+     * @param list<string>             $branches
+     * @param list<string>             $scmCmdline
      *
      * @return array{version: string|null, pretty_version: string|null}
      */
-    private function guessFeatureVersion(array $packageConfig, ?string $version, array $branches, string $scmCmdline, string $path): array
+    private function guessFeatureVersion(array $packageConfig, ?string $version, array $branches, array $scmCmdline, string $path): array
     {
         $prettyVersion = $version;
 
@@ -309,7 +308,9 @@ class VersionGuesser
                         continue;
                     }
 
-                    $cmdLine = str_replace(['%candidate%', '%branch%'], [$candidate, $branch], $scmCmdline);
+                    $cmdLine = array_map(static function (string $component) use ($candidate, $branch) {
+                        return str_replace(['%candidate%', '%branch%'], [$candidate, $branch], $component);
+                    }, $scmCmdline);
                     $promises[] = $this->process->executeAsync($cmdLine, $path)->then(function (Process $process) use (&$length, &$version, &$prettyVersion, $candidateVersion, &$promises): void {
                         if (!$process->isSuccessful()) {
                             return;
@@ -418,5 +419,18 @@ class VersionGuesser
         }
 
         return null;
+    }
+
+    public function getRootVersionFromEnv(): string
+    {
+        $version = Platform::getEnv('COMPOSER_ROOT_VERSION');
+        if (!is_string($version) || $version === '') {
+            throw new \RuntimeException('COMPOSER_ROOT_VERSION not set or empty');
+        }
+        if (Preg::isMatch('{^(\d+(?:\.\d+)*)-dev$}i', $version, $match)) {
+            $version = $match[1].'.x-dev';
+        }
+
+        return $version;
     }
 }

@@ -94,9 +94,9 @@ class SolverTest extends TestCase
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
-            $this->assertCount(1, $problems);
-            $this->assertEquals(2, $e->getCode());
-            $this->assertEquals("\n    - Root composer.json requires b, it could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString($this->repoSet, $this->request, $this->pool, false));
+            self::assertCount(1, $problems);
+            self::assertEquals(2, $e->getCode());
+            self::assertEquals("\n    - Root composer.json requires b, it could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
     }
 
@@ -772,14 +772,14 @@ class SolverTest extends TestCase
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
-            $this->assertCount(1, $problems);
+            self::assertCount(1, $problems);
 
             $msg = "\n";
             $msg .= "  Problem 1\n";
             $msg .= "    - Root composer.json requires a * -> satisfiable by A[1.0].\n";
-            $msg .= "    - A 1.0 conflicts with B 1.0.\n";
             $msg .= "    - Root composer.json requires b * -> satisfiable by B[1.0].\n";
-            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
+            $msg .= "    - A 1.0 conflicts with B 1.0.\n";
+            self::assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
     }
 
@@ -802,14 +802,14 @@ class SolverTest extends TestCase
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
-            $this->assertCount(1, $problems);
+            self::assertCount(1, $problems);
             // TODO assert problem properties
 
             $msg = "\n";
             $msg .= "  Problem 1\n";
             $msg .= "    - Root composer.json requires a * -> satisfiable by A[1.0].\n";
             $msg .= "    - A 1.0 requires b >= 2.0 -> found B[1.0] but it does not match the constraint.\n";
-            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
+            self::assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
     }
 
@@ -847,17 +847,17 @@ class SolverTest extends TestCase
             $this->fail('Unsolvable conflict did not result in exception.');
         } catch (SolverProblemsException $e) {
             $problems = $e->getProblems();
-            $this->assertCount(1, $problems);
+            self::assertCount(1, $problems);
 
             $msg = "\n";
             $msg .= "  Problem 1\n";
+            $msg .= "    - Root composer.json requires a * -> satisfiable by A[1.0].\n";
+            $msg .= "    - A 1.0 requires b >= 1.0 -> satisfiable by B[1.0].\n";
+            $msg .= "    - B 1.0 requires c >= 1.0 -> satisfiable by C[1.0].\n";
             $msg .= "    - C 1.0 requires d >= 1.0 -> satisfiable by D[1.0].\n";
             $msg .= "    - D 1.0 requires b < 1.0 -> satisfiable by B[0.9].\n";
-            $msg .= "    - B 1.0 requires c >= 1.0 -> satisfiable by C[1.0].\n";
             $msg .= "    - You can only install one version of a package, so only one of these can be installed: B[0.9, 1.0].\n";
-            $msg .= "    - A 1.0 requires b >= 1.0 -> satisfiable by B[1.0].\n";
-            $msg .= "    - Root composer.json requires a * -> satisfiable by A[1.0].\n";
-            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
+            self::assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
     }
 
@@ -1023,7 +1023,7 @@ class SolverTest extends TestCase
         $this->createSolver();
 
         // check correct setup for assertion later
-        $this->assertFalse($this->solver->testFlagLearnedPositiveLiteral);
+        self::assertFalse($this->solver->testFlagLearnedPositiveLiteral);
 
         $this->checkSolverResult([
             ['job' => 'install', 'package' => $packageF1],
@@ -1037,7 +1037,7 @@ class SolverTest extends TestCase
 
         // verify that the code path leading to a negative literal resulting in a positive learned literal is actually
         // executed
-        $this->assertTrue($this->solver->testFlagLearnedPositiveLiteral);
+        self::assertTrue($this->solver->testFlagLearnedPositiveLiteral);
     }
 
     protected function reposComplete(): void
@@ -1094,7 +1094,7 @@ class SolverTest extends TestCase
             $resultReadable[] = array_map('strval', $op);
         }
 
-        $this->assertEquals($expectedReadable, $resultReadable);
-        $this->assertEquals($expected, $result);
+        self::assertEquals($expectedReadable, $resultReadable);
+        self::assertEquals($expected, $result);
     }
 }

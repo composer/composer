@@ -116,7 +116,7 @@ class ArchivableFilesFinderTest extends TestCase
 
         $this->finder = new ArchivableFilesFinder($this->sources, $excludes);
 
-        $this->assertArchivableFiles([
+        self::assertArchivableFiles([
             '/!important!.txt',
             '/!important_too!.txt',
             '/#weirdfile',
@@ -191,7 +191,7 @@ class ArchivableFilesFinderTest extends TestCase
 
         $this->finder = new ArchivableFilesFinder($this->sources, []);
 
-        $this->assertArchivableFiles($this->getArchivedFiles(
+        self::assertArchivableFiles($this->getArchivedFiles(
             'git init && '.
             'git config user.email "you@example.com" && '.
             'git config user.name "Your Name" && '.
@@ -212,7 +212,7 @@ class ArchivableFilesFinderTest extends TestCase
 
         $this->finder = new ArchivableFilesFinder($this->sources, $excludes, true);
 
-        $this->assertArchivableFiles([
+        self::assertArchivableFiles([
             '/!important!.txt',
             '/!important_too!.txt',
             '/#weirdfile',
@@ -306,6 +306,6 @@ class ArchivableFilesFinderTest extends TestCase
     {
         $actualFiles = $this->getArchivableFiles();
 
-        $this->assertEquals($expectedFiles, $actualFiles);
+        self::assertEquals($expectedFiles, $actualFiles);
     }
 }

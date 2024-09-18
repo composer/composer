@@ -26,7 +26,7 @@ class GitExcludeFilterTest extends TestCase
     {
         $filter = new GitExcludeFilter('/');
 
-        $this->assertEquals($expected, $filter->parseGitAttributesLine($ignore));
+        self::assertEquals($expected, $filter->parseGitAttributesLine($ignore));
     }
 
     public static function providePatterns(): array

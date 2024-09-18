@@ -102,7 +102,7 @@ class BitbucketTest extends TestCase
 
         $this->setExpectationsForStoringAccessToken();
 
-        $this->assertEquals(
+        self::assertEquals(
             $this->token,
             $this->bitbucket->requestToken($this->origin, $this->consumer_key, $this->consumer_secret)
         );
@@ -124,7 +124,7 @@ class BitbucketTest extends TestCase
                 ]
             );
 
-        $this->assertEquals(
+        self::assertEquals(
             $this->token,
             $this->bitbucket->requestToken($this->origin, $this->consumer_key, $this->consumer_secret)
         );
@@ -178,7 +178,7 @@ class BitbucketTest extends TestCase
 
         $this->setExpectationsForStoringAccessToken();
 
-        $this->assertEquals(
+        self::assertEquals(
             $this->token,
             $this->bitbucket->requestToken($this->origin, $this->consumer_key, $this->consumer_secret)
         );
@@ -222,7 +222,7 @@ class BitbucketTest extends TestCase
             ->with('bitbucket-oauth')
             ->willReturn(null);
 
-        $this->assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
+        self::assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
     }
 
     public function testRequestAccessTokenWithUsernameAndPasswordWithUnauthorizedResponse(): void
@@ -252,7 +252,7 @@ class BitbucketTest extends TestCase
             )
             ->willThrowException(new \Composer\Downloader\TransportException('HTTP/1.1 401 UNAUTHORIZED', 401));
 
-        $this->assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
+        self::assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
     }
 
     public function testRequestAccessTokenWithUsernameAndPasswordWithNotFoundResponse(): void
@@ -315,7 +315,7 @@ class BitbucketTest extends TestCase
 
         $this->setExpectationsForStoringAccessToken(true);
 
-        $this->assertTrue($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
+        self::assertTrue($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
     public function testAuthorizeOAuthInteractivelyWithEmptyUsername(): void
@@ -329,7 +329,7 @@ class BitbucketTest extends TestCase
             ['ask' => 'Consumer Key (hidden): ', 'reply' => ''],
         ]);
 
-        $this->assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
+        self::assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
     public function testAuthorizeOAuthInteractivelyWithEmptyPassword(): void
@@ -345,7 +345,7 @@ class BitbucketTest extends TestCase
             ['ask' => 'Consumer Secret (hidden): ', 'reply' => ''],
         ]);
 
-        $this->assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
+        self::assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
     public function testAuthorizeOAuthInteractivelyWithRequestAccessTokenFailure(): void
@@ -378,7 +378,7 @@ class BitbucketTest extends TestCase
                 )
             );
 
-        $this->assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
+        self::assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
     private function setExpectationsForStoringAccessToken(bool $removeBasicAuth = false): void
@@ -418,7 +418,7 @@ class BitbucketTest extends TestCase
 
     public function testGetTokenWithoutAccessToken(): void
     {
-        $this->assertSame('', $this->bitbucket->getToken());
+        self::assertSame('', $this->bitbucket->getToken());
     }
 
     /**
@@ -426,12 +426,12 @@ class BitbucketTest extends TestCase
      */
     public function testGetTokenWithAccessToken(Bitbucket $bitbucket): void
     {
-        $this->assertSame($this->token, $bitbucket->getToken());
+        self::assertSame($this->token, $bitbucket->getToken());
     }
 
     public function testAuthorizeOAuthWithWrongOriginUrl(): void
     {
-        $this->assertFalse($this->bitbucket->authorizeOAuth('non-' . $this->origin));
+        self::assertFalse($this->bitbucket->authorizeOAuth('non-' . $this->origin));
     }
 
     public function testAuthorizeOAuthWithoutAvailableGitConfigToken(): void
@@ -441,7 +441,7 @@ class BitbucketTest extends TestCase
 
         $bitbucket = new Bitbucket($this->io, $this->config, $process, $this->httpDownloader, $this->time);
 
-        $this->assertFalse($bitbucket->authorizeOAuth($this->origin));
+        self::assertFalse($bitbucket->authorizeOAuth($this->origin));
     }
 
     public function testAuthorizeOAuthWithAvailableGitConfigToken(): void
@@ -450,6 +450,6 @@ class BitbucketTest extends TestCase
 
         $bitbucket = new Bitbucket($this->io, $this->config, $process, $this->httpDownloader, $this->time);
 
-        $this->assertTrue($bitbucket->authorizeOAuth($this->origin));
+        self::assertTrue($bitbucket->authorizeOAuth($this->origin));
     }
 }

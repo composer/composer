@@ -32,7 +32,7 @@ class ConfigCommandTest extends TestCase
 
         $appTester->assertCommandIsSuccessful($appTester->getDisplay());
 
-        $this->assertSame($expected, json_decode((string) file_get_contents('composer.json'), true));
+        self::assertSame($expected, json_decode((string) file_get_contents('composer.json'), true));
     }
 
     public static function provideConfigUpdates(): \Generator
@@ -107,6 +107,16 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'extra.patches.foo/bar', 'setting-value' => ['{"123":"value"}'], '--json' => true, '--merge' => true],
             ['extra' => ['patches' => ['foo/bar' => [123 => 'value']]]],
         ];
+        yield 'unset autoload' => [
+            ['autoload' => ['psr-4' => ['test'], 'classmap' => ['test']]],
+            ['setting-key' => 'autoload.psr-4', '--unset' => true],
+            ['autoload' => ['classmap' => ['test']]],
+        ];
+        yield 'unset autoload-dev' => [
+            ['autoload-dev' => ['psr-4' => ['test'], 'classmap' => ['test']]],
+            ['setting-key' => 'autoload-dev.psr-4', '--unset' => true],
+            ['autoload-dev' => ['classmap' => ['test']]],
+        ];
     }
 
     /**
@@ -123,8 +133,8 @@ class ConfigCommandTest extends TestCase
 
         $appTester->assertCommandIsSuccessful();
 
-        $this->assertSame($expected, trim($appTester->getDisplay(true)));
-        $this->assertSame($composerJson, json_decode((string) file_get_contents('composer.json'), true), 'The composer.json should not be modified by config reads');
+        self::assertSame($expected, trim($appTester->getDisplay(true)));
+        self::assertSame($composerJson, json_decode((string) file_get_contents('composer.json'), true), 'The composer.json should not be modified by config reads');
     }
 
     public static function provideConfigReads(): \Generator

@@ -39,10 +39,10 @@ class FilesystemRepositoryTest extends TestCase
 
         $packages = $repository->getPackages();
 
-        $this->assertCount(1, $packages);
-        $this->assertSame('package1', $packages[0]->getName());
-        $this->assertSame('1.0.0.0-beta', $packages[0]->getVersion());
-        $this->assertSame('vendor', $packages[0]->getType());
+        self::assertCount(1, $packages);
+        self::assertSame('package1', $packages[0]->getName());
+        self::assertSame('1.0.0.0-beta', $packages[0]->getVersion());
+        self::assertSame('vendor', $packages[0]->getType());
     }
 
     public function testCorruptedRepositoryFile(): void
@@ -75,7 +75,7 @@ class FilesystemRepositoryTest extends TestCase
             ->method('exists')
             ->will($this->returnValue(false));
 
-        $this->assertEquals([], $repository->getPackages());
+        self::assertEquals([], $repository->getPackages());
     }
 
     public function testRepositoryWrite(): void
@@ -195,7 +195,7 @@ class FilesystemRepositoryTest extends TestCase
             }));
 
         $repository->write(true, $im);
-        $this->assertSame(file_get_contents(__DIR__.'/Fixtures/installed.php'), file_get_contents($dir.'/installed.php'));
+        self::assertSame(file_get_contents(__DIR__.'/Fixtures/installed.php'), file_get_contents($dir.'/installed.php'));
     }
 
     public function testSafelyLoadInstalledVersions(): void

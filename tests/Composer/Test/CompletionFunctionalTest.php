@@ -136,13 +136,13 @@ class CompletionFunctionalTest extends TestCase
         $suggestions = $tester->complete($input);
 
         if (null === $expectedSuggestions) {
-            $this->assertEmpty($suggestions);
+            self::assertEmpty($suggestions);
 
             return;
         }
 
         $diff = array_diff($expectedSuggestions, $suggestions);
-        $this->assertEmpty($diff, sprintf('Suggestions must contain "%s". Got "%s".', implode('", "', $diff), implode('", "', $suggestions)));
+        self::assertEmpty($diff, sprintf('Suggestions must contain "%s". Got "%s".', implode('", "', $diff), implode('", "', $suggestions)));
     }
 
     private function getApplication(): Application

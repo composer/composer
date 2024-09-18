@@ -169,7 +169,7 @@ EOT
         }
 
         if ($version !== null && Preg::isMatchStrictGroups('{@(stable|RC|beta|alpha|dev)$}i', $version, $match)) {
-            $minStability = $match[1];
+            $minStability = VersionParser::normalizeStability($match[1]);
             $version = (string) substr($version, 0, -strlen($match[0]));
         }
 

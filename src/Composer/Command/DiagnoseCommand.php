@@ -630,7 +630,7 @@ EOT
             $errors['ioncube'] = ioncube_loader_version();
         }
 
-        if (PHP_VERSION_ID < 70205) {
+        if (\PHP_VERSION_ID < 70205) {
             $errors['php'] = PHP_VERSION;
         }
 
@@ -676,6 +676,12 @@ EOT
             || (version_compare(PHP_VERSION, '7.3.0', '>=')
             && version_compare(PHP_VERSION, '7.3.10', '<')))) {
             $warnings['onedrive'] = PHP_VERSION;
+        }
+
+        if (extension_loaded('uopz')
+            && !(filter_var(ini_get('uopz.disable'), FILTER_VALIDATE_BOOLEAN)
+            || filter_var(ini_get('uopz.exit'), FILTER_VALIDATE_BOOLEAN))) {
+            $warnings['uopz'] = true;
         }
 
         if (!empty($errors)) {
@@ -789,6 +795,11 @@ EOT
                     case 'onedrive':
                         $text = "The Windows OneDrive folder is not supported on PHP versions below 7.2.23 and 7.3.10.".PHP_EOL;
                         $text .= "Upgrade your PHP ({$current}) to use this location with Composer.".PHP_EOL;
+                        break;
+
+                    case 'uopz':
+                        $text = "The uopz extension ignores exit calls and may not work with all Composer commands.".PHP_EOL;
+                        $text .= "Disabling it when using Composer is recommended.";
                         break;
 
                     default:

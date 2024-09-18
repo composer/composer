@@ -1076,6 +1076,10 @@ php composer.phar audit
 * **--no-dev:** Disables auditing of require-dev packages.
 * **--format (-f):** Audit output format. Must be "table" (default), "plain", "json", or "summary".
 * **--locked:** Audit packages from the lock file, regardless of what is currently in vendor dir.
+* **--abandoned:** Behavior on abandoned packages. Must be "ignore", "report",
+  or "fail".  See also [audit.abandoned](06-config.md#abandoned).  Passing this
+  flag will override the config value and the environment variable.
+
 
 ## help
 
@@ -1087,8 +1091,8 @@ php composer.phar help install
 
 ## Command-line completion
 
-Command-line completion can be enabled by following instructions
-[on this page](https://github.com/bamarni/symfony-console-autocomplete).
+Command-line completion can be enabled by running the `composer completion --help` command and
+following the instructions.
 
 ## Environment variables
 

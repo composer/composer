@@ -37,8 +37,8 @@ class ArchiveDownloaderTest extends TestCase
             ->will($this->returnValue('/vendor'));
 
         $first = $method->invoke($downloader, $packageMock, '/path');
-        $this->assertMatchesRegularExpression('#/vendor/composer/tmp-[a-z0-9]+\.js#', $first);
-        $this->assertSame($first, $method->invoke($downloader, $packageMock, '/path'));
+        self::assertMatchesRegularExpression('#/vendor/composer/tmp-[a-z0-9]+\.js#', $first);
+        self::assertSame($first, $method->invoke($downloader, $packageMock, '/path'));
     }
 
     public function testProcessUrl(): void
@@ -54,7 +54,7 @@ class ArchiveDownloaderTest extends TestCase
         $expected = 'https://github.com/composer/composer/zipball/master';
         $url = $method->invoke($downloader, $this->getMockBuilder('Composer\Package\PackageInterface')->getMock(), $expected);
 
-        $this->assertEquals($expected, $url);
+        self::assertEquals($expected, $url);
     }
 
     public function testProcessUrl2(): void
@@ -70,7 +70,7 @@ class ArchiveDownloaderTest extends TestCase
         $expected = 'https://github.com/composer/composer/archive/master.tar.gz';
         $url = $method->invoke($downloader, $this->getMockBuilder('Composer\Package\PackageInterface')->getMock(), $expected);
 
-        $this->assertEquals($expected, $url);
+        self::assertEquals($expected, $url);
     }
 
     public function testProcessUrl3(): void
@@ -86,7 +86,7 @@ class ArchiveDownloaderTest extends TestCase
         $expected = 'https://api.github.com/repos/composer/composer/zipball/master';
         $url = $method->invoke($downloader, $this->getMockBuilder('Composer\Package\PackageInterface')->getMock(), $expected);
 
-        $this->assertEquals($expected, $url);
+        self::assertEquals($expected, $url);
     }
 
     /**
@@ -111,7 +111,7 @@ class ArchiveDownloaderTest extends TestCase
             ->will($this->returnValue('ref'));
         $url = $method->invoke($downloader, $package, $url);
 
-        $this->assertEquals($expected, $url);
+        self::assertEquals($expected, $url);
     }
 
     public static function provideUrls(): array
@@ -148,7 +148,7 @@ class ArchiveDownloaderTest extends TestCase
             ->will($this->returnValue('ref'));
         $url = $method->invoke($downloader, $package, $url);
 
-        $this->assertEquals($expected, $url);
+        self::assertEquals($expected, $url);
     }
 
     public static function provideBitbucketUrls(): array

@@ -69,10 +69,10 @@ class ArchiveManagerTest extends ArchiverTestCase
         $this->manager->archive($package, 'tar', $this->targetDir);
 
         $target = $this->getTargetName($package, 'tar');
-        $this->assertFileExists($target);
+        self::assertFileExists($target);
 
         $tmppath = sys_get_temp_dir().'/composer_archiver/'.$this->manager->getPackageFilename($package);
-        $this->assertFileDoesNotExist($tmppath);
+        self::assertFileDoesNotExist($tmppath);
 
         unlink($target);
     }
@@ -91,10 +91,10 @@ class ArchiveManagerTest extends ArchiverTestCase
 
         $target = $this->targetDir . '/' . $fileName . '.tar';
 
-        $this->assertFileExists($target);
+        self::assertFileExists($target);
 
         $tmppath = sys_get_temp_dir().'/composer_archiver/'.$this->manager->getPackageFilename($package);
-        $this->assertFileDoesNotExist($tmppath);
+        self::assertFileDoesNotExist($tmppath);
 
         unlink($target);
     }

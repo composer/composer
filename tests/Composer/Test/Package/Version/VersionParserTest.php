@@ -27,7 +27,7 @@ class VersionParserTest extends TestCase
     {
         $versionParser = new VersionParser();
 
-        $this->assertSame($result, $versionParser->parseNameVersionPairs($pairs));
+        self::assertSame($result, $versionParser->parseNameVersionPairs($pairs));
     }
 
     public static function provideParseNameVersionPairsData(): array
@@ -46,7 +46,7 @@ class VersionParserTest extends TestCase
      */
     public function testIsUpgrade(string $from, string $to, bool $expected): void
     {
-        $this->assertSame($expected, VersionParser::isUpgrade($from, $to));
+        self::assertSame($expected, VersionParser::isUpgrade($from, $to));
     }
 
     public static function provideIsUpgradeTests(): array

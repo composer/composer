@@ -50,21 +50,17 @@ class RepositoryManagerTest extends TestCase
         $rm->addRepository($repository1);
         $rm->prependRepository($repository2);
 
-        $this->assertEquals([$repository2, $repository1], $rm->getRepositories());
+        self::assertEquals([$repository2, $repository1], $rm->getRepositories());
     }
 
     /**
      * @dataProvider provideRepoCreationTestCases
      *
+     * @doesNotPerformAssertions
      * @param array<string, mixed> $options
-     * @param class-string<\Throwable>|null $exception
      */
-    public function testRepoCreation(string $type, array $options, ?string $exception = null): void
+    public function testRepoCreation(string $type, array $options): void
     {
-        if ($exception !== null) {
-            self::expectException($exception);
-        }
-
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
             $config = new Config,
@@ -86,7 +82,7 @@ class RepositoryManagerTest extends TestCase
         $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
 
         $rm->createRepository('composer', ['url' => 'http://example.org']);
-        $this->assertInstanceOf('Composer\Repository\RepositoryInterface', $rm->createRepository($type, $options));
+        $rm->createRepository($type, $options);
     }
 
     public static function provideRepoCreationTestCases(): array
@@ -97,9 +93,7 @@ class RepositoryManagerTest extends TestCase
             ['git', ['url' => 'http://github.com/foo/bar']],
             ['git', ['url' => 'git@example.org:foo/bar.git']],
             ['svn', ['url' => 'svn://example.org/foo/bar']],
-            ['pear', ['url' => 'http://pear.example.org/foo'], 'InvalidArgumentException'],
             ['package', ['package' => []]],
-            ['invalid', [], 'InvalidArgumentException'],
         ];
 
         if (class_exists('ZipArchive')) {
@@ -107,6 +101,36 @@ class RepositoryManagerTest extends TestCase
         }
 
         return $cases;
+    }
+
+    /**
+     * @dataProvider provideInvalidRepoCreationTestCases
+     *
+     * @param array<string, mixed> $options
+     */
+    public function testInvalidRepoCreationThrows(string $type, array $options): void
+    {
+        self::expectException('InvalidArgumentException');
+
+        $rm = new RepositoryManager(
+            $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
+            $config = new Config,
+            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
+            $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
+        );
+
+        $tmpdir = $this->tmpdir;
+        $config->merge(['config' => ['cache-repo-dir' => $tmpdir]]);
+
+        $rm->createRepository($type, $options);
+    }
+
+    public static function provideInvalidRepoCreationTestCases(): array
+    {
+        return [
+            ['pear', ['url' => 'http://pear.example.org/foo']],
+            ['invalid', []],
+        ];
     }
 
     public function testFilterRepoWrapping(): void
@@ -122,7 +146,7 @@ class RepositoryManagerTest extends TestCase
         /** @var \Composer\Repository\FilterRepository $repo */
         $repo = $rm->createRepository('path', ['type' => 'path', 'url' => __DIR__, 'only' => ['foo/bar']]);
 
-        $this->assertInstanceOf('Composer\Repository\FilterRepository', $repo);
-        $this->assertInstanceOf('Composer\Repository\PathRepository', $repo->getRepository());
+        self::assertInstanceOf('Composer\Repository\FilterRepository', $repo);
+        self::assertInstanceOf('Composer\Repository\PathRepository', $repo->getRepository());
     }
 }

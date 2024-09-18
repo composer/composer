@@ -91,18 +91,18 @@ class GitHubDriverTest extends TestCase
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', [$identifier => $sha]);
 
-        $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
+        self::assertEquals('test_master', $gitHubDriver->getRootIdentifier());
 
         $dist = $gitHubDriver->getDist($sha);
         self::assertIsArray($dist);
-        $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
-        $this->assertEquals('SOMESHA', $dist['reference']);
+        self::assertEquals('zip', $dist['type']);
+        self::assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
+        self::assertEquals('SOMESHA', $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
-        $this->assertEquals('git', $source['type']);
-        $this->assertEquals($repoSshUrl, $source['url']);
-        $this->assertEquals('SOMESHA', $source['reference']);
+        self::assertEquals('git', $source['type']);
+        self::assertEquals($repoSshUrl, $source['url']);
+        self::assertEquals('SOMESHA', $source['reference']);
     }
 
     public function testPublicRepository(): void
@@ -134,18 +134,18 @@ class GitHubDriverTest extends TestCase
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', [$identifier => $sha]);
 
-        $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
+        self::assertEquals('test_master', $gitHubDriver->getRootIdentifier());
 
         $dist = $gitHubDriver->getDist($sha);
         self::assertIsArray($dist);
-        $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
-        $this->assertEquals($sha, $dist['reference']);
+        self::assertEquals('zip', $dist['type']);
+        self::assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
+        self::assertEquals($sha, $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
-        $this->assertEquals('git', $source['type']);
-        $this->assertEquals($repoUrl, $source['url']);
-        $this->assertEquals($sha, $source['reference']);
+        self::assertEquals('git', $source['type']);
+        self::assertEquals($repoUrl, $source['url']);
+        self::assertEquals($sha, $source['reference']);
     }
 
     public function testPublicRepository2(): void
@@ -180,23 +180,23 @@ class GitHubDriverTest extends TestCase
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', [$identifier => $sha]);
 
-        $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
+        self::assertEquals('test_master', $gitHubDriver->getRootIdentifier());
 
         $dist = $gitHubDriver->getDist($sha);
         self::assertIsArray($dist);
-        $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
-        $this->assertEquals($sha, $dist['reference']);
+        self::assertEquals('zip', $dist['type']);
+        self::assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
+        self::assertEquals($sha, $dist['reference']);
 
         $source = $gitHubDriver->getSource($sha);
-        $this->assertEquals('git', $source['type']);
-        $this->assertEquals($repoUrl, $source['url']);
-        $this->assertEquals($sha, $source['reference']);
+        self::assertEquals('git', $source['type']);
+        self::assertEquals($repoUrl, $source['url']);
+        self::assertEquals($sha, $source['reference']);
 
         $data = $gitHubDriver->getComposerInformation($identifier);
 
-        $this->assertIsArray($data);
-        $this->assertArrayNotHasKey('abandoned', $data);
+        self::assertIsArray($data);
+        self::assertArrayNotHasKey('abandoned', $data);
     }
 
     public function testInvalidSupportData(): void
@@ -233,8 +233,8 @@ class GitHubDriverTest extends TestCase
 
         $data = $gitHubDriver->getComposerInformation($identifier);
 
-        $this->assertIsArray($data);
-        $this->assertSame('https://github.com/composer/packagist/tree/feature/3.2-foo', $data['support']['source']);
+        self::assertIsArray($data);
+        self::assertSame('https://github.com/composer/packagist/tree/feature/3.2-foo', $data['support']['source']);
     }
 
     public function testPublicRepositoryArchived(): void
@@ -271,8 +271,8 @@ class GitHubDriverTest extends TestCase
 
         $data = $gitHubDriver->getComposerInformation($sha);
 
-        $this->assertIsArray($data);
-        $this->assertTrue($data['abandoned']);
+        self::assertIsArray($data);
+        self::assertTrue($data['abandoned']);
     }
 
     public function testPrivateRepositoryNoInteraction(): void
@@ -326,23 +326,23 @@ class GitHubDriverTest extends TestCase
         $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $process);
         $gitHubDriver->initialize();
 
-        $this->assertEquals('test_master', $gitHubDriver->getRootIdentifier());
+        self::assertEquals('test_master', $gitHubDriver->getRootIdentifier());
 
         $dist = $gitHubDriver->getDist($sha);
         self::assertIsArray($dist);
-        $this->assertEquals('zip', $dist['type']);
-        $this->assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
-        $this->assertEquals($sha, $dist['reference']);
+        self::assertEquals('zip', $dist['type']);
+        self::assertEquals('https://api.github.com/repos/composer/packagist/zipball/SOMESHA', $dist['url']);
+        self::assertEquals($sha, $dist['reference']);
 
         $source = $gitHubDriver->getSource($identifier);
-        $this->assertEquals('git', $source['type']);
-        $this->assertEquals($repoSshUrl, $source['url']);
-        $this->assertEquals($identifier, $source['reference']);
+        self::assertEquals('git', $source['type']);
+        self::assertEquals($repoSshUrl, $source['url']);
+        self::assertEquals($identifier, $source['reference']);
 
         $source = $gitHubDriver->getSource($sha);
-        $this->assertEquals('git', $source['type']);
-        $this->assertEquals($repoSshUrl, $source['url']);
-        $this->assertEquals($sha, $source['reference']);
+        self::assertEquals('git', $source['type']);
+        self::assertEquals($repoSshUrl, $source['url']);
+        self::assertEquals($sha, $source['reference']);
     }
 
     /**
@@ -384,7 +384,7 @@ class GitHubDriverTest extends TestCase
     {
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
-        $this->assertSame($expected, GitHubDriver::supports($io, $this->config, $repoUrl));
+        self::assertSame($expected, GitHubDriver::supports($io, $this->config, $repoUrl));
     }
 
     /**
@@ -426,7 +426,7 @@ class GitHubDriverTest extends TestCase
         $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $this->getProcessExecutorMock());
         $gitHubDriver->initialize();
 
-        $this->assertSame('', $gitHubDriver->getFileContent('composer.json', 'main'));
+        self::assertSame('', $gitHubDriver->getFileContent('composer.json', 'main'));
     }
 
     /**

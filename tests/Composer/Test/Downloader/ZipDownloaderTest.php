@@ -102,7 +102,7 @@ class ZipDownloaderTest extends TestCase
 
             $this->fail('Download of invalid zip files should throw an exception');
         } catch (\Exception $e) {
-            $this->assertStringContainsString('is not a zip archive', $e->getMessage());
+            self::assertStringContainsString('is not a zip archive', $e->getMessage());
         }
     }
 
@@ -167,6 +167,9 @@ class ZipDownloaderTest extends TestCase
         $zipArchive->expects($this->once())
             ->method('extractTo')
             ->will($this->returnValue(true));
+        $zipArchive->expects($this->once())
+            ->method('count')
+            ->will($this->returnValue(0));
 
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
         $promise = $downloader->extract($this->package, $this->filename, 'vendor/dir');
@@ -261,6 +264,9 @@ class ZipDownloaderTest extends TestCase
         $zipArchive->expects($this->once())
             ->method('extractTo')
             ->will($this->returnValue(true));
+        $zipArchive->expects($this->once())
+            ->method('count')
+            ->will($this->returnValue(0));
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);

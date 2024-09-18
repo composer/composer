@@ -33,21 +33,21 @@ class ComposerSchemaTest extends TestCase
         ];
 
         $json = '{"name": "vendor/-pack__age", "description": "description"}';
-        $this->assertEquals($expectedError, $this->check($json));
+        self::assertEquals($expectedError, $this->check($json));
         $json = '{"name": "Vendor/Package", "description": "description"}';
-        $this->assertEquals($expectedError, $this->check($json));
+        self::assertEquals($expectedError, $this->check($json));
     }
 
     public function testOptionalAbandonedProperty(): void
     {
         $json = '{"name": "vendor/package", "description": "description", "abandoned": true}';
-        $this->assertTrue($this->check($json));
+        self::assertTrue($this->check($json));
     }
 
     public function testRequireTypes(): void
     {
         $json = '{"name": "vendor/package", "description": "description", "require": {"a": ["b"]} }';
-        $this->assertEquals([
+        self::assertEquals([
             ['property' => 'require.a', 'message' => 'Array value found, but a string is required', 'constraint' => 'type'],
         ], $this->check($json));
     }
@@ -64,31 +64,31 @@ class ComposerSchemaTest extends TestCase
         ];
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "" }';
-        $this->assertEquals($expectedError, $this->check($json), 'empty string');
+        self::assertEquals($expectedError, $this->check($json), 'empty string');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "dummy" }';
-        $this->assertEquals($expectedError, $this->check($json), 'dummy');
+        self::assertEquals($expectedError, $this->check($json), 'dummy');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "devz" }';
-        $this->assertEquals($expectedError, $this->check($json), 'devz');
+        self::assertEquals($expectedError, $this->check($json), 'devz');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "dev" }';
-        $this->assertTrue($this->check($json), 'dev');
+        self::assertTrue($this->check($json), 'dev');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "alpha" }';
-        $this->assertTrue($this->check($json), 'alpha');
+        self::assertTrue($this->check($json), 'alpha');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "beta" }';
-        $this->assertTrue($this->check($json), 'beta');
+        self::assertTrue($this->check($json), 'beta');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "rc" }';
-        $this->assertTrue($this->check($json), 'rc lowercase');
+        self::assertTrue($this->check($json), 'rc lowercase');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "RC" }';
-        $this->assertTrue($this->check($json), 'rc uppercase');
+        self::assertTrue($this->check($json), 'rc uppercase');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "stable" }';
-        $this->assertTrue($this->check($json), 'stable');
+        self::assertTrue($this->check($json), 'stable');
     }
 
     /**

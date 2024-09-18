@@ -26,9 +26,9 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - c/c 1.0.0 requires x/x 1.0 -> could not be found in any version, there may be a typo in the package name.
-    - b/b 1.0.0 requires c/c 1.* -> satisfiable by c/c[1.0.0].
     - Root composer.json requires b/b 1.* -> satisfiable by b/b[1.0.0].
+    - b/b 1.0.0 requires c/c 1.* -> satisfiable by c/c[1.0.0].
+    - c/c 1.0.0 requires x/x 1.0 -> could not be found in any version, there may be a typo in the package name.
 
 Potential causes:
  - A typo in the package name

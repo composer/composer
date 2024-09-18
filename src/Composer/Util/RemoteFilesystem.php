@@ -533,7 +533,12 @@ class RemoteFilesystem
         }
 
         // https://www.php.net/manual/en/reserved.variables.httpresponseheader.php
-        $responseHeaders = $http_response_header ?? [];
+        if (\PHP_VERSION_ID >= 80400) {
+            $responseHeaders = http_get_last_response_headers();
+            http_clear_last_response_headers();
+        } else {
+            $responseHeaders = $http_response_header ?? [];
+        }
 
         if (null !== $e) {
             throw $e;

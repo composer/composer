@@ -25,6 +25,7 @@ use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\MultiConstraint;
 
 /**
  * Represents a problem detected while solving dependencies
@@ -97,7 +98,58 @@ class Problem
             }
         }
 
+        usort($reasons, function (Rule $rule1, Rule $rule2) use ($pool) {
+            $rule1Prio = $this->getRulePriority($rule1);
+            $rule2Prio = $this->getRulePriority($rule2);
+            if ($rule1Prio !== $rule2Prio) {
+                return $rule2Prio - $rule1Prio;
+            }
+
+            return $this->getSortableString($pool, $rule1) <=> $this->getSortableString($pool, $rule2);
+        });
+
         return self::formatDeduplicatedRules($reasons, '    ', $repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
+    }
+
+    private function getSortableString(Pool $pool, Rule $rule): string
+    {
+        switch ($rule->getReason()) {
+            case Rule::RULE_ROOT_REQUIRE:
+                return $rule->getReasonData()['packageName'];
+            case Rule::RULE_FIXED:
+                return (string) $rule->getReasonData()['package'];
+            case Rule::RULE_PACKAGE_CONFLICT:
+            case Rule::RULE_PACKAGE_REQUIRES:
+                return $rule->getSourcePackage($pool) . '//' . $rule->getReasonData()->getPrettyString($rule->getSourcePackage($pool));
+            case Rule::RULE_PACKAGE_SAME_NAME:
+            case Rule::RULE_PACKAGE_ALIAS:
+            case Rule::RULE_PACKAGE_INVERSE_ALIAS:
+                return (string) $rule->getReasonData();
+            case Rule::RULE_LEARNED:
+                return implode('-', $rule->getLiterals());
+        }
+
+        throw new \LogicException('Unknown rule type: '.$rule->getReason());
+    }
+
+    private function getRulePriority(Rule $rule): int
+    {
+        switch ($rule->getReason()) {
+            case Rule::RULE_FIXED:
+                return 3;
+            case Rule::RULE_ROOT_REQUIRE:
+                return 2;
+            case Rule::RULE_PACKAGE_CONFLICT:
+            case Rule::RULE_PACKAGE_REQUIRES:
+                return 1;
+            case Rule::RULE_PACKAGE_SAME_NAME:
+            case Rule::RULE_LEARNED:
+            case Rule::RULE_PACKAGE_ALIAS:
+            case Rule::RULE_PACKAGE_INVERSE_ALIAS:
+                return 0;
+        }
+
+        throw new \LogicException('Unknown rule type: '.$rule->getReason());
     }
 
     /**
@@ -226,14 +278,19 @@ class Problem
 
                 $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) ?: '0');
                 if (null === $version) {
+                    $providersStr = self::getProvidersList($repositorySet, $packageName, 5);
+                    if ($providersStr !== null) {
+                        $providersStr = "\n\n      Alternatively you can require one of these packages that provide the extension (or parts of it):\n$providersStr";
+                    }
+
                     if (extension_loaded($ext)) {
                         return [
                             $msg,
-                            'the '.$packageName.' package is disabled by your platform config. Enable it again with "composer config platform.'.$packageName.' --unset".',
+                            'the '.$packageName.' package is disabled by your platform config. Enable it again with "composer config platform.'.$packageName.' --unset".' . $providersStr,
                         ];
                     }
 
-                    return [$msg, 'it is missing from your system. Install or enable PHP\'s '.$ext.' extension.'];
+                    return [$msg, 'it is missing from your system. Install or enable PHP\'s '.$ext.' extension.' . $providersStr];
                 }
 
                 return [$msg, 'it has the wrong version installed ('.$version.').'];
@@ -247,7 +304,12 @@ class Problem
                     return ["- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', $error];
                 }
 
-                return ["- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', 'it has the wrong version installed or is missing from your system, make sure to load the extension providing it.'];
+                $providersStr = self::getProvidersList($repositorySet, $packageName, 5);
+                if ($providersStr !== null) {
+                    $providersStr = "\n\n      Alternatively you can require one of these packages that provide the library (or parts of it):\n$providersStr";
+                }
+
+                return ["- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', 'it has the wrong version installed or is missing from your system, make sure to load the extension providing it.'.$providersStr];
             }
         }
 
@@ -259,6 +321,17 @@ class Problem
                     return ["- ", $package->getPrettyName().' is fixed to '.$package->getPrettyVersion().' (lock file version) by a partial update but that version is rejected by your minimum-stability. Make sure you list it as an argument for the update command.'];
                 }
                 break;
+            }
+        }
+
+        if ($constraint instanceof Constraint && $constraint->getOperator() === Constraint::STR_OP_EQ && Preg::isMatch('{^dev-.*#.*}', $constraint->getPrettyString())) {
+            $newConstraint = Preg::replace('{ +as +([^,\s|]+)$}', '', $constraint->getPrettyString());
+            $packages = $repositorySet->findPackages($packageName, new MultiConstraint([
+                new Constraint(Constraint::STR_OP_EQ, $newConstraint),
+                new Constraint(Constraint::STR_OP_EQ, str_replace('#', '+', $newConstraint))
+            ], false));
+            if (\count($packages) > 0) {
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).'. The # character in branch names is replaced by a + character. Make sure to require it as "'.str_replace('#', '+', $constraint->getPrettyString()).'".'];
             }
         }
 
@@ -349,17 +422,8 @@ class Problem
             return ["- Root composer.json requires $packageName, it ", 'could not be found, it looks like its name is invalid, "'.$illegalChars.'" is not allowed in package names.'];
         }
 
-        if ($providers = $repositorySet->getProviders($packageName)) {
-            $maxProviders = 20;
-            $providersStr = implode(array_map(static function ($p): string {
-                $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
-
-                return '      - '.$p['name'].$description."\n";
-            }, count($providers) > $maxProviders + 1 ? array_slice($providers, 0, $maxProviders) : $providers));
-            if (count($providers) > $maxProviders + 1) {
-                $providersStr .= '      ... and '.(count($providers) - $maxProviders).' more.'."\n";
-            }
-
+        $providersStr = self::getProvidersList($repositorySet, $packageName, 15);
+        if ($providersStr !== null) {
             return ["- Root composer.json requires $packageName".self::constraintToText($constraint).", it ", "could not be found in any version, but the following packages provide it:\n".$providersStr."      Consider requiring one of these to satisfy the $packageName requirement."];
         }
 
@@ -571,5 +635,24 @@ class Problem
         }
 
         return $constraint ? ' '.$constraint->getPrettyString() : '';
+    }
+
+    private static function getProvidersList(RepositorySet $repositorySet, string $packageName, int $maxProviders): ?string
+    {
+        $providers = $repositorySet->getProviders($packageName);
+        if (\count($providers) > 0) {
+            $providersStr = implode(array_map(static function ($p): string {
+                $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
+
+                return '      - '.$p['name'].$description."\n";
+            }, count($providers) > $maxProviders + 1 ? array_slice($providers, 0, $maxProviders) : $providers));
+            if (count($providers) > $maxProviders + 1) {
+                $providersStr .= '      ... and '.(count($providers) - $maxProviders).' more.'."\n";
+            }
+
+            return $providersStr;
+        }
+
+        return null;
     }
 }

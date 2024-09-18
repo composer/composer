@@ -63,7 +63,7 @@ class PoolOptimizerTest extends TestCase
 
         $pool = $poolOptimizer->optimize($request, $pool);
 
-        $this->assertSame(
+        self::assertSame(
             $this->reducePackagesInfoForComparison($expectedPackages),
             $this->reducePackagesInfoForComparison($pool->getPackages()),
             $message

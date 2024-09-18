@@ -16,20 +16,27 @@ use Composer\Composer;
 use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\Loader\RootPackageLoader;
+use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\Version\VersionParser;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RepositorySet;
 use Composer\Semver\Intervals;
 use Composer\Util\HttpDownloader;
 use Composer\Advisory\Auditor;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
 use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -283,47 +290,52 @@ EOT
             throw new \InvalidArgumentException('--interactive cannot be used in non-interactive terminals.');
         }
 
+        $platformReqFilter = $this->getPlatformRequirementFilter($input);
+        $stabilityFlags = $composer->getPackage()->getStabilityFlags();
         $requires = array_merge(
             $composer->getPackage()->getRequires(),
             $composer->getPackage()->getDevRequires()
         );
+
+        $filter = \count($packages) > 0 ? BasePackage::packageNamesToRegexp($packages) : null;
+
+        $io->writeError('<info>Loading packages that can be updated...</info>');
         $autocompleterValues = [];
-        foreach ($requires as $require) {
-            $target = $require->getTarget();
-            $autocompleterValues[strtolower($target)] = $target;
-        }
-
-        $installedPackages = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
+        $installedPackages = $composer->getLocker()->isLocked() ? $composer->getLocker()->getLockedRepository(true)->getPackages() : $composer->getRepositoryManager()->getLocalRepository()->getPackages();
+        $versionSelector = $this->createVersionSelector($composer);
         foreach ($installedPackages as $package) {
-            $autocompleterValues[$package->getName()] = $package->getPrettyName();
+            if ($filter !== null && !Preg::isMatch($filter, $package->getName())) {
+                continue;
+            }
+            $currentVersion = $package->getPrettyVersion();
+            $constraint = isset($requires[$package->getName()]) ? $requires[$package->getName()]->getPrettyConstraint() : null;
+            $stability = isset($stabilityFlags[$package->getName()]) ? (string) array_search($stabilityFlags[$package->getName()], BasePackage::STABILITIES, true) : $composer->getPackage()->getMinimumStability();
+            $latestVersion = $versionSelector->findBestCandidate($package->getName(), $constraint, $stability, $platformReqFilter);
+            if ($latestVersion !== false && ($package->getVersion() !== $latestVersion->getVersion() || $latestVersion->isDev())) {
+                $autocompleterValues[$package->getName()] = '<comment>' . $currentVersion . '</comment> => <comment>' . $latestVersion->getPrettyVersion() . '</comment>';
+            }
+        }
+        if (0 === \count($installedPackages)) {
+            foreach ($requires as $req => $constraint) {
+                if (PlatformRepository::isPlatformPackage($req)) {
+                    continue;
+                }
+                $autocompleterValues[$req] = '';
+            }
         }
 
-        $helper = $this->getHelper('question');
-        $question = new Question('<comment>Enter package name: </comment>', null);
-
-        $io->writeError('<info>Press enter without value to end submission</info>');
-
-        do {
-            $autocompleterValues = array_diff($autocompleterValues, $packages);
-            $question->setAutocompleterValues($autocompleterValues);
-            $addedPackage = $helper->ask($input, $output, $question);
-
-            if (!is_string($addedPackage) || empty($addedPackage)) {
-                break;
-            }
-
-            $addedPackage = strtolower($addedPackage);
-            if (!in_array($addedPackage, $packages)) {
-                $packages[] = $addedPackage;
-            }
-        } while (true);
-
-        $packages = array_filter($packages, function (string $pkg) {
-            return $pkg !== '';
-        });
-        if (!$packages) {
-            throw new \InvalidArgumentException('You must enter minimum one package.');
+        if (0 === \count($autocompleterValues)) {
+            throw new \RuntimeException('Could not find any package with new versions available');
         }
+
+        $packages = $io->select(
+            'Select packages: (Select more than one value separated by comma) ',
+            $autocompleterValues,
+            false,
+            1,
+            'No package named "%s" is installed.',
+            true
+        );
 
         $table = new Table($output);
         $table->setHeaders(['Selected packages']);
@@ -340,5 +352,15 @@ EOT
         }
 
         throw new \RuntimeException('Installation aborted.');
+    }
+
+    private function createVersionSelector(Composer $composer): VersionSelector
+    {
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository(new CompositeRepository(array_filter($composer->getRepositoryManager()->getRepositories(), function (RepositoryInterface $repository) {
+            return !$repository instanceof PlatformRepository;
+        })));
+
+        return new VersionSelector($repositorySet);
     }
 }

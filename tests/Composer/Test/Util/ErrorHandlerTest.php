@@ -36,7 +36,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerCaptureNotice(): void
     {
-        if (PHP_VERSION_ID >= 80000) {
+        if (\PHP_VERSION_ID >= 80000) {
             self::expectException('\ErrorException');
             self::expectExceptionMessage('Undefined array key "baz"');
         } else {
@@ -45,7 +45,7 @@ class ErrorHandlerTest extends TestCase
         }
 
         $array = ['foo' => 'bar'];
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore offsetAccess.notFound, expr.resultUnused
         $array['baz'];
     }
 
@@ -54,7 +54,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerCaptureWarning(): void
     {
-        if (PHP_VERSION_ID >= 80000) {
+        if (\PHP_VERSION_ID >= 80000) {
             self::expectException('TypeError');
             self::expectExceptionMessage('array_merge');
         } else {
@@ -62,7 +62,7 @@ class ErrorHandlerTest extends TestCase
             self::expectExceptionMessage('array_merge');
         }
 
-        // @phpstan-ignore-next-line
+        // @phpstan-ignore function.resultUnused, argument.type
         array_merge([], 'string');
     }
 

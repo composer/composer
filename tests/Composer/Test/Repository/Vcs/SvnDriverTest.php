@@ -101,6 +101,6 @@ class SvnDriverTest extends TestCase
     {
         $config = new Config();
         $result = SvnDriver::supports($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $config, $url);
-        $this->assertEquals($assertion, $result);
+        self::assertEquals($assertion, $result);
     }
 }

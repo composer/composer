@@ -21,7 +21,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
 {
     public const DEFAULT_PRETTY_VERSION = '1.0.0+no-version-set';
 
-    /** @var string */
+    /** @var key-of<BasePackage::STABILITIES> */
     protected $minimumStability = 'stable';
     /** @var bool */
     protected $preferStable = false;

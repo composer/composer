@@ -94,6 +94,9 @@ class VcsRepositoryTest extends TestCase
         $exec('git add foo');
         $exec('git commit -m change-a');
 
+        // add foo#bar branch which should result in dev-foo+bar
+        $exec('git branch foo#bar');
+
         // add version to composer.json
         $exec('git checkout master');
         $composer['version'] = '1.0.0';
@@ -154,6 +157,7 @@ class VcsRepositoryTest extends TestCase
             '1.1.x-dev' => true,
             'dev-feature-b' => true,
             'dev-feature/a-1.0-B' => true,
+            'dev-foo+bar' => true,
             'dev-master' => true,
             '9999999-dev' => true, // alias of dev-master
         ];
@@ -177,6 +181,6 @@ class VcsRepositoryTest extends TestCase
             }
         }
 
-        $this->assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
+        self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
     }
 }

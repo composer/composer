@@ -34,8 +34,8 @@ class ConsoleIOTest extends TestCase
 
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
 
-        $this->assertTrue($consoleIO->isInteractive());
-        $this->assertFalse($consoleIO->isInteractive());
+        self::assertTrue($consoleIO->isInteractive());
+        self::assertFalse($consoleIO->isInteractive());
     }
 
     public function testWrite(): void
@@ -127,7 +127,7 @@ class ConsoleIOTest extends TestCase
                 }
 
                 if (count($series) > 0) {
-                    $this->assertSame(array_shift($series), [$args[0], $args[1]]);
+                    self::assertSame(array_shift($series), [$args[0], $args[1]]);
                 }
             });
 
@@ -252,10 +252,10 @@ class ConsoleIOTest extends TestCase
 
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);
         $result = $consoleIO->select('Select item', ["item1", "item2"], 'item1', false, "Error message", true);
-        $this->assertEquals(['1'], $result);
+        self::assertEquals(['1'], $result);
     }
 
-    public function testSetAndgetAuthentication(): void
+    public function testSetAndGetAuthentication(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
@@ -264,7 +264,7 @@ class ConsoleIOTest extends TestCase
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
         $consoleIO->setAuthentication('repoName', 'l3l0', 'passwd');
 
-        $this->assertEquals(
+        self::assertEquals(
             ['username' => 'l3l0', 'password' => 'passwd'],
             $consoleIO->getAuthentication('repoName')
         );
@@ -278,7 +278,7 @@ class ConsoleIOTest extends TestCase
 
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
 
-        $this->assertEquals(
+        self::assertEquals(
             ['username' => null, 'password' => null],
             $consoleIO->getAuthentication('repoName')
         );
@@ -293,7 +293,7 @@ class ConsoleIOTest extends TestCase
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
         $consoleIO->setAuthentication('repoName', 'l3l0', 'passwd');
 
-        $this->assertTrue($consoleIO->hasAuthentication('repoName'));
-        $this->assertFalse($consoleIO->hasAuthentication('repoName2'));
+        self::assertTrue($consoleIO->hasAuthentication('repoName'));
+        self::assertFalse($consoleIO->hasAuthentication('repoName2'));
     }
 }

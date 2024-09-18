@@ -25,6 +25,8 @@ class Platform
     private static $isVirtualBoxGuest = null;
     /** @var ?bool */
     private static $isWindowsSubsystemForLinux = null;
+    /** @var ?bool */
+    private static $isDocker = null;
 
     /**
      * getcwd() equivalent which always returns a string
@@ -76,7 +78,6 @@ class Platform
      */
     public static function putEnv(string $name, string $value): void
     {
-        $value = (string) $value;
         putenv($name . '=' . $value);
         $_SERVER[$name] = $_ENV[$name] = $value;
     }
@@ -100,12 +101,12 @@ class Platform
         }
 
         return Preg::replaceCallback('#^(\$|(?P<percent>%))(?P<var>\w++)(?(percent)%)(?P<path>.*)#', static function ($matches): string {
-            assert(is_string($matches['var']));
-            assert('' !== $matches['var']);
-
             // Treat HOME as an alias for USERPROFILE on Windows for legacy reasons
             if (Platform::isWindows() && $matches['var'] === 'HOME') {
-                return (Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE')) . $matches['path'];
+                if ((bool) Platform::getEnv('HOME')) {
+                    return Platform::getEnv('HOME') . $matches['path'];
+                }
+                return Platform::getEnv('USERPROFILE') . $matches['path'];
             }
 
             return Platform::getEnv($matches['var']) . $matches['path'];
@@ -129,7 +130,9 @@ class Platform
         if (\function_exists('posix_getuid') && \function_exists('posix_getpwuid')) {
             $info = posix_getpwuid(posix_getuid());
 
-            return $info['dir'];
+            if (is_array($info)) {
+                return $info['dir'];
+            }
         }
 
         throw new \RuntimeException('Could not determine user directory');
@@ -149,12 +152,10 @@ class Platform
             }
 
             if (
-                !ini_get('open_basedir')
+                !(bool) ini_get('open_basedir')
                 && is_readable('/proc/version')
                 && false !== stripos((string)Silencer::call('file_get_contents', '/proc/version'), 'microsoft')
-                && !file_exists('/.dockerenv') // Docker and Podman running inside WSL should not be seen as WSL
-                && !file_exists('/run/.containerenv')
-                && !file_exists('/var/run/.containerenv')
+                && !self::isDocker() // Docker and Podman running inside WSL should not be seen as WSL
             ) {
                 return self::$isWindowsSubsystemForLinux = true;
             }
@@ -171,6 +172,46 @@ class Platform
         return \defined('PHP_WINDOWS_VERSION_BUILD');
     }
 
+    public static function isDocker(): bool
+    {
+        if (null !== self::$isDocker) {
+            return self::$isDocker;
+        }
+
+        // cannot check so assume no
+        if ((bool) ini_get('open_basedir')) {
+            return self::$isDocker = false;
+        }
+
+        // .dockerenv and .containerenv are present in some cases but not reliably
+        if (file_exists('/.dockerenv') || file_exists('/run/.containerenv') || file_exists('/var/run/.containerenv')) {
+            return self::$isDocker = true;
+        }
+
+        // see https://www.baeldung.com/linux/is-process-running-inside-container
+        $cgroups = [
+            '/proc/self/mountinfo', // cgroup v2
+            '/proc/1/cgroup', // cgroup v1
+        ];
+        foreach ($cgroups as $cgroup) {
+            if (!is_readable($cgroup)) {
+                continue;
+            }
+            // suppress errors as some environments have these files as readable but system restrictions prevent the read from succeeding
+            // see https://github.com/composer/composer/issues/12095
+            try {
+                $data = @file_get_contents($cgroup);
+            } catch (\Throwable $e) {
+                break;
+            }
+            if (is_string($data) && str_contains($data, '/var/lib/docker/')) {
+                return self::$isDocker = true;
+            }
+        }
+
+        return self::$isDocker = false;
+    }
+
     /**
      * @return int    return a guaranteed binary length of the string, regardless of silly mbstring configs
      */
@@ -178,7 +219,7 @@ class Platform
     {
         static $useMbString = null;
         if (null === $useMbString) {
-            $useMbString = \function_exists('mb_strlen') && ini_get('mbstring.func_overload');
+            $useMbString = \function_exists('mb_strlen') && (bool) ini_get('mbstring.func_overload');
         }
 
         if ($useMbString) {
@@ -202,7 +243,7 @@ class Platform
 
         // detect msysgit/mingw and assume this is a tty because detection
         // does not work correctly, see https://github.com/composer/composer/issues/9690
-        if (in_array(strtoupper(self::getEnv('MSYSTEM') ?: ''), ['MINGW32', 'MINGW64'], true)) {
+        if (in_array(strtoupper((string) self::getEnv('MSYSTEM')), ['MINGW32', 'MINGW64'], true)) {
             return true;
         }
 
@@ -218,8 +259,11 @@ class Platform
         }
 
         $stat = @fstat($fd);
+        if ($stat === false) {
+            return false;
+        }
         // Check if formatted mode is S_IFCHR
-        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
+        return 0020000 === ($stat['mode'] & 0170000);
     }
 
     /**
@@ -252,7 +296,7 @@ class Platform
 
             if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
                 $processUser = posix_getpwuid(posix_geteuid());
-                if ($processUser && $processUser['name'] === 'vagrant') {
+                if (is_array($processUser) && $processUser['name'] === 'vagrant') {
                     return self::$isVirtualBoxGuest = true;
                 }
             }

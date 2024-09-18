@@ -76,7 +76,7 @@ GIT;
                 'stdout' => $stdout,
             ]], true);
 
-        $this->assertSame('main', $driver->getRootIdentifier());
+        self::assertSame('main', $driver->getRootIdentifier());
     }
 
     public function testGetRootIdentifierFromRemote(): void
@@ -109,7 +109,7 @@ GIT;
                 'stdout' => $stdout,
             ]]);
 
-        $this->assertSame('main', $driver->getRootIdentifier());
+        self::assertSame('main', $driver->getRootIdentifier());
     }
 
     public function testGetRootIdentifierFromLocalWithNetworkDisabled(): void
@@ -134,7 +134,7 @@ GIT;
                 'stdout' => $stdout,
             ]]);
 
-        $this->assertSame('main', $driver->getRootIdentifier());
+        self::assertSame('main', $driver->getRootIdentifier());
     }
 
     public function testGetBranchesFilterInvalidBranchNames(): void
@@ -160,7 +160,7 @@ GIT;
             ]]);
 
         $branches = $driver->getBranches();
-        $this->assertSame([
+        self::assertSame([
             'main' => '089681446ba44d6d9004350192486f2ceb4eaa06',
             '2.2' => '12681446ba44d6d9004350192486f2ceb4eaa06',
         ], $branches);
@@ -174,7 +174,7 @@ GIT;
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $driver = new GitDriver(['url' => 'https://example.org/acme.git'], $io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
 
-        $this->assertNull($driver->getFileContent('file.txt', 'h'));
+        self::assertNull($driver->getFileContent('file.txt', 'h'));
 
         $driver->getFileContent('file.txt', '-h');
     }

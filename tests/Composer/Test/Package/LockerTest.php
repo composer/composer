@@ -39,7 +39,7 @@ class LockerTest extends TestCase
             ->method('read')
             ->will($this->returnValue(['packages' => []]));
 
-        $this->assertTrue($locker->isLocked());
+        self::assertTrue($locker->isLocked());
     }
 
     public function testGetNotLockedPackages(): void
@@ -81,8 +81,8 @@ class LockerTest extends TestCase
             ]));
 
         $repo = $locker->getLockedRepository();
-        $this->assertNotNull($repo->findPackage('pkg1', '1.0.0-beta'));
-        $this->assertNotNull($repo->findPackage('pkg2', '0.1.10'));
+        self::assertNotNull($repo->findPackage('pkg1', '1.0.0-beta'));
+        self::assertNotNull($repo->findPackage('pkg2', '0.1.10'));
     }
 
     public function testSetLockData(): void
@@ -96,7 +96,7 @@ class LockerTest extends TestCase
         $package1 = self::getPackage('pkg1', '1.0.0-beta');
         $package2 = self::getPackage('pkg2', '0.1.10');
 
-        $contentHash = md5(trim($jsonContent));
+        $contentHash = hash('md5', trim($jsonContent));
 
         $json
             ->expects($this->once())
@@ -154,9 +154,9 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(['hash' => md5($jsonContent)]));
+            ->will($this->returnValue(['hash' => hash('md5', $jsonContent)]));
 
-        $this->assertTrue($locker->isFresh());
+        self::assertTrue($locker->isFresh());
     }
 
     public function testIsFreshFalse(): void
@@ -171,7 +171,7 @@ class LockerTest extends TestCase
             ->method('read')
             ->will($this->returnValue(['hash' => $this->getJsonContent(['name' => 'test2'])]));
 
-        $this->assertFalse($locker->isFresh());
+        self::assertFalse($locker->isFresh());
     }
 
     public function testIsFreshWithContentHash(): void
@@ -185,9 +185,9 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(['hash' => md5($jsonContent . '  '), 'content-hash' => md5($jsonContent)]));
+            ->will($this->returnValue(['hash' => hash('md5', $jsonContent . '  '), 'content-hash' => hash('md5', $jsonContent)]));
 
-        $this->assertTrue($locker->isFresh());
+        self::assertTrue($locker->isFresh());
     }
 
     public function testIsFreshWithContentHashAndNoHash(): void
@@ -201,9 +201,9 @@ class LockerTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(['content-hash' => md5($jsonContent)]));
+            ->will($this->returnValue(['content-hash' => hash('md5', $jsonContent)]));
 
-        $this->assertTrue($locker->isFresh());
+        self::assertTrue($locker->isFresh());
     }
 
     public function testIsFreshFalseWithContentHash(): void
@@ -213,14 +213,14 @@ class LockerTest extends TestCase
 
         $locker = new Locker(new NullIO, $json, $inst, $this->getJsonContent());
 
-        $differentHash = md5($this->getJsonContent(['name' => 'test2']));
+        $differentHash = hash('md5', $this->getJsonContent(['name' => 'test2']));
 
         $json
             ->expects($this->once())
             ->method('read')
             ->will($this->returnValue(['hash' => $differentHash, 'content-hash' => $differentHash]));
 
-        $this->assertFalse($locker->isFresh());
+        self::assertFalse($locker->isFresh());
     }
 
     /**

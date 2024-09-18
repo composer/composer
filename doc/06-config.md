@@ -153,7 +153,12 @@ Defaults to `report` in Composer 2.6, and defaults to `fail` from Composer 2.7 o
 }
 ```
 
-Since Composer 2.7 the option can be overridden via the [`COMPOSER_AUDIT_ABANDONED`](03-cli.md#composer-audit-abandoned) environment variable.
+Since Composer 2.7, the option can be overridden via the [`COMPOSER_AUDIT_ABANDONED`](03-cli.md#composer-audit-abandoned) environment variable.
+
+Since Composer 2.8, the option can be overridden via the
+[`--abandoned`](03-cli.md#audit) command line option, which overrides both the
+config value and the environment variable.
+
 
 ## use-parent-dir
 
@@ -478,7 +483,14 @@ altogether.
 
 ## bump-after-update
 
-Defaults to `false` and can be any of `true`, `false`, `"dev"` or `"no-dev"`. If set to true, Composer will run the `bump` command after running
-the `update` command. If set to `"dev"` or `"no-dev"` then only the corresponding dependencies will be bumped.
+Defaults to `false` and can be any of `true`, `false`, `"dev"` or `"no-dev"`. If
+set to true, Composer will run the `bump` command after running the `update` command.
+If set to `"dev"` or `"no-dev"` then only the corresponding dependencies will be bumped.
+
+## allow-missing-requirements
+
+Defaults to `false`. Ignores error during `install` if there are any missing
+requirements - the lock file is not up to date with the latest changes in
+`composer.json`.
 
 &larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;

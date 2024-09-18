@@ -1,3 +1,57 @@
+### [2.7.9] 2024-09-04
+
+  * Fixed Docker detection breaking on constrained environments (#12095)
+  * Fixed upstream issue in bash completion script, it is recommended to update it using the `completion` command (#12015)
+
+### [2.7.8] 2024-08-22
+
+  * Added `release-age`, `release-date` and `latest-release-date` in the JSON output of `outdated` (#12053)
+  * Fixed PHP 8.4 deprecation warnings
+  * Fixed addressability of branches containing `#` signs (#12042)
+  * Fixed `bump` command not handling some `~` constraints correctly (#12038)
+  * Fixed COMPOSER_AUTH not taking precedence over ./auth.json (#12084)
+  * Fixed `relative: true` sometimes not being respected in path repo symlinks (#12092)
+  * Fixed copy from cache sometimes failing on VirtualBox shared folders (#12057)
+  * Fixed PSR-4 autoloading order regression in some edge case (#12063)
+  * Fixed duplicate lib-* packages causing issues when having pecl + core versions of the same PHP extension (#12093)
+  * Fixed transport-options.ssl for local cert authorization being stored in lock file making them less portable (#12019)
+  * Fixed memory issues when installing large binaries (#12032)
+  * Fixed `archive` command crashing when a path cannot be realpath'd on windows (#11544)
+  * API: Deprecated BasePackage::$stabilities in favor of BasePackage::STABILITIES (685add70ec)
+  * Improved Docker detection (#12062)
+
+### [2.7.7] 2024-06-10
+
+  * Security: Fixed command injection via malicious git branch name (GHSA-47f6-5gq3-vx9c / CVE-2024-35241)
+  * Security: Fixed multiple command injections via malicious git/hg branch names (GHSA-v9qv-c7wm-wgmf / CVE-2024-35242)
+  * Security: Fixed secure-http checks that could be bypassed by using malformed URL formats (fa3b9582c)
+  * Security: Fixed Filesystem::isLocalPath including windows-specific checks on linux (3c37a67c)
+  * Security: Fixed perforce argument escaping (3773f775)
+  * Security: Fixed handling of zip bombs when extracting archives (de5f7e32)
+  * Security: Fixed Windows command parameter escaping to prevent abuse of unicode characters with best fit encoding conversion (3130a7455, 04a63b324)
+  * Fixed PSR violations for classes not matching the namespace of a rule being hidden, this may lead to new violations being shown (#11957)
+  * Fixed UX when a plugin is still in vendor dir but is not required nor allowed anymore after changing branches (#12000)
+  * Fixed new platform requirements from composer.json not being checked if the lock file is outdated (#12001)
+  * Fixed ability for `config` command to remove autoload keys (#11967)
+  * Fixed empty `type` support in `init` command (#11999)
+  * Fixed git clone errors when `safe.bareRepository` is set to `strict` in the git config (#11969)
+  * Fixed regression showing network errors on PHP <8.1 (#11974)
+  * Fixed some color bleed from a few warnings (#11972)
+
+### [2.7.6] 2024-05-04
+
+  * Fixed regression when script handlers add an autoloader which uses a private callback (#11960)
+
+### [2.7.5] 2024-05-03
+
+  * Added `uninstall` alias to `remove` command (#11951)
+  * Added workaround for broken curl versions 8.7.0/8.7.1 causing transport exceptions (#11913)
+  * Fixed root usage warnings showing up within Podman containers (#11946)
+  * Fixed config command not handling objects correctly in some conditions (#11945)
+  * Fixed binary proxies not containing the correct path if the project dir is a symlink (#11947)
+  * Fixed Composer autoloader being overruled by project autoloaders when they are loaded by event handlers (scripts/plugins) (#11955)
+  * Fixed TransportException (http failures) not having a distinct exit code, should now exit with `100` as code (#11954)
+
 ### [2.7.4] 2024-04-22
 
   * Fixed regression (`Call to undefined method ProxyManager::needsTransitionWarning()`) with projects requiring composer/composer in an pre-2.7.3 version (#11943, #11940)
@@ -1856,6 +1910,11 @@
 
   * Initial release
 
+[2.7.9]: https://github.com/composer/composer/compare/2.7.8...2.7.9
+[2.7.8]: https://github.com/composer/composer/compare/2.7.7...2.7.8
+[2.7.7]: https://github.com/composer/composer/compare/2.7.6...2.7.7
+[2.7.6]: https://github.com/composer/composer/compare/2.7.5...2.7.6
+[2.7.5]: https://github.com/composer/composer/compare/2.7.4...2.7.5
 [2.7.4]: https://github.com/composer/composer/compare/2.7.3...2.7.4
 [2.7.3]: https://github.com/composer/composer/compare/2.7.2...2.7.3
 [2.7.2]: https://github.com/composer/composer/compare/2.7.1...2.7.2

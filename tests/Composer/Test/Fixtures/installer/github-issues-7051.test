@@ -115,19 +115,19 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - Conclusion: don't install friendsofphp/php-cs-fixer v2.10.5 (conflict analysis result)
     - Root composer.json requires friendsofphp/php-cs-fixer * -> satisfiable by friendsofphp/php-cs-fixer[v2.10.4, v2.10.5].
-    - illuminate/queue v5.2.0 requires illuminate/console 5.2.* -> satisfiable by illuminate/console[v5.2.25, v5.2.26].
-    - illuminate/console v5.2.26 requires symfony/console 2.8.* -> satisfiable by symfony/console[v2.8.7, v2.8.8].
-    - Conclusion: don't install symfony/console v2.8.7 (conflict analysis result)
-    - Conclusion: don't install symfony/console v3.4.28 (conflict analysis result)
-    - Conclusion: don't install symfony/console v2.8.8 (conflict analysis result)
-    - Conclusion: don't install symfony/console v3.4.29 (conflict analysis result)
     - Root composer.json requires illuminate/queue * -> satisfiable by illuminate/queue[v5.2.0].
     - friendsofphp/php-cs-fixer v2.10.4 requires symfony/console ^3.2 || ^4.0 -> satisfiable by symfony/console[v3.2.13, ..., v3.4.29].
-    - You can only install one version of a package, so only one of these can be installed: symfony/console[v2.8.7, v2.8.8, v3.1.9, ..., v3.4.29].
     - illuminate/console v5.2.25 requires symfony/console 3.1.* -> satisfiable by symfony/console[v3.1.9, v3.1.10].
+    - illuminate/console v5.2.26 requires symfony/console 2.8.* -> satisfiable by symfony/console[v2.8.7, v2.8.8].
+    - illuminate/queue v5.2.0 requires illuminate/console 5.2.* -> satisfiable by illuminate/console[v5.2.25, v5.2.26].
+    - Conclusion: don't install symfony/console v2.8.7 (conflict analysis result)
+    - Conclusion: don't install symfony/console v2.8.8 (conflict analysis result)
     - Conclusion: don't install symfony/console v3.1.10 (conflict analysis result)
+    - Conclusion: don't install symfony/console v3.4.28 (conflict analysis result)
+    - Conclusion: don't install symfony/console v3.4.29 (conflict analysis result)
+    - Conclusion: don't install friendsofphp/php-cs-fixer v2.10.5 (conflict analysis result)
+    - You can only install one version of a package, so only one of these can be installed: symfony/console[v2.8.7, v2.8.8, v3.1.9, ..., v3.4.29].
 
 --EXPECT-OUTPUT-OPTIMIZED--
 Loading composer repositories with package information
@@ -135,16 +135,15 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
+    - Root composer.json requires friendsofphp/php-cs-fixer * -> satisfiable by friendsofphp/php-cs-fixer[v2.10.4, v2.10.5].
     - Root composer.json requires illuminate/queue * -> satisfiable by illuminate/queue[v5.2.0].
-    - illuminate/queue v5.2.0 requires illuminate/console 5.2.* -> satisfiable by illuminate/console[v5.2.25, v5.2.26].
+    - friendsofphp/php-cs-fixer[v2.10.4, ..., v2.10.5] require symfony/console ^3.2 || ^4.0 -> satisfiable by symfony/console[v3.2.13, ..., v3.4.29].
     - illuminate/console v5.2.25 requires symfony/console 3.1.* -> satisfiable by symfony/console[v3.1.9, v3.1.10].
     - illuminate/console v5.2.26 requires symfony/console 2.8.* -> satisfiable by symfony/console[v2.8.7, v2.8.8].
+    - illuminate/queue v5.2.0 requires illuminate/console 5.2.* -> satisfiable by illuminate/console[v5.2.25, v5.2.26].
     - You can only install one version of a package, so only one of these can be installed: symfony/console[v2.8.7, v2.8.8, v3.1.9, ..., v3.4.29].
-    - friendsofphp/php-cs-fixer[v2.10.4, ..., v2.10.5] require symfony/console ^3.2 || ^4.0 -> satisfiable by symfony/console[v3.2.13, ..., v3.4.29].
-    - Root composer.json requires friendsofphp/php-cs-fixer * -> satisfiable by friendsofphp/php-cs-fixer[v2.10.4, v2.10.5].
 
 --EXPECT--
 
 --EXPECT-EXIT-CODE--
 2
-

@@ -181,7 +181,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             if ('none' === $reference) {
                 $package['dist']['reference'] = null;
             } elseif ('config' === $reference || 'auto' === $reference) {
-                $package['dist']['reference'] = sha1($json . serialize($this->options));
+                $package['dist']['reference'] = hash('sha1', $json . serialize($this->options));
             }
 
             // copy symlink/relative options to transport options
@@ -198,7 +198,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                     && 0 === $this->process->execute('git rev-parse HEAD', $ref2)
                     && $ref1 === $ref2
                 ) {
-                    $package['version'] = $rootVersion;
+                    $package['version'] = $this->versionGuesser->getRootVersionFromEnv();
                 }
             }
 

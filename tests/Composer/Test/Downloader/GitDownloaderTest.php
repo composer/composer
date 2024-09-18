@@ -66,7 +66,7 @@ class GitDownloaderTest extends TestCase
             $config = new Config();
         }
         if (!$config->has('home')) {
-            $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.md5(uniqid('', true));
+            $tmpDir = realpath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.'cmptest-'.bin2hex(random_bytes(5));
             $config->merge(['config' => ['home' => $tmpDir]]);
         }
 
@@ -304,7 +304,7 @@ class GitDownloaderTest extends TestCase
             if ('RuntimeException' !== get_class($e)) {
                 throw $e;
             }
-            $this->assertEquals('RuntimeException', get_class($e));
+            self::assertEquals('RuntimeException', get_class($e));
         }
     }
 
@@ -461,7 +461,7 @@ composer https://github.com/old/url (push)
             if ('RuntimeException' !== get_class($e)) {
                 throw $e;
             }
-            $this->assertEquals('RuntimeException', get_class($e));
+            self::assertEquals('RuntimeException', get_class($e));
         }
     }
 
@@ -631,7 +631,7 @@ composer https://github.com/old/url (push)
     {
         $downloader = $this->getDownloaderMock();
 
-        $this->assertEquals('source', $downloader->getInstallationSource());
+        self::assertEquals('source', $downloader->getInstallationSource());
     }
 
     private function winCompat(string $cmd): string

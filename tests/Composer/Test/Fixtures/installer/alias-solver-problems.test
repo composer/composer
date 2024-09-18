@@ -45,12 +45,11 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
+    - Root composer.json requires a/a *@dev -> satisfiable by a/a[dev-master].
     - Root composer.json requires b/b *@dev -> satisfiable by b/b[dev-master].
     - a/a dev-master requires d/d 1.0.0 -> satisfiable by d/d[1.0.0].
-    - You can only install one version of a package, so only one of these can be installed: d/d[1.0.0, 2.0.0].
     - b/b dev-master requires d/d 2.0.0 -> satisfiable by d/d[2.0.0].
     - Conclusion: install b/b dev-master (conflict analysis result)
-    - Root composer.json requires a/a *@dev -> satisfiable by a/a[dev-master].
+    - You can only install one version of a package, so only one of these can be installed: d/d[1.0.0, 2.0.0].
 
 --EXPECT--
-

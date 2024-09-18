@@ -85,6 +85,7 @@ class Config
         'http-basic' => [],
         'bearer' => [],
         'bump-after-update' => false,
+        'allow-missing-requirements' => false,
     ];
 
     /** @var array<string, mixed> */
@@ -126,7 +127,7 @@ class Config
         $this->config = static::$defaultConfig;
 
         $this->repositories = static::$defaultRepositories;
-        $this->useEnvironment = (bool) $useEnvironment;
+        $this->useEnvironment = $useEnvironment;
         $this->baseDir = is_string($baseDir) && '' !== $baseDir ? $baseDir : null;
 
         foreach ($this->config as $configKey => $configValue) {
@@ -441,9 +442,9 @@ class Config
                 $result = $this->config[$key];
                 $abandonedEnv = $this->getComposerEnv('COMPOSER_AUDIT_ABANDONED');
                 if (false !== $abandonedEnv) {
-                    if (!in_array($abandonedEnv, $validChoices = [Auditor::ABANDONED_IGNORE, Auditor::ABANDONED_REPORT, Auditor::ABANDONED_FAIL], true)) {
+                    if (!in_array($abandonedEnv, $validChoices = Auditor::ABANDONEDS, true)) {
                         throw new \RuntimeException(
-                            "Invalid value for COMPOSER_AUDIT_ABANDONED: {$abandonedEnv}. Expected ".Auditor::ABANDONED_IGNORE.", ".Auditor::ABANDONED_REPORT." or ".Auditor::ABANDONED_FAIL
+                            "Invalid value for COMPOSER_AUDIT_ABANDONED: {$abandonedEnv}. Expected one of ".implode(', ', Auditor::ABANDONEDS)."."
                         );
                     }
                     $result['abandoned'] = $abandonedEnv;
@@ -530,7 +531,6 @@ class Config
         }
 
         return Preg::replaceCallback('#\{\$(.+)\}#', function ($match) use ($flags) {
-            assert(is_string($match[1]));
             return $this->get($match[1], $flags);
         }, $value);
     }
@@ -585,8 +585,8 @@ class Config
      */
     public function prohibitUrlByConfig(string $url, ?IOInterface $io = null, array $repoOptions = []): void
     {
-        // Return right away if the URL is malformed or custom (see issue #5173)
-        if (false === filter_var($url, FILTER_VALIDATE_URL)) {
+        // Return right away if the URL is malformed or custom (see issue #5173), but only for non-HTTP(S) URLs
+        if (false === filter_var($url, FILTER_VALIDATE_URL) && !Preg::isMatch('{^https?://}', $url)) {
             return;
         }
 

@@ -54,7 +54,7 @@ class HomeCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'home', '--show' => true], $command));
 
-        $this->assertSame(trim($expected), trim($appTester->getDisplay(true)));
+        self::assertSame(trim($expected), trim($appTester->getDisplay(true)));
     }
 
     public static function useCaseProvider(): Generator

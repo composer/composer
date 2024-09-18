@@ -26,7 +26,7 @@ use Symfony\Component\Console\Input\InputOption as BaseInputOption;
  *
  * @internal
  *
- * TODO drop when PHP 8.1 / symfony 6.1+ can be required
+ * TODO symfony/console:6.1 drop when PHP 8.1 / symfony 6.1+ can be required
  */
 class InputOption extends BaseInputOption
 {
@@ -62,7 +62,7 @@ class InputOption extends BaseInputOption
     public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
     {
         $values = $this->suggestedValues;
-        if ($values instanceof \Closure && !\is_array($values = $values($input, $suggestions))) { // @phpstan-ignore-line
+        if ($values instanceof \Closure && !\is_array($values = $values($input, $suggestions))) { // @phpstan-ignore function.impossibleType
             throw new LogicException(sprintf('Closure for argument "%s" must return an array. Got "%s".', $this->getName(), get_debug_type($values)));
         }
         if ([] !== $values) {

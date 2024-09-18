@@ -57,7 +57,7 @@ class InstallationManagerTest extends TestCase
         $manager = new InstallationManager($this->loop, $this->io);
 
         $manager->addInstaller($installer);
-        $this->assertSame($installer, $manager->getInstaller('vendor'));
+        self::assertSame($installer, $manager->getInstaller('vendor'));
 
         self::expectException('InvalidArgumentException');
         $manager->getInstaller('unregistered');
@@ -86,11 +86,11 @@ class InstallationManagerTest extends TestCase
         $manager = new InstallationManager($this->loop, $this->io);
 
         $manager->addInstaller($installer);
-        $this->assertSame($installer, $manager->getInstaller('vendor'));
+        self::assertSame($installer, $manager->getInstaller('vendor'));
         $manager->addInstaller($installer2);
-        $this->assertSame($installer2, $manager->getInstaller('vendor'));
+        self::assertSame($installer2, $manager->getInstaller('vendor'));
         $manager->removeInstaller($installer2);
-        $this->assertSame($installer, $manager->getInstaller('vendor'));
+        self::assertSame($installer, $manager->getInstaller('vendor'));
     }
 
     public function testExecute(): void

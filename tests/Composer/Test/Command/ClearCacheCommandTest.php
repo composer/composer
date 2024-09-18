@@ -32,7 +32,7 @@ class ClearCacheCommandTest extends TestCase
 
         $output = $appTester->getDisplay(true);
 
-        $this->assertStringContainsString('All caches cleared.', $output);
+        self::assertStringContainsString('All caches cleared.', $output);
     }
 
     public function testClearCacheCommandWithOptionGarbageCollection(): void
@@ -44,7 +44,7 @@ class ClearCacheCommandTest extends TestCase
 
         $output = $appTester->getDisplay(true);
 
-        $this->assertStringContainsString('All caches garbage-collected.', $output);
+        self::assertStringContainsString('All caches garbage-collected.', $output);
     }
 
     public function testClearCacheCommandWithOptionNoCache(): void
@@ -56,6 +56,6 @@ class ClearCacheCommandTest extends TestCase
 
         $output = $appTester->getDisplay(true);
 
-        $this->assertStringContainsString('Cache is not enabled', $output);
+        self::assertStringContainsString('Cache is not enabled', $output);
     }
 }

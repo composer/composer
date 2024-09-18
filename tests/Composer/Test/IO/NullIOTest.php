@@ -21,51 +21,51 @@ class NullIOTest extends TestCase
     {
         $io = new NullIO();
 
-        $this->assertFalse($io->isInteractive());
+        self::assertFalse($io->isInteractive());
     }
 
-    public function testhasAuthentication(): void
+    public function testHasAuthentication(): void
     {
         $io = new NullIO();
 
-        $this->assertFalse($io->hasAuthentication('foo'));
+        self::assertFalse($io->hasAuthentication('foo'));
     }
 
     public function testAskAndHideAnswer(): void
     {
         $io = new NullIO();
 
-        $this->assertNull($io->askAndHideAnswer('foo'));
+        self::assertNull($io->askAndHideAnswer('foo'));
     }
 
-    public function testgetAuthentications(): void
+    public function testGetAuthentications(): void
     {
         $io = new NullIO();
 
-        $this->assertIsArray($io->getAuthentications()); // @phpstan-ignore-line
-        $this->assertEmpty($io->getAuthentications());
-        $this->assertEquals(['username' => null, 'password' => null], $io->getAuthentication('foo'));
+        self::assertIsArray($io->getAuthentications());
+        self::assertEmpty($io->getAuthentications());
+        self::assertEquals(['username' => null, 'password' => null], $io->getAuthentication('foo'));
     }
 
     public function testAsk(): void
     {
         $io = new NullIO();
 
-        $this->assertEquals('foo', $io->ask('bar', 'foo'));
+        self::assertEquals('foo', $io->ask('bar', 'foo'));
     }
 
     public function testAskConfirmation(): void
     {
         $io = new NullIO();
 
-        $this->assertEquals(false, $io->askConfirmation('bar', false));
+        self::assertFalse($io->askConfirmation('bar', false));
     }
 
     public function testAskAndValidate(): void
     {
         $io = new NullIO();
 
-        $this->assertEquals('foo', $io->askAndValidate('question', static function ($x): bool {
+        self::assertEquals('foo', $io->askAndValidate('question', static function ($x): bool {
             return true;
         }, null, 'foo'));
     }
@@ -74,6 +74,6 @@ class NullIOTest extends TestCase
     {
         $io = new NullIO();
 
-        $this->assertEquals('1', $io->select('question', ['item1', 'item2'], '1', 2, 'foo', true));
+        self::assertEquals('1', $io->select('question', ['item1', 'item2'], '1', 2, 'foo', true));
     }
 }

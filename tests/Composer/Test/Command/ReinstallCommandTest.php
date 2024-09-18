@@ -47,10 +47,10 @@ class ReinstallCommandTest extends TestCase
             'packages' => $packages
         ]);
 
-        $this->assertSame($expected, trim($appTester->getDisplay(true)));
+        self::assertSame($expected, trim($appTester->getDisplay(true)));
     }
 
-    public function caseProvider(): Generator 
+    public function caseProvider(): Generator
     {
         yield 'reinstall a package' => [
             ['root/req', 'root/anotherreq'],

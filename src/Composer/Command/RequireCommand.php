@@ -402,6 +402,8 @@ EOT
 
     /**
      * @param array<string, string> $requirements
+     * @param 'require'|'require-dev' $requireKey
+     * @param 'require'|'require-dev' $removeKey
      * @throws \Exception
      */
     private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, string $requireKey, string $removeKey): int
@@ -559,10 +561,16 @@ EOT
                 }
                 $lockFile = Factory::getLockFile($this->json->getPath());
                 if (file_exists($lockFile)) {
+                    $stabilityFlags = RootPackageLoader::extractStabilityFlags($requirements, $composer->getPackage()->getMinimumStability(), []);
+
                     $lockMtime = filemtime($lockFile);
                     $lock = new JsonFile($lockFile);
                     $lockData = $lock->read();
                     $lockData['content-hash'] = Locker::getContentHash($contents);
+                    foreach ($stabilityFlags as $packageName => $flag) {
+                        $lockData['stability-flags'][$packageName] = $flag;
+                    }
+                    ksort($lockData['stability-flags']);
                     $lock->write($lockData);
                     if (is_int($lockMtime)) {
                         @touch($lockFile, $lockMtime);

@@ -122,6 +122,6 @@ class TransactionTest extends TestCase
             }
         }
 
-        $this->assertEquals($expected, $result);
+        self::assertEquals($expected, $result);
     }
 }

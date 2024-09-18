@@ -36,7 +36,7 @@ class DownloadManagerTest extends TestCase
         $manager = new DownloadManager($this->io, false, $this->filesystem);
 
         $manager->setDownloader('test', $downloader);
-        $this->assertSame($downloader, $manager->getDownloader('test'));
+        self::assertSame($downloader, $manager->getDownloader('test'));
 
         self::expectException('InvalidArgumentException');
         $manager->getDownloader('unregistered');
@@ -86,7 +86,7 @@ class DownloadManagerTest extends TestCase
             ->with('pear')
             ->will($this->returnValue($downloader));
 
-        $this->assertSame($downloader, $manager->getDownloaderForPackage($package));
+        self::assertSame($downloader, $manager->getDownloaderForPackage($package));
     }
 
     public function testGetDownloaderForIncorrectlyInstalledDistPackage(): void
@@ -152,7 +152,7 @@ class DownloadManagerTest extends TestCase
             ->with('git')
             ->will($this->returnValue($downloader));
 
-        $this->assertSame($downloader, $manager->getDownloaderForPackage($package));
+        self::assertSame($downloader, $manager->getDownloaderForPackage($package));
     }
 
     public function testGetDownloaderForIncorrectlyInstalledSourcePackage(): void
@@ -199,7 +199,7 @@ class DownloadManagerTest extends TestCase
 
         $manager = new DownloadManager($this->io, false, $this->filesystem);
 
-        $this->assertNull($manager->getDownloaderForPackage($package));
+        self::assertNull($manager->getDownloaderForPackage($package));
     }
 
     public function testFullPackageDownload(): void
@@ -264,7 +264,7 @@ class DownloadManagerTest extends TestCase
                     'source',
                 ];
 
-                $this->assertSame(array_shift($series), $type);
+                self::assertSame(array_shift($series), $type);
             });
 
         $downloaderFail = $this->createDownloaderMock();
@@ -674,7 +674,7 @@ class DownloadManagerTest extends TestCase
         $manager = new DownloadManager($this->io, false, $this->filesystem);
         $method = new \ReflectionMethod($manager, 'getAvailableSources');
         $method->setAccessible(true);
-        $this->assertEquals($expected, $method->invoke($manager, $target, $initial ?? null));
+        self::assertEquals($expected, $method->invoke($manager, $target, $initial ?? null));
     }
 
     public static function updatesProvider(): array

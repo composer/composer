@@ -29,8 +29,8 @@ class JsonFormatterTest extends TestCase
         $backslash = chr(92);
         $data = '"' . $backslash . $backslash . $backslash . 'u0119"';
         $expected = '"' . $backslash . $backslash . 'ę"';
-        /** @phpstan-ignore-next-line */
-        $this->assertEquals($expected, JsonFormatter::format($data, true, true));
+        /** @phpstan-ignore staticMethod.dynamicCall, staticMethod.deprecatedClass */
+        self::assertEquals($expected, JsonFormatter::format($data, true, true));
     }
 
     /**
@@ -44,7 +44,7 @@ class JsonFormatterTest extends TestCase
         }
 
         $escaped = '"\ud83d\ude00"';
-        /** @phpstan-ignore-next-line */
-        $this->assertEquals($escaped, JsonFormatter::format($escaped, true, true));
+        /** @phpstan-ignore staticMethod.dynamicCall, staticMethod.deprecatedClass */
+        self::assertEquals($escaped, JsonFormatter::format($escaped, true, true));
     }
 }
