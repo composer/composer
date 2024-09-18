@@ -659,7 +659,7 @@
                 },
                 "bump-after-update": {
                     "type": ["string", "boolean"],
-                    "description": "Defaults to false and can be any of true, false, \"dev\"` or \"no-dev\"`. If set to true, Composer will run the Bump command after running the Update command. If set to \"dev\" or \"no-dev\" then only the corresponding dependencies will be bumped."
+                    "description": "Defaults to false and can be any of true, false, \"dev\"` or \"no-dev\"`. If set to true, Composer will run the bump command after running the update command. If set to \"dev\" or \"no-dev\" then only the corresponding dependencies will be bumped."
                 }
             }
         },

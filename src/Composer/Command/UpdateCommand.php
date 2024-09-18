@@ -78,7 +78,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('minimal-changes', 'm', InputOption::VALUE_NONE, 'During a partial update with -w/-W, only perform absolutely necessary changes to transitive dependencies (can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var).'),
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
-                new InputOption('bump-after-update', null, InputOption::VALUE_NONE, 'Runs Bump after performing the update.'),
+                new InputOption('bump-after-update', null, InputOption::VALUE_OPTIONAL, 'Runs bump after performing the update.', false, ['dev', 'no-dev', 'all']),
             ])
             ->setHelp(
                 <<<EOT
@@ -252,18 +252,19 @@ EOT
         $result = $install->run();
 
         if ($result === 0) {
-            $bumpAfterUpdate = (bool) $input->getOption('bump-after-update') || (bool) $composer->getConfig()->get('bump-after-update');
+            $bumpAfterUpdate = $input->getOption('bump-after-update');
+            if (false === $bumpAfterUpdate) {
+                $bumpAfterUpdate = $composer->getConfig()->get('bump-after-update');
+            }
 
-            if ($bumpAfterUpdate) {
+            if (false !== $bumpAfterUpdate) {
                 $io->writeError('<info>Bumping dependencies</info>');
                 $bumpCommand = new BumpCommand();
                 $bumpCommand->setComposer($composer);
                 $result = $bumpCommand->doBump(
                     $io,
-                    $input->getOption('bump-after-update') === 'dev'
-                        || $composer->getConfig()->get('bump-after-update') === 'dev',
-                    $input->getOption('bump-after-update') === 'no-dev'
-                        || $composer->getConfig()->get('bump-after-update') === 'no-dev',
+                    $bumpAfterUpdate === 'dev',
+                    $bumpAfterUpdate === 'no-dev',
                     $input->getOption('dry-run'),
                     $input->getArgument('packages')
                 );
