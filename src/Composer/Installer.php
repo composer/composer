@@ -742,7 +742,9 @@ class Installer
             if ($missingRequirementInfo !== []) {
                 $this->io->writeError($missingRequirementInfo);
 
-                return self::ERROR_LOCK_FILE_INVALID;
+                if (!$this->config->get('allow-missing-requirements')) {
+                    return self::ERROR_LOCK_FILE_INVALID;
+                }
             }
 
             foreach ($lockedRepository->getPackages() as $package) {

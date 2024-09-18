@@ -84,6 +84,7 @@ class Config
         'gitlab-token' => [],
         'http-basic' => [],
         'bearer' => [],
+        'allow-missing-requirements' => false,
     ];
 
     /** @var array<string, mixed> */

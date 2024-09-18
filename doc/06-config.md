@@ -481,4 +481,10 @@ throw, but you can set this config option to `["example.org"]` to allow using sv
 URLs on that hostname. This is a better/safer alternative to disabling `secure-http`
 altogether.
 
+## allow-missing-requirements
+
+Defaults to `false`. Ignores error during `install` if there are any missing
+requirements - the lock file is not up to date with the latest changes in
+`composer.json`.
+
 &larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;

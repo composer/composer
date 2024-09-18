@@ -662,6 +662,10 @@
                 "platform-check": {
                     "type": ["boolean", "string"],
                     "description": "Defaults to \"php-only\" which checks only the PHP version. Setting to true will also check the presence of required PHP extensions. If set to false, Composer will not create and require a platform_check.php file as part of the autoloader bootstrap."
+                },
+                "allow-missing-requirements": {
+                    "type": ["boolean"],
+                    "description": "Defaults to false. If set to true, Composer will allow install when lock file is not up to date with the latest changes in composer.json."
                 }
             }
         },
