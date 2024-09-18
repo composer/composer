@@ -204,7 +204,7 @@ class EventDispatcher
 
                 $additionalArgs = $event->getArguments();
                 if (is_string($callable) && str_contains($callable, '@no_additional_args')) {
-                    $callable = str_replace('@no_additional_args', '', $callable);
+                    $callable = Preg::replace('{ ?@no_additional_args}', '', $callable);
                     $additionalArgs = [];
                 }
                 $formattedEventNameWithArgs = $event->getName() . ($additionalArgs !== [] ? ' (' . implode(', ', $additionalArgs) . ')' : '');
@@ -600,21 +600,6 @@ class EventDispatcher
         $map = $generator->parseAutoloads($packageMap, $package);
         $this->loader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
         $this->loader->register(false);
-
-        $hasScriptWithArgs = false;
-        foreach ($scripts[$event->getName()] as $script) {
-            if (str_contains($script, '@additional_args')) {
-                $hasScriptWithArgs = true;
-                break;
-            }
-        }
-        if ($hasScriptWithArgs) {
-            foreach ($scripts[$event->getName()] as $index => $script) {
-                if (!str_contains($script, '@additional_args')) {
-                    $scripts[$event->getName()][$index] .= '@no_additional_args';
-                }
-            }
-        }
 
         return $scripts[$event->getName()];
     }

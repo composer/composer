@@ -311,6 +311,50 @@ class EventDispatcherTest extends TestCase
         }
     }
 
+    public function testDispatcherSupportForAdditionalArgs(): void
+    {
+        $process = $this->getProcessExecutorMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs([
+                $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ])
+            ->onlyMethods([
+                'getListeners',
+            ])
+            ->getMock();
+
+        $reflMethod = new \ReflectionMethod($dispatcher, 'getPhpExecCommand');
+        if (PHP_VERSION_ID < 80100) {
+            $reflMethod->setAccessible(true);
+        }
+        $phpCmd = $reflMethod->invoke($dispatcher);
+
+        $process->expects([
+            'echo -n foo',
+            $phpCmd.' foo.php \'ARG\' \'ARG2\' \'--arg\' then the rest',
+            'echo -n bar \'ARG\' \'ARG2\' \'--arg\'',
+        ], true);
+
+        $listeners = [
+            'echo -n foo @no_additional_args',
+            '@php foo.php @additional_args then the rest',
+            'echo -n bar',
+        ];
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listeners));
+
+        $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false, ['ARG', 'ARG2', '--arg']);
+
+        $expected = '> post-install-cmd: echo -n foo'.PHP_EOL.
+            '> post-install-cmd: @php foo.php \'ARG\' \'ARG2\' \'--arg\' then the rest'.PHP_EOL.
+            '> post-install-cmd: echo -n bar \'ARG\' \'ARG2\' \'--arg\''.PHP_EOL;
+        self::assertEquals($expected, $io->getOutput());
+    }
+
     public static function createsVendorBinFolderChecksEnvDoesNotContainsBin(): void
     {
         mkdir(__DIR__ . '/vendor/bin', 0700, true);
