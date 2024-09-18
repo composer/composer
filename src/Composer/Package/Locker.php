@@ -373,6 +373,8 @@ class Locker
             'prefer-lowest' => $preferLowest,
         ];
 
+        ksort($lock['stability-flags']);
+
         $lock['packages'] = $this->lockPackages($packages);
         if (null !== $devPackages) {
             $lock['packages-dev'] = $this->lockPackages($devPackages);
