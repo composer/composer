@@ -30,7 +30,7 @@ class DefaultPolicy implements PolicyInterface
     private $preferLowest;
     /** @var array<string, string>|null */
     private $preferredVersions;
-    /** @var array<int, array<string, array<int, int>>> */
+    /** @var array<int, array<string, non-empty-list<int>>> */
     private $preferredPackageResultCachePerPool;
     /** @var array<int, array<string, int>> */
     private $sortingCachePerPool;
@@ -68,9 +68,8 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-     * @param  int[]  $literals
-     * @param  string $requiredPackage
-     * @return int[]
+     * @param  non-empty-list<int>  $literals
+     * @return non-empty-list<int>
      */
     public function selectPreferredPackages(Pool $pool, array $literals, ?string $requiredPackage = null): array
     {
@@ -118,8 +117,8 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-     * @param  int[] $literals
-     * @return array<string, int[]>
+     * @param  non-empty-list<int> $literals
+     * @return non-empty-array<string, non-empty-list<int>>
      */
     protected function groupLiteralsByName(Pool $pool, array $literals): array
     {
@@ -164,7 +163,7 @@ class DefaultPolicy implements PolicyInterface
 
             // for replacers not replacing each other, put a higher prio on replacing
             // packages with the same vendor as the required package
-            if ($requiredPackage && false !== ($pos = strpos($requiredPackage, '/'))) {
+            if ($requiredPackage !== null && false !== ($pos = strpos($requiredPackage, '/'))) {
                 $requiredVendor = substr($requiredPackage, 0, $pos);
 
                 $aIsSameVendor = strpos($a->getName(), $requiredVendor) === 0;
@@ -205,8 +204,8 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-     * @param  int[] $literals
-     * @return int[]
+     * @param  list<int> $literals
+     * @return list<int>
      */
     protected function pruneToBestVersion(Pool $pool, array $literals): array
     {
@@ -252,8 +251,8 @@ class DefaultPolicy implements PolicyInterface
      *
      * If no package is a local alias, nothing happens
      *
-     * @param  int[] $literals
-     * @return int[]
+     * @param  list<int> $literals
+     * @return list<int>
      */
     protected function pruneRemoteAliases(Pool $pool, array $literals): array
     {

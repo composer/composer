@@ -26,8 +26,8 @@ interface PolicyInterface
     public function versionCompare(PackageInterface $a, PackageInterface $b, string $operator): bool;
 
     /**
-     * @param  int[]   $literals
-     * @return int[]
+     * @param  non-empty-list<int>   $literals
+     * @return non-empty-list<int>
      */
     public function selectPreferredPackages(Pool $pool, array $literals, ?string $requiredPackage = null): array;
 }

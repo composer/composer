@@ -109,7 +109,7 @@ class Solver
 
             $conflict = $this->decisions->decisionRule($literal);
 
-            if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
+            if (RuleSet::TYPE_PACKAGE === $conflict->getType()) {
                 $problem = new Problem();
 
                 $problem->addRule($rule);
@@ -164,7 +164,7 @@ class Solver
                 $constraint = $platformRequirementFilter->filterConstraint($packageName, $constraint);
             }
 
-            if (!$this->pool->whatProvides($packageName, $constraint)) {
+            if (0 === \count($this->pool->whatProvides($packageName, $constraint))) {
                 $problem = new Problem();
                 $problem->addRule(new GenericRule([], Rule::RULE_ROOT_REQUIRE, ['packageName' => $packageName, 'constraint' => $constraint]));
                 $this->problems[] = $problem;
@@ -174,7 +174,7 @@ class Solver
 
     public function solve(Request $request, ?PlatformRequirementFilterInterface $platformRequirementFilter = null): LockTransaction
     {
-        $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
+        $platformRequirementFilter = $platformRequirementFilter ?? PlatformRequirementFilterFactory::ignoreNothing();
 
         $this->setupFixedMap($request);
 
@@ -227,7 +227,7 @@ class Solver
 
             $this->propagateIndex++;
 
-            if ($conflict) {
+            if ($conflict !== null) {
                 return $conflict;
             }
         }
@@ -257,7 +257,7 @@ class Solver
             $this->propagateIndex = \count($this->decisions);
         }
 
-        while (!empty($this->branches) && $this->branches[\count($this->branches) - 1][self::BRANCH_LEVEL] >= $level) {
+        while (\count($this->branches) > 0 && $this->branches[\count($this->branches) - 1][self::BRANCH_LEVEL] >= $level) {
             array_pop($this->branches);
         }
     }
@@ -274,10 +274,8 @@ class Solver
      * rule (always unit) and re-propagate.
      *
      * returns the new solver level or 0 if unsolvable
-     *
-     * @param  string|int $literal
      */
-    private function setPropagateLearn(int $level, $literal, Rule $rule): int
+    private function setPropagateLearn(int $level, int $literal, Rule $rule): int
     {
         $level++;
 
@@ -322,7 +320,7 @@ class Solver
     }
 
     /**
-     * @param  int[] $decisionQueue
+     * @param non-empty-list<int> $decisionQueue
      */
     private function selectAndInstall(int $level, array $decisionQueue, Rule $rule): int
     {
@@ -332,7 +330,7 @@ class Solver
         $selectedLiteral = array_shift($literals);
 
         // if there are multiple candidates, then branch
-        if (\count($literals)) {
+        if (\count($literals) > 0) {
             $this->branches[] = [$literals, $level];
         }
 
@@ -426,12 +424,12 @@ class Solver
                     }
                     $learnedLiteral = -$literal;
 
-                    if (!$l1num) {
+                    if (0 === $l1num) {
                         break 2;
                     }
 
-                    foreach ($otherLearnedLiterals as $learnedLiteral) {
-                        unset($seen[abs($learnedLiteral)]);
+                    foreach ($otherLearnedLiterals as $otherLiteral) {
+                        unset($seen[abs($otherLiteral)]);
                     }
                     // only level 1 marks left
                     $l1num++;
@@ -539,10 +537,10 @@ class Solver
         }
 
         foreach ($this->decisions as $decision) {
-            $literal = $decision[Decisions::DECISION_LITERAL];
+            $decisionLiteral = $decision[Decisions::DECISION_LITERAL];
 
             // skip literals that are not in this rule
-            if (!isset($seen[abs($literal)])) {
+            if (!isset($seen[abs($decisionLiteral)])) {
                 continue;
             }
 
@@ -552,7 +550,6 @@ class Solver
             $this->analyzeUnsolvableRule($problem, $why, $ruleSeen);
 
             $literals = $why->getLiterals();
-
             foreach ($literals as $literal) {
                 // skip the one true literal
                 if ($this->decisions->satisfy($literal)) {

@@ -94,7 +94,7 @@ class Decisions implements \Iterator, \Countable
         return 0;
     }
 
-    public function decisionRule(int $literalOrPackageId): ?Rule
+    public function decisionRule(int $literalOrPackageId): Rule
     {
         $packageId = abs($literalOrPackageId);
 
@@ -104,7 +104,7 @@ class Decisions implements \Iterator, \Countable
             }
         }
 
-        return null;
+        throw new \LogicException('Did not find a decision rule using '.$literalOrPackageId);
     }
 
     /**

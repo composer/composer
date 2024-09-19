@@ -817,6 +817,7 @@ EOT
             $pool = $repositorySet->createPoolForPackage($name);
         }
         $matches = $pool->whatProvides($name, $constraint);
+        $literals = [];
         foreach ($matches as $index => $package) {
             // avoid showing the 9999999-dev alias if the default branch has no branch-alias set
             if ($package instanceof AliasPackage && $package->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
@@ -829,11 +830,12 @@ EOT
             }
 
             $versions[$package->getPrettyVersion()] = $package->getVersion();
-            $matches[$index] = $package->getId();
+            $literals[] = $package->getId();
         }
 
         // select preferred package according to policy rules
-        if (null === $matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($pool, $matches)) {
+        if (null === $matchedPackage && \count($literals) > 0) {
+            $preferred = $policy->selectPreferredPackages($pool, $literals);
             $matchedPackage = $pool->literalToPackage($preferred[0]);
         }
 
