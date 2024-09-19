@@ -232,6 +232,7 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
   COMPOSER_PREFER_LOWEST=1 env var.
 * **--minimal-changes (-m):** During a partial update with `-w`/`-W`, only perform absolutely necessary
   changes to transitive dependencies. Can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var.
+* **--patch-only:** Only allow patch version updates for currently installed dependencies.
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
 * **--bump-after-update:** Runs `bump` after performing the update. Set to `dev` or `no-dev` to only bump those dependencies.
