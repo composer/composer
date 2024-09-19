@@ -121,6 +121,7 @@ class VersionSelector
 
             foreach ($candidates as $pkg) {
                 $reqs = $pkg->getRequires();
+                $skip = false;
                 foreach ($reqs as $name => $link) {
                     if (!PlatformRepository::isPlatformPackage($name) || $platformRequirementFilter->isIgnored($name)) {
                         continue;
@@ -151,8 +152,8 @@ class VersionSelector
                     $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
                     $alreadySeenNames[$pkg->getName()] = true;
                     if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
-                        $isFirstWarning = !isset($alreadyWarnedNames[$pkg->getName()]);
-                        $alreadyWarnedNames[$pkg->getName()] = true;
+                        $isFirstWarning = !isset($alreadyWarnedNames[$pkg->getName().'/'.$link->getTarget()]);
+                        $alreadyWarnedNames[$pkg->getName().'/'.$link->getTarget()] = true;
                         $latest = $isLatestVersion ? "'s latest version" : '';
                         $io->writeError(
                             '<warning>Cannot use '.$pkg->getPrettyName().$latest.' '.$pkg->getPrettyVersion().' as it '.$link->getDescription().' '.$link->getTarget().' '.$link->getPrettyConstraint().' which '.$reason.'.</>',
@@ -162,7 +163,11 @@ class VersionSelector
                     }
 
                     // skip candidate
-                    continue 2;
+                    $skip = true;
+                }
+
+                if ($skip) {
+                    continue;
                 }
 
                 $package = $pkg;
