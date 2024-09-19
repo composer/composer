@@ -349,7 +349,8 @@ class Solver
         $num = 0;
         $l1num = 0;
         $seen = [];
-        $learnedLiterals = [null];
+        $mainLiteral = null;
+        $learnedLiterals = [];
 
         $decisionId = \count($this->decisions);
 
@@ -423,16 +424,14 @@ class Solver
                     if ($literal < 0) {
                         $this->testFlagLearnedPositiveLiteral = true;
                     }
-                    $learnedLiterals[0] = -$literal;
+                    $mainLiteral = -$literal;
 
                     if (!$l1num) {
                         break 2;
                     }
 
-                    foreach ($learnedLiterals as $i => $learnedLiteral) {
-                        if ($i !== 0) {
-                            unset($seen[abs($learnedLiteral)]);
-                        }
+                    foreach ($learnedLiterals as $learnedLiteral) {
+                        unset($seen[abs($learnedLiteral)]);
                     }
                     // only level 1 marks left
                     $l1num++;
@@ -475,15 +474,16 @@ class Solver
 
         $why = \count($this->learnedPool) - 1;
 
-        if (null === $learnedLiterals[0]) {
+        if (null === $mainLiteral) {
             throw new SolverBugException(
                 "Did not find a learnable literal in analyzed rule $analyzedRule."
             );
         }
 
+        array_unshift($learnedLiterals, $mainLiteral);
         $newRule = new GenericRule($learnedLiterals, Rule::RULE_LEARNED, $why);
 
-        return [$learnedLiterals[0], $ruleLevel, $newRule, $why];
+        return [$mainLiteral, $ruleLevel, $newRule, $why];
     }
 
     /**
