@@ -349,8 +349,8 @@ class Solver
         $num = 0;
         $l1num = 0;
         $seen = [];
-        $mainLiteral = null;
-        $learnedLiterals = [];
+        $learnedLiteral = null;
+        $otherLearnedLiterals = [];
 
         $decisionId = \count($this->decisions);
 
@@ -383,7 +383,7 @@ class Solver
                     $num++;
                 } else {
                     // not level1 or conflict level, add to new rule
-                    $learnedLiterals[] = $literal;
+                    $otherLearnedLiterals[] = $literal;
 
                     if ($l > $ruleLevel) {
                         $ruleLevel = $l;
@@ -424,13 +424,13 @@ class Solver
                     if ($literal < 0) {
                         $this->testFlagLearnedPositiveLiteral = true;
                     }
-                    $mainLiteral = -$literal;
+                    $learnedLiteral = -$literal;
 
                     if (!$l1num) {
                         break 2;
                     }
 
-                    foreach ($learnedLiterals as $learnedLiteral) {
+                    foreach ($otherLearnedLiterals as $learnedLiteral) {
                         unset($seen[abs($learnedLiteral)]);
                     }
                     // only level 1 marks left
@@ -452,7 +452,7 @@ class Solver
                                     $num++;
                                 } else {
                                     // not level1 or conflict level, add to new rule
-                                    $learnedLiterals[] = $literal;
+                                    $otherLearnedLiterals[] = $literal;
 
                                     if ($l > $ruleLevel) {
                                         $ruleLevel = $l;
@@ -474,16 +474,16 @@ class Solver
 
         $why = \count($this->learnedPool) - 1;
 
-        if (null === $mainLiteral) {
+        if (null === $learnedLiteral) {
             throw new SolverBugException(
                 "Did not find a learnable literal in analyzed rule $analyzedRule."
             );
         }
 
-        array_unshift($learnedLiterals, $mainLiteral);
-        $newRule = new GenericRule($learnedLiterals, Rule::RULE_LEARNED, $why);
+        array_unshift($otherLearnedLiterals, $learnedLiteral);
+        $newRule = new GenericRule($otherLearnedLiterals, Rule::RULE_LEARNED, $why);
 
-        return [$mainLiteral, $ruleLevel, $newRule, $why];
+        return [$learnedLiteral, $ruleLevel, $newRule, $why];
     }
 
     /**
