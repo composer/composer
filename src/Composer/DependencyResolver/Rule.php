@@ -153,7 +153,7 @@ abstract class Rule
             if (PlatformRepository::isPlatformPackage($this->getReasonData()->getTarget())) {
                 return false;
             }
-            if ($request->getLockedRepository()) {
+            if ($request->getLockedRepository() !== null) {
                 foreach ($request->getLockedRepository()->getPackages() as $package) {
                     if ($package->getName() === $this->getReasonData()->getTarget()) {
                         if ($pool->isUnacceptableFixedOrLockedPackage($package)) {
@@ -176,7 +176,7 @@ abstract class Rule
             if (PlatformRepository::isPlatformPackage($this->getReasonData()['packageName'])) {
                 return false;
             }
-            if ($request->getLockedRepository()) {
+            if ($request->getLockedRepository() !== null) {
                 foreach ($request->getLockedRepository()->getPackages() as $package) {
                     if ($package->getName() === $this->getReasonData()['packageName']) {
                         if ($pool->isUnacceptableFixedOrLockedPackage($package)) {
@@ -215,7 +215,7 @@ abstract class Rule
                 return $package2;
 
             case self::RULE_PACKAGE_REQUIRES:
-                $sourceLiteral = array_shift($literals);
+                $sourceLiteral = $literals[0];
                 $sourcePackage = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($sourceLiteral));
 
                 return $sourcePackage;
@@ -240,14 +240,14 @@ abstract class Rule
                 $constraint = $reasonData['constraint'];
 
                 $packages = $pool->whatProvides($packageName, $constraint);
-                if (!$packages) {
+                if (0 === \count($packages)) {
                     return 'No package found to satisfy root composer.json require '.$packageName.' '.$constraint->getPrettyString();
                 }
 
                 $packagesNonAlias = array_values(array_filter($packages, static function ($p): bool {
                     return !($p instanceof AliasPackage);
                 }));
-                if (count($packagesNonAlias) === 1) {
+                if (\count($packagesNonAlias) === 1) {
                     $package = $packagesNonAlias[0];
                     if ($request->isLockedPackage($package)) {
                         return $package->getPrettyName().' is locked to version '.$package->getPrettyVersion()." and an update of this package was not requested.";
@@ -305,6 +305,7 @@ abstract class Rule
                 return $package2->getPrettyString().' conflicts with '.$conflictTarget.'.';
 
             case self::RULE_PACKAGE_REQUIRES:
+                assert(\count($literals) > 0);
                 $sourceLiteral = array_shift($literals);
                 $sourcePackage = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($sourceLiteral));
                 $reasonData = $this->getReasonData();
@@ -315,7 +316,7 @@ abstract class Rule
                 }
 
                 $text = $reasonData->getPrettyString($sourcePackage);
-                if ($requires) {
+                if (\count($requires) > 0) {
                     $text .= ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $requires, $isVerbose, $reasonData->getConstraint()) . '.';
                 } else {
                     $targetName = $reasonData->getTarget();
@@ -333,19 +334,18 @@ abstract class Rule
                     $package = $pool->literalToPackage($literal);
                     $packageNames[$package->getName()] = true;
                 }
+                unset($literal);
                 $replacedName = $this->getReasonData();
 
-                if (count($packageNames) > 1) {
-                    $reason = null;
-
+                if (\count($packageNames) > 1) {
                     if (!isset($packageNames[$replacedName])) {
-                        $reason = 'They '.(count($literals) === 2 ? 'both' : 'all').' replace '.$replacedName.' and thus cannot coexist.';
+                        $reason = 'They '.(\count($literals) === 2 ? 'both' : 'all').' replace '.$replacedName.' and thus cannot coexist.';
                     } else {
                         $replacerNames = $packageNames;
                         unset($replacerNames[$replacedName]);
                         $replacerNames = array_keys($replacerNames);
 
-                        if (count($replacerNames) === 1) {
+                        if (\count($replacerNames) === 1) {
                             $reason = $replacerNames[0] . ' replaces ';
                         } else {
                             $reason = '['.implode(', ', $replacerNames).'] replace ';
@@ -363,7 +363,7 @@ abstract class Rule
                         }
                     }
 
-                    if ($installedPackages && $removablePackages) {
+                    if (\count($installedPackages) > 0 && \count($removablePackages) > 0) {
                         return $this->formatPackagesUnique($pool, $removablePackages, $isVerbose, null, true).' cannot be installed as that would require removing '.$this->formatPackagesUnique($pool, $installedPackages, $isVerbose, null, true).'. '.$reason;
                     }
 
@@ -381,7 +381,7 @@ abstract class Rule
                 // }
                 $learnedString = ' (conflict analysis result)';
 
-                if (count($literals) === 1) {
+                if (\count($literals) === 1) {
                     $ruleText = $pool->literalToPrettyString($literals[0], $installedMap);
                 } else {
                     $groups = [];
@@ -397,7 +397,7 @@ abstract class Rule
                     }
                     $ruleTexts = [];
                     foreach ($groups as $group => $packages) {
-                        $ruleTexts[] = $group . (count($packages) > 1 ? ' one of' : '').' ' . $this->formatPackagesUnique($pool, $packages, $isVerbose);
+                        $ruleTexts[] = $group . (\count($packages) > 1 ? ' one of' : '').' ' . $this->formatPackagesUnique($pool, $packages, $isVerbose);
                     }
 
                     $ruleText = implode(' | ', $ruleTexts);
@@ -439,14 +439,13 @@ abstract class Rule
     }
 
     /**
-     * @param array<int|BasePackage> $packages An array containing packages or literals
+     * @param array<int|BasePackage> $literalsOrPackages An array containing packages or literals
      */
-    protected function formatPackagesUnique(Pool $pool, array $packages, bool $isVerbose, ?ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
+    protected function formatPackagesUnique(Pool $pool, array $literalsOrPackages, bool $isVerbose, ?ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
     {
-        foreach ($packages as $index => $package) {
-            if (!\is_object($package)) {
-                $packages[$index] = $pool->literalToPackage($package);
-            }
+        $packages = [];
+        foreach ($literalsOrPackages as $package) {
+            $packages[] = \is_object($package) ? $package : $pool->literalToPackage($package);
         }
 
         return Problem::getPackageList($packages, $isVerbose, $pool, $constraint, $useRemovedVersionGroup);

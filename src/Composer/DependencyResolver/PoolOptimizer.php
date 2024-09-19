@@ -207,7 +207,7 @@ class PoolOptimizer
                         $groupHashParts[] = 'require:' . (string) $requireConstraint;
                     }
 
-                    if ($package->getReplaces()) {
+                    if (\count($package->getReplaces()) > 0) {
                         foreach ($package->getReplaces() as $link) {
                             if (CompilingMatcher::match($link->getConstraint(), Constraint::OP_EQ, $package->getVersion())) {
                                 // Use the same hash part as the regular require hash because that's what the replacement does
@@ -224,7 +224,7 @@ class PoolOptimizer
                         }
                     }
 
-                    if (!$groupHashParts) {
+                    if (0 === \count($groupHashParts)) {
                         continue;
                     }
 
@@ -371,7 +371,7 @@ class PoolOptimizer
      */
     private function optimizeImpossiblePackagesAway(Request $request, Pool $pool): void
     {
-        if (count($request->getLockedPackages()) === 0) {
+        if (\count($request->getLockedPackages()) === 0) {
             return;
         }
 

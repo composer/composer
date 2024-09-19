@@ -43,7 +43,7 @@ class Solver
 
     /** @var int */
     protected $propagateIndex;
-    /** @var mixed[] */
+    /** @var array<int, array{array<int, int>, int}> */
     protected $branches = [];
     /** @var Problem[] */
     protected $problems = [];
@@ -199,7 +199,7 @@ class Solver
         $this->io->writeError('', true, IOInterface::DEBUG);
         $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
-        if ($this->problems) {
+        if (\count($this->problems) > 0) {
             throw new SolverProblemsException($this->problems, $this->learnedPool);
         }
 
@@ -289,7 +289,9 @@ class Solver
             }
 
             if ($level === 1) {
-                return $this->analyzeUnsolvable($rule);
+                $this->analyzeUnsolvable($rule);
+
+                return 0;
             }
 
             // conflict
@@ -439,24 +441,24 @@ class Solver
                     $rule = $decision[Decisions::DECISION_REASON];
 
                     if ($rule instanceof MultiConflictRule) {
-                        // there is only ever exactly one positive decision in a multiconflict rule
-                        foreach ($rule->getLiterals() as $literal) {
-                            if (!isset($seen[abs($literal)]) && $this->decisions->satisfy(-$literal)) {
+                        // there is only ever exactly one positive decision in a MultiConflictRule
+                        foreach ($rule->getLiterals() as $ruleLiteral) {
+                            if (!isset($seen[abs($ruleLiteral)]) && $this->decisions->satisfy(-$ruleLiteral)) {
                                 $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
-                                $l = $this->decisions->decisionLevel($literal);
+                                $l = $this->decisions->decisionLevel($ruleLiteral);
                                 if (1 === $l) {
                                     $l1num++;
                                 } elseif ($level === $l) {
                                     $num++;
                                 } else {
                                     // not level1 or conflict level, add to new rule
-                                    $otherLearnedLiterals[] = $literal;
+                                    $otherLearnedLiterals[] = $ruleLiteral;
 
                                     if ($l > $ruleLevel) {
                                         $ruleLevel = $l;
                                     }
                                 }
-                                $seen[abs($literal)] = true;
+                                $seen[abs($ruleLiteral)] = true;
                                 break;
                             }
                         }
@@ -514,7 +516,7 @@ class Solver
         $problem->addRule($conflictRule);
     }
 
-    private function analyzeUnsolvable(Rule $conflictRule): int
+    private function analyzeUnsolvable(Rule $conflictRule): void
     {
         $problem = new Problem();
         $problem->addRule($conflictRule);
@@ -558,8 +560,6 @@ class Solver
                 $seen[abs($literal)] = true;
             }
         }
-
-        return 0;
     }
 
     private function runSat(): void
@@ -583,9 +583,7 @@ class Solver
             if (1 === $level) {
                 $conflictRule = $this->propagate($level);
                 if (null !== $conflictRule) {
-                    if ($this->analyzeUnsolvable($conflictRule)) {
-                        continue;
-                    }
+                    $this->analyzeUnsolvable($conflictRule);
 
                     return;
                 }
@@ -609,7 +607,7 @@ class Solver
                             }
                         }
 
-                        if ($noneSatisfied && \count($decisionQueue)) {
+                        if ($noneSatisfied && \count($decisionQueue) > 0) {
                             // if any of the options in the decision queue are fixed, only use those
                             $prunedQueue = [];
                             foreach ($decisionQueue as $literal) {
@@ -617,12 +615,12 @@ class Solver
                                     $prunedQueue[] = $literal;
                                 }
                             }
-                            if (!empty($prunedQueue)) {
+                            if (\count($prunedQueue) > 0) {
                                 $decisionQueue = $prunedQueue;
                             }
                         }
 
-                        if ($noneSatisfied && \count($decisionQueue)) {
+                        if ($noneSatisfied && \count($decisionQueue) > 0) {
                             $oLevel = $level;
                             $level = $this->selectAndInstall($level, $decisionQueue, $rule);
 
@@ -716,7 +714,7 @@ class Solver
             }
 
             // minimization step
-            if (\count($this->branches)) {
+            if (\count($this->branches) > 0) {
                 $lastLiteral = null;
                 $lastLevel = null;
                 $lastBranchIndex = 0;
@@ -726,7 +724,7 @@ class Solver
                     [$literals, $l] = $this->branches[$i];
 
                     foreach ($literals as $offset => $literal) {
-                        if ($literal && $literal > 0 && $this->decisions->decisionLevel($literal) > $l + 1) {
+                        if ($literal > 0 && $this->decisions->decisionLevel($literal) > $l + 1) {
                             $lastLiteral = $literal;
                             $lastBranchIndex = $i;
                             $lastBranchOffset = $offset;
@@ -735,7 +733,7 @@ class Solver
                     }
                 }
 
-                if ($lastLiteral) {
+                if ($lastLiteral !== null && $lastLevel !== null) {
                     unset($this->branches[$lastBranchIndex][self::BRANCH_LITERALS][$lastBranchOffset]);
 
                     $level = $lastLevel;

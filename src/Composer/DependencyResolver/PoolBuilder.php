@@ -95,7 +95,7 @@ class PoolBuilder
      */
     private $loadedPerRepo = [];
     /**
-     * @var BasePackage[]
+     * @var array<int, BasePackage>
      */
     private $packages = [];
     /**
@@ -201,9 +201,13 @@ class PoolBuilder
     {
         $this->restrictedPackagesList = $request->getRestrictedPackages() !== null ? array_flip($request->getRestrictedPackages()) : null;
 
-        if ($request->getUpdateAllowList()) {
+        if (\count($request->getUpdateAllowList()) > 0) {
             $this->updateAllowList = $request->getUpdateAllowList();
             $this->warnAboutNonMatchingUpdateAllowList($request);
+
+            if (null === $request->getLockedRepository()) {
+                throw new \LogicException('No lock repo present and yet a partial update was requested.');
+            }
 
             foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
                 if (!$this->isUpdateAllowed($lockedPackage)) {
@@ -271,7 +275,7 @@ class PoolBuilder
             }
         }
 
-        while (!empty($this->packagesToLoad)) {
+        while (\count($this->packagesToLoad) > 0) {
             $this->loadPackagesMarkedForLoading($request, $repositories);
         }
 
@@ -303,7 +307,7 @@ class PoolBuilder
             }
         }
 
-        if ($this->eventDispatcher) {
+        if ($this->eventDispatcher !== null) {
             $prePoolCreateEvent = new PrePoolCreateEvent(
                 PluginEvents::PRE_POOL_CREATE,
                 $repositories,
@@ -413,7 +417,7 @@ class PoolBuilder
         $this->packagesToLoad = [];
 
         foreach ($repositories as $repoIndex => $repository) {
-            if (empty($packageBatch)) {
+            if (0 === \count($packageBatch)) {
                 break;
             }
 
@@ -499,7 +503,7 @@ class PoolBuilder
                 if ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies()) {
                     $skippedRootRequires = $this->getSkippedRootRequires($request, $require);
 
-                    if ($request->getUpdateAllowTransitiveRootDependencies() || !$skippedRootRequires) {
+                    if ($request->getUpdateAllowTransitiveRootDependencies() || 0 === \count($skippedRootRequires)) {
                         $this->unlockPackage($request, $repositories, $require);
                         $this->markPackageNameForLoading($request, $require, $linkConstraint);
                     } else {
@@ -528,7 +532,7 @@ class PoolBuilder
                 if (isset($this->loadedPackages[$replace], $this->skippedLoad[$replace])) {
                     $skippedRootRequires = $this->getSkippedRootRequires($request, $replace);
 
-                    if ($request->getUpdateAllowTransitiveRootDependencies() || !$skippedRootRequires) {
+                    if ($request->getUpdateAllowTransitiveRootDependencies() || 0 === \count($skippedRootRequires)) {
                         $this->unlockPackage($request, $repositories, $replace);
                         // the replaced package only needs to be loaded if something else requires it
                         $this->markPackageNameForLoadingIfRequired($request, $replace);
@@ -615,6 +619,10 @@ class PoolBuilder
 
     private function warnAboutNonMatchingUpdateAllowList(Request $request): void
     {
+        if (null === $request->getLockedRepository()) {
+            throw new \LogicException('No lock repo present and yet a partial update was requested.');
+        }
+
         foreach ($this->updateAllowList as $pattern) {
             $matchedPlatformPackage = false;
 

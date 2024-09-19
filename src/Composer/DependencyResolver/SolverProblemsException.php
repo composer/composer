@@ -38,7 +38,7 @@ class SolverProblemsException extends \RuntimeException
         $this->problems = $problems;
         $this->learnedPool = $learnedPool;
 
-        parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', self::ERROR_DEPENDENCY_RESOLUTION_FAILED);
+        parent::__construct('Failed resolving dependencies with '.\count($problems).' problems, call getPrettyString to get formatted details', self::ERROR_DEPENDENCY_RESOLUTION_FAILED);
     }
 
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, bool $isDevExtraction = false): string
@@ -63,11 +63,11 @@ class SolverProblemsException extends \RuntimeException
         }
 
         $hints = [];
-        if (!$isDevExtraction && (strpos($text, 'could not be found') || strpos($text, 'no matching package found'))) {
+        if (!$isDevExtraction && (str_contains($text, 'could not be found') || str_contains($text, 'no matching package found'))) {
             $hints[] = "Potential causes:\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n - It's a private package and you forgot to add a custom repository to find it\n\nRead <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
         }
 
-        if (!empty($missingExtensions)) {
+        if (\count($missingExtensions) > 0) {
             $hints[] = $this->createExtensionHint($missingExtensions);
         }
 
@@ -75,17 +75,17 @@ class SolverProblemsException extends \RuntimeException
             $hints[] = "Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.";
         }
 
-        if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match') && strpos($text, '- ocramius/package-versions')) {
+        if (str_contains($text, 'found composer-plugin-api[2.0.0] but it does not match') && str_contains($text, '- ocramius/package-versions')) {
             $hints[] = "<warning>ocramius/package-versions only provides support for Composer 2 in 1.8+, which requires PHP 7.4.</warning>\nIf you can not upgrade PHP you can require <info>composer/package-versions-deprecated</info> to resolve this with PHP 7.0+.";
         }
 
         if (!class_exists('PHPUnit\Framework\TestCase', false)) {
-            if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match')) {
+            if (str_contains($text, 'found composer-plugin-api[2.0.0] but it does not match')) {
                 $hints[] = "You are using Composer 2, which some of your plugins seem to be incompatible with. Make sure you update your plugins or report a plugin-issue to ask them to support Composer 2.";
             }
         }
 
-        if ($hints) {
+        if (\count($hints) > 0) {
             $text .= "\n" . implode("\n\n", $hints);
         }
 
