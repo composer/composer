@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft-04/schema#",
-    "title": "Package",
+    "title": "Composer Package",
     "type": "object",
     "properties": {
         "name": {

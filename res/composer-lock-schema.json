@@ -1,0 +1,154 @@
+{
+    "$schema": "https://json-schema.org/draft-04/schema#",
+    "title": "Composer Lock File",
+    "type": "object",
+    "required": [ "content-hash", "packages", "packages-dev" ],
+    "additionalProperties": true,
+    "properties": {
+        "_readme": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Informational text for humans reading the file"
+        },
+        "content-hash": {
+            "type": "string",
+            "description": "Hash of all relevant properties of the composer.json that was used to create this lock file."
+        },
+        "packages": {
+            "type": "array",
+            "description": "An array of packages that are required.",
+            "$ref": "#/definitions/versions"
+        },
+        "packages-dev": {
+            "type": "array",
+            "description": "An array of packages that are required in require-dev.",
+            "$ref": "#/definitions/versions"
+        },
+        "aliases": {
+            "type": "array",
+            "description": "Inline aliases defined in the root package.",
+            "items": {
+                "type": "object",
+                "required": [ "package", "version", "alias", "alias_normalized" ],
+                "properties": {
+                    "package": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "alias": {
+                        "type": "string"
+                    },
+                    "alias_normalized": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "minimum-stability": {
+            "type": "string",
+            "description": "The minimum-stability used to generate this lock file."
+        },
+        "stability-flags": {
+            "type": "object",
+            "description": "Root package stability flags changing the minimum-stability for specific packages.",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
+        "prefer-stable": {
+            "type": "boolean",
+            "description": "Whether the --prefer-stable flag was used when building this lock file."
+        },
+        "prefer-lowest": {
+            "type": "boolean",
+            "description": "Whether the --prefer-lowest flag was used when building this lock file."
+        },
+        "platform": {
+            "type": "object",
+            "description": "Platform requirements of the root package.",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "platform-dev": {
+            "type": "object",
+            "description": "Platform dev-requirements of the root package.",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "platform-overrides": {
+            "type": "object",
+            "description": "Platform config overrides of the root package.",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "plugin-api-version": {
+            "type": "string",
+            "description": "The composer-plugin-api version that was used to generate this lock file."
+        }
+    },
+    "definitions": {
+        "versions": {
+            "type": "array",
+            "description": "An array of packages and their metadata.",
+            "additionalProperties": { "$ref": "#/definitions/version" }
+        },
+        "version": {
+            "type": "object",
+            "oneOf": [
+                { "$ref": "#/definitions/package" },
+                { "$ref": "#/definitions/metapackage" }
+            ]
+        },
+        "package-base": {
+            "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "version": { "type": "string" },
+                "version_normalized": {
+                    "type": "string",
+                    "description": "Normalized version, optional but can save computational time on client side."
+                },
+                "autoload": { "type": "object" },
+                "require": { "type": "object" },
+                "replace": { "type": "object" },
+                "conflict": { "type": "object" },
+                "provide": { "type": "object" },
+                "time": { "type": "string" }
+            },
+            "additionalProperties": true
+        },
+        "package": {
+            "allOf": [
+                { "$ref": "#/definitions/package-base" },
+                {
+                    "properties": {
+                        "dist": { "type": "object" },
+                        "source": { "type": "object" }
+                    }
+                },
+                { "oneOf": [
+                    { "required": [ "name", "version", "source" ] },
+                    { "required": [ "name", "version", "dist" ] }
+                ] }
+            ]
+        },
+        "metapackage": {
+            "allOf": [
+                { "$ref": "#/definitions/package-base" },
+                {
+                    "properties": {
+                        "type": { "type": "string", "enum": [ "metapackage" ] }
+                    },
+                    "required": [ "name", "version", "type" ]
+                }
+            ]
+        }
+    }
+}

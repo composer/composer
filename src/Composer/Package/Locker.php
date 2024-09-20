@@ -74,6 +74,14 @@ class Locker
     }
 
     /**
+     * @internal
+     */
+    public function getJsonFile(): JsonFile
+    {
+        return $this->lockFile;
+    }
+
+    /**
      * Returns the md5 hash of the sorted content of the composer file.
      *
      * @param string $composerFileContents The contents of the composer file.
