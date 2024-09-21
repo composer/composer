@@ -51,7 +51,8 @@ class ReinstallCommand extends BaseCommand
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'List of package names to reinstall, can include a wildcard (*) to match any substring.', null, $this->suggestInstalledPackage(false)),
+                new InputOption('type', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Filter packages to reinstall by type(s)', null, $this->suggestInstalledPackageTypes(false)),
+                new InputArgument('packages', InputArgument::IS_ARRAY, 'List of package names to reinstall, can include a wildcard (*) to match any substring.', null, $this->suggestInstalledPackage(false)),
             ])
             ->setHelp(
                 <<<EOT
@@ -77,23 +78,38 @@ EOT
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         $packagesToReinstall = [];
         $packageNamesToReinstall = [];
-        foreach ($input->getArgument('packages') as $pattern) {
-            $patternRegexp = BasePackage::packageNameToRegexp($pattern);
-            $matched = false;
+        if (\count($input->getOption('type')) > 0) {
+            if (\count($input->getArgument('packages')) > 0) {
+                throw new \InvalidArgumentException('You cannot specify package names and filter by type at the same time.');
+            }
             foreach ($localRepo->getCanonicalPackages() as $package) {
-                if (Preg::isMatch($patternRegexp, $package->getName())) {
-                    $matched = true;
+                if (in_array($package->getType(), $input->getOption('type'), true)) {
                     $packagesToReinstall[] = $package;
                     $packageNamesToReinstall[] = $package->getName();
                 }
             }
+        } else {
+            if (\count($input->getArgument('packages')) === 0) {
+                throw new \InvalidArgumentException('You must pass one or more package names to be reinstalled.');
+            }
+            foreach ($input->getArgument('packages') as $pattern) {
+                $patternRegexp = BasePackage::packageNameToRegexp($pattern);
+                $matched = false;
+                foreach ($localRepo->getCanonicalPackages() as $package) {
+                    if (Preg::isMatch($patternRegexp, $package->getName())) {
+                        $matched = true;
+                        $packagesToReinstall[] = $package;
+                        $packageNamesToReinstall[] = $package->getName();
+                    }
+                }
 
-            if (!$matched) {
-                $io->writeError('<warning>Pattern "' . $pattern . '" does not match any currently installed packages.</warning>');
+                if (!$matched) {
+                    $io->writeError('<warning>Pattern "' . $pattern . '" does not match any currently installed packages.</warning>');
+                }
             }
         }
 
-        if (!$packagesToReinstall) {
+        if (0 === \count($packagesToReinstall)) {
             $io->writeError('<warning>Found no packages to reinstall, aborting.</warning>');
 
             return 1;
