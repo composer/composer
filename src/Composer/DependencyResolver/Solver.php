@@ -733,7 +733,8 @@ class Solver
                     }
                 }
 
-                if ($lastLiteral !== null && $lastLevel !== null) {
+                if ($lastLiteral !== null) {
+                    assert($lastLevel !== null);
                     unset($this->branches[$lastBranchIndex][self::BRANCH_LITERALS][$lastBranchOffset]);
 
                     $level = $lastLevel;

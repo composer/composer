@@ -818,7 +818,7 @@ EOT
         }
         $matches = $pool->whatProvides($name, $constraint);
         $literals = [];
-        foreach ($matches as $index => $package) {
+        foreach ($matches as $package) {
             // avoid showing the 9999999-dev alias if the default branch has no branch-alias set
             if ($package instanceof AliasPackage && $package->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
                 $package = $package->getAliasOf();
