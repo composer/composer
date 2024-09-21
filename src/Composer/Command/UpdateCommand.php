@@ -28,6 +28,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
+use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Semver\Intervals;
 use Composer\Util\HttpDownloader;
 use Composer\Advisory\Auditor;
@@ -83,6 +84,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies (can also be set via the COMPOSER_PREFER_STABLE=1 env var).'),
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies (can also be set via the COMPOSER_PREFER_LOWEST=1 env var).'),
                 new InputOption('minimal-changes', 'm', InputOption::VALUE_NONE, 'During a partial update with -w/-W, only perform absolutely necessary changes to transitive dependencies (can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var).'),
+                new InputOption('patch-only', null, InputOption::VALUE_NONE, 'Only allow patch version updates for currently installed dependencies.'),
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
                 new InputOption('bump-after-update', null, InputOption::VALUE_OPTIONAL, 'Runs bump after performing the update.', false, ['dev', 'no-dev', 'all']),
@@ -172,6 +174,26 @@ EOT
                 $io->writeError('<error>The temporary constraint "'.$constraint.'" for "'.$package.'" must be a subset of the constraint in your composer.json ('.$rootRequirements[$package]->getPrettyConstraint().')</error>');
                 $io->write('<info>Run `composer require '.$package.'` or `composer require '.$package.':'.$constraint.'` instead to replace the constraint</info>');
                 return self::FAILURE;
+            }
+        }
+
+        if ($input->getOption('patch-only')) {
+            if (!$composer->getLocker()->isLocked()) {
+                throw new \InvalidArgumentException('patch-only can only be used with a lock file present');
+            }
+            foreach ($composer->getLocker()->getLockedRepository(true)->getCanonicalPackages() as $package) {
+                if ($package->isDev()) {
+                    continue;
+                }
+                if (!Preg::isMatch('{^(\d+\.\d+\.\d+)}', $package->getVersion(), $match)) {
+                    continue;
+                }
+                $constraint = $parser->parseConstraints('~'.$match[1]);
+                if (isset($temporaryConstraints[$package->getName()])) {
+                    $temporaryConstraints[$package->getName()] = MultiConstraint::create([$temporaryConstraints[$package->getName()], $constraint], true);
+                } else {
+                    $temporaryConstraints[$package->getName()] = $constraint;
+                }
             }
         }
 
