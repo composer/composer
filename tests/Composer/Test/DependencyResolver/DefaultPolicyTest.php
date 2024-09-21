@@ -226,6 +226,7 @@ class DefaultPolicyTest extends TestCase
         $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
 
         $packages = $pool->whatProvides('a', new Constraint('=', '2.1.9999999.9999999-dev'));
+        self::assertNotEmpty($packages);
         $literals = [];
         foreach ($packages as $package) {
             $literals[] = $package->getId();

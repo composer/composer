@@ -190,7 +190,7 @@ class Request
     }
 
     /**
-     * @return array<int|string, BasePackage>
+     * @return ($packageIds is true ? array<int, BasePackage> : array<string, BasePackage>)
      *
      * @TODO look into removing the packageIds option, the only place true is used
      *       is for the installed map in the solver problems.
@@ -201,7 +201,7 @@ class Request
     {
         $presentMap = [];
 
-        if ($this->lockedRepository) {
+        if ($this->lockedRepository !== null) {
             foreach ($this->lockedRepository->getPackages() as $package) {
                 $presentMap[$packageIds ? $package->getId() : spl_object_hash($package)] = $package;
             }
@@ -215,7 +215,7 @@ class Request
     }
 
     /**
-     * @return BasePackage[]
+     * @return array<int, BasePackage>
      */
     public function getFixedPackagesMap(): array
     {

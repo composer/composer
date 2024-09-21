@@ -56,7 +56,7 @@ class RuleSetGenerator
      *
      * @phpstan-param ReasonData $reasonData
      */
-    protected function createRequireRule(BasePackage $package, array $providers, $reason, $reasonData = null): ?Rule
+    protected function createRequireRule(BasePackage $package, array $providers, $reason, $reasonData): ?Rule
     {
         $literals = [-$package->id];
 
@@ -77,7 +77,7 @@ class RuleSetGenerator
      * The rule is (A|B|C) with A, B and C different packages. If the given
      * set of packages is empty an impossible rule is generated.
      *
-     * @param  BasePackage[] $packages   The set of packages to choose from
+     * @param  non-empty-array<BasePackage> $packages   The set of packages to choose from
      * @param  Rule::RULE_*  $reason     A RULE_* constant describing the reason for
      *                                   generating this rule
      * @param  mixed         $reasonData Additional data like the root require or fix request info
@@ -109,7 +109,7 @@ class RuleSetGenerator
      *
      * @phpstan-param ReasonData $reasonData
      */
-    protected function createRule2Literals(BasePackage $issuer, BasePackage $provider, $reason, $reasonData = null): ?Rule
+    protected function createRule2Literals(BasePackage $issuer, BasePackage $provider, $reason, $reasonData): ?Rule
     {
         // ignore self conflict
         if ($issuer === $provider) {
@@ -120,7 +120,7 @@ class RuleSetGenerator
     }
 
     /**
-     * @param BasePackage[] $packages
+     * @param non-empty-array<BasePackage> $packages
      * @param Rule::RULE_* $reason A RULE_* constant
      * @param mixed $reasonData
      *
@@ -151,7 +151,7 @@ class RuleSetGenerator
      */
     private function addRule($type, ?Rule $newRule = null): void
     {
-        if (!$newRule) {
+        if (null === $newRule) {
             return;
         }
 
@@ -276,7 +276,7 @@ class RuleSetGenerator
             }
 
             $packages = $this->pool->whatProvides($packageName, $constraint);
-            if ($packages) {
+            if (\count($packages) > 0) {
                 foreach ($packages as $package) {
                     $this->addRulesForPackage($package, $platformRequirementFilter);
                 }
@@ -307,7 +307,7 @@ class RuleSetGenerator
 
     public function getRulesFor(Request $request, ?PlatformRequirementFilterInterface $platformRequirementFilter = null): RuleSet
     {
-        $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
+        $platformRequirementFilter = $platformRequirementFilter ?? PlatformRequirementFilterFactory::ignoreNothing();
 
         $this->addRulesForRequest($request, $platformRequirementFilter);
 

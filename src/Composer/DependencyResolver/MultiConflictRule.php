@@ -19,11 +19,11 @@ namespace Composer\DependencyResolver;
  */
 class MultiConflictRule extends Rule
 {
-    /** @var list<int> */
+    /** @var non-empty-list<int> */
     protected $literals;
 
     /**
-     * @param list<int> $literals
+     * @param non-empty-list<int> $literals
      */
     public function __construct(array $literals, $reason, $reasonData)
     {
@@ -40,7 +40,7 @@ class MultiConflictRule extends Rule
     }
 
     /**
-     * @return list<int>
+     * @return non-empty-list<int>
      */
     public function getLiterals(): array
     {
@@ -53,6 +53,9 @@ class MultiConflictRule extends Rule
     public function getHash()
     {
         $data = unpack('ihash', (string) hash(\PHP_VERSION_ID > 80100 ? 'xxh3' : 'sha1', 'c:'.implode(',', $this->literals), true));
+        if (false === $data) {
+            throw new \RuntimeException('Failed unpacking: '.implode(', ', $this->literals));
+        }
 
         return $data['hash'];
     }

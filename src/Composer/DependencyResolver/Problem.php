@@ -80,7 +80,7 @@ class Problem
         // TODO doesn't this entirely defeat the purpose of the problem sections? what's the point of sections?
         $reasons = array_merge(...array_reverse($this->reasons));
 
-        if (count($reasons) === 1) {
+        if (\count($reasons) === 1) {
             reset($reasons);
             $rule = current($reasons);
 
@@ -93,7 +93,7 @@ class Problem
             $constraint = $reasonData['constraint'];
 
             $packages = $pool->whatProvides($packageName, $constraint);
-            if (count($packages) === 0) {
+            if (\count($packages) === 0) {
                 return "\n    ".implode(self::getMissingPackageReason($repositorySet, $request, $pool, $isVerbose, $packageName, $constraint));
             }
         }
@@ -188,7 +188,7 @@ class Problem
                     if (!$isVerbose) {
                         $versions = self::condenseVersionList($versions, 1);
                     }
-                    if (count($versions) > 1) {
+                    if (\count($versions) > 1) {
                         // remove the s from requires/conflicts to correct grammar
                         $message = Preg::replace('{^(%s%s (?:require|conflict))s}', '$1', $message);
                         $result[] = sprintf($message, $package, '['.implode(', ', $versions).']');
@@ -276,7 +276,7 @@ class Problem
                 $ext = substr($packageName, 4);
                 $msg = "- Root composer.json requires PHP extension ".$packageName.self::constraintToText($constraint).' but ';
 
-                $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) ?: '0');
+                $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) === false ? '0' : phpversion($ext));
                 if (null === $version) {
                     $providersStr = self::getProvidersList($repositorySet, $packageName, 5);
                     if ($providersStr !== null) {
@@ -337,7 +337,8 @@ class Problem
 
         // first check if the actual requested package is found in normal conditions
         // if so it must mean it is rejected by another constraint than the one given here
-        if ($packages = $repositorySet->findPackages($packageName, $constraint)) {
+        $packages = $repositorySet->findPackages($packageName, $constraint);
+        if (\count($packages) > 0) {
             $rootReqs = $repositorySet->getRootRequires();
             if (isset($rootReqs[$packageName])) {
                 $filtered = array_filter($packages, static function ($p) use ($rootReqs, $packageName): bool {
@@ -358,7 +359,7 @@ class Problem
                 }
             }
 
-            if ($lockedPackage) {
+            if ($lockedPackage !== null) {
                 $fixedConstraint = new Constraint('==', $lockedPackage->getVersion());
                 $filtered = array_filter($packages, static function ($p) use ($fixedConstraint): bool {
                     return $fixedConstraint->matches(new Constraint('==', $p->getVersion()));
@@ -372,7 +373,7 @@ class Problem
                 return !$p->getRepository() instanceof LockArrayRepository;
             });
 
-            if (!$nonLockedPackages) {
+            if (0 === \count($nonLockedPackages)) {
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.'];
             }
 
@@ -380,9 +381,11 @@ class Problem
         }
 
         // check if the package is found when bypassing stability checks
-        if ($packages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
+        $packages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES);
+        if (\count($packages) > 0) {
             // we must first verify if a valid package would be found in a lower priority repository
-            if ($allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
+            $allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES);
+            if (\count($allReposPackages) > 0) {
                 return self::computeCheckForLowerPrioRepo($pool, $isVerbose, $packageName, $packages, $allReposPackages, 'minimum-stability', $constraint);
             }
 
@@ -390,9 +393,11 @@ class Problem
         }
 
         // check if the package is found when bypassing the constraint and stability checks
-        if ($packages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
+        $packages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES);
+        if (\count($packages) > 0) {
             // we must first verify if a valid package would be found in a lower priority repository
-            if ($allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
+            $allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES);
+            if (\count($allReposPackages) > 0) {
                 return self::computeCheckForLowerPrioRepo($pool, $isVerbose, $packageName, $packages, $allReposPackages, 'constraint', $constraint);
             }
 
@@ -441,12 +446,12 @@ class Problem
         foreach ($packages as $package) {
             $prepared[$package->getName()]['name'] = $package->getPrettyName();
             $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion().($package instanceof AliasPackage ? ' (alias of '.$package->getAliasOf()->getPrettyVersion().')' : '');
-            if ($pool && $constraint) {
+            if ($pool !== null && $constraint !== null) {
                 foreach ($pool->getRemovedVersions($package->getName(), $constraint) as $version => $prettyVersion) {
                     $prepared[$package->getName()]['versions'][$version] = $prettyVersion;
                 }
             }
-            if ($pool && $useRemovedVersionGroup) {
+            if ($pool !== null && $useRemovedVersionGroup) {
                 foreach ($pool->getRemovedVersionsByPackage(spl_object_hash($package)) as $version => $prettyVersion) {
                     $prepared[$package->getName()]['versions'][$version] = $prettyVersion;
                 }
@@ -482,7 +487,7 @@ class Problem
     {
         $available = $pool->whatProvides($packageName);
 
-        if (count($available)) {
+        if (\count($available) > 0) {
             $selected = null;
             foreach ($available as $pkg) {
                 if ($pkg->getRepository() instanceof PlatformRepository) {
@@ -507,7 +512,7 @@ class Problem
             $version = $selected->getPrettyVersion();
             $extra = $selected->getExtra();
             if ($selected instanceof CompletePackageInterface && isset($extra['config.platform']) && $extra['config.platform'] === true) {
-                $version .= '; ' . str_replace('Package ', '', $selected->getDescription());
+                $version .= '; ' . str_replace('Package ', '', (string) $selected->getDescription());
             }
         } else {
             return null;
@@ -568,8 +573,8 @@ class Problem
     }
 
     /**
-     * @param PackageInterface[] $higherRepoPackages
-     * @param PackageInterface[] $allReposPackages
+     * @param non-empty-array<PackageInterface> $higherRepoPackages
+     * @param non-empty-array<PackageInterface> $allReposPackages
      * @return array{0: string, 1: string}
      */
     private static function computeCheckForLowerPrioRepo(Pool $pool, bool $isVerbose, string $packageName, array $higherRepoPackages, array $allReposPackages, string $reason, ?ConstraintInterface $constraint = null): array
@@ -586,7 +591,9 @@ class Problem
             }
         }
 
-        if ($higherRepoPackages) {
+        assert(null !== $nextRepo);
+
+        if (\count($higherRepoPackages) > 0) {
             $topPackage = reset($higherRepoPackages);
             if ($topPackage instanceof RootPackageInterface) {
                 return [
@@ -634,7 +641,7 @@ class Problem
             return ' ' . $constraint->getPrettyString() . ' (exact version match: ' . (count($versions) > 1 ? implode(', ', array_slice($versions, 0, -1)) . ' or ' . end($versions) : $versions[0]) . ')';
         }
 
-        return $constraint ? ' '.$constraint->getPrettyString() : '';
+        return $constraint !== null ? ' '.$constraint->getPrettyString() : '';
     }
 
     private static function getProvidersList(RepositorySet $repositorySet, string $packageName, int $maxProviders): ?string
@@ -642,7 +649,7 @@ class Problem
         $providers = $repositorySet->getProviders($packageName);
         if (\count($providers) > 0) {
             $providersStr = implode(array_map(static function ($p): string {
-                $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
+                $description = $p['description'] !== '' ? ' '.substr($p['description'], 0, 100) : '';
 
                 return '      - '.$p['name'].$description."\n";
             }, count($providers) > $maxProviders + 1 ? array_slice($providers, 0, $maxProviders) : $providers));
