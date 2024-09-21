@@ -19,12 +19,17 @@
         "packages": {
             "type": "array",
             "description": "An array of packages that are required.",
-            "$ref": "#/definitions/versions"
+            "items": {
+                "$ref": "./composer-schema.json",
+                "required": ["name", "version"]
+            }
         },
         "packages-dev": {
             "type": "array",
             "description": "An array of packages that are required in require-dev.",
-            "$ref": "#/definitions/versions"
+            "items": {
+                "$ref": "./composer-schema.json"
+            }
         },
         "aliases": {
             "type": "array",
@@ -91,64 +96,6 @@
         "plugin-api-version": {
             "type": "string",
             "description": "The composer-plugin-api version that was used to generate this lock file."
-        }
-    },
-    "definitions": {
-        "versions": {
-            "type": "array",
-            "description": "An array of packages and their metadata.",
-            "additionalProperties": { "$ref": "#/definitions/version" }
-        },
-        "version": {
-            "type": "object",
-            "oneOf": [
-                { "$ref": "#/definitions/package" },
-                { "$ref": "#/definitions/metapackage" }
-            ]
-        },
-        "package-base": {
-            "properties": {
-                "name": { "type": "string" },
-                "type": { "type": "string" },
-                "version": { "type": "string" },
-                "version_normalized": {
-                    "type": "string",
-                    "description": "Normalized version, optional but can save computational time on client side."
-                },
-                "autoload": { "type": "object" },
-                "require": { "type": "object" },
-                "replace": { "type": "object" },
-                "conflict": { "type": "object" },
-                "provide": { "type": "object" },
-                "time": { "type": "string" }
-            },
-            "additionalProperties": true
-        },
-        "package": {
-            "allOf": [
-                { "$ref": "#/definitions/package-base" },
-                {
-                    "properties": {
-                        "dist": { "type": "object" },
-                        "source": { "type": "object" }
-                    }
-                },
-                { "oneOf": [
-                    { "required": [ "name", "version", "source" ] },
-                    { "required": [ "name", "version", "dist" ] }
-                ] }
-            ]
-        },
-        "metapackage": {
-            "allOf": [
-                { "$ref": "#/definitions/package-base" },
-                {
-                    "properties": {
-                        "type": { "type": "string", "enum": [ "metapackage" ] }
-                    },
-                    "required": [ "name", "version", "type" ]
-                }
-            ]
         }
     }
 }
