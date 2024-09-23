@@ -595,7 +595,7 @@ class Package extends BasePackage
     /**
      * Sets the list of paths added to PHP's include path.
      *
-     * @param array{extension-name?: string, priority?: int, support-zts?: bool, configure-options?: list<array{name: string, description?: string}>}|null $phpExt List of directories.
+     * @param array{extension-name?: string, priority?: int, support-zts?: bool, support-nts?: bool, configure-options?: list<array{name: string, description?: string}>}|null $phpExt List of directories.
      */
     public function setPhpExt(?array $phpExt): void
     {
