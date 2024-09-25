@@ -311,6 +311,12 @@
                     "example": false,
                     "default": true
                 },
+                "support-nts": {
+                    "type": "boolean",
+                    "description": "Does this package support non-Thread Safe mode",
+                    "example": false,
+                    "default": true
+                },
                 "configure-options": {
                     "type": "array",
                     "description": "These configure options make up the flags that can be passed to ./configure when installing the extension.",
