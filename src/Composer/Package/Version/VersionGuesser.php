@@ -284,7 +284,7 @@ class VersionGuesser
             }
 
             // sort local branches first then remote ones
-            // and sort numeric branches below named ones, to make sure if the branch has the same distance from main and 1.10 and 1.9 for example, main is picked
+            // and sort numeric branches below named ones, to make sure if the branch has the same distance from main and 1.10 and 1.9 for example, 1.9 is picked
             // and sort using natural sort so that 1.10 will appear before 1.9
             usort($branches, static function ($a, $b): int {
                 $aRemote = 0 === strpos($a, 'remotes/');
@@ -300,7 +300,8 @@ class VersionGuesser
             $promises = [];
             $this->process->setMaxJobs(30);
             try {
-                foreach ($branches as $candidate) {
+                $lastIndex = -1;
+                foreach ($branches as $index => $candidate) {
                     $candidateVersion = Preg::replace('{^remotes/\S+/}', '', $candidate);
 
                     // do not compare against itself or other feature branches
@@ -311,13 +312,17 @@ class VersionGuesser
                     $cmdLine = array_map(static function (string $component) use ($candidate, $branch) {
                         return str_replace(['%candidate%', '%branch%'], [$candidate, $branch], $component);
                     }, $scmCmdline);
-                    $promises[] = $this->process->executeAsync($cmdLine, $path)->then(function (Process $process) use (&$length, &$version, &$prettyVersion, $candidateVersion, &$promises): void {
+                    $promises[] = $this->process->executeAsync($cmdLine, $path)->then(function (Process $process) use (&$lastIndex, $index, &$length, &$version, &$prettyVersion, $candidateVersion, &$promises): void {
                         if (!$process->isSuccessful()) {
                             return;
                         }
 
                         $output = $process->getOutput();
-                        if (strlen($output) < $length) {
+                        // overwrite existing if we have a shorter diff, or we have an equal diff and an index that comes later in the array (i.e. older version)
+                        // as newer versions typically have more commits, if the feature branch is based on a newer branch it should have a longer diff to the old version
+                        // but if it doesn't and they have equal diffs, then it probably is based on the old version
+                        if (strlen($output) < $length || (strlen($output) === $length && $lastIndex < $index)) {
+                            $lastIndex = $index;
                             $length = strlen($output);
                             $version = $this->versionParser->normalizeBranch($candidateVersion);
                             $prettyVersion = 'dev-' . $candidateVersion;
