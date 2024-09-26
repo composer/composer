@@ -59,6 +59,7 @@ class Auditor
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
      * @param string[] $ignoreList List of advisory IDs, remote IDs or CVE IDs that reported but not listed as vulnerabilities.
      * @param self::ABANDONED_* $abandoned
+     * @param array<string> $ignoredSeverities List of ignored severity levels
      *
      * @return int Amount of packages with vulnerabilities found
      * @throws InvalidArgumentException If no packages are passed in
