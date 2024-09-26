@@ -1,11 +1,12 @@
 {
     "$schema": "https://json-schema.org/draft-04/schema#",
-    "description": "A representation of packages metadata.",
+    "title": "Composer Package Repository",
     "type": "object",
     "oneOf": [
         { "required": [ "packages" ] },
         { "required": [ "providers" ] },
-        { "required": [ "provider-includes", "providers-url" ] }
+        { "required": [ "provider-includes", "providers-url" ] },
+        { "required": [ "metadata-url" ] }
     ],
     "properties": {
         "packages": {
@@ -13,19 +14,48 @@
             "description": "A hashmap of package names in the form of <vendor>/<name>.",
             "additionalProperties": { "$ref": "#/definitions/versions" }
         },
-        "providers-url": {
+        "metadata-url": {
             "type": "string",
-            "description": "Endpoint to retrieve provider data from, e.g. '/p/%package%$%hash%.json'."
+            "description": "Endpoint to retrieve package metadata data from, in Composer v2 format, e.g. '/p2/%package%.json'."
         },
-        "provider-includes": {
-            "type": "object",
-            "description": "A hashmap of provider listings.",
-            "additionalProperties": { "$ref": "#/definitions/provider" }
+        "available-packages": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "If your repository only has a small number of packages, and you want to avoid serving many 404s, specify all the package names that your repository contains here."
         },
-        "providers": {
-            "type": "object",
-            "description": "A hashmap of package names in the form of <vendor>/<name>.",
-            "additionalProperties": { "$ref": "#/definitions/provider" }
+        "available-package-patterns": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "If your repository only has a small number of packages, and you want to avoid serving many 404s, specify package name patterns containing wildcards (*) that your repository contains here."
+        },
+        "security-advisories": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["metadata", "api-url"],
+                "properties": {
+                    "metadata": {
+                        "type": "boolean",
+                        "description": "Whether metadata files contain security advisory data or whether it should always be queried using the API URL."
+                    },
+                    "api-url": {
+                        "type": "string",
+                        "description": "Endpoint to call to retrieve security advisories data."
+                    }
+                }
+            }
+        },
+        "metadata-changes-url": {
+            "type": "string",
+            "description": "Endpoint to retrieve package metadata updates from. This should receive a timestamp since last call to be able to return new changes. e.g. '/metadata/changes.json'."
+        },
+        "providers-api": {
+            "type": "string",
+            "description": "Endpoint to retrieve package names providing a given name from, e.g. '/providers/%package%.json'."
         },
         "notify-batch": {
             "type": "string",
@@ -35,9 +65,73 @@
             "type": "string",
             "description": "Endpoint that provides search capabilities, e.g. '/search.json?q=%query%&type=%type%'."
         },
+        "list": {
+            "type": "string",
+            "description": "Endpoint that provides a full list of packages present in the repository. It should accept an optional `?filter=xx` query param, which can contain `*` as wildcards matching any substring. e.g. '/list.json'."
+        },
+        "warnings": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["message", "versions"],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "A message that will be output by Composer as a warning when this source is consulted."
+                    },
+                    "versions": {
+                        "type": "string",
+                        "description": "A version constraint to limit to which Composer versions the warning should be shown."
+                    }
+                }
+            }
+        },
+        "infos": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["message", "versions"],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "A message that will be output by Composer as info when this source is consulted."
+                    },
+                    "versions": {
+                        "type": "string",
+                        "description": "A version constraint to limit to which Composer versions the info should be shown."
+                    }
+                }
+            }
+        },
+        "providers-url": {
+            "type": "string",
+            "description": "DEPRECATED: Endpoint to retrieve provider data from, e.g. '/p/%package%$%hash%.json'."
+        },
+        "provider-includes": {
+            "type": "object",
+            "description": "DEPRECATED: A hashmap of provider listings.",
+            "additionalProperties": { "$ref": "#/definitions/provider" }
+        },
+        "providers": {
+            "type": "object",
+            "description": "DEPRECATED: A hashmap of package names in the form of <vendor>/<name>.",
+            "additionalProperties": { "$ref": "#/definitions/provider" }
+        },
         "warning": {
             "type": "string",
-            "description": "A message that will be output by Composer as a warning when this source is consulted."
+            "description": "DEPRECATED: A message that will be output by Composer as a warning when this source is consulted."
+        },
+        "warning-versions": {
+            "type": "string",
+            "description": "DEPRECATED: A version constraint to limit to which Composer versions the warning should be shown."
+        },
+        "info": {
+            "type": "string",
+            "description": "DEPRECATED: A message that will be output by Composer as a info when this source is consulted."
+        },
+        "info-versions": {
+            "type": "string",
+            "description": "DEPRECATED: A version constraint to limit to which Composer versions the info should be shown."
         }
     },
     "definitions": {

@@ -19,6 +19,8 @@ use Composer\Config;
 use Composer\Downloader\TransportException;
 use Composer\IO\BufferIO;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonValidationException;
+use Composer\Package\Locker;
 use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
@@ -89,6 +91,12 @@ EOT
 
             $io->write('Checking composer.json: ', false);
             $this->outputResult($this->checkComposerSchema());
+
+            if ($composer->getLocker()->isLocked()) {
+                $io->write('Checking composer.lock: ', false);
+                $this->outputResult($this->checkComposerLockSchema($composer->getLocker()));
+            }
+
             $this->process = $composer->getLoop()->getProcessExecutor() ?? new ProcessExecutor($io);
         } else {
             $this->process = new ProcessExecutor($io);
@@ -262,6 +270,27 @@ EOT
             }
 
             return rtrim($output);
+        }
+
+        return true;
+    }
+
+    /**
+     * @return string|true
+     */
+    private function checkComposerLockSchema(Locker $locker)
+    {
+        $json = $locker->getJsonFile();
+
+        try {
+            $json->validateSchema(JsonFile::LOCK_SCHEMA);
+        } catch (JsonValidationException $e) {
+            $output = '';
+            foreach ($e->getErrors() as $error) {
+                $output .= '<error>'.$error.'</error>'.PHP_EOL;
+            }
+
+            return trim($output);
         }
 
         return true;
