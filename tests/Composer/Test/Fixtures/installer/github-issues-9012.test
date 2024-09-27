@@ -1,6 +1,6 @@
 --TEST--
 
-See Github issue #9012 ( https://github.com/composer/composer/issues/9012 and https://gist.github.com/Seldaek/4e2dbc2cea4b4fd7a8207bb310ec8e34).
+See GitHub issue #9012 ( https://github.com/composer/composer/issues/9012 and https://gist.github.com/Seldaek/4e2dbc2cea4b4fd7a8207bb310ec8e34).
 
 Recursive analysis of the same learnt rules can lead to infinite recursion in solver.
 

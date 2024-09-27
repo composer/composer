@@ -1,6 +1,6 @@
 --TEST--
 
-See Github issue #8903 ( https://github.com/composer/composer/issues/8903 ).
+See GitHub issue #8903 ( https://github.com/composer/composer/issues/8903 ).
 
 Recursive output of learnt rules can lead to infinite loop.
 

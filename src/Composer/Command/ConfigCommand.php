@@ -1025,7 +1025,7 @@ EOT
     }
 
     /**
-     * Suggest setting-keys, while taking given options in acount.
+     * Suggest setting-keys, while taking given options in account.
      */
     private function suggestSettingKeys(): \Closure
     {
