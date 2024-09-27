@@ -19,6 +19,8 @@ use Composer\Config;
 use Composer\Downloader\TransportException;
 use Composer\IO\BufferIO;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonValidationException;
+use Composer\Package\Locker;
 use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
@@ -89,6 +91,12 @@ EOT
 
             $io->write('Checking composer.json: ', false);
             $this->outputResult($this->checkComposerSchema());
+
+            if ($composer->getLocker()->isLocked()) {
+                $io->write('Checking composer.lock: ', false);
+                $this->outputResult($this->checkComposerLockSchema($composer->getLocker()));
+            }
+
             $this->process = $composer->getLoop()->getProcessExecutor() ?? new ProcessExecutor($io);
         } else {
             $this->process = new ProcessExecutor($io);
@@ -116,6 +124,25 @@ EOT
 
         $io->write('Checking https connectivity to packagist: ', false);
         $this->outputResult($this->checkHttp('https', $config));
+
+        foreach ($config->getRepositories() as $repo) {
+            if (($repo['type'] ?? null) === 'composer' && isset($repo['url'])) {
+                $composerRepo = new ComposerRepository($repo, $this->getIO(), $config, $this->httpDownloader);
+                $reflMethod = new \ReflectionMethod($composerRepo, 'getPackagesJsonUrl');
+                if (PHP_VERSION_ID < 80100) {
+                    $reflMethod->setAccessible(true);
+                }
+                $url = $reflMethod->invoke($composerRepo);
+                if (!str_starts_with($url, 'http')) {
+                    continue;
+                }
+                if (str_starts_with($url, 'https://repo.packagist.org')) {
+                    continue;
+                }
+                $io->write('Checking connectivity to ' . $repo['url'].': ', false);
+                $this->outputResult($this->checkComposerRepo($url, $config));
+            }
+        }
 
         $proxyManager = ProxyManager::getInstance();
         $protos = $config->get('disable-tls') === true ? ['http'] : ['http', 'https'];
@@ -248,6 +275,27 @@ EOT
         return true;
     }
 
+    /**
+     * @return string|true
+     */
+    private function checkComposerLockSchema(Locker $locker)
+    {
+        $json = $locker->getJsonFile();
+
+        try {
+            $json->validateSchema(JsonFile::LOCK_SCHEMA);
+        } catch (JsonValidationException $e) {
+            $output = '';
+            foreach ($e->getErrors() as $error) {
+                $output .= '<error>'.$error.'</error>'.PHP_EOL;
+            }
+
+            return trim($output);
+        }
+
+        return true;
+    }
+
     private function checkGit(): string
     {
         if (!function_exists('proc_open')) {
@@ -288,6 +336,45 @@ EOT
 
         try {
             $this->httpDownloader->get($proto . '://repo.packagist.org/packages.json');
+        } catch (TransportException $e) {
+            $hints = HttpDownloader::getExceptionHints($e);
+            if (null !== $hints && count($hints) > 0) {
+                foreach ($hints as $hint) {
+                    $result[] = $hint;
+                }
+            }
+
+            $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
+        }
+
+        if (isset($tlsWarning)) {
+            $result[] = $tlsWarning;
+        }
+
+        if (count($result) > 0) {
+            return $result;
+        }
+
+        return true;
+    }
+
+    /**
+     * @return string|string[]|true
+     */
+    private function checkComposerRepo(string $url, Config $config)
+    {
+        $result = $this->checkConnectivityAndComposerNetworkHttpEnablement();
+        if ($result !== true) {
+            return $result;
+        }
+
+        $result = [];
+        if (str_starts_with($url, 'https://') && $config->get('disable-tls') === true) {
+            $tlsWarning = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
+        }
+
+        try {
+            $this->httpDownloader->get($url);
         } catch (TransportException $e) {
             $hints = HttpDownloader::getExceptionHints($e);
             if (null !== $hints && count($hints) > 0) {

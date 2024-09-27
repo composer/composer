@@ -29,8 +29,8 @@ Requiring a replaced package in a version, that is not provided by the replacing
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --RUN--
 install

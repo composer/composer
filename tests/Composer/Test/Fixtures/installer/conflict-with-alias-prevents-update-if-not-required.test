@@ -30,9 +30,9 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
+    - Root composer.json requires conflictor/foo 1.0.0 -> satisfiable by conflictor/foo[1.0.0].
     - Root composer.json requires some/dep dev-main -> satisfiable by some/dep[dev-main].
     - conflictor/foo 1.0.0 conflicts with some/dep 1.3.x-dev.
     - some/dep 1.3.x-dev is an alias of some/dep dev-main and must be installed with it.
-    - Root composer.json requires conflictor/foo 1.0.0 -> satisfiable by conflictor/foo[1.0.0].
 
 --EXPECT--

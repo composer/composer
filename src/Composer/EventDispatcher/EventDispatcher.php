@@ -202,7 +202,12 @@ class EventDispatcher
                 $return = 0;
                 $this->ensureBinDirIsInPath();
 
-                $formattedEventNameWithArgs = $event->getName() . ($event->getArguments() !== [] ? ' (' . implode(', ', $event->getArguments()) . ')' : '');
+                $additionalArgs = $event->getArguments();
+                if (is_string($callable) && str_contains($callable, '@no_additional_args')) {
+                    $callable = Preg::replace('{ ?@no_additional_args}', '', $callable);
+                    $additionalArgs = [];
+                }
+                $formattedEventNameWithArgs = $event->getName() . ($additionalArgs !== [] ? ' (' . implode(', ', $additionalArgs) . ')' : '');
                 if (!is_string($callable)) {
                     if (!is_callable($callable)) {
                         $className = is_object($callable[0]) ? get_class($callable[0]) : $callable[0];
@@ -220,7 +225,12 @@ class EventDispatcher
                     $scriptName = $script[0];
                     unset($script[0]);
 
-                    $args = array_merge($script, $event->getArguments());
+                    $index = array_search('@additional_args', $script, true);
+                    if ($index !== false) {
+                        $args = array_splice($script, $index, 0, $additionalArgs);
+                    } else {
+                        $args = array_merge($script, $additionalArgs);
+                    }
                     $flags = $event->getFlags();
                     if (isset($flags['script-alias-input'])) {
                         $argsString = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $script));
@@ -294,7 +304,7 @@ class EventDispatcher
                     $app->add($cmd);
                     $app->setDefaultCommand((string) $cmd->getName(), true);
                     try {
-                        $args = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $event->getArguments()));
+                        $args = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $additionalArgs));
                         // reusing the output from $this->io is mostly needed for tests, but generally speaking
                         // it does not hurt to keep the same stream as the current Application
                         if ($this->io instanceof ConsoleIO) {
@@ -313,13 +323,17 @@ class EventDispatcher
                         throw $e;
                     }
                 } else {
-                    $args = implode(' ', array_map(['Composer\Util\ProcessExecutor', 'escape'], $event->getArguments()));
+                    $args = implode(' ', array_map(['Composer\Util\ProcessExecutor', 'escape'], $additionalArgs));
 
                     // @putenv does not receive arguments
                     if (strpos($callable, '@putenv ') === 0) {
                         $exec = $callable;
                     } else {
-                        $exec = $callable . ($args === '' ? '' : ' '.$args);
+                        if (str_contains($callable, '@additional_args')) {
+                            $exec = str_replace('@additional_args', $args, $callable);
+                        } else {
+                            $exec = $callable . ($args === '' ? '' : ' '.$args);
+                        }
                     }
 
                     if ($this->io->isVerbose()) {

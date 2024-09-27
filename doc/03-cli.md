@@ -232,8 +232,10 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
   COMPOSER_PREFER_LOWEST=1 env var.
 * **--minimal-changes (-m):** During a partial update with `-w`/`-W`, only perform absolutely necessary
   changes to transitive dependencies. Can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var.
+* **--patch-only:** Only allow patch version updates for currently installed dependencies.
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
+* **--bump-after-update:** Runs `bump` after performing the update. Set to `dev` or `no-dev` to only bump those dependencies.
 
 Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has the same effect as specifying the option `--lock`, for example `composer update mirrors` is exactly the same as `composer update --lock`.
 
@@ -989,6 +991,8 @@ performance.
   Multiple requirements can be ignored via wildcard.
 * **--strict-psr:** Return a failed exit code (1) if PSR-4 or PSR-0 mapping errors
   are present. Requires --optimize to work.
+* **--strict-ambiguous:** Return a failed exit code (2) if the same class is found
+  in multiple files. Requires --optimize to work.
 
 ## clear-cache / clearcache / cc
 
@@ -1075,6 +1079,10 @@ php composer.phar audit
 * **--no-dev:** Disables auditing of require-dev packages.
 * **--format (-f):** Audit output format. Must be "table" (default), "plain", "json", or "summary".
 * **--locked:** Audit packages from the lock file, regardless of what is currently in vendor dir.
+* **--abandoned:** Behavior on abandoned packages. Must be "ignore", "report",
+  or "fail".  See also [audit.abandoned](06-config.md#abandoned).  Passing this
+  flag will override the config value and the environment variable.
+
 
 ## help
 
@@ -1086,8 +1094,8 @@ php composer.phar help install
 
 ## Command-line completion
 
-Command-line completion can be enabled by following instructions
-[on this page](https://github.com/bamarni/symfony-console-autocomplete).
+Command-line completion can be enabled by running the `composer completion --help` command and
+following the instructions.
 
 ## Environment variables
 

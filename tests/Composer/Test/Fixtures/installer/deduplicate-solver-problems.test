@@ -41,9 +41,8 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - package/a[2.2.0, ..., 2.6.0] require missing/dep ^1.1 -> found missing/dep[2.0.0] but it does not match the constraint.
-    - package/a[2.0.0, ..., 2.1.0] require missing/dep ^1.0 -> found missing/dep[2.0.0] but it does not match the constraint.
     - Root composer.json requires package/a * -> satisfiable by package/a[2.0.0, ..., 2.6.0].
+    - package/a[2.0.0, ..., 2.1.0] require missing/dep ^1.0 -> found missing/dep[2.0.0] but it does not match the constraint.
+    - package/a[2.2.0, ..., 2.6.0] require missing/dep ^1.1 -> found missing/dep[2.0.0] but it does not match the constraint.
 
 --EXPECT--
-

@@ -32,6 +32,7 @@ class JsonFile
     public const LAX_SCHEMA = 1;
     public const STRICT_SCHEMA = 2;
     public const AUTH_SCHEMA = 3;
+    public const LOCK_SCHEMA = 4;
 
     /** @deprecated Use \JSON_UNESCAPED_SLASHES */
     public const JSON_UNESCAPED_SLASHES = 64;
@@ -41,6 +42,7 @@ class JsonFile
     public const JSON_UNESCAPED_UNICODE = 256;
 
     public const COMPOSER_SCHEMA_PATH = __DIR__ . '/../../../res/composer-schema.json';
+    public const LOCK_SCHEMA_PATH = __DIR__ . '/../../../res/composer-lock-schema.json';
 
     public const INDENT_DEFAULT = '    ';
 
@@ -228,8 +230,12 @@ class JsonFile
     {
         $isComposerSchemaFile = false;
         if (null === $schemaFile) {
-            $isComposerSchemaFile = true;
-            $schemaFile = self::COMPOSER_SCHEMA_PATH;
+            if ($schema === self::LOCK_SCHEMA) {
+                $schemaFile = self::LOCK_SCHEMA_PATH;
+            } else {
+                $isComposerSchemaFile = true;
+                $schemaFile = self::COMPOSER_SCHEMA_PATH;
+            }
         }
 
         // Prepend with file:// only when not using a special schema already (e.g. in the phar)

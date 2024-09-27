@@ -74,4 +74,16 @@ class ApplicationTest extends TestCase
 
         self::assertSame('', $output->fetch());
     }
+
+    /**
+     * @runInSeparateProcess
+     * @see https://github.com/composer/composer/issues/12107
+     */
+    public function testProcessIsolationWorksMultipleTimes(): void
+    {
+        $application = new Application;
+        $application->add(new \Composer\Command\AboutCommand);
+        self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
+        self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
+    }
 }

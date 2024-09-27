@@ -34,8 +34,8 @@ Test that conflict with a branch alias in the lock file leads to an error on ins
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --RUN--
 install
@@ -48,7 +48,7 @@ Your lock file does not contain a compatible set of packages. Please run compose
 
   Problem 1
     - conflictor/foo is locked to version 1.0.0 and an update of this package was not requested.
-    - conflictor/foo 1.0.0 conflicts with some/dep 1.3.x-dev.
     - some/dep is locked to version 1.3.x-dev and an update of this package was not requested.
+    - conflictor/foo 1.0.0 conflicts with some/dep 1.3.x-dev.
 
 --EXPECT--

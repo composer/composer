@@ -104,15 +104,3 @@ Setting the value to `*` will bypass the proxy for all requests.
 
 Composer originally provided `HTTP_PROXY_REQUEST_FULLURI` and `HTTPS_PROXY_REQUEST_FULLURI` to help
 mitigate issues with misbehaving proxies. These are no longer required or used.
-
-## Requirement changes
-
-Composer <2.8 used `http_proxy` for both HTTP and HTTPS requests if `https_proxy` was not set,
-but as of Composer 2.8.0 it requires [scheme-specific](#usage) environment variables.
-
-The reason for this change is to align Composer with current practice across other popular tools. To help
-with the transition, as of Composer 2.7.3 the original behaviour remains but a warning message is 
-shown instructing the user to add an `https_proxy` environment variable.
-
-To prevent the original behaviour during the transition period, set an empty environment variable
-(`https_proxy=`).

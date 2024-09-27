@@ -179,7 +179,7 @@ class RuleSet implements \IteratorAggregate, \Countable
         foreach ($this->rules as $type => $rules) {
             $string .= str_pad(self::TYPES[$type], 8, ' ') . ": ";
             foreach ($rules as $rule) {
-                $string .= ($repositorySet && $request && $pool ? $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose) : $rule)."\n";
+                $string .= ($repositorySet !== null && $request !== null && $pool !== null ? $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose) : $rule)."\n";
             }
             $string .= "\n\n";
         }

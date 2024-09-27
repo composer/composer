@@ -133,7 +133,7 @@ class StreamContextFactoryTest extends TestCase
 
     public function testHttpProxyWithoutPort(): void
     {
-        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
+        $_SERVER['https_proxy'] = 'http://username:password@proxyserver.net';
 
         $context = StreamContextFactory::getContext('https://example.org', ['http' => ['method' => 'GET', 'header' => 'User-Agent: foo']]);
         $options = stream_context_get_options($context);
@@ -221,7 +221,7 @@ class StreamContextFactoryTest extends TestCase
 
     public function testInitOptionsDoesIncludeProxyAuthHeaders(): void
     {
-        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
+        $_SERVER['https_proxy'] = 'http://username:password@proxyserver.net:3128/';
 
         $options = [];
         $options = StreamContextFactory::initOptions('https://example.org', $options);

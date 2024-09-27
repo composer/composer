@@ -43,7 +43,7 @@ class Rule2Literals extends Rule
     }
 
     /**
-     * @return list<int>
+     * @return non-empty-list<int>
      */
     public function getLiterals(): array
     {

@@ -750,7 +750,15 @@ class PluginManager
 
                         // persist answer in composer.json if it wasn't simply discarded
                         if ($answer === 'y' || $answer === 'n') {
-                            $composer->getConfig()->getConfigSource()->addConfigSetting('allow-plugins.'.$package, $allow);
+                            $allowPlugins = $composer->getConfig()->get('allow-plugins');
+                            if (is_array($allowPlugins)) {
+                                $allowPlugins[$package] = $allow;
+                                if ($composer->getConfig()->get('sort-packages')) {
+                                    ksort($allowPlugins);
+                                }
+                                $composer->getConfig()->getConfigSource()->addConfigSetting('allow-plugins', $allowPlugins);
+                                $composer->getConfig()->merge(['config' => ['allow-plugins' => $allowPlugins]]);
+                            }
                         }
 
                         return $allow;

@@ -74,6 +74,14 @@ class Locker
     }
 
     /**
+     * @internal
+     */
+    public function getJsonFile(): JsonFile
+    {
+        return $this->lockFile;
+    }
+
+    /**
      * Returns the md5 hash of the sorted content of the composer file.
      *
      * @param string $composerFileContents The contents of the composer file.
@@ -368,18 +376,22 @@ class Locker
             'packages-dev' => null,
             'aliases' => $aliases,
             'minimum-stability' => $minimumStability,
-            'stability-flags' => $stabilityFlags,
+            'stability-flags' => \count($stabilityFlags) > 0 ? $stabilityFlags : new \stdClass,
             'prefer-stable' => $preferStable,
             'prefer-lowest' => $preferLowest,
         ];
+
+        if (is_array($lock['stability-flags'])) {
+            ksort($lock['stability-flags']);
+        }
 
         $lock['packages'] = $this->lockPackages($packages);
         if (null !== $devPackages) {
             $lock['packages-dev'] = $this->lockPackages($devPackages);
         }
 
-        $lock['platform'] = $platformReqs;
-        $lock['platform-dev'] = $platformDevReqs;
+        $lock['platform'] = \count($platformReqs) > 0 ? $platformReqs : new \stdClass;
+        $lock['platform-dev'] = \count($platformDevReqs) > 0 ? $platformDevReqs : new \stdClass;
         if (\count($platformOverrides) > 0) {
             $lock['platform-overrides'] = $platformOverrides;
         }
@@ -434,14 +446,6 @@ class Locker
 
             $spec = $this->dumper->dump($package);
             unset($spec['version_normalized']);
-            // remove `transport-options.ssl` from lock file to prevent storing
-            // local-filesystem repo config paths in the lock file as that makes it less portable
-            if (isset($spec['transport-options']['ssl'])) {
-                unset($spec['transport-options']['ssl']);
-                if (\count($spec['transport-options']) === 0) {
-                    unset($spec['transport-options']);
-                }
-            }
 
             // always move time to the end of the package definition
             $time = $spec['time'] ?? null;

@@ -1,5 +1,6 @@
 --TEST--
-Requirements from the composer file are not installed if the lock file is present, but fails on missing requirements
+Requirements from the composer file are not installed if the lock file is present and missing requirements warning
+is issued when allow-missing-requirements if enabled
 --COMPOSER--
 {
     "repositories": [
@@ -14,6 +15,9 @@ Requirements from the composer file are not installed if the lock file is presen
     "require": {
         "required/pkg": "1.0.0",
         "newly-required/pkg": "1.0.0"
+    },
+    "config": {
+        "allow-missing-requirements": true
     }
 }
 --LOCK--
@@ -37,6 +41,7 @@ Verifying lock file contents can be installed on current platform.
 This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.
 Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md
 and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require-r
---EXPECT-EXIT-CODE--
-4
+Package operations: 1 install, 0 updates, 0 removals
+Generating autoload files
 --EXPECT--
+Installing required/pkg (1.0.0)

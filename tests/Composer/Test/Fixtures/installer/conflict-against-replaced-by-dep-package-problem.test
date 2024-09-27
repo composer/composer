@@ -41,8 +41,7 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - Root composer.json requires conflicting/pkg * -> satisfiable by conflicting/pkg[1.0.0].
-    - conflicting/pkg 1.0.0 conflicts with replaced/pkg2 >=2.1 (provider/pkg 1.0.0 replaces replaced/pkg2 2.5).
     - Root composer.json requires provider/pkg * -> satisfiable by provider/pkg[1.0.0].
+    - conflicting/pkg 1.0.0 conflicts with replaced/pkg2 >=2.1 (provider/pkg 1.0.0 replaces replaced/pkg2 2.5).
 
 --EXPECT--
-

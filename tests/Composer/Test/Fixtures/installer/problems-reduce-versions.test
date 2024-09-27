@@ -91,11 +91,11 @@ Test the error output minifies version lists
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 
 --RUN--
@@ -115,4 +115,3 @@ Your requirements could not be resolved to an installable set of packages.
 Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
 
 --EXPECT--
-

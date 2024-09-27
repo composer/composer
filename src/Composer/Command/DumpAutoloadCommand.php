@@ -43,6 +43,7 @@ class DumpAutoloadCommand extends BaseCommand
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('strict-psr', null, InputOption::VALUE_NONE, 'Return a failed status code (1) if PSR-4 or PSR-0 mapping errors are present. Requires --optimize to work.'),
+                new InputOption('strict-ambiguous', null, InputOption::VALUE_NONE, 'Return a failed status code (2) if the same class is found in multiple files. Requires --optimize to work.'),
             ])
             ->setHelp(
                 <<<EOT
@@ -73,6 +74,9 @@ EOT
 
         if ($input->getOption('strict-psr') && !$optimize && !$authoritative) {
             throw new \InvalidArgumentException('--strict-psr mode only works with optimized autoloader, use --optimize or --classmap-authoritative if you want a strict return value.');
+        }
+        if ($input->getOption('strict-ambiguous') && !$optimize && !$authoritative) {
+            throw new \InvalidArgumentException('--strict-ambiguous mode only works with optimized autoloader, use --optimize or --classmap-authoritative if you want a strict return value.');
         }
 
         if ($authoritative) {
@@ -122,6 +126,10 @@ EOT
 
         if ($input->getOption('strict-psr') && count($classMap->getPsrViolations()) > 0) {
             return 1;
+        }
+
+        if ($input->getOption('strict-ambiguous') && count($classMap->getAmbiguousClasses()) > 0) {
+            return 2;
         }
 
         return 0;

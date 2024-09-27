@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft-04/schema#",
-    "title": "Package",
+    "title": "Composer Package",
     "type": "object",
     "properties": {
         "name": {
@@ -308,6 +308,12 @@
                 "support-zts": {
                     "type": "boolean",
                     "description": "Does this package support Zend Thread Safety",
+                    "example": false,
+                    "default": true
+                },
+                "support-nts": {
+                    "type": "boolean",
+                    "description": "Does this package support non-Thread Safe mode",
                     "example": false,
                     "default": true
                 },
@@ -662,6 +668,14 @@
                 "platform-check": {
                     "type": ["boolean", "string"],
                     "description": "Defaults to \"php-only\" which checks only the PHP version. Setting to true will also check the presence of required PHP extensions. If set to false, Composer will not create and require a platform_check.php file as part of the autoloader bootstrap."
+                },
+                "bump-after-update": {
+                    "type": ["string", "boolean"],
+                    "description": "Defaults to false and can be any of true, false, \"dev\"` or \"no-dev\"`. If set to true, Composer will run the bump command after running the update command. If set to \"dev\" or \"no-dev\" then only the corresponding dependencies will be bumped."
+                },
+                "allow-missing-requirements": {
+                    "type": ["boolean"],
+                    "description": "Defaults to false. If set to true, Composer will allow install when lock file is not up to date with the latest changes in composer.json."
                 }
             }
         },

@@ -247,6 +247,18 @@ please report this [issue](https://github.com/composer/composer/issues).
 3. Check if it contains any path to a non-existent file, if it's the case, remove them.
 
 
+## SSL certificate problem: unable to get local issuer certificate
+
+1. Check that your root certificate store / CA bundle is up to date. Run `composer diagnose -vvv`
+   and look for `Checked CA file ...` or `Checked directory ...` lines in the first lines of output.
+   This will show you where Composer is looking for a CA bundle. You can get a
+   [new cacert.pem from cURL](https://curl.se/docs/caextract.html) and store it there.
+2. If this did not help despite Composer finding a valid CA bundle, try disabling your antivirus and
+   firewall software to see if that helps. We have seen issues where Avast on Windows for example would
+   prevent Composer from functioning correctly. If this helps you should report it to the
+   software vendor so they can hopefully improve things.
+
+
 ## API rate limit and OAuth tokens
 
 Because of GitHub's rate limits on their API it can happen that Composer prompts

@@ -15,6 +15,7 @@ namespace Composer\Test\Command;
 
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
+use Composer\Semver\Constraint\MultiConstraint;
 use Symfony\Component\Console\Command\Command;
 use UnexpectedValueException;
 use InvalidArgumentException;
@@ -374,19 +375,25 @@ OUTPUT
                     'package' => [
                         ['name' => 'vendor1/package1', 'version' => '1.3.0'],
                         ['name' => 'vendor2/package1', 'version' => '2.0.0'],
-                        ['name' => 'vendor2/package2', 'version' => '1.0.0', 'require' => ['vendor2/package3' => '1.4.*']],
+                        ['name' => 'vendor2/package2', 'version' => '1.0.0', 'require' => ['vendor2/package3' => '1.4.*', 'php' => '^8.2']],
                         ['name' => 'vendor2/package3', 'version' => '1.4.0'],
                         ['name' => 'vendor2/package3', 'version' => '1.5.0']
                     ],
                 ],
             ],
             'require' => [
-                'vendor1/package1' => '1.*'
+                'vendor1/package1' => '1.*',
+                'php' => '^8',
             ],
             'require-dev' => [
                 'vendor2/package1' => '2.*',
                 'vendor2/package2' => '^1'
-            ]
+            ],
+            'config' => [
+                'platform' => [
+                    'php' => '8.3.2',
+                ],
+            ],
         ]);
 
         $someRequiredPackage = self::getPackage('vendor1/package1', '1.3.0');
@@ -399,7 +406,14 @@ OUTPUT
                 new MatchAllConstraint(),
                 Link::TYPE_REQUIRE,
                 '1.4.*'
-            )
+            ),
+            'php' => new Link(
+                'vendor2/package2',
+                'php',
+                new MultiConstraint([self::getVersionConstraint('>=', '8.2.0.0'), self::getVersionConstraint('<', '9.0.0.0-dev')]),
+                Link::TYPE_REQUIRE,
+                '^8.2'
+            ),
         ]);
         $secondDevNestedRequiredPackage = self::getPackage('vendor2/package3', '1.4.0');
 
@@ -465,6 +479,26 @@ OUTPUT
             <<<OUTPUT
 vendor2/package2 1.0.0 requires vendor2/package3 (1.4.*)
 Not finding what you were looking for? Try calling `composer update "vendor2/package3:1.5.0" --dry-run` to get another view on the problem.
+OUTPUT
+,
+            1
+        ];
+
+        yield 'all compatible with the inspected platform package (range matching installed)' => [
+            ['package' => 'php', 'version' => '^8'],
+            <<<OUTPUT
+Package "php ^8" found in version "8.3.2" (version provided by config.platform).
+There is no installed package depending on "php" in versions not matching ^8
+OUTPUT
+,
+            0
+        ];
+
+        yield 'an installed package requires an incompatible version of the inspected platform package (fixed non-matching package)' => [
+            ['package' => 'php', 'version' => '9.1.0'],
+            <<<OUTPUT
+__root__         -     requires php (^8)
+vendor2/package2 1.0.0 requires php (^8.2)
 OUTPUT
 ,
             1

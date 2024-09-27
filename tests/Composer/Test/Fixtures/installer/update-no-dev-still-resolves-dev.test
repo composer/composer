@@ -54,8 +54,8 @@ Updates with --no-dev but we still end up with a complete lock file including de
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": []
+    "platform": {},
+    "platform-dev": {}
 }
 --RUN--
 update --no-dev
