@@ -43,7 +43,7 @@ class Git
         $this->filesystem = $fs;
     }
 
-    public function setHttpDownloader(HttpDownloader $httpDownloader)
+    public function setHttpDownloader(HttpDownloader $httpDownloader): void
     {
         $this->httpDownloader = $httpDownloader;
     }

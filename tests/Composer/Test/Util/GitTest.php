@@ -182,8 +182,12 @@ class GitTest extends TestCase
 
     /**
      * @dataProvider privateBitbucketWithOauthProvider
+     *
+     * @param string $gitUrl
+     * @param string $expectedUrl
+     * @param array{'username': string, 'password': string}[] $initial_config
      */
-    public function testRunCommandPrivateBitbucketRepositoryNotInitialCloneInteractiveWithOauth(string $gitUrl, string $expectedUrl, $initial_config = []): void
+    public function testRunCommandPrivateBitbucketRepositoryNotInitialCloneInteractiveWithOauth(string $gitUrl, string $expectedUrl, array $initial_config = []): void
     {
         $commandCallable = static function ($url) use ($expectedUrl): string {
             if ($url !== $expectedUrl) {
