@@ -14,6 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Config;
 use Composer\IO\IOInterface;
+use Composer\Test\Mock\HttpDownloaderMock;
 use Composer\Util\Filesystem;
 use Composer\Util\Git;
 use Composer\Test\Mock\ProcessExecutorMock;
@@ -177,6 +178,94 @@ class GitTest extends TestCase
                 ->willReturn(['username' => 'token', 'password' => $bitbucketToken]);
         }
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
+    }
+
+    /**
+     * @dataProvider privateBitbucketWithOauthProvider
+     */
+    public function testRunCommandPrivateBitbucketRepositoryNotInitialCloneInteractiveWithOauth(string $gitUrl, string $expectedUrl, $initial_config = []): void
+    {
+        $commandCallable = static function ($url) use ($expectedUrl): string {
+            if ($url !== $expectedUrl) {
+                return 'git command failing';
+            }
+
+            return 'git command ok';
+        };
+
+        $expectedCalls = [];
+        $expectedCalls[] = ['cmd' => 'git command failing', 'return' => 1];
+        if (count($initial_config) > 0) {
+            $expectedCalls[] = ['cmd' => 'git command failing', 'return' => 1];
+        } else {
+            $expectedCalls[] = ['cmd' => 'git config bitbucket.accesstoken', 'return' => 1];
+        }
+        $expectedCalls[] = ['cmd' => 'git command ok', 'return' => 0];
+        $this->process->expects($expectedCalls, true);
+
+        $this->config
+            ->method('get')
+            ->willReturnMap([
+                ['gitlab-domains', 0, ['gitlab.com']],
+                ['github-domains', 0, ['github.com']],
+            ]);
+
+        $this->io
+            ->method('isInteractive')
+            ->willReturn(true);
+
+        $this->io
+            ->method('askConfirmation')
+            ->willReturnCallback(function () {
+               return true;
+            });
+        $this->io->method('askAndHideAnswer')
+            ->willReturnCallback(function ($question) {
+                switch ($question) {
+                    case 'Consumer Key (hidden): ':
+                        return 'my-consumer-key';
+                    case 'Consumer Secret (hidden): ':
+                        return 'my-consumer-secret';
+                }
+                return '';
+            });
+
+        $this->io
+            ->method('hasAuthentication')
+            ->with($this->equalTo('bitbucket.org'))
+            ->willReturnCallback(function ($repositoryName) use (&$initial_config) {
+                return isset($initial_config[$repositoryName]);
+            });
+        $this->io
+            ->method('setAuthentication')
+            ->willReturnCallback(function (string $repositoryName, string $username, ?string $password = null) use (&$initial_config) {
+                $initial_config[$repositoryName] = ['username' => $username, 'password' => $password];
+            });
+        $this->io
+            ->method('getAuthentication')
+            ->willReturnCallback(function (string $repositoryName) use (&$initial_config) {
+                if (isset($initial_config[$repositoryName])) {
+                    return $initial_config[$repositoryName];
+                }
+
+                return ['username' => null, 'password' => null];
+            });
+        $downloader_mock = $this->getHttpDownloaderMock();
+        $downloader_mock->expects([
+            ['url' => 'https://bitbucket.org/site/oauth2/access_token', 'status' => 200, 'body' => '{"expires_in": 600, "access_token": "my-access-token"}']
+        ]);
+        $this->git->setHttpDownloader($downloader_mock);
+        $this->git->runCommand($commandCallable, $gitUrl, null, true);
+    }
+
+    public static function privateBitbucketWithOauthProvider(): array
+    {
+        return [
+            ['git@bitbucket.org:acme/repo.git', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
+            ['https://bitbucket.org/acme/repo.git', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
+            ['https://bitbucket.org/acme/repo', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git'],
+            ['git@bitbucket.org:acme/repo.git', 'https://x-token-auth:my-access-token@bitbucket.org/acme/repo.git', ['bitbucket.org' => ['username' => 'someuseralsoswappedfortoken', 'password' => 'little green men']]],
+        ];
     }
 
     public static function privateBitbucketWithCredentialsProvider(): array
