@@ -979,6 +979,7 @@ performance.
 * **--apcu:** Use APCu to cache found/not-found classes.
 * **--apcu-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu`.
+* **--dry-run:** Outputs the operations but will not execute anything.
 * **--no-dev:** Disables autoload-dev rules. Composer will by default infer this
   automatically according to the last `install` or `update` `--no-dev` state.
 * **--dev:** Enables autoload-dev rules. Composer will by default infer this
