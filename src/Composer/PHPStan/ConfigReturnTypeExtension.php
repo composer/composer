@@ -65,7 +65,11 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
     {
         $args = $methodCall->getArgs();
 
-        $defaultReturn = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+        $defaultReturn = ParametersAcceptorSelector::selectFromArgs(
+            $scope,
+            $methodCall->getArgs(),
+            $methodReflection->getVariants()
+        )->getReturnType();
 
         if (count($args) < 1) {
             return $defaultReturn;
