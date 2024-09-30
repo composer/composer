@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Package\AliasPackage;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
@@ -66,6 +67,21 @@ EOT
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         $package = $composer->getPackage();
         $config = $composer->getConfig();
+
+        $missingDependencies = false;
+        foreach ($localRepo->getPackages() as $package) {
+            if ($package instanceof AliasPackage) {
+                continue;
+            }
+
+            $installPath = $installationManager->getInstallPath($package);
+            if ($installPath !== null && (file_exists($installPath) === false || is_dir($installPath) === false)) {
+                $missingDependencies = true;
+                $this->getIO()->write('<warning>Not all dependencies are installed. Make sure to run a "composer install" to install missing dependencies</warning>');
+
+                break;
+            }
+        }
 
         $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
@@ -124,7 +140,7 @@ EOT
             $this->getIO()->write('<info>Generated autoload files</info>');
         }
 
-        if ($input->getOption('strict-psr') && count($classMap->getPsrViolations()) > 0) {
+        if ($missingDependencies || ($input->getOption('strict-psr') && count($classMap->getPsrViolations()) > 0)) {
             return 1;
         }
 
