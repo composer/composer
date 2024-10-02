@@ -69,13 +69,9 @@ EOT
         $config = $composer->getConfig();
 
         $missingDependencies = false;
-        foreach ($localRepo->getPackages() as $package) {
-            if ($package instanceof AliasPackage) {
-                continue;
-            }
-
-            $installPath = $installationManager->getInstallPath($package);
-            if ($installPath !== null && (file_exists($installPath) === false || is_dir($installPath) === false)) {
+        foreach ($localRepo->getCanonicalPackages() as $localPkg) {
+            $installPath = $installationManager->getInstallPath($localPkg);
+            if ($installPath !== null && file_exists($installPath) === false) {
                 $missingDependencies = true;
                 $this->getIO()->write('<warning>Not all dependencies are installed. Make sure to run a "composer install" to install missing dependencies</warning>');
 
