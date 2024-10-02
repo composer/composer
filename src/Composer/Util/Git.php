@@ -32,6 +32,8 @@ class Git
     protected $process;
     /** @var Filesystem */
     protected $filesystem;
+    /** @var HttpDownloader */
+    protected $httpDownloader;
 
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process, Filesystem $fs)
     {
@@ -39,6 +41,11 @@ class Git
         $this->config = $config;
         $this->process = $process;
         $this->filesystem = $fs;
+    }
+
+    public function setHttpDownloader(HttpDownloader $httpDownloader): void
+    {
+        $this->httpDownloader = $httpDownloader;
     }
 
     /**
@@ -131,50 +138,69 @@ class Git
                     $errorMsg = $this->process->getErrorOutput();
                 }
             // @phpstan-ignore composerPcre.maybeUnsafeStrictGroups
-            } elseif (Preg::isMatchStrictGroups('{^https://(bitbucket\.org)/(.*?)(?:\.git)?$}i', $url, $match)) { //bitbucket oauth
-                $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process);
+            } elseif (
+                Preg::isMatchStrictGroups('{^(https?)://(bitbucket\.org)/(.*?)(?:\.git)?$}i', $url, $match)
+                || Preg::isMatchStrictGroups('{^(git)@(bitbucket\.org):(.+?\.git)$}i', $url, $match)
+            ) { //bitbucket either through oauth or app password, with fallback to ssh.
+                $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process, $this->httpDownloader);
 
-                if (!$this->io->hasAuthentication($match[1])) {
+                $domain = $match[2];
+                $repo_with_git_part = $match[3];
+                if (!str_ends_with($repo_with_git_part, '.git')) {
+                    $repo_with_git_part .= '.git';
+                }
+                if (!$this->io->hasAuthentication($domain)) {
                     $message = 'Enter your Bitbucket credentials to access private repos';
 
-                    if (!$bitbucketUtil->authorizeOAuth($match[1]) && $this->io->isInteractive()) {
+                    if (!$bitbucketUtil->authorizeOAuth($domain) && $this->io->isInteractive()) {
                         $bitbucketUtil->authorizeOAuthInteractively($match[1], $message);
                         $accessToken = $bitbucketUtil->getToken();
-                        $this->io->setAuthentication($match[1], 'x-token-auth', $accessToken);
+                        $this->io->setAuthentication($domain, 'x-token-auth', $accessToken);
                     }
-                } else { //We're authenticating with a locally stored consumer.
-                    $auth = $this->io->getAuthentication($match[1]);
+                }
+
+                // First we try to authenticate with whatever we have stored.
+                // This will be successful if there is for example an app
+                // password in there.
+                if ($this->io->hasAuthentication($domain)) {
+                    $auth = $this->io->getAuthentication($domain);
+                    $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $domain . '/' . $repo_with_git_part;
+
+                    $command = $commandCallable($authUrl);
+                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
+                        // Well if that succeeded on our first try, let's just
+                        // take the win.
+                        return;
+                    }
 
                     //We already have an access_token from a previous request.
                     if ($auth['username'] !== 'x-token-auth') {
-                        $accessToken = $bitbucketUtil->requestToken($match[1], $auth['username'], $auth['password']);
+                        $accessToken = $bitbucketUtil->requestToken($domain, $auth['username'], $auth['password']);
                         if (!empty($accessToken)) {
-                            $this->io->setAuthentication($match[1], 'x-token-auth', $accessToken);
+                            $this->io->setAuthentication($domain, 'x-token-auth', $accessToken);
                         }
                     }
                 }
 
-                if ($this->io->hasAuthentication($match[1])) {
-                    $auth = $this->io->getAuthentication($match[1]);
-                    $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
-
+                if ($this->io->hasAuthentication($domain)) {
+                    $auth = $this->io->getAuthentication($domain);
+                    $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $domain . '/' . $repo_with_git_part;
                     $command = $commandCallable($authUrl);
                     if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
 
                     $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
-                    $errorMsg = $this->process->getErrorOutput();
-                } else { // Falling back to ssh
-                    $sshUrl = 'git@bitbucket.org:' . $match[2] . '.git';
-                    $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
-                    $command = $commandCallable($sshUrl);
-                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
-                        return;
-                    }
-
-                    $errorMsg = $this->process->getErrorOutput();
                 }
+                //Falling back to ssh
+                $sshUrl = 'git@bitbucket.org:' . $repo_with_git_part;
+                $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
+                $command = $commandCallable($sshUrl);
+                if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
+                    return;
+                }
+
+                $errorMsg = $this->process->getErrorOutput();
             } elseif (
                 // @phpstan-ignore composerPcre.maybeUnsafeStrictGroups
                 Preg::isMatchStrictGroups('{^(git)@' . self::getGitLabDomainsRegex($this->config) . ':(.+?\.git)$}i', $url, $match)

@@ -182,7 +182,7 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
-			count: 8
+			count: 10
 			path: ../src/Composer/Util/Git.php
 
 		-
