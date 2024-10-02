@@ -1,6 +1,6 @@
 --TEST--
 
-See Github issue #9290 ( https://github.com/composer/composer/issues/9290 ).
+See GitHub issue #9290 ( https://github.com/composer/composer/issues/9290 ).
 MultiConflictRule with a level 1 decision needs to exit correctly.
 
 --COMPOSER--

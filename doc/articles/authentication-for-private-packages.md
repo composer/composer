@@ -296,7 +296,7 @@ php composer.phar config [--global] --editor --auth
 
 ## github-oauth
 
-To create a new access token, head to your [token settings section on Github](https://github.com/settings/tokens) and [generate a new token](https://github.com/settings/tokens/new).
+To create a new access token, head to your [token settings section on GitHub](https://github.com/settings/tokens) and [generate a new token](https://github.com/settings/tokens/new).
 
 For public repositories when rate limited, a token *without* any particular scope is sufficient (see `(no scope)` in the [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps)). Such tokens grant read-only access to public information.
 

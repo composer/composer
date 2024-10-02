@@ -107,7 +107,7 @@ class GitLabDriver extends VcsDriver
         ;
         $origin = self::determineOrigin($configuredDomains, $guessedDomain, $urlParts, $match['port']);
         if (false === $origin) {
-            throw new \LogicException('It should not be possible to create a gitlab driver with an unparseable origin URL ('.$this->url.')');
+            throw new \LogicException('It should not be possible to create a gitlab driver with an unparsable origin URL ('.$this->url.')');
         }
         $this->originUrl = $origin;
 

@@ -25,8 +25,8 @@ class HtmlOutputFormatterTest extends TestCase
         ]);
 
         self::assertEquals(
-            'text <span style="color:green;">green</span> <span style="color:yellow;">yellow</span> <span style="color:black;background-color:yellow;">black w/ yello bg</span>',
-            $formatter->format('text <info>green</info> <comment>yellow</comment> <warning>black w/ yello bg</warning>')
+            'text <span style="color:green;">green</span> <span style="color:yellow;">yellow</span> <span style="color:black;background-color:yellow;">black w/ yellow bg</span>',
+            $formatter->format('text <info>green</info> <comment>yellow</comment> <warning>black w/ yellow bg</warning>')
         );
     }
 }

@@ -1,6 +1,6 @@
 --TEST--
 
-See Github issue #8902 ( https://github.com/composer/composer/issues/8902 ).
+See GitHub issue #8902 ( https://github.com/composer/composer/issues/8902 ).
 
 Avoid installing packages twice if they are required in different versions and one is matched by a dev package.
 

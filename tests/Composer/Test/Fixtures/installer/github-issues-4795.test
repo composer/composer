@@ -1,6 +1,6 @@
 --TEST--
 
-See Github issue #4795 ( github.com/composer/composer/issues/4795 ).
+See GitHub issue #4795 ( github.com/composer/composer/issues/4795 ).
 
 Composer\Installer::allowListUpdateDependencies intentionally ignores root requirements even if said package is also a
 dependency of one the requirements that is allowed for update.

@@ -1,6 +1,6 @@
 --TEST--
 
-See Github issue #4319 ( github.com/composer/composer/issues/4319 ).
+See GitHub issue #4319 ( github.com/composer/composer/issues/4319 ).
 
 Present a clear error message when config.platform.php version results in a conflict rule.
 

@@ -1,6 +1,6 @@
 --TEST--
 
-See Github issue #6661 ( github.com/composer/composer/issues/6661 ).
+See GitHub issue #6661 ( github.com/composer/composer/issues/6661 ).
 
 When `--with-all-dependencies` is used, Composer should update the dependencies of all allowed packages, even if the dependency is a root requirement.
 
