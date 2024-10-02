@@ -729,8 +729,10 @@ packages depending on the packages that cause the conflict.
 ## validate
 
 You should always run the `validate` command before you commit your
-`composer.json` file, and before you tag a release. It will check if your
-`composer.json` is valid.
+`composer.json` file (and `composer.lock` [if applicable](01-basic-usage.md#commit-your-composer-lock-file-to-version-control)), and before you tag a release.
+
+It will check if your
+`composer.json` is valid. If a `composer.lock` exists, it will also check if it is up to date with the `composer.json`.
 
 ```shell
 php composer.phar validate
@@ -740,7 +742,9 @@ php composer.phar validate
 
 * **--no-check-all:** Do not emit a warning if requirements in `composer.json` use unbound or overly strict version constraints.
 * **--no-check-lock:** Do not emit an error if `composer.lock` exists and is not up to date.
+* **--check-lock** Check if lock file is up to date (even when [config.lock](06-config.md#lock) is false)
 * **--no-check-publish:** Do not emit an error if `composer.json` is unsuitable for publishing as a package on Packagist but is otherwise valid.
+* **--no-check-version:** Do not emit an error if the version field is present.
 * **--with-dependencies:** Also validate the composer.json of all installed dependencies.
 * **--strict:** Return a non-zero exit code for warnings as well as errors.
 
