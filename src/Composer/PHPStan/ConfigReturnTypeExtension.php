@@ -61,14 +61,12 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
         return strtolower($methodReflection->getName()) === 'get';
     }
 
-    public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
+    public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
     {
         $args = $methodCall->getArgs();
 
-        $defaultReturn = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
-
         if (count($args) < 1) {
-            return $defaultReturn;
+            return null;
         }
 
         $keyType = $scope->getType($args[0]->value);
@@ -82,7 +80,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
             $types = [];
             foreach($strings as $string) {
                 if (!isset($this->properties[$string->getValue()])) {
-                    return $defaultReturn;
+                    return null;
                 }
                 $types[] = $this->properties[$string->getValue()];
             }
@@ -90,7 +88,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
             return TypeCombinator::union(...$types);
         }
 
-        return $defaultReturn;
+        return null;
     }
 
     /**
