@@ -1082,7 +1082,8 @@ php composer.phar audit
 * **--abandoned:** Behavior on abandoned packages. Must be "ignore", "report",
   or "fail".  See also [audit.abandoned](06-config.md#abandoned).  Passing this
   flag will override the config value and the environment variable.
-
+* **--ignore-severity:** Ignore advisories of a certain severity level. Can be passed one or more
+  time to ignore multiple severities.
 
 ## help
 
