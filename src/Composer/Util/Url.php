@@ -75,7 +75,7 @@ class Url
             $origin .= ':'.$port;
         }
 
-        if (strpos($origin, '.github.com') === (strlen($origin) - 11)) {
+        if (str_ends_with($origin, '.github.com') && $origin !== 'codeload.github.com') {
             return 'github.com';
         }
 
