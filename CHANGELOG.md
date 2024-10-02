@@ -1,3 +1,31 @@
+### [2.8.0] 2024-10-02
+
+  * BC Warning: Fixed `https_proxy` env var falling back to `http_proxy`'s value. The fallback and warning have now been removed per the 2.7.3 release notes (#11938, #11915)
+  * Added `--patch-only` flag to the `update` command to restrict updates to patch versions and make an update of all deps safer (#12122)
+  * Added `--abandoned` flag to the `audit` command to configure how abandoned packages should be treated, overriding the `audit.abandoned` config setting (#12091)
+  * Added `--ignore-severity` flag to the `audit` command to ignore one or more advisory severities (#12132)
+  * Added `--bump-after-update` flag to the `update` command to run bump after the update is done (#11942)
+  * Added a way to control which `scripts` receive additional CLI arguments and where they appear in the command, see [the docs](https://getcomposer.org/doc/articles/scripts.md#controlling-additional-arguments) (#12086)
+  * Added `allow-missing-requirements` config setting to skip the error when the lock file is not fulfilling the composer.json's dependencies (#11966)
+  * Added a JSON schema for the composer.lock file (#12123)
+  * Added better support for Bitbucket app passwords when cloning repos / installing from source (#12103)
+  * Added `--type` flag to filter packages by type(s) in the `reinstall` command (#12114)
+  * Added `--strict-ambiguous` flag to the `dump-autoload` command to make it return with an error code if duplicate classes are found (#12119)
+  * Added warning in `dump-autoload` when vendor files have been deleted (#12139)
+  * Added warnings for each missing platform package when running `create-project` to avoid having to run it again and again (#12120)
+  * Added sorting of packages in allow-plugins when `sort-packages` is enabled (#11348)
+  * Added suggestion of provider packages / polyfills when an ext or lib package is missing (#12113)
+  * Improved interactive package update selection by first outputting all packages and their possible updates (#11990)
+  * Improved dependency resolution failure output by sorting the output in a deterministic and (often) more logical way (#12111)
+  * Fixed PHP 8.4 deprecation warnings about `E_STRICT` (#12116)
+  * Fixed `init` command to validate the given license identifier (#12115)
+  * Fixed version guessing to be more deterministic on feature branches if it appears that it could come from either of two mainline branches (#12129)
+  * Fixed COMPOSER_ROOT_VERSION env var handling to treat 1.2 the same as 1.2.x-dev and not 1.2.0 (#12109)
+  * Fixed require command skipping new stability flags from the lock file, causing invalid lock file diffs (#12112)
+  * Fixed php://stdin potentially being open several times when running Composer programmatically (#12107)
+  * Fixed handling of platform packages in why-not command and partial updates (#12110)
+  * Reverted "Fixed transport-options.ssl for local cert authorization being stored in lock file making them less portable (#12019)" from 2.7.8 as it was broken
+
 ### [2.7.9] 2024-09-04
 
   * Fixed Docker detection breaking on constrained environments (#12095)
@@ -1910,6 +1938,7 @@
 
   * Initial release
 
+[2.8.0]: https://github.com/composer/composer/compare/2.7.9...2.8.0
 [2.7.9]: https://github.com/composer/composer/compare/2.7.8...2.7.9
 [2.7.8]: https://github.com/composer/composer/compare/2.7.7...2.7.8
 [2.7.7]: https://github.com/composer/composer/compare/2.7.6...2.7.7
