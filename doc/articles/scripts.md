@@ -412,6 +412,8 @@ the PHP executable available in it as a `PHP_BINARY` env var.
 
 ## Controlling additional arguments
 
+As of Composer 2.8, you can control how additional arguments are passed to script commands.
+
 When running scripts like `composer script-name arg arg2` or `composer script-name -- --option`,
 Composer will by default append `arg`, `arg2` and `--option` to the script's command.
 
