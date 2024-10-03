@@ -195,13 +195,29 @@ class Application extends BaseApplication
         }
 
         // prompt user for dir change if no composer.json is present in current dir
-        if ($io->isInteractive() && null === $newWorkDir && !in_array($commandName, ['', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'], true) && !file_exists(Factory::getComposerFile()) && ($useParentDirIfNoJsonAvailable = $this->getUseParentDirConfigValue()) !== false) {
+        if (
+            null === $newWorkDir
+            // do not prompt for commands that can function without composer.json
+            && !in_array($commandName, ['', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'], true)
+            && !file_exists(Factory::getComposerFile())
+            // if use-parent-dir is disabled we should not prompt
+            && ($useParentDirIfNoJsonAvailable = $this->getUseParentDirConfigValue()) !== false
+            // config --file ... should not prompt
+            && ($commandName !== 'config' || ($input->hasParameterOption('--file', true) === false && $input->hasParameterOption('-f', true) === false))
+            // calling a command's help should not prompt
+            && $input->hasParameterOption('--help', true) === false
+            && $input->hasParameterOption('-h', true) === false
+        ) {
             $dir = dirname(Platform::getCwd(true));
             $home = realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
 
             // abort when we reach the home dir or top of the filesystem
             while (dirname($dir) !== $dir && $dir !== $home) {
                 if (file_exists($dir.'/'.Factory::getComposerFile())) {
+                    if ($useParentDirIfNoJsonAvailable !== true && !$io->isInteractive()) {
+                        $io->writeError('<info>No composer.json in current directory, to use the one at '.$dir.' run interactively or set config.use-parent-dir to true</info>');
+                        break;
+                    }
                     if ($useParentDirIfNoJsonAvailable === true || $io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ')) {
                         if ($useParentDirIfNoJsonAvailable === true) {
                             $io->writeError('<info>No composer.json in current directory, changing working directory to '.$dir.'</info>');
@@ -215,6 +231,7 @@ class Application extends BaseApplication
                 }
                 $dir = dirname($dir);
             }
+            unset($dir, $home);
         }
 
         $needsSudoCheck = !Platform::isWindows()
