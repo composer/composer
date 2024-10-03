@@ -353,6 +353,7 @@ EOT
             throw new \UnexpectedValueException('Got an empty target directory, something went wrong');
         }
 
+        // set the base dir to ensure $config->all() below resolves the correct absolute paths to vendor-dir etc
         $config->setBaseDir($directory);
         if (!$secureHttp) {
             $config->merge(['config' => ['secure-http' => false]], Config::SOURCE_COMMAND);
@@ -387,6 +388,8 @@ EOT
 
         $composer = $this->createComposerInstance($input, $io, $config->all(), $disablePlugins, $disableScripts);
         $config = $composer->getConfig();
+        // set the base dir here again on the new config instance, as otherwise in case the vendor dir is defined in an env var for example it would still override the value set above by $config->all()
+        $config->setBaseDir($directory);
         $rm = $composer->getRepositoryManager();
 
         $repositorySet = new RepositorySet($stability);
@@ -433,7 +436,9 @@ EOT
                 $handler->exitWithLastSignal();
             });
         }
-        chdir($directory);
+        if (!chdir($directory)) {
+            throw new \RuntimeException('Failed to chdir into the new project dir at '.$directory);
+        }
 
         // avoid displaying 9999999-dev as version if default-branch was selected
         if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
