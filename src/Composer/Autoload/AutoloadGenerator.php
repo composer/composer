@@ -1026,6 +1026,16 @@ PLATFORM_CHECK;
 
 CLASSLOADER_INIT;
 
+        $file .= <<<PRELOAD_INSTALLED_VERSIONS
+        // include InstalledVersions class & installed.php data to ensure it is in opcache when preloading
+        if (file_exists(__DIR__ . '/InstalledVersions.php') && !class_exists('Composer\\\\InstalledVersions', false)) {
+            include __DIR__ . '/InstalledVersions.php';
+            include __DIR__ . '/installed.php';
+        }
+
+
+PRELOAD_INSTALLED_VERSIONS;
+
         if ($useIncludePath) {
             $file .= <<<'INCLUDE_PATH'
         $includePaths = require __DIR__ . '/include_paths.php';

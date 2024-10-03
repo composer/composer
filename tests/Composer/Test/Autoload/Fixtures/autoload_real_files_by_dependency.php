@@ -26,6 +26,12 @@ class ComposerAutoloaderInitFilesAutoloadOrder
         self::$loader = $loader = new \Composer\Autoload\ClassLoader(\dirname(__DIR__));
         spl_autoload_unregister(array('ComposerAutoloaderInitFilesAutoloadOrder', 'loadClassLoader'));
 
+        // include InstalledVersions class & installed.php data to ensure it is in opcache when preloading
+        if (file_exists(__DIR__ . '/InstalledVersions.php') && !class_exists('Composer\\InstalledVersions', false)) {
+            include __DIR__ . '/InstalledVersions.php';
+            include __DIR__ . '/installed.php';
+        }
+
         require __DIR__ . '/autoload_static.php';
         call_user_func(\Composer\Autoload\ComposerStaticInitFilesAutoloadOrder::getInitializer($loader));
 

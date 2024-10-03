@@ -26,6 +26,12 @@ class ComposerAutoloaderInitFilesAutoload
         self::$loader = $loader = new \Composer\Autoload\ClassLoader(\dirname(__DIR__));
         spl_autoload_unregister(array('ComposerAutoloaderInitFilesAutoload', 'loadClassLoader'));
 
+        // include InstalledVersions class & installed.php data to ensure it is in opcache when preloading
+        if (file_exists(__DIR__ . '/InstalledVersions.php') && !class_exists('Composer\\InstalledVersions', false)) {
+            include __DIR__ . '/InstalledVersions.php';
+            include __DIR__ . '/installed.php';
+        }
+
         $includePaths = require __DIR__ . '/include_paths.php';
         $includePaths[] = get_include_path();
         set_include_path(implode(PATH_SEPARATOR, $includePaths));
