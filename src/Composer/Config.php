@@ -144,9 +144,9 @@ class Config
      *
      * The $baseDir should be an absolute path and without trailing slash
      *
-     * @param non-empty-string $baseDir
+     * @param non-empty-string|null $baseDir
      */
-    public function setBaseDir(string $baseDir): void
+    public function setBaseDir(?string $baseDir): void
     {
         $this->baseDir = $baseDir;
     }
