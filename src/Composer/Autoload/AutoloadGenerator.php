@@ -173,7 +173,7 @@ class AutoloadGenerator
      * @throws \Seld\JsonLint\ParsingException
      * @throws \RuntimeException
      */
-    public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, string $targetDir, bool $scanPsrPackages = false, ?string $suffix = null, ?Locker $locker = null)
+    public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, string $targetDir, bool $scanPsrPackages = false, ?string $suffix = null, ?Locker $locker = null, bool $strictAmbiguous = false)
     {
         if ($this->classMapAuthoritative) {
             // Force scanPsrPackages when classmap is authoritative
@@ -362,7 +362,12 @@ EOF;
         }
 
         $classMap = $classMapGenerator->getClassMap();
-        foreach ($classMap->getAmbiguousClasses() as $className => $ambiguousPaths) {
+        if ($strictAmbiguous) {
+            $ambiguousClasses = $classMap->getAmbiguousClasses(false);
+        } else {
+            $ambiguousClasses = $classMap->getAmbiguousClasses();
+        }
+        foreach ($ambiguousClasses as $className => $ambiguousPaths) {
             if (count($ambiguousPaths) > 1) {
                 $this->io->writeError(
                     '<warning>Warning: Ambiguous class resolution, "'.$className.'"'.
