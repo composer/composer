@@ -400,7 +400,7 @@ EOT
             $license
         );
         $spdx = new SpdxLicenses();
-        if (!$spdx->validate($license) && $license !== 'proprietary') {
+        if (null !== $license && !$spdx->validate($license) && $license !== 'proprietary') {
             throw new \InvalidArgumentException('Invalid license provided: '.$license.'. Only SPDX license identifiers (https://spdx.org/licenses/) or "proprietary" are accepted.');
         }
         $input->setOption('license', $license);
