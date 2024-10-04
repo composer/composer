@@ -1,3 +1,10 @@
+### [2.8.1] 2024-10-04
+
+  * Fixed `init` command regression when no license is provided (#12145)
+  * Fixed `--strict-ambiguous` flag handling whereas it sometimes did not report all issues (#12148)
+  * Fixed `create-project` to inherit the target folder's permissions for installed project files (#12146)
+  * Fixed a few cases where the prompt for using a parent dir's composer.json fails to work correctly (#8023)
+
 ### [2.8.0] 2024-10-02
 
   * BC Warning: Fixed `https_proxy` env var falling back to `http_proxy`'s value. The fallback and warning have now been removed per the 2.7.3 release notes (#11938, #11915)
@@ -1938,6 +1945,7 @@
 
   * Initial release
 
+[2.8.1]: https://github.com/composer/composer/compare/2.8.0...2.8.1
 [2.8.0]: https://github.com/composer/composer/compare/2.7.9...2.8.0
 [2.7.9]: https://github.com/composer/composer/compare/2.7.8...2.7.9
 [2.7.8]: https://github.com/composer/composer/compare/2.7.7...2.7.8
