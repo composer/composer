@@ -124,7 +124,8 @@ EOT
             'composer',
             $optimize,
             null,
-            $composer->getLocker()
+            $composer->getLocker(),
+            $input->getOption('strict-ambiguous')
         );
         $numberOfClasses = count($classMap);
 
@@ -140,7 +141,7 @@ EOT
             return 1;
         }
 
-        if ($input->getOption('strict-ambiguous') && count($classMap->getAmbiguousClasses()) > 0) {
+        if ($input->getOption('strict-ambiguous') && count($classMap->getAmbiguousClasses(false)) > 0) {
             return 2;
         }
 

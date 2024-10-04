@@ -24,7 +24,7 @@
     "require": {
         "php": "^7.2.5 || ^8.0",
         "composer/ca-bundle": "^1.5",
-        "composer/class-map-generator": "^1.3.3",
+        "composer/class-map-generator": "^1.4.0",
         "composer/metadata-minifier": "^1.0",
         "composer/semver": "^3.3",
         "composer/spdx-licenses": "^1.5.7",
