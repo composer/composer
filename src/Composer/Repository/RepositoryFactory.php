@@ -178,7 +178,7 @@ class RepositoryFactory
     /**
      * @param int|string $index
      * @param array{url?: string} $repo
-     * @param array<string, mixed> $existingRepos
+     * @param array<int|string, mixed> $existingRepos
      */
     public static function generateRepositoryName($index, array $repo, array $existingRepos): string
     {

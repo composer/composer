@@ -319,14 +319,6 @@ EOT
         $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_CREATE_PROJECT_CMD, $installDevPackages);
 
         chdir($oldCwd);
-        $vendorComposerDir = $config->get('vendor-dir').'/composer';
-        if (is_dir($vendorComposerDir) && $fs->isDirEmpty($vendorComposerDir)) {
-            Silencer::call('rmdir', $vendorComposerDir);
-            $vendorDir = $config->get('vendor-dir');
-            if (is_dir($vendorDir) && $fs->isDirEmpty($vendorDir)) {
-                Silencer::call('rmdir', $vendorDir);
-            }
-        }
 
         return 0;
     }
@@ -338,10 +330,6 @@ EOT
      */
     protected function installRootPackage(InputInterface $input, IOInterface $io, Config $config, string $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, ?array $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $secureHttp = true): bool
     {
-        if (!$secureHttp) {
-            $config->merge(['config' => ['secure-http' => false]], Config::SOURCE_COMMAND);
-        }
-
         $parser = new VersionParser();
         $requirements = $parser->parseNameVersionPairs([$packageName]);
         $name = strtolower($requirements[0]['name']);
@@ -354,11 +342,21 @@ EOT
             $parts = explode("/", $name, 2);
             $directory = Platform::getCwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
+        $directory = rtrim($directory, '/\\');
 
         $process = new ProcessExecutor($io);
         $fs = new Filesystem($process);
         if (!$fs->isAbsolutePath($directory)) {
             $directory = Platform::getCwd() . DIRECTORY_SEPARATOR . $directory;
+        }
+        if ('' === $directory) {
+            throw new \UnexpectedValueException('Got an empty target directory, something went wrong');
+        }
+
+        // set the base dir to ensure $config->all() below resolves the correct absolute paths to vendor-dir etc
+        $config->setBaseDir($directory);
+        if (!$secureHttp) {
+            $config->merge(['config' => ['secure-http' => false]], Config::SOURCE_COMMAND);
         }
 
         $io->writeError('<info>Creating a "' . $packageName . '" project at "' . $fs->findShortestPath(Platform::getCwd(), $directory, true) . '"</info>');
@@ -390,6 +388,8 @@ EOT
 
         $composer = $this->createComposerInstance($input, $io, $config->all(), $disablePlugins, $disableScripts);
         $config = $composer->getConfig();
+        // set the base dir here again on the new config instance, as otherwise in case the vendor dir is defined in an env var for example it would still override the value set above by $config->all()
+        $config->setBaseDir($directory);
         $rm = $composer->getRepositoryManager();
 
         $repositorySet = new RepositorySet($stability);
@@ -424,15 +424,20 @@ EOT
             throw new \InvalidArgumentException($errorMessage .'.');
         }
 
+        $oldCwd = Platform::getCwd();
         // handler Ctrl+C aborts gracefully
         @mkdir($directory, 0777, true);
         if (false !== ($realDir = realpath($directory))) {
-            $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) use ($realDir) {
+            $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) use ($realDir, $oldCwd) {
+                chdir($oldCwd);
                 $this->getIO()->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
                 $fs = new Filesystem();
                 $fs->removeDirectory($realDir);
                 $handler->exitWithLastSignal();
             });
+        }
+        if (!chdir($directory)) {
+            throw new \RuntimeException('Failed to chdir into the new project dir at '.$directory);
         }
 
         // avoid displaying 9999999-dev as version if default-branch was selected
@@ -467,7 +472,6 @@ EOT
         $installedFromVcs = 'source' === $package->getInstallationSource();
 
         $io->writeError('<info>Created project in ' . $directory . '</info>');
-        chdir($directory);
 
         // ensure that the env var being set does not interfere with create-project
         // as it is probably not meant to be used here, so we do not use it if a composer.json can be found
