@@ -424,7 +424,7 @@ class Locker
      *
      * This is a risky method, use carefully.
      *
-     * @param (callable(array<mixed>): array<mixed>)|null $dataProcessor Receives the lock data and can process it before it gets written to disk
+     * @param (callable(array<string, mixed>): array<string, mixed>)|null $dataProcessor Receives the lock data and can process it before it gets written to disk
      */
     public function updateHash(JsonFile $composerJson, ?callable $dataProcessor = null): void
     {
