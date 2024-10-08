@@ -2381,7 +2381,7 @@ parameters:
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
-			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:getProviders\\(\\) should return array\\<string, array\\{name\\: string, description\\: string, type\\: string\\}\\> but returns array\\<int\\|string, array\\{name\\: mixed, description\\: mixed, type\\: mixed\\}\\>\\.$#"
+			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:getProviders\\(\\) should return array\\<string, array\\{name\\: string, description\\: string|null, type\\: string\\}\\> but returns array\\<int\\|string, array\\{name\\: mixed, description\\: mixed, type\\: mixed\\}\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
@@ -2496,7 +2496,7 @@ parameters:
 			path: ../src/Composer/Repository/CompositeRepository.php
 
 		-
-			message: "#^Only booleans are allowed in a ternary operator condition, array\\<int, array\\<string, array\\<string, string\\>\\>\\> given\\.$#"
+			message: "#^Only booleans are allowed in a ternary operator condition, array\\<int, array\\<string, array\\<string, string|null\\>\\>\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/CompositeRepository.php
 
@@ -2714,7 +2714,7 @@ parameters:
 			path: ../src/Composer/Repository/RepositorySet.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, array\\<string, array\\<string, string\\>\\> given\\.$#"
+			message: "#^Only booleans are allowed in an if condition, array\\<string, array\\<string, string|null\\>\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/RepositorySet.php
 

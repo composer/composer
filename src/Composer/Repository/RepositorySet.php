@@ -284,7 +284,7 @@ class RepositorySet
 
     /**
      * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...')
-     * @phpstan-return array<string, array{name: string, description: string, type: string}>
+     * @phpstan-return array<string, array{name: string, description: string|null, type: string}>
      */
     public function getProviders(string $packageName): array
     {
