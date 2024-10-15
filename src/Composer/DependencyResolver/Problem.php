@@ -649,7 +649,7 @@ class Problem
         $providers = $repositorySet->getProviders($packageName);
         if (\count($providers) > 0) {
             $providersStr = implode(array_map(static function ($p): string {
-                $description = $p['description'] !== '' ? ' '.substr($p['description'], 0, 100) : '';
+                $description = $p['description'] !== '' ? ' '.substr($p['description'] ?? '', 0, 100) : '';
 
                 return '      - '.$p['name'].$description."\n";
             }, count($providers) > $maxProviders + 1 ? array_slice($providers, 0, $maxProviders) : $providers));
