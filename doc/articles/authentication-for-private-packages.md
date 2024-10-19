@@ -155,7 +155,7 @@ If the username e.g. is an email address it needs to be passed as `name%40exampl
 ### Command line inline http-basic
 
 ```shell
-php composer.phar config [--global] repositories composer.unique-name https://username:password@repo.example.org
+php composer.phar config [--global] repositories.unique-name composer https://username:password@repo.example.org
 ```
 
 ### Manual inline http-basic
