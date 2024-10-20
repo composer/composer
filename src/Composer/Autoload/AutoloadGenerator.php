@@ -268,6 +268,7 @@ EOF;
             foreach ($paths as $path) {
                 $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
             }
+            sort($exportedPaths);
             $exportedPrefix = var_export($namespace, true);
             $namespacesFile .= "    $exportedPrefix => ";
             $namespacesFile .= "array(".implode(', ', $exportedPaths)."),\n";
@@ -280,6 +281,7 @@ EOF;
             foreach ($paths as $path) {
                 $exportedPaths[] = $this->getPathCode($filesystem, $basePath, $vendorPath, $path);
             }
+            sort($exportedPaths);
             $exportedPrefix = var_export($namespace, true);
             $psr4File .= "    $exportedPrefix => ";
             $psr4File .= "array(".implode(', ', $exportedPaths)."),\n";
