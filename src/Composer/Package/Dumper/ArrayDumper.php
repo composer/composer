@@ -37,6 +37,7 @@ class ArrayDumper
             'devAutoload' => 'autoload-dev',
             'notificationUrl' => 'notification-url',
             'includePaths' => 'include-path',
+            'phpExt' => 'php-ext',
         ];
 
         $data = [];

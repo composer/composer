@@ -234,6 +234,11 @@ class ArrayDumperTest extends TestCase
                 ['ssl' => ['local_cert' => '/opt/certs/test.pem']],
                 'transportOptions',
             ],
+            [
+                'php-ext',
+                ['extension-name' => 'test'],
+                'phpExt',
+            ],
         ];
     }
 }
