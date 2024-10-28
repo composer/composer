@@ -224,7 +224,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     {
         $path = Filesystem::trimTrailingSlash($path);
         $parser = new VersionParser;
-        $guesser = new VersionGuesser($this->config, $this->process, $parser);
+        $guesser = new VersionGuesser($this->config, $this->process, $parser, $this->io);
         $dumper = new ArrayDumper;
 
         $packageConfig = $dumper->dump($package);

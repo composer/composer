@@ -116,7 +116,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         $this->loader = new ArrayLoader(null, true);
         $this->url = Platform::expandPath($repoConfig['url']);
         $this->process = $process ?? new ProcessExecutor($io);
-        $this->versionGuesser = new VersionGuesser($config, $this->process, new VersionParser());
+        $this->versionGuesser = new VersionGuesser($config, $this->process, new VersionParser(), $io);
         $this->repoConfig = $repoConfig;
         $this->options = $repoConfig['options'] ?? [];
         if (!isset($this->options['relative'])) {
