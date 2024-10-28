@@ -36,11 +36,11 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects([
             ['cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'], 'return' => 128],
-            ['cmd' => 'git describe --exact-match --tags', 'return' => 128],
-            ['cmd' => 'git log --pretty="%H" -n1 HEAD'.GitUtil::getNoShowSignatureFlag($process), 'return' => 128],
-            ['cmd' => 'hg branch', 'return' => 0, 'stdout' => $branch],
-            ['cmd' => 'hg branches', 'return' => 0],
-            ['cmd' => 'hg bookmarks', 'return' => 0],
+            ['cmd' => ['git', 'describe', '--exact-match', '--tags'], 'return' => 128],
+            ['cmd' => array_merge(['git log', '--pretty=%H', '-n1', 'HEAD'], GitUtil::getNoShowSignatureFlags($process)), 'return' => 128],
+            ['cmd' => ['hg', 'branch'], 'return' => 0, 'stdout' => $branch],
+            ['cmd' => ['hg', 'branches'], 'return' => 0],
+            ['cmd' => ['hg', 'bookmarks'], 'return' => 0],
         ], true);
 
         GitUtil::getVersion(new ProcessExecutor);

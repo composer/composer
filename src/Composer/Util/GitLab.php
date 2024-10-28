@@ -65,14 +65,14 @@ class GitLab
         }
 
         // if available use token from git config
-        if (0 === $this->process->execute('git config gitlab.accesstoken', $output)) {
+        if (0 === $this->process->execute(['git', 'config', 'gitlab.accesstoken'], $output)) {
             $this->io->setAuthentication($originUrl, trim($output), 'oauth2');
 
             return true;
         }
 
         // if available use deploy token from git config
-        if (0 === $this->process->execute('git config gitlab.deploytoken.user', $tokenUser) && 0 === $this->process->execute('git config gitlab.deploytoken.token', $tokenPassword)) {
+        if (0 === $this->process->execute(['git', 'config', 'gitlab.deploytoken.user'], $tokenUser) && 0 === $this->process->execute(['git', 'config', 'gitlab.deploytoken.token'], $tokenPassword)) {
             $this->io->setAuthentication($originUrl, trim($tokenUser), trim($tokenPassword));
 
             return true;

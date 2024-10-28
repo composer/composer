@@ -27,7 +27,7 @@ use ZipArchive;
  */
 class ZipDownloader extends ArchiveDownloader
 {
-    /** @var array<int, array{0: string, 1: string}> */
+    /** @var array<int, array{0: string, 1: string, 2: string}> */
     private static $unzipCommands;
     /** @var bool */
     private static $hasZipArchive;
@@ -46,16 +46,16 @@ class ZipDownloader extends ArchiveDownloader
             self::$unzipCommands = [];
             $finder = new ExecutableFinder;
             if (Platform::isWindows() && ($cmd = $finder->find('7z', null, ['C:\Program Files\7-Zip']))) {
-                self::$unzipCommands[] = ['7z', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s'];
+                self::$unzipCommands[] = ['7z', ProcessExecutor::escape($cmd), 'x -bb0 -y %s -o%s'];
             }
             if ($cmd = $finder->find('unzip')) {
-                self::$unzipCommands[] = ['unzip', ProcessExecutor::escape($cmd).' -qq %s -d %s'];
+                self::$unzipCommands[] = ['unzip', ProcessExecutor::escape($cmd), '-qq %s -d %s'];
             }
             if (!Platform::isWindows() && ($cmd = $finder->find('7z'))) { // 7z linux/macOS support is only used if unzip is not present
-                self::$unzipCommands[] = ['7z', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s'];
+                self::$unzipCommands[] = ['7z', ProcessExecutor::escape($cmd), 'x -bb0 -y %s -o%s'];
             }
             if (!Platform::isWindows() && ($cmd = $finder->find('7zz'))) { // 7zz linux/macOS support is only used if unzip is not present
-                self::$unzipCommands[] = ['7zz', ProcessExecutor::escape($cmd).' x -bb0 -y %s -o%s'];
+                self::$unzipCommands[] = ['7zz', ProcessExecutor::escape($cmd), 'x -bb0 -y %s -o%s'];
             }
         }
 
@@ -121,17 +121,17 @@ class ZipDownloader extends ArchiveDownloader
         }
 
         $commandSpec = reset(self::$unzipCommands);
-        $command = sprintf($commandSpec[1], ProcessExecutor::escape($file), ProcessExecutor::escape($path));
+        $command = $commandSpec[1] . ' ' . sprintf($commandSpec[2], ProcessExecutor::escape($file), ProcessExecutor::escape($path));
         // normalize separators to backslashes to avoid problems with 7-zip on windows
         // see https://github.com/composer/composer/issues/10058
         if (Platform::isWindows()) {
-            $command = sprintf($commandSpec[1], ProcessExecutor::escape(strtr($file, '/', '\\')), ProcessExecutor::escape(strtr($path, '/', '\\')));
+            $command = sprintf($commandSpec[2], ProcessExecutor::escape(strtr($file, '/', '\\')), ProcessExecutor::escape(strtr($path, '/', '\\')));
         }
 
         $executable = $commandSpec[0];
         if (!$warned7ZipLinux && !Platform::isWindows() && in_array($executable, ['7z', '7zz'], true)) {
             $warned7ZipLinux = true;
-            if (0 === $this->process->execute($executable, $output)) {
+            if (0 === $this->process->execute([$commandSpec[1]], $output)) {
                 if (Preg::isMatchStrictGroups('{^\s*7-Zip(?: \[64\])? ([0-9.]+)}', $output, $match) && version_compare($match[1], '21.01', '<')) {
                     $this->io->writeError('    <warning>Unzipping using '.$executable.' '.$match[1].' may result in incorrect file permissions. Install '.$executable.' 21.01+ or unzip to ensure you get correct permissions.</warning>');
                 }

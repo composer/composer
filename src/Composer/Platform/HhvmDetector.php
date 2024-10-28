@@ -49,11 +49,7 @@ class HhvmDetector
             $hhvmPath = $this->executableFinder->find('hhvm');
             if ($hhvmPath !== null) {
                 $this->processExecutor = $this->processExecutor ?? new ProcessExecutor();
-                $exitCode = $this->processExecutor->execute(
-                    ProcessExecutor::escape($hhvmPath).
-                    ' --php -d hhvm.jit=0 -r "echo HHVM_VERSION;" 2>/dev/null',
-                    self::$hhvmVersion
-                );
+                $exitCode = $this->processExecutor->execute([$hhvmPath, '--php', '-d', 'hhvm.jit=0', '-r', 'echo HHVM_VERSION;'], self::$hhvmVersion);
                 if ($exitCode !== 0) {
                     self::$hhvmVersion = false;
                 }

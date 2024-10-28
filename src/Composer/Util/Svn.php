@@ -349,7 +349,7 @@ class Svn
     public function binaryVersion(): ?string
     {
         if (!self::$version) {
-            if (0 === $this->process->execute('svn --version', $output)) {
+            if (0 === $this->process->execute(['svn', '--version'], $output)) {
                 if (Preg::isMatch('{(\d+(?:\.\d+)+)}', $output, $match)) {
                     self::$version = $match[1];
                 }

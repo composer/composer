@@ -102,7 +102,7 @@ class GitDriver extends VcsDriver
             }
 
             // select currently checked out branch as default branch
-            $this->process->execute('git branch --no-color', $output, $this->repoDir);
+            $this->process->execute(['git', 'branch', '--no-color'], $output, $this->repoDir);
             $branches = $this->process->splitLines($output);
             if (!in_array('* master', $branches)) {
                 foreach ($branches as $branch) {
@@ -150,8 +150,7 @@ class GitDriver extends VcsDriver
             throw new \RuntimeException('Invalid git identifier detected. Identifier must not start with a -, given: ' . $identifier);
         }
 
-        $resource = sprintf('%s:%s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
-        $this->process->execute(sprintf('git show %s', $resource), $content, $this->repoDir);
+        $this->process->execute(['git', 'show', $identifier.':'.$file], $content, $this->repoDir);
 
         if (trim($content) === '') {
             return null;
@@ -165,10 +164,7 @@ class GitDriver extends VcsDriver
      */
     public function getChangeDate(string $identifier): ?\DateTimeImmutable
     {
-        $this->process->execute(sprintf(
-            'git -c log.showSignature=false log -1 --format=%%at %s',
-            ProcessExecutor::escape($identifier)
-        ), $output, $this->repoDir);
+        $this->process->execute(['git', '-c', 'log.showSignature=false', 'log', '-1', '--format=%at', $identifier], $output, $this->repoDir);
 
         return new \DateTimeImmutable('@'.trim($output), new \DateTimeZone('UTC'));
     }
@@ -181,7 +177,7 @@ class GitDriver extends VcsDriver
         if (null === $this->tags) {
             $this->tags = [];
 
-            $this->process->execute('git show-ref --tags --dereference', $output, $this->repoDir);
+            $this->process->execute(['git', 'show-ref', '--tags', '--dereference'], $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $tag) {
                 if ($tag !== '' && Preg::isMatch('{^([a-f0-9]{40}) refs/tags/(\S+?)(\^\{\})?$}', $tag, $match)) {
                     $this->tags[$match[2]] = $match[1];
@@ -200,7 +196,7 @@ class GitDriver extends VcsDriver
         if (null === $this->branches) {
             $branches = [];
 
-            $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->repoDir);
+            $this->process->execute(['git', 'branch', '--no-color', '--no-abbrev', '-v'], $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch !== '' && !Preg::isMatch('{^ *[^/]+/HEAD }', $branch)) {
                     if (Preg::isMatchStrictGroups('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match) && $match[1][0] !== '-') {
@@ -233,7 +229,7 @@ class GitDriver extends VcsDriver
 
             $process = new ProcessExecutor($io);
             // check whether there is a git repo in that path
-            if ($process->execute('git tag', $output, $url) === 0) {
+            if ($process->execute(['git', 'tag'], $output, $url) === 0) {
                 return true;
             }
         }
@@ -246,8 +242,8 @@ class GitDriver extends VcsDriver
         GitUtil::cleanEnv();
 
         try {
-            $gitUtil->runCommand(static function ($url): string {
-                return 'git ls-remote --heads -- ' . ProcessExecutor::escape($url);
+            $gitUtil->runCommand(static function ($url): array {
+                return ['git', 'ls-remote', '--heads', '--', $url];
             }, $url, sys_get_temp_dir());
         } catch (\RuntimeException $e) {
             return false;

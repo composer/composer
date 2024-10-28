@@ -27,6 +27,7 @@ use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
@@ -535,15 +536,11 @@ EOT
             return $this->gitConfig;
         }
 
-        $finder = new ExecutableFinder();
-        $gitBin = $finder->find('git');
+        $process = new ProcessExecutor($this->getIO());
 
-        $cmd = new Process([$gitBin, 'config', '-l']);
-        $cmd->run();
-
-        if ($cmd->isSuccessful()) {
+        if (0 === $process->execute(['git', 'config', '-l'], $output)) {
             $this->gitConfig = [];
-            Preg::matchAllStrictGroups('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches);
+            Preg::matchAllStrictGroups('{^([^=]+)=(.*)$}m', $output, $matches);
             foreach ($matches[1] as $key => $match) {
                 $this->gitConfig[$match] = $matches[2][$key];
             }

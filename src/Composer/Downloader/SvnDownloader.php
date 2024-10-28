@@ -97,7 +97,7 @@ class SvnDownloader extends VcsDownloader
             return null;
         }
 
-        $this->process->execute('svn status --ignore-externals', $output, $path);
+        $this->process->execute(['svn', 'status', '--ignore-externals'], $output, $path);
 
         return Preg::isMatch('{^ *[^X ] +}m', $output) ? $output : null;
     }
@@ -194,10 +194,10 @@ class SvnDownloader extends VcsDownloader
     {
         if (Preg::isMatch('{@(\d+)$}', $fromReference) && Preg::isMatch('{@(\d+)$}', $toReference)) {
             // retrieve the svn base url from the checkout folder
-            $command = sprintf('svn info --non-interactive --xml -- %s', ProcessExecutor::escape($path));
+            $command = ['svn', 'info', '--non-interactive', '--xml', '--', $path];
             if (0 !== $this->process->execute($command, $output, $path)) {
                 throw new \RuntimeException(
-                    'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()
+                    'Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput()
                 );
             }
 
@@ -235,7 +235,7 @@ class SvnDownloader extends VcsDownloader
      */
     protected function discardChanges(string $path): PromiseInterface
     {
-        if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {
+        if (0 !== $this->process->execute(['svn', 'revert', '-R', '.'], $output, $path)) {
             throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
         }
 

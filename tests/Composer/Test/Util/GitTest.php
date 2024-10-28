@@ -82,7 +82,7 @@ class GitTest extends TestCase
 
         $this->process->expects([
             ['cmd' => 'git command', 'return' => 1],
-            ['cmd' => 'git --version', 'return' => 0],
+            ['cmd' => ['git', '--version'], 'return' => 0],
         ], true);
 
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);

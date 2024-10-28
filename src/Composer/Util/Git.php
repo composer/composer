@@ -68,7 +68,7 @@ class Git
 
         if (!$initialClone) {
             // capture username/password from URL if there is one and we have no auth configured yet
-            $this->process->execute('git remote -v', $output, $cwd);
+            $this->process->execute(['git', 'remote', '-v'], $output, $cwd);
             if (Preg::isMatchStrictGroups('{^(?:composer|origin)\s+https?://(.+):(.+)@([^/]+)}im', $output, $match) && !$this->io->hasAuthentication($match[3])) {
                 $this->io->setAuthentication($match[3], rawurldecode($match[1]), rawurldecode($match[2]));
             }
@@ -301,14 +301,30 @@ class Git
         }
 
         // update the repo if it is a valid git repository
-        if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
+        if (is_dir($dir) && 0 === $this->process->execute(['git', 'rev-parse', '--git-dir'], $output, $dir) && trim($output) === '.') {
             try {
-                $commandCallable = static function ($url): string {
-                    $sanitizedUrl = Preg::replace('{://([^@]+?):(.+?)@}', '://', $url);
+                $commands = [
+                    ['git', 'remote', 'set-url', 'origin', '--', '%url%'],
+                    ['git', 'remote', 'update', '--prune', 'origin'],
+                    ['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%'],
+                    ['git', 'gc', '--auto'],
+                ];
 
-                    return sprintf('git remote set-url origin -- %s && git remote update --prune origin && git remote set-url origin -- %s && git gc --auto', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
+                $command = [];
+                $commandCallable = static function (string $url) use (&$command): array {
+                    $map = [
+                        '%url%' => $url,
+                        '%sanitizedUrl%' => Preg::replace('{://([^@]+?):(.+?)@}', '://', $url),
+                    ];
+
+                    return array_map(static function($value) use ($map): string {
+                        return $map[$value] ?? $value;
+                    }, $command);
                 };
-                $this->runCommand($commandCallable, $url, $dir);
+
+                foreach ($commands as $command) {
+                    $this->runCommand($commandCallable, $url, $dir);
+                }
             } catch (\Exception $e) {
                 $this->io->writeError('<error>Sync mirror failed: ' . $e->getMessage() . '</error>', true, IOInterface::DEBUG);
 
@@ -321,8 +337,8 @@ class Git
         // clean up directory and do a fresh clone into it
         $this->filesystem->removeDirectory($dir);
 
-        $commandCallable = static function ($url) use ($dir): string {
-            return sprintf('git clone --mirror -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
+        $commandCallable = static function ($url) use ($dir): array {
+            return ['git', 'clone', '--mirror', '--', $url, $dir];
         };
 
         $this->runCommand($commandCallable, $url, $dir, true);
@@ -337,10 +353,10 @@ class Git
                 $branch = Preg::replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $prettyVersion);
                 $branches = null;
                 $tags = null;
-                if (0 === $this->process->execute('git branch', $output, $dir)) {
+                if (0 === $this->process->execute(['git', 'branch'], $output, $dir)) {
                     $branches = $output;
                 }
-                if (0 === $this->process->execute('git tag', $output, $dir)) {
+                if (0 === $this->process->execute(['git', 'tag'], $output, $dir)) {
                     $tags = $output;
                 }
 
@@ -375,11 +391,15 @@ class Git
         return '';
     }
 
+    public static function getNoShowSignatureFlags(ProcessExecutor $process): array
+    {
+        return explode(' ', substr(static::getNoShowSignatureFlag($process), 1));
+    }
+
     private function checkRefIsInMirror(string $dir, string $ref): bool
     {
-        if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
-            $escapedRef = ProcessExecutor::escape($ref.'^{commit}');
-            $exitCode = $this->process->execute(sprintf('git rev-parse --quiet --verify %s', $escapedRef), $ignoredOutput, $dir);
+        if (is_dir($dir) && 0 === $this->process->execute(['git', 'rev-parse', '--git-dir'], $output, $dir) && trim($output) === '.') {
+            $exitCode = $this->process->execute(['git rev-parse', '--quiet', '--verify', $ref.'^{commit}'], $ignoredOutput, $dir);
             if ($exitCode === 0) {
                 return true;
             }
@@ -423,18 +443,33 @@ class Git
 
         try {
             if ($isLocalPathRepository) {
-                $this->process->execute('git remote show origin', $output, $dir);
+                $this->process->execute(['git', 'remote', 'show', 'origin'], $output, $dir);
             } else {
-                $commandCallable = static function ($url): string {
-                    $sanitizedUrl = Preg::replace('{://([^@]+?):(.+?)@}', '://', $url);
+                $commands = [
+                    ['git', 'remote', 'set-url', 'origin', '--', '%url%'],
+                    ['git', 'remote', 'show', 'origin'],
+                    ['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%'],
+                ];
 
-                    return sprintf('git remote set-url origin -- %s && git remote show origin && git remote set-url origin -- %s', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
+                $output = [];
+                $command = [];
+                $commandCallable = static function (string $url) use (&$command): array {
+                    $map = [
+                        '%url%' => $url,
+                        '%sanitizedUrl%' => Preg::replace('{://([^@]+?):(.+?)@}', '://', $url),
+                    ];
+
+                    return array_map(static function($value) use ($map): string {
+                        return $map[$value] ?? $value;
+                    }, $command);
                 };
 
-                $this->runCommand($commandCallable, $url, $dir, false, $output);
+                foreach ($commands as $command) {
+                    $this->runCommand($commandCallable, $url, $dir, false, $output[]);
+                }
             }
 
-            $lines = $this->process->splitLines($output);
+            $lines = $this->process->splitLines(implode('', $output));
             foreach ($lines as $line) {
                 if (Preg::isMatch('{^\s*HEAD branch:\s(.+)\s*$}m', $line, $matches)) {
                     return $matches[1];
@@ -497,7 +532,7 @@ class Git
         // git might delete a directory when it fails and php will not know
         clearstatcache();
 
-        if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
+        if (0 !== $this->process->execute(['git', '--version'], $ignoredOutput)) {
             throw new \RuntimeException(Url::sanitize('Failed to clone ' . $url . ', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
         }
 
@@ -513,7 +548,7 @@ class Git
     {
         if (false === self::$version) {
             self::$version = null;
-            if (0 === $process->execute('git --version', $output) && Preg::isMatch('/^git version (\d+(?:\.\d+)+)/m', $output, $matches)) {
+            if (0 === $process->execute(['git', '--version'], $output) && Preg::isMatch('/^git version (\d+(?:\.\d+)+)/m', $output, $matches)) {
                 self::$version = $matches[1];
             }
         }

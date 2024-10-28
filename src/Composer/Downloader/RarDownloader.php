@@ -34,13 +34,13 @@ class RarDownloader extends ArchiveDownloader
 
         // Try to use unrar on *nix
         if (!Platform::isWindows()) {
-            $command = 'unrar x -- ' . ProcessExecutor::escape($file) . ' ' . ProcessExecutor::escape($path) . ' >/dev/null && chmod -R u+w ' . ProcessExecutor::escape($path);
+            $command = ['sh', '-c', 'unrar x -- "$0" "$1" >/dev/null && chmod -R u+w "$1"', $file, $path];
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {
                 return \React\Promise\resolve(null);
             }
 
-            $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
+            $processError = 'Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput();
         }
 
         if (!class_exists('RarArchive')) {

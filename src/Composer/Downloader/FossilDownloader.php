@@ -38,21 +38,19 @@ class FossilDownloader extends VcsDownloader
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
 
-        $url = ProcessExecutor::escape($url);
-        $ref = ProcessExecutor::escape($package->getSourceReference());
         $repoFile = $path . '.fossil';
         $this->io->writeError("Cloning ".$package->getSourceReference());
-        $command = sprintf('fossil clone -- %s %s', $url, ProcessExecutor::escape($repoFile));
+        $command = ['fossil', 'clone', '--', $url, $repoFile];
         if (0 !== $this->process->execute($command, $ignoredOutput)) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new \RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());
         }
-        $command = sprintf('fossil open --nested -- %s', ProcessExecutor::escape($repoFile));
+        $command = ['fossil', 'open', '--nested', '--', $repoFile];
         if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new \RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());
         }
-        $command = sprintf('fossil update -- %s', $ref);
+        $command = ['fossil', 'update', '--', $package->getSourceReference()];
         if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new \RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());
         }
 
         return \React\Promise\resolve(null);
@@ -66,16 +64,18 @@ class FossilDownloader extends VcsDownloader
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
 
-        $ref = ProcessExecutor::escape($target->getSourceReference());
         $this->io->writeError(" Updating to ".$target->getSourceReference());
 
         if (!$this->hasMetadataRepository($path)) {
             throw new \RuntimeException('The .fslckout file is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
-        $command = sprintf('fossil pull && fossil up %s', $ref);
-        if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        if (0 !== $this->process->execute(['fossil', 'pull'], $ignoredOutput, realpath($path))) {
+            throw new \RuntimeException("Failed to execute fossil pull\n\n" . $this->process->getErrorOutput());
+        }
+
+        if (0 !== $this->process->execute(['fossil', 'up', $target->getSourceReference()], $ignoredOutput, realpath($path))) {
+            throw new \RuntimeException("Failed to execute fossil up\n\n" . $this->process->getErrorOutput());
         }
 
         return \React\Promise\resolve(null);
@@ -90,7 +90,7 @@ class FossilDownloader extends VcsDownloader
             return null;
         }
 
-        $this->process->execute('fossil changes', $output, realpath($path));
+        $this->process->execute(['fossil', 'changes'], $output, realpath($path));
 
         $output = trim($output);
 
@@ -102,10 +102,10 @@ class FossilDownloader extends VcsDownloader
      */
     protected function getCommitLogs(string $fromReference, string $toReference, string $path): string
     {
-        $command = sprintf('fossil timeline -t ci -W 0 -n 0 before %s', ProcessExecutor::escape($toReference));
+        $command = ['fossil', 'timeline', '-t', 'ci', '-W', '0', '-n', '0', 'before', $toReference];
 
         if (0 !== $this->process->execute($command, $output, realpath($path))) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new \RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());
         }
 
         $log = '';

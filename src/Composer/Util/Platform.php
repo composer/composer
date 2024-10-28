@@ -308,7 +308,7 @@ class Platform
             if (defined('PHP_OS_FAMILY') && PHP_OS_FAMILY === 'Linux') {
                 $process = new ProcessExecutor();
                 try {
-                    if (0 === $process->execute('lsmod | grep vboxguest', $ignoredOutput)) {
+                    if (0 === $process->execute(['lsmod'], $output) && false !== strpos($output, 'vboxguest')) {
                         return self::$isVirtualBoxGuest = true;
                     }
                 } catch (\Exception $e) {

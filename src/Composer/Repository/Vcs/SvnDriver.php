@@ -331,10 +331,7 @@ class SvnDriver extends VcsDriver
         }
 
         $process = new ProcessExecutor($io);
-        $exit = $process->execute(
-            "svn info --non-interactive -- ".ProcessExecutor::escape($url),
-            $ignoredOutput
-        );
+        $exit = $process->execute(['svn', 'info', '--non-interactive', '--', $url], $ignoredOutput);
 
         if ($exit === 0) {
             // This is definitely a Subversion repository.

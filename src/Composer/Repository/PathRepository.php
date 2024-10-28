@@ -194,8 +194,8 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             // carry over the root package version if this path repo is in the same git repository as root package
             if (!isset($package['version']) && ($rootVersion = Platform::getEnv('COMPOSER_ROOT_VERSION'))) {
                 if (
-                    0 === $this->process->execute('git rev-parse HEAD', $ref1, $path)
-                    && 0 === $this->process->execute('git rev-parse HEAD', $ref2)
+                    0 === $this->process->execute(['git', 'rev-parse', 'HEAD'], $ref1, $path)
+                    && 0 === $this->process->execute(['git', 'rev-parse', 'HEAD'], $ref2)
                     && $ref1 === $ref2
                 ) {
                     $package['version'] = $this->versionGuesser->getRootVersionFromEnv();
@@ -203,7 +203,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             }
 
             $output = '';
-            if ('auto' === $reference && is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H'.GitUtil::getNoShowSignatureFlag($this->process), $output, $path)) {
+            if ('auto' === $reference && is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute(array_merge(['git', 'log', '-n1', '--pretty=%H'], GitUtil::getNoShowSignatureFlags($this->process)), $output, $path)) {
                 $package['dist']['reference'] = trim($output);
             }
 
