@@ -43,6 +43,20 @@ class Git
         $this->filesystem = $fs;
     }
 
+    /**
+     * @param IOInterface|null $io If present, a warning is output there instead of throwing, so pass this in only for cases where this is a soft failure
+     */
+    public static function checkForRepoOwnershipError(string $output, string $path, ?IOInterface $io = null): void
+    {
+        if (str_contains($output, 'fatal: detected dubious ownership')) {
+            $msg = 'The repository at "' . $path . '" does not have the correct ownership and git refuses to use it:' . PHP_EOL . PHP_EOL . $output;
+            if ($io === null) {
+                throw new \RuntimeException($msg);
+            }
+            $io->writeError('<warning>'.$msg.'</warning>');
+        }
+    }
+
     public function setHttpDownloader(HttpDownloader $httpDownloader): void
     {
         $this->httpDownloader = $httpDownloader;
@@ -317,6 +331,7 @@ class Git
 
             return true;
         }
+        self::checkForRepoOwnershipError($this->process->getErrorOutput(), $dir);
 
         // clean up directory and do a fresh clone into it
         $this->filesystem->removeDirectory($dir);
@@ -384,6 +399,7 @@ class Git
                 return true;
             }
         }
+        self::checkForRepoOwnershipError($this->process->getErrorOutput(), $dir);
 
         return false;
     }

@@ -384,7 +384,7 @@ class Factory
 
         // load package
         $parser = new VersionParser;
-        $guesser = new VersionGuesser($config, $process, $parser);
+        $guesser = new VersionGuesser($config, $process, $parser, $io);
         $loader = $this->loadRootPackage($rm, $config, $parser, $guesser, $io);
         $package = $loader->load($localConfig, 'Composer\Package\RootPackage', $cwd);
         $composer->setPackage($package);
