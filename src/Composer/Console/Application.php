@@ -19,7 +19,6 @@ use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use LogicException;
 use RuntimeException;
-use Seld\Signal\SignalHandler;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Helper\HelperSet;
@@ -84,9 +83,6 @@ class Application extends BaseApplication
      */
     private $initialWorkingDirectory;
 
-    /** @var SignalHandler */
-    private $signalHandler;
-
     public function __construct(string $name = 'Composer', string $version = '')
     {
         if (method_exists($this, 'setCatchErrors')) {
@@ -107,12 +103,6 @@ class Application extends BaseApplication
         }
 
         $this->io = new NullIO();
-
-        $this->signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) {
-            $this->io->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
-
-            $handler->exitWithLastSignal();
-        });
 
         if (!$shutdownRegistered) {
             $shutdownRegistered = true;
@@ -135,7 +125,6 @@ class Application extends BaseApplication
 
     public function __destruct()
     {
-        $this->signalHandler->unregister();
     }
 
     public function run(?InputInterface $input = null, ?OutputInterface $output = null): int
