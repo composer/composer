@@ -55,6 +55,19 @@ class Platform
     }
 
     /**
+     * Infallible realpath version that falls back on the given $path if realpath is not working
+     */
+    public static function realpath(string $path): string
+    {
+        $realPath = realpath($path);
+        if ($realPath === false) {
+            return $path;
+        }
+
+        return $realPath;
+    }
+
+    /**
      * getenv() equivalent but reads from the runtime global variables first
      *
      * @param non-empty-string $name
