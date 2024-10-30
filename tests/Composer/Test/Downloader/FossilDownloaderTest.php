@@ -76,8 +76,8 @@ class FossilDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            ['fossil', 'clone', '--', 'http://fossil.kd2.org/kd2fw/', $this->workingDir, '.fossil'],
-            ['fossil', 'open', '--nested', '--', $this->workingDir, '.fossil'],
+            ['fossil', 'clone', '--', 'http://fossil.kd2.org/kd2fw/', $this->workingDir.'.fossil'],
+            ['fossil', 'open', '--nested', '--', $this->workingDir.'.fossil'],
             ['fossil', 'update', '--', 'trunk'],
         ], true);
 

@@ -81,6 +81,8 @@ class FossilDriver extends VcsDriver
      */
     protected function updateLocalRepo(): void
     {
+        assert($this->repoFile !== null);
+
         $fs = new Filesystem();
         $fs->ensureDirectoryExists($this->checkoutDir);
 
@@ -157,7 +159,7 @@ class FossilDriver extends VcsDriver
     {
         $this->process->execute(['fossil', 'cat', '-r', $identifier, '--', $file], $content, $this->checkoutDir);
 
-        if (!trim($content)) {
+        if ('' === trim($content)) {
             return null;
         }
 

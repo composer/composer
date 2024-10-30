@@ -82,7 +82,7 @@ class Perforce
 
     public static function checkServerExists(string $url, ProcessExecutor $processExecutor): bool
     {
-        return 0 === $processExecutor->execute([$this->getP4Executable(), '-p', $url, 'info', '-s'], $ignoredOutput);
+        return 0 === $processExecutor->execute(['p4', '-p', $url, 'info', '-s'], $ignoredOutput);
     }
 
     /**
@@ -622,7 +622,7 @@ class Perforce
         $this->filesystem = $fs;
     }
 
-    private function getP4Executable()
+    private function getP4Executable(): string
     {
         static $p4Executable;
 

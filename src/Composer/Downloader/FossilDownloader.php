@@ -109,7 +109,7 @@ class FossilDownloader extends VcsDownloader
     }
 
     /**
-     * @param list<string> $command
+     * @param non-empty-list<string> $command
      * @throws \RuntimeException
      */
     private function execute(array $command, ?string $cwd = null, ?string &$output = null): void

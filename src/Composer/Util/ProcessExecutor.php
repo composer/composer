@@ -75,7 +75,7 @@ class ProcessExecutor
     /**
      * runs a process on the commandline
      *
-     * @param  string|list<string> $command the command to execute
+     * @param  string|non-empty-list<string> $command the command to execute
      * @param  mixed   $output  the output will be written into this var if passed by ref
      *                          if a callable is passed it will be used as output handler
      * @param  null|string $cwd     the working directory
@@ -93,7 +93,7 @@ class ProcessExecutor
     /**
      * runs a process on the commandline in TTY mode
      *
-     * @param  string|list<string>  $command the command to execute
+     * @param  string|non-empty-list<string>  $command the command to execute
      * @param  null|string $cwd     the working directory
      * @return int     statuscode
      */
@@ -107,7 +107,7 @@ class ProcessExecutor
     }
 
     /**
-     * @param  string|list<string> $command
+     * @param  string|non-empty-list<string> $command
      * @param  array<string, string>|null $env
      * @param  mixed   $output
      */
@@ -117,13 +117,13 @@ class ProcessExecutor
         // in the current directory which could be untrusted. Instead we use the ExecutableFinder.
 
         if (is_string($command)) {
-            if (Platform::isWindows() && preg_match('{^([-a-zA-Z0-9_]++) }', $command, $match)) {
+            if (Platform::isWindows() && Preg::isMatch('{^([^:/\\\\]++) }', $command, $match)) {
                 $command = substr_replace($command, self::escape(self::getExecutable($match[1])), 0, strlen($match[1]));
             }
 
             $process = Process::fromShellCommandline($command, $cwd, $env, null, static::getTimeout());
         } else {
-            if (Platform::isWindows() && is_array($command) && $command && preg_match('{^[-a-zA-Z0-9_]++$}D', $command[0])) {
+            if (Platform::isWindows() && \strlen($command[0]) === strcspn($command[0], ':/\\')) {
                 $command[0] = self::getExecutable($command[0]);
             }
 
@@ -176,7 +176,7 @@ class ProcessExecutor
     }
 
     /**
-     * @param  string|list<string> $command
+     * @param  string|non-empty-list<string> $command
      * @param  mixed   $output
      */
     private function doExecute($command, ?string $cwd, bool $tty, &$output = null): int
@@ -569,9 +569,12 @@ class ProcessExecutor
     private static function getExecutable(string $name): string
     {
         if (!isset(self::$executables[$name])) {
-            self::$executables[$name] = (new ExecutableFinder())->find($name, $name);
+            $path = (new ExecutableFinder())->find($name, $name);
+            if ($path !== null) {
+                self::$executables[$name] = $path;
+            }
         }
 
-        return self::$executables[$name];
+        return self::$executables[$name] ?? $name;
     }
 }

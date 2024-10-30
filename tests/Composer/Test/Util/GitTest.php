@@ -155,7 +155,7 @@ class GitTest extends TestCase
             // When we are testing what happens without auth saved, and URLs
             // with https, there will also be an attempt to find the token in
             // the git config for the folder and repo, locally.
-            $additional_calls = array_fill(0, $bitbucket_git_auth_calls, ['cmd' => 'git config bitbucket.accesstoken', 'return' => 1]);
+            $additional_calls = array_fill(0, $bitbucket_git_auth_calls, ['cmd' => ['git', 'config', 'bitbucket.accesstoken'], 'return' => 1]);
             foreach ($additional_calls as $call) {
                 $expectedCalls[] = $call;
             }
@@ -206,7 +206,7 @@ class GitTest extends TestCase
         if (count($initial_config) > 0) {
             $expectedCalls[] = ['cmd' => 'git command failing', 'return' => 1];
         } else {
-            $expectedCalls[] = ['cmd' => 'git config bitbucket.accesstoken', 'return' => 1];
+            $expectedCalls[] = ['cmd' => ['git', 'config', 'bitbucket.accesstoken'], 'return' => 1];
         }
         $expectedCalls[] = ['cmd' => 'git command ok', 'return' => 0];
         $this->process->expects($expectedCalls, true);

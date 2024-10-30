@@ -109,7 +109,7 @@ class Filesystem
         }
 
         if (Platform::isWindows()) {
-            $cmd = ['rmdir', '/S', '/Q', realpath($directory)];
+            $cmd = ['rmdir', '/S', '/Q', Platform::realpath($directory)];
         } else {
             $cmd = ['rm', '-rf', $directory];
         }
@@ -144,7 +144,7 @@ class Filesystem
         }
 
         if (Platform::isWindows()) {
-            $cmd = ['rmdir', '/S', '/Q', realpath($directory)];
+            $cmd = ['rmdir', '/S', '/Q', Platform::realpath($directory)];
         } else {
             $cmd = ['rm', '-rf', $directory];
         }
@@ -839,7 +839,7 @@ class Filesystem
             @rmdir($junction);
         }
 
-        $cmd = ['mklink', '/J', str_replace('/', DIRECTORY_SEPARATOR, $junction), realpath($target)];
+        $cmd = ['mklink', '/J', str_replace('/', DIRECTORY_SEPARATOR, $junction), Platform::realpath($target)];
         if ($this->getProcess()->execute($cmd, $output) !== 0) {
             throw new IOException(sprintf('Failed to create junction to "%s" at "%s".', $target, $junction), 0, null, $target);
         }

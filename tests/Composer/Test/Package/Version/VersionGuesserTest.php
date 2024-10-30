@@ -37,7 +37,7 @@ class VersionGuesserTest extends TestCase
         $process->expects([
             ['cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'], 'return' => 128],
             ['cmd' => ['git', 'describe', '--exact-match', '--tags'], 'return' => 128],
-            ['cmd' => array_merge(['git log', '--pretty=%H', '-n1', 'HEAD'], GitUtil::getNoShowSignatureFlags($process)), 'return' => 128],
+            ['cmd' => array_merge(['git', 'log', '--pretty=%H', '-n1', 'HEAD'], GitUtil::getNoShowSignatureFlags($process)), 'return' => 128],
             ['cmd' => ['hg', 'branch'], 'return' => 0, 'stdout' => $branch],
             ['cmd' => ['hg', 'branches'], 'return' => 0],
             ['cmd' => ['hg', 'bookmarks'], 'return' => 0],
@@ -201,7 +201,7 @@ class VersionGuesserTest extends TestCase
                 'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* (no branch) $commitHash Commit message\n",
             ],
-            'git describe --exact-match --tags',
+            ['git', 'describe', '--exact-match', '--tags'],
         ], true);
 
         $config = new Config;
@@ -223,7 +223,7 @@ class VersionGuesserTest extends TestCase
                 'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* (HEAD detached at FETCH_HEAD) $commitHash Commit message\n",
             ],
-            'git describe --exact-match --tags',
+            ['git', 'describe', '--exact-match', '--tags'],
         ], true);
 
         $config = new Config;
@@ -245,7 +245,7 @@ class VersionGuesserTest extends TestCase
                 'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* (HEAD detached at 03a15d220) $commitHash Commit message\n",
             ],
-            'git describe --exact-match --tags',
+            ['git', 'describe', '--exact-match', '--tags'],
         ], true);
 
         $config = new Config;
@@ -266,7 +266,7 @@ class VersionGuesserTest extends TestCase
                 'stdout' => "* (HEAD detached at v2.0.5-alpha2) 433b98d4218c181bae01865901aac045585e8a1a Commit message\n",
             ],
             [
-                'cmd' => 'git describe --exact-match --tags',
+                'cmd' => ['git', 'describe', '--exact-match', '--tags'],
                 'stdout' => "v2.0.5-alpha2",
             ],
         ], true);
@@ -289,7 +289,7 @@ class VersionGuesserTest extends TestCase
                 'stdout' => "* (HEAD detached at 1.0.0) c006f0c12bbbf197b5c071ffb1c0e9812bb14a4d Commit message\n",
             ],
             [
-                'cmd' => 'git describe --exact-match --tags',
+                'cmd' => ['git', 'describe', '--exact-match', '--tags'],
                 'stdout' => '1.0.0',
             ],
         ], true);

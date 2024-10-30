@@ -47,7 +47,7 @@ class HgDownloader extends VcsDownloader
 
         $hgUtils->runCommand($cloneCommand, $url, $path);
 
-        $command = ['hg', 'up', '--', $package->getSourceReference()];
+        $command = ['hg', 'up', '--', (string) $package->getSourceReference()];
         if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
             throw new \RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());
         }

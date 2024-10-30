@@ -91,11 +91,19 @@ class Git
         $commandCallables = is_callable($commandCallable) ? [$commandCallable] : $commandCallable;
         $lastCommand = '';
 
-        $runCommands = function ($url) use ($commandCallables, $cwd, &$commandOutput, &$lastCommand) {
+        // Ensure we are allowed to use this URL by config
+        $this->config->prohibitUrlByConfig($url, $this->io);
+
+        if ($initialClone) {
+            $origCwd = $cwd;
+        }
+
+        $runCommands = function ($url) use ($commandCallables, $cwd, &$commandOutput, &$lastCommand, $initialClone) {
             $collectOutputs = !is_callable($commandOutput);
             $outputs = [];
 
             $status = 0;
+            $counter = 0;
             foreach ($commandCallables as $callable) {
                 $lastCommand = $callable($url);
                 if ($collectOutputs) {
@@ -104,10 +112,11 @@ class Git
                 } else {
                     $output = &$commandOutput;
                 }
-                $status = $this->process->execute($lastCommand, $output, $cwd);
+                $status = $this->process->execute($lastCommand, $output, $initialClone && $counter === 0 ? null : $cwd);
                 if ($status !== 0) {
                     break;
                 }
+                $counter++;
             }
 
             if ($collectOutputs) {
@@ -116,14 +125,6 @@ class Git
 
             return $status;
         };
-
-        // Ensure we are allowed to use this URL by config
-        $this->config->prohibitUrlByConfig($url, $this->io);
-
-        if ($initialClone) {
-            $origCwd = $cwd;
-            $cwd = null;
-        }
 
         if (Preg::isMatch('{^ssh://[^@]+@[^:]+:[^0-9]+}', $url)) {
             throw new \InvalidArgumentException('The source URL ' . $url . ' is invalid, ssh URLs should have a port number after ":".' . "\n" . 'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
@@ -339,6 +340,7 @@ class Git
                 $this->filesystem->removeDirectory($origCwd);
             }
 
+            $lastCommand = implode(' ', $lastCommand);
             if (count($credentials) > 0) {
                 $lastCommand = $this->maskCredentials($lastCommand, $credentials);
                 $errorMsg = $this->maskCredentials($errorMsg, $credentials);

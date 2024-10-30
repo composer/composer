@@ -60,12 +60,7 @@ class SvnDriverTest extends TestCase
         $output .= " rejected Basic challenge (https://corp.svn.local/)";
 
         $process = $this->getProcessExecutorMock();
-        $authedCommand = sprintf(
-            'svn ls --verbose --non-interactive  --username %s --password %s  -- %s',
-            ProcessExecutor::escape('till'),
-            ProcessExecutor::escape('secret'),
-            ProcessExecutor::escape('https://till:secret@corp.svn.local/repo/trunk')
-        );
+        $authedCommand = ['svn', 'ls', '--verbose', '--non-interactive', '--username', 'till', '--password', 'secret', '--', 'https://till:secret@corp.svn.local/repo/trunk'];
         $process->expects([
             ['cmd' => $authedCommand, 'return' => 1, 'stderr' => $output],
             ['cmd' => $authedCommand, 'return' => 1, 'stderr' => $output],
@@ -73,7 +68,7 @@ class SvnDriverTest extends TestCase
             ['cmd' => $authedCommand, 'return' => 1, 'stderr' => $output],
             ['cmd' => $authedCommand, 'return' => 1, 'stderr' => $output],
             ['cmd' => $authedCommand, 'return' => 1, 'stderr' => $output],
-            ['cmd' => 'svn --version', 'return' => 0, 'stdout' => '1.2.3'],
+            ['cmd' => ['svn', '--version'], 'return' => 0, 'stdout' => '1.2.3'],
         ], true);
 
         $repoConfig = [

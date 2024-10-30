@@ -94,7 +94,6 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $path = $this->normalizePath($path);
         $cachePath = $this->config->get('cache-vcs-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($url)).'/';
         $ref = $package->getSourceReference();
-        $flag = Platform::isWindows() ? ['/D'] : [];
 
         if (!empty($this->cachedPackages[$package->getId()][$ref])) {
             $msg = "Cloning ".$this->getShortHash($ref).' from cache';
@@ -107,7 +106,6 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
             $commands = [
                 array_merge(['git', 'clone', '--no-checkout', $cachePath, $path], $cloneFlags),
-                array_merge(['cd'], $flag, [$path]),
                 ['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%'],
                 ['git', 'remote', 'add', 'composer', '--', '%sanitizedUrl%'],
             ];
@@ -115,7 +113,6 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $msg = "Cloning ".$this->getShortHash($ref);
             $commands = [
                 array_merge(['git', 'clone', '--no-checkout', '--', '%url%', $path]),
-                array_merge(['cd'], $flag, [$path]),
                 ['git', 'remote', 'add', 'composer', '--', '%url%'],
                 ['git', 'fetch', 'composer'],
                 ['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%'],
@@ -181,7 +178,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                 ['git', 'fetch', '--tags', 'composer'],
             ];
 
-            $this->gitUtil->runCommands($commands, $url, $path, true);
+            $this->gitUtil->runCommands($commands, $url, $path);
         }
 
         $command = ['git', 'remote', 'set-url', 'composer', '--', '%sanitizedUrl%'];

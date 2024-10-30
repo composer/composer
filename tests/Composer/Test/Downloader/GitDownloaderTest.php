@@ -123,9 +123,14 @@ class GitDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            $this->winCompat("git clone --no-checkout -- 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer -- 'https://example.com/composer/composer' && git fetch composer && git remote set-url origin -- 'https://example.com/composer/composer' && git remote set-url composer -- 'https://example.com/composer/composer'"),
-            $this->winCompat("git branch -r"),
-            $this->winCompat("(git checkout 'master' -- || git checkout -B 'master' 'composer/master' --) && git reset --hard '1234567890123456789012345678901234567890' --"),
+            ['git', 'clone', '--no-checkout', '--', 'https://example.com/composer/composer', 'composerPath'],
+            ['git', 'remote', 'add', 'composer', '--', 'https://example.com/composer/composer'],
+            ['git', 'fetch', 'composer'],
+            ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/composer/composer'],
+            ['git', 'remote', 'set-url', 'composer', '--', 'https://example.com/composer/composer'],
+            ['git', 'branch', '-r'],
+            ['git', 'checkout', 'master', '--'],
+            ['git', 'reset', '--hard', '1234567890123456789012345678901234567890', '--'],
         ], true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
@@ -609,7 +614,7 @@ composer https://github.com/old/url (push)
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            'git show-ref --head -d',
+            ['git', 'show-ref', '--head', '-d'],
             $expectedGitResetCommand,
         ], true);
 
