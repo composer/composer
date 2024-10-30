@@ -49,11 +49,74 @@ class Git
     }
 
     /**
+     * Runs a set of commands using the $url or a variation of it (with auth, ssh, ..)
+     *
+     * Commands should use %url% placeholders for the URL instead of inlining it to allow this function to do its job
+     * %sanitizedUrl% is also automatically replaced by the url without user/pass
+     *
+     * As soon as a single command fails it will halt, so assume the commands are run as && in bash
+     *
+     * @param non-empty-array<non-empty-list<string>> $commands
+     * @param mixed $commandOutput  the output will be written into this var if passed by ref
+     *                              if a callable is passed it will be used as output handler
+     */
+    public function runCommands(array $commands, string $url, ?string $cwd, bool $initialClone = false, &$commandOutput = null): void
+    {
+        $callables = [];
+        foreach ($commands as $cmd) {
+            $callables[] = static function (string $url) use ($cmd): array {
+                $map = [
+                    '%url%' => $url,
+                    '%sanitizedUrl%' => Preg::replace('{://([^@]+?):(.+?)@}', '://', $url),
+                ];
+
+                return array_map(static function ($value) use ($map): string {
+                    return $map[$value] ?? $value;
+                }, $cmd);
+            };
+        }
+
+        // @phpstan-ignore method.deprecated
+        $this->runCommand($callables, $url, $cwd, $initialClone, $commandOutput);
+    }
+
+    /**
+     * @param callable|array<callable> $commandCallable
      * @param mixed       $commandOutput  the output will be written into this var if passed by ref
      *                                    if a callable is passed it will be used as output handler
+     * @deprecated Use runCommands with placeholders instead of callbacks for simplicity
      */
-    public function runCommand(callable $commandCallable, string $url, ?string $cwd, bool $initialClone = false, &$commandOutput = null): void
+    public function runCommand($commandCallable, string $url, ?string $cwd, bool $initialClone = false, &$commandOutput = null): void
     {
+        $commandCallables = is_callable($commandCallable) ? [$commandCallable] : $commandCallable;
+        $lastCommand = '';
+
+        $runCommands = function ($url) use ($commandCallables, $cwd, &$commandOutput, &$lastCommand) {
+            $collectOutputs = !is_callable($commandOutput);
+            $outputs = [];
+
+            $status = 0;
+            foreach ($commandCallables as $callable) {
+                $lastCommand = $callable($url);
+                if ($collectOutputs) {
+                    $outputs[] = '';
+                    $output = &$outputs[count($outputs) - 1];
+                } else {
+                    $output = &$commandOutput;
+                }
+                $status = $this->process->execute($lastCommand, $output, $cwd);
+                if ($status !== 0) {
+                    break;
+                }
+            }
+
+            if ($collectOutputs) {
+                $commandOutput = implode('', $outputs);
+            }
+
+            return $status;
+        };
+
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
 
@@ -86,7 +149,7 @@ class Git
                     $protoUrl = $protocol . "://" . $match[1] . "/" . $match[2];
                 }
 
-                if (0 === $this->process->execute($commandCallable($protoUrl), $commandOutput, $cwd)) {
+                if (0 === $runCommands($protoUrl)) {
                     return;
                 }
                 $messages[] = '- ' . $protoUrl . "\n" . Preg::replace('#^#m', '  ', $this->process->getErrorOutput());
@@ -105,11 +168,9 @@ class Git
         // if we have a private github url and the ssh protocol is disabled then we skip it and directly fallback to https
         $bypassSshForGitHub = Preg::isMatch('{^git@' . self::getGitHubDomainsRegex($this->config) . ':(.+?)\.git$}i', $url) && !in_array('ssh', $protocols, true);
 
-        $command = $commandCallable($url);
-
         $auth = null;
         $credentials = [];
-        if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $commandOutput, $cwd)) {
+        if ($bypassSshForGitHub || 0 !== $runCommands($url)) {
             $errorMsg = $this->process->getErrorOutput();
             // private github repository without ssh key access, try https with auth
             // @phpstan-ignore composerPcre.maybeUnsafeStrictGroups
@@ -129,8 +190,7 @@ class Git
                 if ($this->io->hasAuthentication($match[1])) {
                     $auth = $this->io->getAuthentication($match[1]);
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
-                    $command = $commandCallable($authUrl);
-                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
+                    if (0 === $runCommands($authUrl)) {
                         return;
                     }
 
@@ -166,8 +226,7 @@ class Git
                     $auth = $this->io->getAuthentication($domain);
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $domain . '/' . $repo_with_git_part;
 
-                    $command = $commandCallable($authUrl);
-                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
+                    if (0 === $runCommands($authUrl)) {
                         // Well if that succeeded on our first try, let's just
                         // take the win.
                         return;
@@ -185,8 +244,7 @@ class Git
                 if ($this->io->hasAuthentication($domain)) {
                     $auth = $this->io->getAuthentication($domain);
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $domain . '/' . $repo_with_git_part;
-                    $command = $commandCallable($authUrl);
-                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
+                    if (0 === $runCommands($authUrl)) {
                         return;
                     }
 
@@ -195,8 +253,7 @@ class Git
                 //Falling back to ssh
                 $sshUrl = 'git@bitbucket.org:' . $repo_with_git_part;
                 $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
-                $command = $commandCallable($sshUrl);
-                if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
+                if (0 === $runCommands($sshUrl)) {
                     return;
                 }
 
@@ -228,8 +285,7 @@ class Git
                         $authUrl = $match[1] . '://' . rawurlencode((string) $auth['username']) . ':' . rawurlencode((string) $auth['password']) . '@' . $match[2] . '/' . $match[3];
                     }
 
-                    $command = $commandCallable($authUrl);
-                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
+                    if (0 === $runCommands($authUrl)) {
                         return;
                     }
 
@@ -266,8 +322,7 @@ class Git
                 if (null !== $auth) {
                     $authUrl = $match[1] . rawurlencode((string) $auth['username']) . ':' . rawurlencode((string) $auth['password']) . '@' . $match[2] . $match[3];
 
-                    $command = $commandCallable($authUrl);
-                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
+                    if (0 === $runCommands($authUrl)) {
                         $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
                         $authHelper = new AuthHelper($this->io, $this->config);
                         $authHelper->storeAuth($match[2], $storeAuth);
@@ -285,10 +340,10 @@ class Git
             }
 
             if (count($credentials) > 0) {
-                $command = $this->maskCredentials($command, $credentials);
+                $lastCommand = $this->maskCredentials($lastCommand, $credentials);
                 $errorMsg = $this->maskCredentials($errorMsg, $credentials);
             }
-            $this->throwException('Failed to execute ' . $command . "\n\n" . $errorMsg, $url);
+            $this->throwException('Failed to execute ' . $lastCommand . "\n\n" . $errorMsg, $url);
         }
     }
 
@@ -310,21 +365,7 @@ class Git
                     ['git', 'gc', '--auto'],
                 ];
 
-                $command = [];
-                $commandCallable = static function (string $url) use (&$command): array {
-                    $map = [
-                        '%url%' => $url,
-                        '%sanitizedUrl%' => Preg::replace('{://([^@]+?):(.+?)@}', '://', $url),
-                    ];
-
-                    return array_map(static function($value) use ($map): string {
-                        return $map[$value] ?? $value;
-                    }, $command);
-                };
-
-                foreach ($commands as $command) {
-                    $this->runCommand($commandCallable, $url, $dir);
-                }
+                $this->runCommands($commands, $url, $dir);
             } catch (\Exception $e) {
                 $this->io->writeError('<error>Sync mirror failed: ' . $e->getMessage() . '</error>', true, IOInterface::DEBUG);
 
@@ -337,11 +378,7 @@ class Git
         // clean up directory and do a fresh clone into it
         $this->filesystem->removeDirectory($dir);
 
-        $commandCallable = static function ($url) use ($dir): array {
-            return ['git', 'clone', '--mirror', '--', $url, $dir];
-        };
-
-        $this->runCommand($commandCallable, $url, $dir, true);
+        $this->runCommands([['git', 'clone', '--mirror', '--', '%url%', $dir]], $url, $dir, true);
 
         return true;
     }
@@ -391,6 +428,9 @@ class Git
         return '';
     }
 
+    /**
+     * @return list<string>
+     */
     public static function getNoShowSignatureFlags(ProcessExecutor $process): array
     {
         return explode(' ', substr(static::getNoShowSignatureFlag($process), 1));
@@ -451,25 +491,10 @@ class Git
                     ['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%'],
                 ];
 
-                $output = [];
-                $command = [];
-                $commandCallable = static function (string $url) use (&$command): array {
-                    $map = [
-                        '%url%' => $url,
-                        '%sanitizedUrl%' => Preg::replace('{://([^@]+?):(.+?)@}', '://', $url),
-                    ];
-
-                    return array_map(static function($value) use ($map): string {
-                        return $map[$value] ?? $value;
-                    }, $command);
-                };
-
-                foreach ($commands as $command) {
-                    $this->runCommand($commandCallable, $url, $dir, false, $output[]);
-                }
+                $this->runCommands($commands, $url, $dir, false, $output);
             }
 
-            $lines = $this->process->splitLines(implode('', $output));
+            $lines = $this->process->splitLines($output);
             foreach ($lines as $line) {
                 if (Preg::isMatch('{^\s*HEAD branch:\s(.+)\s*$}m', $line, $matches)) {
                     return $matches[1];

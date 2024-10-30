@@ -242,9 +242,7 @@ class GitDriver extends VcsDriver
         GitUtil::cleanEnv();
 
         try {
-            $gitUtil->runCommand(static function ($url): array {
-                return ['git', 'ls-remote', '--heads', '--', $url];
-            }, $url, sys_get_temp_dir());
+            $gitUtil->runCommands([['git', 'ls-remote', '--heads', '--', '%url%']], $url, sys_get_temp_dir());
         } catch (\RuntimeException $e) {
             return false;
         }

@@ -57,6 +57,7 @@ class GitTest extends TestCase
 
         $this->process->expects(['git command'], true);
 
+        // @phpstan-ignore method.deprecated
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
     }
 
@@ -85,6 +86,7 @@ class GitTest extends TestCase
             ['cmd' => ['git', '--version'], 'return' => 0],
         ], true);
 
+        // @phpstan-ignore method.deprecated
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
     }
 
@@ -124,6 +126,7 @@ class GitTest extends TestCase
             ->with($this->equalTo('github.com'))
             ->willReturn(['username' => 'token', 'password' => $gitHubToken]);
 
+        // @phpstan-ignore method.deprecated
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 
@@ -177,6 +180,7 @@ class GitTest extends TestCase
                 ->with($this->equalTo('bitbucket.org'))
                 ->willReturn(['username' => 'token', 'password' => $bitbucketToken]);
         }
+        // @phpstan-ignore method.deprecated
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 
@@ -259,6 +263,7 @@ class GitTest extends TestCase
             ['url' => 'https://bitbucket.org/site/oauth2/access_token', 'status' => 200, 'body' => '{"expires_in": 600, "access_token": "my-access-token"}']
         ]);
         $this->git->setHttpDownloader($downloader_mock);
+        // @phpstan-ignore method.deprecated
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 

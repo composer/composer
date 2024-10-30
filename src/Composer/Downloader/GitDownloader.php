@@ -94,28 +94,28 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $path = $this->normalizePath($path);
         $cachePath = $this->config->get('cache-vcs-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($url)).'/';
         $ref = $package->getSourceReference();
-        $flag = Platform::isWindows() ? ['/D '] : [];
+        $flag = Platform::isWindows() ? ['/D'] : [];
 
         if (!empty($this->cachedPackages[$package->getId()][$ref])) {
             $msg = "Cloning ".$this->getShortHash($ref).' from cache';
 
-            $cloneFlags = ['--dissociate', '--reference', '%cachePath%'];
+            $cloneFlags = ['--dissociate', '--reference', $cachePath];
             $transportOptions = $package->getTransportOptions();
             if (isset($transportOptions['git']['single_use_clone']) && $transportOptions['git']['single_use_clone']) {
                 $cloneFlags = [];
             }
 
             $commands = [
-                array_merge(['git', 'clone', '--no-checkout', '%cachePath%', '%path%'], $cloneFlags),
-                array_merge(['cd'], $flag, ['%path%']),
+                array_merge(['git', 'clone', '--no-checkout', $cachePath, $path], $cloneFlags),
+                array_merge(['cd'], $flag, [$path]),
                 ['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%'],
                 ['git', 'remote', 'add', 'composer', '--', '%sanitizedUrl%'],
             ];
         } else {
             $msg = "Cloning ".$this->getShortHash($ref);
             $commands = [
-                array_merge(['git', 'clone', '--no-checkout', '--', '%url%', '%path%']),
-                array_merge(['cd'], $flag, ['%path%']),
+                array_merge(['git', 'clone', '--no-checkout', '--', '%url%', $path]),
+                array_merge(['cd'], $flag, [$path]),
                 ['git', 'remote', 'add', 'composer', '--', '%url%'],
                 ['git', 'fetch', 'composer'],
                 ['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%'],
@@ -128,23 +128,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $this->io->writeError($msg);
 
-        $command = [];
-        $commandCallable = static function (string $url) use (&$command, $path, $cachePath): array {
-            $map = [
-                '%url%' => $url,
-                '%path%' => $path,
-                '%cachePath%' => $cachePath,
-                '%sanitizedUrl%' => Preg::replace('{://([^@]+?):(.+?)@}', '://', $url),
-            ];
-
-            return array_map(static function($value) use ($map): string {
-                return $map[$value] ?? $value;
-            }, $command);
-        };
-
-        foreach ($commands as $command) {
-            $this->gitUtil->runCommand($commandCallable, $url, $path, true);
-        }
+        $this->gitUtil->runCommands($commands, $url, $path, true);
 
         $sourceUrl = $package->getSourceUrl();
         if ($url !== $sourceUrl && $sourceUrl !== null) {
@@ -191,28 +175,17 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $this->io->writeError($msg);
 
         if (0 !== $this->process->execute(['git', 'rev-parse', '--quiet', '--verify', $ref.'^{commit}'], $output, $path)) {
-            $command = [];
-            $commandCallable = static function (string $url) use (&$command): array {
-                return array_map(static function($value) use ($url): string {
-                    return $value === '%url%' ? $url : $value;
-                }, $command);
-            };
-
             $commands = [
                 ['git', 'remote', 'set-url', 'composer', '--', $remoteUrl],
                 ['git', 'fetch', 'composer'],
                 ['git', 'fetch', '--tags', 'composer'],
             ];
 
-            foreach ($commands as $command) {
-                $this->gitUtil->runCommand($commandCallable, $url, $path, true);
-            }
+            $this->gitUtil->runCommands($commands, $url, $path, true);
         }
 
-        $commandCallable = static function (string $url): array {
-            return ['git', 'remote', 'set-url', 'composer', '--', Preg::replace('{://([^@]+?):(.+?)@}', '://', $url)];
-        };
-        $this->gitUtil->runCommand($commandCallable, $url, $path);
+        $command = ['git', 'remote', 'set-url', 'composer', '--', '%sanitizedUrl%'];
+        $this->gitUtil->runCommands([$command], $url, $path);
 
         if ($newRef = $this->updateToCommit($target, $path, (string) $ref, $target->getPrettyVersion())) {
             if ($target->getDistReference() === $target->getSourceReference()) {
@@ -474,7 +447,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $branch = Preg::replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $prettyVersion);
 
+        /**
+         * @var \Closure(non-empty-list<string>): bool $execute
+         * @phpstan-ignore varTag.nativeType
+         */
         $execute = function (array $command) use (&$output, $path) {
+            /** @var non-empty-list<string> $command */
             $output = '';
 
             return 0 === $this->process->execute($command, $output, $path);
