@@ -435,13 +435,18 @@ class Git
      */
     public static function getNoShowSignatureFlags(ProcessExecutor $process): array
     {
-        return explode(' ', substr(static::getNoShowSignatureFlag($process), 1));
+        $flags = static::getNoShowSignatureFlag($process);
+        if ('' === $flags) {
+            return [];
+        }
+
+        return explode(' ', substr($flags, 1));
     }
 
     private function checkRefIsInMirror(string $dir, string $ref): bool
     {
         if (is_dir($dir) && 0 === $this->process->execute(['git', 'rev-parse', '--git-dir'], $output, $dir) && trim($output) === '.') {
-            $exitCode = $this->process->execute(['git rev-parse', '--quiet', '--verify', $ref.'^{commit}'], $ignoredOutput, $dir);
+            $exitCode = $this->process->execute(['git', 'rev-parse', '--quiet', '--verify', $ref.'^{commit}'], $ignoredOutput, $dir);
             if ($exitCode === 0) {
                 return true;
             }
