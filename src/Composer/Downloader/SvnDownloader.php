@@ -59,7 +59,7 @@ class SvnDownloader extends VcsDownloader
         }
 
         $this->io->writeError(" Checking out ".$package->getSourceReference());
-        $this->execute($package, $url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
+        $this->execute($package, $url, ['svn', 'co'], sprintf("%s/%s", $url, $ref), null, $path);
 
         return \React\Promise\resolve(null);
     }
@@ -77,13 +77,13 @@ class SvnDownloader extends VcsDownloader
         }
 
         $util = new SvnUtil($url, $this->io, $this->config, $this->process);
-        $flags = "";
+        $flags = [];
         if (version_compare($util->binaryVersion(), '1.7.0', '>=')) {
-            $flags .= ' --ignore-ancestry';
+            $flags[] = '--ignore-ancestry';
         }
 
         $this->io->writeError(" Checking out " . $ref);
-        $this->execute($target, $url, "svn switch" . $flags, sprintf("%s/%s", $url, $ref), $path);
+        $this->execute($target, $url, array_merge(['svn', 'switch'], $flags), sprintf("%s/%s", $url, $ref), $path);
 
         return \React\Promise\resolve(null);
     }
@@ -107,13 +107,13 @@ class SvnDownloader extends VcsDownloader
      * if necessary.
      *
      * @param  string            $baseUrl Base URL of the repository
-     * @param  string            $command SVN command to run
+     * @param  non-empty-list<string> $command SVN command to run
      * @param  string            $url     SVN url
      * @param  string            $cwd     Working directory
      * @param  string            $path    Target for a checkout
      * @throws \RuntimeException
      */
-    protected function execute(PackageInterface $package, string $baseUrl, string $command, string $url, ?string $cwd = null, ?string $path = null): string
+    protected function execute(PackageInterface $package, string $baseUrl, array $command, string $url, ?string $cwd = null, ?string $path = null): string
     {
         $util = new SvnUtil($baseUrl, $this->io, $this->config, $this->process);
         $util->setCacheCredentials($this->cacheCredentials);
@@ -214,7 +214,7 @@ class SvnDownloader extends VcsDownloader
             $fromRevision = Preg::replace('{.*@(\d+)$}', '$1', $fromReference);
             $toRevision = Preg::replace('{.*@(\d+)$}', '$1', $toReference);
 
-            $command = sprintf('svn log -r%s:%s --incremental', ProcessExecutor::escape($fromRevision), ProcessExecutor::escape($toRevision));
+            $command = ['svn', 'log', '-r', $fromRevision.':'.$toRevision, '--incremental'];
 
             $util = new SvnUtil($baseUrl, $this->io, $this->config, $this->process);
             $util->setCacheCredentials($this->cacheCredentials);
@@ -222,7 +222,7 @@ class SvnDownloader extends VcsDownloader
                 return $util->executeLocal($command, $path, null, $this->io->isVerbose());
             } catch (\RuntimeException $e) {
                 throw new \RuntimeException(
-                    'Failed to execute ' . $command . "\n\n".$e->getMessage()
+                    'Failed to execute ' . implode(' ', $command) . "\n\n".$e->getMessage()
                 );
             }
         }

@@ -90,7 +90,7 @@ class Svn
      * Execute an SVN remote command and try to fix up the process with credentials
      * if necessary.
      *
-     * @param string  $command SVN command to run
+     * @param non-empty-list<string> $command SVN command to run
      * @param string  $url     SVN url
      * @param ?string $cwd     Working directory
      * @param ?string $path    Target for a checkout
@@ -98,7 +98,7 @@ class Svn
      *
      * @throws \RuntimeException
      */
-    public function execute(string $command, string $url, ?string $cwd = null, ?string $path = null, bool $verbose = false): string
+    public function execute(array $command, string $url, ?string $cwd = null, ?string $path = null, bool $verbose = false): string
     {
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
@@ -110,20 +110,23 @@ class Svn
      * Execute an SVN local command and try to fix up the process with credentials
      * if necessary.
      *
-     * @param string $command SVN command to run
+     * @param non-empty-list<string> $command SVN command to run
      * @param string $path    Path argument passed thru to the command
      * @param string $cwd     Working directory
      * @param bool   $verbose Output all output to the user
      *
      * @throws \RuntimeException
      */
-    public function executeLocal(string $command, string $path, ?string $cwd = null, bool $verbose = false): string
+    public function executeLocal(array $command, string $path, ?string $cwd = null, bool $verbose = false): string
     {
         // A local command has no remote url
         return $this->executeWithAuthRetry($command, $cwd, '', $path, $verbose);
     }
 
-    private function executeWithAuthRetry(string $svnCommand, ?string $cwd, string $url, ?string $path, bool $verbose): ?string
+    /**
+     * @param non-empty-list<string> $svnCommand
+     */
+    private function executeWithAuthRetry(array $svnCommand, ?string $cwd, string $url, ?string $path, bool $verbose): ?string
     {
         // Regenerate the command at each try, to use the newly user-provided credentials
         $command = $this->getCommand($svnCommand, $url, $path);
@@ -209,22 +212,23 @@ class Svn
     /**
      * A method to create the svn commands run.
      *
-     * @param string $cmd  Usually 'svn ls' or something like that.
+     * @param non-empty-list<string> $cmd  Usually 'svn ls' or something like that.
      * @param string $url  Repo URL.
      * @param string $path Target for a checkout
+     *
+     * @return non-empty-list<string>
      */
-    protected function getCommand(string $cmd, string $url, ?string $path = null): string
+    protected function getCommand(array $cmd, string $url, ?string $path = null): array
     {
-        $cmd = sprintf(
-            '%s %s%s -- %s',
+        $cmd = array_merge(
             $cmd,
-            '--non-interactive ',
-            $this->getCredentialString(),
-            ProcessExecutor::escape($url)
+            ['--non-interactive'],
+            $this->getCredentialArgs(),
+            ['--', $url]
         );
 
-        if ($path) {
-            $cmd .= ' ' . ProcessExecutor::escape($path);
+        if ($path !== null) {
+            $cmd[] = $path;
         }
 
         return $cmd;
@@ -234,18 +238,18 @@ class Svn
      * Return the credential string for the svn command.
      *
      * Adds --no-auth-cache when credentials are present.
+     *
+     * @return list<string>
      */
-    protected function getCredentialString(): string
+    protected function getCredentialArgs(): array
     {
         if (!$this->hasAuth()) {
-            return '';
+            return [];
         }
 
-        return sprintf(
-            ' %s--username %s --password %s ',
-            $this->getAuthCache(),
-            ProcessExecutor::escape($this->getUsername()),
-            ProcessExecutor::escape($this->getPassword())
+        return array_merge(
+            $this->getAuthCacheArgs(),
+            ['--username', $this->getUsername(), '--password', $this->getPassword()]
         );
     }
 
@@ -295,10 +299,12 @@ class Svn
 
     /**
      * Return the no-auth-cache switch.
+     *
+     * @return list<string>
      */
-    protected function getAuthCache(): string
+    protected function getAuthCacheArgs(): array
     {
-        return $this->cacheCredentials ? '' : '--no-auth-cache ';
+        return $this->cacheCredentials ? [] : ['--no-auth-cache'];
     }
 
     /**
