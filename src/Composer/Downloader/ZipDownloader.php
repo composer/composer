@@ -46,16 +46,16 @@ class ZipDownloader extends ArchiveDownloader
             self::$unzipCommands = [];
             $finder = new ExecutableFinder;
             if (Platform::isWindows() && ($cmd = $finder->find('7z', null, ['C:\Program Files\7-Zip']))) {
-                self::$unzipCommands[] = ['7z', $cmd, 'x', '-bb0', '-y', '%file%', '-o', '%path%'];
+                self::$unzipCommands[] = ['7z', $cmd, 'x', '-bb0', '-y', '%file%', '-o%path%'];
             }
             if ($cmd = $finder->find('unzip')) {
                 self::$unzipCommands[] = ['unzip', $cmd, '-qq', '%file%', '-d', '%path%'];
             }
             if (!Platform::isWindows() && ($cmd = $finder->find('7z'))) { // 7z linux/macOS support is only used if unzip is not present
-                self::$unzipCommands[] = ['7z', $cmd, 'x', '-bb0', '-y', '%file%', '-o', '%path%'];
+                self::$unzipCommands[] = ['7z', $cmd, 'x', '-bb0', '-y', '%file%', '-o%path%'];
             }
             if (!Platform::isWindows() && ($cmd = $finder->find('7zz'))) { // 7zz linux/macOS support is only used if unzip is not present
-                self::$unzipCommands[] = ['7zz', $cmd, 'x', '-bb0', '-y', '%file%', '-o', '%path%'];
+                self::$unzipCommands[] = ['7zz', $cmd, 'x', '-bb0', '-y', '%file%', '-o%path%'];
             }
         }
 
@@ -130,7 +130,7 @@ class ZipDownloader extends ArchiveDownloader
             '%path%' => strtr($path, '/', DIRECTORY_SEPARATOR),
         ];
         $command = array_map(static function ($value) use ($map) {
-            return $map[$value] ?? $value;
+            return strtr($value, $map);
         }, $command);
 
         if (!$warned7ZipLinux && !Platform::isWindows() && in_array($executable, ['7z', '7zz'], true)) {
