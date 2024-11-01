@@ -63,7 +63,7 @@ class Compiler
         $this->versionDate = new \DateTime(trim($output));
         $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
-        if (0 !== $process->execute(['git', 'describe', '--tags', '--exact-match', 'HEAD'], $output, __DIR__)) {
+        if (0 === $process->execute(['git', 'describe', '--tags', '--exact-match', 'HEAD'], $output, __DIR__)) {
             $this->version = trim($output);
         } else {
             // get branch-alias defined in composer.json for dev-main (if any)
@@ -73,6 +73,10 @@ class Compiler
             if (isset($localConfig['extra']['branch-alias']['dev-main'])) {
                 $this->branchAliasVersion = $localConfig['extra']['branch-alias']['dev-main'];
             }
+        }
+
+        if ('' === $this->version) {
+            throw new \UnexpectedValueException('Version detection failed');
         }
 
         $phar = new \Phar($pharFile, 0, 'composer.phar');

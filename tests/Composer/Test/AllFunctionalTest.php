@@ -87,6 +87,7 @@ class AllFunctionalTest extends TestCase
         }
 
         $proc = new Process([PHP_BINARY, '-dphar.readonly=0', './bin/compile'], $target);
+        $proc->setTimeout(300);
         $exitcode = $proc->run();
 
         if ($exitcode !== 0 || trim($proc->getOutput()) !== '') {
