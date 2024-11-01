@@ -34,6 +34,24 @@ class ProcessExecutor
     private const STATUS_FAILED = 4;
     private const STATUS_ABORTED = 5;
 
+    private const BUILTIN_CMD_COMMANDS = [
+        'call' => true,
+        'cd' => true,
+        'copy' => true,
+        'del' => true,
+        'echo' => true,
+        'mkdir' => true,
+        'md' => true,
+        'mklink' => true,
+        'move' => true,
+        'ren' => true,
+        'rename' => true,
+        'rmdir' => true,
+        'rd' => true,
+        'set' => true,
+        'time' => true,
+    ];
+
     private const GIT_CMDS_NEED_GIT_DIR = [
         ['show'],
         ['log'],
@@ -568,6 +586,10 @@ class ProcessExecutor
 
     private static function getExecutable(string $name): string
     {
+        if (isset(self::BUILTIN_CMD_COMMANDS[strtolower($name)])) {
+            return $name;
+        }
+
         if (!isset(self::$executables[$name])) {
             $path = (new ExecutableFinder())->find($name, $name);
             if ($path !== null) {
