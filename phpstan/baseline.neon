@@ -301,11 +301,6 @@ parameters:
 			path: ../src/Composer/Command/CreateProjectCommand.php
 
 		-
-			message: "#^Parameter \\#3 \\$existingRepos of static method Composer\\\\Repository\\\\RepositoryFactory\\:\\:generateRepositoryName\\(\\) expects array\\<string, mixed\\>, array\\<int\\|string, mixed\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/CreateProjectCommand.php
-
-		-
 			message: "#^Variable method call on Composer\\\\Package\\\\RootPackageInterface\\.$#"
 			count: 1
 			path: ../src/Composer/Command/CreateProjectCommand.php
@@ -494,11 +489,6 @@ parameters:
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 2
 			path: ../src/Composer/Command/LicensesCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, array\\<int, Composer\\\\Package\\\\PackageInterface\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ReinstallCommand.php
 
 		-
 			message: "#^Foreach overwrites \\$type with its key variable\\.$#"
@@ -956,11 +946,6 @@ parameters:
 			path: ../src/Composer/Config.php
 
 		-
-			message: "#^Only booleans are allowed in a ternary operator condition, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Config.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/Config.php
@@ -1159,11 +1144,6 @@ parameters:
 			message: "#^Strict comparison using \\=\\=\\= between null and Composer\\\\Util\\\\Http\\\\Response\\|string will always evaluate to false\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/FileDownloader.php
-
-		-
-			message: "#^Parameter \\#3 \\$cwd of method Composer\\\\Util\\\\ProcessExecutor\\:\\:execute\\(\\) expects string\\|null, string\\|false given\\.$#"
-			count: 5
-			path: ../src/Composer/Downloader/FossilDownloader.php
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
@@ -1367,7 +1347,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, array\\<int, array\\<int, string\\>\\> given\\.$#"
-			count: 3
+			count: 2
 			path: ../src/Composer/Downloader/ZipDownloader.php
 
 		-
@@ -2331,11 +2311,6 @@ parameters:
 			path: ../src/Composer/Question/StrictConfirmationQuestion.php
 
 		-
-			message: "#^Method Composer\\\\Repository\\\\ArrayRepository\\:\\:getProviders\\(\\) should return array\\<string, array\\{name\\: string, description\\: string, type\\: string\\}\\> but returns array\\<string, array\\{name\\: string, description\\: string\\|null, type\\: string\\}\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ArrayRepository.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ArrayRepository.php
@@ -2381,7 +2356,7 @@ parameters:
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
-			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:getProviders\\(\\) should return array\\<string, array\\{name\\: string, description\\: string|null, type\\: string\\}\\> but returns array\\<int\\|string, array\\{name\\: mixed, description\\: mixed, type\\: mixed\\}\\>\\.$#"
+			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:getProviders\\(\\) should return array\\<string, array\\{name\\: string, description\\: string\\|null, type\\: string\\}\\> but returns array\\<int\\|string, array\\{name\\: mixed, description\\: mixed, type\\: mixed\\}\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
@@ -2496,7 +2471,7 @@ parameters:
 			path: ../src/Composer/Repository/CompositeRepository.php
 
 		-
-			message: "#^Only booleans are allowed in a ternary operator condition, array\\<int, array\\<string, array\\<string, string|null\\>\\>\\> given\\.$#"
+			message: "#^Only booleans are allowed in a ternary operator condition, array\\<int, array\\<string, array\\<string, string\\|null\\>\\>\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/CompositeRepository.php
 
@@ -2714,7 +2689,7 @@ parameters:
 			path: ../src/Composer/Repository/RepositorySet.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, array\\<string, array\\<string, string|null\\>\\> given\\.$#"
+			message: "#^Only booleans are allowed in an if condition, array\\<string, array\\<string, string\\|null\\>\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/RepositorySet.php
 
@@ -2722,21 +2697,6 @@ parameters:
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/RepositorySet.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/FossilDriver.php
-
-		-
-			message: "#^Parameter \\#1 \\$file of method Composer\\\\Util\\\\Filesystem\\:\\:remove\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/FossilDriver.php
-
-		-
-			message: "#^Parameter \\#1 \\$filename of function is_file expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/FossilDriver.php
 
 		-
 			message: "#^Call to function array_search\\(\\) requires parameter \\#3 to be set\\.$#"
@@ -3969,11 +3929,6 @@ parameters:
 			path: ../src/Composer/Util/Svn.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Svn.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Svn.php
@@ -4342,6 +4297,11 @@ parameters:
 			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
 
 		-
+			message: "#^Property Composer\\\\Test\\\\Mock\\\\ProcessExecutorMock\\:\\:\\$expectations \\(array\\<array\\{cmd\\: list\\<string\\>\\|string, return\\: int, stdout\\: string, stderr\\: string, callback\\: \\(callable\\(\\)\\: mixed\\)\\|null\\}\\>\\|null\\) does not accept array\\<non\\-empty\\-array\\<'callback'\\|'cmd'\\|'return'\\|'stderr'\\|'stdout'\\|int\\<0, max\\>, non\\-empty\\-list\\<non\\-empty\\-list\\<string\\>\\|\\(callable\\(\\)\\: mixed\\)\\|int\\|string\\>\\|\\(callable\\(\\)\\: mixed\\)\\|int\\|string\\|null\\>\\>\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
+
+		-
 			message: "#^Composer\\\\Test\\\\Mock\\\\VersionGuesserMock\\:\\:__construct\\(\\) does not call parent constructor from Composer\\\\Package\\\\Version\\\\VersionGuesser\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Mock/VersionGuesserMock.php
@@ -4487,8 +4447,13 @@ parameters:
 			path: ../tests/Composer/Test/TestCase.php
 
 		-
+			message: "#^Cannot access an offset on array\\<int, array\\<string, array\\<int, string\\>\\|int\\|string\\>\\>\\|false\\.$#"
+			count: 2
+			path: ../tests/Composer/Test/Util/GitTest.php
+
+		-
 			message: "#^Cannot access an offset on array\\<int, array\\<string, int\\|string\\>\\>\\|false\\.$#"
-			count: 3
+			count: 1
 			path: ../tests/Composer/Test/Util/GitTest.php
 
 		-

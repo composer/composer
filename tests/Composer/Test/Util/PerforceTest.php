@@ -561,7 +561,9 @@ class PerforceTest extends TestCase
     public function testCheckServerExists(): void
     {
         $this->processExecutor->expects(
-            ['p4 -p '.ProcessExecutor::escape('perforce.does.exist:port').' info -s'],
+            [
+                ['p4', '-p', 'perforce.does.exist:port', 'info', '-s']
+            ],
             true
         );
 
@@ -578,7 +580,7 @@ class PerforceTest extends TestCase
     {
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
-        $expectedCommand = 'p4 -p '.ProcessExecutor::escape('perforce.does.exist:port').' info -s';
+        $expectedCommand = ['p4', '-p', 'perforce.does.exist:port', 'info', '-s'];
         $processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))

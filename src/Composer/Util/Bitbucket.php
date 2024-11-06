@@ -77,7 +77,7 @@ class Bitbucket
         }
 
         // if available use token from git config
-        if (0 === $this->process->execute('git config bitbucket.accesstoken', $output)) {
+        if (0 === $this->process->execute(['git', 'config', 'bitbucket.accesstoken'], $output)) {
             $this->io->setAuthentication($originUrl, 'x-token-auth', trim($output));
 
             return true;

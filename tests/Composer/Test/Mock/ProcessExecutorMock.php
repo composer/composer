@@ -57,16 +57,16 @@ class ProcessExecutorMock extends ProcessExecutor
     }
 
     /**
-     * @param array<string|array{cmd: string|list<string>, return?: int, stdout?: string, stderr?: string, callback?: callable}> $expectations
+     * @param array<string|non-empty-list<string>|array{cmd: string|non-empty-list<string>, return?: int, stdout?: string, stderr?: string, callback?: callable}> $expectations
      * @param bool                                                                                                               $strict         set to true if you want to provide *all* expected commands, and not just a subset you are interested in testing
      * @param array{return: int, stdout?: string, stderr?: string}                                                               $defaultHandler default command handler for undefined commands if not in strict mode
      */
     public function expects(array $expectations, bool $strict = false, array $defaultHandler = ['return' => 0, 'stdout' => '', 'stderr' => '']): void
     {
-        /** @var array{cmd: string|list<string>, return: int, stdout: string, stderr: string, callback: callable|null} $default */
+        /** @var array{cmd: string|non-empty-list<string>, return: int, stdout: string, stderr: string, callback: callable|null} $default */
         $default = ['cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null];
         $this->expectations = array_map(static function ($expect) use ($default): array {
-            if (is_string($expect)) {
+            if (is_string($expect) || array_is_list($expect)) {
                 $command = $expect;
                 $expect = $default;
                 $expect['cmd'] = $command;

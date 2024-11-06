@@ -302,7 +302,7 @@ EOT
             return '<comment>proc_open is not available, git cannot be used</comment>';
         }
 
-        $this->process->execute('git config color.ui', $output);
+        $this->process->execute(['git', 'config', 'color.ui'], $output);
         if (strtolower(trim($output)) === 'always') {
             return '<comment>Your git color.ui setting is set to always, this is known to create issues. Use "git config --global color.ui true" to set it correctly.</comment>';
         }

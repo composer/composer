@@ -85,10 +85,10 @@ HG_BOOKMARKS;
 
         $process
             ->expects([[
-                'cmd' => 'hg branches',
+                'cmd' => ['hg', 'branches'],
                 'stdout' => $stdout,
             ], [
-                'cmd' => 'hg bookmarks',
+                'cmd' => ['hg', 'bookmarks'],
                 'stdout' => $stdout1,
             ]]);
 

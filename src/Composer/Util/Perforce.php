@@ -14,6 +14,7 @@ namespace Composer\Util;
 
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
+use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 
 /**
@@ -81,7 +82,7 @@ class Perforce
 
     public static function checkServerExists(string $url, ProcessExecutor $processExecutor): bool
     {
-        return 0 === $processExecutor->execute('p4 -p ' . ProcessExecutor::escape($url) . ' info -s', $ignoredOutput);
+        return 0 === $processExecutor->execute(['p4', '-p', $url, 'info', '-s'], $ignoredOutput);
     }
 
     /**
@@ -248,7 +249,7 @@ class Perforce
         }
         $this->p4User = $this->io->ask('Enter P4 User:');
         if ($this->windowsFlag) {
-            $command = 'p4 set P4USER=' . $this->p4User;
+            $command = $this->getP4Executable().' set P4USER=' . $this->p4User;
         } else {
             $command = 'export P4USER=' . $this->p4User;
         }
@@ -261,7 +262,7 @@ class Perforce
     protected function getP4variable(string $name): ?string
     {
         if ($this->windowsFlag) {
-            $command = 'p4 set';
+            $command = $this->getP4Executable().' set';
             $this->executeCommand($command);
             $result = trim($this->commandResult);
             $resArray = explode(PHP_EOL, $result);
@@ -309,7 +310,7 @@ class Perforce
      */
     public function generateP4Command(string $command, bool $useClient = true): string
     {
-        $p4Command = 'p4 ';
+        $p4Command = $this->getP4Executable().' ';
         $p4Command .= '-u ' . $this->getUser() . ' ';
         if ($useClient) {
             $p4Command .= '-c ' . $this->getClient() . ' ';
@@ -619,5 +620,18 @@ class Perforce
     public function setFilesystem(Filesystem $fs): void
     {
         $this->filesystem = $fs;
+    }
+
+    private function getP4Executable(): string
+    {
+        static $p4Executable;
+
+        if ($p4Executable) {
+            return $p4Executable;
+        }
+
+        $finder = new ExecutableFinder();
+
+        return $p4Executable = $finder->find('p4') ?? 'p4';
     }
 }

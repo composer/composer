@@ -20,6 +20,7 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\RuntimeException;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -32,6 +33,14 @@ class ProcessExecutor
     private const STATUS_COMPLETED = 3;
     private const STATUS_FAILED = 4;
     private const STATUS_ABORTED = 5;
+
+    private const BUILTIN_CMD_COMMANDS = [
+        'assoc', 'break', 'call', 'cd', 'chdir', 'cls', 'color', 'copy', 'date',
+        'del', 'dir', 'echo', 'endlocal', 'erase', 'exit', 'for', 'ftype', 'goto',
+        'help', 'if', 'label', 'md', 'mkdir', 'mklink', 'move', 'path', 'pause',
+        'popd', 'prompt', 'pushd', 'rd', 'rem', 'ren', 'rename', 'rmdir', 'set',
+        'setlocal', 'shift', 'start', 'time', 'title', 'type', 'ver', 'vol',
+    ];
 
     private const GIT_CMDS_NEED_GIT_DIR = [
         ['show'],
@@ -63,6 +72,9 @@ class ProcessExecutor
     /** @var bool */
     private $allowAsync = false;
 
+    /** @var array<string, string> */
+    private static $executables = [];
+
     public function __construct(?IOInterface $io = null)
     {
         $this->io = $io;
@@ -71,7 +83,7 @@ class ProcessExecutor
     /**
      * runs a process on the commandline
      *
-     * @param  string|list<string> $command the command to execute
+     * @param  string|non-empty-list<string> $command the command to execute
      * @param  mixed   $output  the output will be written into this var if passed by ref
      *                          if a callable is passed it will be used as output handler
      * @param  null|string $cwd     the working directory
@@ -89,7 +101,7 @@ class ProcessExecutor
     /**
      * runs a process on the commandline in TTY mode
      *
-     * @param  string|list<string>  $command the command to execute
+     * @param  string|non-empty-list<string>  $command the command to execute
      * @param  null|string $cwd     the working directory
      * @return int     statuscode
      */
@@ -103,15 +115,26 @@ class ProcessExecutor
     }
 
     /**
-     * @param  string|list<string> $command
+     * @param  string|non-empty-list<string> $command
      * @param  array<string, string>|null $env
      * @param  mixed   $output
      */
     private function runProcess($command, ?string $cwd, ?array $env, bool $tty, &$output = null): ?int
     {
+        // On Windows, we don't rely on the OS to find the executable if possible to avoid lookups
+        // in the current directory which could be untrusted. Instead we use the ExecutableFinder.
+
         if (is_string($command)) {
+            if (Platform::isWindows() && Preg::isMatch('{^([^:/\\\\]++) }', $command, $match)) {
+                $command = substr_replace($command, self::escape(self::getExecutable($match[1])), 0, strlen($match[1]));
+            }
+
             $process = Process::fromShellCommandline($command, $cwd, $env, null, static::getTimeout());
         } else {
+            if (Platform::isWindows() && \strlen($command[0]) === strcspn($command[0], ':/\\')) {
+                $command[0] = self::getExecutable($command[0]);
+            }
+
             $process = new Process($command, $cwd, $env, null, static::getTimeout());
         }
 
@@ -161,7 +184,7 @@ class ProcessExecutor
     }
 
     /**
-     * @param  string|list<string> $command
+     * @param  string|non-empty-list<string> $command
      * @param  mixed   $output
      */
     private function doExecute($command, ?string $cwd, bool $tty, &$output = null): int
@@ -178,7 +201,7 @@ class ProcessExecutor
             $isBareRepository = !is_dir(sprintf('%s/.git', rtrim($cwd, '/')));
             if ($isBareRepository) {
                 $configValue = '';
-                $this->runProcess('git config safe.bareRepository', $cwd, ['GIT_DIR' => $cwd], $tty, $configValue);
+                $this->runProcess(['git', 'config', 'safe.bareRepository'], $cwd, ['GIT_DIR' => $cwd], $tty, $configValue);
                 $configValue = trim($configValue);
                 if ($configValue === 'explicit') {
                     $env = ['GIT_DIR' => $cwd];
@@ -549,5 +572,24 @@ class ProcessExecutor
         }
 
         return false;
+    }
+
+    /**
+     * Resolves executable paths on Windows
+     */
+    private static function getExecutable(string $name): string
+    {
+        if (\in_array(strtolower($name), self::BUILTIN_CMD_COMMANDS, true)) {
+            return $name;
+        }
+
+        if (!isset(self::$executables[$name])) {
+            $path = (new ExecutableFinder())->find($name, $name);
+            if ($path !== null) {
+                self::$executables[$name] = $path;
+            }
+        }
+
+        return self::$executables[$name] ?? $name;
     }
 }

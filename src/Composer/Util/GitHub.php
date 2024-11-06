@@ -61,7 +61,7 @@ class GitHub
         }
 
         // if available use token from git config
-        if (0 === $this->process->execute('git config github.accesstoken', $output)) {
+        if (0 === $this->process->execute(['git', 'config', 'github.accesstoken'], $output)) {
             $this->io->setAuthentication($originUrl, trim($output), 'x-oauth-basic');
 
             return true;
@@ -86,7 +86,7 @@ class GitHub
         }
 
         $note = 'Composer';
-        if ($this->config->get('github-expose-hostname') === true && 0 === $this->process->execute('hostname', $output)) {
+        if ($this->config->get('github-expose-hostname') === true && 0 === $this->process->execute(['hostname'], $output)) {
             $note .= ' on ' . trim($output);
         }
         $note .= ' ' . date('Y-m-d Hi');

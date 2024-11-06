@@ -57,6 +57,7 @@ class GitTest extends TestCase
 
         $this->process->expects(['git command'], true);
 
+        // @phpstan-ignore method.deprecated
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
     }
 
@@ -82,9 +83,10 @@ class GitTest extends TestCase
 
         $this->process->expects([
             ['cmd' => 'git command', 'return' => 1],
-            ['cmd' => 'git --version', 'return' => 0],
+            ['cmd' => ['git', '--version'], 'return' => 0],
         ], true);
 
+        // @phpstan-ignore method.deprecated
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
     }
 
@@ -124,6 +126,7 @@ class GitTest extends TestCase
             ->with($this->equalTo('github.com'))
             ->willReturn(['username' => 'token', 'password' => $gitHubToken]);
 
+        // @phpstan-ignore method.deprecated
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 
@@ -152,7 +155,7 @@ class GitTest extends TestCase
             // When we are testing what happens without auth saved, and URLs
             // with https, there will also be an attempt to find the token in
             // the git config for the folder and repo, locally.
-            $additional_calls = array_fill(0, $bitbucket_git_auth_calls, ['cmd' => 'git config bitbucket.accesstoken', 'return' => 1]);
+            $additional_calls = array_fill(0, $bitbucket_git_auth_calls, ['cmd' => ['git', 'config', 'bitbucket.accesstoken'], 'return' => 1]);
             foreach ($additional_calls as $call) {
                 $expectedCalls[] = $call;
             }
@@ -177,6 +180,7 @@ class GitTest extends TestCase
                 ->with($this->equalTo('bitbucket.org'))
                 ->willReturn(['username' => 'token', 'password' => $bitbucketToken]);
         }
+        // @phpstan-ignore method.deprecated
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 
@@ -202,7 +206,7 @@ class GitTest extends TestCase
         if (count($initial_config) > 0) {
             $expectedCalls[] = ['cmd' => 'git command failing', 'return' => 1];
         } else {
-            $expectedCalls[] = ['cmd' => 'git config bitbucket.accesstoken', 'return' => 1];
+            $expectedCalls[] = ['cmd' => ['git', 'config', 'bitbucket.accesstoken'], 'return' => 1];
         }
         $expectedCalls[] = ['cmd' => 'git command ok', 'return' => 0];
         $this->process->expects($expectedCalls, true);
@@ -259,6 +263,7 @@ class GitTest extends TestCase
             ['url' => 'https://bitbucket.org/site/oauth2/access_token', 'status' => 200, 'body' => '{"expires_in": 600, "access_token": "my-access-token"}']
         ]);
         $this->git->setHttpDownloader($downloader_mock);
+        // @phpstan-ignore method.deprecated
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 

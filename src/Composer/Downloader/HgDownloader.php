@@ -41,16 +41,15 @@ class HgDownloader extends VcsDownloader
     {
         $hgUtils = new HgUtils($this->io, $this->config, $this->process);
 
-        $cloneCommand = static function (string $url) use ($path): string {
-            return sprintf('hg clone -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($path));
+        $cloneCommand = static function (string $url) use ($path): array {
+            return ['hg', 'clone', '--', $url, $path];
         };
 
         $hgUtils->runCommand($cloneCommand, $url, $path);
 
-        $ref = ProcessExecutor::escape($package->getSourceReference());
-        $command = sprintf('hg up -- %s', $ref);
+        $command = ['hg', 'up', '--', (string) $package->getSourceReference()];
         if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new \RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());
         }
 
         return \React\Promise\resolve(null);
@@ -70,10 +69,14 @@ class HgDownloader extends VcsDownloader
             throw new \RuntimeException('The .hg directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
-        $command = static function ($url) use ($ref): string {
-            return sprintf('hg pull -- %s && hg up -- %s', ProcessExecutor::escape($url), ProcessExecutor::escape($ref));
+        $command = static function ($url): array {
+            return ['hg', 'pull', '--', $url];
         };
+        $hgUtils->runCommand($command, $url, $path);
 
+        $command = static function () use ($ref): array {
+            return ['hg', 'up', '--', $ref];
+        };
         $hgUtils->runCommand($command, $url, $path);
 
         return \React\Promise\resolve(null);
@@ -88,7 +91,7 @@ class HgDownloader extends VcsDownloader
             return null;
         }
 
-        $this->process->execute('hg st', $output, realpath($path));
+        $this->process->execute(['hg', 'st'], $output, realpath($path));
 
         $output = trim($output);
 
@@ -100,10 +103,10 @@ class HgDownloader extends VcsDownloader
      */
     protected function getCommitLogs(string $fromReference, string $toReference, string $path): string
     {
-        $command = sprintf('hg log -r %s:%s --style compact', ProcessExecutor::escape($fromReference), ProcessExecutor::escape($toReference));
+        $command = ['hg', 'log', '-r', $fromReference.':'.$toReference, '--style', 'compact'];
 
         if (0 !== $this->process->execute($command, $output, realpath($path))) {
-            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            throw new \RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());
         }
 
         return $output;

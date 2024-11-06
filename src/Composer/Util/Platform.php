@@ -55,6 +55,19 @@ class Platform
     }
 
     /**
+     * Infallible realpath version that falls back on the given $path if realpath is not working
+     */
+    public static function realpath(string $path): string
+    {
+        $realPath = realpath($path);
+        if ($realPath === false) {
+            return $path;
+        }
+
+        return $realPath;
+    }
+
+    /**
      * getenv() equivalent but reads from the runtime global variables first
      *
      * @param non-empty-string $name
@@ -308,7 +321,7 @@ class Platform
             if (defined('PHP_OS_FAMILY') && PHP_OS_FAMILY === 'Linux') {
                 $process = new ProcessExecutor();
                 try {
-                    if (0 === $process->execute('lsmod | grep vboxguest', $ignoredOutput)) {
+                    if (0 === $process->execute(['lsmod'], $output) && str_contains($output, 'vboxguest')) {
                         return self::$isVirtualBoxGuest = true;
                     }
                 } catch (\Exception $e) {

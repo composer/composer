@@ -122,10 +122,16 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue('dev-master'));
 
         $process = $this->getProcessExecutorMock();
+        $expectedPath = Platform::isWindows() ? Platform::getCwd().'/composerPath' : 'composerPath';
         $process->expects([
-            $this->winCompat("git clone --no-checkout -- 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer -- 'https://example.com/composer/composer' && git fetch composer && git remote set-url origin -- 'https://example.com/composer/composer' && git remote set-url composer -- 'https://example.com/composer/composer'"),
-            $this->winCompat("git branch -r"),
-            $this->winCompat("(git checkout 'master' -- || git checkout -B 'master' 'composer/master' --) && git reset --hard '1234567890123456789012345678901234567890' --"),
+            ['git', 'clone', '--no-checkout', '--', 'https://example.com/composer/composer', $expectedPath],
+            ['git', 'remote', 'add', 'composer', '--', 'https://example.com/composer/composer'],
+            ['git', 'fetch', 'composer'],
+            ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/composer/composer'],
+            ['git', 'remote', 'set-url', 'composer', '--', 'https://example.com/composer/composer'],
+            ['git', 'branch', '-r'],
+            ['git', 'checkout', 'master', '--'],
+            ['git', 'reset', '--hard', '1234567890123456789012345678901234567890', '--'],
         ], true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
@@ -160,16 +166,24 @@ class GitDownloaderTest extends TestCase
         $filesystem = new \Composer\Util\Filesystem;
         $filesystem->removeDirectory($cachePath);
 
+        $expectedPath = Platform::isWindows() ? Platform::getCwd().'/composerPath' : 'composerPath';
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            ['cmd' => $this->winCompat(sprintf("git clone --mirror -- 'https://example.com/composer/composer' '%s'", $cachePath)), 'callback' => static function () use ($cachePath): void {
-                @mkdir($cachePath, 0777, true);
-            }],
-            ['cmd' => 'git rev-parse --git-dir', 'stdout' => '.'],
-            $this->winCompat('git rev-parse --quiet --verify \'1234567890123456789012345678901234567890^{commit}\''),
-            $this->winCompat(sprintf("git clone --no-checkout '%1\$s' 'composerPath' --dissociate --reference '%1\$s' && cd 'composerPath' && git remote set-url origin -- 'https://example.com/composer/composer' && git remote add composer -- 'https://example.com/composer/composer'", $cachePath)),
-            'git branch -r',
-            $this->winCompat("(git checkout 'master' -- || git checkout -B 'master' 'composer/master' --) && git reset --hard '1234567890123456789012345678901234567890' --"),
+            [
+                'cmd' => ['git', 'clone', '--mirror', '--', 'https://example.com/composer/composer', $cachePath],
+                'callback' => static function () use ($cachePath): void {
+                    @mkdir($cachePath, 0777, true);
+                }
+            ],
+            ['cmd' => ['git', 'rev-parse', '--git-dir'], 'stdout' => '.'],
+            ['git', 'rev-parse', '--quiet', '--verify', '1234567890123456789012345678901234567890^{commit}'],
+            ['git', 'clone', '--no-checkout', $cachePath, $expectedPath, '--dissociate', '--reference', $cachePath],
+            ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/composer/composer'],
+            ['git', 'remote', 'add', 'composer', '--', 'https://example.com/composer/composer'],
+            ['git', 'branch', '-r'],
+            ['cmd' => ['git', 'checkout', 'master', '--'], 'return' => 1],
+            ['git', 'checkout', '-B', 'master', 'composer/master', '--'],
+            ['git', 'reset', '--hard', '1234567890123456789012345678901234567890', '--'],
         ], true);
 
         $downloader = $this->getDownloaderMock(null, $config, $process);
@@ -197,17 +211,21 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue('1.0.0'));
 
         $process = $this->getProcessExecutorMock();
+        $expectedPath = Platform::isWindows() ? Platform::getCwd().'/composerPath' : 'composerPath';
         $process->expects([
-            [
-                'cmd' => $this->winCompat("git clone --no-checkout -- 'https://github.com/mirrors/composer' 'composerPath' && cd 'composerPath' && git remote add composer -- 'https://github.com/mirrors/composer' && git fetch composer && git remote set-url origin -- 'https://github.com/mirrors/composer' && git remote set-url composer -- 'https://github.com/mirrors/composer'"),
-                'return' => 1,
-                'stderr' => 'Error1',
-            ],
-            $this->winCompat("git clone --no-checkout -- 'git@github.com:mirrors/composer' 'composerPath' && cd 'composerPath' && git remote add composer -- 'git@github.com:mirrors/composer' && git fetch composer && git remote set-url origin -- 'git@github.com:mirrors/composer' && git remote set-url composer -- 'git@github.com:mirrors/composer'"),
-            $this->winCompat("git remote set-url origin -- 'https://github.com/composer/composer'"),
-            $this->winCompat("git remote set-url --push origin -- 'git@github.com:composer/composer.git'"),
-            'git branch -r',
-            $this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --"),
+            ['cmd' => ['git', 'clone', '--no-checkout', '--', 'https://github.com/mirrors/composer', $expectedPath], 'return' => 1, 'stderr' => 'Error1'],
+
+            ['git', 'clone', '--no-checkout', '--', 'git@github.com:mirrors/composer', $expectedPath],
+            ['git', 'remote', 'add', 'composer', '--', 'git@github.com:mirrors/composer'],
+            ['git', 'fetch', 'composer'],
+            ['git', 'remote', 'set-url', 'origin', '--', 'git@github.com:mirrors/composer'],
+            ['git', 'remote', 'set-url', 'composer', '--', 'git@github.com:mirrors/composer'],
+
+            ['git', 'remote', 'set-url', 'origin', '--', 'https://github.com/composer/composer'],
+            ['git', 'remote', 'set-url', '--push', 'origin', '--', 'git@github.com:composer/composer.git'],
+            ['git', 'branch', '-r'],
+            ['git', 'checkout', 'ref', '--'],
+            ['git', 'reset', '--hard', 'ref', '--'],
         ], true);
 
         $downloader = $this->getDownloaderMock(null, new Config(), $process);
@@ -250,11 +268,18 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue('1.0.0'));
 
         $process = $this->getProcessExecutorMock();
+        $expectedPath = Platform::isWindows() ? Platform::getCwd().'/composerPath' : 'composerPath';
         $process->expects([
-            $this->winCompat("git clone --no-checkout -- '{$url}' 'composerPath' && cd 'composerPath' && git remote add composer -- '{$url}' && git fetch composer && git remote set-url origin -- '{$url}' && git remote set-url composer -- '{$url}'"),
-            $this->winCompat("git remote set-url --push origin -- '{$pushUrl}'"),
-            'git branch -r',
-            $this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --"),
+            ['git', 'clone', '--no-checkout', '--', $url, $expectedPath],
+            ['git', 'remote', 'add', 'composer', '--', $url],
+            ['git', 'fetch', 'composer'],
+            ['git', 'remote', 'set-url', 'origin', '--', $url],
+            ['git', 'remote', 'set-url', 'composer', '--', $url],
+
+            ['git', 'remote', 'set-url', '--push', 'origin', '--', $pushUrl],
+            ['git', 'branch', '-r'],
+            ['git', 'checkout', 'ref', '--'],
+            ['git', 'reset', '--hard', 'ref', '--'],
         ], true);
 
         $config = new Config();
@@ -284,28 +309,21 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue('1.0.0'));
 
         $process = $this->getProcessExecutorMock();
+        $expectedPath = Platform::isWindows() ? Platform::getCwd().'/composerPath' : 'composerPath';
         $process->expects([
             [
-                'cmd' => $this->winCompat("git clone --no-checkout -- 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer -- 'https://example.com/composer/composer' && git fetch composer && git remote set-url origin -- 'https://example.com/composer/composer' && git remote set-url composer -- 'https://example.com/composer/composer'"),
+                'cmd' => ['git', 'clone', '--no-checkout', '--', 'https://example.com/composer/composer', $expectedPath],
                 'return' => 1,
             ],
         ]);
 
-        // not using PHPUnit's expected exception because Prophecy exceptions extend from RuntimeException too so it is not safe
-        try {
-            $downloader = $this->getDownloaderMock(null, null, $process);
-            $downloader->download($packageMock, 'composerPath');
-            $downloader->prepare('install', $packageMock, 'composerPath');
-            $downloader->install($packageMock, 'composerPath');
-            $downloader->cleanup('install', $packageMock, 'composerPath');
-
-            $this->fail('This test should throw');
-        } catch (\RuntimeException $e) {
-            if ('RuntimeException' !== get_class($e)) {
-                throw $e;
-            }
-            self::assertEquals('RuntimeException', get_class($e));
-        }
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('Failed to execute git clone --no-checkout -- https://example.com/composer/composer '.$expectedPath);
+        $downloader = $this->getDownloaderMock(null, null, $process);
+        $downloader->download($packageMock, 'composerPath');
+        $downloader->prepare('install', $packageMock, 'composerPath');
+        $downloader->install($packageMock, 'composerPath');
+        $downloader->cleanup('install', $packageMock, 'composerPath');
     }
 
     public function testUpdateforPackageWithoutSourceReference(): void
@@ -327,8 +345,6 @@ class GitDownloaderTest extends TestCase
 
     public function testUpdate(): void
     {
-        $expectedGitUpdateCommand = $this->winCompat("(git remote set-url composer -- 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- 'https://github.com/composer/composer'");
-
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -345,13 +361,23 @@ class GitDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            $this->winCompat('git show-ref --head -d'),
-            $this->winCompat('git status --porcelain --untracked-files=no'),
-            $this->winCompat('git remote -v'),
-            $expectedGitUpdateCommand,
-            $this->winCompat('git branch -r'),
-            $this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --"),
-            $this->winCompat('git remote -v'),
+            ['git', 'show-ref', '--head', '-d'],
+            ['git', 'status', '--porcelain', '--untracked-files=no'],
+            ['cmd' => ['git', 'rev-parse', '--quiet', '--verify', 'ref^{commit}'], 'return' => 1],
+
+            // fallback commands for the above failing
+            ['git', 'remote', '-v'],
+            ['git', 'remote', 'set-url', 'composer', '--', 'https://github.com/composer/composer'],
+            ['git', 'fetch', 'composer'],
+            ['git', 'fetch', '--tags', 'composer'],
+
+            ['git', 'remote', '-v'],
+            ['git', 'remote', 'set-url', 'composer', '--', 'https://github.com/composer/composer'],
+
+            ['git', 'branch', '-r'],
+            ['git', 'checkout', 'ref', '--'],
+            ['git', 'reset', '--hard', 'ref', '--'],
+            ['git', 'remote', '-v'],
         ], true);
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
@@ -364,8 +390,6 @@ class GitDownloaderTest extends TestCase
 
     public function testUpdateWithNewRepoUrl(): void
     {
-        $expectedGitUpdateCommand = $this->winCompat("(git remote set-url composer -- 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- 'https://github.com/composer/composer'");
-
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -385,22 +409,26 @@ class GitDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            $this->winCompat("git show-ref --head -d"),
-            $this->winCompat("git status --porcelain --untracked-files=no"),
-            $this->winCompat("git remote -v"),
-            $this->winCompat($expectedGitUpdateCommand),
-            'git branch -r',
-            $this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --"),
+            ['git', 'show-ref', '--head', '-d'],
+            ['git', 'status', '--porcelain', '--untracked-files=no'],
+            ['cmd' => ['git', 'rev-parse', '--quiet', '--verify', 'ref^{commit}'], 'return' => 0],
+
+            ['git', 'remote', '-v'],
+            ['git', 'remote', 'set-url', 'composer', '--', 'https://github.com/composer/composer'],
+
+            ['git', 'branch', '-r'],
+            ['git', 'checkout', 'ref', '--'],
+            ['git', 'reset', '--hard', 'ref', '--'],
             [
-                'cmd' => $this->winCompat("git remote -v"),
+                'cmd' => ['git', 'remote', '-v'],
                 'stdout' => 'origin https://github.com/old/url (fetch)
 origin https://github.com/old/url (push)
 composer https://github.com/old/url (fetch)
 composer https://github.com/old/url (push)
 ',
             ],
-            $this->winCompat("git remote set-url origin -- 'https://github.com/composer/composer'"),
-            $this->winCompat("git remote set-url --push origin -- 'git@github.com:composer/composer.git'"),
+            ['git', 'remote', 'set-url', 'origin', '--', 'https://github.com/composer/composer'],
+            ['git', 'remote', 'set-url', '--push', 'origin', '--', 'git@github.com:composer/composer.git'],
         ], true);
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
@@ -416,9 +444,6 @@ composer https://github.com/old/url (push)
      */
     public function testUpdateThrowsRuntimeExceptionIfGitCommandFails(): void
     {
-        $expectedGitUpdateCommand = $this->winCompat("(git remote set-url composer -- 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- 'https://github.com/composer/composer'");
-        $expectedGitUpdateCommand2 = $this->winCompat("(git remote set-url composer -- 'git@github.com:composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- 'git@github.com:composer/composer'");
-
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -432,44 +457,38 @@ composer https://github.com/old/url (push)
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            $this->winCompat('git show-ref --head -d'),
-            $this->winCompat('git status --porcelain --untracked-files=no'),
-            $this->winCompat('git remote -v'),
-            [
-                'cmd' => $expectedGitUpdateCommand,
-                'return' => 1,
-            ],
-            [
-                'cmd' => $expectedGitUpdateCommand2,
-                'return' => 1,
-            ],
-            $this->winCompat('git --version'),
+            ['git', 'show-ref', '--head', '-d'],
+            ['git', 'status', '--porcelain', '--untracked-files=no'],
+
+            // commit not yet in so we try to fetch
+            ['cmd' => ['git', 'rev-parse', '--quiet', '--verify', 'ref^{commit}'], 'return' => 1],
+
+            // fail first fetch
+            ['git', 'remote', '-v'],
+            ['git', 'remote', 'set-url', 'composer', '--', 'https://github.com/composer/composer'],
+            ['cmd' => ['git', 'fetch', 'composer'], 'return' => 1],
+
+            // fail second fetch
+            ['git', 'remote', 'set-url', 'composer', '--', 'git@github.com:composer/composer'],
+            ['cmd' => ['git', 'fetch', 'composer'], 'return' => 1],
+
+            ['git', '--version'],
         ], true);
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
 
-        // not using PHPUnit's expected exception because Prophecy exceptions extend from RuntimeException too so it is not safe
-        try {
-            $downloader = $this->getDownloaderMock(null, new Config(), $process);
-            $downloader->download($packageMock, $this->workingDir, $packageMock);
-            $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
-            $downloader->update($packageMock, $packageMock, $this->workingDir);
-            $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
-
-            $this->fail('This test should throw');
-        } catch (\RuntimeException $e) {
-            if ('RuntimeException' !== get_class($e)) {
-                throw $e;
-            }
-            self::assertEquals('RuntimeException', get_class($e));
-        }
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('Failed to clone https://github.com/composer/composer via https, ssh protocols, aborting.');
+        self::expectExceptionMessageMatches('{git@github\.com:composer/composer}');
+        $downloader = $this->getDownloaderMock(null, new Config(), $process);
+        $downloader->download($packageMock, $this->workingDir, $packageMock);
+        $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
+        $downloader->update($packageMock, $packageMock, $this->workingDir);
+        $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
     }
 
     public function testUpdateDoesntThrowsRuntimeExceptionIfGitCommandFailsAtFirstButIsAbleToRecover(): void
     {
-        $expectedFirstGitUpdateCommand = $this->winCompat("(git remote set-url composer -- '".(Platform::isWindows() ? 'C:\\' : '/')."' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- '".(Platform::isWindows() ? 'C:\\' : '/')."'");
-        $expectedSecondGitUpdateCommand = $this->winCompat("(git remote set-url composer -- 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- 'https://github.com/composer/composer'");
-
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
             ->method('getSourceReference')
@@ -486,22 +505,33 @@ composer https://github.com/old/url (push)
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            $this->winCompat('git show-ref --head -d'),
-            $this->winCompat('git status --porcelain --untracked-files=no'),
-            $this->winCompat('git remote -v'),
-            [
-                'cmd' => $expectedFirstGitUpdateCommand,
-                'return' => 1,
-            ],
-            $this->winCompat('git --version'),
-            $this->winCompat('git remote -v'),
-            [
-                'cmd' => $expectedSecondGitUpdateCommand,
-                'return' => 0,
-            ],
-            $this->winCompat('git branch -r'),
-            $this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --"),
-            $this->winCompat('git remote -v'),
+            ['git', 'show-ref', '--head', '-d'],
+            ['git', 'status', '--porcelain', '--untracked-files=no'],
+
+            // commit not yet in so we try to fetch
+            ['cmd' => ['git', 'rev-parse', '--quiet', '--verify', 'ref^{commit}'], 'return' => 1],
+
+            // fail first source URL
+            ['git', 'remote', '-v'],
+            ['git', 'remote', 'set-url', 'composer', '--', Platform::isWindows() ? 'C:\\' : '/'],
+            ['cmd' => ['git', 'fetch', 'composer'], 'return' => 1],
+            ['git', '--version'],
+
+            // commit not yet in so we try to fetch
+            ['cmd' => ['git', 'rev-parse', '--quiet', '--verify', 'ref^{commit}'], 'return' => 1],
+
+            // pass second source URL
+            ['git', 'remote', '-v'],
+            ['git', 'remote', 'set-url', 'composer', '--', 'https://github.com/composer/composer'],
+            ['cmd' => ['git', 'fetch', 'composer'], 'return' => 0],
+            ['git', 'fetch', '--tags', 'composer'],
+            ['git', 'remote', '-v'],
+            ['git', 'remote', 'set-url', 'composer', '--', 'https://github.com/composer/composer'],
+
+            ['git', 'branch', '-r'],
+            ['git', 'checkout', 'ref', '--'],
+            ['git', 'reset', '--hard', 'ref', '--'],
+            ['git', 'remote', '-v'],
         ], true);
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
@@ -604,13 +634,11 @@ composer https://github.com/old/url (push)
 
     public function testRemove(): void
     {
-        $expectedGitResetCommand = $this->winCompat("git status --porcelain --untracked-files=no");
-
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            'git show-ref --head -d',
-            $expectedGitResetCommand,
+            ['git', 'show-ref', '--head', '-d'],
+            ['git', 'status', '--porcelain', '--untracked-files=no'],
         ], true);
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
@@ -632,17 +660,5 @@ composer https://github.com/old/url (push)
         $downloader = $this->getDownloaderMock();
 
         self::assertEquals('source', $downloader->getInstallationSource());
-    }
-
-    private function winCompat(string $cmd): string
-    {
-        if (Platform::isWindows()) {
-            $cmd = str_replace('cd ', 'cd /D ', $cmd);
-            $cmd = str_replace('composerPath', Platform::getCwd().'/composerPath', $cmd);
-
-            return self::getCmd($cmd);
-        }
-
-        return $cmd;
     }
 }

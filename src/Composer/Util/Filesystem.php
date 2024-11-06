@@ -109,9 +109,9 @@ class Filesystem
         }
 
         if (Platform::isWindows()) {
-            $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape(realpath($directory)));
+            $cmd = ['rmdir', '/S', '/Q', Platform::realpath($directory)];
         } else {
-            $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
+            $cmd = ['rm', '-rf', $directory];
         }
 
         $result = $this->getProcess()->execute($cmd, $output) === 0;
@@ -144,9 +144,9 @@ class Filesystem
         }
 
         if (Platform::isWindows()) {
-            $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape(realpath($directory)));
+            $cmd = ['rmdir', '/S', '/Q', Platform::realpath($directory)];
         } else {
-            $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
+            $cmd = ['rm', '-rf', $directory];
         }
 
         $promise = $this->getProcess()->executeAsync($cmd);
@@ -427,8 +427,7 @@ class Filesystem
 
         if (Platform::isWindows()) {
             // Try to copy & delete - this is a workaround for random "Access denied" errors.
-            $command = sprintf('xcopy %s %s /E /I /Q /Y', ProcessExecutor::escape($source), ProcessExecutor::escape($target));
-            $result = $this->getProcess()->execute($command, $output);
+            $result = $this->getProcess()->execute(['xcopy', $source, $target, '/E', '/I', '/Q', '/Y'], $output);
 
             // clear stat cache because external processes aren't tracked by the php stat cache
             clearstatcache();
@@ -441,8 +440,7 @@ class Filesystem
         } else {
             // We do not use PHP's "rename" function here since it does not support
             // the case where $source, and $target are located on different partitions.
-            $command = sprintf('mv %s %s', ProcessExecutor::escape($source), ProcessExecutor::escape($target));
-            $result = $this->getProcess()->execute($command, $output);
+            $result = $this->getProcess()->execute(['mv', $source, $target], $output);
 
             // clear stat cache because external processes aren't tracked by the php stat cache
             clearstatcache();
@@ -841,11 +839,7 @@ class Filesystem
             @rmdir($junction);
         }
 
-        $cmd = sprintf(
-            'mklink /J %s %s',
-            ProcessExecutor::escape(str_replace('/', DIRECTORY_SEPARATOR, $junction)),
-            ProcessExecutor::escape(realpath($target))
-        );
+        $cmd = ['mklink', '/J', str_replace('/', DIRECTORY_SEPARATOR, $junction), Platform::realpath($target)];
         if ($this->getProcess()->execute($cmd, $output) !== 0) {
             throw new IOException(sprintf('Failed to create junction to "%s" at "%s".', $target, $junction), 0, null, $target);
         }

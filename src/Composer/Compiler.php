@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Json\JsonFile;
 use Composer\CaBundle\CaBundle;
 use Composer\Pcre\Preg;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Seld\PharUtils\Timestamps;
@@ -48,23 +49,22 @@ class Compiler
             unlink($pharFile);
         }
 
-        $process = new Process(['git', 'log', '--pretty=%H', '-n1', 'HEAD'], __DIR__);
-        if ($process->run() !== 0) {
+        $process = new ProcessExecutor();
+
+        if (0 !== $process->execute(['git', 'log', '--pretty=%H', '-n1', 'HEAD'], $output, __DIR__)) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
-        $this->version = trim($process->getOutput());
+        $this->version = trim($output);
 
-        $process = new Process(['git', 'log', '-n1', '--pretty=%ci', 'HEAD'], __DIR__);
-        if ($process->run() !== 0) {
+        if (0 !== $process->execute(['git', 'log', '-n1', '--pretty=%ci', 'HEAD'], $output, __DIR__)) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
 
-        $this->versionDate = new \DateTime(trim($process->getOutput()));
+        $this->versionDate = new \DateTime(trim($output));
         $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
-        $process = new Process(['git', 'describe', '--tags', '--exact-match', 'HEAD'], __DIR__);
-        if ($process->run() === 0) {
-            $this->version = trim($process->getOutput());
+        if (0 === $process->execute(['git', 'describe', '--tags', '--exact-match', 'HEAD'], $output, __DIR__)) {
+            $this->version = trim($output);
         } else {
             // get branch-alias defined in composer.json for dev-main (if any)
             $localConfig = __DIR__.'/../../composer.json';
@@ -73,6 +73,10 @@ class Compiler
             if (isset($localConfig['extra']['branch-alias']['dev-main'])) {
                 $this->branchAliasVersion = $localConfig['extra']['branch-alias']['dev-main'];
             }
+        }
+
+        if ('' === $this->version) {
+            throw new \UnexpectedValueException('Version detection failed');
         }
 
         $phar = new \Phar($pharFile, 0, 'composer.phar');

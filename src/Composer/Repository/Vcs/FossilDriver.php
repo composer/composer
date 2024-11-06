@@ -71,7 +71,7 @@ class FossilDriver extends VcsDriver
      */
     protected function checkFossil(): void
     {
-        if (0 !== $this->process->execute('fossil version', $ignoredOutput)) {
+        if (0 !== $this->process->execute(['fossil', 'version'], $ignoredOutput)) {
             throw new \RuntimeException("fossil was not found, check that it is installed and in your PATH env.\n\n" . $this->process->getErrorOutput());
         }
     }
@@ -81,6 +81,8 @@ class FossilDriver extends VcsDriver
      */
     protected function updateLocalRepo(): void
     {
+        assert($this->repoFile !== null);
+
         $fs = new Filesystem();
         $fs->ensureDirectoryExists($this->checkoutDir);
 
@@ -89,8 +91,8 @@ class FossilDriver extends VcsDriver
         }
 
         // update the repo if it is a valid fossil repository
-        if (is_file($this->repoFile) && is_dir($this->checkoutDir) && 0 === $this->process->execute('fossil info', $output, $this->checkoutDir)) {
-            if (0 !== $this->process->execute('fossil pull', $output, $this->checkoutDir)) {
+        if (is_file($this->repoFile) && is_dir($this->checkoutDir) && 0 === $this->process->execute(['fossil', 'info'], $output, $this->checkoutDir)) {
+            if (0 !== $this->process->execute(['fossil', 'pull'], $output, $this->checkoutDir)) {
                 $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$this->process->getErrorOutput().')</error>');
             }
         } else {
@@ -100,13 +102,13 @@ class FossilDriver extends VcsDriver
 
             $fs->ensureDirectoryExists($this->checkoutDir);
 
-            if (0 !== $this->process->execute(sprintf('fossil clone -- %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoFile)), $output)) {
+            if (0 !== $this->process->execute(['fossil', 'clone', '--', $this->url, $this->repoFile], $output)) {
                 $output = $this->process->getErrorOutput();
 
                 throw new \RuntimeException('Failed to clone '.$this->url.' to repository ' . $this->repoFile . "\n\n" .$output);
             }
 
-            if (0 !== $this->process->execute(sprintf('fossil open --nested -- %s', ProcessExecutor::escape($this->repoFile)), $output, $this->checkoutDir)) {
+            if (0 !== $this->process->execute(['fossil', 'open', '--nested', '--', $this->repoFile], $output, $this->checkoutDir)) {
                 $output = $this->process->getErrorOutput();
 
                 throw new \RuntimeException('Failed to open repository '.$this->repoFile.' in ' . $this->checkoutDir . "\n\n" .$output);
@@ -155,10 +157,9 @@ class FossilDriver extends VcsDriver
      */
     public function getFileContent(string $file, string $identifier): ?string
     {
-        $command = sprintf('fossil cat -r %s -- %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
-        $this->process->execute($command, $content, $this->checkoutDir);
+        $this->process->execute(['fossil', 'cat', '-r', $identifier, '--', $file], $content, $this->checkoutDir);
 
-        if (!trim($content)) {
+        if ('' === trim($content)) {
             return null;
         }
 
@@ -170,7 +171,7 @@ class FossilDriver extends VcsDriver
      */
     public function getChangeDate(string $identifier): ?\DateTimeImmutable
     {
-        $this->process->execute('fossil finfo -b -n 1 composer.json', $output, $this->checkoutDir);
+        $this->process->execute(['fossil', 'finfo', '-b', '-n', '1', 'composer.json'], $output, $this->checkoutDir);
         [, $date] = explode(' ', trim($output), 3);
 
         return new \DateTimeImmutable($date, new \DateTimeZone('UTC'));
@@ -184,7 +185,7 @@ class FossilDriver extends VcsDriver
         if (null === $this->tags) {
             $tags = [];
 
-            $this->process->execute('fossil tag list', $output, $this->checkoutDir);
+            $this->process->execute(['fossil', 'tag', 'list'], $output, $this->checkoutDir);
             foreach ($this->process->splitLines($output) as $tag) {
                 $tags[$tag] = $tag;
             }
@@ -203,7 +204,7 @@ class FossilDriver extends VcsDriver
         if (null === $this->branches) {
             $branches = [];
 
-            $this->process->execute('fossil branch list', $output, $this->checkoutDir);
+            $this->process->execute(['fossil', 'branch', 'list'], $output, $this->checkoutDir);
             foreach ($this->process->splitLines($output) as $branch) {
                 $branch = trim(Preg::replace('/^\*/', '', trim($branch)));
                 $branches[$branch] = $branch;
@@ -237,7 +238,7 @@ class FossilDriver extends VcsDriver
 
             $process = new ProcessExecutor($io);
             // check whether there is a fossil repo in that path
-            if ($process->execute('fossil info', $output, $url) === 0) {
+            if ($process->execute(['fossil', 'info'], $output, $url) === 0) {
                 return true;
             }
         }

@@ -76,8 +76,8 @@ class HgDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            self::getCmd('hg clone -- \'https://mercurial.dev/l3l0/composer\' \''.$this->workingDir.'\''),
-            self::getCmd('hg up -- \'ref\''),
+            ['hg', 'clone', '--', 'https://mercurial.dev/l3l0/composer', $this->workingDir],
+            ['hg', 'up', '--', 'ref'],
         ], true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
@@ -117,8 +117,9 @@ class HgDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            self::getCmd('hg st'),
-            self::getCmd("hg pull -- 'https://github.com/l3l0/composer' && hg up -- 'ref'"),
+            ['hg', 'st'],
+            ['hg', 'pull', '--', 'https://github.com/l3l0/composer'],
+            ['hg', 'up', '--', 'ref'],
         ], true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
@@ -135,7 +136,7 @@ class HgDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            self::getCmd('hg st'),
+            ['hg', 'st'],
         ], true);
 
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();

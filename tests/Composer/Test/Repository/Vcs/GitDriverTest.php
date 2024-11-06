@@ -72,7 +72,7 @@ GIT;
 
         $process
             ->expects([[
-                'cmd' => 'git branch --no-color',
+                'cmd' => ['git', 'branch', '--no-color'],
                 'stdout' => $stdout,
             ]], true);
 
@@ -102,11 +102,17 @@ GIT;
 
         $process
             ->expects([[
-                'cmd' => 'git remote -v',
+                'cmd' => ['git', 'remote', '-v'],
                 'stdout' => '',
             ], [
-                'cmd' => Platform::isWindows() ? "git remote set-url origin -- https://example.org/acme.git && git remote show origin && git remote set-url origin -- https://example.org/acme.git" : "git remote set-url origin -- 'https://example.org/acme.git' && git remote show origin && git remote set-url origin -- 'https://example.org/acme.git'",
+                'cmd' => ['git', 'remote', 'set-url', 'origin', '--', 'https://example.org/acme.git'],
+                'stdout' => '',
+            ], [
+                'cmd' => ['git', 'remote', 'show', 'origin'],
                 'stdout' => $stdout,
+            ], [
+                'cmd' => ['git', 'remote', 'set-url', 'origin', '--', 'https://example.org/acme.git'],
+                'stdout' => '',
             ]]);
 
         self::assertSame('main', $driver->getRootIdentifier());
@@ -130,7 +136,7 @@ GIT;
 
         $process
             ->expects([[
-                'cmd' => 'git branch --no-color',
+                'cmd' => ['git', 'branch', '--no-color'],
                 'stdout' => $stdout,
             ]]);
 
@@ -155,7 +161,7 @@ GIT;
 
         $process
             ->expects([[
-                'cmd' => 'git branch --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => $stdout,
             ]]);
 

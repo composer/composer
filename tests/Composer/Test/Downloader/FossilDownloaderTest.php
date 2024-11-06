@@ -76,9 +76,9 @@ class FossilDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            self::getCmd('fossil clone -- \'http://fossil.kd2.org/kd2fw/\' \''.$this->workingDir.'.fossil\''),
-            self::getCmd('fossil open --nested -- \''.$this->workingDir.'.fossil\''),
-            self::getCmd('fossil update -- \'trunk\''),
+            ['fossil', 'clone', '--', 'http://fossil.kd2.org/kd2fw/', $this->workingDir.'.fossil'],
+            ['fossil', 'open', '--nested', '--', $this->workingDir.'.fossil'],
+            ['fossil', 'update', '--', 'trunk'],
         ], true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
@@ -123,8 +123,9 @@ class FossilDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            self::getCmd("fossil changes"),
-            self::getCmd("fossil pull && fossil up 'trunk'"),
+            ['fossil', 'changes'],
+            ['fossil', 'pull'],
+            ['fossil', 'up', 'trunk'],
         ], true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
@@ -143,7 +144,7 @@ class FossilDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            self::getCmd('fossil changes'),
+            ['fossil', 'changes'],
         ], true);
 
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();

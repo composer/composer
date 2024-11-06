@@ -122,22 +122,20 @@ EOT
      */
     private function openBrowser(string $url): void
     {
-        $url = ProcessExecutor::escape($url);
-
         $process = new ProcessExecutor($this->getIO());
         if (Platform::isWindows()) {
-            $process->execute('start "web" explorer ' . $url, $output);
+            $process->execute(['start', '"web"', 'explorer', $url], $output);
 
             return;
         }
 
-        $linux = $process->execute('which xdg-open', $output);
-        $osx = $process->execute('which open', $output);
+        $linux = $process->execute(['which', 'xdg-open'], $output);
+        $osx = $process->execute(['which', 'open'], $output);
 
         if (0 === $linux) {
-            $process->execute('xdg-open ' . $url, $output);
+            $process->execute(['xdg-open', $url], $output);
         } elseif (0 === $osx) {
-            $process->execute('open ' . $url, $output);
+            $process->execute(['open', $url], $output);
         } else {
             $this->getIO()->writeError('No suitable browser opening command found, open yourself: ' . $url);
         }

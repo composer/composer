@@ -303,18 +303,18 @@ class GitHubDriverTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects([
-            ['cmd' => 'git config github.accesstoken', 'return' => 1],
-            'git clone --mirror -- '.ProcessExecutor::escape($repoSshUrl).' '.ProcessExecutor::escape($this->config->get('cache-vcs-dir').'/git-github.com-composer-packagist.git/'),
+            ['cmd' => ['git', 'config', 'github.accesstoken'], 'return' => 1],
+            ['git', 'clone', '--mirror', '--', $repoSshUrl, $this->config->get('cache-vcs-dir').'/git-github.com-composer-packagist.git/'],
             [
-                'cmd' => 'git show-ref --tags --dereference',
+                'cmd' => ['git', 'show-ref', '--tags', '--dereference'],
                 'stdout' => $sha.' refs/tags/'.$identifier,
             ],
             [
-                'cmd' => 'git branch --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => '  test_master     edf93f1fccaebd8764383dc12016d0a1a9672d89 Fix test & behavior',
             ],
             [
-                'cmd' => 'git branch --no-color',
+                'cmd' => ['git', 'branch', '--no-color'],
                 'stdout' => '* test_master',
             ],
         ], true);
