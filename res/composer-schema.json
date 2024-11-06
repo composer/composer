@@ -930,7 +930,8 @@
                 "options": {
                     "type": "object",
                     "properties": {
-                        "symlink": { "type": ["boolean", "null"] }
+                        "symlink": { "type": ["boolean", "null"] },
+                        "optional": { "type":  "boolean" }
                     },
                     "additionalProperties": true
                 }

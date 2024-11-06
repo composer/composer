@@ -161,6 +161,13 @@ class PathRepositoryTest extends TestCase
         }
     }
 
+    public function testLoadPackageFromFileSystemWithIncorrectPathButOptional(): void
+    {
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'missing']);
+        $repository = $this->createPathRepo(['url' => $repositoryUrl, 'options' => ['optional' => true]]);
+        self::assertEmpty($repository->getPackages());
+    }
+
     /**
      * @param array<mixed> $options
      */
