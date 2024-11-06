@@ -232,6 +232,7 @@ class GitDriver extends VcsDriver
             if ($process->execute(['git', 'tag'], $output, $url) === 0) {
                 return true;
             }
+            GitUtil::checkForRepoOwnershipError($process->getErrorOutput(), $url);
         }
 
         if (!$deep) {

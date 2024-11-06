@@ -1,3 +1,12 @@
+### [2.8.2] 2024-10-29
+
+  * Fixed crash while suggesting providers if they have no description (#12152)
+  * Fixed issues creating lock files violating the schema in some circumstances (#12149)
+  * Fixed `create-project` regression in 2.8.1 when using path repos with relative paths (#12150)
+  * Fixed ctrl-C aborts not working inside text prompts (#12106)
+  * Fixed git failing silently when git cannot read a repo due to ownership violations (#12178)
+  * Fixed handling of signals in non-PHP binaries run via proxies (#12176)
+
 ### [2.8.1] 2024-10-04
 
   * Fixed `init` command regression when no license is provided (#12145)
@@ -1945,6 +1954,7 @@
 
   * Initial release
 
+[2.8.2]: https://github.com/composer/composer/compare/2.8.1...2.8.2
 [2.8.1]: https://github.com/composer/composer/compare/2.8.0...2.8.1
 [2.8.0]: https://github.com/composer/composer/compare/2.7.9...2.8.0
 [2.7.9]: https://github.com/composer/composer/compare/2.7.8...2.7.9

@@ -406,7 +406,7 @@ if [ -n "\$bashSource" ]; then
     fi
 fi
 
-"\${dir}/$binFile" "\$@"
+exec "\${dir}/$binFile" "\$@"
 
 PROXY;
     }

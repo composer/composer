@@ -13,6 +13,7 @@
 namespace Composer\Package\Version;
 
 use Composer\Config;
+use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\HgDriver;
 use Composer\IO\NullIO;
@@ -50,11 +51,17 @@ class VersionGuesser
      */
     private $versionParser;
 
-    public function __construct(Config $config, ProcessExecutor $process, SemverVersionParser $versionParser)
+    /**
+     * @var IOInterface|null
+     */
+    private $io;
+
+    public function __construct(Config $config, ProcessExecutor $process, SemverVersionParser $versionParser, ?IOInterface $io = null)
     {
         $this->config = $config;
         $this->process = $process;
         $this->versionParser = $versionParser;
+        $this->io = $io;
     }
 
     /**
@@ -178,6 +185,7 @@ class VersionGuesser
                 $prettyVersion = $result['pretty_version'];
             }
         }
+        GitUtil::checkForRepoOwnershipError($this->process->getErrorOutput(), $path, $this->io);
 
         if (!$version || $isDetached) {
             $result = $this->versionFromGitTags($path);
