@@ -35,21 +35,11 @@ class ProcessExecutor
     private const STATUS_ABORTED = 5;
 
     private const BUILTIN_CMD_COMMANDS = [
-        'call' => true,
-        'cd' => true,
-        'copy' => true,
-        'del' => true,
-        'echo' => true,
-        'mkdir' => true,
-        'md' => true,
-        'mklink' => true,
-        'move' => true,
-        'ren' => true,
-        'rename' => true,
-        'rmdir' => true,
-        'rd' => true,
-        'set' => true,
-        'time' => true,
+        'assoc', 'break', 'call', 'cd', 'chdir', 'cls', 'color', 'copy', 'date',
+        'del', 'dir', 'echo', 'endlocal', 'erase', 'exit', 'for', 'ftype', 'goto',
+        'help', 'if', 'label', 'md', 'mkdir', 'mklink', 'move', 'path', 'pause',
+        'popd', 'prompt', 'pushd', 'rd', 'rem', 'ren', 'rename', 'rmdir', 'set',
+        'setlocal', 'shift', 'start', 'time', 'title', 'type', 'ver', 'vol',
     ];
 
     private const GIT_CMDS_NEED_GIT_DIR = [
@@ -584,9 +574,12 @@ class ProcessExecutor
         return false;
     }
 
+    /**
+     * Resolves executable paths on Windows
+     */
     private static function getExecutable(string $name): string
     {
-        if (isset(self::BUILTIN_CMD_COMMANDS[strtolower($name)])) {
+        if (\in_array(strtolower($name), self::BUILTIN_CMD_COMMANDS, true)) {
             return $name;
         }
 
