@@ -166,6 +166,7 @@ class GitDownloaderTest extends TestCase
         $filesystem = new \Composer\Util\Filesystem;
         $filesystem->removeDirectory($cachePath);
 
+        $expectedPath = Platform::isWindows() ? Platform::getCwd().'/composerPath' : 'composerPath';
         $process = $this->getProcessExecutorMock();
         $process->expects([
             [
@@ -176,7 +177,7 @@ class GitDownloaderTest extends TestCase
             ],
             ['cmd' => ['git', 'rev-parse', '--git-dir'], 'stdout' => '.'],
             ['git', 'rev-parse', '--quiet', '--verify', '1234567890123456789012345678901234567890^{commit}'],
-            ['git', 'clone', '--no-checkout', $cachePath, 'composerPath', '--dissociate', '--reference', $cachePath],
+            ['git', 'clone', '--no-checkout', $cachePath, $expectedPath, '--dissociate', '--reference', $cachePath],
             ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/composer/composer'],
             ['git', 'remote', 'add', 'composer', '--', 'https://example.com/composer/composer'],
             ['git', 'branch', '-r'],
@@ -317,7 +318,7 @@ class GitDownloaderTest extends TestCase
         ]);
 
         self::expectException('RuntimeException');
-        self::expectExceptionMessage('Failed to execute git clone --no-checkout -- https://example.com/composer/composer composerPath');
+        self::expectExceptionMessage('Failed to execute git clone --no-checkout -- https://example.com/composer/composer '.$expectedPath);
         $downloader = $this->getDownloaderMock(null, null, $process);
         $downloader->download($packageMock, 'composerPath');
         $downloader->prepare('install', $packageMock, 'composerPath');
