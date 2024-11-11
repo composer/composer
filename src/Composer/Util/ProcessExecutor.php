@@ -42,13 +42,6 @@ class ProcessExecutor
         'setlocal', 'shift', 'start', 'time', 'title', 'type', 'ver', 'vol',
     ];
 
-    private const GIT_CMDS_NEED_GIT_DIR = [
-        ['show'],
-        ['log'],
-        ['branch'],
-        ['remote', 'set-url']
-    ];
-
     /** @var int */
     protected static $timeout = 300;
 
@@ -196,17 +189,9 @@ class ProcessExecutor
 
         $env = null;
 
-        $requiresGitDirEnv = $this->requiresGitDirEnv($command);
-        if ($cwd !== null && $requiresGitDirEnv) {
-            $isBareRepository = !is_dir(sprintf('%s/.git', rtrim($cwd, '/')));
-            if ($isBareRepository) {
-                $configValue = '';
-                $this->runProcess(['git', 'config', 'safe.bareRepository'], $cwd, ['GIT_DIR' => $cwd], $tty, $configValue);
-                $configValue = trim($configValue);
-                if ($configValue === 'explicit') {
-                    $env = ['GIT_DIR' => $cwd];
-                }
-            }
+        $gitDirToUseInEnv = $this->getGitDirToUseInEnv($command, $cwd, $tty);
+        if (null !== $gitDirToUseInEnv) {
+            $env = ['GIT_DIR' => $gitDirToUseInEnv];
         }
 
         return $this->runProcess($command, $cwd, $env, $tty, $output);
@@ -556,22 +541,43 @@ class ProcessExecutor
     }
 
     /**
+     * Retrieve the directory to use in the environment of a git command, if any.
+     *
      * @param string[]|string $command
      */
-    public function requiresGitDirEnv($command): bool
+    public function getGitDirToUseInEnv($command, ?string $cwd, bool $tty): ?string
     {
+        // only for git commands
         $cmd = !is_array($command) ? explode(' ', $command) : $command;
         if ($cmd[0] !== 'git') {
-            return false;
+            return null;
         }
 
-        foreach (self::GIT_CMDS_NEED_GIT_DIR as $gitCmd) {
-            if (array_intersect($cmd, $gitCmd) === $gitCmd) {
-                return true;
+        // if composer is being compiled from source, we need to use the git dir from the source checkout
+        $srcComposerDirEnd = DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Composer';
+        $isComposerSource = $cwd !== null && str_ends_with($cwd, $srcComposerDirEnd);
+
+        if ($isComposerSource) {
+            return getcwd() . '/.git';
+        }
+
+        // if no cwd is set, we cannot determine the git dir
+        if (null === $cwd) {
+            return null;
+        }
+
+        // check for bare repository with safe.bareRepository set to "explicit"
+        $isBareRepository = !is_dir(sprintf('%s/.git', rtrim($cwd, '/')));
+        if ($isBareRepository) {
+            $configValue = '';
+            $this->runProcess(['git', 'config', 'safe.bareRepository'], $cwd, ['GIT_DIR' => $cwd], $tty, $configValue);
+            $configValue = trim($configValue);
+            if ($configValue === 'explicit') {
+                return $cwd;
             }
         }
 
-        return false;
+        return null;
     }
 
     /**
