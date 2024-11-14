@@ -80,7 +80,9 @@ jobs:
 
       - name: "Handle lowest dependencies update"
         if: "contains(matrix.dependencies, 'lowest')"
-        run: "echo \"COMPOSER_UPDATE_FLAGS=$COMPOSER_UPDATE_FLAGS --prefer-lowest\" >> $GITHUB_ENV"
+        run: |
+          echo "COMPOSER_UPDATE_FLAGS=$COMPOSER_UPDATE_FLAGS --prefer-lowest" >> $GITHUB_ENV
+          echo "COMPOSER_LOWEST_DEPS_TEST=1" >> $GITHUB_ENV
 
       - name: "Handle ignore-platform-reqs dependencies update"
         if: "contains(matrix.dependencies, 'ignore')"

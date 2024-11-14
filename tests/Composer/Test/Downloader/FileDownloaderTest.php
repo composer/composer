@@ -388,6 +388,9 @@ class FileDownloaderTest extends TestCase
         $filesystem->expects($this->once())
             ->method('removeDirectoryAsync')
             ->will($this->returnValue(\React\Promise\resolve(true)));
+        $filesystem->expects($this->any())
+            ->method('normalizePath')
+            ->will(self::returnArgument(0));
 
         $downloader = $this->getDownloader($ioMock, $config, null, null, null, $filesystem);
 

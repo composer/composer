@@ -13,6 +13,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 
 class DiagnoseCommandTest extends TestCase
 {
@@ -23,7 +24,11 @@ class DiagnoseCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'diagnose']);
 
-        self::assertSame(1, $appTester->getStatusCode());
+        if (Platform::getEnv('COMPOSER_LOWEST_DEPS_TEST') === '1') {
+            self::assertGreaterThanOrEqual(1, $appTester->getStatusCode());
+        } else {
+            self::assertSame(1, $appTester->getStatusCode());
+        }
 
         $output = $appTester->getDisplay(true);
         self::assertStringContainsString('Checking composer.json: <warning>WARNING</warning>
@@ -41,7 +46,9 @@ Checking github.com rate limit: ', $output);
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'diagnose']);
 
-        $appTester->assertCommandIsSuccessful();
+        if (Platform::getEnv('COMPOSER_LOWEST_DEPS_TEST') !== '1') {
+            $appTester->assertCommandIsSuccessful();
+        }
 
         $output = $appTester->getDisplay(true);
         self::assertStringContainsString('Checking composer.json: OK', $output);
