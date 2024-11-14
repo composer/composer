@@ -554,7 +554,7 @@ EOT
 
         if (!$dryRun) {
             $this->updateFile($this->json, $requirements, $requireKey, $removeKey, $sortPackages);
-            if ($locker->isLocked()) {
+            if ($locker->isLocked() && $composer->getConfig()->get('lock')) {
                 $stabilityFlags = RootPackageLoader::extractStabilityFlags($requirements, $composer->getPackage()->getMinimumStability(), []);
                 $locker->updateHash($this->json, function (array $lockData) use ($stabilityFlags) {
                     foreach ($stabilityFlags as $packageName => $flag) {

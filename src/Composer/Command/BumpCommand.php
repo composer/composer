@@ -216,7 +216,7 @@ EOT
             $io->write('<info>No requirements to update in '.$composerJsonPath.'.</info>');
         }
 
-        if (!$dryRun && $composer->getLocker()->isLocked() && $changeCount > 0) {
+        if (!$dryRun && $composer->getLocker()->isLocked() && $composer->getConfig()->get('lock') && $changeCount > 0) {
             $composer->getLocker()->updateHash($composerJson);
         }
 
