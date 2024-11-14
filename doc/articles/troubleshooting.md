@@ -255,8 +255,9 @@ please report this [issue](https://github.com/composer/composer/issues).
    [new cacert.pem from cURL](https://curl.se/docs/caextract.html) and store it there.
 2. If this did not help despite Composer finding a valid CA bundle, try disabling your antivirus and
    firewall software to see if that helps. We have seen issues where Avast on Windows for example would
-   prevent Composer from functioning correctly. If this helps you should report it to the
-   software vendor so they can hopefully improve things.
+   prevent Composer from functioning correctly. To disable the HTTPS scanning in Avast you can go in
+   "Protection > Core Shields > Web Shield > **uncheck** Enable HTTPS scanning". If this helps you
+   should report it to the software vendor so they can hopefully improve things.
 
 
 ## API rate limit and OAuth tokens
