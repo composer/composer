@@ -665,11 +665,11 @@ EOF;
 
             foreach ($package->getIncludePaths() as $includePath) {
                 $includePath = trim($includePath, '/');
-                $includePaths[] = empty($installPath) ? $includePath : $installPath.'/'.$includePath;
+                $includePaths[] = $installPath === '' ? $includePath : $installPath.'/'.$includePath;
             }
         }
 
-        if (!$includePaths) {
+        if (\count($includePaths) === 0) {
             return null;
         }
 

@@ -84,7 +84,7 @@ class InstalledRepository extends CompositeRepository
      * @param  string[]                 $packagesFound Used internally when recurring
      *
      * @return array[] An associative array of arrays as described above.
-     * @phpstan-return array<array{0: PackageInterface, 1: Link, 2: mixed[]|bool}>
+     * @phpstan-return array<array{0: PackageInterface, 1: Link, 2: array<mixed>|false}>
      */
     public function getDependents($needle, ?ConstraintInterface $constraint = null, bool $invert = false, bool $recurse = true, ?array $packagesFound = null): array
     {
@@ -137,6 +137,7 @@ class InstalledRepository extends CompositeRepository
                         }
                     }
                 }
+                unset($needle);
             }
 
             // Require-dev is only relevant for the root package
@@ -163,7 +164,7 @@ class InstalledRepository extends CompositeRepository
             }
 
             // When inverting, we need to check for conflicts of the needles against installed packages
-            if ($invert && in_array($package->getName(), $needles)) {
+            if ($invert && in_array($package->getName(), $needles, true)) {
                 foreach ($package->getConflicts() as $link) {
                     foreach ($this->findPackages($link->getTarget()) as $pkg) {
                         $version = new Constraint('=', $pkg->getVersion());
@@ -176,7 +177,7 @@ class InstalledRepository extends CompositeRepository
 
             // List conflicts against X as they may explain why the current version was selected, or explain why it is rejected if the conflict matched when inverting
             foreach ($package->getConflicts() as $link) {
-                if (in_array($link->getTarget(), $needles)) {
+                if (in_array($link->getTarget(), $needles, true)) {
                     foreach ($this->findPackages($link->getTarget()) as $pkg) {
                         $version = new Constraint('=', $pkg->getVersion());
                         if ($link->getConstraint()->matches($version) === $invert) {
@@ -187,7 +188,7 @@ class InstalledRepository extends CompositeRepository
             }
 
             // When inverting, we need to check for conflicts of the needles' requirements against installed packages
-            if ($invert && $constraint && in_array($package->getName(), $needles) && $constraint->matches(new Constraint('=', $package->getVersion()))) {
+            if ($invert && $constraint && in_array($package->getName(), $needles, true) && $constraint->matches(new Constraint('=', $package->getVersion()))) {
                 foreach ($package->getRequires() as $link) {
                     if (PlatformRepository::isPlatformPackage($link->getTarget())) {
                         if ($this->findPackage($link->getTarget(), $link->getConstraint())) {
