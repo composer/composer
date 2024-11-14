@@ -49,7 +49,7 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - Root composer.json requires requires/root 1.0.0 -> satisfiable by requires/root[1.0.0].
-    - requires/root 1.0.0 requires root/pkg ^1.0 -> satisfiable by root/pkg[1.0.0] from package repo (defining 3 packages) but root/pkg is the root package and cannot be modified. See https://getcomposer.org/dep-on-root for details and assistance.
+    - requires/root 1.0.0 requires root/pkg ^1.0 -> satisfiable by root/pkg[1.0.0] from package repo (defining 3 packages) but root/pkg dev-master is the root package and cannot be modified. See https://getcomposer.org/dep-on-root for details and assistance.
   Problem 2
     - Root composer.json requires requires/root2 1.0.0 -> satisfiable by requires/root2[1.0.0].
     - requires/root2 1.0.0 requires root/pkg ^2.0 -> found root/pkg[dev-master] but it does not match the constraint. See https://getcomposer.org/dep-on-root for details and assistance.

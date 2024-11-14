@@ -598,7 +598,7 @@ class Problem
             if ($topPackage instanceof RootPackageInterface) {
                 return [
                     "- Root composer.json requires $packageName".self::constraintToText($constraint).', it is ',
-                    'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose, $pool, $constraint).' from '.$nextRepo->getRepoName().' but '.$topPackage->getPrettyName().' is the root package and cannot be modified. See https://getcomposer.org/dep-on-root for details and assistance.',
+                    'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose, $pool, $constraint).' from '.$nextRepo->getRepoName().' but '.$topPackage->getPrettyName().' '.$topPackage->getPrettyVersion().' is the root package and cannot be modified. See https://getcomposer.org/dep-on-root for details and assistance.',
                 ];
             }
         }
