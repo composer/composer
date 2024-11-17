@@ -37,7 +37,7 @@ class AuditorTest extends TestCase
                 ],
                 'warningOnly' => true,
             ],
-            'expected' => 0,
+            'expected' => Auditor::BIT_OK,
             'output' => 'No security vulnerability advisories found.',
         ];
 
@@ -50,7 +50,7 @@ class AuditorTest extends TestCase
                 ],
                 'warningOnly' => true,
             ],
-            'expected' => 1,
+            'expected' => Auditor::BIT_VULNERABLE,
             'output' => '<warning>Found 2 security vulnerability advisories affecting 1 package:</warning>
 Package: vendor1/package1
 Severity: high
@@ -83,7 +83,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                 'warningOnly' => false,
                 'abandoned' => Auditor::ABANDONED_IGNORE,
             ],
-            'expected' => 0,
+            'expected' => Auditor::BIT_OK,
             'output' => 'No security vulnerability advisories found.',
         ];
 
@@ -96,7 +96,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                 'warningOnly' => true,
                 'abandoned' => Auditor::ABANDONED_REPORT,
             ],
-            'expected' => 0,
+            'expected' => Auditor::BIT_OK,
             'output' => 'No security vulnerability advisories found.
 Found 2 abandoned packages:
 vendor/abandoned is abandoned. Use foo/bar instead.
@@ -113,8 +113,48 @@ vendor/abandoned2 is abandoned. No replacement was suggested.',
                 'abandoned' => Auditor::ABANDONED_FAIL,
                 'format' => Auditor::FORMAT_TABLE,
             ],
-            'expected' => 2,
+            'expected' => Auditor::BIT_ABANDONED,
             'output' => 'No security vulnerability advisories found.
+Found 2 abandoned packages:
++-------------------+----------------------------------------------------------------------------------+
+| Abandoned Package | Suggested Replacement                                                            |
++-------------------+----------------------------------------------------------------------------------+
+| vendor/abandoned  | foo/bar                                                                          |
+| vendor/abandoned2 | none                                                                             |
++-------------------+----------------------------------------------------------------------------------+',
+        ];
+
+        yield 'vulnerable and abandoned packages fails' => [
+            'data' => [
+                'packages' => [
+                    new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => false,
+                'abandoned' => Auditor::ABANDONED_FAIL,
+                'format' => Auditor::FORMAT_TABLE,
+            ],
+            'expected' => Auditor::BIT_VULNERABLE | Auditor::BIT_ABANDONED,
+            'output' => 'Found 2 security vulnerability advisories affecting 1 package:
++-------------------+----------------------------------------------------------------------------------+
+| Package           | vendor1/package1                                                                 |
+| Severity          | high                                                                             |
+| CVE               | CVE3                                                                             |
+| Title             | advisory4                                                                        |
+| URL               | https://advisory.example.com/advisory4                                           |
+| Affected versions | >=8,<8.2.2|>=1,<2.5.6                                                            |
+| Reported at       | 2022-05-25T13:21:00+00:00                                                        |
++-------------------+----------------------------------------------------------------------------------+
++-------------------+----------------------------------------------------------------------------------+
+| Package           | vendor1/package1                                                                 |
+| Severity          | medium                                                                           |
+| CVE               |                                                                                  |
+| Title             | advisory5                                                                        |
+| URL               | https://advisory.example.com/advisory5                                           |
+| Affected versions | >=8,<8.2.2|>=1,<2.5.6                                                            |
+| Reported at       | 2022-05-25T13:21:00+00:00                                                        |
++-------------------+----------------------------------------------------------------------------------+
 Found 2 abandoned packages:
 +-------------------+----------------------------------------------------------------------------------+
 | Abandoned Package | Suggested Replacement                                                            |
@@ -134,7 +174,7 @@ Found 2 abandoned packages:
                 'abandoned' => Auditor::ABANDONED_FAIL,
                 'format' => Auditor::FORMAT_JSON,
             ],
-            'expected' => 2,
+            'expected' => Auditor::BIT_ABANDONED,
             'output' => '{
     "advisories": [],
     "abandoned": {

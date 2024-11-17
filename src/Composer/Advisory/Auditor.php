@@ -53,6 +53,11 @@ class Auditor
         self::ABANDONED_FAIL,
     ];
 
+    /** Values to determine the audit result. */
+    public const BIT_OK = 0;
+    public const BIT_VULNERABLE = 1;
+    public const BIT_ABANDONED = 2;
+
     /**
      * @param PackageInterface[] $packages
      * @param self::FORMAT_* $format The format that will be used to output audit results.
@@ -61,7 +66,7 @@ class Auditor
      * @param self::ABANDONED_* $abandoned
      * @param array<string> $ignoredSeverities List of ignored severity levels
      *
-     * @return int Amount of packages with vulnerabilities found
+     * @return int A bitmask calculation of vulnerable and abandoned packages found
      * @throws InvalidArgumentException If no packages are passed in
      */
     public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_FAIL, array $ignoredSeverities = []): int
@@ -75,7 +80,7 @@ class Auditor
         ['advisories' => $advisories, 'ignoredAdvisories' => $ignoredAdvisories] = $this->processAdvisories($allAdvisories, $ignoreList, $ignoredSeverities);
 
         $abandonedCount = 0;
-        $affectedPackagesCount = 0;
+        $affectedPackagesCount = count($advisories);
         if ($abandoned === self::ABANDONED_IGNORE) {
             $abandonedPackages = [];
         } else {
@@ -84,6 +89,8 @@ class Auditor
                 $abandonedCount = count($abandonedPackages);
             }
         }
+
+        $auditBitmask = $this->calculateBitmask(0 < $affectedPackagesCount, 0 < $abandonedCount);
 
         if (self::FORMAT_JSON === $format) {
             $json = ['advisories' => $advisories];
@@ -98,11 +105,11 @@ class Auditor
 
             $io->write(JsonFile::encode($json));
 
-            return count($advisories) + $abandonedCount;
+            return $auditBitmask;
         }
 
         $errorOrWarn = $warningOnly ? 'warning' : 'error';
-        if (count($advisories) > 0 || count($ignoredAdvisories) > 0) {
+        if ($affectedPackagesCount > 0 || count($ignoredAdvisories) > 0) {
             $passes = [
                 [$ignoredAdvisories, "<info>Found %d ignored security vulnerability advisor%s affecting %d package%s%s</info>"],
                 // this has to run last to allow $affectedPackagesCount in the return statement to be correct
@@ -130,7 +137,7 @@ class Auditor
             $this->outputAbandonedPackages($io, $abandonedPackages, $format);
         }
 
-        return $affectedPackagesCount + $abandonedCount;
+        return $auditBitmask;
     }
 
     /**
@@ -139,7 +146,7 @@ class Auditor
      */
     private function filterAbandonedPackages(array $packages): array
     {
-        return array_filter($packages, static function (PackageInterface $pkg) {
+        return array_filter($packages, static function (PackageInterface $pkg): bool {
             return $pkg instanceof CompletePackageInterface && $pkg->isAbandoned();
         });
     }
@@ -400,5 +407,23 @@ class Auditor
         }
 
         return '<href='.OutputFormatter::escape($advisory->link).'>'.OutputFormatter::escape($advisory->link).'</>';
+    }
+
+    /**
+     * Produces a bitmask from the audit results.
+     */
+    private function calculateBitmask(bool $hasVulnerablePackages, bool $hasabandonedPackages): int
+    {
+        $bitmask = self::BIT_OK;
+
+        if ($hasVulnerablePackages) {
+            $bitmask |= self::BIT_VULNERABLE;
+        }
+
+        if ($hasabandonedPackages) {
+            $bitmask |= self::BIT_ABANDONED;
+        }
+
+        return $bitmask;
     }
 }
