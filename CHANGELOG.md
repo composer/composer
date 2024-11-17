@@ -1,3 +1,9 @@
+### [2.8.3] 2024-11-17
+
+  * Fixed windows handling of process discovery (#12180)
+  * Fixed react/promise requirement to allow 2.x installs again (#12188)
+  * Fixed some issues when lock:false is set in require and bump commands
+
 ### [2.8.2] 2024-10-29
 
   * Fixed crash while suggesting providers if they have no description (#12152)
@@ -1954,6 +1960,7 @@
 
   * Initial release
 
+[2.8.3]: https://github.com/composer/composer/compare/2.8.2...2.8.3
 [2.8.2]: https://github.com/composer/composer/compare/2.8.1...2.8.2
 [2.8.1]: https://github.com/composer/composer/compare/2.8.0...2.8.1
 [2.8.0]: https://github.com/composer/composer/compare/2.7.9...2.8.0
