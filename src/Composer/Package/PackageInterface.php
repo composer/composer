@@ -23,6 +23,7 @@ use Composer\Repository\RepositoryInterface;
  *
  * @phpstan-type AutoloadRules    array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>, exclude-from-classmap?: list<string>}
  * @phpstan-type DevAutoloadRules array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>}
+ * @phpstan-type PhpExtConfig     array{extension-name?: string, priority?: int, support-zts?: bool, support-nts?: bool, build-path?: string|null, configure-options?: list<array{name: string, description?: string}>}|null
  */
 interface PackageInterface
 {
@@ -326,7 +327,7 @@ interface PackageInterface
     /**
      * Returns the settings for php extension packages
      *
-     * @return array{extension-name?: string, priority?: int, support-zts?: bool, support-nts?: bool, configure-options?: list<array{name: string, description?: string}>}|null
+     * @return PhpExtConfig
      */
     public function getPhpExt(): ?array;
 

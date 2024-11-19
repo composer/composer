@@ -317,6 +317,12 @@
                     "example": false,
                     "default": true
                 },
+                "build-path": {
+                    "type": ["string", "null"],
+                    "description": "If specified, this is the subdirectory that will be used to build the extension instead of the root of the project.",
+                    "example": "my-extension-source",
+                    "default": null
+                },
                 "configure-options": {
                     "type": "array",
                     "description": "These configure options make up the flags that can be passed to ./configure when installing the extension.",
