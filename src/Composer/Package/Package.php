@@ -99,7 +99,10 @@ class Package extends BasePackage
     protected $isDefaultBranch = false;
     /** @var mixed[] */
     protected $transportOptions = [];
-    /** @var PhpExtConfig */
+    /**
+     * @var array|null
+     * @phpstan-var PhpExtConfig|null
+     */
     protected $phpExt = null;
 
     /**
@@ -596,7 +599,9 @@ class Package extends BasePackage
     /**
      * Sets the settings for php extension packages
      *
-     * @param PhpExtConfig $phpExt
+     * @param array|null $phpExt
+     *
+     * @phpstan-param PhpExtConfig|null $phpExt
      */
     public function setPhpExt(?array $phpExt): void
     {
