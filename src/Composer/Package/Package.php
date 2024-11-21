@@ -23,6 +23,7 @@ use Composer\Util\ComposerMirror;
  *
  * @phpstan-import-type AutoloadRules from PackageInterface
  * @phpstan-import-type DevAutoloadRules from PackageInterface
+ * @phpstan-import-type PhpExtConfig from PackageInterface
  */
 class Package extends BasePackage
 {
@@ -98,7 +99,10 @@ class Package extends BasePackage
     protected $isDefaultBranch = false;
     /** @var mixed[] */
     protected $transportOptions = [];
-    /** @var array{priority?: int, configure-options?: list<array{name: string, description?: string}>}|null */
+    /**
+     * @var array|null
+     * @phpstan-var PhpExtConfig|null
+     */
     protected $phpExt = null;
 
     /**
@@ -593,9 +597,11 @@ class Package extends BasePackage
     }
 
     /**
-     * Sets the list of paths added to PHP's include path.
+     * Sets the settings for php extension packages
      *
-     * @param array{extension-name?: string, priority?: int, support-zts?: bool, support-nts?: bool, configure-options?: list<array{name: string, description?: string}>}|null $phpExt List of directories.
+     * @param array|null $phpExt
+     *
+     * @phpstan-param PhpExtConfig|null $phpExt
      */
     public function setPhpExt(?array $phpExt): void
     {
