@@ -264,7 +264,7 @@ php composer.phar config [--global] --editor --auth
 > **Note:** For the gitlab authentication to work on private gitlab instances, the
 > [`gitlab-domains`](../06-config.md#gitlab-domains) section should also contain the URL.
 
-To create a new access token, go to your [access tokens section on GitLab](https://gitlab.com/-/profile/personal_access_tokens)
+To create a new access token, go to your [access tokens section on GitLab](https://gitlab.com/-/user_settings/personal_access_tokens)
 (or the equivalent URL on your private instance) and create a new token. See also [the GitLab access token documentation](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#creating-a-personal-access-token) for more information.
 
 When creating a gitlab token manually, make sure it has either the `read_api` or `api` scope.
