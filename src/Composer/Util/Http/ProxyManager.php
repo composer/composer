@@ -61,7 +61,7 @@ class ProxyManager
 
     public function hasProxy(): bool
     {
-        return $this->httpProxy !== null && $this->httpsProxy !== null;
+        return $this->httpProxy !== null || $this->httpsProxy !== null;
     }
 
     /**
