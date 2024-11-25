@@ -65,10 +65,10 @@
         'foo/impl' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '^1.1',
-                1 => '1.2',
-                2 => '1.4',
-                3 => '2.0',
+                0 => '1.2',
+                1 => '1.4',
+                2 => '2.0',
+                3 => '^1.1',
             ),
         ),
         'foo/impl2' => array(

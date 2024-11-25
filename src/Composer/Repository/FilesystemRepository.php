@@ -329,6 +329,14 @@ REGEX;
         ksort($versions['versions']);
         ksort($versions);
 
+        foreach ($versions['versions'] as $name => $version) {
+            foreach (['aliases', 'replaced', 'provided'] as $key) {
+                if (isset($versions['versions'][$name][$key])) {
+                    sort($versions['versions'][$name][$key], SORT_NATURAL);
+                }
+            }
+        }
+
         return $versions;
     }
 
