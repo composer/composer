@@ -37,7 +37,7 @@ class AuditorTest extends TestCase
                 ],
                 'warningOnly' => true,
             ],
-            'expected' => Auditor::BIT_OK,
+            'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.',
         ];
 
@@ -50,7 +50,7 @@ class AuditorTest extends TestCase
                 ],
                 'warningOnly' => true,
             ],
-            'expected' => Auditor::BIT_VULNERABLE,
+            'expected' => Auditor::STATUS_VULNERABLE,
             'output' => '<warning>Found 2 security vulnerability advisories affecting 1 package:</warning>
 Package: vendor1/package1
 Severity: high
@@ -83,7 +83,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                 'warningOnly' => false,
                 'abandoned' => Auditor::ABANDONED_IGNORE,
             ],
-            'expected' => Auditor::BIT_OK,
+            'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.',
         ];
 
@@ -96,7 +96,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                 'warningOnly' => true,
                 'abandoned' => Auditor::ABANDONED_REPORT,
             ],
-            'expected' => Auditor::BIT_OK,
+            'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.
 Found 2 abandoned packages:
 vendor/abandoned is abandoned. Use foo/bar instead.
@@ -113,7 +113,7 @@ vendor/abandoned2 is abandoned. No replacement was suggested.',
                 'abandoned' => Auditor::ABANDONED_FAIL,
                 'format' => Auditor::FORMAT_TABLE,
             ],
-            'expected' => Auditor::BIT_ABANDONED,
+            'expected' => Auditor::STATUS_ABANDONED,
             'output' => 'No security vulnerability advisories found.
 Found 2 abandoned packages:
 +-------------------+----------------------------------------------------------------------------------+
@@ -135,7 +135,7 @@ Found 2 abandoned packages:
                 'abandoned' => Auditor::ABANDONED_FAIL,
                 'format' => Auditor::FORMAT_TABLE,
             ],
-            'expected' => Auditor::BIT_VULNERABLE | Auditor::BIT_ABANDONED,
+            'expected' => Auditor::STATUS_VULNERABLE | Auditor::STATUS_ABANDONED,
             'output' => 'Found 2 security vulnerability advisories affecting 1 package:
 +-------------------+----------------------------------------------------------------------------------+
 | Package           | vendor1/package1                                                                 |
@@ -174,7 +174,7 @@ Found 2 abandoned packages:
                 'abandoned' => Auditor::ABANDONED_FAIL,
                 'format' => Auditor::FORMAT_JSON,
             ],
-            'expected' => Auditor::BIT_ABANDONED,
+            'expected' => Auditor::STATUS_ABANDONED,
             'output' => '{
     "advisories": [],
     "abandoned": {

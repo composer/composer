@@ -54,9 +54,9 @@ class Auditor
     ];
 
     /** Values to determine the audit result. */
-    public const BIT_OK = 0;
-    public const BIT_VULNERABLE = 1;
-    public const BIT_ABANDONED = 2;
+    public const STATUS_OK = 0;
+    public const STATUS_VULNERABLE = 1;
+    public const STATUS_ABANDONED = 2;
 
     /**
      * @param PackageInterface[] $packages
@@ -66,7 +66,7 @@ class Auditor
      * @param self::ABANDONED_* $abandoned
      * @param array<string> $ignoredSeverities List of ignored severity levels
      *
-     * @return int A bitmask calculation of vulnerable and abandoned packages found
+     * @return int-mask<self::STATUS_*> A bitmask of STATUS_* constants or 0 on success
      * @throws InvalidArgumentException If no packages are passed in
      */
     public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_FAIL, array $ignoredSeverities = []): int
@@ -112,16 +112,15 @@ class Auditor
         if ($affectedPackagesCount > 0 || count($ignoredAdvisories) > 0) {
             $passes = [
                 [$ignoredAdvisories, "<info>Found %d ignored security vulnerability advisor%s affecting %d package%s%s</info>"],
-                // this has to run last to allow $affectedPackagesCount in the return statement to be correct
                 [$advisories, "<$errorOrWarn>Found %d security vulnerability advisor%s affecting %d package%s%s</$errorOrWarn>"],
             ];
             foreach ($passes as [$advisoriesToOutput, $message]) {
-                [$affectedPackagesCount, $totalAdvisoryCount] = $this->countAdvisories($advisoriesToOutput);
-                if ($affectedPackagesCount > 0) {
+                [$pkgCount, $totalAdvisoryCount] = $this->countAdvisories($advisoriesToOutput);
+                if ($pkgCount > 0) {
                     $plurality = $totalAdvisoryCount === 1 ? 'y' : 'ies';
-                    $pkgPlurality = $affectedPackagesCount === 1 ? '' : 's';
+                    $pkgPlurality = $pkgCount === 1 ? '' : 's';
                     $punctuation = $format === 'summary' ? '.' : ':';
-                    $io->writeError(sprintf($message, $totalAdvisoryCount, $plurality, $affectedPackagesCount, $pkgPlurality, $punctuation));
+                    $io->writeError(sprintf($message, $totalAdvisoryCount, $plurality, $pkgCount, $pkgPlurality, $punctuation));
                     $this->outputAdvisories($io, $advisoriesToOutput, $format);
                 }
             }
@@ -410,18 +409,18 @@ class Auditor
     }
 
     /**
-     * Produces a bitmask from the audit results.
+     * @return int-mask<self::STATUS_*>
      */
-    private function calculateBitmask(bool $hasVulnerablePackages, bool $hasabandonedPackages): int
+    private function calculateBitmask(bool $hasVulnerablePackages, bool $hasAbandonedPackages): int
     {
-        $bitmask = self::BIT_OK;
+        $bitmask = self::STATUS_OK;
 
         if ($hasVulnerablePackages) {
-            $bitmask |= self::BIT_VULNERABLE;
+            $bitmask |= self::STATUS_VULNERABLE;
         }
 
-        if ($hasabandonedPackages) {
-            $bitmask |= self::BIT_ABANDONED;
+        if ($hasAbandonedPackages) {
+            $bitmask |= self::STATUS_ABANDONED;
         }
 
         return $bitmask;
