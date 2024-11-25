@@ -59,6 +59,11 @@ class ProxyManager
         self::$instance = null;
     }
 
+    public function hasProxy(): bool
+    {
+        return $this->httpProxy !== null || $this->httpsProxy !== null;
+    }
+
     /**
      * Returns a RequestProxy instance for the request url
      *
