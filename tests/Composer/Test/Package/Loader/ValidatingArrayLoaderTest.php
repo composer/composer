@@ -52,7 +52,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     'keywords' => ['a', 'b_c', 'D E', 'éîüø', '微信'],
                     'homepage' => 'https://foo.com',
                     'time' => '2010-10-10T10:10:10+00:00',
-                    'license' => 'MIT',
+                    'license' => ['MIT', 'WTFPL'],
                     'authors' => [
                         [
                             'name' => 'Alice',
@@ -165,12 +165,6 @@ class ValidatingArrayLoaderTest extends TestCase
                     'transport-options' => ['ssl' => ['local_cert' => '/opt/certs/test.pem']],
                 ],
             ],
-            [ // test licenses as array
-                [
-                    'name' => 'foo/bar',
-                    'license' => ['MIT', 'WTFPL'],
-                ],
-            ],
             [ // test bin as string
                 [
                     'name' => 'foo/bar',
@@ -252,7 +246,7 @@ class ValidatingArrayLoaderTest extends TestCase
      * @param array<string, mixed> $config
      * @param string[]             $expectedWarnings
      */
-    public function testLoadSkipsWarningDataWhenIgnoringErrors(array $config, array $expectedWarnings, bool $mustCheck = true): void
+    public function testLoadSkipsWarningDataWhenIgnoringErrors(array $config, array $expectedWarnings, bool $mustCheck = true, ?array $expectedArray = null): void
     {
         if (!$mustCheck) {
             self::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
@@ -263,7 +257,7 @@ class ValidatingArrayLoaderTest extends TestCase
         $internalLoader
             ->expects($this->once())
             ->method('load')
-            ->with(['name' => 'a/b']);
+            ->with($expectedArray ?? ['name' => 'a/b']);
 
         $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
         $config['name'] = 'a/b';
@@ -551,6 +545,35 @@ class ValidatingArrayLoaderTest extends TestCase
                     'require.Foo/Baz is invalid, it should not contain uppercase characters. Please use foo/baz instead.',
                 ],
                 false,
+            ],
+            [
+                [
+                    'name' => 'a/b',
+                    'license' => 'XXXXX',
+                ],
+                [
+                    'License "XXXXX" is not a valid SPDX license identifier, see https://spdx.org/licenses/ if you use an open license.'.PHP_EOL.
+                    'If the software is closed-source, you may use "proprietary" as license.',
+                ],
+                true,
+                [
+                    'name' => 'a/b',
+                    'license' => ['XXXXX'],
+                ]
+            ],
+            [
+                [
+                    'name' => 'a/b',
+                    'license' => [['author'=>'bar'], 'MIT'],
+                ],
+                [
+                    'License {"author":"bar"} should be a string.',
+                ],
+                true,
+                [
+                    'name' => 'a/b',
+                    'license' => ['MIT'],
+                ]
             ],
         ];
     }
