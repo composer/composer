@@ -66,7 +66,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     private $driver;
     /** @var ?VersionCacheInterface */
     private $versionCache;
-    /** @var string[] */
+    /** @var list<string> */
     private $emptyReferences = [];
     /** @var array<'tags'|'branches', array<string, TransportException>> */
     private $versionTransportExceptions = [];
@@ -165,7 +165,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function getEmptyReferences(): array
     {
