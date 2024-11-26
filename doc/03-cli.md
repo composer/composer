@@ -1069,9 +1069,10 @@ php composer.phar archive vendor/package 2.0.21 --format=zip
 ## audit
 
 This command is used to audit the packages you have installed
-for possible security issues. It checks for and
-lists security vulnerability advisories according to the
-[Packagist.org api](https://packagist.org/apidoc#list-security-advisories).
+for potential security issues. It checks for and
+lists security vulnerability advisories using the 
+[Packagist.org api](https://packagist.org/apidoc#list-security-advisories)
+by default or other repositories if specified in the `repositories` section of `composer.json`.
 
 The audit command returns the amount of vulnerabilities found. `0` if successful, and up to `255` otherwise.
 
