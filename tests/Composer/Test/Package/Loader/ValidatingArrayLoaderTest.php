@@ -245,6 +245,7 @@ class ValidatingArrayLoaderTest extends TestCase
      *
      * @param array<string, mixed> $config
      * @param string[]             $expectedWarnings
+     * @param array<string, mixed>|null $expectedArray
      */
     public function testLoadSkipsWarningDataWhenIgnoringErrors(array $config, array $expectedWarnings, bool $mustCheck = true, ?array $expectedArray = null): void
     {
