@@ -18,7 +18,9 @@ use Composer\XdebugHandler\XdebugHandler;
 use Composer\Util\Platform;
 use Composer\Util\ErrorHandler;
 
-error_reporting(-1);
+// no E_DEPRECATED for this LTS series, or we get countless deprecation notices related to E_STRICT and explicit nullable types for PHP 8.4+
+// also see ErrorHandler::register()
+error_reporting(E_ALL & ~E_DEPRECATED);
 
 // Restart without Xdebug
 $xdebug = new XdebugHandler('Composer');

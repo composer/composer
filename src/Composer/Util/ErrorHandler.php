@@ -89,7 +89,9 @@ class ErrorHandler
     public static function register(IOInterface $io = null)
     {
         set_error_handler(array(__CLASS__, 'handle'));
-        error_reporting(E_ALL | E_STRICT);
+        // no E_DEPRECATED for this LTS series, or we get countless deprecation notices related to E_STRICT and explicit nullable types for PHP 8.4+
+        // also see bin/composer
+        error_reporting(E_ALL & ~E_DEPRECATED | E_STRICT);
         self::$io = $io;
     }
 }
