@@ -323,6 +323,26 @@
                     "example": "my-extension-source",
                     "default": null
                 },
+                "os-families": {
+                    "type": "array",
+                    "minItems": 1,
+                    "description": "An array of OS families to mark as compatible with the extension. Specifying this property will mean this package is not installable with PIE on any OS family not listed here. Must not be specified alongside os-families-exclude.",
+                    "items": {
+                        "type": "string",
+                        "enum": ["windows", "bsd", "darwin", "solaris", "linux", "unknown"],
+                        "description": "The name of the OS family to mark as compatible."
+                    }
+                },
+                "os-families-exclude": {
+                    "type": "array",
+                    "minItems": 1,
+                    "description": "An array of OS families to mark as incompatible with the extension. Specifying this property will mean this package is installable on any OS family except those listed here. Must not be specified alongside os-families.",
+                    "items": {
+                        "type": "string",
+                        "enum": ["windows", "bsd", "darwin", "solaris", "linux", "unknown"],
+                        "description": "The name of the OS family to exclude."
+                    }
+                },
                 "configure-options": {
                     "type": "array",
                     "description": "These configure options make up the flags that can be passed to ./configure when installing the extension.",
@@ -350,7 +370,14 @@
                         }
                     }
                 }
-            }
+            },
+            "allOf": [
+                {
+                    "not": {
+                        "required": ["os-families", "os-families-exclude"]
+                    }
+                }
+            ]
         },
         "config": {
             "type": "object",
