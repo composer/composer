@@ -149,7 +149,7 @@ class BumpCommandTest extends TestCase
                     'dev/pkg' => '~2.0',
                 ],
             ],
-            ['packages' => ['first/pkg', 'dev/*']],
+            ['packages' => ['first/pkg:3.0.1', 'dev/*']],
             [
                 'require' => [
                     'first/pkg' => '^2.3.4',
