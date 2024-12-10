@@ -55,7 +55,7 @@ class PluginManager
 
     /** @var array<PluginInterface> */
     protected $plugins = [];
-    /** @var array<string, PluginInterface|InstallerInterface> */
+    /** @var array<string, array<PluginInterface|InstallerInterface>> */
     protected $registeredPlugins = [];
 
     /**
@@ -201,6 +201,7 @@ class PluginManager
         if (isset($this->registeredPlugins[$package->getName()])) {
             return;
         }
+        $this->registeredPlugins[$package->getName()] = [];
 
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
@@ -289,14 +290,14 @@ class PluginManager
                 $this->io->writeError('<warning>Loading "'.$package->getName() . '" '.($isGlobalPlugin || $this->runningInGlobalDir ? '(installed globally) ' : '').'which is a legacy composer-installer built for Composer 1.x, it is likely to cause issues as you are running Composer 2.x.</warning>');
                 $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
-                $this->registeredPlugins[$package->getName()] = $installer;
+                $this->registeredPlugins[$package->getName()][] = $installer;
             } elseif (class_exists($class)) {
                 if (!is_a($class, 'Composer\Plugin\PluginInterface', true)) {
                     throw new \RuntimeException('Could not activate plugin "'.$package->getName().'" as "'.$class.'" does not implement Composer\Plugin\PluginInterface');
                 }
                 $plugin = new $class();
                 $this->addPlugin($plugin, $isGlobalPlugin, $package);
-                $this->registeredPlugins[$package->getName()] = $plugin;
+                $this->registeredPlugins[$package->getName()][] = $plugin;
             } elseif ($failOnMissingClasses) {
                 throw new \UnexpectedValueException('Plugin '.$package->getName().' could not be initialized, class not found: '.$class);
             }
@@ -317,13 +318,15 @@ class PluginManager
             return;
         }
 
-        $plugin = $this->registeredPlugins[$package->getName()];
-        unset($this->registeredPlugins[$package->getName()]);
-        if ($plugin instanceof InstallerInterface) {
-            $this->composer->getInstallationManager()->removeInstaller($plugin);
-        } else {
-            $this->removePlugin($plugin);
+        $plugins = $this->registeredPlugins[$package->getName()];
+        foreach ($plugins as $plugin) {
+            if ($plugin instanceof InstallerInterface) {
+                $this->composer->getInstallationManager()->removeInstaller($plugin);
+            } else {
+                $this->removePlugin($plugin);
+            }
         }
+        unset($this->registeredPlugins[$package->getName()]);
     }
 
     /**
@@ -340,14 +343,16 @@ class PluginManager
             return;
         }
 
-        $plugin = $this->registeredPlugins[$package->getName()];
-        if ($plugin instanceof InstallerInterface) {
-            $this->deactivatePackage($package);
-        } else {
-            unset($this->registeredPlugins[$package->getName()]);
-            $this->removePlugin($plugin);
-            $this->uninstallPlugin($plugin);
+        $plugins = $this->registeredPlugins[$package->getName()];
+        foreach ($plugins as $plugin) {
+            if ($plugin instanceof InstallerInterface) {
+                $this->composer->getInstallationManager()->removeInstaller($plugin);
+            } else {
+                $this->removePlugin($plugin);
+                $this->uninstallPlugin($plugin);
+            }
         }
+        unset($this->registeredPlugins[$package->getName()]);
     }
 
     /**
