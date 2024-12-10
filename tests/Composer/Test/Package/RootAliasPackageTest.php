@@ -81,7 +81,7 @@ class RootAliasPackageTest extends TestCase
     }
 
     /**
-     * @return \Prophecy\Prophecy\ObjectProphecy
+     * @return \Prophecy\Prophecy\ObjectProphecy<\Composer\Package\RootPackage>
      */
     protected function getMockRootPackageInterface()
     {

@@ -206,6 +206,7 @@ class FilesystemRepositoryTest extends TestCase
         self::assertTrue($result, 'The file should be considered valid');
         $rawData = \Composer\InstalledVersions::getAllRawData();
         $rawData = end($rawData);
+        /** @phpstan-ignore-next-line */
         self::assertSame(array(
             'root' => array(
                 'install_path' => __DIR__ . '/Fixtures/./',
