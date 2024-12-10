@@ -39,7 +39,13 @@ if (!extension_loaded('iconv') && !extension_loaded('mbstring')) {
 }
 
 if (function_exists('ini_set')) {
-    @ini_set('display_errors', '1');
+    // if display_errors is set to stderr or unset, we set it
+    if ('stderr' !== ini_get('display_errors') && !(bool) ini_get('display_errors')) {
+        // except if we're on a CLI SAPI with log errors enabled and the error_log is empty, in which case errors already go to stderr
+        if (!(bool) ini_get('log_errors') || PHP_SAPI !== 'cli' || '' !== ini_get('error_log')) {
+            @ini_set('display_errors', PHP_SAPI === 'cli' ? 'stderr' : '1');
+        }
+    }
 
     // Set user defined memory limit
     if ($memoryLimit = getenv('COMPOSER_MEMORY_LIMIT')) {
