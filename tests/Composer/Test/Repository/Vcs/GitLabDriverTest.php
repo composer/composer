@@ -33,15 +33,15 @@ class GitLabDriverTest extends TestCase
      */
     private $config;
     /**
-     * @var \Prophecy\Prophecy\ObjectProphecy
+     * @var \Prophecy\Prophecy\ObjectProphecy<\Composer\IO\IOInterface>
      */
     private $io;
     /**
-     * @var \Prophecy\Prophecy\ObjectProphecy
+     * @var \Prophecy\Prophecy\ObjectProphecy<\Composer\Util\ProcessExecutor>
      */
     private $process;
     /**
-     * @var \Prophecy\Prophecy\ObjectProphecy
+     * @var \Prophecy\Prophecy\ObjectProphecy<\Composer\Util\HttpDownloader>
      */
     private $httpDownloader;
 

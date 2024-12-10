@@ -31,11 +31,6 @@ parameters:
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
 
 		-
-			message: "#^Only booleans are allowed in &&, array\\<string, array\\<int\\|string, array\\<string\\>\\|int\\|string\\>\\|bool\\|string\\>\\|bool\\|string\\|null given on the left side\\.$#"
-			count: 1
-			path: ../src/Composer/Autoload/AutoloadGenerator.php
-
-		-
 			message: "#^Only booleans are allowed in &&, bool\\|null given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
@@ -2481,11 +2476,6 @@ parameters:
 			path: ../src/Composer/Config.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, bool\\|string given\\.$#"
-			count: 1
-			path: ../src/Composer/Config.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
 			count: 1
 			path: ../src/Composer/Config.php
@@ -2578,11 +2568,6 @@ parameters:
 		-
 			message: "#^Only booleans are allowed in a negated boolean, string\\|false given\\.$#"
 			count: 2
-			path: ../src/Composer/Console/Application.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, Composer\\\\Composer\\|null given\\.$#"
-			count: 1
 			path: ../src/Composer/Console/Application.php
 
 		-
@@ -2726,11 +2711,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/MultiConflictRule.php
 
 		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Pool.php
-
-		-
 			message: "#^Cannot call method getPackages\\(\\) on Composer\\\\Repository\\\\LockArrayRepository\\|null\\.$#"
 			count: 2
 			path: ../src/Composer/DependencyResolver/PoolBuilder.php
@@ -2756,11 +2736,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/PoolBuilder.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/PoolBuilder.php
-
-		-
 			message: "#^Parameter \\#4 \\$index of method Composer\\\\DependencyResolver\\\\PoolBuilder\\:\\:removeLoadedPackage\\(\\) expects int, int\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/PoolBuilder.php
@@ -2773,11 +2748,6 @@ parameters:
 		-
 			message: "#^Only booleans are allowed in an if condition, array\\<Composer\\\\Package\\\\Link\\> given\\.$#"
 			count: 1
-			path: ../src/Composer/DependencyResolver/PoolOptimizer.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 4
 			path: ../src/Composer/DependencyResolver/PoolOptimizer.php
 
 		-
@@ -3971,7 +3941,22 @@ parameters:
 			path: ../src/Composer/InstalledVersions.php
 
 		-
+			message: "#^Method Composer\\\\InstalledVersions\\:\\:getInstalled\\(\\) should return array\\<int, array\\{root\\: array\\{name\\: string, version\\: string, reference\\: string, pretty_version\\: string, aliases\\: array\\<string\\>, dev\\: bool, install_path\\: string, type\\: string\\}, versions\\: array\\<string, array\\{dev_requirement\\: bool, pretty_version\\?\\: string, version\\?\\: string, aliases\\?\\: array\\<string\\>, reference\\?\\: string, replaced\\?\\: array\\<string\\>, provided\\?\\: array\\<string\\>, install_path\\?\\: string, \\.\\.\\.\\}\\>\\}\\> but returns array\\<int, array\\{root\\: array\\{name\\: string, pretty_version\\: string, version\\: string, reference\\: string\\|null, type\\: string, install_path\\: string, aliases\\: array\\<string\\>, dev\\: bool\\}, versions\\: array\\<string, array\\{pretty_version\\?\\: string, version\\?\\: string, reference\\?\\: string\\|null, type\\?\\: string, install_path\\?\\: string, aliases\\?\\: array\\<string\\>, dev_requirement\\: bool, replaced\\?\\: array\\<string\\>, \\.\\.\\.\\}\\>\\}\\>\\.$#"
+			count: 1
+			path: ../src/Composer/InstalledVersions.php
+
+		-
 			message: "#^Parameter \\#1 \\$constraints of method Composer\\\\Semver\\\\VersionParser\\:\\:parseConstraints\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/InstalledVersions.php
+
+		-
+			message: "#^Static property Composer\\\\InstalledVersions\\:\\:\\$installed \\(array\\{\\}\\|array\\{root\\: array\\{name\\: string, version\\: string, reference\\: string, pretty_version\\: string, aliases\\: array\\<string\\>, dev\\: bool, install_path\\: string, type\\: string\\}, versions\\: array\\<string, array\\{dev_requirement\\: bool, pretty_version\\?\\: string, version\\?\\: string, aliases\\?\\: array\\<string\\>, reference\\?\\: string, replaced\\?\\: array\\<string\\>, provided\\?\\: array\\<string\\>, install_path\\?\\: string, \\.\\.\\.\\}\\>\\}\\|null\\) does not accept array\\{root\\: array\\{name\\: string, pretty_version\\: string, version\\: string, reference\\: string\\|null, type\\: string, install_path\\: string, aliases\\: array\\<string\\>, dev\\: bool\\}, versions\\: array\\<string, array\\{pretty_version\\?\\: string, version\\?\\: string, reference\\?\\: string\\|null, type\\?\\: string, install_path\\?\\: string, aliases\\?\\: array\\<string\\>, dev_requirement\\: bool, replaced\\?\\: array\\<string\\>, \\.\\.\\.\\}\\>\\}\\.$#"
+			count: 2
+			path: ../src/Composer/InstalledVersions.php
+
+		-
+			message: "#^Static property Composer\\\\InstalledVersions\\:\\:\\$installedByVendor \\(array\\<string, array\\{root\\: array\\{name\\: string, version\\: string, reference\\: string, pretty_version\\: string, aliases\\: array\\<string\\>, dev\\: bool, install_path\\: string, type\\: string\\}, versions\\: array\\<string, array\\{dev_requirement\\: bool, pretty_version\\?\\: string, version\\?\\: string, aliases\\?\\: array\\<string\\>, reference\\?\\: string, replaced\\?\\: array\\<string\\>, provided\\?\\: array\\<string\\>, install_path\\?\\: string, \\.\\.\\.\\}\\>\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{root\\: array\\{name\\: string, version\\: string, reference\\: string\\|null, pretty_version\\: string, aliases\\: array\\<string\\>, dev\\: bool, install_path\\: string, type\\: string\\}, versions\\: array\\<string, array\\{dev_requirement\\: bool, pretty_version\\?\\: string, version\\?\\: string, aliases\\?\\: array\\<string\\>, reference\\?\\: string\\|null, replaced\\?\\: array\\<string\\>, provided\\?\\: array\\<string\\>, install_path\\?\\: string, \\.\\.\\.\\}\\>\\}\\>\\.$#"
 			count: 1
 			path: ../src/Composer/InstalledVersions.php
 
@@ -4136,11 +4121,6 @@ parameters:
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
-			message: "#^Constant PHP_WINDOWS_EVENT_CTRL_C not found\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/InstallationManager.php
@@ -4148,11 +4128,6 @@ parameters:
 		-
 			message: "#^Foreach overwrites \\$batch with its value variable\\.$#"
 			count: 2
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Function sapi_windows_set_ctrl_handler not found\\.$#"
-			count: 3
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
@@ -5042,7 +5017,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\Repository\\\\InstalledRepositoryInterface\\|null given\\.$#"
-			count: 3
+			count: 1
 			path: ../src/Composer/Plugin/PluginManager.php
 
 		-
@@ -5227,7 +5202,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
@@ -6466,17 +6441,7 @@ parameters:
 			path: ../src/Composer/Util/GitHub.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/GitHub.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/GitHub.php
-
-		-
-			message: "#^Parameter \\#1 \\$str of function trim expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/GitHub.php
 
@@ -8354,8 +8319,28 @@ parameters:
 			path: ../tests/Composer/Test/Package/LockerTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$aliasOf of class Composer\\\\Package\\\\RootAliasPackage constructor expects Composer\\\\Package\\\\RootPackage, object given\\.$#"
-			count: 5
+			message: "#^Call to an undefined method Prophecy\\\\Prophecy\\\\ObjectProphecy\\<Composer\\\\Package\\\\RootPackage\\>\\:\\:setConflicts\\(\\)\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Package/RootAliasPackageTest.php
+
+		-
+			message: "#^Call to an undefined method Prophecy\\\\Prophecy\\\\ObjectProphecy\\<Composer\\\\Package\\\\RootPackage\\>\\:\\:setDevRequires\\(\\)\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Package/RootAliasPackageTest.php
+
+		-
+			message: "#^Call to an undefined method Prophecy\\\\Prophecy\\\\ObjectProphecy\\<Composer\\\\Package\\\\RootPackage\\>\\:\\:setProvides\\(\\)\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Package/RootAliasPackageTest.php
+
+		-
+			message: "#^Call to an undefined method Prophecy\\\\Prophecy\\\\ObjectProphecy\\<Composer\\\\Package\\\\RootPackage\\>\\:\\:setReplaces\\(\\)\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Package/RootAliasPackageTest.php
+
+		-
+			message: "#^Call to an undefined method Prophecy\\\\Prophecy\\\\ObjectProphecy\\<Composer\\\\Package\\\\RootPackage\\>\\:\\:setRequires\\(\\)\\.$#"
+			count: 1
 			path: ../tests/Composer/Test/Package/RootAliasPackageTest.php
 
 		-
@@ -8579,33 +8564,18 @@ parameters:
 			path: ../tests/Composer/Test/Repository/Vcs/GitHubDriverTest.php
 
 		-
+			message: "#^Call to an undefined method Prophecy\\\\Prophecy\\\\ObjectProphecy\\<Composer\\\\Util\\\\HttpDownloader\\>\\:\\:get\\(\\)\\.$#"
+			count: 3
+			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
+
+		-
 			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$io of static method Composer\\\\Repository\\\\Vcs\\\\GitLabDriver\\:\\:supports\\(\\) expects Composer\\\\IO\\\\IOInterface, object given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$io of class Composer\\\\Repository\\\\Vcs\\\\GitLabDriver constructor expects Composer\\\\IO\\\\IOInterface, object given\\.$#"
-			count: 9
-			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
-
-		-
 			message: "#^Parameter \\#4 \\$body of class Composer\\\\Util\\\\Http\\\\Response constructor expects string\\|null, string\\|false given\\.$#"
 			count: 2
-			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
-
-		-
-			message: "#^Parameter \\#4 \\$httpDownloader of class Composer\\\\Repository\\\\Vcs\\\\GitLabDriver constructor expects Composer\\\\Util\\\\HttpDownloader, object given\\.$#"
-			count: 9
-			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
-
-		-
-			message: "#^Parameter \\#5 \\$process of class Composer\\\\Repository\\\\Vcs\\\\GitLabDriver constructor expects Composer\\\\Util\\\\ProcessExecutor, object given\\.$#"
-			count: 9
 			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
 
 		-

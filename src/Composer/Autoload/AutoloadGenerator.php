@@ -1193,7 +1193,7 @@ HEADER;
         }
 
         foreach ((array) $loader as $prop => $value) {
-            if (is_array($value) && $value && 0 === strpos($prop, $prefix)) {
+            if (is_array($value) && \count($value) !== 0 && 0 === strpos($prop, $prefix)) {
                 $maps[substr($prop, $prefixLen)] = $value;
             }
         }
