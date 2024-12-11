@@ -142,14 +142,10 @@ OUTPUT
             $publishDataStripped,
             [ '--no-check-publish' => true],
             <<<OUTPUT
-./composer.json is valid for simple usage with Composer but has
-strict errors that make it unable to be published as a package
+./composer.json is valid, but with a few warnings
 <warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>
 <warning># General warnings</warning>
 - No license specified, it is recommended to do so. For closed-source software you may use "proprietary" as license.
-<warning># Publish warnings</warning>
-- name : The property name is required
-- description : The property description is required
 OUTPUT
         ];
     }
