@@ -146,7 +146,7 @@ EOT
 
         if (\count($errors) > 0) {
             $io->writeError('<error>' . $name . ' is invalid, the following errors/warnings were found:</error>');
-        } elseif (\count($publishErrors) > 0) {
+        } elseif (\count($publishErrors) > 0 && $checkPublish) {
             $io->writeError('<info>' . $name . ' is valid for simple usage with Composer but has</info>');
             $io->writeError('<info>strict errors that make it unable to be published as a package</info>');
             $doPrintSchemaUrl = $printSchemaUrl;
