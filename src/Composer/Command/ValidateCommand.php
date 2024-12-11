@@ -68,7 +68,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $file = $input->getArgument('file') ?: Factory::getComposerFile();
+        $file = $input->getArgument('file') ?? Factory::getComposerFile();
         $io = $this->getIO();
 
         if (!file_exists($file)) {
@@ -144,16 +144,16 @@ EOT
     {
         $doPrintSchemaUrl = false;
 
-        if ($errors) {
+        if (\count($errors) > 0) {
             $io->writeError('<error>' . $name . ' is invalid, the following errors/warnings were found:</error>');
-        } elseif ($publishErrors) {
+        } elseif (\count($publishErrors) > 0) {
             $io->writeError('<info>' . $name . ' is valid for simple usage with Composer but has</info>');
             $io->writeError('<info>strict errors that make it unable to be published as a package</info>');
             $doPrintSchemaUrl = $printSchemaUrl;
-        } elseif ($warnings) {
+        } elseif (\count($warnings) > 0) {
             $io->writeError('<info>' . $name . ' is valid, but with a few warnings</info>');
             $doPrintSchemaUrl = $printSchemaUrl;
-        } elseif ($lockErrors) {
+        } elseif (\count($lockErrors) > 0) {
             $io->write('<info>' . $name . ' is valid but your composer.lock has some '.($checkLock ? 'errors' : 'warnings').'</info>');
         } else {
             $io->write('<info>' . $name . ' is valid</info>');
@@ -163,13 +163,13 @@ EOT
             $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         }
 
-        if ($errors) {
+        if (\count($errors) > 0) {
             $errors = array_map(static function ($err): string {
                 return '- ' . $err;
             }, $errors);
             array_unshift($errors, '# General errors');
         }
-        if ($warnings) {
+        if (\count($warnings) > 0) {
             $warnings = array_map(static function ($err): string {
                 return '- ' . $err;
             }, $warnings);
@@ -180,22 +180,17 @@ EOT
         $extraWarnings = [];
 
         // If checking publish errors, display them as errors, otherwise just show them as warnings
-        if ($publishErrors) {
+        if (\count($publishErrors) > 0 && $checkPublish) {
             $publishErrors = array_map(static function ($err): string {
                 return '- ' . $err;
             }, $publishErrors);
 
-            if ($checkPublish) {
-                array_unshift($publishErrors, '# Publish errors');
-                $errors = array_merge($errors, $publishErrors);
-            } else {
-                array_unshift($publishErrors, '# Publish warnings');
-                $extraWarnings = array_merge($extraWarnings, $publishErrors);
-            }
+            array_unshift($publishErrors, '# Publish errors');
+            $errors = array_merge($errors, $publishErrors);
         }
 
         // If checking lock errors, display them as errors, otherwise just show them as warnings
-        if ($lockErrors) {
+        if (\count($lockErrors) > 0) {
             if ($checkLock) {
                 array_unshift($lockErrors, '# Lock file errors');
                 $errors = array_merge($errors, $lockErrors);
