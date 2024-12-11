@@ -42,7 +42,12 @@ if (!extension_loaded('iconv') && !extension_loaded('mbstring')) {
 }
 
 if (function_exists('ini_set')) {
-    @ini_set('display_errors', '1');
+    // check if error logging is on, but to an empty destination - for the CLI SAPI, that means stderr
+    $logsToSapiDefault = ('' === ini_get('error_log') && (bool) ini_get('log_errors'));
+    // on the CLI SAPI, ensure errors are displayed on stderr, either via display_errors or via error_log
+    if (PHP_SAPI === 'cli') {
+        @ini_set('display_errors', $logsToSapiDefault ? '0' : 'stderr');
+    }
 
     // Set user defined memory limit
     if ($memoryLimit = getenv('COMPOSER_MEMORY_LIMIT')) {
