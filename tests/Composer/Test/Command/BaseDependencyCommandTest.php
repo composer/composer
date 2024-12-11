@@ -464,11 +464,10 @@ OUTPUT
             0
         ];
 
-        yield 'there is no installed package depending on the package in versions not matching a specific version' => [
+        yield 'Package is already installed!' => [
             ['package' => 'vendor1/package1', 'version' => '^1.3'],
             <<<OUTPUT
-There is no installed package depending on "vendor1/package1" in versions not matching ^1.3
-Not finding what you were looking for? Try calling `composer require "vendor1/package1:^1.3" --dry-run` to get another view on the problem.
+Package "vendor1/package1" 1.3.0 is already installed! To find out why, run `composer why vendor1/package1`
 OUTPUT
 ,
             0
