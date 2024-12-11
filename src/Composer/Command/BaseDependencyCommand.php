@@ -126,6 +126,9 @@ abstract class BaseDependencyCommand extends BaseCommand
                 $extraNotice = ' (version provided by config.platform)';
             }
             $this->getIO()->writeError('<info>Package "'.$needle.' '.$textConstraint.'" found in version "'.$matchedPackage->getPrettyVersion().'"'.$extraNotice.'.</info>');
+        } elseif ($inverted) {
+            $this->getIO()->write('<comment>Package "'.$needle.'" '.$matchedPackage->getPrettyVersion().' is already installed! To find out why, run `composer why '.$needle.'`</comment>');
+            return 0;
         }
 
         // Include replaced packages for inverted lookups as they are then the actual starting point to consider
