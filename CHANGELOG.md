@@ -1,3 +1,10 @@
+### [2.2.25] 2024-12-11
+
+  * Fixed deprecation notices appearing on this LTS version in case it is used on modern PHP. Modern PHP support is not guaranteed nor tested for though and the main purpose of LTS releases is legacy PHP versions support. (#12217)
+  * Fixed issue on plugin upgrade when it defines multiple classes (#12226)
+  * Fixed duplicate errors appearing in the output depending on php settings (#12214)
+  * Fixed InstalledVersions returning duplicate data in some instances (#12225)
+
 ### [2.2.24] 2024-06-10
 
   * Security: Fixed command injection via malicious git branch name (GHSA-47f6-5gq3-vx9c / CVE-2024-35241)
@@ -1517,6 +1524,7 @@
 
   * Initial release
 
+[2.2.25]: https://github.com/composer/composer/compare/2.2.24...2.2.25
 [2.2.24]: https://github.com/composer/composer/compare/2.2.23...2.2.24
 [2.2.23]: https://github.com/composer/composer/compare/2.2.22...2.2.23
 [2.2.22]: https://github.com/composer/composer/compare/2.2.21...2.2.22
