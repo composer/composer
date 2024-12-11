@@ -404,6 +404,12 @@ EOT
                 ) {
                     continue;
                 }
+
+                // disable symlinking for the root package by default as that most likely makes no sense
+                if (($repoConfig['type'] ?? null) === 'path' && !isset($repoConfig['options']['symlink'])) {
+                    $repoConfig['options']['symlink'] = false;
+                }
+
                 $repositorySet->addRepository(RepositoryFactory::createRepo($io, $config, $repoConfig, $rm));
             }
         }
