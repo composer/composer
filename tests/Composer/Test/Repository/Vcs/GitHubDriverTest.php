@@ -192,7 +192,7 @@ class GitHubDriverTest extends TestCase
         $httpDownloader->expects($this->at(3))
             ->method('get')
             ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/contents/.github/FUNDING.yml'))
-            ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"encoding": "base64", "content": "'.base64_encode("custom: https://example.com").'"}')));
+            ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"encoding": "base64", "content": "'.base64_encode("custom: [\"https://example.com/funding\", octocat.com]").'"}')));
 
         $repoConfig = array(
             'url' => $repoUrl,
