@@ -623,6 +623,14 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         $bits = parse_url($value);
+        if ($bits === false) {
+            return false;
+        }
+
+        if (array_key_exists('path', $bits) && !array_key_exists('scheme', $bits) && !array_key_exists('host', $bits)) {
+            return true;
+        }
+
         if (empty($bits['scheme']) || empty($bits['host'])) {
             return false;
         }

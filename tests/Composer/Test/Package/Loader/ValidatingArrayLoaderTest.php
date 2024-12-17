@@ -84,6 +84,14 @@ class ValidatingArrayLoaderTest extends TestCase
                         [
                             'url' => 'https://example.org/fund',
                         ],
+                        [
+                            'type' => 'custom',
+                            'url' => 'example.com',
+                        ],
+                        [
+                            'type' => 'custom',
+                            'url' => 'example.com/fund#fundus',
+                        ],
                     ],
                     'require' => [
                         'a/b' => '1.*',
