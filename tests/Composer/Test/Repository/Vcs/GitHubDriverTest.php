@@ -237,6 +237,102 @@ class GitHubDriverTest extends TestCase
         self::assertSame('https://github.com/composer/packagist/tree/feature/3.2-foo', $data['support']['source']);
     }
 
+    /**
+     * @dataProvider fundingUrlProvider
+     * @param array<array{type: string, url: string}>|null $expected
+     */
+    public function testFundingFormat(string $funding, ?array $expected): void
+    {
+        $repoUrl = 'http://github.com/composer/packagist';
+        $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
+        $identifier = 'feature/3.2-foo';
+        $sha = 'SOMESHA';
+
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io->expects($this->any())
+            ->method('isInteractive')
+            ->will($this->returnValue(true));
+
+        $httpDownloader = $this->getHttpDownloaderMock($io, $this->config);
+        $httpDownloader->expects(
+            [
+                ['url' => $repoApiUrl, 'body' => '{"master_branch": "test_master", "owner": {"login": "composer"}, "name": "packagist"}'],
+                ['url' => 'https://api.github.com/repos/composer/packagist/contents/composer.json?ref=feature%2F3.2-foo', 'body' => '{"encoding":"base64","content":"'.base64_encode('{"support": {"source": "'.$repoUrl.'" }}').'"}'],
+                ['url' => 'https://api.github.com/repos/composer/packagist/commits/feature%2F3.2-foo', 'body' => '{"commit": {"committer":{ "date": "2012-09-10"}}}'],
+                ['url' => 'https://api.github.com/repos/composer/packagist/contents/.github/FUNDING.yml', 'body' => '{"encoding": "base64", "content": "'.base64_encode($funding).'"}'],
+            ],
+            true
+        );
+
+        $repoConfig = [
+            'url' => $repoUrl,
+        ];
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $this->getProcessExecutorMock());
+        $gitHubDriver->initialize();
+        $this->setAttribute($gitHubDriver, 'tags', [$identifier => $sha]);
+        $this->setAttribute($gitHubDriver, 'branches', ['test_master' => $sha]);
+
+        $data = $gitHubDriver->getComposerInformation($identifier);
+
+        self::assertIsArray($data);
+        if ($expected === null) {
+            self::assertArrayNotHasKey('funding', $data);
+        } else {
+            self::assertSame(array_values($expected), array_values($data['funding']));
+        }
+    }
+
+    public static function fundingUrlProvider(): array
+    {
+        return [
+            [
+                'custom: example.com',
+                null,
+            ],
+            [
+                'custom: [example.com]',
+                null,
+            ],
+            [
+                'custom: "https://example.com"',
+                [
+                    [
+                        'type' => 'custom',
+                        'url' => 'https://example.com',
+                    ],
+                ],
+            ],
+            [
+                'custom: ["https://example.com"]',
+                [
+                    [
+                        'type' => 'custom',
+                        'url' => 'https://example.com',
+                    ],
+                ],
+            ],
+            [
+                'custom: ["https://example.com", example.org]',
+                [
+                    [
+                        'type' => 'custom',
+                        'url' => 'https://example.com',
+                    ],
+                ],
+            ],
+            [
+                'custom: [example.net/funding, "https://example.com", example.org]',
+                [
+                    [
+                        'type' => 'custom',
+                        'url' => 'https://example.com',
+                    ],
+                ],
+            ],
+        ];
+    }
+
     public function testPublicRepositoryArchived(): void
     {
         $repoUrl = 'http://github.com/composer/packagist';
