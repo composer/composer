@@ -287,6 +287,19 @@ class GitHubDriver extends VcsDriver
                 case 'buy_me_a_coffee':
                     $result[$key]['url'] = 'https://www.buymeacoffee.com/' . basename($item['url']);
                     break;
+                case 'custom':
+                    $bits = parse_url($item['url']);
+                    if ($bits === false) {
+                        unset($result[$key]);
+                        break;
+                    }
+
+                    if (!array_key_exists('scheme', $bits) && !array_key_exists('host', $bits)) {
+                        $this->io->writeError('<warning>Funding URL '.$item['url'].' not in a supported format.</warning>');
+                        unset($result[$key]);
+                        break;
+                    }
+                    break;
             }
         }
 
