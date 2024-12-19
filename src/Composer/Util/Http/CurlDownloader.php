@@ -426,7 +426,7 @@ class CurlDownloader
                 }
                 fclose($job['bodyHandle']);
 
-                if ($response->getStatusCode() >= 400 && $response->getHeader('content-type') === 'application/json') {
+                if ($response->getStatusCode() >= 300 && $response->getHeader('content-type') === 'application/json') {
                     HttpDownloader::outputWarnings($this->io, $job['origin'], json_decode($response->getBody(), true));
                 }
 
