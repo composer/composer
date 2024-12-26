@@ -1310,6 +1310,10 @@ INITIALIZER;
 
                     $autoloads[$namespace][] = $relativePath;
                 }
+
+                if (array_key_exists($namespace, $autoloads) && is_array($autoloads[$namespace])) {
+                    sort($autoloads[$namespace]);
+                }
             }
         }
 
