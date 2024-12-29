@@ -7,7 +7,27 @@ it should not be relied upon in the long term.
 An alternative is to use this script which only works with UNIX utilities:
 
 ```shell
+<!-- Please remember to select the appropriate branch:
 #!/bin/sh
+
+EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+
+if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]
+then
+    >&2 echo 'ERROR: Invalid installer checksum'
+    rm composer-setup.php
+    exit 1
+fi
+
+php composer-setup.php --quiet
+RESULT=$?
+rm composer-setup.php
+exit $RESULTFor bug fixes pick the oldest branch where the fix applies (e.g. `2.4` if that version is affected, `1.10` if it is a critical fix that should be fixed in Composer 1, otherwise `main`)
+
+For new features and everything else, use the main branch. -->
+!/bin/sh
 
 EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
