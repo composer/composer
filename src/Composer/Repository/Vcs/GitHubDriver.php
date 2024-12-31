@@ -257,35 +257,35 @@ class GitHubDriver extends VcsDriver
 
         foreach ($result as $key => $item) {
             switch ($item['type']) {
-                case 'tidelift':
-                    $result[$key]['url'] = 'https://tidelift.com/funding/github/' . $item['url'];
+                case 'community_bridge':
+                    $result[$key]['url'] = 'https://funding.communitybridge.org/projects/' . basename($item['url']);
                     break;
                 case 'github':
                     $result[$key]['url'] = 'https://github.com/' . basename($item['url']);
                     break;
-                case 'patreon':
-                    $result[$key]['url'] = 'https://www.patreon.com/' . basename($item['url']);
-                    break;
-                case 'otechie':
-                    $result[$key]['url'] = 'https://otechie.com/' . basename($item['url']);
-                    break;
-                case 'open_collective':
-                    $result[$key]['url'] = 'https://opencollective.com/' . basename($item['url']);
-                    break;
-                case 'liberapay':
-                    $result[$key]['url'] = 'https://liberapay.com/' . basename($item['url']);
+                case 'issuehunt':
+                    $result[$key]['url'] = 'https://issuehunt.io/r/' . $item['url'];
                     break;
                 case 'ko_fi':
                     $result[$key]['url'] = 'https://ko-fi.com/' . basename($item['url']);
                     break;
-                case 'issuehunt':
-                    $result[$key]['url'] = 'https://issuehunt.io/r/' . $item['url'];
+                case 'liberapay':
+                    $result[$key]['url'] = 'https://liberapay.com/' . basename($item['url']);
                     break;
-                case 'community_bridge':
-                    $result[$key]['url'] = 'https://funding.communitybridge.org/projects/' . basename($item['url']);
+                case 'open_collective':
+                    $result[$key]['url'] = 'https://opencollective.com/' . basename($item['url']);
+                    break;
+                case 'patreon':
+                    $result[$key]['url'] = 'https://www.patreon.com/' . basename($item['url']);
+                    break;
+                case 'tidelift':
+                    $result[$key]['url'] = 'https://tidelift.com/funding/github/' . $item['url'];
                     break;
                 case 'buy_me_a_coffee':
                     $result[$key]['url'] = 'https://www.buymeacoffee.com/' . basename($item['url']);
+                    break;
+                case 'otechie':
+                    $result[$key]['url'] = 'https://otechie.com/' . basename($item['url']);
                     break;
             }
         }
