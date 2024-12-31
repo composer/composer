@@ -281,8 +281,14 @@ class GitHubDriver extends VcsDriver
                 case 'tidelift':
                     $result[$key]['url'] = 'https://tidelift.com/funding/github/' . $item['url'];
                     break;
+                case 'polar':
+                    $result[$key]['url'] = 'https://polar.sh/' . basename($item['url']);
+                    break;
                 case 'buy_me_a_coffee':
                     $result[$key]['url'] = 'https://www.buymeacoffee.com/' . basename($item['url']);
+                    break;
+                case 'thanks_dev':
+                    $result[$key]['url'] = 'https://thanks.dev/' . basename($item['url']);
                     break;
                 case 'otechie':
                     $result[$key]['url'] = 'https://otechie.com/' . basename($item['url']);
