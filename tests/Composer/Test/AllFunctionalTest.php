@@ -96,6 +96,7 @@ class AllFunctionalTest extends TestCase
 
         self::assertFileExists(self::$pharPath);
         copy(self::$pharPath, __DIR__.'/../../composer-test.phar');
+        chmod(__DIR__.'/../../composer-test.phar', 0777);
     }
 
     /**
