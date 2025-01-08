@@ -50,7 +50,7 @@ class Tar
         }
 
         $composerJsonPath = key($topLevelPaths).'/composer.json';
-        if ($topLevelPaths && isset($phar[$composerJsonPath])) {
+        if (\count($topLevelPaths) > 0 && isset($phar[$composerJsonPath])) {
             return $phar[$composerJsonPath]->getContent();
         }
 
