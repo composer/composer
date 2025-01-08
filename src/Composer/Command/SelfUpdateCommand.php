@@ -23,6 +23,7 @@ use Composer\SelfUpdate\Versions;
 use Composer\IO\IOInterface;
 use Composer\Downloader\FilesystemException;
 use Composer\Downloader\TransportException;
+use Phar;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
 use Composer\Console\Input\InputArgument;
@@ -116,9 +117,9 @@ EOT
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('data-dir');
         $home = $config->get('home');
-        $localFilename = realpath($_SERVER['argv'][0]);
-        if (false === $localFilename) {
-            $localFilename = $_SERVER['argv'][0];
+        $localFilename = Phar::running(false);
+        if ('' === $localFilename) {
+            throw new \RuntimeException('Could not determine the location of the composer.phar file as it appears you are not running this code from a phar archive.');
         }
 
         if ($input->getOption('update-keys')) {
