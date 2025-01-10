@@ -163,7 +163,7 @@ class GitLab
                     }
 
                     $this->io->writeError('You can also manually create a personal access token enabling the "read_api" scope at:');
-                    $this->io->writeError($scheme.'://'.$originUrl.'/profile/personal_access_tokens');
+                    $this->io->writeError($personalAccessTokenLink);
                     $this->io->writeError('Add it using "composer config --global --auth gitlab-token.'.$originUrl.' <token>"');
 
                     continue;
