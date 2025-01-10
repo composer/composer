@@ -288,7 +288,7 @@ class GitHubDriver extends VcsDriver
                     $result[$key]['url'] = 'https://www.buymeacoffee.com/' . basename($item['url']);
                     break;
                 case 'thanks_dev':
-                    $result[$key]['url'] = 'https://thanks.dev/' . basename($item['url']);
+                    $result[$key]['url'] = 'https://thanks.dev/' . $item['url'];
                     break;
                 case 'otechie':
                     $result[$key]['url'] = 'https://otechie.com/' . basename($item['url']);
