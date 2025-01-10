@@ -301,6 +301,11 @@ class GitHubDriver extends VcsDriver
                     }
 
                     if (!array_key_exists('scheme', $bits) && !array_key_exists('host', $bits)) {
+                        if (Preg::isMatch('{^[a-z0-9-]++\.[a-z]{2,3}$}', $item['url'])) {
+                            $result[$key]['url'] = 'https://'.$item['url'];
+                            break;
+                        }
+
                         $this->io->writeError('<warning>Funding URL '.$item['url'].' not in a supported format.</warning>');
                         unset($result[$key]);
                         break;
