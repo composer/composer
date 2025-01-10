@@ -288,11 +288,21 @@ class GitHubDriverTest extends TestCase
         return [
             [
                 'custom: example.com',
-                null,
+                [
+                    [
+                        'type' => 'custom',
+                        'url' => 'https://example.com',
+                    ],
+                ],
             ],
             [
                 'custom: [example.com]',
-                null,
+                [
+                    [
+                        'type' => 'custom',
+                        'url' => 'https://example.com',
+                    ],
+                ],
             ],
             [
                 'custom: "https://example.com"',
@@ -319,6 +329,10 @@ class GitHubDriverTest extends TestCase
                         'type' => 'custom',
                         'url' => 'https://example.com',
                     ],
+                    [
+                        'type' => 'custom',
+                        'url' => 'https://example.org',
+                    ],
                 ],
             ],
             [
@@ -327,6 +341,10 @@ class GitHubDriverTest extends TestCase
                     [
                         'type' => 'custom',
                         'url' => 'https://example.com',
+                    ],
+                    [
+                        'type' => 'custom',
+                        'url' => 'https://example.org',
                     ],
                 ],
             ],
