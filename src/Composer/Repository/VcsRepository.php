@@ -443,6 +443,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             $data['source'] = $driver->getSource($identifier);
         }
 
+        // if custom dist info is provided but does not provide a reference, copy the source reference to it
+        if (is_array($data['dist']) && !isset($data['dist']['reference']) && isset($data['source']['reference'])) {
+            $data['dist']['reference'] = $data['source']['reference'];
+        }
+
         return $data;
     }
 
