@@ -231,7 +231,7 @@ EOT
 
         $requirements = $this->formatRequirements($requirements);
 
-        if (!$input->getOption('dev') && $io->isInteractive()) {
+        if (!$input->getOption('dev') && $io->isInteractive() && !$composer->isGlobal()) {
             $devPackages = [];
             $devTags = ['dev', 'testing', 'static analysis'];
             $currentRequiresByKey = $this->getPackagesByRequireKey();
