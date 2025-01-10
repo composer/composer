@@ -266,4 +266,31 @@ class InstalledVersionsTest extends TestCase
         self::assertSame('/foo/bar/vendor/c/c', \Composer\InstalledVersions::getInstallPath('c/c'));
         self::assertNull(\Composer\InstalledVersions::getInstallPath('foo/impl'));
     }
+
+    public function testWithClassLoaderLoaded(): void
+    {
+        // disable multiple-ClassLoader-based checks of InstalledVersions by making it seem like no
+        // class loaders are registered
+        $prop = new \ReflectionProperty(ClassLoader::class, 'registeredLoaders');
+        $prop->setAccessible(true);
+        $prop->setValue(null, array_slice(self::$previousRegisteredLoaders, 0, 1, true));
+
+        $prop2 = new \ReflectionProperty(InstalledVersions::class, 'installedIsLocalDir');
+        $prop2->setAccessible(true);
+        $prop2->setValue(null, true);
+
+        self::assertFalse(InstalledVersions::isInstalled('foo/bar'));
+        InstalledVersions::reload([
+            'root' => InstalledVersions::getRootPackage(),
+            'versions' => [
+                'foo/bar' => [
+                    'version' => '1.0.0',
+                    'dev_requirement' => false,
+                ],
+            ],
+        ]);
+        self::assertTrue(InstalledVersions::isInstalled('foo/bar'));
+
+        $prop->setValue(null, []);
+    }
 }
