@@ -151,7 +151,7 @@ Optional.
 
 Release date of the version.
 
-Must be in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS` format.
+Must be in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS` format in UTC timezone.
 
 Optional.
 

@@ -14,6 +14,7 @@ namespace Composer\Test\Command;
 
 use Composer\Composer;
 use Composer\Test\TestCase;
+use Symfony\Component\Process\Process;
 
 /**
  * @group slow
@@ -24,23 +25,15 @@ class SelfUpdateCommandTest extends TestCase
     /**
      * @var string
      */
-    private $prevArgv;
+    private $phar;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->prevArgv = $_SERVER['argv'][0];
         $dir = $this->initTempComposer();
         copy(__DIR__.'/../../../composer-test.phar', $dir.'/composer.phar');
-        $_SERVER['argv'][0] = $dir.'/composer.phar';
-    }
-
-    public function tearDown(): void
-    {
-        parent::tearDown();
-
-        $_SERVER['argv'][0] = $this->prevArgv;
+        $this->phar = $dir.'/composer.phar';
     }
 
     public function testSuccessfulUpdate(): void
@@ -49,20 +42,20 @@ class SelfUpdateCommandTest extends TestCase
             $this->markTestSkipped('On releases this test can fail to upgrade as we are already on latest version');
         }
 
-        $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'self-update']);
+        $appTester = new Process([PHP_BINARY, $this->phar, 'self-update']);
+        $status = $appTester->run();
+        self::assertSame(0, $status, $appTester->getErrorOutput());
 
-        $appTester->assertCommandIsSuccessful();
-        self::assertStringContainsString('Upgrading to version', $appTester->getDisplay());
+        self::assertStringContainsString('Upgrading to version', $appTester->getOutput());
     }
 
     public function testUpdateToSpecificVersion(): void
     {
-        $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'self-update', 'version' => '2.4.0']);
+        $appTester = new Process([PHP_BINARY, $this->phar, 'self-update', '2.4.0']);
+        $status = $appTester->run();
+        self::assertSame(0, $status, $appTester->getErrorOutput());
 
-        $appTester->assertCommandIsSuccessful();
-        self::assertStringContainsString('Upgrading to version 2.4.0', $appTester->getDisplay());
+        self::assertStringContainsString('Upgrading to version 2.4.0', $appTester->getOutput());
     }
 
     public function testUpdateWithInvalidOptionThrowsException(): void
@@ -83,12 +76,12 @@ class SelfUpdateCommandTest extends TestCase
             $this->markTestSkipped('On releases this test can fail to upgrade as we are already on latest version');
         }
 
-        $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'self-update', $option => true]);
-        $appTester->assertCommandIsSuccessful();
+        $appTester = new Process([PHP_BINARY, $this->phar, 'self-update', $option]);
+        $status = $appTester->run();
+        self::assertSame(0, $status, $appTester->getErrorOutput());
 
-        self::assertStringContainsString('Upgrading to version', $appTester->getDisplay());
-        self::assertStringContainsString($expectedOutput, $appTester->getDisplay());
+        self::assertStringContainsString('Upgrading to version', $appTester->getOutput());
+        self::assertStringContainsString($expectedOutput, $appTester->getOutput());
     }
 
     /**

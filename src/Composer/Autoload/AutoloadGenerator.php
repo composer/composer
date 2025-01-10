@@ -578,12 +578,17 @@ EOF;
         }
         $sortedPackageMap = $this->sortPackageMap($packageMap);
         $sortedPackageMap[] = $rootPackageMap;
-        array_unshift($packageMap, $rootPackageMap);
+        $reverseSortedMap = array_reverse($sortedPackageMap);
 
-        $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $rootPackage);
-        $psr4 = $this->parseAutoloadsType($packageMap, 'psr-4', $rootPackage);
-        $classmap = $this->parseAutoloadsType(array_reverse($sortedPackageMap), 'classmap', $rootPackage);
+        // reverse-sorted means root first, then dependents, then their dependents, etc.
+        // which makes sense to allow root to override classmap or psr-0/4 entries with higher precedence rules
+        $psr0 = $this->parseAutoloadsType($reverseSortedMap, 'psr-0', $rootPackage);
+        $psr4 = $this->parseAutoloadsType($reverseSortedMap, 'psr-4', $rootPackage);
+        $classmap = $this->parseAutoloadsType($reverseSortedMap, 'classmap', $rootPackage);
+
+        // sorted (i.e. dependents first) for files to ensure that dependencies are loaded/available once a file is included
         $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $rootPackage);
+        // using sorted here but it does not really matter as all are excluded equally
         $exclude = $this->parseAutoloadsType($sortedPackageMap, 'exclude-from-classmap', $rootPackage);
 
         krsort($psr0);
