@@ -293,6 +293,24 @@ class GitHubDriver extends VcsDriver
                 case 'otechie':
                     $result[$key]['url'] = 'https://otechie.com/' . basename($item['url']);
                     break;
+                case 'custom':
+                    $bits = parse_url($item['url']);
+                    if ($bits === false) {
+                        unset($result[$key]);
+                        break;
+                    }
+
+                    if (!array_key_exists('scheme', $bits) && !array_key_exists('host', $bits)) {
+                        if (Preg::isMatch('{^[a-z0-9-]++\.[a-z]{2,3}$}', $item['url'])) {
+                            $result[$key]['url'] = 'https://'.$item['url'];
+                            break;
+                        }
+
+                        $this->io->writeError('<warning>Funding URL '.$item['url'].' not in a supported format.</warning>');
+                        unset($result[$key]);
+                        break;
+                    }
+                    break;
             }
         }
 
