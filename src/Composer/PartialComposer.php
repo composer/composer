@@ -24,6 +24,11 @@ use Composer\EventDispatcher\EventDispatcher;
 class PartialComposer
 {
     /**
+     * @var bool
+     */
+    private $global = false;
+
+    /**
      * @var RootPackageInterface
      */
     private $package;
@@ -111,5 +116,15 @@ class PartialComposer
     public function getEventDispatcher(): EventDispatcher
     {
         return $this->eventDispatcher;
+    }
+
+    public function isGlobal(): bool
+    {
+        return $this->global;
+    }
+
+    public function setGlobal(): void
+    {
+        $this->global = true;
     }
 }
