@@ -179,6 +179,31 @@ class InitCommandTest extends TestCase
         self::assertEquals($expected, $file->read());
     }
 
+    public function testRunGuessNameFromDirSanitizesDir(): void
+    {
+        $dir = $this->initTempComposer();
+        mkdir($dirName = '_foo_--bar__baz.--..qux__');
+        chdir($dirName);
+
+        $_SERVER['COMPOSER_DEFAULT_VENDOR'] = '.vendorName';
+
+        $appTester = $this->getApplicationTester();
+        $appTester->setInputs(['', '', 'n', '', '', '', 'no', 'no', 'n', 'yes']);
+        $appTester->run(['command' => 'init']);
+
+        self::assertSame(0, $appTester->getStatusCode());
+
+        $expected = [
+            'name' => 'vendor-name/foo-bar_baz.qux',
+            'require' => [],
+        ];
+
+        $file = new JsonFile('./composer.json');
+        self::assertEquals($expected, $file->read());
+
+        unset($_SERVER['COMPOSER_DEFAULT_VENDOR']);
+    }
+
     public function testRunInvalidAuthorArgumentInvalidEmail(): void
     {
         $this->expectException(\InvalidArgumentException::class);
