@@ -91,7 +91,7 @@ EOT
         $allowlist = ['name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license', 'autoload'];
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)), function ($val) { return $val !== null && $val !== []; });
 
-        if (isset($options['name']) && !Preg::isMatch('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $options['name'])) {
+        if (isset($options['name']) && !Preg::isMatch('{^[a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$}D', $options['name'])) {
             throw new \InvalidArgumentException(
                 'The package name '.$options['name'].' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
             );
@@ -274,23 +274,24 @@ EOT
         $name = $input->getOption('name');
         if (null === $name) {
             $name = basename($cwd);
-            $name = Preg::replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
-            $name = strtolower($name);
+            $name = $this->sanitizePackageNameComponent($name);
+
+            $vendor = $name;
             if (!empty($_SERVER['COMPOSER_DEFAULT_VENDOR'])) {
-                $name = $_SERVER['COMPOSER_DEFAULT_VENDOR'] . '/' . $name;
+                $vendor = $_SERVER['COMPOSER_DEFAULT_VENDOR'];
             } elseif (isset($git['github.user'])) {
-                $name = $git['github.user'] . '/' . $name;
+                $vendor = $git['github.user'];
             } elseif (!empty($_SERVER['USERNAME'])) {
-                $name = $_SERVER['USERNAME'] . '/' . $name;
+                $vendor = $_SERVER['USERNAME'];
             } elseif (!empty($_SERVER['USER'])) {
-                $name = $_SERVER['USER'] . '/' . $name;
+                $vendor = $_SERVER['USER'];
             } elseif (get_current_user()) {
-                $name = get_current_user() . '/' . $name;
-            } else {
-                // package names must be in the format foo/bar
-                $name .= '/' . $name;
+                $vendor = get_current_user();
             }
-            $name = strtolower($name);
+
+            $vendor = $this->sanitizePackageNameComponent($vendor);
+
+            $name = $vendor . '/' . $name;
         }
 
         $name = $io->askAndValidate(
@@ -300,7 +301,7 @@ EOT
                     return $name;
                 }
 
-                if (!Preg::isMatch('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $value)) {
+                if (!Preg::isMatch('{^[a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$}D', $value)) {
                     throw new \InvalidArgumentException(
                         'The package name '.$value.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
                     );
@@ -635,5 +636,15 @@ EOT
         $devRequires = isset($options['require-dev']) ? (array) $options['require-dev'] : [];
 
         return !empty($requires) || !empty($devRequires);
+    }
+
+    private function sanitizePackageNameComponent(string $name): string
+    {
+        $name = Preg::replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
+        $name = strtolower($name);
+        $name = Preg::replace('{^[_.-]+|[_.-]+$|[^a-z0-9_.-]}u', '', $name);
+        $name = Preg::replace('{([_.-]){2,}}u', '$1', $name);
+
+        return $name;
     }
 }
