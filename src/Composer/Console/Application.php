@@ -21,6 +21,7 @@ use LogicException;
 use RuntimeException;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
+use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputDefinition;
@@ -173,7 +174,7 @@ class Application extends BaseApplication
 
         // determine command name to be executed without including plugin commands
         $commandName = '';
-        if ($name = $this->getCommandName($input)) {
+        if ($name = $this->getCommandNameBeforeBinding($input)) {
             try {
                 $commandName = $this->find($name)->getName();
             } catch (CommandNotFoundException $e) {
@@ -311,7 +312,7 @@ class Application extends BaseApplication
 
         // determine command name to be executed incl plugin commands, and check if it's a proxy command
         $isProxyCommand = false;
-        if ($name = $this->getCommandName($input)) {
+        if ($name = $this->getCommandNameBeforeBinding($input)) {
             try {
                 $command = $this->find($name);
                 $commandName = $command->getName();
@@ -629,6 +630,24 @@ class Application extends BaseApplication
         }
 
         return $commands;
+    }
+
+    /**
+     * This ensures we can find the correct command name even if a global input option is present before it
+     *
+     * e.g. "composer -d foo bar" should detect bar as the command name, and not foo
+     */
+    private function getCommandNameBeforeBinding(InputInterface $input): ?string
+    {
+        $input = clone $input;
+        try {
+            // Makes ArgvInput::getFirstArgument() able to distinguish an option from an argument.
+            $input->bind($this->getDefinition());
+        } catch (ExceptionInterface $e) {
+            // Errors must be ignored, full binding/validation happens later when the command is known.
+        }
+
+        return $input->getFirstArgument();
     }
 
     public function getLongVersion(): string
