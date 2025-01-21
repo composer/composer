@@ -1,3 +1,16 @@
+### [2.8.5] 2025-01-21
+
+  * Added build provenance attestation so you can also now download and verify phar files from GitHub releases:
+
+        gh release --repo composer/composer download --pattern composer.phar
+        gh attestation verify --repo composer/composer composer.phar
+
+  * Fixed unsupported `funding` values causing parse errors in packages (#12247)
+  * Fixed support for a few newer funding formats (#12257)
+  * Fixed InstalledVersions regression from 2.8.4 when `reload()` is used (#12269)
+  * Fixed psr-0/psr-4 rules having unstable order in `vendor/composer/autoload*.php` (#12263)
+  * Fixed a few warnings happening incorrectly in edge cases (#12284, #12268, #12283)
+
 ### [2.8.4] 2024-12-11
 
   * Fixed exit code of the `audit` command not being meaningful (now 1 for vulnerabilities and 2 for abandoned, 3 for both) (#12203)
@@ -1973,6 +1986,7 @@
 
   * Initial release
 
+[2.8.5]: https://github.com/composer/composer/compare/2.8.4...2.8.5
 [2.8.4]: https://github.com/composer/composer/compare/2.8.3...2.8.4
 [2.8.3]: https://github.com/composer/composer/compare/2.8.2...2.8.3
 [2.8.2]: https://github.com/composer/composer/compare/2.8.1...2.8.2
