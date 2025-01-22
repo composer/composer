@@ -2,7 +2,7 @@
 name: Support request / question
 about: Confused, looking for assistance, and you don't like GitHub Discussions?
 title: ''
-labels: Support
+type: Support
 assignees: ''
 
 ---
