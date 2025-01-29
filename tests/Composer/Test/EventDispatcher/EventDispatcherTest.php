@@ -29,6 +29,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class EventDispatcherTest extends TestCase
 {
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        Platform::clearEnv('COMPOSER_SKIP_SCRIPTS');
+    }
+
     public function testListenerExceptionsAreCaught(): void
     {
         self::expectException('RuntimeException');
@@ -608,6 +614,29 @@ class EventDispatcherTest extends TestCase
         $transaction = $this->getMockBuilder('Composer\DependencyResolver\LockTransaction')->disableOriginalConstructor()->getMock();
 
         $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_OPERATIONS_EXEC, true, true, $transaction);
+    }
+
+    public function testDispatcherDoesntReturnSkippedScripts(): void
+    {
+        Platform::putEnv('COMPOSER_SKIP_SCRIPTS', 'scriptName');
+        $composer = $this->createComposerInstance();
+
+        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
+        $package->method('getScripts')->will($this->returnValue(['scriptName' => ['scriptName']]));
+        $composer->setPackage($package);
+
+        $dispatcher = new EventDispatcher(
+            $composer,
+            $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
+            $this->getProcessExecutorMock()
+        );
+
+        $event = $this->getMockBuilder('Composer\Script\Event')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $event->method('getName')->will($this->returnValue('scriptName'));
+
+        $this->assertFalse($dispatcher->hasEventListeners($event));
     }
 
     public static function call(): void
