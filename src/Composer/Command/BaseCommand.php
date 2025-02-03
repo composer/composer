@@ -258,6 +258,8 @@ abstract class BaseCommand extends Command
             'COMPOSER_PREFER_STABLE' => ['prefer-stable'],
             'COMPOSER_PREFER_LOWEST' => ['prefer-lowest'],
             'COMPOSER_MINIMAL_CHANGES' => ['minimal-changes'],
+            'COMPOSER_WITH_DEPENDENCIES' => ['with-dependencies'],
+            'COMPOSER_WITH_ALL_DEPENDENCIES' => ['with-all-dependencies'],
         ];
         foreach ($envOptions as $envName => $optionNames) {
             foreach ($optionNames as $optionName) {

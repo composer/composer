@@ -205,8 +205,8 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--with-dependencies (-w):** Update also dependencies of packages in the argument list, except those which are root requirements.
-* **--with-all-dependencies (-W):** Update also dependencies of packages in the argument list, including those which are root requirements.
+* **--with-dependencies (-w):** Update also dependencies of packages in the argument list, except those which are root requirements. Can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var.
+* **--with-all-dependencies (-W):** Update also dependencies of packages in the argument list, including those which are root requirements. Can also be set via the COMPOSER_WITH_ALL_DEPENDENCIES=1 env var.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run, so it is currently not done by default.
@@ -289,8 +289,8 @@ If you do not want to install the new dependencies immediately you can call it w
 * **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option. Also see [COMPOSER_NO_DEV](#composer-no-dev).
-* **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements.
-* **--update-with-all-dependencies (-W):** Also update dependencies of the newly required packages, including those that are root requirements.
+* **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements. Can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var.
+* **--update-with-all-dependencies (-W):** Also update dependencies of the newly required packages, including those that are root requirements. Can also be set via the COMPOSER_WITH_ALL_DEPENDENCIES=1 env var.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
@@ -339,10 +339,10 @@ uninstalled.
 * **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--update-no-dev:** Run the dependency update with the --no-dev option. Also see [COMPOSER_NO_DEV](#composer-no-dev).
-* **--update-with-dependencies (-w):** Also update dependencies of the removed packages.
+* **--update-with-dependencies (-w):** Also update dependencies of the removed packages. Can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var.
   (Deprecated, is now default behavior)
 * **--update-with-all-dependencies (-W):** Allows all inherited dependencies to be updated,
-  including those that are root requirements.
+  including those that are root requirements. Can also be set via the COMPOSER_WITH_ALL_DEPENDENCIES=1 env var.
 * **--minimal-changes (-m):** During an update with `-w`/`-W`, only perform absolutely necessary
   changes to transitive dependencies. Can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
@@ -1324,5 +1324,15 @@ If `COMPOSER_IGNORE_PLATFORM_REQS` set to `1`, it is the equivalent of passing t
 Otherwise, specifying a comma separated list in `COMPOSER_IGNORE_PLATFORM_REQ` will ignore those specific requirements.
 
 For example, if a development workstation will never run database queries, this can be used to ignore the requirement for the database extensions to be available. If you set `COMPOSER_IGNORE_PLATFORM_REQ=ext-oci8`, then composer will allow packages to be installed even if the `oci8` PHP extension is not enabled.
+
+### COMPOSER_WITH_DEPENDENCIES
+
+If set to `1`, it is the equivalent of passing the `--with-dependencies` option to
+`update`, `require` or `remove`.
+
+### COMPOSER_WITH_ALL_DEPENDENCIES
+
+If set to `1`, it is the equivalent of passing the `--with-all-dependencies` option to
+`update`, `require` or `remove`.
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
