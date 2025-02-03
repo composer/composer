@@ -1293,6 +1293,10 @@ fully offline with `1`.
 If set to `1`, outputs information about events being dispatched, which can be
 useful for plugin authors to identify what is firing when exactly.
 
+### COMPOSER_SKIP_SCRIPTS
+
+Accepts a comma-seperated list of event names, e.g. `post-install-cmd` for which scripts execution should be skipped.
+
 ### COMPOSER_NO_AUDIT
 
 If set to `1`, it is the equivalent of passing the `--no-audit` option to `require`, `update`, `remove` or `create-project` command.
