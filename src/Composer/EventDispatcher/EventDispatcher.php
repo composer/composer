@@ -83,9 +83,12 @@ class EventDispatcher
         $this->io = $io;
         $this->process = $process ?? new ProcessExecutor($io);
         $this->eventStack = [];
-        $this->skipScripts = array_filter(array_map('trim', explode(',', (string) Platform::getEnv('COMPOSER_SKIP_SCRIPTS'))), function ($val) { 
-            return $val !== '';
-        });
+        $this->skipScripts = array_values(array_filter(
+            array_map('trim', explode(',', (string) Platform::getEnv('COMPOSER_SKIP_SCRIPTS'))), 
+            function ($val) { 
+                return $val !== '';
+            }
+        ));
     }
 
     /**
