@@ -497,6 +497,14 @@ class Application extends BaseApplication
             $io->writeError('<error>Check https://getcomposer.org/doc/faqs/how-to-use-composer-behind-a-proxy.md for details</error>', true, IOInterface::QUIET);
         }
 
+        if (Platform::isWindows() && $exception instanceof TransportException && str_contains($exception->getMessage(), 'unable to get local issuer certificate')) {
+            $avastDetect = glob('C:\Program Files\Avast*');
+            if (is_array($avastDetect) && count($avastDetect) !== 0) {
+                $io->writeError('<error>The following exception indicates a possible issue with the Avast Firewall</error>', true, IOInterface::QUIET);
+                $io->writeError('<error>Check https://getcomposer.org/local-issuer for details</error>', true, IOInterface::QUIET);
+            }
+        }
+
         if (Platform::isWindows() && false !== strpos($exception->getMessage(), 'The system cannot find the path specified')) {
             $io->writeError('<error>The following exception may be caused by a stale entry in your cmd.exe AutoRun</error>', true, IOInterface::QUIET);
             $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#-the-system-cannot-find-the-path-specified-windows- for details</error>', true, IOInterface::QUIET);
