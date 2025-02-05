@@ -323,6 +323,12 @@
                     "example": "my-extension-source",
                     "default": null
                 },
+                "override-download-url-method": {
+                    "type": "string",
+                    "description": "If specified, this technique will be used to override the URL that PIE uses to download the asset. The default, if not specified, is composer-default.",
+                    "enum": ["composer-default", "pre-packaged-source"],
+                    "example": "composer-default"
+                },
                 "os-families": {
                     "type": "array",
                     "minItems": 1,
