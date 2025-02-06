@@ -48,7 +48,7 @@ There are no real trade-offs with this method. It should always be enabled in
 production.
 
 The only issue is it does not keep track of autoload misses (i.e. when
-it cannot find a given class), so those fallback to PSR-4 rules and can still
+it cannot find a given class), so those fall back to PSR-4 rules and can still
 result in slow filesystem checks. To solve this issue two Level 2 optimization
 options exist, and you can decide to enable either if you have a lot of
 class_exists checks that are done for classes that do not exist in your project.
