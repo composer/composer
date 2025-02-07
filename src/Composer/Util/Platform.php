@@ -217,7 +217,11 @@ class Platform
             } catch (\Throwable $e) {
                 break;
             }
-            if (is_string($data) && str_contains($data, '/var/lib/docker/')) {
+            if (!is_string($data)) {
+                continue;
+            }
+            // detect default mount points created by Docker/containerd
+            if (str_contains($data, '/var/lib/docker/') || str_contains($data, '/io.containerd.snapshotter')) {
                 return self::$isDocker = true;
             }
         }
