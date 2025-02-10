@@ -461,10 +461,10 @@ To create a new access token, go to your [applications section on Forgejo](https
 
 When creating a Forgejo access token, make sure it has the `read:repository` scope.
 
-### Command line gitlab-token
+### Command line forgejo-token
 
 ```shell
-php composer.phar config [--global] forgejo-token.gitlab.example.org username access-token
+php composer.phar config [--global] forgejo-token.forgejo.example.org username access-token
 ```
 
 In the above command, the config key `forgejo-token.forgejo.example.org` consists of two parts:
