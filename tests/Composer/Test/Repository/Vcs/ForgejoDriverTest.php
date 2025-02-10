@@ -130,7 +130,7 @@ class ForgejoDriverTest extends TestCase
                     'clone_url' => 'https://codeberg.org/acme/repo.git'
                 ])],
                 ['url' => 'https://codeberg.org/api/v1/repos/acme/repo/tags?per_page=100', 'body' => (string) json_encode([
-                    ['tag_name' => '1.0', 'commit' => ['sha' => 'SOMESHA']]
+                    ['name' => '1.0', 'commit' => ['sha' => 'SOMESHA']]
                 ])]
             ],
             true
