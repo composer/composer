@@ -130,7 +130,7 @@ class ForgejoDriver extends VcsDriver
                 $response = $this->getContents($resource);
                 $tagsData = $response->decodeJson();
                 foreach ($tagsData as $tag) {
-                    $tags[$tag['tag_name']] = $tag['commit']['sha'];
+                    $tags[$tag['name']] = $tag['commit']['sha'];
                 }
 
                 $resource = $this->getNextPage($response);
