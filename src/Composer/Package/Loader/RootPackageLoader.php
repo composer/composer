@@ -60,10 +60,10 @@ class RootPackageLoader extends ArrayLoader
 
         $this->manager = $manager;
         $this->config = $config;
-        if (!$versionGuesser) {
-          $processExecutor = new ProcessExecutor($io);
-          $processExecutor->enableAsync();
-          $versionGuesser = new VersionGuesser($config, $processExecutor, $this->versionParser);
+        if (null === $versionGuesser) {
+            $processExecutor = new ProcessExecutor($io);
+            $processExecutor->enableAsync();
+            $versionGuesser = new VersionGuesser($config, $processExecutor, $this->versionParser);
         }
         $this->versionGuesser = $versionGuesser;
         $this->io = $io;
