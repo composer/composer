@@ -573,7 +573,7 @@ class ClassLoader
          * @return void
          */
         self::$includeFile = \Closure::bind(static function($file) {
-            include $file;
+            include_once $file;
         }, null, null);
     }
 }

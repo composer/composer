@@ -82,4 +82,14 @@ class ClassLoaderTest extends TestCase
         self::assertSame($loader->getPrefixesPsr4(), $loader2->getPrefixesPsr4());
         self::assertSame($loader->getUseIncludePath(), $loader2->getUseIncludePath());
     }
+
+    public function testClassWithDoubleSlashes(): void
+    {
+        $loader = new ClassLoader();
+        $loader->add('Namespaced\\', __DIR__ . '/Fixtures');
+        $loader->loadClass('Namespaced\\\\FooDoubleSlashes');
+        $loader->loadClass('Namespaced\\\\FooDoubleSlashes');
+
+        self::expectNotToPerformAssertions();
+    }
 }
