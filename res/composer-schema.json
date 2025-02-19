@@ -969,9 +969,11 @@
                 "options": {
                     "type": "object",
                     "properties": {
-                        "symlink": { "type": ["boolean", "null"] }
+                        "reference": { "type": ["string"], "enum": ["none", "config", "auto"] },
+                        "symlink": { "type": ["boolean", "null"] },
+                        "relative": { "type": ["boolean"] }
                     },
-                    "additionalProperties": true
+                    "additionalProperties": false
                 }
             }
         },
