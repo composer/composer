@@ -973,7 +973,7 @@
                         "symlink": { "type": ["boolean", "null"] },
                         "relative": { "type": ["boolean"] }
                     },
-                    "additionalProperties": false
+                    "additionalProperties": true
                 }
             }
         },
