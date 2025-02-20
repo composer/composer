@@ -105,7 +105,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
     /**
      * Initializes path repository.
      *
-     * @param array{url?: string, options?: array{symlink?: bool, reference?: string, relative?: bool, versions?: array<string, string>}} $repoConfig
+     * @param array{url?: string, options?: array{symlink?: bool, reference?: string, relative?: bool, versions?: array<string, string>, optional?: bool}} $repoConfig
      */
     public function __construct(array $repoConfig, IOInterface $io, Config $config, ?HttpDownloader $httpDownloader = null, ?EventDispatcher $dispatcher = null, ?ProcessExecutor $process = null)
     {
@@ -158,6 +158,10 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 if (is_dir($url)) {
                     return;
                 }
+            }
+
+            if (array_key_exists('optional', $this->options) && $this->options['optional'] === true) {
+                return;
             }
 
             throw new \RuntimeException('The `url` supplied for the path (' . $this->url . ') repository does not exist');
