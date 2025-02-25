@@ -37,6 +37,17 @@ class ZipArchiverTest extends ArchiverTestCase
         ];
     }
 
+    public function testFolderWithBackslashes(): void
+    {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('Folder names cannot contain backslashes on Windows.');
+        }
+
+        $this->testZipArchive([
+            'folder\with\backslashes/README.md' => '# doc',
+        ]);
+    }
+
     /**
      * @param array<string, string> $files
      */
