@@ -62,7 +62,7 @@ class ZipArchiverTest extends ArchiverTestCase
             $this->markTestSkipped('Folder names cannot contain backslashes on Windows.');
         }
 
-        $this->testZipArchive([
+        $this->assertZipArchive([
             'folder\with\backslashes/README.md' => '# doc',
         ]);
     }
