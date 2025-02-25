@@ -1,3 +1,11 @@
+### [2.8.6] 2025-02-25
+
+  * Added `COMPOSER_WITH_DEPENDENCIES` and `COMPOSER_WITH_ALL_DEPENDENCIES` env vars to enable the `--with[-all]-dependencies` flags (#12289)
+  * Added `COMPOSER_SKIP_SCRIPTS` env var to tell Composer to skip certain script handlers by script names (comma separated) (#12290)
+  * Added error hint when Avast is detected together with curl certificate errors (#9894)
+  * Fixed handling of backslash in folder names when creating archives (#12327)
+  * Fixed detection of containerd for containers to avoid warning about root usage (#12299)
+
 ### [2.8.5] 2025-01-21
 
   * Added build provenance attestation so you can also now download and verify phar files from GitHub releases:
@@ -1986,6 +1994,7 @@
 
   * Initial release
 
+[2.8.6]: https://github.com/composer/composer/compare/2.8.5...2.8.6
 [2.8.5]: https://github.com/composer/composer/compare/2.8.4...2.8.5
 [2.8.4]: https://github.com/composer/composer/compare/2.8.3...2.8.4
 [2.8.3]: https://github.com/composer/composer/compare/2.8.2...2.8.3
