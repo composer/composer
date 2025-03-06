@@ -38,6 +38,46 @@ class ComposerSchemaTest extends TestCase
         self::assertEquals($expectedError, $this->check($json));
     }
 
+    public function versionProvider(): array
+    {
+        return [
+            ['1.0.0', true],
+            ['1.0.2', true],
+            ['1.1.0', true],
+            ['1.0.0-dev', true],
+            ['1.0.0-alpha3', true],
+            ['1.0.0-beta232', true],
+            ['1.0.0-RC', true],
+            ['v2.0.4-p', true],
+            ['dev-master', true],
+            ['0.2.5.4', true],
+
+            ['invalid', false],
+            ['1.0b', false],
+            ['1.0.0-', false],
+        ];
+    }
+
+    /**
+     * @dataProvider versionProvider
+     */
+    public function testVersionPattern(string $version, bool $isValid): void
+    {
+        $json = '{"name": "vendor/package", "description": "description", "version": "' . $version . '"}';
+        if ($isValid) {
+            self::assertTrue($this->check($json));
+        } else {
+            self::assertEquals([
+                [
+                    'property' => 'version',
+                    'message' => 'Does not match the regex pattern ^v?\d+(\.\d+){0,3}(-(dev|(patch|p|alpha|a|beta|b|RC)\d*))?$|^dev-.*$',
+                    'constraint' => 'pattern',
+                    'pattern' => '^v?\d+(\.\d+){0,3}(-(dev|(patch|p|alpha|a|beta|b|RC)\d*))?$|^dev-.*$',
+                ],
+            ], $this->check($json));
+        }
+    }
+
     public function testOptionalAbandonedProperty(): void
     {
         $json = '{"name": "vendor/package", "description": "description", "abandoned": true}';

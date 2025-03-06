@@ -28,7 +28,7 @@
         "version": {
             "type": "string",
             "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes.",
-            "pattern": "^v?\\d+(\\.\\d+){0,3}|^dev-"
+            "pattern": "^v?\\d+(\\.\\d+){0,3}(-(dev|(patch|p|alpha|a|beta|b|RC)\\d*))?$|^dev-.*$"
         },
         "default-branch": {
             "type": ["boolean"],
