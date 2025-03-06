@@ -765,7 +765,7 @@ EOF;
             }
         }
 
-        if (strpos($path, '.phar') !== false) {
+        if (str_ends_with($path, '.phar')) {
             $baseDir = "'phar://' . " . $baseDir;
         }
 
