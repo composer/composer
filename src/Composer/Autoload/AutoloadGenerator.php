@@ -765,7 +765,7 @@ EOF;
             }
         }
 
-        if (str_ends_with($path, '.phar')) {
+        if (Preg::isMatch('{\.phar([\\\\/]|$)}', $path)) {
             $baseDir = "'phar://' . " . $baseDir;
         }
 
