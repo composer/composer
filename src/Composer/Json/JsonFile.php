@@ -392,7 +392,7 @@ class JsonFile
         return self::INDENT_DEFAULT;
     }
 
-    /** @return ?bool, True if it exists, False if it doesn't, null when git is not installed or on other exit codes */
+    /** @return ?bool True if it exists, False if it doesn't, null when git is not installed or on other exit codes */
     public function isInGit(): ?bool
     {
         $code = (new ProcessExecutor($this->io))->execute(['git', 'show', "HEAD~1:{$this->path}", '> /dev/null 2>&1'], $output);
