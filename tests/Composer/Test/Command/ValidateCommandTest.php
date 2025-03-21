@@ -58,7 +58,7 @@ class ValidateCommandTest extends TestCase
 ./composer.json is valid but your composer.lock has some errors
 # Lock file errors
 - Required package "root/req" is not present in the lock file.
-This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.
+This usually happens when composer files are incorrectly merged, the lock file is not in version control or the composer.json file is manually edited.
 Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md
 and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require-r
 OUTPUT;
