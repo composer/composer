@@ -62,7 +62,7 @@ Verifying lock file contents can be installed on current platform.
 - Required package "foo/bar" is in the lock file as "1.0.0" but that does not satisfy your constraint "2.0.0".
 - Required package "foo/provided-wrong-version" is in the lock file as "provided as ^3 by foo/self 1.2.2" but that does not satisfy your constraint "1.0.0".
 - Required package "foo/root-replaced-wrong-version" is in the lock file as "replaced as ^2 by __root__ 1.2.3" but that does not satisfy your constraint "1.0.0".
-This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.
+This usually happens when composer files are incorrectly merged, the lock file is not in version control or the composer.json file is manually edited.
 Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md
 and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require-r
 --EXPECT-EXIT-CODE--
