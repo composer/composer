@@ -96,7 +96,9 @@ EOT
         $checkLock = ($checkLock && $composer->getConfig()->get('lock')) || $input->getOption('check-lock');
         $locker = $composer->getLocker();
         if ($locker->isLocked() && !$locker->isFresh()) {
-            $lockErrors[] = '- The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update` or `composer update <package name>`.';
+            $lockErrors[] =  ($composer->getPackage()->getType() === 'library' && $locker->getJsonFile()->isInGit() === false)
+                ? '- The lock file is not up to date with the latest changes in composer.json. The lock file is not in git and this is a library so the lock file can probably be safely deleted.'
+                : '- The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update` or `composer update <package name>`.';
         }
 
         if ($locker->isLocked()) {

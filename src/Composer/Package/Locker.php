@@ -620,7 +620,7 @@ class Locker
         }
 
         if ($missingRequirements) {
-            $missingRequirementInfo[] = 'This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.';
+            $missingRequirementInfo[] = 'This usually happens when composer files are incorrectly merged, the lock file is not in version control or the composer.json file is manually edited.';
             $missingRequirementInfo[] = 'Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md';
             $missingRequirementInfo[] = 'and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require-r';
         }

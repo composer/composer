@@ -14,6 +14,7 @@ namespace Composer\Json;
 
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
@@ -389,5 +390,20 @@ class JsonFile
             return $match[1];
         }
         return self::INDENT_DEFAULT;
+    }
+
+    /** @return ?bool, True if it exists, False if it doesn't, null when git is not installed or on other exit codes */
+    public function isInGit(): ?bool
+    {
+        $code = (new ProcessExecutor($this->io))->execute(['git', 'show', "HEAD~1:{$this->path}", '> /dev/null 2>&1'], $output);
+        if ($code === 0) {
+            return true;
+        }
+
+        if ($code === 128) {
+            return false;
+        }
+
+        return null;
     }
 }
