@@ -27,8 +27,12 @@ class ComposerSchemaTest extends TestCase
             [
                 'property' => 'name',
                 'message' => 'Does not match the regex pattern ^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$',
-                'constraint' => 'pattern',
-                'pattern' => '^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$',
+                'constraint' => [
+                    'name' => 'pattern',
+                    'params' => [
+                        'pattern' => '^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$',
+                    ]
+                ],
             ],
         ];
 
@@ -71,8 +75,12 @@ class ComposerSchemaTest extends TestCase
                 [
                     'property' => 'version',
                     'message' => 'Does not match the regex pattern ^v?\d+(\.\d+){0,3}(-(dev|(patch|p|alpha|a|beta|b|RC)\d*))?$|^dev-.*$',
-                    'constraint' => 'pattern',
-                    'pattern' => '^v?\d+(\.\d+){0,3}(-(dev|(patch|p|alpha|a|beta|b|RC)\d*))?$|^dev-.*$',
+                    'constraint' => [
+                        'name' => 'pattern',
+                        'params' => [
+                            'pattern' => '^v?\d+(\.\d+){0,3}(-(dev|(patch|p|alpha|a|beta|b|RC)\d*))?$|^dev-.*$',
+                        ]
+                    ],
                 ],
             ], $this->check($json));
         }
@@ -88,7 +96,11 @@ class ComposerSchemaTest extends TestCase
     {
         $json = '{"name": "vendor/package", "description": "description", "require": {"a": ["b"]} }';
         self::assertEquals([
-            ['property' => 'require.a', 'message' => 'Array value found, but a string is required', 'constraint' => 'type'],
+            [
+                'property' => 'require.a',
+                'message' => 'Array value found, but a string is required',
+                'constraint' => ['name' => 'type', 'params' => ['found' => 'array', 'expected' => 'a string']],
+            ],
         ], $this->check($json));
     }
 
@@ -98,8 +110,12 @@ class ComposerSchemaTest extends TestCase
             [
                 'property' => 'minimum-stability',
                 'message' => 'Does not have a value in the enumeration ["dev","alpha","beta","rc","RC","stable"]',
-                'constraint' => 'enum',
-                'enum' => ['dev', 'alpha', 'beta', 'rc', 'RC', 'stable'],
+                'constraint' => [
+                    'name' => 'enum',
+                    'params' => [
+                        'enum' => ['dev', 'alpha', 'beta', 'rc', 'RC', 'stable'],
+                    ],
+                ],
             ],
         ];
 
@@ -137,7 +153,8 @@ class ComposerSchemaTest extends TestCase
     private function check(string $json)
     {
         $validator = new Validator();
-        $validator->check(json_decode($json), (object) ['$ref' => 'file://' . JsonFile::COMPOSER_SCHEMA_PATH]);
+        $json = json_decode($json);
+        $validator->validate($json, (object) ['$ref' => 'file://' . JsonFile::COMPOSER_SCHEMA_PATH]);
 
         if (!$validator->isValid()) {
             $errors = $validator->getErrors();

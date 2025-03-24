@@ -256,11 +256,12 @@ class JsonFile
         }
 
         $validator = new Validator();
-        $validator->check($data, $schemaData);
+        $data = (object) $data;
+        $validator->validate($data, $schemaData);
 
         if (!$validator->isValid()) {
             $errors = [];
-            foreach ((array) $validator->getErrors() as $error) {
+            foreach ($validator->getErrors() as $error) {
                 $errors[] = ($error['property'] ? $error['property'].' : ' : '').$error['message'];
             }
             throw new JsonValidationException('"'.$source.'" does not match the expected JSON schema', $errors);
