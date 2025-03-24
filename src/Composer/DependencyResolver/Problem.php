@@ -129,6 +129,7 @@ class Problem
                 return implode('-', $rule->getLiterals());
         }
 
+        // @phpstan-ignore deadCode.unreachable
         throw new \LogicException('Unknown rule type: '.$rule->getReason());
     }
 
@@ -149,6 +150,7 @@ class Problem
                 return 0;
         }
 
+        // @phpstan-ignore deadCode.unreachable
         throw new \LogicException('Unknown rule type: '.$rule->getReason());
     }
 
