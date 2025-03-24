@@ -18,8 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Checkout"
-        uses: "actions/checkout@v4"
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: "Install Composer dependencies"
         run: "composer config platform --unset && composer install"
@@ -28,7 +27,7 @@ jobs:
         run: "./bin/composer install -d tests/Composer/Test/Autoload/MinimumVersionSupport"
 
       - name: "Install oldest supported PHP version for autoloader"
-        uses: "shivammathur/setup-php@v2"
+        uses: shivammathur/setup-php@9e72090525849c5e82e596468b86eb55e9cc5401 # 2.32.0
         with:
           coverage: "none"
           extensions: "intl, zip"

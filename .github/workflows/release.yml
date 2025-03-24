@@ -20,11 +20,9 @@ jobs:
     name: Upload Release Asset
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+      - uses: shivammathur/setup-php@9e72090525849c5e82e596468b86eb55e9cc5401 # 2.32.0
         with:
           coverage: "none"
           extensions: "intl"
@@ -44,7 +42,7 @@ jobs:
         run: "php -d phar.readonly=0 bin/compile"
 
       - name: Generate build provenance attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 # v2.2.3
         with:
           subject-path: '${{ github.workspace }}/composer.phar'
 
@@ -93,7 +91,7 @@ jobs:
       # This step requires a secret token with `pull` access to composer/docker. The default
       # secrets.GITHUB_TOKEN is scoped to this repository only which is not sufficient.
       - name: "Open issue @ Docker repository"
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           github-token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           script: |
