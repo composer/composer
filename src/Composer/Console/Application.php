@@ -502,6 +502,9 @@ class Application extends BaseApplication
             if (is_array($avastDetect) && count($avastDetect) !== 0) {
                 $io->writeError('<error>The following exception indicates a possible issue with the Avast Firewall</error>', true, IOInterface::QUIET);
                 $io->writeError('<error>Check https://getcomposer.org/local-issuer for details</error>', true, IOInterface::QUIET);
+            } else {
+                $io->writeError('<error>The following exception indicates a possible issue with a Firewall/Antivirus</error>', true, IOInterface::QUIET);
+                $io->writeError('<error>Check https://getcomposer.org/local-issuer for details</error>', true, IOInterface::QUIET);
             }
         }
 
