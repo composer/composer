@@ -243,12 +243,10 @@ class JsonFile
             $schemaFile = 'file://' . $schemaFile;
         }
 
-        $schemaData = (object) ['$ref' => $schemaFile];
+        $schemaData = (object) ['$ref' => $schemaFile, '$schema' => "https://json-schema.org/draft-04/schema#"];
 
-        if ($schema === self::LAX_SCHEMA) {
-            $schemaData->additionalProperties = true;
-            $schemaData->required = [];
-        } elseif ($schema === self::STRICT_SCHEMA && $isComposerSchemaFile) {
+        if ($schema === self::STRICT_SCHEMA && $isComposerSchemaFile) {
+            $schemaData = json_decode((string) file_get_contents($schemaFile));
             $schemaData->additionalProperties = false;
             $schemaData->required = ['name', 'description'];
         } elseif ($schema === self::AUTH_SCHEMA && $isComposerSchemaFile) {
@@ -256,11 +254,13 @@ class JsonFile
         }
 
         $validator = new Validator();
-        $validator->check($data, $schemaData);
+        // convert assoc arrays to objects
+        $data = json_decode((string) json_encode($data));
+        $validator->validate($data, $schemaData);
 
         if (!$validator->isValid()) {
             $errors = [];
-            foreach ((array) $validator->getErrors() as $error) {
+            foreach ($validator->getErrors() as $error) {
                 $errors[] = ($error['property'] ? $error['property'].' : ' : '').$error['message'];
             }
             throw new JsonValidationException('"'.$source.'" does not match the expected JSON schema', $errors);

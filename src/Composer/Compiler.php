@@ -120,7 +120,7 @@ class Compiler
         $finder = new Finder();
         $finder->files()
             ->ignoreVCS(true)
-            ->notPath('/\/(composer\.(json|lock)|[A-Z]+\.md(?:own)?|\.gitignore|appveyor.yml|phpunit\.xml\.dist|phpstan\.neon\.dist|phpstan-config\.neon|phpstan-baseline\.neon)$/')
+            ->notPath('/\/(composer\.(?:json|lock)|[A-Z]+\.md(?:own)?|\.gitignore|appveyor.yml|phpunit\.xml\.dist|phpstan\.neon\.dist|phpstan-config\.neon|phpstan-baseline\.neon|UPGRADE.*\.(?:md|txt))$/')
             ->notPath('/bin\/(jsonlint|validate-json|simple-phpunit|phpstan|phpstan\.phar)(\.bat)?$/')
             ->notPath('justinrainbow/json-schema/demo/')
             ->notPath('justinrainbow/json-schema/dist/')
@@ -152,7 +152,7 @@ class Compiler
         foreach ($finder as $file) {
             if (false !== ($index = array_search($file->getRealPath(), $extraFiles, true))) {
                 unset($extraFiles[$index]);
-            } elseif (!Preg::isMatch('{(^LICENSE$|\.php$)}', $file->getFilename())) {
+            } elseif (!Preg::isMatch('{(^LICENSE(?:\.txt)?$|\.php$)}', $file->getFilename())) {
                 $unexpectedFiles[] = (string) $file;
             }
 
