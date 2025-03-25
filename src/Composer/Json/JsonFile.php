@@ -256,7 +256,8 @@ class JsonFile
         }
 
         $validator = new Validator();
-        $data = (object) $data;
+        // convert assoc arrays to objects
+        $data = json_decode((string) json_encode($data));
         $validator->validate($data, $schemaData);
 
         if (!$validator->isValid()) {
