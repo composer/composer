@@ -243,12 +243,10 @@ class JsonFile
             $schemaFile = 'file://' . $schemaFile;
         }
 
-        $schemaData = (object) ['$ref' => $schemaFile];
+        $schemaData = (object) ['$ref' => $schemaFile, '$schema' => "https://json-schema.org/draft-04/schema#"];
 
-        if ($schema === self::LAX_SCHEMA) {
-            $schemaData->additionalProperties = true;
-            $schemaData->required = [];
-        } elseif ($schema === self::STRICT_SCHEMA && $isComposerSchemaFile) {
+        if ($schema === self::STRICT_SCHEMA && $isComposerSchemaFile) {
+            $schemaData = json_decode((string) file_get_contents($schemaFile));
             $schemaData->additionalProperties = false;
             $schemaData->required = ['name', 'description'];
         } elseif ($schema === self::AUTH_SCHEMA && $isComposerSchemaFile) {
