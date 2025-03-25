@@ -208,11 +208,10 @@ This field is optional.
 
 The `providers-api` field allows you to provide a URL template to serve all
 packages which provide a given package name, but not the package which has
-that name. It must contain the placeholder `%package%`.
+that name even if it exists. It must contain the placeholder `%package%`.
 
-For example https://packagist.org/providers/monolog/monolog.json lists some
-package which have a "provide" rule for monolog/monolog, but it does not list
-monolog/monolog itself.
+For example https://packagist.org/providers/psr/log-implementation.json lists
+some package which have a "provide" rule for psr/log-implementation.
 
 ```json
 {
