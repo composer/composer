@@ -15,9 +15,11 @@ Updating all dependencies only updates what really must change when a minimal up
                 { "name": "root/dep", "version": "1.0.0", "require": { "dependency/pkg": "1.*", "dependency/pkg2": "1.*" } },
                 { "name": "root/dep2", "version": "1.1.0" },
                 { "name": "root/dep2", "version": "1.0.0" },
+                { "name": "dependency/pkg", "version": "2.1.0" },
                 { "name": "dependency/pkg", "version": "2.0.0" },
                 { "name": "dependency/pkg", "version": "1.1.0" },
                 { "name": "dependency/pkg", "version": "1.0.0" },
+                { "name": "dependency/pkg2", "version": "2.1.0" },
                 { "name": "dependency/pkg2", "version": "2.0.0" },
                 { "name": "dependency/pkg2", "version": "1.1.0" },
                 { "name": "dependency/pkg2", "version": "1.0.0" }
@@ -56,5 +58,5 @@ Updating all dependencies only updates what really must change when a minimal up
 --RUN--
 update --minimal-changes
 --EXPECT--
-Upgrading dependency/pkg (1.0.0 => 2.0.0)
+Upgrading dependency/pkg (1.0.0 => 2.1.0)
 Upgrading root/dep (1.0.0 => 2.0.0)
