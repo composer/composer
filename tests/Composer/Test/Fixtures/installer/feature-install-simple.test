@@ -1,0 +1,30 @@
+--TEST--
+Installing a package with features should install all features dependencies by default
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "b/b", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "feature": {
+        "b": {
+            "description": "Feature B",
+            "require": {
+                "b/b": "1.0.0"
+            }
+        }
+    }
+}
+--RUN--
+install
+--EXPECT--
+Installing a/a (1.0.0)
+Installing b/b (1.0.0)
