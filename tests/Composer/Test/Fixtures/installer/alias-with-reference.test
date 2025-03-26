@@ -43,6 +43,7 @@ update
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [{
         "package": "a/aliased",
         "version": "9999999-dev",

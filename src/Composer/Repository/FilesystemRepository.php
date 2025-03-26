@@ -118,7 +118,7 @@ class FilesystemRepository extends WritableArrayRepository
     /**
      * Writes writable repository.
      */
-    public function write(bool $devMode, InstallationManager $installationManager)
+    public function write(bool $devMode, InstallationManager $installationManager, ?array $restrictedRootFeatures = null)
     {
         $data = ['packages' => [], 'dev' => $devMode, 'dev-package-names' => []];
         $dumper = new ArrayDumper();
@@ -160,7 +160,7 @@ class FilesystemRepository extends WritableArrayRepository
         $this->file->write($data);
 
         if ($this->dumpVersions) {
-            $versions = $this->generateInstalledVersions($installationManager, $installPaths, $devMode, $repoDir);
+            $versions = $this->generateInstalledVersions($installationManager, $installPaths, $devMode, $repoDir, $restrictedRootFeatures);
 
             $this->filesystem->filePutContentsIfModified($repoDir.'/installed.php', '<?php return ' . $this->dumpToPhpCode($versions) . ';'."\n");
             $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
@@ -263,11 +263,21 @@ REGEX;
 
     /**
      * @param array<string, string> $installPaths
+     * @param string[]              $restrictedRootFeatures
      *
      * @return array{root: array{name: string, pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev: bool}, versions: array<string, array{pretty_version?: string, version?: string, reference?: string|null, type?: string, install_path?: string, aliases?: string[], dev_requirement: bool, replaced?: string[], provided?: string[]}>}
      */
-    private function generateInstalledVersions(InstallationManager $installationManager, array $installPaths, bool $devMode, string $repoDir): array
+    private function generateInstalledVersions(InstallationManager $installationManager, array $installPaths, bool $devMode, string $repoDir, ?array $restrictedRootFeatures = null): array
     {
+        // build features list
+        $features = [];
+
+        foreach ($this->getPackages() as $package) {
+            foreach ($package->getFeaturesRequires() as $packageName => $featuresList) {
+                $features[$packageName] = array_unique(array_merge($features[$packageName] ?? [], $featuresList));
+            }
+        }
+
         $devPackages = array_flip($this->devPackageNames);
         $packages = $this->getPackages();
         if (null === $this->rootPackage) {
@@ -280,7 +290,7 @@ REGEX;
             $packages[] = $rootPackage;
         }
         $versions = [
-            'root' => $this->dumpRootPackage($rootPackage, $installPaths, $devMode, $repoDir, $devPackages),
+            'root' => $this->dumpRootPackage($rootPackage, $installPaths, $devMode, $repoDir, $devPackages, $restrictedRootFeatures),
             'versions' => [],
         ];
 
@@ -290,7 +300,7 @@ REGEX;
                 continue;
             }
 
-            $versions['versions'][$package->getName()] = $this->dumpInstalledPackage($package, $installPaths, $repoDir, $devPackages);
+            $versions['versions'][$package->getName()] = $this->dumpInstalledPackage($package, $installPaths, $repoDir, $devPackages, $features[$package->getName()] ?? []);
         }
 
         // add provided/replaced packages
@@ -313,6 +323,9 @@ REGEX;
                 if (!isset($versions['versions'][$replace->getTarget()]['replaced']) || !in_array($replaced, $versions['versions'][$replace->getTarget()]['replaced'], true)) {
                     $versions['versions'][$replace->getTarget()]['replaced'][] = $replaced;
                 }
+                if (!isset($versions['versions'][$replace->getTarget()]['features'])) {
+                    $versions['versions'][$replace->getTarget()]['features'] = $features[$replace->getTarget()] ?? [];
+                }
             }
             foreach ($package->getProvides() as $provide) {
                 // exclude platform provides as when they are really there we can not check for their presence
@@ -330,6 +343,9 @@ REGEX;
                 }
                 if (!isset($versions['versions'][$provide->getTarget()]['provided']) || !in_array($provided, $versions['versions'][$provide->getTarget()]['provided'], true)) {
                     $versions['versions'][$provide->getTarget()]['provided'][] = $provided;
+                }
+                if (!isset($versions['versions'][$provide->getTarget()]['features'])) {
+                    $versions['versions'][$provide->getTarget()]['features'] = $features[$provide->getTarget()] ?? [];
                 }
             }
         }
@@ -362,9 +378,10 @@ REGEX;
     /**
      * @param array<string, string> $installPaths
      * @param array<string, int> $devPackages
-     * @return array{pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev_requirement: bool}
+     * @param array<string> $features
+     * @return array{pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev_requirement: bool, features: array<string>}
      */
-    private function dumpInstalledPackage(PackageInterface $package, array $installPaths, string $repoDir, array $devPackages): array
+    private function dumpInstalledPackage(PackageInterface $package, array $installPaths, string $repoDir, array $devPackages, array $features): array
     {
         $reference = null;
         if ($package->getInstallationSource()) {
@@ -389,6 +406,7 @@ REGEX;
             'install_path' => $installPath,
             'aliases' => [],
             'dev_requirement' => isset($devPackages[$package->getName()]),
+            'features' => $features,
         ];
 
         return $data;
@@ -397,11 +415,18 @@ REGEX;
     /**
      * @param array<string, string> $installPaths
      * @param array<string, int> $devPackages
-     * @return array{name: string, pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev: bool}
+     * @param array<string>|null $restrictedRootFeatures
+     * @return array{name: string, pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev: bool, features: array<string>}
      */
-    private function dumpRootPackage(RootPackageInterface $package, array $installPaths, bool $devMode, string $repoDir, array $devPackages)
+    private function dumpRootPackage(RootPackageInterface $package, array $installPaths, bool $devMode, string $repoDir, array $devPackages, ?array $restrictedRootFeatures)
     {
-        $data = $this->dumpInstalledPackage($package, $installPaths, $repoDir, $devPackages);
+        if ($restrictedRootFeatures !== null) {
+            $features = $restrictedRootFeatures;
+        } else {
+            $features = array_keys($package->getFeatures());
+        }
+
+        $data = $this->dumpInstalledPackage($package, $installPaths, $repoDir, $devPackages, $features);
 
         return [
             'name' => $package->getName(),
@@ -412,6 +437,7 @@ REGEX;
             'install_path' => $data['install_path'],
             'aliases' => $data['aliases'],
             'dev' => $devMode,
+            'features' => $data['features'],
         ];
     }
 }

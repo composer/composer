@@ -1,0 +1,37 @@
+--TEST--
+Installing a package with a specific feature should not install other features dependencies
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "b/b", "version": "1.0.0" },
+                { "name": "c/c", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "feature": {
+        "b": {
+            "description": "Feature B",
+            "require": {
+                "b/b": "1.0.0"
+            }
+        },
+        "c": {
+            "description": "Feature C",
+            "require": {
+                "c/c": "1.0.0"
+            }
+        }
+    }
+}
+--RUN--
+install --feature c
+--EXPECT--
+Installing a/a (1.0.0)
+Installing c/c (1.0.0)

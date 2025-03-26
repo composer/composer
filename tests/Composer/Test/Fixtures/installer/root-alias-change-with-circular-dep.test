@@ -39,6 +39,7 @@ This also checks that an implicit stabilityFlag is added for the root package, i
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
