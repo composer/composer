@@ -47,7 +47,6 @@ class PoolOptimizer
      * @var array<string, array<string, ConstraintInterface>>
      */
     private $conflictConstraintsPerPackage = [];
-
     /**
      * @var array<int, true>
      */
@@ -118,6 +117,18 @@ class PoolOptimizer
                 $this->extractConflictConstraintsPerPackage($link->getTarget(), $link->getConstraint());
             }
 
+            $featuresRequired = $pool->getRequiredFeatures()[$package->getName()]['merged'] ?? [];
+
+            if (count($featuresRequired) > 0) {
+                foreach ($package->getFeatures() as $featureName => $featureConfig) {
+                    if (in_array($featureName, $featuresRequired, true)) {
+                        foreach ($featureConfig['require'] ?? [] as $link) {
+                            $this->extractRequireConstraintsPerPackage($link->getTarget(), $link->getConstraint());
+                        }
+                    }
+                }
+            }
+
             // Keep track of alias packages for every package so if either the alias or aliased is kept
             // we keep the others as they are a unit of packages really
             if ($package instanceof AliasPackage) {
@@ -173,7 +184,7 @@ class PoolOptimizer
             }
         }
 
-        $optimizedPool = new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $removedVersions, $this->removedVersionsByPackage, $pool->getAllSecurityRemovedPackageVersions(), $pool->getAllAbandonedRemovedPackageVersions());
+        $optimizedPool = new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $removedVersions, $this->removedVersionsByPackage, $pool->getAllSecurityRemovedPackageVersions(), $pool->getAllAbandonedRemovedPackageVersions(), $pool->getRequiredFeatures());
 
         return $optimizedPool;
     }
@@ -200,8 +211,18 @@ class PoolOptimizer
                     continue;
                 }
 
+                // Add features to groupHash if any
+                $featureHashParts = array_keys($package->getFeatures());
+                // sort for consistent hash
+                sort($featureHashParts);
+                $featureHash = implode(',', $featureHashParts);
+
                 foreach ($this->requireConstraintsPerPackage[$packageName] as $requireConstraint) {
                     $groupHashParts = [];
+
+                    if ($featureHash !== '') {
+                        $groupHashParts[] = 'feature:' . $featureHash;
+                    }
 
                     if (CompilingMatcher::match($requireConstraint, Constraint::OP_EQ, $package->getVersion())) {
                         $groupHashParts[] = 'require:' . (string) $requireConstraint;
