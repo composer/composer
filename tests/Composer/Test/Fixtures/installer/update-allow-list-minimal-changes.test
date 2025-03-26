@@ -53,7 +53,8 @@ Updating transitive dependencies only updates what is really required when a min
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update allowed/pkg --with-all-dependencies --minimal-changes

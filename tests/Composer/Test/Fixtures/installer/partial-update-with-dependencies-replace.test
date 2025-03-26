@@ -36,7 +36,8 @@ Ensure a partial update of a dependency updates dependencies which replace one o
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update root/req1 --with-dependencies
@@ -54,7 +55,8 @@ update root/req1 --with-dependencies
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Installing dep/pkg1 (1.2.0)

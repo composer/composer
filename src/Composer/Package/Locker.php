@@ -102,6 +102,8 @@ class Locker
             'prefer-stable',
             'repositories',
             'extra',
+            'features',
+            'require-features',
         ];
 
         $relevantContent = [];
@@ -326,6 +328,15 @@ class Locker
     }
 
     /**
+     * @return array<string>
+     */
+    public function getSelfFeatures(): array
+    {
+        $lockData = $this->getLockData();
+        return $lockData['self-features'] ?? [];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function getLockData(): array
@@ -344,18 +355,19 @@ class Locker
     /**
      * Locks provided data into lockfile.
      *
-     * @param PackageInterface[]          $packages          array of packages
-     * @param PackageInterface[]|null     $devPackages       array of dev packages or null if installed without --dev
-     * @param array<string, string>       $platformReqs      array of package name => constraint for required platform packages
-     * @param array<string, string>       $platformDevReqs   array of package name => constraint for dev-required platform packages
-     * @param string[][]                  $aliases           array of aliases
-     * @param array<string, int>          $stabilityFlags
-     * @param array<string, string|false> $platformOverrides
-     * @param bool                        $write             Whether to actually write data to disk, useful in tests and for --dry-run
+     * @param PackageInterface[]                     $packages          array of packages
+     * @param PackageInterface[]|null                $devPackages       array of dev packages or null if installed without --dev
+     * @param array<string>                          $selfFeatures      array of features for the root package
+     * @param array<string, string>                  $platformReqs      array of package name => constraint for required platform packages
+     * @param array<string, string>                  $platformDevReqs   array of package name => constraint for dev-required platform packages
+     * @param string[][]                             $aliases           array of aliases
+     * @param array<string, int>                     $stabilityFlags
+     * @param array<string, string|false>            $platformOverrides
+     * @param bool                                   $write             Whether to actually write data to disk, useful in tests and for --dry-run
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      */
-    public function setLockData(array $packages, ?array $devPackages, array $platformReqs, array $platformDevReqs, array $aliases, string $minimumStability, array $stabilityFlags, bool $preferStable, bool $preferLowest, array $platformOverrides, bool $write = true): bool
+    public function setLockData(array $packages, ?array $devPackages, array $selfFeatures, array $platformReqs, array $platformDevReqs, array $aliases, string $minimumStability, array $stabilityFlags, bool $preferStable, bool $preferLowest, array $platformOverrides, bool $write = true): bool
     {
         // keep old default branch names normalized to DEFAULT_BRANCH_ALIAS for BC as that is how Composer 1 outputs the lock file
         // when loading the lock file the version is anyway ignored in Composer 2, so it has no adverse effect
@@ -379,6 +391,7 @@ class Locker
             'stability-flags' => $stabilityFlags,
             'prefer-stable' => $preferStable,
             'prefer-lowest' => $preferLowest,
+            'self-features' => $selfFeatures,
         ];
 
         if (null !== $devPackages) {

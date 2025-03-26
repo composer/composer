@@ -39,7 +39,8 @@ Newly defined root aliases end up in lock file only if the package is updated
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update a/aliased
@@ -67,7 +68,8 @@ update a/aliased
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Installing a/aliased (3.0.2)

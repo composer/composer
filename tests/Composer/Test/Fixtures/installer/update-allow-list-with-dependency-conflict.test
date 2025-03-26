@@ -47,7 +47,8 @@ Update with a package allow list only updates allowed packages if no dependency 
     "minimum-stability": "dev",
     "stability-flags": {"a/a":20},
     "prefer-stable": false,
-    "prefer-lowest": false
+    "prefer-lowest": false,
+    "self-features": []
 }
 --RUN--
 update allowed/pkg

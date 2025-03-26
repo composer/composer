@@ -50,7 +50,8 @@ update
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT-OUTPUT--
 Loading composer repositories with package information

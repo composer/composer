@@ -30,7 +30,8 @@ Requiring a replaced package in a version, that is not provided by the replacing
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 install

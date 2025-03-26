@@ -1380,6 +1380,25 @@ INITIALIZER;
                     }
                 }
             }
+
+            foreach ($package->getFeatures() as $feature) {
+                if (!isset($feature['require'])) {
+                    continue;
+                }
+
+                foreach ($feature['require'] as $link) {
+                    $target = $link->getTarget();
+                    if (isset($replacedBy[$target])) {
+                        $target = $replacedBy[$target];
+                    }
+                    if (!isset($include[$target])) {
+                        $include[$target] = true;
+                        if (isset($packages[$target])) {
+                            $add($packages[$target]);
+                        }
+                    }
+                }
+            }
         };
         $add($rootPackage);
 

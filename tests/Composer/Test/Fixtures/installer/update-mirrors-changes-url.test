@@ -148,7 +148,8 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT-LOCK--
 {
@@ -205,7 +206,8 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update mirrors

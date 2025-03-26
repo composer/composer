@@ -63,6 +63,7 @@ class InstallCommand extends BaseCommand
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('source-fallback', null, InputOption::VALUE_NEGATABLE, 'Whether to fall back to alternative sources (dist/source) on download failure.'),
+                new InputOption('self-feature', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Install a specific feature from the root package.', null, []),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Should not be provided, use composer require instead to add a given package to composer.json.'),
             ])
             ->setHelp(
@@ -109,6 +110,12 @@ EOT
             $io->writeError('<warning>Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled.</warning>');
         }
 
+        $restrictFeatures = [];
+
+        if (($features = $input->getOption('self-feature')) !== []) {
+            $restrictFeatures = $features;
+        }
+
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'install', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
@@ -145,6 +152,7 @@ EOT
             ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
             ->setAuditConfig($this->createAuditConfig($input))
             ->setErrorOnAudit($input->getOption('audit'))
+            ->setRootFeatures($restrictFeatures)
         ;
 
         if ($input->getOption('no-plugins')) {
