@@ -137,7 +137,7 @@ class FilterListPoolFilter
             $packages[] = $package;
         }
 
-        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $pool->getAllRemovedVersions(), $pool->getAllRemovedVersionsByPackage(), $policyRemovedVersions);
+        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $pool->getAllRemovedVersions(), $pool->getAllRemovedVersionsByPackage(), $policyRemovedVersions, $pool->getRequiredFeatures());
     }
 
     /**

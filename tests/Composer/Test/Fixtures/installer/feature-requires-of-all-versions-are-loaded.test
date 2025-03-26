@@ -1,0 +1,28 @@
+--TEST--
+Feature requirements of every candidate version must all be loaded, not just the last one seen
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "require": { "b/b": "^1.0 || ^2.0", "k/k": "1.0.0" }, "require-features": { "b/b": ["x"] } },
+                { "name": "b/b", "version": "2.0.0", "features": { "x": { "require": { "d/d": "^2.0" } } } },
+                { "name": "b/b", "version": "1.0.0", "features": { "x": { "require": { "d/d": "^1.0" } } } },
+                { "name": "k/k", "version": "1.0.0", "require": { "b/b": "^2.0" } },
+                { "name": "d/d", "version": "1.0.0" },
+                { "name": "d/d", "version": "2.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    }
+}
+--RUN--
+update
+--EXPECT--
+Installing b/b (2.0.0)
+Installing k/k (1.0.0)
+Installing a/a (1.0.0)
+Installing d/d (2.0.0)

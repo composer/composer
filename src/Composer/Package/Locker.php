@@ -102,6 +102,8 @@ class Locker
             'prefer-stable',
             'repositories',
             'extra',
+            'features',
+            'require-features',
         ];
 
         $relevantContent = [];
@@ -326,6 +328,15 @@ class Locker
     }
 
     /**
+     * @return array<string>
+     */
+    public function getSelfFeatures(): array
+    {
+        $lockData = $this->getLockData();
+        return $lockData['self-features'] ?? [];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function getLockData(): array
@@ -352,10 +363,11 @@ class Locker
      * @param array<string, int>          $stabilityFlags
      * @param array<string, string|false> $platformOverrides
      * @param bool                        $write             Whether to actually write data to disk, useful in tests and for --dry-run
+     * @param array<string>               $selfFeatures      array of root package features that were enabled
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      */
-    public function setLockData(array $packages, ?array $devPackages, array $platformReqs, array $platformDevReqs, array $aliases, string $minimumStability, array $stabilityFlags, bool $preferStable, bool $preferLowest, array $platformOverrides, bool $write = true): bool
+    public function setLockData(array $packages, ?array $devPackages, array $platformReqs, array $platformDevReqs, array $aliases, string $minimumStability, array $stabilityFlags, bool $preferStable, bool $preferLowest, array $platformOverrides, bool $write = true, array $selfFeatures = []): bool
     {
         // keep old default branch names normalized to DEFAULT_BRANCH_ALIAS for BC as that is how Composer 1 outputs the lock file
         // when loading the lock file the version is anyway ignored in Composer 2, so it has no adverse effect
@@ -380,6 +392,10 @@ class Locker
             'prefer-stable' => $preferStable,
             'prefer-lowest' => $preferLowest,
         ];
+
+        if (\count($selfFeatures) > 0) {
+            $lock['self-features'] = $selfFeatures;
+        }
 
         if (null !== $devPackages) {
             $lock['packages-dev'] = $this->lockPackages($devPackages);

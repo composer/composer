@@ -1,0 +1,65 @@
+--TEST--
+Feature requiring the same package should have the locked version duplicated in each feature
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "b/b", "version": "1.0.0" },
+                { "name": "c/c", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "features": {
+        "b": {
+            "description": "Feature B",
+            "require": {
+                "b/b": "1.0.0"
+            }
+        },
+        "c": {
+            "description": "Feature C",
+            "require": {
+                "b/b": "1.0.0",
+                "c/c": "1.0.0"
+            }
+        }
+    }
+}
+--RUN--
+update --self-feature b --self-feature c
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "1.0.0",
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "1.0.0",
+            "type": "library"
+        },
+        {
+            "name": "c/c", "version": "1.0.0",
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {},
+    "self-features": ["b", "c"]
+}
+--EXPECT--
+Installing a/a (1.0.0)
+Installing b/b (1.0.0)
+Installing c/c (1.0.0)

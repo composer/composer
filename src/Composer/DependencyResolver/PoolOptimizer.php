@@ -47,7 +47,6 @@ class PoolOptimizer
      * @var array<string, array<string, ConstraintInterface>>
      */
     private $conflictConstraintsPerPackage = [];
-
     /**
      * @var array<int, true>
      */
@@ -118,6 +117,18 @@ class PoolOptimizer
                 $this->extractConflictConstraintsPerPackage($link->getTarget(), $link->getConstraint());
             }
 
+            $featuresRequired = $pool->getRequiredFeatures()[$package->getName()]['merged'] ?? [];
+
+            if (count($featuresRequired) > 0) {
+                foreach ($package->getFeatures() as $featureName => $featureConfig) {
+                    if (in_array($featureName, $featuresRequired, true)) {
+                        foreach ($featureConfig['require'] ?? [] as $link) {
+                            $this->extractRequireConstraintsPerPackage($link->getTarget(), $link->getConstraint());
+                        }
+                    }
+                }
+            }
+
             // Keep track of alias packages for every package so if either the alias or aliased is kept
             // we keep the others as they are a unit of packages really
             if ($package instanceof AliasPackage) {
@@ -173,7 +184,7 @@ class PoolOptimizer
             }
         }
 
-        $optimizedPool = new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $removedVersions, $this->removedVersionsByPackage, $pool->getAllPolicyRemovedVersions());
+        $optimizedPool = new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $removedVersions, $this->removedVersionsByPackage, $pool->getAllPolicyRemovedVersions(), $pool->getRequiredFeatures());
 
         return $optimizedPool;
     }
@@ -194,6 +205,11 @@ class PoolOptimizer
 
             $dependencyHash = $this->calculateDependencyHash($package);
 
+            // versions offering different feature sets must not be merged into one group
+            $featureNames = array_keys($package->getFeatures());
+            sort($featureNames);
+            $featureHashParts = \count($featureNames) > 0 ? ['feature:' . implode(',', $featureNames)] : [];
+
             $replaceHashParts = [];
             foreach ($package->getReplaces() as $link) {
                 if (CompilingMatcher::match($link->getConstraint(), Constraint::OP_EQ, $package->getVersion())) {
@@ -207,7 +223,7 @@ class PoolOptimizer
                     continue;
                 }
 
-                $invariantHashParts = $replaceHashParts;
+                $invariantHashParts = array_merge($featureHashParts, $replaceHashParts);
                 if (isset($this->conflictConstraintsPerPackage[$packageName])) {
                     foreach ($this->conflictConstraintsPerPackage[$packageName] as $conflictConstraint) {
                         if (CompilingMatcher::match($conflictConstraint, Constraint::OP_EQ, $package->getVersion())) {

@@ -359,8 +359,9 @@ class RepositorySet
      *
      * @param list<string>      $ignoredTypes Packages of those types are ignored
      * @param list<string>|null $allowedTypes Only packages of those types are allowed if set to non-null
+     * @param string[]          $selfFeatures List of features wanted and present by the root package
      */
-    public function createPool(Request $request, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $ignoredTypes = [], ?array $allowedTypes = null, ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null, ?FilterListPoolFilter $filterListPoolFilter = null, ?CooldownPoolFilter $cooldownPoolFilter = null): Pool
+    public function createPool(Request $request, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $ignoredTypes = [], ?array $allowedTypes = null, ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null, ?FilterListPoolFilter $filterListPoolFilter = null, ?CooldownPoolFilter $cooldownPoolFilter = null, array $selfFeatures = []): Pool
     {
         $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer, $this->temporaryConstraints, $securityAdvisoryPoolFilter, $filterListPoolFilter, $cooldownPoolFilter);
         $poolBuilder->setIgnoredTypes($ignoredTypes);
@@ -374,7 +375,7 @@ class RepositorySet
 
         $this->locked = true;
 
-        return $poolBuilder->buildPool($this->repositories, $request);
+        return $poolBuilder->buildPool($this->repositories, $request, $selfFeatures);
     }
 
     /**
