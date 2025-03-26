@@ -1,0 +1,52 @@
+--TEST--
+Installing a feature that was never locked must be reported as a stale lock file
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "b/b", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "features": {
+        "b": {
+            "description": "Feature B",
+            "require": {
+                "b/b": "1.0.0"
+            }
+        }
+    }
+}
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "1.0.0",
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--RUN--
+install --self-feature b
+--EXPECT-EXIT-CODE--
+4
+
+--EXPECT-OUTPUT--
+Installing dependencies from lock file (including require-dev)
+Error: The lock file does not match the requested features (missing from the lock file: b). Please run composer update with the same --self-feature options.
+
+--EXPECT--

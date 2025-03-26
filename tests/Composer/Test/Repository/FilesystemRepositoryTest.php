@@ -124,6 +124,75 @@ class FilesystemRepositoryTest extends TestCase
         $repository->write(true, $im);
     }
 
+    public function testInstalledPhpOnlyCarriesFeaturesWhenThereAreSome(): void
+    {
+        $dir = self::getUniqueTmpDirectory();
+        chdir($dir);
+
+        $rootPackage = self::getRootPackage('my/root', '1.0.0');
+        $rootPackage->setFeatures(['extra' => ['require' => []], 'unused' => ['require' => []]]);
+
+        $repository = new FilesystemRepository(new JsonFile($dir.'/installed.json'), true, $rootPackage);
+
+        $plain = self::getPackage('a/plain', '1.0.0');
+        $repository->addPackage($plain);
+
+        $featured = self::getPackage('a/featured', '1.0.0');
+        $repository->addPackage($featured);
+
+        $requirer = self::getPackage('a/requirer', '1.0.0');
+        $requirer->setFeatureRequires(['a/featured' => ['logging']]);
+        $repository->addPackage($requirer);
+
+        $repository->setRootFeatures(['extra']);
+        $repository->write(true, $this->getInstallationManagerMock($dir));
+
+        $installed = require $dir.'/installed.php';
+
+        // only the features actually selected are recorded, not every feature the root declares
+        self::assertSame(['extra'], $installed['root']['features']);
+        self::assertSame(['logging'], $installed['versions']['a/featured']['features']);
+        // packages nobody requires a feature from must not gain an empty key
+        self::assertArrayNotHasKey('features', $installed['versions']['a/plain']);
+        self::assertArrayNotHasKey('features', $installed['versions']['a/requirer']);
+    }
+
+    public function testInstalledPhpHasNoFeatureKeyWhenNothingUsesFeatures(): void
+    {
+        $dir = self::getUniqueTmpDirectory();
+        chdir($dir);
+
+        $repository = new FilesystemRepository(new JsonFile($dir.'/installed.json'), true, self::getRootPackage('my/root', '1.0.0'));
+        $repository->addPackage(self::getPackage('a/plain', '1.0.0'));
+        $repository->write(true, $this->getInstallationManagerMock($dir));
+
+        $installed = require $dir.'/installed.php';
+
+        self::assertArrayNotHasKey('features', $installed['root']);
+        self::assertArrayNotHasKey('features', $installed['versions']['a/plain']);
+    }
+
+    /**
+     * @return \Composer\Installer\InstallationManager&\PHPUnit\Framework\MockObject\MockObject
+     */
+    private function getInstallationManagerMock(string $dir)
+    {
+        $im = $this->getMockBuilder('Composer\Installer\InstallationManager')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $im->expects($this->any())
+            ->method('getInstallPath')
+            ->will($this->returnCallback(static function ($package) use ($dir): string {
+                if ($package instanceof RootPackageInterface) {
+                    return $dir;
+                }
+
+                return 'vendor/'.$package->getName();
+            }));
+
+        return $im;
+    }
+
     public function testRepositoryWritesInstalledPhp(): void
     {
         $dir = self::getUniqueTmpDirectory();

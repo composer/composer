@@ -163,12 +163,14 @@ EOT
 
         $dryRun = $input->getOption('dry-run');
         $toRemove = [];
+        $removedNames = [];
         foreach ($packages as $package) {
             if (isset($composer[$type][$package])) {
                 if ($dryRun) {
                     $toRemove[$type][] = $composer[$type][$package];
                 } else {
                     $json->removeLink($type, $composer[$type][$package]);
+                    $removedNames[] = $composer[$type][$package];
                 }
             } elseif (isset($composer[$altType][$package])) {
                 $io->writeError('<warning>' . $composer[$altType][$package] . ' could not be found in ' . $type . ' but it is present in ' . $altType . '</warning>');
@@ -178,6 +180,7 @@ EOT
                             $toRemove[$altType][] = $composer[$altType][$package];
                         } else {
                             $json->removeLink($altType, $composer[$altType][$package]);
+                            $removedNames[] = $composer[$altType][$package];
                         }
                     }
                 }
@@ -187,6 +190,7 @@ EOT
                         $toRemove[$type][] = $matchedPackage;
                     } else {
                         $json->removeLink($type, $matchedPackage);
+                        $removedNames[] = $matchedPackage;
                     }
                 }
             } elseif (isset($composer[$altType]) && count($matches = Preg::grep(BasePackage::packageNameToRegexp($package), array_keys($composer[$altType]))) > 0) {
@@ -198,12 +202,19 @@ EOT
                                 $toRemove[$altType][] = $matchedPackage;
                             } else {
                                 $json->removeLink($altType, $matchedPackage);
+                                $removedNames[] = $matchedPackage;
                             }
                         }
                     }
                 }
             } else {
                 $io->writeError('<warning>'.$package.' is not required in your composer.json and has not been removed</warning>');
+            }
+        }
+
+        foreach ($removedNames as $removedName) {
+            if (isset($composer['require-features'][$removedName])) {
+                $json->removeLink('require-features', $removedName);
             }
         }
 

@@ -122,9 +122,16 @@ class Problem
         switch ($rule->getReason()) {
             case Rule::RULE_ROOT_REQUIRE:
                 return $rule->getReasonData()['packageName'];
+            case Rule::RULE_REQUIRE_FEATURE:
+                return $rule->getReasonData()['packageName'] . '-' . $rule->getReasonData()['feature'];
             case Rule::RULE_FIXED:
             case Rule::RULE_LOCKED_FILTER_LIST_REMOVED:
                 return (string) $rule->getReasonData()['package'];
+            case Rule::RULE_FEATURE_REQUIRES:
+                $sourcePackage = $rule->getSourcePackage($pool);
+                $reasonData = $rule->getReasonData();
+
+                return $sourcePackage . '//' . $reasonData['feature'] . '//' . $reasonData['link']->getPrettyString($sourcePackage);
             case Rule::RULE_PACKAGE_CONFLICT:
             case Rule::RULE_PACKAGE_REQUIRES:
                 return $rule->getSourcePackage($pool) . '//' . $rule->getReasonData()->getPrettyString($rule->getSourcePackage($pool));
@@ -150,11 +157,13 @@ class Problem
                 return 2;
             case Rule::RULE_PACKAGE_CONFLICT:
             case Rule::RULE_PACKAGE_REQUIRES:
+            case Rule::RULE_FEATURE_REQUIRES:
                 return 1;
             case Rule::RULE_PACKAGE_SAME_NAME:
             case Rule::RULE_LEARNED:
             case Rule::RULE_PACKAGE_ALIAS:
             case Rule::RULE_PACKAGE_INVERSE_ALIAS:
+            case Rule::RULE_REQUIRE_FEATURE:
                 return 0;
         }
 

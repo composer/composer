@@ -119,6 +119,56 @@ class RemoveCommandTest extends TestCase
         self::assertSame('No unused packages to remove', trim($appTester->getDisplay(true)));
     }
 
+    public function testRemoveDropsTheRequireFeaturesEntry(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'acme/mono', 'version' => '1.0.0', 'features' => ['handlers' => ['require' => []]]],
+                        ['name' => 'acme/keep', 'version' => '1.0.0', 'features' => ['cache' => ['require' => []]]],
+                    ],
+                ],
+            ],
+            'require' => ['acme/mono' => '1.*', 'acme/keep' => '1.*'],
+            'require-features' => ['acme/mono' => ['handlers'], 'acme/keep' => ['cache']],
+        ]);
+
+        $this->createInstalledJson([self::getPackage('acme/mono'), self::getPackage('acme/keep')]);
+        $this->createComposerLock([self::getPackage('acme/mono'), self::getPackage('acme/keep')]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'remove', '--no-audit' => true, '--no-update' => true, '--no-interaction' => true, 'packages' => ['acme/mono']]);
+
+        $json = json_decode((string) file_get_contents('composer.json'), true);
+        self::assertSame(['acme/keep' => ['cache']], $json['require-features']);
+        self::assertArrayNotHasKey('acme/mono', $json['require']);
+    }
+
+    public function testRemoveDropsTheRequireFeaturesKeyWhenItBecomesEmpty(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [['name' => 'acme/mono', 'version' => '1.0.0', 'features' => ['handlers' => ['require' => []]]]],
+                ],
+            ],
+            'require' => ['acme/mono' => '1.*'],
+            'require-features' => ['acme/mono' => ['handlers']],
+        ]);
+
+        $this->createInstalledJson([self::getPackage('acme/mono')]);
+        $this->createComposerLock([self::getPackage('acme/mono')]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'remove', '--no-audit' => true, '--no-update' => true, '--no-interaction' => true, 'packages' => ['acme/mono']]);
+
+        $json = json_decode((string) file_get_contents('composer.json'), true);
+        self::assertArrayNotHasKey('require-features', $json);
+    }
+
     public function testRemoveUnusedPackage(): void
     {
         $this->initTempComposer([

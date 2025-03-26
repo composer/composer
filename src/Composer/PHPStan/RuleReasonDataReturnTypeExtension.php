@@ -24,7 +24,10 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
+use PHPStan\Type\ArrayType;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\ObjectType;
@@ -49,6 +52,7 @@ final class RuleReasonDataReturnTypeExtension implements DynamicMethodReturnType
 
         $types = [
             Rule::RULE_ROOT_REQUIRE => new ConstantArrayType([new ConstantStringType('packageName'), new ConstantStringType('constraint')], [new StringType, new ObjectType(ConstraintInterface::class)]),
+            Rule::RULE_REQUIRE_FEATURE => new ConstantArrayType([new ConstantStringType('packageName'), new ConstantStringType('feature'), new ConstantStringType('requiredBy'), new ConstantStringType('found')], [new StringType, new StringType(), new ArrayType(new MixedType(), new StringType()), new BooleanType()]),
             Rule::RULE_FIXED => new ConstantArrayType([new ConstantStringType('package')], [new ObjectType(BasePackage::class)]),
             Rule::RULE_LOCKED_FILTER_LIST_REMOVED => new ConstantArrayType([new ConstantStringType('package')], [new ObjectType(BasePackage::class)]),
             Rule::RULE_PACKAGE_CONFLICT => new ObjectType(Link::class),
@@ -57,6 +61,7 @@ final class RuleReasonDataReturnTypeExtension implements DynamicMethodReturnType
             Rule::RULE_LEARNED => new IntegerType(),
             Rule::RULE_PACKAGE_ALIAS => new ObjectType(BasePackage::class),
             Rule::RULE_PACKAGE_INVERSE_ALIAS => new ObjectType(BasePackage::class),
+            Rule::RULE_FEATURE_REQUIRES => new ConstantArrayType([new ConstantStringType('packageName'), new ConstantStringType('feature'), new ConstantStringType('link')], [new StringType, new StringType(), new ObjectType(Link::class)]),
         ];
 
         // Collect every reasonData type whose reason constant is a possible

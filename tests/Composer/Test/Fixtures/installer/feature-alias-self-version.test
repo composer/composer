@@ -1,0 +1,35 @@
+--TEST--
+A feature requiring self.version on a branch-aliased package resolves against the alias version
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+                    "features": { "extras": { "require": { "a/extra": "self.version" } } }
+                },
+                {
+                    "name": "a/extra", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.*"
+    },
+    "require-features": {
+        "a/a": ["extras"]
+    },
+    "minimum-stability": "dev"
+}
+--RUN--
+update
+--EXPECT--
+Installing a/a (dev-master)
+Marking a/a (1.0.x-dev) as installed, alias of a/a (dev-master)
+Installing a/extra (dev-master)
+Marking a/extra (1.0.x-dev) as installed, alias of a/extra (dev-master)

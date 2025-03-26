@@ -435,6 +435,47 @@ class AutoloadGeneratorTest extends TestCase
         self::assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated, even if empty.");
     }
 
+    public function testVendorsFeaturesAutoloading(): void
+    {
+        $package = new RootPackage('root/a', '1.0', '1.0');
+        $package->setRequires([
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
+            'b/b' => new Link('a', 'b/b', new MatchAllConstraint()),
+        ]);
+        $package->setFeatureRequires(['a/a' => ['d']]);
+
+        $packages = [];
+        $packages[] = $a = new Package('a/a', '1.0', '1.0');
+        $packages[] = $b = new Package('b/b', '1.0', '1.0');
+        $packages[] = $c = new AliasPackage($b, '1.2', '1.2');
+        $packages[] = $d = new Package('d/d', '1.0', '1.0');
+        $a->setAutoload(['psr-0' => ['A' => 'src/', 'A\\B' => 'lib/']]);
+        $b->setAutoload(['psr-0' => ['B\\Sub\\Name' => 'src/']]);
+        $d->setAutoload(['psr-0' => ['D\\Sub\\Name' => 'src/']]);
+        $a->setFeatures([
+            'd' => [
+                'description' => 'Feature D',
+                'require' => [
+                    'd/d' => new Link('a/a', 'd/d', new MatchAllConstraint()),
+                ],
+            ],
+        ]);
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($packages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/lib');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/d/d/src');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer');
+        self::assertAutoloadFiles('vendors_feature', $this->vendorDir.'/composer');
+        self::assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated, even if empty.");
+    }
+
     public function testVendorsAutoloadingWithMetapackages(): void
     {
         $package = new RootPackage('root/a', '1.0', '1.0');

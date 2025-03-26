@@ -1,0 +1,38 @@
+--TEST--
+Updating a package that changes its feature requirement, but should keep the same version installed given root requirements.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "features": { "b": { "require": { "b/b": "^1.0" } } } },
+                { "name": "a/a", "version": "1.1.0", "features": { "b": { "require": { "b/b": "^1.0|^2.0" } } } },
+                { "name": "b/b", "version": "1.0.0" },
+                { "name": "b/b", "version": "2.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "^1.0",
+        "b/b": "^1.0|^2.0"
+    },
+    "require-features": {
+        "a/a": ["b"]
+    }
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "1.0.0",
+        "features": { "b": { "require": { "b/b": "^1.0" } } }
+    },
+    {
+        "name": "b/b", "version": "1.0.0"
+    }
+]
+--RUN--
+update
+--EXPECT--
+Upgrading a/a (1.0.0 => 1.1.0)
+Upgrading b/b (1.0.0 => 2.0.0)

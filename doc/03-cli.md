@@ -114,6 +114,9 @@ resolution.
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--self-feature:** Install a [feature](articles/features.md) declared by the root
+  package. Repeat the option for several features. Must match the features the lock
+  file was resolved with, otherwise Composer stops with exit code 4.
 * **--audit:** Run an audit after installation is complete.
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories or that are abandoned. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
@@ -245,6 +248,9 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--patch-only:** Only allow patch version updates for currently installed dependencies.
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
+* **--self-feature:** Resolve with a [feature](articles/features.md) declared by the
+  root package enabled. Repeat the option for several features. The selected set is
+  written to `composer.lock`, but it has to be passed again on every update.
 * **--bump-after-update:** Runs `bump` after performing the update. Set to `dev` or `no-dev` to only bump those dependencies.
 
 Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has the same effect as specifying the option `--lock`, for example `composer update mirrors` is exactly the same as `composer update --lock`.
@@ -317,6 +323,10 @@ If you do not want to install the new dependencies immediately you can call it w
   COMPOSER_PREFER_LOWEST=1 env var.
 * **--minimal-changes (-m):** During an update with `-w`/`-W`, only perform absolutely necessary
   changes to transitive dependencies. Can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var.
+* **--feature:** Also enable a [feature](articles/features.md) offered by the package
+  being required, writing it to `require-features`. Pass just the feature name when
+  requiring a single package, or `vendor/package:feature` when requiring several.
+  Repeat the option for several features.
 * **--sort-packages:** Keep packages sorted in `composer.json`.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
   get a faster autoloader. This is recommended especially for production, but
