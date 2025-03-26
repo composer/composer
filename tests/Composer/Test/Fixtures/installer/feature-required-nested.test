@@ -1,0 +1,24 @@
+--TEST--
+Installing a package that require a feature from another package should install the feature dependencies
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "require": { "b/b": "1.0.0" }, "require-feature": { "b/b": ["c"] } },
+                { "name": "b/b", "version": "1.0.0", "feature": { "c": { "require": { "c/c": "1.0.0" } } } },
+                { "name": "c/c", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    }
+}
+--RUN--
+update
+--EXPECT--
+Installing b/b (1.0.0)
+Installing a/a (1.0.0)
+Installing c/c (1.0.0)

@@ -27,6 +27,7 @@ Partial update from lock file with root aliases should work
         { "name": "c/aliased", "version": "1.0.0" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [
         {
             "package": "c/aliased",
@@ -58,6 +59,7 @@ update --lock
         { "name": "c/aliased", "version": "1.0.0", "type": "library" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [
         {
             "package": "c/aliased",

@@ -17,6 +17,8 @@ use Composer\Package\Version\VersionParser;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * @phpstan-import-type FeatureConfig from PackageInterface
  */
 class AliasPackage extends BasePackage
 {
@@ -48,6 +50,10 @@ class AliasPackage extends BasePackage
     protected $provides;
     /** @var Link[] */
     protected $replaces;
+    /** @var array<string, string[]> */
+    protected $featuresRequires = [];
+    /** @var array<string, FeatureConfig> */
+    protected $features = [];
 
     /**
      * All descendants' constructors should call this parent constructor
@@ -67,8 +73,17 @@ class AliasPackage extends BasePackage
         $this->dev = $this->stability === 'dev';
 
         foreach (Link::$TYPES as $type) {
-            $links = $aliasOf->{'get' . ucfirst($type)}();
-            $this->{$type} = $this->replaceSelfVersionDependencies($links, $type);
+            if ($type === Link::TYPE_FEATURE) {
+                $aliasFeatures = $aliasOf->getFeatures();
+
+                foreach ($this->features as $name => $feature) {
+                    $links = $aliasFeatures[$name]['require'] ?? [];
+                    $this->features[$name]['require'] = $this->replaceSelfVersionDependencies($links, Link::TYPE_FEATURE);
+                }
+            } else {
+                $links = $aliasOf->{'get' . ucfirst($type)}();
+                $this->{$type} = $this->replaceSelfVersionDependencies($links, $type);
+            }
         }
     }
 
@@ -394,5 +409,21 @@ class AliasPackage extends BasePackage
     public function setSourceDistReferences(string $reference): void
     {
         $this->aliasOf->setSourceDistReferences($reference);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFeaturesRequires(): array
+    {
+        return $this->featuresRequires;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFeatures(): array
+    {
+        return $this->features;
     }
 }

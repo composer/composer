@@ -58,6 +58,7 @@ Partially updating one root requirement with transitive deps fully updates trans
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {

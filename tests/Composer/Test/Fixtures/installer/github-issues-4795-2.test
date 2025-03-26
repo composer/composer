@@ -40,6 +40,7 @@ that are also a root package, when that root package is also explicitly allowed.
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},

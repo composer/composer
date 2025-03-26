@@ -220,4 +220,27 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
         parent::__clone();
         $this->aliasOf = clone $this->aliasOf;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function setFeaturesRequires(array $featuresRequires): void
+    {
+        $this->aliasOf->setFeaturesRequires($featuresRequires);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setFeatures(array $features): void
+    {
+        foreach ($features as $name => $feature) {
+            $links = $feature['require'] ?? [];
+
+            $this->features[$name] = $feature;
+            $this->features[$name]['require'] = $this->replaceSelfVersionDependencies($links, Link::TYPE_FEATURE);
+        }
+
+        $this->aliasOf->setFeatures($features);
+    }
 }

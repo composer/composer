@@ -154,6 +154,7 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
@@ -215,6 +216,7 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {

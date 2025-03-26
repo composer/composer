@@ -24,6 +24,7 @@ use Composer\Util\ComposerMirror;
  * @phpstan-import-type AutoloadRules from PackageInterface
  * @phpstan-import-type DevAutoloadRules from PackageInterface
  * @phpstan-import-type PhpExtConfig from PackageInterface
+ * @phpstan-import-type FeatureConfig from PackageInterface
  */
 class Package extends BasePackage
 {
@@ -104,6 +105,12 @@ class Package extends BasePackage
      * @phpstan-var PhpExtConfig|null
      */
     protected $phpExt = null;
+
+    /** @var array<string, string[]> */
+    protected $featuresRequires = [];
+
+    /** @var array<string, FeatureConfig> */
+    protected $features = [];
 
     /**
      * Creates a new in memory package.
@@ -720,5 +727,41 @@ class Package extends BasePackage
         }
 
         return $newLinks;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFeaturesRequires(): array
+    {
+        return $this->featuresRequires;
+    }
+
+    /**
+     * Set the required features
+     *
+     * @param array<string, string[]> $featuresRequires A set of package links
+     */
+    public function setFeaturesRequires(array $featuresRequires): void
+    {
+        $this->featuresRequires = $featuresRequires;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFeatures(): array
+    {
+        return $this->features;
+    }
+
+    /**
+     * Set the features
+     *
+     * @param array<string, FeatureConfig> $features A set of package features
+     */
+    public function setFeatures(array $features): void
+    {
+        $this->features = $features;
     }
 }

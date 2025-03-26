@@ -33,6 +33,7 @@ Newly defined root aliases end up in lock file only if the package is updated
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
@@ -56,6 +57,7 @@ update a/aliased
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [{
         "package": "a/aliased",
         "version": "3.0.2.0",

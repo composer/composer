@@ -47,6 +47,7 @@ Updates with --no-dev but we still end up with a complete lock file including de
     "packages-dev": [
         { "name": "a/b", "version": "2.0.0", "type": "library" }
     ],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {

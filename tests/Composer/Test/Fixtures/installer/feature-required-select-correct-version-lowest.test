@@ -1,0 +1,27 @@
+--TEST--
+Installing a package that require a feature from another package only available on a specific version should install the version that provides the feature
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "feature": { "c": { "require": { "c/c": "1.0.0" } } } },
+                { "name": "a/a", "version": "2.0.0", "feature": { "d": { "require": { "d/d": "1.0.0" } } } },
+                { "name": "c/c", "version": "1.0.0" },
+                { "name": "d/d", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "^1.0 | ^2.0"
+    },
+    "require-feature": {
+        "a/a": ["d"]
+    }
+}
+--RUN--
+update --prefer-lowest
+--EXPECT--
+Installing a/a (2.0.0)
+Installing d/d (1.0.0)

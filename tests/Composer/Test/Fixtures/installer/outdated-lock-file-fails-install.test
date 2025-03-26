@@ -14,6 +14,7 @@ Test that install checks missing requirements from both composer.json if the loc
         {"name": "some/dep", "version": "dev-foo"}
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},

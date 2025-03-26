@@ -27,6 +27,7 @@ Test that conflict with a branch alias in the lock file leads to an error on ins
         { "name": "some/dep", "version": "dev-main", "extra": {"branch-alias": {"dev-main": "1.3.x-dev"} }, "type": "library" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
