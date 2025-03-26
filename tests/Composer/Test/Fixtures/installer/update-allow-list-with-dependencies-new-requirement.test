@@ -40,7 +40,8 @@ When partially updating a package to a newer version and the new version has a n
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update root/pkg2 --with-dependencies

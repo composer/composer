@@ -37,7 +37,8 @@ Verify that partial updates warn about using patterns in the argument which have
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update b/b foo/bar baz/* --with-dependencies

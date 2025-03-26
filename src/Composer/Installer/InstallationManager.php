@@ -177,8 +177,9 @@ class InstallationManager
      * @param bool                         $devMode      whether the install is being run in dev mode
      * @param bool                         $runScripts   whether to dispatch script events
      * @param bool                         $downloadOnly whether to only download packages
+     * @param string[]|null                $restrictedRootFeatures A list of root package features that are allowed to be installed (or null if all are allowed)
      */
-    public function execute(InstalledRepositoryInterface $repo, array $operations, bool $devMode = true, bool $runScripts = true, bool $downloadOnly = false): void
+    public function execute(InstalledRepositoryInterface $repo, array $operations, bool $devMode = true, bool $runScripts = true, bool $downloadOnly = false, ?array $restrictedRootFeatures = null): void
     {
         /** @var array<callable(): ?PromiseInterface<void|null>> $cleanupPromises */
         $cleanupPromises = [];
@@ -235,7 +236,7 @@ class InstallationManager
         // do a last write so that we write the repository even if nothing changed
         // as that can trigger an update of some files like InstalledVersions.php if
         // running a new composer version
-        $repo->write($devMode, $this);
+        $repo->write($devMode, $this, $restrictedRootFeatures);
     }
 
     /**

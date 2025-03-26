@@ -35,7 +35,8 @@ A partial update for a new package yet to be installed should remove another dep
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update new/pkg

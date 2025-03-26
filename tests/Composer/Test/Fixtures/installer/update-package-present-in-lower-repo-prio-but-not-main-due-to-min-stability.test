@@ -37,7 +37,8 @@ Update package which is in lower prio repo but not main repo due to min-stabilit
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update main/dep --with-all-dependencies
