@@ -416,6 +416,7 @@ class ConfigTest extends TestCase
             'github-oauth',
             'gitlab-oauth',
             'gitlab-token',
+            'forgejo-token',
             'http-basic',
             'bearer',
         ];
