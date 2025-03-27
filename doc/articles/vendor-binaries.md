@@ -117,7 +117,7 @@ $binDir = $_composer_bin_dir ?? __DIR__ . '/../vendor/bin';
 #!/bin/bash
 
 if [[ -z "$COMPOSER_RUNTIME_BIN_DIR" ]]; then
-  BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+  BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[10000]}" )" && pwd )"
 else
   BIN_DIR="$COMPOSER_RUNTIME_BIN_DIR"
 fi
