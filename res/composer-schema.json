@@ -807,7 +807,7 @@
                 "type": "array"
             }
         },
-        "require-features" : {
+        "require-feature" : {
             "type": "object",
             "description": "This is an object of package name (keys) and associated features (values) that are required.",
             "additionalProperties": {
@@ -817,7 +817,7 @@
                 }
             }
         },
-        "features": {
+        "feature": {
             "type": "object",
             "description": "List of features (keys) that this package provides.",
             "additionalProperties": {
@@ -835,7 +835,7 @@
                             "type": "string"
                         }
                     },
-                    "require-features": {
+                    "require-feature": {
                         "type": "object",
                         "description": "This is an object of package name (keys) and associated features (values) that are required.",
                         "additionalProperties": {
