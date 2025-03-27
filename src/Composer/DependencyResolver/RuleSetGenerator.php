@@ -206,6 +206,32 @@ class RuleSetGenerator
                     $workQueue->enqueue($require);
                 }
             }
+
+            // get required features for this package
+            $requiredFeatures = $this->pool->getRequiredFeatures()[$package->getName()]['merged'] ?? [];
+
+            foreach ($package->getFeatures() as $featureName => $feature) {
+                if (!in_array($featureName, $requiredFeatures, true)) {
+                    continue;
+                }
+
+                foreach ($feature['require'] as $link) {
+                    $constraint = $link->getConstraint();
+                    if ($platformRequirementFilter->isIgnored($link->getTarget())) {
+                        continue;
+                    } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+                        $constraint = $platformRequirementFilter->filterConstraint($link->getTarget(), $constraint);
+                    }
+
+                    $possibleRequires = $this->pool->whatProvides($link->getTarget(), $constraint);
+
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, $possibleRequires, Rule::RULE_PACKAGE_REQUIRES, $link));
+
+                    foreach ($possibleRequires as $require) {
+                        $workQueue->enqueue($require);
+                    }
+                }
+            }
         }
     }
 

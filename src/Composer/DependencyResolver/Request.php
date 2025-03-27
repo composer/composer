@@ -56,6 +56,8 @@ class Request
     protected $updateAllowTransitiveDependencies = false;
     /** @var non-empty-list<string>|null */
     private $restrictedPackages = null;
+    /** @var array<string, string[]> */
+    protected $requiresFeature = [];
 
     public function __construct(?LockArrayRepository $lockedRepository = null)
     {
@@ -73,6 +75,17 @@ class Request
             throw new \LogicException('Overwriting requires seems like a bug ('.$packageName.' '.$this->requires[$packageName]->getPrettyString().' => '.$constraint->getPrettyString().', check why it is happening, might be a root alias');
         }
         $this->requires[$packageName] = $constraint;
+    }
+
+    public function requireFeature(string $packageName, string $feature): void
+    {
+        $packageName = strtolower($packageName);
+
+        if (!isset($this->requiresFeature[$packageName])) {
+            $this->requiresFeature[$packageName] = [];
+        }
+
+        $this->requires[$packageName][] = $feature;
     }
 
     /**

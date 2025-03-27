@@ -118,6 +118,18 @@ class PoolOptimizer
                 $this->extractConflictConstraintsPerPackage($link->getTarget(), $link->getConstraint());
             }
 
+            $featuresRequired = $pool->getRequiredFeatures()[$package->getName()]['merged'] ?? [];
+
+            if ($featuresRequired) {
+                foreach ($package->getFeatures() as $featureName => $featureConfig) {
+                    if (in_array($featureName, $featuresRequired)) {
+                        foreach ($featureConfig['require'] as $link) {
+                            $this->extractRequireConstraintsPerPackage($link->getTarget(), $link->getConstraint());
+                        }
+                    }
+                }
+            }
+
             // Keep track of alias packages for every package so if either the alias or aliased is kept
             // we keep the others as they are a unit of packages really
             if ($package instanceof AliasPackage) {
