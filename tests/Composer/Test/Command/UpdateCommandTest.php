@@ -46,9 +46,9 @@ class UpdateCommandTest extends TestCase
                     'type' => 'package',
                     'package' => [
                         ['name' => 'root/req', 'version' => '1.0.0', 'require' => ['dep/pkg' => '^1']],
-                        ['name' => 'dep/pkg', 'version' => '1.0.0'],
-                        ['name' => 'dep/pkg', 'version' => '1.0.1'],
-                        ['name' => 'dep/pkg', 'version' => '1.0.2'],
+                        ['name' => 'dep/pkg', 'version' => '1.0.0', 'replace' => ['replaced/pkg' => '1.0.0']],
+                        ['name' => 'dep/pkg', 'version' => '1.0.1', 'replace' => ['replaced/pkg' => '1.0.1']],
+                        ['name' => 'dep/pkg', 'version' => '1.0.2', 'replace' => ['replaced/pkg' => '1.0.2']],
                     ],
                 ],
             ],
@@ -78,8 +78,6 @@ OUTPUT
             ['-vv' => true],
             <<<OUTPUT
 Loading composer repositories with package information
-Pool optimizer completed in %f seconds
-Found %d package versions referenced in your dependency graph. %d (%d%%) were optimized away.
 Updating dependencies
 Dependency resolution completed in %f seconds
 Analyzed %d packages to resolve dependencies
@@ -183,6 +181,20 @@ Your requirements could not be resolved to an installable set of packages.
   Problem 1
     - Root composer.json requires root/req 1.* -> satisfiable by root/req[1.0.0].
     - root/req 1.0.0 requires dep/pkg ^1 -> found dep/pkg[1.0.0, 1.0.1, 1.0.2] but it conflicts with your temporary update constraint (dep/pkg:^2).
+OUTPUT
+        ];
+
+        yield 'update with replaced name filter fails to resolve' => [
+            $rootDepAndTransitiveDep,
+            ['--with' => ['replaced/pkg:^2']],
+            <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires root/req 1.* -> satisfiable by root/req[1.0.0].
+    - root/req 1.0.0 requires dep/pkg ^1 -> found dep/pkg[1.0.0, 1.0.1, 1.0.2] but it conflicts with your temporary update constraint (replaced/pkg:^2).
 OUTPUT
         ];
     }
