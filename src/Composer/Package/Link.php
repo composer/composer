@@ -26,6 +26,7 @@ class Link
     public const TYPE_PROVIDE = 'provides';
     public const TYPE_CONFLICT = 'conflicts';
     public const TYPE_REPLACE = 'replaces';
+    public const TYPE_FEATURE = 'features';
 
     /**
      * Special type
@@ -48,6 +49,7 @@ class Link
         self::TYPE_PROVIDE,
         self::TYPE_CONFLICT,
         self::TYPE_REPLACE,
+        self::TYPE_FEATURE,
     ];
 
     /**

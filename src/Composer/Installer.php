@@ -491,7 +491,7 @@ class Installer
         }
 
         $request = $this->createRequest($this->fixedRootPackage, $platformRepo, $lockedRepository);
-        $this->requirePackagesForUpdate($request, $lockedRepository, true);
+        $this->requirePackagesForUpdate($request, $lockedRepository, true, true);
 
         // pass the allow list into the request, so the pool builder can apply it
         if ($this->updateAllowList !== null) {
@@ -533,7 +533,7 @@ class Installer
             $this->io->writeError('Nothing to modify in lock file');
         }
 
-        $exitCode = $this->extractDevPackages($lockTransaction, $platformRepo, $aliases, $policy, $lockedRepository);
+        $exitCode = $this->extractDevAndFeaturePackages($lockTransaction, $platformRepo, $aliases, $policy, $lockedRepository);
         if ($exitCode !== 0) {
             return $exitCode;
         }
@@ -654,16 +654,16 @@ class Installer
 
     /**
      * Run the solver a second time on top of the existing update result with only the current result set in the pool
-     * and see what packages would get removed if we only had the non-dev packages in the solver request
+     * and see what packages would get removed if we only had the non-dev packages and no feature in the solver request
      *
      * @param array<int, array<string, string>> $aliases
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      * @phpstan-return self::ERROR_*
      */
-    protected function extractDevPackages(LockTransaction $lockTransaction, PlatformRepository $platformRepo, array $aliases, PolicyInterface $policy, ?LockArrayRepository $lockedRepository = null): int
+    protected function extractDevAndFeaturePackages(LockTransaction $lockTransaction, PlatformRepository $platformRepo, array $aliases, PolicyInterface $policy, ?LockArrayRepository $lockedRepository = null): int
     {
-        if (!$this->package->getDevRequires()) {
+        if (!$this->package->getDevRequires() && !$this->package->getFeatures()) {
             return 0;
         }
 
@@ -678,7 +678,7 @@ class Installer
         $repositorySet->addRepository($resultRepo);
 
         $request = $this->createRequest($this->fixedRootPackage, $platformRepo);
-        $this->requirePackagesForUpdate($request, $lockedRepository, false);
+        $this->requirePackagesForUpdate($request, $lockedRepository, false, false);
 
         $pool = $repositorySet->createPoolWithAllPackages();
 
@@ -687,12 +687,12 @@ class Installer
             $nonDevLockTransaction = $solver->solve($request, $this->platformRequirementFilter);
             $solver = null;
         } catch (SolverProblemsException $e) {
-            $err = 'Unable to find a compatible set of packages based on your non-dev requirements alone.';
+            $err = 'Unable to find a compatible set of packages based on your non-dev requirements and without any feature.';
             $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose(), true);
 
             $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
-            $this->io->writeError('Your requirements can be resolved successfully when require-dev packages are present.');
-            $this->io->writeError('You may need to move packages from require-dev or some of their dependencies to require.');
+            $this->io->writeError('Your requirements can be resolved successfully when require-dev packages are present or some features are required.');
+            $this->io->writeError('You may need to move packages from require-dev, from your features or some of their dependencies to require.');
             $this->io->writeError($prettyProblem);
 
             $ghe = new GithubActionError($this->io);
@@ -766,6 +766,15 @@ class Installer
                     $request->requireName($link->getTarget(), $link->getConstraint());
                 }
             }
+
+            $features = $this->package->getFeatures();
+
+            foreach ($features as $feature) {
+                foreach ($feature['require'] as $link) {
+                    $request->requireName($link->getTarget(), $link->getConstraint());
+                }
+            }
+
             unset($rootRequires, $link);
 
             $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes);
@@ -1004,7 +1013,7 @@ class Installer
         return $request;
     }
 
-    private function requirePackagesForUpdate(Request $request, ?LockArrayRepository $lockedRepository = null, bool $includeDevRequires = true): void
+    private function requirePackagesForUpdate(Request $request, ?LockArrayRepository $lockedRepository = null, bool $includeDevRequires = true, bool $includeFeatureRequires = true): void
     {
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
         if ($this->updateMirrors) {
@@ -1025,6 +1034,15 @@ class Installer
             if ($includeDevRequires) {
                 $links = array_merge($links, $this->package->getDevRequires());
             }
+
+            if ($includeFeatureRequires) {
+                $features = $this->package->getFeatures();
+
+                foreach ($features as $feature) {
+                    $links = array_merge($links, $feature['require']);
+                }
+            }
+
             foreach ($links as $link) {
                 $request->requireName($link->getTarget(), $link->getConstraint());
             }

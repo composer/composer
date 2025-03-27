@@ -69,6 +69,31 @@ class ArrayLoader implements LoaderInterface
             );
         }
 
+        $features = [];
+
+        foreach ($config['feature'] ?? [] as $name => $feature) {
+            $features[$name] = $feature;
+
+            foreach (['require'] as $linkType) {
+                if (!isset($features[$name][$linkType]) || !is_array($features[$name][$linkType])) {
+                    $features[$name][$linkType] = [];
+
+                    continue;
+                }
+
+                $links = $this->parseLinks(
+                    $package->getName(),
+                    $package->getPrettyVersion(),
+                    Link::TYPE_FEATURE,
+                    $features[$name][$linkType]
+                );
+
+                $features[$name][$linkType] = $links;
+            }
+        }
+
+        $package->setFeatures($features);
+
         $package = $this->configureObject($package, $config);
 
         return $package;

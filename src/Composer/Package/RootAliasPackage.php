@@ -220,4 +220,12 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
         parent::__clone();
         $this->aliasOf = clone $this->aliasOf;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function setFeatures(array $features): void
+    {
+        $this->aliasOf->setFeatures($features);
+    }
 }

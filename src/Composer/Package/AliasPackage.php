@@ -17,6 +17,8 @@ use Composer\Package\Version\VersionParser;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * @phpstan-import-type FeatureConfig from PackageInterface
  */
 class AliasPackage extends BasePackage
 {
@@ -48,6 +50,10 @@ class AliasPackage extends BasePackage
     protected $provides;
     /** @var Link[] */
     protected $replaces;
+    /** @var array<string, string[]> */
+    protected $featuresRequires = [];
+    /** @var array<string, FeatureConfig> */
+    protected $features = [];
 
     /**
      * All descendants' constructors should call this parent constructor
@@ -394,5 +400,13 @@ class AliasPackage extends BasePackage
     public function setSourceDistReferences(string $reference): void
     {
         $this->aliasOf->setSourceDistReferences($reference);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFeatures(): array
+    {
+        return $this->features;
     }
 }
