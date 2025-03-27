@@ -37,7 +37,7 @@ abstract class Rule
     public const RULE_LEARNED = 12; // int (rule id)
     public const RULE_PACKAGE_ALIAS = 13; // BasePackage
     public const RULE_PACKAGE_INVERSE_ALIAS = 14; // BasePackage
-    public const RULE_REQUIRE_FEATURE = 15; // array{packageName: string, feature: string}
+    public const RULE_REQUIRE_FEATURE = 15; // array{packageName: string, feature?: string}
     public const RULE_PROVIDE_FEATURE = 16; // array{packageName: string, feature: string}
 
     // bitfield defs
