@@ -41,7 +41,7 @@ class Link
      *
      * @internal
      * @var string[]
-     * @phpstan-var array<self::TYPE_REQUIRE|self::TYPE_DEV_REQUIRE|self::TYPE_PROVIDE|self::TYPE_CONFLICT|self::TYPE_REPLACE>
+     * @phpstan-var array<self::TYPE_REQUIRE|self::TYPE_DEV_REQUIRE|self::TYPE_PROVIDE|self::TYPE_CONFLICT|self::TYPE_REPLACE|self::TYPE_FEATURE>
      */
     public static $TYPES = [
         self::TYPE_REQUIRE,

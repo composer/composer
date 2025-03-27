@@ -271,6 +271,10 @@ class ArrayLoader implements LoaderInterface
             $package->setNotificationUrl($config['notification-url']);
         }
 
+        if (isset($config['require-feature'])) {
+            $package->setFeaturesRequires($config['require-feature']);
+        }
+
         if ($package instanceof CompletePackageInterface) {
             if (!empty($config['archive']['name'])) {
                 $package->setArchiveName($config['archive']['name']);

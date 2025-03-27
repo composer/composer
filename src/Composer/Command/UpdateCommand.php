@@ -88,6 +88,8 @@ class UpdateCommand extends BaseCommand
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
                 new InputOption('bump-after-update', null, InputOption::VALUE_OPTIONAL, 'Runs bump after performing the update.', false, ['dev', 'no-dev', 'all']),
+                new InputOption('no-features', null, InputOption::VALUE_NONE, 'Do not install any local features.'),
+                new InputOption('feature', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Install a specific feature from the root package.', null, []),
             ])
             ->setHelp(
                 <<<EOT
@@ -137,6 +139,20 @@ EOT
 
         if (!HttpDownloader::isCurlEnabled()) {
             $io->writeError('<warning>Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled.</warning>');
+        }
+
+        $restrictFeatures = null;
+
+        if ($input->getOption('feature')) {
+            $restrictFeatures = $input->getOption('feature');
+        }
+
+        if ($input->getOption('no-features')) {
+            if ($restrictFeatures !== null) {
+                $io->writeError('<warning>You are using both "no-features" and "feature" option. No features will be installed.</warning>');
+            }
+
+            $restrictFeatures = [];
         }
 
         $packages = $input->getArgument('packages');
@@ -272,6 +288,7 @@ EOT
             ->setAudit(!$input->getOption('no-audit'))
             ->setAuditFormat($this->getAuditFormat($input))
             ->setMinimalUpdate($input->getOption('minimal-changes'))
+            ->setRestrictedRootFeatures($restrictFeatures)
         ;
 
         if ($input->getOption('no-plugins')) {

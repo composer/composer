@@ -745,6 +745,24 @@ class Package extends BasePackage
     /**
      * @inheritDoc
      */
+    public function getFeaturesRequires(): array
+    {
+        return $this->featuresRequires;
+    }
+
+    /**
+     * Set the required features
+     *
+     * @param array<string, string[]> $featuresRequires A set of package links
+     */
+    public function setFeaturesRequires(array $featuresRequires): void
+    {
+        $this->featuresRequires = $featuresRequires;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getFeatures(): array
     {
         return $this->features;

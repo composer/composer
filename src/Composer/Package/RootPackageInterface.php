@@ -173,6 +173,13 @@ interface RootPackageInterface extends CompletePackageInterface
     public function setExtra(array $extra): void;
 
     /**
+     * Set features required
+     *
+     * @param array<string, string[]> $featuresRequires A list of features required per package
+     */
+    public function setFeaturesRequires(array $featuresRequires): void;
+
+    /**
      * Set features provided
      *
      * @param array<string, FeatureConfig> $features A list of features provided for this package

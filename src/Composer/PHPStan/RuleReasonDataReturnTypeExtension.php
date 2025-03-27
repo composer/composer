@@ -49,6 +49,8 @@ final class RuleReasonDataReturnTypeExtension implements DynamicMethodReturnType
 
         $types = [
             Rule::RULE_ROOT_REQUIRE => new ConstantArrayType([new ConstantStringType('packageName'), new ConstantStringType('constraint')], [new StringType, new ObjectType(ConstraintInterface::class)]),
+            Rule::RULE_REQUIRE_FEATURE => new ConstantArrayType([new ConstantStringType('packageName'), new ConstantStringType('feature')], [new StringType, new StringType()], [0], [1]),
+            Rule::RULE_PROVIDE_FEATURE => new ConstantArrayType([new ConstantStringType('packageName'), new ConstantStringType('feature')], [new StringType, new StringType()]),
             Rule::RULE_FIXED => new ConstantArrayType([new ConstantStringType('package')], [new ObjectType(BasePackage::class)]),
             Rule::RULE_PACKAGE_CONFLICT => new ObjectType(Link::class),
             Rule::RULE_PACKAGE_REQUIRES => new ObjectType(Link::class),

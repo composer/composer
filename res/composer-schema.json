@@ -834,16 +834,6 @@
                         "additionalProperties": {
                             "type": "string"
                         }
-                    },
-                    "require-feature": {
-                        "type": "object",
-                        "description": "This is an object of package name (keys) and associated features (values) that are required.",
-                        "additionalProperties": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
                     }
                 }
             }

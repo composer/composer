@@ -24,7 +24,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 /**
  * @author Nils Adermann <naderman@naderman.de>
  * @author Ruben Gonzalez <rubenrua@gmail.com>
- * @phpstan-type ReasonData Link|BasePackage|string|int|array{packageName: string, constraint: ConstraintInterface}|array{package: BasePackage}
+ * @phpstan-type ReasonData Link|BasePackage|string|int|array{packageName: string, constraint?: ConstraintInterface, feature?: string}
  */
 abstract class Rule
 {
@@ -37,6 +37,8 @@ abstract class Rule
     public const RULE_LEARNED = 12; // int (rule id)
     public const RULE_PACKAGE_ALIAS = 13; // BasePackage
     public const RULE_PACKAGE_INVERSE_ALIAS = 14; // BasePackage
+    public const RULE_REQUIRE_FEATURE = 15; // array{packageName: string, feature: string}
+    public const RULE_PROVIDE_FEATURE = 16; // array{packageName: string, feature: string}
 
     // bitfield defs
     private const BITFIELD_TYPE = 0;
@@ -102,6 +104,7 @@ abstract class Rule
     {
         switch ($this->getReason()) {
             case self::RULE_ROOT_REQUIRE:
+            case self::RULE_REQUIRE_FEATURE:
                 return $this->getReasonData()['packageName'];
             case self::RULE_FIXED:
                 return $this->getReasonData()['package']->getName();
@@ -425,6 +428,11 @@ abstract class Rule
                 $package = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[0]));
 
                 return $aliasPackage->getPrettyString() .' is an alias of '.$package->getPrettyString().' and must be installed with it.';
+            case self::RULE_REQUIRE_FEATURE:
+                // TODO : need to get which package requires the feature to better debug the issue
+                return 'A package requires feature "'.$this->getReasonData()['feature'].'" for '. $this->getReasonData()['packageName'] . '.' ;
+            case self::RULE_PROVIDE_FEATURE:
+                return 'Package '.$this->getReasonData()['packageName'].' does not provide feature "'.$this->getReasonData()['feature'].'".';
             default:
                 $ruleText = '';
                 foreach ($literals as $i => $literal) {
