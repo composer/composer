@@ -81,7 +81,7 @@ class LockTransaction extends Transaction
     }
 
     /**
-     * @param array<string, FeatureConfig> $features
+     * @param array<string, LockTransaction> $extractionResultPerFeatures
      */
     public function setNonDevPackages(LockTransaction $extractionResult, array $extractionResultPerFeatures): void
     {
@@ -101,8 +101,8 @@ class LockTransaction extends Transaction
             }
         }
 
-        foreach ($extractionResultPerFeatures as $featureName => $extractionResult) {
-            $packages = $extractionResult->getNewLockPackages(false);
+        foreach ($extractionResultPerFeatures as $featureName => $featureExtractionResult) {
+            $packages = $featureExtractionResult->getNewLockPackages(false);
 
             foreach ($packages as $package) {
                 foreach ($this->resultPackages['dev'] as $i => $resultPackage) {
@@ -138,6 +138,9 @@ class LockTransaction extends Transaction
         return $packages;
     }
 
+    /**
+     * @return array<string, BasePackage[]> A lock transaction per feature
+     */
     public function getNewLockFeaturesPackages(bool $updateMirrors = false): array
     {
         $packages = [];

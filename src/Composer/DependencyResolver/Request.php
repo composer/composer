@@ -77,17 +77,6 @@ class Request
         $this->requires[$packageName] = $constraint;
     }
 
-    public function requireFeature(string $packageName, string $feature): void
-    {
-        $packageName = strtolower($packageName);
-
-        if (!isset($this->requiresFeature[$packageName])) {
-            $this->requiresFeature[$packageName] = [];
-        }
-
-        $this->requires[$packageName][] = $feature;
-    }
-
     /**
      * Mark a package as currently present and having to remain installed
      *

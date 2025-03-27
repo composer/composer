@@ -40,15 +40,15 @@ class Pool implements \Countable
     protected $removedVersions = [];
     /** @var array<string, array<string, string>> Map of package object hash => removed normalized versions => removed pretty version */
     protected $removedVersionsByPackage = [];
-    /** @var array<string, {merged: string[], by-package: array<string, string[]>}> */
-    private $requiredFeatures = [];
+    /** @var array<string, array{merged: string[], by-package: array<string, string[]>}> */
+    protected $requiredFeatures = [];
 
     /**
      * @param BasePackage[] $packages
      * @param BasePackage[] $unacceptableFixedOrLockedPackages
      * @param array<string, array<string, string>> $removedVersions
      * @param array<string, array<string, string>> $removedVersionsByPackage
-     * @param array<string, {merged: string[], by-package: array<string, string[]>}> $requiredFeatures
+     * @param array<string, array{merged: string[], by-package: array<string, string[]>}> $requiredFeatures
      */
     public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $requiredFeatures = [])
     {
@@ -268,7 +268,7 @@ class Pool implements \Countable
     }
 
     /**
-     * @return array<string, {merged: string[], by-package: array<string, string[]>}>
+     * @return array<string, array{merged: string[], by-package: array<string, string[]>}>
      */
     public function getRequiredFeatures(): array
     {

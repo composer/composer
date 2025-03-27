@@ -24,7 +24,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 /**
  * @author Nils Adermann <naderman@naderman.de>
  * @author Ruben Gonzalez <rubenrua@gmail.com>
- * @phpstan-type ReasonData Link|BasePackage|string|int|array{packageName: string, constraint?: ConstraintInterface, feature?: string}
+ * @phpstan-type ReasonData Link|BasePackage|string|int|array{packageName: string, constraint?: ConstraintInterface, feature?: string}|array{package: BasePackage}
  */
 abstract class Rule
 {
@@ -430,7 +430,7 @@ abstract class Rule
                 return $aliasPackage->getPrettyString() .' is an alias of '.$package->getPrettyString().' and must be installed with it.';
             case self::RULE_REQUIRE_FEATURE:
                 // TODO : need to get which package requires the feature to better debug the issue
-                return 'A package requires feature "'.$this->getReasonData()['feature'].'" for '. $this->getReasonData()['packageName'] . '.' ;
+                return 'A package requires feature "'.($this->getReasonData()['feature'] ?? '').'" for '. $this->getReasonData()['packageName'] . '.' ;
             case self::RULE_PROVIDE_FEATURE:
                 return 'Package '.$this->getReasonData()['packageName'].' does not provide feature "'.$this->getReasonData()['feature'].'".';
             default:

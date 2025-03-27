@@ -88,6 +88,7 @@ class Problem
                 throw new \LogicException("Single reason problems must contain a root require rule.");
             }
 
+            /** @var array{packageName: string, constraint?: ConstraintInterface} $reasonData */
             $reasonData = $rule->getReasonData();
             $packageName = $reasonData['packageName'];
             $constraint = $reasonData['constraint'] ?? null;
@@ -115,8 +116,6 @@ class Problem
     {
         switch ($rule->getReason()) {
             case Rule::RULE_ROOT_REQUIRE:
-                return $rule->getReasonData()['packageName'];
-            case Rule::RULE_REQUIRE_FEATURE:
                 return $rule->getReasonData()['packageName'];
             case Rule::RULE_PROVIDE_FEATURE:
                 return $rule->getReasonData()['feature'] . '-' . $rule->getReasonData()['packageName'];

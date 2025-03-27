@@ -215,7 +215,7 @@ class RuleSetGenerator
                     continue;
                 }
 
-                foreach ($feature['require'] as $link) {
+                foreach ($feature['require'] ?? [] as $link) {
                     $constraint = $link->getConstraint();
                     if ($platformRequirementFilter->isIgnored($link->getTarget())) {
                         continue;

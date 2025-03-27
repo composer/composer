@@ -110,7 +110,7 @@ class PoolBuilder
     private $ignoredTypes = [];
     /** @var list<string>|null */
     private $allowedTypes = null;
-    /** @var array<string, {merged: string[], by-package: array<string, string[]>}> */
+    /** @var array<string, array{merged: string[], by-package: array<string, string[]>}> */
     private $requiredFeatures = [];
     /** @var array<string, int[]> */
     private $packagesFeatures = [];
@@ -487,9 +487,9 @@ class PoolBuilder
                         continue;
                     }
 
-                    $packageFeature = $packageFeatures[$feature];
+                    $packageFeatureRequire = $packageFeatures[$feature]['require'] ?? [];
 
-                    foreach ($packageFeature['require'] as $link) {
+                    foreach ($packageFeatureRequire as $link) {
                         // if package is already loaded skip it
                         if (isset($this->loadedPackages[$link->getTarget()])) {
                             continue;

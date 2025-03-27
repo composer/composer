@@ -143,8 +143,8 @@ EOT
 
         $restrictFeatures = null;
 
-        if ($input->getOption('feature')) {
-            $restrictFeatures = $input->getOption('feature');
+        if (($features = $input->getOption('feature')) !== []) {
+            $restrictFeatures = $features;
         }
 
         if ($input->getOption('no-features')) {

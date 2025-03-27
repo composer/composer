@@ -120,10 +120,10 @@ class PoolOptimizer
 
             $featuresRequired = $pool->getRequiredFeatures()[$package->getName()]['merged'] ?? [];
 
-            if ($featuresRequired) {
+            if (count($featuresRequired) > 0) {
                 foreach ($package->getFeatures() as $featureName => $featureConfig) {
-                    if (in_array($featureName, $featuresRequired)) {
-                        foreach ($featureConfig['require'] as $link) {
+                    if (in_array($featureName, $featuresRequired, true)) {
+                        foreach ($featureConfig['require'] ?? [] as $link) {
                             $this->extractRequireConstraintsPerPackage($link->getTarget(), $link->getConstraint());
                         }
                     }

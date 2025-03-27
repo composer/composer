@@ -357,14 +357,15 @@ class Locker
     /**
      * Locks provided data into lockfile.
      *
-     * @param PackageInterface[]          $packages          array of packages
-     * @param PackageInterface[]|null     $devPackages       array of dev packages or null if installed without --dev
-     * @param array<string, string>       $platformReqs      array of package name => constraint for required platform packages
-     * @param array<string, string>       $platformDevReqs   array of package name => constraint for dev-required platform packages
-     * @param string[][]                  $aliases           array of aliases
-     * @param array<string, int>          $stabilityFlags
-     * @param array<string, string|false> $platformOverrides
-     * @param bool                        $write             Whether to actually write data to disk, useful in tests and for --dry-run
+     * @param PackageInterface[]                     $packages          array of packages
+     * @param PackageInterface[]|null                $devPackages       array of dev packages or null if installed without --dev
+     * @param array<string, PackageInterface[]>|null $featurePackages   array of packages for each feature or null if no features
+     * @param array<string, string>                  $platformReqs      array of package name => constraint for required platform packages
+     * @param array<string, string>                  $platformDevReqs   array of package name => constraint for dev-required platform packages
+     * @param string[][]                             $aliases           array of aliases
+     * @param array<string, int>                     $stabilityFlags
+     * @param array<string, string|false>            $platformOverrides
+     * @param bool                                   $write             Whether to actually write data to disk, useful in tests and for --dry-run
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      */

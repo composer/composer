@@ -720,6 +720,15 @@ class Installer
         return 0;
     }
 
+    /**
+     * Run the solver on top of the existing update result with only the current result set in the pool and a specific feature
+     * and see what packages would get removed if we only had this feature in the solver request
+     *
+     * @param array<int, array<string, string>> $aliases
+     *
+     * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
+     * @phpstan-return self::ERROR_* | LockTransaction
+     */
     protected function extractFeaturePackages(LockTransaction $lockTransaction, PlatformRepository $platformRepo, array $aliases, PolicyInterface $policy, string $feature, ?LockArrayRepository $lockedRepository = null)
     {
         $resultRepo = new ArrayRepository([]);
@@ -823,10 +832,11 @@ class Installer
             $features = $this->package->getFeatures();
 
             foreach ($features as $name => $featureConfig) {
-                if ($this->restrictedRootFeatures && !in_array($name, $this->restrictedRootFeatures, true)) {
+                if ($this->restrictedRootFeatures !== null && !in_array($name, $this->restrictedRootFeatures, true)) {
                     continue;
                 }
-                $require = $feature['require'] ?? [];
+
+                $require = $featureConfig['require'] ?? [];
 
                 foreach ($require as $link) {
                     $request->requireName($link->getTarget(), $link->getConstraint());
@@ -1071,6 +1081,9 @@ class Installer
         return $request;
     }
 
+    /**
+     * @param string[]|null $featureRequired A list of feature required
+     */
     private function requirePackagesForUpdate(Request $request, ?LockArrayRepository $lockedRepository = null, bool $includeDevRequires = true, ?array $featureRequired = null): void
     {
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
