@@ -282,26 +282,32 @@ class PoolBuilder
         if (\count($this->temporaryConstraints) > 0) {
             foreach ($this->packages as $i => $package) {
                 // we check all alias related packages at once, so no need to check individual aliases
-                if (!isset($this->temporaryConstraints[$package->getName()]) || $package instanceof AliasPackage) {
+                if ($package instanceof AliasPackage) {
                     continue;
                 }
 
-                $constraint = $this->temporaryConstraints[$package->getName()];
-                $packageAndAliases = [$i => $package];
-                if (isset($this->aliasMap[spl_object_hash($package)])) {
-                    $packageAndAliases += $this->aliasMap[spl_object_hash($package)];
-                }
-
-                $found = false;
-                foreach ($packageAndAliases as $packageOrAlias) {
-                    if (CompilingMatcher::match($constraint, Constraint::OP_EQ, $packageOrAlias->getVersion())) {
-                        $found = true;
+                foreach ($package->getNames() as $packageName) {
+                    if (!isset($this->temporaryConstraints[$packageName])) {
+                        continue;
                     }
-                }
 
-                if (!$found) {
-                    foreach ($packageAndAliases as $index => $packageOrAlias) {
-                        unset($this->packages[$index]);
+                    $constraint = $this->temporaryConstraints[$packageName];
+                    $packageAndAliases = [$i => $package];
+                    if (isset($this->aliasMap[spl_object_hash($package)])) {
+                        $packageAndAliases += $this->aliasMap[spl_object_hash($package)];
+                    }
+
+                    $found = false;
+                    foreach ($packageAndAliases as $packageOrAlias) {
+                        if (CompilingMatcher::match($constraint, Constraint::OP_EQ, $packageOrAlias->getVersion())) {
+                            $found = true;
+                        }
+                    }
+
+                    if (!$found) {
+                        foreach ($packageAndAliases as $index => $packageOrAlias) {
+                            unset($this->packages[$index]);
+                        }
                     }
                 }
             }

@@ -354,12 +354,14 @@ class Problem
             }
 
             $tempReqs = $repositorySet->getTemporaryConstraints();
-            if (isset($tempReqs[$packageName])) {
-                $filtered = array_filter($packages, static function ($p) use ($tempReqs, $packageName): bool {
-                    return $tempReqs[$packageName]->matches(new Constraint('==', $p->getVersion()));
-                });
-                if (0 === count($filtered)) {
-                    return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with your temporary update constraint ('.$packageName.':'.$tempReqs[$packageName]->getPrettyString().').'];
+            foreach (reset($packages)->getNames() as $name) {
+                if (isset($tempReqs[$name])) {
+                    $filtered = array_filter($packages, static function ($p) use ($tempReqs, $name): bool {
+                        return $tempReqs[$name]->matches(new Constraint('==', $p->getVersion()));
+                    });
+                    if (0 === count($filtered)) {
+                        return ["- Root composer.json requires $name".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with your temporary update constraint ('.$name.':'.$tempReqs[$name]->getPrettyString().').'];
+                    }
                 }
             }
 
