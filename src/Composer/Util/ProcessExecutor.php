@@ -78,6 +78,9 @@ class ProcessExecutor
     public function __construct(?IOInterface $io = null)
     {
         $this->io = $io;
+        if (is_numeric($maxJobs = Platform::getEnv('COMPOSER_MAX_PARALLEL_PROCESSES'))) {
+            $this->maxJobs = max(1, min(50, (int) $maxJobs));
+        }
     }
 
     /**
@@ -350,7 +353,11 @@ class ProcessExecutor
 
     public function resetMaxJobs(): void
     {
-        $this->maxJobs = 10;
+        if (is_numeric($maxJobs = Platform::getEnv('COMPOSER_MAX_PARALLEL_PROCESSES'))) {
+            $this->maxJobs = max(1, min(50, (int) $maxJobs));
+        } else {
+            $this->maxJobs = 10;
+        }
     }
 
     /**
