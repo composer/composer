@@ -1,0 +1,35 @@
+--TEST--
+A simple package with a feature
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "feature": { "b": { "require": { "b/b": "1.0.0" } } } },
+                { "name": "b/b", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "require-feature": {
+        "a/a": ["unknown"]
+    }
+}
+--RUN--
+update
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - A package requires feature "unknown" for a/a.
+    - Package a/a does not provide feature "unknown".
+
+--EXPECT--

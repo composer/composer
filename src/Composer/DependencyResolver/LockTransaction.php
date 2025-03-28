@@ -101,6 +101,8 @@ class LockTransaction extends Transaction
             }
         }
 
+        $toRemoveFromDev = [];
+
         foreach ($extractionResultPerFeatures as $featureName => $featureExtractionResult) {
             $packages = $featureExtractionResult->getNewLockPackages(false);
 
@@ -108,10 +110,14 @@ class LockTransaction extends Transaction
                 foreach ($this->resultPackages['dev'] as $i => $resultPackage) {
                     if ($package->getName() === $resultPackage->getName()) {
                         $this->resultPackages['features'][$featureName][] = $resultPackage;
-                        unset($this->resultPackages['dev'][$i]);
+                        $toRemoveFromDev[$i] = true;
                     }
                 }
             }
+        }
+
+        foreach ($toRemoveFromDev as $i => $_) {
+            unset($this->resultPackages['dev'][$i]);
         }
     }
 

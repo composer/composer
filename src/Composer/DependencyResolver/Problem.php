@@ -116,9 +116,10 @@ class Problem
     {
         switch ($rule->getReason()) {
             case Rule::RULE_ROOT_REQUIRE:
+            case Rule::RULE_REQUIRE_FEATURE:
                 return $rule->getReasonData()['packageName'];
             case Rule::RULE_PROVIDE_FEATURE:
-                return $rule->getReasonData()['feature'] . '-' . $rule->getReasonData()['packageName'];
+                return $rule->getReasonData()['packageName'] . '-' . $rule->getReasonData()['feature'];
             case Rule::RULE_FIXED:
                 return (string) $rule->getReasonData()['package'];
             case Rule::RULE_PACKAGE_CONFLICT:
