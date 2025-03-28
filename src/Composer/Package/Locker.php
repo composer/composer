@@ -182,6 +182,8 @@ class Locker
             foreach ($restrictedRootFeatures as $feature) {
                 if (isset($lockData['packages-feature'][$feature])) {
                     $lockedPackages = array_merge($lockedPackages, $lockData['packages-feature'][$feature]);
+                } else {
+                    throw new \RuntimeException('The lock file does not contain information for the feature "'.$feature.'", run install with the --feature option or delete it and run composer update to generate a new lock file.');
                 }
             }
         }

@@ -913,7 +913,7 @@ class Installer
 
         if ($this->executeOperations) {
             $localRepo->setDevPackageNames($this->locker->getDevPackageNames());
-            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts, $this->downloadOnly);
+            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts, $this->downloadOnly, $this->restrictedRootFeatures);
 
             // see https://github.com/composer/composer/issues/2764
             if (count($localRepoTransaction->getOperations()) > 0) {

@@ -25,6 +25,7 @@ update
     "packages": [
         {
             "name": "a/a", "version": "1.0.0",
+            "feature": { "b": { "require": { "b/b": "1.0.0" } } },
             "type": "library"
         },
         {
