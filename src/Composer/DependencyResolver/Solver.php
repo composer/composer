@@ -172,41 +172,6 @@ class Solver
         }
     }
 
-    /**
-     * Check for any problems related to features
-     *
-     * @return void
-     */
-    protected function checkForFeatureRequireProblems() {
-        foreach ($this->pool->getRequiredFeatures() as $packageName => $features) {
-            $packages = $this->pool->whatProvides($packageName);
-
-            /** If there is no package provided, then a feature has been requested on a package this is never fetched so we should report it */
-            if (0 === \count($packages)) {
-                $problem = new Problem();
-                $problem->addRule(new GenericRule([], Rule::RULE_REQUIRE_FEATURE, ['packageName' => $packageName]));
-                $this->problems[] = $problem;
-            }
-
-            /** We now check that this feature exist in any of the package provided */
-            // TODO : Current resolver will not select the package based on feature, meaning that a feature that
-            // is no longer available may be required while not installable. This is a limitation of the current
-            // implementation and may be improved later
-            $leftOverFeatures = $features['merged'];
-
-            foreach ($packages as $package) {
-                $leftOverFeatures = array_diff($leftOverFeatures, array_keys($package->getFeatures()));
-            }
-
-            foreach ($leftOverFeatures as $feature) {
-                $problem = new Problem();
-                $problem->addRule(new GenericRule([], Rule::RULE_REQUIRE_FEATURE, ['packageName' => $packageName, 'feature' => $feature]));
-                $problem->addRule(new GenericRule([], Rule::RULE_PROVIDE_FEATURE, ['packageName' => $packageName, 'feature' => $feature]));
-                $this->problems[] = $problem;
-            }
-        }
-    }
-
     public function solve(Request $request, ?PlatformRequirementFilterInterface $platformRequirementFilter = null): LockTransaction
     {
         $platformRequirementFilter = $platformRequirementFilter ?? PlatformRequirementFilterFactory::ignoreNothing();
@@ -227,9 +192,6 @@ class Solver
 
         /* make decisions based on root require/fix assertions */
         $this->makeAssertionRuleDecisions();
-
-        /* check for features problems */
-        $this->checkForFeatureRequireProblems();
 
         $this->io->writeError('Resolving dependencies through SAT', true, IOInterface::DEBUG);
         $before = microtime(true);

@@ -29,7 +29,7 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - A package requires feature "unknown" for a/a.
-    - Package a/a does not provide feature "unknown".
+    - Root composer.json requires a/a 1.0.0 -> satisfiable by a/a[1.0.0].
+    - Root composer.json requires feature "unknown" for a/a.
 
 --EXPECT--

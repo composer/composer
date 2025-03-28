@@ -110,7 +110,7 @@ class PoolBuilder
     private $ignoredTypes = [];
     /** @var list<string>|null */
     private $allowedTypes = null;
-    /** @var array<string, array{merged: string[], by-package: array<string, string[]>}> */
+    /** @var array<string, array{merged: string[], byPackage: array<string, string[]>}> */
     private $requiredFeatures = [];
     /** @var array<string, int[]> */
     private $packagesFeatures = [];
@@ -558,14 +558,14 @@ class PoolBuilder
             if (!isset($this->requiredFeatures[$packageName])) {
                 $this->requiredFeatures[$packageName] = [
                     'merged' => [],
-                    'by-package' => [],
+                    'byPackage' => [],
                 ];
             }
 
             // We merge all features that may be required by different packages
             // Meaning a feature can be added by multiple packages and we take the combination of all required features
             $this->requiredFeatures[$packageName]['merged'] = array_merge($this->requiredFeatures[$packageName]['merged'], $features);
-            $this->requiredFeatures[$packageName]['by-package'][$package->getName()] = $features;
+            $this->requiredFeatures[$packageName]['byPackage'][$package->getName()] = $features;
 
             // Get already loaded features
             $loadedFeaturesForPackage = $this->featuresLoaded[$packageName] ?? [];

@@ -84,14 +84,13 @@ class Problem
             reset($reasons);
             $rule = current($reasons);
 
-            if ($rule->getReason() !== Rule::RULE_ROOT_REQUIRE && $rule->getReason() !== Rule::RULE_REQUIRE_FEATURE) {
+            if ($rule->getReason() !== Rule::RULE_ROOT_REQUIRE) {
                 throw new \LogicException("Single reason problems must contain a root require rule.");
             }
 
-            /** @var array{packageName: string, constraint?: ConstraintInterface} $reasonData */
             $reasonData = $rule->getReasonData();
             $packageName = $reasonData['packageName'];
-            $constraint = $reasonData['constraint'] ?? null;
+            $constraint = $reasonData['constraint'];
 
             $packages = $pool->whatProvides($packageName, $constraint);
             if (\count($packages) === 0) {
@@ -116,9 +115,8 @@ class Problem
     {
         switch ($rule->getReason()) {
             case Rule::RULE_ROOT_REQUIRE:
-            case Rule::RULE_REQUIRE_FEATURE:
                 return $rule->getReasonData()['packageName'];
-            case Rule::RULE_PROVIDE_FEATURE:
+            case Rule::RULE_REQUIRE_FEATURE:
                 return $rule->getReasonData()['packageName'] . '-' . $rule->getReasonData()['feature'];
             case Rule::RULE_FIXED:
                 return (string) $rule->getReasonData()['package'];
@@ -151,7 +149,6 @@ class Problem
             case Rule::RULE_LEARNED:
             case Rule::RULE_PACKAGE_ALIAS:
             case Rule::RULE_PACKAGE_INVERSE_ALIAS:
-            case Rule::RULE_PROVIDE_FEATURE:
             case Rule::RULE_REQUIRE_FEATURE:
                 return 0;
         }

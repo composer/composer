@@ -47,7 +47,6 @@ class PoolOptimizer
      * @var array<string, array<string, ConstraintInterface>>
      */
     private $conflictConstraintsPerPackage = [];
-
     /**
      * @var array<int, true>
      */
@@ -212,8 +211,18 @@ class PoolOptimizer
                     continue;
                 }
 
+                // Add features to groupHash if any
+                $featureHashParts = array_keys($package->getFeatures());
+                // sort for consistent hash
+                sort($featureHashParts);
+                $featureHash = implode(',', $featureHashParts);
+
                 foreach ($this->requireConstraintsPerPackage[$packageName] as $requireConstraint) {
                     $groupHashParts = [];
+
+                    if ($featureHash !== '') {
+                        $groupHashParts[] = 'feature:' . $featureHash;
+                    }
 
                     if (CompilingMatcher::match($requireConstraint, Constraint::OP_EQ, $package->getVersion())) {
                         $groupHashParts[] = 'require:' . (string) $requireConstraint;
