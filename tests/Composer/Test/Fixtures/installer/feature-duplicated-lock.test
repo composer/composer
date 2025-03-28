@@ -1,5 +1,5 @@
 --TEST--
-A simple package with a feature
+Feature requiring the same package should have the locked version duplicated in each feature
 --COMPOSER--
 {
     "repositories": [

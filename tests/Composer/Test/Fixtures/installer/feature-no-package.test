@@ -1,5 +1,5 @@
 --TEST--
-A simple package with a feature
+A feature requiring a package that is not available should fail
 --COMPOSER--
 {
     "repositories": [

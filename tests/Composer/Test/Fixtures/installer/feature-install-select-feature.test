@@ -1,5 +1,5 @@
 --TEST--
-A simple package with a feature
+Installing a package with a specific feature should not install other features dependencies
 --COMPOSER--
 {
     "repositories": [

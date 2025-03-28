@@ -1,5 +1,5 @@
 --TEST--
-A simple package with a feature
+Installing a package with a not existing feature should fail
 --COMPOSER--
 {
     "repositories": [
