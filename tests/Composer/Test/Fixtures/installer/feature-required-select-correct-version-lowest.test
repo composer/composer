@@ -17,11 +17,11 @@ Installing a package that require a feature from another package only available 
         "a/a": "^1.0 | ^2.0"
     },
     "require-feature": {
-        "a/a": ["c"]
+        "a/a": ["d"]
     }
 }
 --RUN--
-update
+update --prefer-lowest
 --EXPECT--
-Installing a/a (1.0.0)
-Installing c/c (1.0.0)
+Installing a/a (2.0.0)
+Installing d/d (1.0.0)
