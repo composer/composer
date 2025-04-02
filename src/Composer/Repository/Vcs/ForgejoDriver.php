@@ -199,15 +199,8 @@ class ForgejoDriver extends VcsDriver
         if ($this->gitDriver !== null) {
             return $this->gitDriver->getSource($identifier);
         }
-        if ($this->repositoryData->isPrivate) {
-            // Private Forgejo repositories should be accessed using the
-            // SSH version of the URL.
-            $url = $this->repositoryData->sshUrl;
-        } else {
-            $url = $this->getUrl();
-        }
 
-        return ['type' => 'git', 'url' => $url, 'reference' => $identifier];
+        return ['type' => 'git', 'url' => $this->getUrl(), 'reference' => $identifier];
     }
 
     public function getUrl(): string
