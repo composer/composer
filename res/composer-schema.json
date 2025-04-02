@@ -971,7 +971,8 @@
                     "properties": {
                         "reference": { "type": ["string"], "enum": ["none", "config", "auto"] },
                         "symlink": { "type": ["boolean", "null"] },
-                        "relative": { "type": ["boolean"] }
+                        "relative": { "type": ["boolean"] },
+                        "versions": { "type": "object", "additionalProperties": { "type": "string" } }
                     },
                     "additionalProperties": true
                 }
