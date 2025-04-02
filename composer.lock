@@ -532,16 +532,16 @@
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "6.3.1",
+            "version": "6.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jsonrainbow/json-schema.git",
-                "reference": "c9f00dec766a67bf82c277b71d71d254357db92c"
+                "reference": "16b274cb469bc8165c59b76c283724a035d27f4c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/c9f00dec766a67bf82c277b71d71d254357db92c",
-                "reference": "c9f00dec766a67bf82c277b71d71d254357db92c",
+                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/16b274cb469bc8165c59b76c283724a035d27f4c",
+                "reference": "16b274cb469bc8165c59b76c283724a035d27f4c",
                 "shasum": ""
             },
             "require": {
@@ -601,9 +601,9 @@
             ],
             "support": {
                 "issues": "https://github.com/jsonrainbow/json-schema/issues",
-                "source": "https://github.com/jsonrainbow/json-schema/tree/6.3.1"
+                "source": "https://github.com/jsonrainbow/json-schema/tree/6.4.0"
             },
-            "time": "2025-03-18T19:03:56+00:00"
+            "time": "2025-04-01T18:50:59+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
@@ -2309,16 +2309,16 @@
         },
         {
             "name": "phpstan/phpstan-symfony",
-            "version": "1.4.14",
+            "version": "1.4.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-symfony.git",
-                "reference": "08b97ab6621a57d6bbb8add1a358c5bf25cd98df"
+                "reference": "78b6b5a62f56731d938031c8f59817ed83b2328a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-symfony/zipball/08b97ab6621a57d6bbb8add1a358c5bf25cd98df",
-                "reference": "08b97ab6621a57d6bbb8add1a358c5bf25cd98df",
+                "url": "https://api.github.com/repos/phpstan/phpstan-symfony/zipball/78b6b5a62f56731d938031c8f59817ed83b2328a",
+                "reference": "78b6b5a62f56731d938031c8f59817ed83b2328a",
                 "shasum": ""
             },
             "require": {
@@ -2375,9 +2375,9 @@
             "description": "Symfony Framework extensions and rules for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-symfony/issues",
-                "source": "https://github.com/phpstan/phpstan-symfony/tree/1.4.14"
+                "source": "https://github.com/phpstan/phpstan-symfony/tree/1.4.15"
             },
-            "time": "2025-03-19T12:40:08+00:00"
+            "time": "2025-03-28T12:01:24+00:00"
         },
         {
             "name": "symfony/phpunit-bridge",
