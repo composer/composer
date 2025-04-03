@@ -1,3 +1,15 @@
+### [2.8.7] 2025-04-03
+
+  * Bumped justinrainbow/json-schema dependency to 6.x (#12348)
+  * Added `COMPOSER_MAX_PARALLEL_PROCESS` env var to control max amount of parallel processes Composer will start (#12356)
+  * Added zstd/brotli presence in `diagnose` command output
+  * Fixed error handler to avoid spamming deprecation notices (#12360)
+  * Fixed InstalledVersions returning duplicate data at Composer runtime (#12225)
+  * Fixed handling of `--with ...` constraints to make them apply to packages replaced a package with a different name (#12353)
+  * Fixed deprecation warnings showing up in IDE code inspections within the vendor dir (#12331)
+  * Fixed a few json schema completeness issues (#12332, #12321)
+  * Fixed issue autoloading files with a .phar inside the path (#12326)
+
 ### [2.8.6] 2025-02-25
 
   * Added `COMPOSER_WITH_DEPENDENCIES` and `COMPOSER_WITH_ALL_DEPENDENCIES` env vars to enable the `--with[-all]-dependencies` flags (#12289)
@@ -1994,6 +2006,7 @@
 
   * Initial release
 
+[2.8.7]: https://github.com/composer/composer/compare/2.8.6...2.8.7
 [2.8.6]: https://github.com/composer/composer/compare/2.8.5...2.8.6
 [2.8.5]: https://github.com/composer/composer/compare/2.8.4...2.8.5
 [2.8.4]: https://github.com/composer/composer/compare/2.8.3...2.8.4
