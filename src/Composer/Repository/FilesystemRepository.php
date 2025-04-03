@@ -169,7 +169,26 @@ class FilesystemRepository extends WritableArrayRepository
             if ($installedVersionsClass !== false) {
                 $this->filesystem->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
 
+                // make sure the in memory state is up to date with on disk
                 \Composer\InstalledVersions::reload($versions);
+
+                // make sure the selfDir matches the expected data at runtime if the class was loaded from the vendor dir, as it may have been
+                // loaded from the Composer sources, causing packages to appear twice in that case if the installed.php is loaded in addition to the
+                // in memory loaded data from above
+                try {
+                    $reflProp = new \ReflectionProperty(\Composer\InstalledVersions::class, 'selfDir');
+                    $reflProp->setAccessible(true);
+                    $reflProp->setValue(null, strtr($repoDir, '\\', '/'));
+
+                    $reflProp = new \ReflectionProperty(\Composer\InstalledVersions::class, 'installedIsLocalDir');
+                    $reflProp->setAccessible(true);
+                    $reflProp->setValue(null, true);
+                } catch (\ReflectionException $e) {
+                    if (!Preg::isMatch('{Property .*? does not exist}i', $e->getMessage())) {
+                        throw $e;
+                    }
+                    // noop, if outdated class is loaded we do not want to cause trouble
+                }
             }
         }
     }
