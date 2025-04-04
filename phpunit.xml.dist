@@ -14,7 +14,7 @@
          bootstrap="tests/bootstrap.php"
 >
     <php>
-        <env name="SYMFONY_DEPRECATIONS_HELPER" value="/Implicit conversion/"/>
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="max[direct]=0"/>
         <env name="COMPOSER_TEST_SUITE" value="1"/>
     </php>
     <testsuites>
