@@ -51,14 +51,27 @@ class ComposerSchemaTest extends TestCase
             ['1.0.0-dev', true],
             ['1.0.0-alpha3', true],
             ['1.0.0-beta232', true],
+            ['10.4.13beta.2', true],
+            ['1.0.0.RC.15-dev', true],
             ['1.0.0-RC', true],
             ['v2.0.4-p', true],
             ['dev-master', true],
             ['0.2.5.4', true],
+            ['12345678-123456', true],
+            ['20100102-203040-p1', true],
+            ['2010-01-02.5', true],
+            ['0.2.5.4-rc.2', true],
+            ['dev-feature+issue-1', true],
+            ['1.0.0-alpha.3.1+foo/-bar', true],
+            ['00.01.03.04', true],
+            ['041.x-dev', true],
+            ['dev-foo bar', true],
 
             ['invalid', false],
-            ['1.0b', false],
-            ['1.0.0-', false],
+            ['1.0be', false],
+            ['1.0.0-meh', false],
+            ['feature-foo', false],
+            ['1.0 .2', false],
         ];
     }
 
@@ -74,11 +87,11 @@ class ComposerSchemaTest extends TestCase
             self::assertEquals([
                 [
                     'property' => 'version',
-                    'message' => 'Does not match the regex pattern ^v?\d+(\.\d+){0,3}(-(dev|(patch|p|alpha|a|beta|b|RC)\d*))?$|^dev-.*$',
+                    'message' => 'Does not match the regex pattern ^v?\\d+(?:[.-]\\d+){0,3}[._-]?(?:(?:stable|beta|b|RC|rc|alpha|a|patch|pl|p)(?:(?:[.-]?\\d+)*+)?)?(?:[.-]?dev|\\.x-dev)?(?:\\+.*)?$|^dev-.*$',
                     'constraint' => [
                         'name' => 'pattern',
                         'params' => [
-                            'pattern' => '^v?\d+(\.\d+){0,3}(-(dev|(patch|p|alpha|a|beta|b|RC)\d*))?$|^dev-.*$',
+                            'pattern' => '^v?\\d+(?:[.-]\\d+){0,3}[._-]?(?:(?:stable|beta|b|RC|rc|alpha|a|patch|pl|p)(?:(?:[.-]?\\d+)*+)?)?(?:[.-]?dev|\\.x-dev)?(?:\\+.*)?$|^dev-.*$',
                         ]
                     ],
                 ],
