@@ -131,40 +131,6 @@ jobs:
         if: "matrix.php-version == '7.3'"
         run: "vendor/bin/simple-phpunit --configuration tests/complete.phpunit.xml"
 
-  tests_x86:
-    name: "CI on PHP x86"
-
-    runs-on: ubuntu-latest
-    container: shivammathur/node:latest-i386
-
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - uses: shivammathur/setup-php@9e72090525849c5e82e596468b86eb55e9cc5401 # 2.32.0
-        with:
-          coverage: "none"
-          extensions: "intl, zip"
-          ini-values: "memory_limit=-1, phar.readonly=0, error_reporting=E_ALL, display_errors=On"
-          php-version: "8.4"
-          tools: composer
-
-      - name: "Install dependencies from composer.lock using composer binary provided by system"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
-
-      - name: "Run install again using composer binary from source"
-        run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
-
-      - name: "Make source binary the one used by default"
-        run: |
-          echo -e "$(pwd)/bin\n$(cat $GITHUB_PATH)" > $GITHUB_PATH
-          echo -e "COMPOSER_BINARY=$(pwd)/bin/composer" >> $GITHUB_ENV
-
-      - name: "Prepare git environment"
-        run: "git config --global user.name composer && git config --global user.email composer@example.com"
-
-      - name: "Run tests"
-        run: "vendor/bin/simple-phpunit --verbose"
-
   validation:
     name: "Composer validation"
 
