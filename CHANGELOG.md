@@ -1,3 +1,8 @@
+### [2.8.8] 2025-04-04
+
+  * Fixed json schema issues with version validation (#12367)
+  * Fixed issues running on 32bit machines (#12365)
+
 ### [2.8.7] 2025-04-03
 
   * Bumped justinrainbow/json-schema dependency to 6.x (#12348)
@@ -2006,6 +2011,7 @@
 
   * Initial release
 
+[2.8.8]: https://github.com/composer/composer/compare/2.8.7...2.8.8
 [2.8.7]: https://github.com/composer/composer/compare/2.8.6...2.8.7
 [2.8.6]: https://github.com/composer/composer/compare/2.8.5...2.8.6
 [2.8.5]: https://github.com/composer/composer/compare/2.8.4...2.8.5
