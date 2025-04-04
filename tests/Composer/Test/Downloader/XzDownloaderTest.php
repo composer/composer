@@ -36,6 +36,9 @@ class XzDownloaderTest extends TestCase
         if (Platform::isWindows()) {
             $this->markTestSkipped('Skip test on Windows');
         }
+        if (PHP_INT_SIZE === 4) {
+            $this->markTestSkipped('Skip test on 32bit');
+        }
         $this->testDir = self::getUniqueTmpDirectory();
     }
 
