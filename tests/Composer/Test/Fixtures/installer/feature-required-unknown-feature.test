@@ -1,0 +1,35 @@
+--TEST--
+Installing a package with a not existing feature should fail
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "feature": { "b": { "require": { "b/b": "1.0.0" } } } },
+                { "name": "b/b", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "require-feature": {
+        "a/a": ["unknown"]
+    }
+}
+--RUN--
+update
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires a/a 1.0.0 -> satisfiable by a/a[1.0.0].
+    - Root composer.json requires feature "unknown" for a/a.
+
+--EXPECT--
