@@ -489,7 +489,7 @@ class PlatformRepository extends ArrayRepository
                          * pre-release ID in practice is always 0xff even for RCs etc, so we ignore it
                          */
                         $libRdKafkaVersionInt = $this->runtime->getConstant('RD_KAFKA_VERSION');
-                        $this->addLibrary($libraries, $name.'-librdkafka', sprintf('%d.%d.%d', ($libRdKafkaVersionInt & 0xFF000000) >> 24, ($libRdKafkaVersionInt & 0x00FF0000) >> 16, ($libRdKafkaVersionInt & 0x0000FF00) >> 8), 'librdkafka for '.$name);
+                        $this->addLibrary($libraries, $name.'-librdkafka', sprintf('%d.%d.%d', ($libRdKafkaVersionInt & 0x7F000000) >> 24, ($libRdKafkaVersionInt & 0x00FF0000) >> 16, ($libRdKafkaVersionInt & 0x0000FF00) >> 8), 'librdkafka for '.$name);
                     }
                     break;
 
