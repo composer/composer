@@ -42,6 +42,7 @@ jobs:
         run: |
           echo -e "$(pwd)/bin\n$(cat $GITHUB_PATH)" > $GITHUB_PATH
           echo -e "COMPOSER_BINARY=$(pwd)/bin/composer" >> $GITHUB_ENV
+          git config --global --add safe.directory $(pwd)
 
       - name: "Prepare git environment"
         run: "git config --global user.name composer && git config --global user.email composer@example.com"
