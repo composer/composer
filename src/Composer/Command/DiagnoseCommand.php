@@ -614,12 +614,20 @@ EOT
 
             $version = curl_version();
             $hasZstd = isset($version['features']) && defined('CURL_VERSION_ZSTD') && 0 !== ($version['features'] & CURL_VERSION_ZSTD);
+            $httpVersions = '1.0, 1.1';
+            if (isset($version['features']) && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $version['features']) !== 0) {
+                $httpVersions .= ', 2';
+            }
+            if (isset($version['features']) && \defined('CURL_VERSION_HTTP3') && ($version['features'] & CURL_VERSION_HTTP3) !== 0) {
+                $httpVersions .= ', 3';
+            }
 
             return '<comment>'.$version['version'].'</comment> '.
                 'libz <comment>'.($version['libz_version'] ?? 'missing').'</comment> '.
                 'brotli <comment>'.($version['brotli_version'] ?? 'missing').'</comment> '.
                 'zstd <comment>'.($hasZstd ? 'supported' : 'missing').'</comment> '.
-                'ssl <comment>'.($version['ssl_version'] ?? 'missing').'</comment>';
+                'ssl <comment>'.($version['ssl_version'] ?? 'missing').'</comment> '.
+                'HTTP <comment>'.$httpVersions.'</comment>';
         }
 
         return '<error>missing, using php streams fallback, which reduces performance</error>';
