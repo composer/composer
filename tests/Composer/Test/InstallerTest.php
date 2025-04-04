@@ -509,7 +509,7 @@ class InstallerTest extends TestCase
             try {
                 $testData = self::readTestFile($file, $fixturesDir);
                 // skip 64bit related tests on 32bit
-                if (str_contains($testData['EXPECT-OUTPUT'], 'php-64bit') && PHP_INT_SIZE === 4) {
+                if (str_contains($testData['EXPECT-OUTPUT'] ?? '', 'php-64bit') && PHP_INT_SIZE === 4) {
                     continue;
                 }
 
