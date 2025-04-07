@@ -61,6 +61,10 @@ class BumpCommandTest extends TestCase
 
     public function testBumpFailsOnWriteErrorToComposerFile(): void
     {
+        if (function_exists('posix_getuid') && posix_getuid() === 0) {
+            $this->markTestSkipped('Cannot run as root');
+        }
+
         $dir = $this->initTempComposer([]);
         $composerJsonPath = $dir . '/composer.json';
         chmod($composerJsonPath, 0444);
