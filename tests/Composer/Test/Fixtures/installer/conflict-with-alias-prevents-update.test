@@ -29,6 +29,7 @@ update
         { "name": "some/dep", "version": "1.2.x-dev", "type": "library" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {

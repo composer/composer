@@ -69,6 +69,7 @@ Ensure that a partial update of a dependency does not conflict if the only way t
         {"name": "root/pkg10", "version": "1.0.0", "type": "library", "require": {"dep/pkg9": "*"}}
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
@@ -99,6 +100,7 @@ update update/pkg1 --with-dependencies
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},

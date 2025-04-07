@@ -360,14 +360,24 @@ class InstallerTest extends TestCase
         $install->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY);
         $install->addOption('no-dev', null, InputOption::VALUE_NONE);
         $install->addOption('dry-run', null, InputOption::VALUE_NONE);
+        $install->addOption('no-features', null, InputOption::VALUE_NONE);
+        $install->addOption('feature', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, '', []);
         $install->setCode(static function ($input, $output) use ($installer): int {
             $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
+            $restrictedFeatures = null;
+
+            if ($input->getOption('no-features')) {
+                $restrictedFeatures = [];
+            } elseif ($input->getOption('feature')) {
+                $restrictedFeatures = $input->getOption('feature');
+            }
 
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setDryRun($input->getOption('dry-run'))
                 ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
-                ->setAudit(false);
+                ->setAudit(false)
+                ->setRestrictedRootFeatures($restrictedFeatures);
 
             return $installer->run();
         });
@@ -385,6 +395,8 @@ class InstallerTest extends TestCase
         $update->addOption('minimal-changes', null, InputOption::VALUE_NONE);
         $update->addOption('prefer-stable', null, InputOption::VALUE_NONE);
         $update->addOption('prefer-lowest', null, InputOption::VALUE_NONE);
+        $update->addOption('no-features', null, InputOption::VALUE_NONE);
+        $update->addOption('feature', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, '', []);
         $update->addArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL);
         $update->setCode(static function ($input, $output) use ($installer): int {
             $packages = $input->getArgument('packages');
@@ -402,6 +414,13 @@ class InstallerTest extends TestCase
             }
 
             $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
+            $restrictedFeatures = null;
+
+            if ($input->getOption('no-features')) {
+                $restrictedFeatures = [];
+            } elseif ($input->getOption('feature')) {
+                $restrictedFeatures = $input->getOption('feature');
+            }
 
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
@@ -415,7 +434,8 @@ class InstallerTest extends TestCase
                 ->setPreferLowest($input->getOption('prefer-lowest'))
                 ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
                 ->setAudit(false)
-                ->setMinimalUpdate($input->getOption('minimal-changes'));
+                ->setMinimalUpdate($input->getOption('minimal-changes'))
+                ->setRestrictedRootFeatures($restrictedFeatures);
 
             return $installer->run();
         });
