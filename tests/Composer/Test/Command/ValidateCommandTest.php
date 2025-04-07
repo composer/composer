@@ -72,6 +72,10 @@ OUTPUT;
             $this->markTestSkipped('Does not run on windows');
         }
 
+        if (function_exists('posix_getuid') && posix_getuid() === 0) {
+            $this->markTestSkipped('Cannot run as root');
+        }
+
         $directory = $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
         chmod($directory.'/composer.json', 0200);
 
