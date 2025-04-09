@@ -209,13 +209,13 @@ Use custom HTTP headers for authentication with private repositories that requir
 ### Command line custom-headers
 
 ```shell
-php composer.phar config [--global] custom-headers.example.org "API-TOKEN: YOUR-API-TOKEN" "X-CUSTOM-HEADER: Value"
+php composer.phar config [--global] custom-headers.repo.example.org "API-TOKEN: YOUR-API-TOKEN" "X-CUSTOM-HEADER: Value"
 ```
 
-In the above command, the config key `custom-headers.example.org` consists of two parts:
+In the above command, the config key `custom-headers.repo.example.org` consists of two parts:
 
 - `custom-headers` is the authentication method.
-- `example.org` is the repository host name, you should replace it with the host name of your repository.
+- `repo.example.org` is the repository host name, you should replace it with the host name of your repository.
 
 You can provide multiple custom headers as separate arguments. Each header must be in the standard HTTP header format `"Header-Name: Header-Value"`.
 
@@ -228,7 +228,7 @@ php composer.phar config [--global] --editor --auth
 ```json
 {
     "custom-headers": {
-        "example.org": [
+        "repo.example.org": [
             "API-TOKEN: YOUR-API-TOKEN",
             "X-CUSTOM-HEADER: Value"
         ]
