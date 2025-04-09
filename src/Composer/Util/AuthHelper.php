@@ -238,6 +238,18 @@ class AuthHelper
             $auth = $this->io->getAuthentication($origin);
             if ($auth['password'] === 'bearer') {
                 $headers[] = 'Authorization: Bearer '.$auth['username'];
+            } elseif ($auth['password'] === 'custom-headers') {
+                // Handle custom HTTP headers from auth.json
+                $customHeaders = null;
+                if (is_string($auth['username'])) {
+                    $customHeaders = json_decode($auth['username'], true);
+                }
+                if (is_array($customHeaders)) {
+                    foreach ($customHeaders as $header) {
+                        $headers[] = $header;
+                    }
+                    $authenticationDisplayMessage = 'Using custom HTTP headers for authentication';
+                }
             } elseif ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
                 // only add the access_token if it is actually a github API URL
                 if (Preg::isMatch('{^https?://api\.github\.com/}', $url)) {

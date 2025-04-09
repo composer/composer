@@ -327,6 +327,43 @@ class AuthHelperTest extends TestCase
     }
 
     /**
+     * Tests that custom HTTP headers are correctly added to the request when using
+     * the 'custom-headers' authentication type.
+     */
+    public function testAddAuthenticationHeaderWithCustomHeaders(): void
+    {
+        $headers = [
+            'Accept-Encoding: gzip',
+            'Connection: close',
+        ];
+        $origin = 'example.org';
+        $url = 'https://example.org/packages.json';
+        $customHeaders = [
+            'API-TOKEN: abc123',
+            'X-CUSTOM-HEADER: value'
+        ];
+        $headersJson = json_encode($customHeaders);
+        // Ensure we have a string, not false from json_encode failure
+        $auth = [
+            'username' => $headersJson !== false ? $headersJson : null,
+            'password' => 'custom-headers',
+        ];
+
+        $this->expectsAuthentication($origin, $auth);
+
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('Using custom HTTP headers for authentication', true, IOInterface::DEBUG);
+
+        $expectedHeaders = array_merge($headers, $customHeaders);
+
+        self::assertSame(
+            $expectedHeaders,
+            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
+        );
+    }
+
+    /**
      * @dataProvider bitbucketPublicUrlProvider
      */
     public function testIsPublicBitBucketDownloadWithBitbucketPublicUrl(string $url): void
