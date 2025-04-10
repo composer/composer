@@ -75,6 +75,7 @@ abstract class VcsDriver implements VcsDriverInterface
 
     /**
      * Returns whether or not the given $identifier should be cached or not.
+     * @phpstan-assert-if-true !null $this->cache
      */
     protected function shouldCache(string $identifier): bool
     {

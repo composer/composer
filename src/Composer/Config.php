@@ -86,6 +86,8 @@ class Config
         'bearer' => [],
         'bump-after-update' => false,
         'allow-missing-requirements' => false,
+        'forgejo-domains' => ['codeberg.org'],
+        'forgejo-token' => [],
     ];
 
     /** @var array<string, mixed> */
@@ -191,7 +193,7 @@ class Config
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, ['bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer'], true) && isset($this->config[$key])) {
+                if (in_array($key, ['bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer', 'forgejo-token'], true) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
                     $this->setSourceOfConfigValue($val, $key, $source);
                 } elseif (in_array($key, ['allow-plugins'], true) && isset($this->config[$key]) && is_array($this->config[$key]) && is_array($val)) {
