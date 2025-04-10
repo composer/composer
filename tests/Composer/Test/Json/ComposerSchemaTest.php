@@ -49,8 +49,18 @@ class ComposerSchemaTest extends TestCase
             ['1.0.2', true],
             ['1.1.0', true],
             ['1.0.0-dev', true],
+            ['1.0.0-Alpha', true],
+            ['1.0.0-ALPHA', true],
+            ['1.0.0-alphA', true],
             ['1.0.0-alpha3', true],
+            ['1.0.0-Alpha3', true],
+            ['1.0.0-ALPHA3', true],
+            ['1.0.0-Beta', true],
+            ['1.0.0-BETA', true],
+            ['1.0.0-betA', true],
             ['1.0.0-beta232', true],
+            ['1.0.0-Beta232', true],
+            ['1.0.0-BETA232', true],
             ['10.4.13beta.2', true],
             ['1.0.0.RC.15-dev', true],
             ['1.0.0-RC', true],
@@ -87,11 +97,11 @@ class ComposerSchemaTest extends TestCase
             self::assertEquals([
                 [
                     'property' => 'version',
-                    'message' => 'Does not match the regex pattern ^v?\\d+(?:[.-]\\d+){0,3}[._-]?(?:(?:stable|beta|b|RC|rc|alpha|a|patch|pl|p)(?:(?:[.-]?\\d+)*+)?)?(?:[.-]?dev|\\.x-dev)?(?:\\+.*)?$|^dev-.*$',
+                    'message' => 'Does not match the regex pattern ^[vV]?\\d+(?:[.-]\\d+){0,3}[._-]?(?:(?:[sS][tT][aA][bB][lL][eE]|[bB][eE][tT][aA]|[bB]|[rR][cC]|[aA][lL][pP][hH][aA]|[aA]|[pP][aA][tT][cC][hH]|[pP][lL]|[pP])(?:(?:[.-]?\\d+)*+)?)?(?:[.-]?[dD][eE][vV]|\\.x-dev)?(?:\\+.*)?$|^dev-.*$',
                     'constraint' => [
                         'name' => 'pattern',
                         'params' => [
-                            'pattern' => '^v?\\d+(?:[.-]\\d+){0,3}[._-]?(?:(?:stable|beta|b|RC|rc|alpha|a|patch|pl|p)(?:(?:[.-]?\\d+)*+)?)?(?:[.-]?dev|\\.x-dev)?(?:\\+.*)?$|^dev-.*$',
+                            'pattern' => '^[vV]?\\d+(?:[.-]\\d+){0,3}[._-]?(?:(?:[sS][tT][aA][bB][lL][eE]|[bB][eE][tT][aA]|[bB]|[rR][cC]|[aA][lL][pP][hH][aA]|[aA]|[pP][aA][tT][cC][hH]|[pP][lL]|[pP])(?:(?:[.-]?\\d+)*+)?)?(?:[.-]?[dD][eE][vV]|\\.x-dev)?(?:\\+.*)?$|^dev-.*$',
                         ]
                     ],
                 ],
