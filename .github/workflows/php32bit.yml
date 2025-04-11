@@ -24,6 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Configure git safe directory
+        run: git config --global --add safe.directory ${{ github.workspace }}
+
       - uses: shivammathur/setup-php@9e72090525849c5e82e596468b86eb55e9cc5401 # 2.32.0
         with:
           coverage: "none"
@@ -42,7 +45,6 @@ jobs:
         run: |
           echo -e "$(pwd)/bin\n$(cat $GITHUB_PATH)" > $GITHUB_PATH
           echo -e "COMPOSER_BINARY=$(pwd)/bin/composer" >> $GITHUB_ENV
-          git config --global --add safe.directory $(pwd)
 
       - name: "Prepare git environment"
         run: "git config --global user.name composer && git config --global user.email composer@example.com"
