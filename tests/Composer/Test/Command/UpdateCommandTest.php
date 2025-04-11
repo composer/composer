@@ -151,6 +151,19 @@ OUTPUT
             , true
         ];
 
+        yield 'update & bump with lock' => [
+            $rootDepAndTransitiveDep,
+            ['--bump-after-update' => true, '--lock' => true],
+            <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Nothing to modify in lock file
+Installing dependencies from lock file (including require-dev)
+Nothing to install, update or remove
+OUTPUT
+            , true
+        ];
+
         yield 'update & bump dev only' => [
             $rootDepAndTransitiveDep,
             ['--bump-after-update' => 'dev'],
