@@ -2044,6 +2044,10 @@ parameters:
 			message: "#^Only booleans are allowed in &&, int\\<0, 2\\> given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Loader/ValidatingArrayLoader.php
+		-
+			message: "#^Only booleans are allowed in &&, int\\<0, 4\\> given on the left side\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Loader/ValidatingArrayLoader.php
 
 		-
 			message: "#^Only booleans are allowed in &&, string\\|false given on the left side\\.$#"

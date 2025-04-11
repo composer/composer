@@ -26,9 +26,10 @@ use Composer\Spdx\SpdxLicenses;
  */
 class ValidatingArrayLoader implements LoaderInterface
 {
-    public const CHECK_ALL = 3;
+    public const CHECK_ALL = 7;
     public const CHECK_UNBOUND_CONSTRAINTS = 1;
     public const CHECK_STRICT_CONSTRAINTS = 2;
+    public const CHECK_DUPLICATE_CONSTRAINTS = 4;
 
     /** @var LoaderInterface */
     private $loader;
@@ -326,9 +327,15 @@ class ValidatingArrayLoader implements LoaderInterface
                         }
                     }
 
-                    if ($linkType === 'conflict' && isset($this->config['replace']) && $keys = array_intersect_key($this->config['replace'], $this->config['conflict'])) {
-                        $this->errors[] = $linkType.'.'.$package.' : you cannot conflict with a package that is also replaced, as replace already creates an implicit conflict rule';
-                        unset($this->config[$linkType][$package]);
+                    if ($linkType === 'conflict') {
+                        if (($this->flags & self::CHECK_DUPLICATE_CONSTRAINTS) && isset($this->config['require'][$package])) {
+                            $this->warnings[] = $linkType.'.'.$package.' : you should not conflict with a package that is also required, update the constraint in the required package instead';
+                        }
+
+                        if (isset($this->config['replace']) && $keys = array_intersect_key($this->config['replace'], $this->config['conflict'])) {
+                            $this->errors[] = $linkType.'.'.$package.' : you cannot conflict with a package that is also replaced, as replace already creates an implicit conflict rule';
+                            unset($this->config[$linkType][$package]);
+                        }
                     }
                 }
             }
