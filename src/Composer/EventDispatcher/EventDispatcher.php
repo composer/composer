@@ -346,8 +346,12 @@ class EventDispatcher
 
                     if ($this->io->isVerbose()) {
                         $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
-                    } elseif ($event->getName() !== '__exec_command') {
+                    } elseif (
                         // do not output the command being run when using `composer exec` as it is fairly obvious the user is running it
+                        $event->getName() !== '__exec_command'
+                        // do not output the command being run when using `composer <script-name>` as it is also fairly obvious the user is running it
+                        && ($event->getFlags()['script-alias-input'] ?? null) === null
+                    ) {
                         $this->io->writeError(sprintf('> %s', $exec));
                     }
 
