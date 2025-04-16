@@ -202,10 +202,46 @@ php composer.phar config [--global] --editor --auth
 }
 ```
 
+## custom-headers
 
-## Custom token authentication
+Use custom HTTP headers for authentication with private repositories that require header-based authentication.
 
-### Manual custom token authentication
+### Command line custom-headers
+
+```shell
+php composer.phar config [--global] custom-headers.repo.example.org "API-TOKEN: YOUR-API-TOKEN" "X-CUSTOM-HEADER: Value"
+```
+
+In the above command, the config key `custom-headers.repo.example.org` consists of two parts:
+
+- `custom-headers` is the authentication method.
+- `repo.example.org` is the repository host name, you should replace it with the host name of your repository.
+
+You can provide multiple custom headers as separate arguments. Each header must be in the standard HTTP header format `"Header-Name: Header-Value"`.
+
+### Manual custom-headers
+
+```shell
+php composer.phar config [--global] --editor --auth
+```
+
+```json
+{
+    "custom-headers": {
+        "repo.example.org": [
+            "API-TOKEN: YOUR-API-TOKEN",
+            "X-CUSTOM-HEADER: Value"
+        ]
+    }
+}
+```
+
+## Inline custom-headers
+
+### Manual inline custom-headers
+
+For the inline custom-headers authentication method, the custom headers are defined directly
+in your `composer.json` file as part of the repository configuration.
 
 ```shell
 php composer.phar config [--global] --editor
@@ -216,11 +252,12 @@ php composer.phar config [--global] --editor
     "repositories": [
         {
             "type": "composer",
-            "url": "https://example.org",
-            "options":  {
+            "url": "https://repo.example.org",
+            "options": {
                 "http": {
                     "header": [
-                        "API-TOKEN: YOUR-API-TOKEN"
+                        "API-TOKEN: YOUR-API-TOKEN",
+                        "X-CUSTOM-HEADER: Value"
                     ]
                 }
             }

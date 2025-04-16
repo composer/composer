@@ -84,6 +84,7 @@ class Config
         'gitlab-token' => [],
         'http-basic' => [],
         'bearer' => [],
+        'custom-headers' => [],
         'bump-after-update' => false,
         'allow-missing-requirements' => false,
     ];
