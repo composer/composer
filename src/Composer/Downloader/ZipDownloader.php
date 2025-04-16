@@ -245,12 +245,12 @@ class ZipDownloader extends ArchiveDownloader
                     return \React\Promise\resolve(null);
                 }
 
-                $processError = new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));
+                $processError = new \RuntimeException(rtrim("There was an error extracting the ZIP file for \"{$package->getName()}\", it is either corrupted or using an invalid format.\n"));
             } else {
                 $processError = new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n"), $retval);
             }
         } catch (\ErrorException $e) {
-            $processError = new \RuntimeException('The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): '.$e->getMessage(), 0, $e);
+            $processError = new \RuntimeException('The archive for "'.$package->getName().'" may contain identical file names with different capitalization (which fails on case insensitive filesystems): '.$e->getMessage(), 0, $e);
         } catch (\Throwable $e) {
             $processError = $e;
         }
