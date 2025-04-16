@@ -28,6 +28,7 @@ Update package which is in lock file but not remote repo due to min-stability sh
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
