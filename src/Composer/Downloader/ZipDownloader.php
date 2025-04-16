@@ -229,11 +229,11 @@ class ZipDownloader extends ArchiveDownloader
                         }
                         $totalSize += $stat['size'];
                         if ($stat['size'] > $stat['comp_size'] * 200) {
-                            throw new \RuntimeException('Invalid zip file with compression ratio >99% (possible zip bomb)');
+                            throw new \RuntimeException('Invalid zip file for "'.$package->getName().'" with compression ratio >99% (possible zip bomb)');
                         }
                     }
                     if ($archiveSize !== false && $totalSize > $archiveSize * 100 && $totalSize > 50*1024*1024) {
-                        throw new \RuntimeException('Invalid zip file with compression ratio >99% (possible zip bomb)');
+                        throw new \RuntimeException('Invalid zip file for "'.$package->getName().'" with compression ratio >99% (possible zip bomb)');
                     }
                 }
 
