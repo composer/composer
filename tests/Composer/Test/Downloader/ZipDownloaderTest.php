@@ -43,6 +43,9 @@ class ZipDownloaderTest extends TestCase
         $dlConfig = $this->getMockBuilder('Composer\Config')->getMock();
         $this->httpDownloader = new HttpDownloader($this->io, $dlConfig);
         $this->package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+        $this->package->expects($this->any())
+            ->method('getName')
+            ->will($this->returnValue('test/pkg'));
 
         $this->filename = $this->testDir.'/composer-test.zip';
         file_put_contents($this->filename, 'zip');
@@ -132,7 +135,7 @@ class ZipDownloaderTest extends TestCase
     public function testZipArchiveExtractOnlyFailed(): void
     {
         self::expectException('RuntimeException');
-        self::expectExceptionMessage('The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): Not a directory');
+        self::expectExceptionMessage('The archive for "test/pkg" may contain identical file names with different capitalization (which fails on case insensitive filesystems): Not a directory');
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('zip extension missing');
         }
@@ -179,7 +182,7 @@ class ZipDownloaderTest extends TestCase
     public function testSystemUnzipOnlyFailed(): void
     {
         self::expectException('Exception');
-        self::expectExceptionMessage('Failed to extract : (1) unzip');
+        self::expectExceptionMessage('Failed to extract test/pkg: (1) unzip');
         $this->setPrivateProperty('isWindows', false);
         $this->setPrivateProperty('hasZipArchive', false);
         $this->setPrivateProperty('unzipCommands', [['unzip', 'unzip -qq %s -d %s']]);
