@@ -159,7 +159,11 @@ class JsonManipulator
      */
     public function addRepository(string $name, $config, bool $append = true): bool
     {
-        return $this->addSubNode('repositories', $name, $config, $append);
+        if ($name === '') {
+            return $this->addListItem('repositories', $name, $config, $append);
+        } else {
+            return $this->addSubNode('repositories', $name, $config, $append);
+        }
     }
 
     public function removeRepository(string $name): bool
@@ -317,6 +321,110 @@ class JsonManipulator
 
                 // children present but empty
                 $children = '{' . $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $whitespace . '}';
+            }
+        } else {
+            throw new \LogicException('Nothing matched above for: '.$children);
+        }
+
+        $this->contents = Preg::replaceCallback($nodeRegex, static function ($m) use ($children): string {
+            return $m['start'] . $children . $m['end'];
+        }, $this->contents);
+
+        return true;
+    }
+
+    /**
+     * @param mixed  $value
+     */
+    public function addListItem(string $mainNode, string $name, $value, bool $append = true): bool
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+
+        $subName = null;
+        if (in_array($mainNode, ['config', 'extra', 'scripts']) && false !== strpos($name, '.')) {
+            [$name, $subName] = explode('.', $name, 2);
+        }
+
+        // no main node yet
+        if (!isset($decoded[$mainNode])) {
+            if ($subName !== null) {
+                $this->addMainKey($mainNode, [$name => [$subName => [$value]]]);
+            } else {
+                $this->addMainKey($mainNode, [$name => [$value]]);
+            }
+
+            return true;
+        }
+
+        // main node content not match-able
+        $nodeRegex = '{'.self::DEFINES.'^(?P<start> \s* \{ \s* (?: (?&string) \s* : (?&json) \s* , \s* )*?'.
+            preg_quote(JsonFile::encode($mainNode)).'\s*:\s*)(?P<content>(?&array))(?P<end>.*)}sx';
+
+        try {
+            if (!Preg::isMatch($nodeRegex, $this->contents, $match)) {
+                return false;
+            }
+        } catch (\RuntimeException $e) {
+            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+                return false;
+            }
+            throw $e;
+        }
+
+        assert(is_string($match['start']));
+        assert(is_string($match['content']));
+        assert(is_string($match['end']));
+
+        $children = $match['content'];
+        // invalid match due to un-regexable content, abort
+        if (!@json_decode($children)) {
+            return false;
+        }
+
+        // child exists
+        $childRegex = '{'.self::DEFINES.'(?P<start>"'.preg_quote($name).'"\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
+        if (Preg::isMatch($childRegex, $children, $matches)) {
+            $children = Preg::replaceCallback($childRegex, function ($matches) use ($subName, $value): string {
+                if ($subName !== null && is_string($matches['content'])) {
+                    $curVal = json_decode($matches['content'], true);
+
+                    if (!is_array($curVal)) {
+                        $curVal = [];
+                    }
+
+                    $curVal[] = $value;
+
+                    $value = $curVal;
+                }
+
+                return $matches['start'] . $this->format($value, 1) . $matches['end'];
+            }, $children);
+        } elseif (Preg::isMatch('#^\[(?P<leadingspace>\s*?)(?P<content>\S+.*?)?(?P<trailingspace>\s*)\]$#s', $children, $match)) {
+            $whitespace = $match['trailingspace'];
+
+            if ($subName !== null) {
+                $value = [$subName => $value];
+            }
+
+            if (null !== $match['content']) {
+                // child missing but non empty children
+                if ($append) {
+                    $children = Preg::replace(
+                        '#'.$whitespace.']$#',
+                        addcslashes(',' . $this->newline . $this->indent . $this->indent . $this->format($value, 1) . $whitespace . ']', '\\$'),
+                        $children
+                    );
+                } else {
+                    $whitespace = $match['leadingspace'];
+                    $children = Preg::replace(
+                        '#^\['.$whitespace.'#',
+                        addcslashes('[' . $whitespace . $this->format($value, 1) . ',' . $this->newline . $this->indent . $this->indent, '\\$'),
+                        $children
+                    );
+                }
+            } else {
+                // children present but empty
+                $children = '[' . $this->newline . $this->indent . $this->indent . $this->format($value, 1) . $whitespace . ']';
             }
         } else {
             throw new \LogicException('Nothing matched above for: '.$children);
