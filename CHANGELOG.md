@@ -1,3 +1,5 @@
+  * Added support to `config repositories` command to add repositories without a name (#9918)
+
 ### [2.8.8] 2025-04-04
 
   * Fixed json schema issues with version validation (#12367)
