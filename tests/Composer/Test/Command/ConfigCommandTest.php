@@ -25,7 +25,7 @@ class ConfigCommandTest extends TestCase
      */
     public function testConfigUpdates(array $before, array $command, array $expected): void
     {
-        $this->initTempComposer($before);
+        $this->initTempComposer($before, [], [], false);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'config'], $command));
@@ -116,6 +116,46 @@ class ConfigCommandTest extends TestCase
             ['autoload-dev' => ['psr-4' => ['test'], 'classmap' => ['test']]],
             ['setting-key' => 'autoload-dev.psr-4', '--unset' => true],
             ['autoload-dev' => ['classmap' => ['test']]],
+        ];
+        yield 'prepend repository by name (list to assoc)' => [
+            ['repositories' => [['type' => 'git', 'url' => 'example.tld']]],
+            ['setting-key' => 'repositories.foo', 'setting-value' => ['path', 'foo/bar']],
+            ['repositories' => ['foo' => ['type' => 'path', 'url' => 'foo/bar'], '0' => ['type' => 'git', 'url' => 'example.tld']]],
+        ];
+        yield 'append repository by name (list to assoc)' => [
+            ['repositories' => [['type' => 'git', 'url' => 'example.tld']]],
+            ['setting-key' => 'repositories.foo', 'setting-value' => ['path', 'foo/bar'], '--append' => true],
+            ['repositories' => ['0' => ['type' => 'git', 'url' => 'example.tld'], 'foo' => ['type' => 'path', 'url' => 'foo/bar']]],
+        ];
+        yield 'prepend repository (list)' => [
+            ['repositories' => [['type' => 'git', 'url' => 'example.tld']]],
+            ['setting-key' => 'repositories', 'setting-value' => ['path', 'foo/bar']],
+            ['repositories' => [['type' => 'path', 'url' => 'foo/bar'], ['type' => 'git', 'url' => 'example.tld']]],
+        ];
+        yield 'append repository (list)' => [
+            ['repositories' => [['type' => 'git', 'url' => 'example.tld']]],
+            ['setting-key' => 'repositories', 'setting-value' => ['path', 'foo/bar'], '--append' => true],
+            ['repositories' => [['type' => 'git', 'url' => 'example.tld'], ['type' => 'path', 'url' => 'foo/bar']]],
+        ];
+        yield 'prepend repository by name (assoc)' => [
+            ['repositories' => [['type' => 'git', 'url' => 'example.tld'], 'packagist.org' => false]],
+            ['setting-key' => 'repositories.foo', 'setting-value' => ['path', 'foo/bar']],
+            ['repositories' => ['foo' => ['type' => 'path', 'url' => 'foo/bar'], '0' => ['type' => 'git', 'url' => 'example.tld'], 'packagist.org' => false]],
+        ];
+        yield 'append repository by name (assoc)' => [
+            ['repositories' => [['type' => 'git', 'url' => 'example.tld'], 'packagist.org' => false]],
+            ['setting-key' => 'repositories.foo', 'setting-value' => ['path', 'foo/bar'], '--append' => true],
+            ['repositories' => ['0' => ['type' => 'git', 'url' => 'example.tld'], 'packagist.org' => false, 'foo' => ['type' => 'path', 'url' => 'foo/bar']]],
+        ];
+        yield 'prepend repository (assoc)' => [
+            ['repositories' => [['type' => 'git', 'url' => 'example.tld'], 'packagist.org' => false]],
+            ['setting-key' => 'repositories', 'setting-value' => ['path', 'foo/bar']],
+            ['repositories' => [['type' => 'path', 'url' => 'foo/bar'], ['type' => 'git', 'url' => 'example.tld'], 'packagist.org' => false]],
+        ];
+        yield 'append repository (assoc)' => [
+            ['repositories' => [['type' => 'git', 'url' => 'example.tld'], 'packagist.org' => false]],
+            ['setting-key' => 'repositories', 'setting-value' => ['path', 'foo/bar'], '--append' => true],
+            ['repositories' => [['type' => 'git', 'url' => 'example.tld'], 'packagist.org' => false, ['type' => 'path', 'url' => 'foo/bar']]],
         ];
     }
 

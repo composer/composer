@@ -123,11 +123,16 @@ To edit the global config.json file:
 
 To add a repository:
 
+    <comment>%command.full_name% repositories vcs https://bar.com</comment>
+
+To add a repository by name:
+
     <comment>%command.full_name% repositories.foo vcs https://bar.com</comment>
 
 To remove a repository (repo is a short alias for repositories):
 
     <comment>%command.full_name% --unset repo.foo</comment>
+    <comment>%command.full_name% --unset repo.0</comment>
 
 To disable packagist:
 
@@ -731,8 +736,14 @@ EOT
         }
 
         // handle repositories
-        if (Preg::isMatchStrictGroups('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
+        if (Preg::isMatchStrictGroups('/^repos?(?:itories)?($|\..+)/', $settingKey, $matches)) {
+            $matches[1] = ltrim($matches[1], '.');
+
             if ($input->getOption('unset')) {
+                if ($matches[1] === '') {
+                    throw new \RuntimeException('You must pass the index or name of the repository to remove. Example: php composer.phar config --unset repositories.foo');
+                }
+
                 $this->configSource->removeRepository($matches[1]);
 
                 return 0;

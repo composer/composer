@@ -2021,6 +2021,235 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: string, 3: array, 4: bool}>
+     */
+    public static function addRepositoryProvider(): iterable
+    {
+        yield 'prepend repository (list)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "foo/bar"
+        },
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository (list)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "type": "path",
+            "url": "foo/bar"
+        }
+    ]
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+        yield 'prepend repository by name (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '{
+    "repositories": {
+        "foo": {
+            "type": "path",
+            "url": "foo/bar"
+        },
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository by name (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false,
+        "foo": {
+            "type": "path",
+            "url": "foo/bar"
+        }
+    }
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+    }
+
+    /**
+     * @dataProvider addRepositoryProvider
+     */
+    public function testAddRepository(string $from, string $to, string $name, array $config, bool $append): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertTrue($manipulator->addRepository($name, $config, $append));
+        self::assertEquals($to, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: array, 3: bool}>
+     */
+    public static function addRepositoryProviderExpectingFallbackToHandle(): iterable
+    {
+        yield 'prepend repository by name (list to assoc)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository by name (list to assoc)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+        yield 'prepend repository (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+    }
+
+    /**
+     * @dataProvider addRepositoryProviderExpectingFallbackToHandle
+     */
+    public function testAddRepositoryFailsOnAssocToListOrListToAssoc(string $from, string $name, array $config, bool $append): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertFalse($manipulator->addRepository($name, $config, $append));
+    }
+
     public function testAddRepositoryCanOverrideDeepRepos(): void
     {
         $manipulator = new JsonManipulator('{

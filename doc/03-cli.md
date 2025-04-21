@@ -862,10 +862,16 @@ In addition to modifying the config section, the `config` command also supports 
 changes to the repositories section by using it the following way:
 
 ```shell
-php composer.phar config repositories.foo vcs https://github.com/foo/bar
+php composer.phar config repositories vcs https://github.com/foo/bar
 ```
 
 If your repository requires more configuration options, you can instead pass its JSON representation :
+
+```shell
+php composer.phar config repositories '{"type": "vcs", "url": "http://svn.example.org/my-project/", "trunk-path": "master"}'
+```
+
+If you want to name the repository you can add a name to it:
 
 ```shell
 php composer.phar config repositories.foo '{"type": "vcs", "url": "http://svn.example.org/my-project/", "trunk-path": "master"}'
