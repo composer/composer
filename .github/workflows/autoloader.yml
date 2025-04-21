@@ -27,7 +27,7 @@ jobs:
         run: "./bin/composer install -d tests/Composer/Test/Autoload/MinimumVersionSupport"
 
       - name: "Install oldest supported PHP version for autoloader"
-        uses: shivammathur/setup-php@9e72090525849c5e82e596468b86eb55e9cc5401 # 2.32.0
+        uses: shivammathur/setup-php@cf4cade2721270509d5b1c766ab3549210a39a2a # 2.33.0
         with:
           coverage: "none"
           extensions: "intl, zip"
