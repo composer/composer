@@ -16,7 +16,12 @@ problems:
   submodules. This is problematic because they are not real submodules, and you
   will run into issues.
 
-If you really feel like you must do this, you have a few options:
+The major advantage of doing this, however, is the ability to run `git bisect`.
+It becomes incredibly difficult to recreate a specific snapshot in time if the
+dependencies -- and the dependencies of dependencies etc -- are not version
+controlled.
+
+There are multiple ways to avoid problems with submodules:
 
 1. Limit yourself to installing tagged releases (no dev versions), so that you
    only get zipped installs, and avoid problems with the git "submodules".
