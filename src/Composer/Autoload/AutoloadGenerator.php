@@ -214,15 +214,15 @@ class AutoloadGenerator
         // Do not remove double realpath() calls.
         // Fixes failing Windows realpath() implementation.
         // See https://bugs.php.net/bug.php?id=72738
-        $basePath = $filesystem->normalizePath(realpath(realpath(Platform::getCwd())));
-        $vendorPath = $filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))));
+        $basePath = $filesystem->normalizePath(Platform::realpath(Platform::realpath(Platform::getCwd())));
+        $vendorPath = $filesystem->normalizePath(Platform::realpath(Platform::realpath($config->get('vendor-dir'))));
         $useGlobalIncludePath = $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
-        $vendorPathCode = $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true);
-        $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, realpath($targetDir), true);
+        $vendorPathCode = $filesystem->findShortestPathCode(Platform::realpath($targetDir), $vendorPath, true);
+        $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, Platform::realpath($targetDir), true);
 
         $appBaseDirCode = $filesystem->findShortestPathCode($vendorPath, $basePath, true);
         $appBaseDirCode = str_replace('__DIR__', '$vendorDir', $appBaseDirCode);
@@ -493,7 +493,7 @@ EOF;
         // if $dir does not exist, it should anyway not find anything there so no trouble
         if (file_exists($dir)) {
             // transform $dir in the same way that exclude-from-classmap patterns are transformed so we can match them against each other
-            $dirMatch = preg_quote(strtr(realpath($dir), '\\', '/'));
+            $dirMatch = preg_quote(strtr(Platform::realpath($dir), '\\', '/'));
             foreach ($excluded as $index => $pattern) {
                 // extract the constant string prefix of the pattern here, until we reach a non-escaped regex special character
                 $pattern = Preg::replace('{^(([^.+*?\[^\]$(){}=!<>|:\\\\#-]+|\\\\[.+*?\[^\]$(){}=!<>|:#-])*).*}', '$1', $pattern);
@@ -1165,10 +1165,10 @@ HEADER;
 
         $filesystem = new Filesystem();
 
-        $vendorPathCode = ' => ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true) . " . '/";
-        $vendorPharPathCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(realpath($targetDir), $vendorPath, true, true) . " . '/";
-        $appBaseDirCode = ' => ' . $filesystem->findShortestPathCode(realpath($targetDir), $basePath, true, true) . " . '/";
-        $appBaseDirPharCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(realpath($targetDir), $basePath, true, true) . " . '/";
+        $vendorPathCode = ' => ' . $filesystem->findShortestPathCode(Platform::realpath($targetDir), $vendorPath, true, true) . " . '/";
+        $vendorPharPathCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(Platform::realpath($targetDir), $vendorPath, true, true) . " . '/";
+        $appBaseDirCode = ' => ' . $filesystem->findShortestPathCode(Platform::realpath($targetDir), $basePath, true, true) . " . '/";
+        $appBaseDirPharCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(Platform::realpath($targetDir), $basePath, true, true) . " . '/";
 
         $absoluteVendorPathCode = ' => ' . substr(var_export(rtrim($vendorDir, '\\/') . '/', true), 0, -1);
         $absoluteVendorPharPathCode = ' => ' . substr(var_export(rtrim('phar://' . $vendorDir, '\\/') . '/', true), 0, -1);
@@ -1291,7 +1291,7 @@ INITIALIZER;
                             $installPath = strtr(Platform::getCwd(), '\\', '/');
                         }
 
-                        $resolvedPath = realpath($installPath . '/' . $updir);
+                        $resolvedPath = Platform::realpath($installPath . '/' . $updir);
                         if (false === $resolvedPath) {
                             continue;
                         }
