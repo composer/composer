@@ -399,4 +399,32 @@ class FilesystemTest extends TestCase
         self::assertDirectoryDoesNotExist($this->workingDir . '/foo/bar', 'Still a directory: ' . $this->workingDir . '/foo/bar');
         self::assertDirectoryDoesNotExist($this->workingDir . '/foo', 'Still a directory: ' . $this->workingDir . '/foo');
     }
+
+    /**
+     * A Unix path is absolute if it starts with a forward-slash.
+     * A Windows path is absolute if it starts with a drive letter followed by a colon and a back-slash.
+     * A network path is always absolute and starts with two backslashes.
+     * A stream path is always absolute and starts with a scheme followed by "://".
+     */
+    public static function isAbsolutePathDataProvider(): array
+    {
+        return [
+            'unixPath' => ['/foo/bar', true],
+            'smbPath' => ['\\\\smb\\folder\\file.txt', true],
+            'windowsPath' => ['C:\\foo\\bar', true],
+            'streamPath' => ['file://path/to/whatever', true],
+            'relativeSubPath' => ['foo/bar', false],
+            'relativeSubPath2' => ['./foo/bar', false],
+            'relativeParentPath' => ['../foo/bar', false],
+        ];
+    }
+
+    /**
+     * @covers \Composer\Util\Filesystem::isAbsolutePath
+     * @dataProvider isAbsolutePathDataProvider
+     */
+    public function testIsAbsolutePath(string $path, bool $expected): void
+    {
+        self::assertEquals($expected, (new Filesystem())->isAbsolutePath($path));
+    }
 }
