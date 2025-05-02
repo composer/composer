@@ -1292,9 +1292,7 @@ INITIALIZER;
                         }
 
                         $resolvedPath = Platform::realpath($installPath . '/' . $updir);
-                        if (false === $resolvedPath) {
-                            continue;
-                        }
+
                         $autoloads[] = preg_quote(strtr($resolvedPath, '\\', '/')) . '/' . $path . '($|/)';
                         continue;
                     }
