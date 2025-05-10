@@ -385,6 +385,12 @@ class Application extends BaseApplication
                                 if (is_string($dummy) && class_exists($dummy)) {
                                     $cmd = new $dummy;
                                     if ($cmd instanceof SymfonyCommand) {
+                                        if ($cmd->getName() === '' || $cmd->getName() === null) {
+                                            $cmd->setName($script);
+                                        }
+                                        if ($cmd->getDescription() === '') {
+                                            $cmd->setDescription($description);
+                                        }
                                         $this->add($cmd);
                                         continue;
                                     }
