@@ -174,9 +174,7 @@ EOT
             $description = '';
             try {
                 $cmd = $this->getApplication()->find($name);
-                if ($cmd instanceof Command) {
-                    $description = $cmd->getDescription();
-                }
+                $description = $cmd->getDescription();
             } catch (\Symfony\Component\Console\Exception\CommandNotFoundException $e) {
                 // ignore scripts that have no command associated, like native Composer script listeners
             }
