@@ -143,6 +143,26 @@ class AuthHelperTest extends TestCase
         self::assertSame($expectedHeaders, $options['http']['header']);
     }
 
+    public function testAddAuthenticationOptionsForClientCertificate(): void
+    {
+        $options = [];
+        $origin  = 'example.org';
+        $url     = 'file://' . __FILE__;
+        $certificateConfiguration = [
+            'local_cert' => 'certificate value',
+            'local_pk' => 'key value',
+            'passphrase' => 'passphrase value'
+        ];
+        $auth = [
+            'username' => (string)json_encode($certificateConfiguration),
+            'password' => 'client-certificate'
+        ];
+        $this->expectsAuthentication($origin, $auth);
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
+
+        self::assertSame($certificateConfiguration, $options['ssl']);
+    }
+
     public static function gitlabPrivateTokenProvider(): array
     {
         return [

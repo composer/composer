@@ -121,6 +121,7 @@ abstract class BaseIO implements IOInterface
         $gitlabToken = $config->get('gitlab-token');
         $httpBasic = $config->get('http-basic');
         $bearerToken = $config->get('bearer');
+        $clientCertificate = $config->get('client-certificate');
 
         // reload oauth tokens from config if available
 
@@ -170,6 +171,28 @@ abstract class BaseIO implements IOInterface
 
         foreach ($bearerToken as $domain => $token) {
             $this->checkAndSetAuthentication($domain, $token, 'bearer');
+        }
+
+        // reload ssl client certificate credentials from config if available
+        foreach ($clientCertificate as $domain => $cred) {
+            $sslOptions = array_filter(
+                [
+                    'local_cert' => $cred['local_cert'] ?? null,
+                    'local_pk' => $cred['local_pk'] ?? null,
+                    'passphrase' => $cred['passphrase'] ?? null,
+                ],
+                static function (?string $value): bool { return $value !== null; }
+            );
+            if (!isset($sslOptions['local_cert'])) {
+                $this->writeError(
+                    sprintf(
+                        '<warning>Warning: Client certificate configuration is missing key `local_cert` for %s.</warning>',
+                        $domain
+                    )
+                );
+                continue;
+            }
+            $this->checkAndSetAuthentication($domain, 'client-certificate', (string)json_encode($sslOptions));
         }
 
         // setup process timeout
