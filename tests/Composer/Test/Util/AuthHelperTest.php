@@ -201,11 +201,6 @@ class AuthHelperTest extends TestCase
 
         $this->expectsAuthentication($origin, $auth);
 
-        $this->config->expects($this->once())
-            ->method('get')
-            ->with('gitlab-domains')
-            ->willReturn([]);
-
         $this->io->expects($this->once())
             ->method('writeError')
             ->with('Using Bitbucket OAuth token authentication', true, IOInterface::DEBUG);
@@ -241,11 +236,6 @@ class AuthHelperTest extends TestCase
         ];
 
         $this->expectsAuthentication($origin, $auth);
-
-        $this->config->expects($this->once())
-            ->method('get')
-            ->with('gitlab-domains')
-            ->willReturn([]);
 
         $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
         self::assertSame($headers, $options['http']['header']);
@@ -297,11 +287,6 @@ class AuthHelperTest extends TestCase
         $options = ['http' => ['header' => $headers]];
 
         $this->expectsAuthentication($origin, $auth);
-
-        $this->config->expects($this->once())
-            ->method('get')
-            ->with('gitlab-domains')
-            ->willReturn([$origin]);
 
         $this->io->expects($this->once())
             ->method('writeError')
