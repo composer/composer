@@ -262,15 +262,15 @@ class AuthHelper
             $auth = $this->io->getAuthentication($origin);
             if ($auth['password'] === 'bearer') {
                 $headers[] = 'Authorization: Bearer '.$auth['username'];
-            } elseif ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
+            } elseif ('x-oauth-basic' === $auth['password'] && 'github.com' === $origin) {
                 // only add the access_token if it is actually a github API URL
                 if (Preg::isMatch('{^https?://api\.github\.com/}', $url)) {
                     $headers[] = 'Authorization: token '.$auth['username'];
                     $authenticationDisplayMessage = 'Using GitHub token authentication';
                 }
             } elseif (
-                in_array($origin, $this->config->get('gitlab-domains'), true)
-                && in_array($auth['password'], ['oauth2', 'private-token', 'gitlab-ci-token'], true)
+                in_array($auth['password'], ['oauth2', 'private-token', 'gitlab-ci-token'], true)
+                && in_array($origin, $this->config->get('gitlab-domains'), true)
             ) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
@@ -280,9 +280,9 @@ class AuthHelper
                     $authenticationDisplayMessage = 'Using GitLab private token authentication';
                 }
             } elseif (
-                'bitbucket.org' === $origin
+                'x-token-auth' === $auth['username']
+                && 'bitbucket.org' === $origin
                 && $url !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL
-                && 'x-token-auth' === $auth['username']
             ) {
                 if (!$this->isPublicBitBucketDownload($url)) {
                     $headers[] = 'Authorization: Bearer ' . $auth['password'];
@@ -299,7 +299,6 @@ class AuthHelper
                 $this->displayedOriginAuthentications[$origin] = $authenticationDisplayMessage;
             }
         } elseif (in_array($origin, ['api.bitbucket.org', 'api.github.com'], true)) {
-            return $this->addAuthenticationHeader($headers, str_replace('api.', '', $origin), $url);
             return $this->addAuthenticationOptions($options, str_replace('api.', '', $origin), $url);
         }
 
