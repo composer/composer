@@ -227,12 +227,13 @@ class AuthHelper
     }
 
     /**
-     * @param string[] $headers
+     * @param mixed[] $options
      *
-     * @return string[] updated headers array
+     * @return mixed[] updated headers array
      */
-    public function addAuthenticationHeader(array $headers, string $origin, string $url): array
+    public function addAuthenticationOptions(array $options, string $origin, string $url): array
     {
+        $headers = &$options['http']['header'];
         if ($this->io->hasAuthentication($origin)) {
             $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($origin);
@@ -276,9 +277,10 @@ class AuthHelper
             }
         } elseif (in_array($origin, ['api.bitbucket.org', 'api.github.com'], true)) {
             return $this->addAuthenticationHeader($headers, str_replace('api.', '', $origin), $url);
+            return $this->addAuthenticationOptions($options, str_replace('api.', '', $origin), $url);
         }
 
-        return $headers;
+        return $options;
     }
 
     /**
