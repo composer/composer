@@ -200,7 +200,7 @@ class SuggestedPackagesReporter
 
         $suggestions = [];
         foreach ($suggestedPackages as $suggestion) {
-            if (in_array($suggestion['target'], $installedNames) || ($sourceFilter && !in_array($suggestion['source'], $sourceFilter))) {
+            if (in_array($suggestion['target'], $installedNames) || (\count($sourceFilter) > 0 && !in_array($suggestion['source'], $sourceFilter))) {
                 continue;
             }
 
