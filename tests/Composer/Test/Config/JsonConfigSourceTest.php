@@ -53,6 +53,16 @@ class JsonConfigSourceTest extends TestCase
         self::assertFileEquals(self::fixturePath('config/config-with-exampletld-repository.json'), $config);
     }
 
+    public function testAddRepositoryAsList(): void
+    {
+        $config = $this->workingDir.'/composer.json';
+        copy(self::fixturePath('composer-repositories.json'), $config);
+        $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
+        $jsonConfigSource->addRepository('', ['type' => 'git', 'url' => 'example.tld']);
+
+        self::assertFileEquals(self::fixturePath('config/config-with-exampletld-repository-as-list.json'), $config);
+    }
+
     public function testAddRepositoryWithOptions(): void
     {
         $config = $this->workingDir.'/composer.json';

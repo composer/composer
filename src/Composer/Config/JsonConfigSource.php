@@ -75,10 +75,18 @@ class JsonConfigSource implements ConfigSourceInterface
                 }
             }
 
-            if ($append) {
-                $config['repositories'][$repo] = $repoConfig;
+            if ($repo === '') {
+                if ($append) {
+                    $config['repositories'][] = $repoConfig;
+                } else {
+                    array_unshift($config['repositories'], $repoConfig);
+                }
             } else {
-                $config['repositories'] = [$repo => $repoConfig] + $config['repositories'];
+                if ($append) {
+                    $config['repositories'][$repo] = $repoConfig;
+                } else {
+                    $config['repositories'] = [$repo => $repoConfig] + $config['repositories'];
+                }
             }
         }, $name, $config, $append);
     }
