@@ -957,10 +957,10 @@ class Installer
         }
 
         $preferredVersions = null;
-        if ($forUpdate && $this->minimalUpdate && $this->updateAllowList !== null && $lockedRepo !== null) {
+        if ($forUpdate && $this->minimalUpdate && $lockedRepo !== null) {
             $preferredVersions = [];
             foreach ($lockedRepo->getPackages() as $pkg) {
-                if ($pkg instanceof AliasPackage || in_array($pkg->getName(), $this->updateAllowList, true)) {
+                if ($pkg instanceof AliasPackage || ($this->updateAllowList !== null && in_array($pkg->getName(), $this->updateAllowList, true))) {
                     continue;
                 }
                 $preferredVersions[$pkg->getName()] = $pkg->getVersion();
