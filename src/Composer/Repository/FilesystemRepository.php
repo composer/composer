@@ -129,7 +129,7 @@ class FilesystemRepository extends WritableArrayRepository
         $repoDir = dirname($this->file->getPath());
         $this->filesystem->ensureDirectoryExists($repoDir);
 
-        $repoDir = $this->filesystem->normalizePath(realpath($repoDir));
+        $repoDir = $this->filesystem->normalizePath(Platform::realpath($repoDir));
         $installPaths = [];
 
         foreach ($this->getCanonicalPackages() as $package) {
@@ -375,7 +375,7 @@ REGEX;
         }
 
         if ($package instanceof RootPackageInterface) {
-            $to = $this->filesystem->normalizePath(realpath(Platform::getCwd()));
+            $to = $this->filesystem->normalizePath(Platform::realpath(Platform::getCwd()));
             $installPath = $this->filesystem->findShortestPath($repoDir, $to, true);
         } else {
             $installPath = $installPaths[$package->getName()];

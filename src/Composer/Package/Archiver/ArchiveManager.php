@@ -17,6 +17,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Loop;
+use Composer\Util\Platform;
 use Composer\Util\SyncHelper;
 use Composer\Json\JsonFile;
 use Composer\Package\CompletePackageInterface;
@@ -208,7 +209,7 @@ class ArchiveManager
 
         // Archive filename
         $filesystem->ensureDirectoryExists($targetDir);
-        $target = realpath($targetDir).'/'.$packageName.'.'.$format;
+        $target = Platform::realpath($targetDir).'/'.$packageName.'.'.$format;
         $filesystem->ensureDirectoryExists(dirname($target));
 
         if (!$this->overwriteFiles && file_exists($target)) {

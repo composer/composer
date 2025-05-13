@@ -55,11 +55,11 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             ));
         }
 
-        if (realpath($path) === $realUrl) {
+        if (Platform::realpath($path) === $realUrl) {
             return \React\Promise\resolve(null);
         }
 
-        if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
+        if (strpos(Platform::realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
             // IMPORTANT NOTICE: If you wish to change this, don't. You are wasting your time and ours.
             //
             // Please see https://github.com/composer/composer/pull/5974 and https://github.com/composer/composer/pull/6174
@@ -67,7 +67,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             throw new \RuntimeException(sprintf(
                 'Package %s cannot install to "%s" inside its source at "%s"',
                 $package->getName(),
-                realpath($path),
+                Platform::realpath($path),
                 $realUrl
             ));
         }
@@ -90,7 +90,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             throw new \RuntimeException('Failed to realpath '.$url);
         }
 
-        if (realpath($path) === $realUrl) {
+        if (Platform::realpath($path) === $realUrl) {
             if ($output) {
                 $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));
             }
@@ -250,7 +250,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             throw new \RuntimeException('Failed to realpath '.$url);
         }
 
-        if (realpath($path) === $realUrl) {
+        if (Platform::realpath($path) === $realUrl) {
             return ': Source already present';
         }
 

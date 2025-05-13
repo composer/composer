@@ -14,6 +14,7 @@ namespace Composer\Json;
 
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
@@ -148,7 +149,7 @@ class JsonFile
         if (!is_dir($dir)) {
             if (file_exists($dir)) {
                 throw new \UnexpectedValueException(
-                    realpath($dir).' exists and is not a directory.'
+                    Platform::realpath($dir).' exists and is not a directory.'
                 );
             }
             if (!@mkdir($dir, 0777, true)) {

@@ -607,7 +607,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                 return $path;
             }
 
-            $path = rtrim(realpath($basePath) . '/' . implode('/', $removed), '/');
+            $path = rtrim(Platform::realpath($basePath) . '/' . implode('/', $removed), '/');
         }
 
         return $path;

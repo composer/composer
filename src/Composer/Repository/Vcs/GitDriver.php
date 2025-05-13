@@ -13,6 +13,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Pcre\Preg;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\Util\Url;
@@ -46,7 +47,7 @@ class GitDriver extends VcsDriver
                 throw new \RuntimeException('Failed to read package information from '.$this->url.' as the path does not exist');
             }
             $this->repoDir = $this->url;
-            $cacheUrl = realpath($this->url);
+            $cacheUrl = Platform::realpath($this->url);
         } else {
             if (!Cache::isUsable($this->config->get('cache-vcs-dir'))) {
                 throw new \RuntimeException('GitDriver requires a usable cache directory, and it looks like you set it to be disabled');

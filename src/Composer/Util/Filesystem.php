@@ -29,9 +29,15 @@ class Filesystem
     /** @var ?ProcessExecutor */
     private $processExecutor;
 
+    /**
+     * @var non-empty-string
+     */
+    private $streamWrappersRegex;
+
     public function __construct(?ProcessExecutor $executor = null)
     {
         $this->processExecutor = $executor;
+        $this->streamWrappersRegex = sprintf('{^(?:%s)://}', implode('|', array_map('preg_quote', stream_get_wrappers())));
     }
 
     /**
@@ -564,7 +570,12 @@ class Filesystem
      */
     public function isAbsolutePath(string $path)
     {
-        return strpos($path, '/') === 0 || substr($path, 1, 1) === ':' || strpos($path, '\\\\') === 0;
+        $path = str_replace('file://', '', $path);
+
+        return strpos($path, '/') === 0
+               || substr($path, 1, 1) === ':'
+               || strpos($path, '\\\\') === 0
+               || Preg::isMatch($this->streamWrappersRegex, $path);
     }
 
     /**
