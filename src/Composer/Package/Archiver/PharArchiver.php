@@ -72,8 +72,8 @@ class PharArchiver implements ArchiverInterface
                 unset($phar);
 
                 if ($format === 'tar') {
-                    // create an empty tar file (=512 null bytes) if the tar file is empty and PharData thus did not write it to disk
-                    file_put_contents($target, str_repeat("\0", 512));
+                    // create an empty tar file (=10240 null bytes) if the tar file is empty and PharData thus did not write it to disk
+                    file_put_contents($target, str_repeat("\0", 10240));
                 } elseif ($format === 'zip') {
                     // create minimal valid ZIP file (Empty Central Directory + End of Central Directory record)
                     $eocd = pack(
@@ -94,9 +94,9 @@ class PharArchiver implements ArchiverInterface
                         throw new \RuntimeException(sprintf('Can not compress to %s format', $format));
                     }
                     if ($format === 'tar.gz' && function_exists('gzcompress')) {
-                        file_put_contents($target, gzcompress(str_repeat("\0", 512)));
+                        file_put_contents($target, gzcompress(str_repeat("\0", 10240)));
                     } elseif ($format === 'tar.bz2' && function_exists('bzcompress')) {
-                        file_put_contents($target, bzcompress(str_repeat("\0", 512)));
+                        file_put_contents($target, bzcompress(str_repeat("\0", 10240)));
                     }
                 }
 
