@@ -56,12 +56,18 @@ class Platform
 
     /**
      * Infallible realpath version that falls back on the given $path if realpath is not working
+     *
+     * NB: Do not remove recursive `realpath()` calls. Fixes failing Windows `realpath()` implementation.
+     * @see https://bugs.php.net/bug.php?id=72738
      */
     public static function realpath(string $path): string
     {
         $realPath = realpath($path);
         if ($realPath === false) {
             return $path;
+        }
+        if ($realPath !== $path) {
+            return Platform::realpath($realPath);
         }
 
         return $realPath;
