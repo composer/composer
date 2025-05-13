@@ -570,7 +570,7 @@ class Filesystem
      */
     public function isAbsolutePath(string $path)
     {
-        $path = str_replace('file://', '', $path);
+        $path = Preg::replace('{^file://}i', '', $path);
 
         return strpos($path, '/') === 0
                || substr($path, 1, 1) === ':'
