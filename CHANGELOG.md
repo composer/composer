@@ -1,3 +1,11 @@
+### [2.8.9] 2025-05-13
+
+  * Fixed json schema issues with version validation (#12376)
+  * Fixed `bump-after-update` triggering after an `update --lock`, which makes no sense (#12371)
+  * Fixed zip bomb false positives when unpacking using `ZipArchive` (#12409)
+  * Fixed creation of empty archives (#12408)
+  * Removed output of script being run when running via `composer <script-name>` (#12383)
+
 ### [2.8.8] 2025-04-04
 
   * Fixed json schema issues with version validation (#12367)
@@ -2011,6 +2019,7 @@
 
   * Initial release
 
+[2.8.9]: https://github.com/composer/composer/compare/2.8.8...2.8.9
 [2.8.8]: https://github.com/composer/composer/compare/2.8.7...2.8.8
 [2.8.7]: https://github.com/composer/composer/compare/2.8.6...2.8.7
 [2.8.6]: https://github.com/composer/composer/compare/2.8.5...2.8.6
