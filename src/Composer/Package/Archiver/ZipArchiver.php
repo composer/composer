@@ -71,6 +71,22 @@ class ZipArchiver implements ArchiverInterface
                 }
             }
             if ($zip->close()) {
+                if (!file_exists($target)) {
+                    // create minimal valid ZIP file (Empty Central Directory + End of Central Directory record)
+                    $eocd = pack(
+                        'VvvvvVVv',
+                        0x06054b50,  // End of central directory signature
+                        0,           // Number of this disk
+                        0,           // Disk where central directory starts
+                        0,           // Number of central directory records on this disk
+                        0,           // Total number of central directory records
+                        0,           // Size of central directory (bytes)
+                        0,           // Offset of start of central directory
+                        0            // Comment length
+                    );
+                    file_put_contents($target, $eocd);
+                }
+
                 return $target;
             }
         }

@@ -12,6 +12,8 @@
 
 namespace Composer\Package\Archiver;
 
+use PharData;
+
 /**
  * @author Till Klampaeckel <till@php.net>
  * @author Nils Adermann <naderman@naderman.de>
@@ -65,9 +67,45 @@ class PharArchiver implements ArchiverInterface
             $phar->buildFromIterator($filesOnly, $sources);
             $filesOnly->addEmptyDir($phar, $sources);
 
+            if (!file_exists($target)) {
+                $target = $filename . '.' . $format;
+                unset($phar);
+
+                if ($format === 'tar') {
+                    // create an empty tar file (=10240 null bytes) if the tar file is empty and PharData thus did not write it to disk
+                    file_put_contents($target, str_repeat("\0", 10240));
+                } elseif ($format === 'zip') {
+                    // create minimal valid ZIP file (Empty Central Directory + End of Central Directory record)
+                    $eocd = pack(
+                        'VvvvvVVv',
+                        0x06054b50,  // End of central directory signature
+                        0,           // Number of this disk
+                        0,           // Disk where central directory starts
+                        0,           // Number of central directory records on this disk
+                        0,           // Total number of central directory records
+                        0,           // Size of central directory (bytes)
+                        0,           // Offset of start of central directory
+                        0            // Comment length
+                    );
+
+                    file_put_contents($target, $eocd);
+                } elseif ($format === 'tar.gz' || $format === 'tar.bz2') {
+                    if (!PharData::canCompress(static::$compressFormats[$format])) {
+                        throw new \RuntimeException(sprintf('Can not compress to %s format', $format));
+                    }
+                    if ($format === 'tar.gz' && function_exists('gzcompress')) {
+                        file_put_contents($target, gzcompress(str_repeat("\0", 10240)));
+                    } elseif ($format === 'tar.bz2' && function_exists('bzcompress')) {
+                        file_put_contents($target, bzcompress(str_repeat("\0", 10240)));
+                    }
+                }
+
+                return $target;
+            }
+
             if (isset(static::$compressFormats[$format])) {
                 // Check can be compressed?
-                if (!$phar->canCompress(static::$compressFormats[$format])) {
+                if (!PharData::canCompress(static::$compressFormats[$format])) {
                     throw new \RuntimeException(sprintf('Can not compress to %s format', $format));
                 }
 
