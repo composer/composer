@@ -412,7 +412,9 @@ class FilesystemTest extends TestCase
             'unixPath' => ['/foo/bar', true],
             'smbPath' => ['\\\\smb\\folder\\file.txt', true],
             'windowsPath' => ['C:\\foo\\bar', true],
-            'streamPath' => ['file://path/to/whatever', true],
+            'streamPath' => ['customstreamwrapper://path/to/whatever', true],
+            'fileStreamAbsolutePath' => ['file:///path/to/whatever', true],
+            'fileStreamRelativePath' => ['file://path/to/whatever', false],
             'relativeSubPath' => ['foo/bar', false],
             'relativeSubPath2' => ['./foo/bar', false],
             'relativeParentPath' => ['../foo/bar', false],
@@ -425,6 +427,10 @@ class FilesystemTest extends TestCase
      */
     public function testIsAbsolutePath(string $path, bool $expected): void
     {
+        if (str_starts_with($path, 'customstreamwrapper://') && !in_array('customstreamwrapper', stream_get_wrappers(), true)) {
+            stream_wrapper_register('customstreamwrapper', __CLASS__);
+        }
+
         self::assertEquals($expected, (new Filesystem())->isAbsolutePath($path));
     }
 }
