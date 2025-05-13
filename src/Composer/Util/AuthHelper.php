@@ -227,26 +227,27 @@ class AuthHelper
     }
 
     /**
-     * @param string[] $headers
+     * @param mixed[] $options
      *
-     * @return string[] updated headers array
+     * @return mixed[] updated headers array
      */
-    public function addAuthenticationHeader(array $headers, string $origin, string $url): array
+    public function addAuthenticationOptions(array $options, string $origin, string $url): array
     {
+        $headers = &$options['http']['header'];
         if ($this->io->hasAuthentication($origin)) {
             $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($origin);
             if ($auth['password'] === 'bearer') {
                 $headers[] = 'Authorization: Bearer '.$auth['username'];
-            } elseif ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
+            } elseif ('x-oauth-basic' === $auth['password'] && 'github.com' === $origin) {
                 // only add the access_token if it is actually a github API URL
                 if (Preg::isMatch('{^https?://api\.github\.com/}', $url)) {
                     $headers[] = 'Authorization: token '.$auth['username'];
                     $authenticationDisplayMessage = 'Using GitHub token authentication';
                 }
             } elseif (
-                in_array($origin, $this->config->get('gitlab-domains'), true)
-                && in_array($auth['password'], ['oauth2', 'private-token', 'gitlab-ci-token'], true)
+                in_array($auth['password'], ['oauth2', 'private-token', 'gitlab-ci-token'], true)
+                && in_array($origin, $this->config->get('gitlab-domains'), true)
             ) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
@@ -256,14 +257,17 @@ class AuthHelper
                     $authenticationDisplayMessage = 'Using GitLab private token authentication';
                 }
             } elseif (
-                'bitbucket.org' === $origin
+                'x-token-auth' === $auth['username']
+                && 'bitbucket.org' === $origin
                 && $url !== Bitbucket::OAUTH2_ACCESS_TOKEN_URL
-                && 'x-token-auth' === $auth['username']
             ) {
                 if (!$this->isPublicBitBucketDownload($url)) {
                     $headers[] = 'Authorization: Bearer ' . $auth['password'];
                     $authenticationDisplayMessage = 'Using Bitbucket OAuth token authentication';
                 }
+            } elseif ('client-certificate' === $auth['password']) {
+                $options['ssl'] = array_merge($options['ssl'] ?? [], json_decode((string)$auth['username'], true));
+                $authenticationDisplayMessage = 'Using SSL client certificate';
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
@@ -275,10 +279,10 @@ class AuthHelper
                 $this->displayedOriginAuthentications[$origin] = $authenticationDisplayMessage;
             }
         } elseif (in_array($origin, ['api.bitbucket.org', 'api.github.com'], true)) {
-            return $this->addAuthenticationHeader($headers, str_replace('api.', '', $origin), $url);
+            return $this->addAuthenticationOptions($options, str_replace('api.', '', $origin), $url);
         }
 
-        return $headers;
+        return $options;
     }
 
     /**
