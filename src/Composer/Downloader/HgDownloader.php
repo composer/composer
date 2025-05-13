@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use Composer\Util\Platform;
 use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
@@ -48,7 +49,7 @@ class HgDownloader extends VcsDownloader
         $hgUtils->runCommand($cloneCommand, $url, $path);
 
         $command = ['hg', 'up', '--', (string) $package->getSourceReference()];
-        if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
+        if (0 !== $this->process->execute($command, $ignoredOutput, Platform::realpath($path))) {
             throw new \RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());
         }
 
@@ -91,7 +92,7 @@ class HgDownloader extends VcsDownloader
             return null;
         }
 
-        $this->process->execute(['hg', 'st'], $output, realpath($path));
+        $this->process->execute(['hg', 'st'], $output, Platform::realpath($path));
 
         $output = trim($output);
 
@@ -105,7 +106,7 @@ class HgDownloader extends VcsDownloader
     {
         $command = ['hg', 'log', '-r', $fromReference.':'.$toReference, '--style', 'compact'];
 
-        if (0 !== $this->process->execute($command, $output, realpath($path))) {
+        if (0 !== $this->process->execute($command, $output, Platform::realpath($path))) {
             throw new \RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());
         }
 

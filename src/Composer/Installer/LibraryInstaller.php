@@ -333,7 +333,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     protected function initializeVendorDir()
     {
         $this->filesystem->ensureDirectoryExists($this->vendorDir);
-        $this->vendorDir = realpath($this->vendorDir);
+        $this->vendorDir = Platform::realpath($this->vendorDir);
     }
 
     protected function getDownloadManager(): DownloadManager

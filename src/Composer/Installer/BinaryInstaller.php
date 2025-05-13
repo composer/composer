@@ -76,7 +76,7 @@ class BinaryInstaller
                 // $package, we can now safely turn it into a absolute path (as we
                 // already checked the binary's existence). The following helpers
                 // will require absolute paths to work properly.
-                $binPath = realpath($binPath);
+                $binPath = Platform::realpath($binPath);
             }
             $this->initializeBinDir();
             $link = $this->binDir.'/'.basename($bin);
@@ -87,7 +87,7 @@ class BinaryInstaller
                     }
                     continue;
                 }
-                if (realpath($link) === realpath($binPath)) {
+                if (Platform::realpath($link) === Platform::realpath($binPath)) {
                     // It is a linked binary from a previous installation, which can be replaced with a proxy file
                     $this->filesystem->unlink($link);
                 }
@@ -180,7 +180,7 @@ class BinaryInstaller
     protected function initializeBinDir(): void
     {
         $this->filesystem->ensureDirectoryExists($this->binDir);
-        $this->binDir = realpath($this->binDir);
+        $this->binDir = Platform::realpath($this->binDir);
     }
 
     protected function generateWindowsProxyCode(string $bin, string $link): string

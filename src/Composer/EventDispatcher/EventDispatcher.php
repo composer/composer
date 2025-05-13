@@ -683,7 +683,7 @@ class EventDispatcher
         // add the bin dir to the PATH to make local binaries of deps usable in scripts
         $binDir = $this->composer->getConfig()->get('bin-dir');
         if (is_dir($binDir)) {
-            $binDir = realpath($binDir);
+            $binDir = Platform::realpath($binDir);
             $pathValue = (string) Platform::getEnv($pathEnv);
             if (!Preg::isMatch('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $pathValue)) {
                 Platform::putEnv($pathEnv, $binDir.PATH_SEPARATOR.$pathValue);

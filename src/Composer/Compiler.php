@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Json\JsonFile;
 use Composer\CaBundle\CaBundle;
 use Composer\Pcre\Preg;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
@@ -142,7 +143,7 @@ class Compiler
             __DIR__ . '/../../vendor/symfony/console/Resources/bin/hiddeninput.exe',
             __DIR__ . '/../../vendor/symfony/console/Resources/completion.bash',
         ] as $file) {
-            $extraFiles[$file] = realpath($file);
+            $extraFiles[$file] = Platform::realpath($file);
             if (!file_exists($file)) {
                 throw new \RuntimeException('Extra file listed is missing from the filesystem: '.$file);
             }

@@ -333,7 +333,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
 
         foreach ($dirsToCleanUp as $dir) {
-            if (is_dir($dir) && $this->filesystem->isDirEmpty($dir) && realpath($dir) !== Platform::getCwd()) {
+            if (is_dir($dir) && $this->filesystem->isDirEmpty($dir) && Platform::realpath($dir) !== Platform::getCwd()) {
                 $this->filesystem->removeDirectoryPhp($dir);
             }
         }

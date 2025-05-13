@@ -12,6 +12,8 @@
 
 namespace Composer\Package\Archiver;
 
+use Composer\Util\Platform;
+
 /**
  * @author Till Klampaeckel <till@php.net>
  * @author Nils Adermann <naderman@naderman.de>
@@ -38,7 +40,7 @@ class PharArchiver implements ArchiverInterface
      */
     public function archive(string $sources, string $target, string $format, array $excludes = [], bool $ignoreFilters = false): string
     {
-        $sources = realpath($sources);
+        $sources = Platform::realpath($sources);
 
         // Phar would otherwise load the file which we don't want
         if (file_exists($target)) {
