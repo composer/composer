@@ -257,8 +257,8 @@ class AuthHelper
                     $authenticationDisplayMessage = 'Using GitHub token authentication';
                 }
             } elseif (
-                in_array($origin, $this->config->get('gitlab-domains'), true)
-                && in_array($auth['password'], ['oauth2', 'private-token', 'gitlab-ci-token'], true)
+                in_array($auth['password'], ['oauth2', 'private-token', 'gitlab-ci-token'], true)
+                && in_array($origin, $this->config->get('gitlab-domains'), true)
             ) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
