@@ -227,12 +227,35 @@ class AuthHelper
     }
 
     /**
+     * @deprecated use addAuthenticationOptions instead
+     *
      * @param string[] $headers
      *
      * @return string[] updated headers array
      */
     public function addAuthenticationHeader(array $headers, string $origin, string $url): array
     {
+        trigger_error('AuthHelper::addAuthenticationHeader is deprecated since Composer 2.9 use addAuthenticationOptions instead.', E_USER_DEPRECATED);
+
+        $options = ['http' => ['header' => &$headers]];
+        $options = $this->addAuthenticationOptions($options, $origin, $url);
+        return $options['http']['header'];
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed> updated options
+     */
+    public function addAuthenticationOptions(array $options, string $origin, string $url): array
+    {
+        if (!isset($options['http'])) {
+            $options['http'] = [];
+        }
+        if (!isset($options['http']['header'])) {
+            $options['http']['header'] = [];
+        }
+        $headers = &$options['http']['header'];
         if ($this->io->hasAuthentication($origin)) {
             $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($origin);
@@ -287,10 +310,10 @@ class AuthHelper
                 $this->displayedOriginAuthentications[$origin] = $authenticationDisplayMessage;
             }
         } elseif (in_array($origin, ['api.bitbucket.org', 'api.github.com'], true)) {
-            return $this->addAuthenticationHeader($headers, str_replace('api.', '', $origin), $url);
+            return $this->addAuthenticationOptions($options, str_replace('api.', '', $origin), $url);
         }
 
-        return $headers;
+        return $options;
     }
 
     /**
