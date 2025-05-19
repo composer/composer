@@ -571,6 +571,28 @@
                         }
                     }
                 },
+                "client-certificate": {
+                    "type": "object",
+                    "description": "An object of domain name => {\"local_cert\": \"...\", \"local_pk\"?: \"...\", \"passphrase\"?: \"...\"} to provide client certificate.",
+                    "additionalProperties": {
+                        "type": "object",
+                        "required": ["local_cert"],
+                        "properties": {
+                            "local_cert": {
+                                "type": "string",
+                                "description": "Path to a certificate (pem) or pair certificate+key (pem)"
+                            },
+                            "local_pk": {
+                                "type": "string",
+                                "description": "Path to a private key file (pem)"
+                            },
+                            "passphrase": {
+                                "type": "string",
+                                "description": "Passphrase for private key"
+                            }
+                        }
+                    }
+                },
                 "store-auths": {
                     "type": ["string", "boolean"],
                     "description": "What to do after prompting for authentication, one of: true (store), false (do not store) or \"prompt\" (ask every time), defaults to prompt."
