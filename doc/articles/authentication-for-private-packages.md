@@ -356,9 +356,9 @@ For private repositories, the `repo` scope is needed. Note that the token will b
 
 ### Fine-grained tokens
 
-Fine-grained tokens allow you to choose specific repositories to which the token applies, and permissions to specific aspects or properties of the repository. For example, you can choose to grant read-only access to your private repo's content, as well as write access to Actions. 
+Fine-grained tokens allow you to choose specific repositories to which the token applies, and permissions to specific aspects or properties of the repository.
 
-In the case of a privately hosted package, you would most likely want to choose read-only access to content.
+In the case of a privately hosted composer package, you would most likely want to choose read-only access to content.
 
 ### Command line github-oauth
 
