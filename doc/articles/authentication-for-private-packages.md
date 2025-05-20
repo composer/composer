@@ -333,13 +333,14 @@ php composer.phar config [--global] --editor --auth
 
 ## github-oauth
 
-GitHub currently offers two types of access tokens: 
+GitHub currently offers two types of access tokens:
+
 - [Fine-grained tokens](https://github.com/settings/personal-access-tokens)
 - [Tokens (classic)](https://github.com/settings/personal-access-tokens)
 
 These can be found in [Settings](https://github.com/settings/profile), at the very bottom of the left-side menu ([Developer options](https://github.com/settings/apps)).
 
-Classic tokens are broader and less secure, whereas Fine-grained tokens can strictly limit which repository the token applies to, as well as which permissions it is granted for each property of the repository. 
+Classic tokens are broader and less secure, whereas Fine-grained tokens can strictly limit which repository the token applies to, as well as which permissions it is granted for each property of the repository.
 
 > **Note:** It is [recommended](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#types-of-personal-access-tokens) to use the fine-grained tokens,
 > as you can have much tighter control over what is accessed and by whom.
