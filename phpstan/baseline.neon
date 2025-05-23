@@ -4447,6 +4447,14 @@ parameters:
 			path: ../tests/Composer/Test/TestCase.php
 
 		-
+			message: """
+				#^Call to deprecated method addAuthenticationHeader\\(\\) of class Composer\\\\Util\\\\AuthHelper\\:
+				use addAuthenticationOptions instead$#
+			"""
+			count: 3
+			path: ../tests/Composer/Test/Util/AuthHelperTest.php
+
+		-
 			message: "#^Cannot access an offset on array\\<int, array\\<string, array\\<int, string\\>\\|int\\|string\\>\\>\\|false\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/Util/GitTest.php
