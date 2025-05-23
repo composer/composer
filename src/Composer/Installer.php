@@ -533,7 +533,7 @@ class Installer
             $this->io->writeError('Nothing to modify in lock file');
 
             if ($this->minimalUpdate && $this->updateAllowList === null && $this->locker->isFresh()) {
-                $this->io->writeError('<warning>Updates using --minimal-changes that do not change any requirement typically will not yield any dependency changes.</warning>');
+                $this->io->writeError('<warning>The --minimal-changes option should be used with package arguments or after modifying composer.json requirements, otherwise it will likely not yield any dependency changes.</warning>');
             }
         }
 
