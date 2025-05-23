@@ -531,6 +531,10 @@ class Installer
 
         if (!$lockTransaction->getOperations()) {
             $this->io->writeError('Nothing to modify in lock file');
+
+            if ($this->minimalUpdate && $this->updateAllowList === null && $this->locker->isFresh()) {
+                $this->io->writeError('<warning>Updates using --minimal-changes that do not change any requirement typically will not yield any dependency changes.</warning>');
+            }
         }
 
         $exitCode = $this->extractDevPackages($lockTransaction, $platformRepo, $aliases, $policy, $lockedRepository);
