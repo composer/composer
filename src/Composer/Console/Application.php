@@ -603,7 +603,7 @@ class Application extends BaseApplication
      */
     protected function getDefaultCommands(): array
     {
-        $commands = array_merge(parent::getDefaultCommands(), [
+        return array_merge(parent::getDefaultCommands(), [
             new Command\AboutCommand(),
             new Command\ConfigCommand(),
             new Command\DependsCommand(),
@@ -634,13 +634,8 @@ class Application extends BaseApplication
             new Command\FundCommand(),
             new Command\ReinstallCommand(),
             new Command\BumpCommand(),
+            new Command\SelfUpdateCommand(),
         ]);
-
-        if (strpos(__FILE__, 'phar:') === 0 || '1' === Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING')) {
-            $commands[] = new Command\SelfUpdateCommand();
-        }
-
-        return $commands;
     }
 
     /**
