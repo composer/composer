@@ -31,6 +31,7 @@ Ensure a partial update of a dependency does NOT update dependencies which provi
         {"name": "root/req2", "version": "1.0.0", "type": "library", "require": {"dep/pkg1": "1.*", "dep/pkg2": "1.*"}}
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
@@ -50,6 +51,7 @@ update root/req1 --with-dependencies
         {"name": "root/req2", "version": "1.0.0", "type": "library", "require": {"dep/pkg1": "1.*", "dep/pkg2": "1.*"}}
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
