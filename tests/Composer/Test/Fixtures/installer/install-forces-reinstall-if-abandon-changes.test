@@ -1,17 +1,7 @@
 --TEST--
-Update updates the outdated state of packages
+Install triggers a reinstall of packages that have outdated information if their abandoned state changed
 --COMPOSER--
 {
-    "repositories": [
-        {
-            "type": "package",
-            "package": [
-                {
-                    "name": "a/a", "version": "1.0.0", "abandoned": "replacement"
-                }
-            ]
-        }
-    ],
     "require": {
         "a/a": "1.0.0"
     }
@@ -19,10 +9,10 @@ Update updates the outdated state of packages
 --INSTALLED--
 [
     {
-        "name": "a/a", "version": "1.0.0", "type": "library"
+        "name": "a/a", "version": "1.0.0", "type": "library", "abandoned": "old-replacement"
     }
 ]
---EXPECT-LOCK--
+--LOCK--
 {
     "packages": [
         {
@@ -47,6 +37,6 @@ Update updates the outdated state of packages
     }
 ]
 --RUN--
-update
+install
 --EXPECT--
 Upgrading a/a (1.0.0 => 1.0.0)
