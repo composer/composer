@@ -12,6 +12,9 @@
 
 namespace Composer\Util;
 
+use RuntimeException;
+use ZipArchive;
+
 /**
  * @author Andreas Schempp <andreas.schempp@terminal42.ch>
  */
@@ -23,10 +26,10 @@ class Zip
     public static function getComposerJson(string $pathToZip): ?string
     {
         if (!extension_loaded('zip')) {
-            throw new \RuntimeException('The Zip Util requires PHP\'s zip extension');
+            throw new RuntimeException("The Zip Util requires PHP's zip extension");
         }
 
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         if ($zip->open($pathToZip) !== true) {
             return null;
         }
@@ -55,9 +58,9 @@ class Zip
     /**
      * Find a file by name, returning the one that has the shortest path.
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
-    private static function locateFile(\ZipArchive $zip, string $filename): int
+    private static function locateFile(ZipArchive $zip, string $filename): int
     {
         // return root composer.json if it is there and is a file
         if (false !== ($index = $zip->locateName($filename)) && $zip->getFromIndex($index) !== false) {
@@ -65,12 +68,12 @@ class Zip
         }
 
         $topLevelPaths = [];
-        for ($i = 0; $i < $zip->numFiles; $i++) {
+        for ($i = 0; $i < $zip->numFiles; ++$i) {
             $name = $zip->getNameIndex($i);
             $dirname = dirname($name);
 
             // ignore OSX specific resource fork folder
-            if (strpos($name, '__MACOSX') !== false) {
+            if (str_contains($name, '__MACOSX')) {
                 continue;
             }
 
@@ -78,16 +81,17 @@ class Zip
             if ($dirname === '.') {
                 $topLevelPaths[$name] = true;
                 if (\count($topLevelPaths) > 1) {
-                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
+                    throw new RuntimeException("Archive has more than one top level directories, and no composer.json was found on the top level, so it's an invalid archive. Top level paths found were: ".implode(',', array_keys($topLevelPaths)));
                 }
+
                 continue;
             }
 
             // handle archives which do not have a TOC record for the directory itself
-            if (false === strpos($dirname, '\\') && false === strpos($dirname, '/')) {
+            if (in_array(str_contains($dirname, '\\'), [0, false], true) && in_array(str_contains($dirname, '/'), [0, false], true)) {
                 $topLevelPaths[$dirname.'/'] = true;
                 if (\count($topLevelPaths) > 1) {
-                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
+                    throw new RuntimeException("Archive has more than one top level directories, and no composer.json was found on the top level, so it's an invalid archive. Top level paths found were: ".implode(',', array_keys($topLevelPaths)));
                 }
             }
         }
@@ -96,6 +100,6 @@ class Zip
             return $index;
         }
 
-        throw new \RuntimeException('No composer.json found either at the top level or within the topmost directory');
+        throw new RuntimeException('No composer.json found either at the top level or within the topmost directory');
     }
 }
