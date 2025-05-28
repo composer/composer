@@ -24,6 +24,7 @@ for credentials and save them (or a token if Composer is able to retrieve one).
 |[gitlab-token](#gitlab-token)|yes|
 |[github-oauth](#github-oauth)|yes|
 |[bitbucket-oauth](#bitbucket-oauth)|yes|
+|[Client TLS certificates](#client-tls-certificates)|no|
 
 Sometimes automatic authentication is not possible, or you may want to predefine
 authentication credentials.
@@ -417,3 +418,34 @@ php composer.phar config [--global] --editor --auth
     }
 }
 ```
+
+## Client TLS certificates
+
+Accessing private repositories that require client TLS certificates.
+
+For global/project-wide configuration see [Handling private packages: Security section](handling-private-packages.md#security).
+
+### Manual client certificates
+
+```shell
+php composer.phar config [--global] --editor --auth
+```
+
+```json
+{
+    "client-certificate": {
+        "repo.example.org": {
+            "local_cert": "/path/to/certificate",
+            "local_pk": "/path/to/key",
+            "passphrase": "MySecretPassword"
+        }
+    }
+}
+```
+
+Supported options are `local_cert` (required), `local_pk`, `passphrase`.
+More information for options can be found at [SSL context options](https://www.php.net/manual/en/context.ssl.php)
+
+Options could be omitted:
+ - `local_pk`: in case of keeping certificate and private key in a single file;
+ - `passphrase`: in case of passwordless private key.

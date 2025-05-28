@@ -253,7 +253,7 @@ class CurlDownloader
             curl_setopt($curlHandle, CURLOPT_ENCODING, "gzip");
         }
 
-        $options['http']['header'] = $this->authHelper->addAuthenticationHeader($options['http']['header'], $origin, $url);
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
         $options = StreamContextFactory::initOptions($url, $options, true);
 
         foreach (self::$options as $type => $curlOptions) {
