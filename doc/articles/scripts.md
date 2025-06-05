@@ -202,7 +202,7 @@ If you would like to run the scripts for an event manually, the syntax is:
 php composer.phar run-script [--dev] [--no-dev] script
 ```
 
-For example `composer run-script post-install-cmd` will run any
+For example, `composer run-script post-install-cmd` will run any
 **post-install-cmd** scripts and [plugins](plugins.md) that have been defined.
 
 You can also give additional arguments to the script handler by appending `--`
@@ -213,16 +213,16 @@ and can be retrieved as an array via `$event->getArguments()` by PHP handlers.
 
 ## Writing custom commands
 
-If you add custom scripts that do not fit one of the predefined event name
-above, you can either run them with run-script or also run them as native
-Composer commands. For example the handler defined below is executable by
+If you add custom scripts that do not fit one of the predefined event names
+above, you can either run them with `run-script`, or as native
+Composer commands. For example, the handler defined below is executable by
 running `composer test`:
 
 ```json
 {
     "scripts": {
         "test": "phpunit",
-        "do-something": "MyVendor\\MyClass::doSomething"
+        "do-something": "MyVendor\\MyClass::doSomething",
         "my-cmd": "MyVendor\\MyCommand"
     }
 }
@@ -238,16 +238,23 @@ available in `$event->getArguments()`. This however does not let you easily pass
 custom options in the form of `--flags`.
 
 Using a [symfony/console](https://packagist.org/packages/symfony/console) `Command`
-class you can define and access arguments and options more easily.
+class you can describe your script, define and access arguments and options more
+easily.
 
-For example with the command below you can then simply call `composer my-cmd
+For example, with the command below you can then simply call `composer my-cmd
 --arbitrary-flag` without even the need for a `--` separator. To be detected
-as symfony/console commands the class name must end with `Command` and extend
-symfony's `Command` class. Also note that this will run using Composer's built-in
-symfony/console version which may not match the one you have required in your
-project, and may change between Composer minor releases. If you need more
-safety guarantees you should rather use your own binary file that runs your own
+as symfony/console commands, the class name must end with `Command` and extend
+Symfony's `Command` class. Also note that this will run using Composer's built-in
+symfony/console version, which may not match the one you have required in your
+project and may change between Composer minor releases. If you need more
+safety guarantees, you should rather use your own binary file that runs your own
 symfony/console version in isolation in its own process then.
+
+Script names and descriptions defined inside a `Command` class will override the
+details from your `composer.json`: the key for the entry in `scripts` (used as
+the command passed to `run-script`) will be replaced with either `$defaultName`
+or the value passed to `setName()`, and similar replacement will happen with
+anything included in `scripts-descriptions` for that script class.
 
 ```php
 <?php
@@ -264,10 +271,17 @@ class MyCommand extends Command
 {
     protected function configure(): void
     {
-        $this->setDefinition([
-            new InputOption('arbitrary-flag', null, InputOption::VALUE_NONE, 'Example flag'),
-            new InputArgument('foo', InputArgument::OPTIONAL, 'Optional arg'),
-        ]);
+        $this
+//          ->setName('custom-cmd') //if this gets included, it would execute with `composer custom-cmd` instead
+            ->setDescription('Custom description for this command')
+            ->setDefinition([
+                new InputOption('arbitrary-flag', null, InputOption::VALUE_NONE, 'Example flag'),
+                new InputArgument('foo', InputArgument::OPTIONAL, 'Optional arg'),
+            ])
+            ->setHelp(
+                "Here you can define a long description for your command\n".
+                "This would be visible with composer my-cmd --help"
+            );
     }
 
     public function execute(InputInterface $input, OutputInterface $output): int
@@ -282,9 +296,9 @@ class MyCommand extends Command
 ```
 
 > **Note:** Before executing scripts, Composer's bin-dir is temporarily pushed
-> on top of the PATH environment variable so that binaries of dependencies
-> are directly accessible. In this example no matter if the `phpunit` binary is
-> actually in `vendor/bin/phpunit` or `bin/phpunit` it will be found and executed.
+> on top of the PATH environment variable, so that binaries of dependencies
+> are directly accessible. In this example, no matter if the `phpunit` binary is
+> actually in `vendor/bin/phpunit` or `bin/phpunit`, it will be found and executed.
 
 
 ## Managing the process timeout

@@ -20,6 +20,7 @@ use Composer\Util\Silencer;
 use LogicException;
 use RuntimeException;
 use Symfony\Component\Console\Application as BaseApplication;
+use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Helper\HelperSet;
@@ -380,6 +381,21 @@ class Application extends BaseApplication
 
                                 $aliases = $composer['scripts-aliases'][$script] ?? [];
 
+                                //if the command points to a valid Command class, import its details directly
+                                if (is_string($dummy) && class_exists($dummy)) {
+                                    $cmd = new $dummy;
+                                    if ($cmd instanceof SymfonyCommand) {
+                                        if ($cmd->getName() === '' || $cmd->getName() === null) {
+                                            $cmd->setName($script);
+                                        }
+                                        if ($cmd->getDescription() === '') {
+                                            $cmd->setDescription($description);
+                                        }
+                                        $this->add($cmd);
+                                        continue;
+                                    }
+                                }
+
                                 $this->add(new Command\ScriptAliasCommand($script, $description, $aliases));
                             }
                         }
@@ -599,7 +615,7 @@ class Application extends BaseApplication
 
     /**
      * Initializes all the composer commands.
-     * @return \Symfony\Component\Console\Command\Command[]
+     * @return SymfonyCommand[]
      */
     protected function getDefaultCommands(): array
     {
