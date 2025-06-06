@@ -669,6 +669,8 @@ class Filesystem
             self::$streamWrappersRegex = sprintf( '{^(?:%s)://}', implode( '|', array_map( 'preg_quote', stream_get_wrappers() ) ) );
         }
 
+        $path = Preg::replace('{^file://}i', '', $path);
+
         return Preg::isMatch(self::$streamWrappersRegex, $path);
     }
 
