@@ -30,14 +30,13 @@ class Filesystem
     private $processExecutor;
 
     /**
-     * @var non-empty-string
+     * @var ?non-empty-string
      */
-    private $streamWrappersRegex;
+    private static $streamWrappersRegex = null;
 
     public function __construct(?ProcessExecutor $executor = null)
     {
         $this->processExecutor = $executor;
-        $this->streamWrappersRegex = sprintf('{^(?:%s)://}', implode('|', array_map('preg_quote', stream_get_wrappers())));
     }
 
     /**
@@ -575,7 +574,7 @@ class Filesystem
         return strpos($path, '/') === 0
                || substr($path, 1, 1) === ':'
                || strpos($path, '\\\\') === 0
-               || Preg::isMatch($this->streamWrappersRegex, $path);
+               || self::isStreamWrapperPath($path);
     }
 
     /**
@@ -662,6 +661,15 @@ class Filesystem
         }
 
         return $path;
+    }
+
+    public static function isStreamWrapperPath(string $path): bool
+    {
+        if(!isset(self::$streamWrappersRegex)) {
+            self::$streamWrappersRegex = sprintf( '{^(?:%s)://}', implode( '|', array_map( 'preg_quote', stream_get_wrappers() ) ) );
+        }
+
+        return Preg::isMatch(self::$streamWrappersRegex, $path);
     }
 
     /**
