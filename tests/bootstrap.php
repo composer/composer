@@ -35,3 +35,12 @@ Platform::putEnv('NO_COLOR', '1');
 Platform::clearEnv('COMPOSER');
 Platform::clearEnv('COMPOSER_VENDOR_DIR');
 Platform::clearEnv('COMPOSER_BIN_DIR');
+
+/**
+ * The stream wrapper checks use a static property to store the stream wrapper names. If it is accessed before
+ * the stream wrapper is registered, and a later test relies on that stream wrapper, the static property will be
+ * outdated and the test will fail.
+ *
+ * @see \Composer\Util\Filesystem::isStreamWrapperPath()
+ */
+stream_wrapper_register('composertestsstreamwrapper', stdclass::class);
