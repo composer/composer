@@ -23,7 +23,7 @@ class ValidatingArrayLoaderTest extends TestCase
      *
      * @param array<string, mixed> $config
      */
-    public function testLoadSuccess(array $config): void
+    public function testLoadSuccess(array $config, bool $ignoreWarnings = true): void
     {
         $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $internalLoader
@@ -33,6 +33,10 @@ class ValidatingArrayLoaderTest extends TestCase
 
         $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
         $loader->load($config);
+
+        if (!$ignoreWarnings) {
+            self::assertEmpty($loader->getWarnings());
+        }
     }
 
     public static function successProvider(): array
@@ -88,6 +92,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     'require' => [
                         'a/b' => '1.*',
                         'b/c' => '~2',
+                        'd/e' => '^1.2.3',
                         'example/pkg' => '>2.0-dev,<2.4-dev',
                         'composer-runtime-api' => '*',
                     ],
@@ -99,6 +104,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     'conflict' => [
                         'a/bx' => '1.*',
                         'b/cx' => '>2.7',
+                        'd/e' => '>=1.2.3',
                         'example/pkgx' => '>2.0-dev,<2.4-dev',
                     ],
                     'replace' => [
@@ -197,6 +203,14 @@ class ValidatingArrayLoaderTest extends TestCase
                     'source' => ['url' => 'https://example.org', 'reference' => 1234, 'type' => 'baz'],
                     'dist' => ['url' => 'https://example.org', 'reference' => 'foobar', 'type' => 'baz'],
                 ],
+            ],
+            'require-dev-and-conlict' => [
+                [
+                    'name' => 'foo/bar',
+                    'require-dev' => ['a/b' => '^1.0'],
+                    'conflict' => ['a/b' => '>=1.2.3'],
+                ],
+                false,
             ],
         ];
     }
@@ -575,6 +589,21 @@ class ValidatingArrayLoaderTest extends TestCase
                     'name' => 'a/b',
                     'license' => ['MIT'],
                 ]
+            ],
+            'invalid-conflict' => [
+                [
+                    'name' => 'foo/bar',
+                    'require' => [
+                        'acme/baz' => '^1.0',
+                    ],
+                    'conflict' => [
+                        'acme/baz' => '>=2.0',
+                    ],
+                ],
+                [
+                    'conflict.acme/baz : you should not conflict with a package that is also required, update the constraint in the required package instead',
+                ],
+                false,
             ],
         ];
     }
