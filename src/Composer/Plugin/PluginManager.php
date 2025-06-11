@@ -201,7 +201,6 @@ class PluginManager
         if (isset($this->registeredPlugins[$package->getName()])) {
             return;
         }
-        $this->registeredPlugins[$package->getName()] = [];
 
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
