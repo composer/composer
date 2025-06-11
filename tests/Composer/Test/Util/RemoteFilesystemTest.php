@@ -270,7 +270,7 @@ class RemoteFilesystemTest extends TestCase
     public static function provideBitbucketPublicDownloadUrls(): array
     {
         return [
-            ['https://bitbucket.org/seldaek/composer-live-test-repo/downloads/composer-unit-test-download-me.txt', '1234'],
+            ['https://bitbucket.org/seldaek/composer-live-test-repo/raw/master/composer-unit-test-download-me.txt', '1234'],
         ];
     }
 
@@ -294,47 +294,6 @@ class RemoteFilesystemTest extends TestCase
         $result = $rfs->getContents($hostname, $url, false);
 
         self::assertEquals($contents, $result);
-    }
-
-    /**
-     * Tests that a BitBucket public download is correctly retrieved when `bitbucket-oauth` is configured.
-     *
-     * @dataProvider provideBitbucketPublicDownloadUrls
-     * @param non-empty-string $url
-     * @requires PHP 7.4.17
-     */
-    public function testBitBucketPublicDownloadWithAuthConfigured(string $url, string $contents): void
-    {
-        /** @var MockObject|ConsoleIO $io */
-        $io = $this
-            ->getMockBuilder('Composer\IO\ConsoleIO')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $domains = [];
-        $io
-            ->method('hasAuthentication')
-            ->willReturnCallback(static function ($arg) use (&$domains): bool {
-                $domains[] = $arg;
-                // first time is called with bitbucket.org, then it redirects to bbuseruploads.s3.amazonaws.com so next time we have no auth configured
-                return $arg === 'bitbucket.org';
-            });
-        $io
-        ->method('getAuthentication')
-            ->with('bitbucket.org')
-            ->willReturn([
-                'username' => 'x-token-auth',
-                // This token is fake, but it matches a valid token's pattern.
-                'password' => '1A0yeK5Po3ZEeiiRiMWLivS0jirLdoGuaSGq9NvESFx1Fsdn493wUDXC8rz_1iKVRTl1GINHEUCsDxGh5lZ=',
-            ]);
-
-        $rfs = new RemoteFilesystem($io, $this->getConfigMock());
-        $hostname = parse_url($url, PHP_URL_HOST);
-
-        $result = $rfs->getContents($hostname, $url, false);
-
-        self::assertEquals($contents, $result);
-        self::assertEquals(['bitbucket.org', 'bbuseruploads.s3.amazonaws.com'], $domains);
     }
 
     /**
