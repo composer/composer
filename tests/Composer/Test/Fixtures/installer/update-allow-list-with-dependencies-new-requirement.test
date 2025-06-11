@@ -34,6 +34,7 @@ When partially updating a package to a newer version and the new version has a n
         { "name": "root/pkg2", "version": "1.0.0" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},

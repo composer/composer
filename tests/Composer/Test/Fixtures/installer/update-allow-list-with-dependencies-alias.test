@@ -40,6 +40,7 @@ Verify that a partial update with deps correctly keeps track of all aliases.
         { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "<1.2.0" } }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [
         {
             "alias": "1.1.0",
@@ -66,6 +67,7 @@ update new/pkg --with-all-dependencies
         { "name": "new/pkg", "version": "1.0.0", "require": { "current/dep": "^1.1", "current/dep2": "^1.1"}, "type": "library"}
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [
         {
             "alias": "1.1.0",

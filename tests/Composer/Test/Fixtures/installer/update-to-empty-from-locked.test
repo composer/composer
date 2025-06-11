@@ -23,6 +23,7 @@ Update to a state without dependency works well from locked with dependency
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},
@@ -37,6 +38,7 @@ update
 {
     "packages": [],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},
