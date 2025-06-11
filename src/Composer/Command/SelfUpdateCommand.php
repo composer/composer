@@ -78,6 +78,20 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        if (strpos(__FILE__, 'phar:') !== 0) {
+            if (str_contains(strtr(__DIR__, '\\', '/'), 'vendor/composer/composer')) {
+                $projDir = dirname(__DIR__, 6);
+                $output->writeln('<error>This instance of Composer does not have the self-update command.</error>');
+                $output->writeln('<comment>You are running Composer installed as a package in your current project ("'.$projDir.'").</comment>');
+                $output->writeln('<comment>To update Composer, download a composer.phar from https://getcomposer.org and then run `composer.phar update composer/composer` in your project.</comment>');
+            } else {
+                $output->writeln('<error>This instance of Composer does not have the self-update command.</error>');
+                $output->writeln('<comment>This could be due to a number of reasons, such as Composer being installed as a system package on your OS, or Composer being installed as a package in the current project.</comment>');
+            }
+
+            return 1;
+        }
+
         if ($_SERVER['argv'][0] === 'Standard input code') {
             return 1;
         }
