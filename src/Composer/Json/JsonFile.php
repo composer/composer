@@ -106,10 +106,11 @@ class JsonFile
                 }
                 if ($this->io && $this->io->isDebug()) {
                     $realpathInfo = '';
-                    $realpath = realpath($this->path);
-                    if (false !== $realpath && $realpath !== $this->path) {
+                    $realpath = Platform::realpath($this->path);
+                    if ($realpath !== $this->path) {
                         $realpathInfo = ' (' . $realpath . ')';
                     }
+
                     $this->io->writeError('Reading ' . $this->path . $realpathInfo);
                 }
                 $json = file_get_contents($this->path);

@@ -46,8 +46,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if (null === $url) {
             throw new \RuntimeException('The package '.$package->getPrettyName().' has no dist url configured, cannot download.');
         }
-        $realUrl = realpath($url);
-        if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
+        try {
+            $realUrl = Platform::realpath($url);
+        } catch (\RuntimeException $exception) {
             throw new \RuntimeException(sprintf(
                 'Source path "%s" is not found for package %s',
                 $url,
@@ -55,11 +56,12 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             ));
         }
 
-        if (Platform::realpath($path) === $realUrl) {
+        $realPath = Platform::realpath($path);
+        if ($realPath === $realUrl) {
             return \React\Promise\resolve(null);
         }
 
-        if (strpos(Platform::realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
+        if (strpos($realPath . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
             // IMPORTANT NOTICE: If you wish to change this, don't. You are wasting your time and ours.
             //
             // Please see https://github.com/composer/composer/pull/5974 and https://github.com/composer/composer/pull/6174
@@ -67,7 +69,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             throw new \RuntimeException(sprintf(
                 'Package %s cannot install to "%s" inside its source at "%s"',
                 $package->getName(),
-                Platform::realpath($path),
+                $realPath,
                 $realUrl
             ));
         }
@@ -85,7 +87,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if (null === $url) {
             throw new \RuntimeException('The package '.$package->getPrettyName().' has no dist url configured, cannot install.');
         }
-        $realUrl = realpath($url);
+        $realUrl = Platform::realpath($url);
         if (false === $realUrl) {
             throw new \RuntimeException('Failed to realpath '.$url);
         }
@@ -245,10 +247,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if (null === $url) {
             throw new \RuntimeException('The package '.$package->getPrettyName().' has no dist url configured, cannot install.');
         }
-        $realUrl = realpath($url);
-        if (false === $realUrl) {
-            throw new \RuntimeException('Failed to realpath '.$url);
-        }
+        $realUrl = Platform::realpath($url);
 
         if (Platform::realpath($path) === $realUrl) {
             return ': Source already present';

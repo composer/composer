@@ -19,6 +19,7 @@ use Composer\Repository\InstalledRepository;
 use Composer\Repository\LockArrayRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
@@ -544,11 +545,15 @@ class Locker
         if ($path === null) {
             return null;
         }
-        $path = realpath($path);
+        try {
+            $path = Platform::realpath($path);
+        } catch (\RuntimeException $exception) {
+            return null;
+        }
         $sourceType = $package->getSourceType();
         $datetime = null;
 
-        if ($path && in_array($sourceType, ['git', 'hg'])) {
+        if (in_array($sourceType, ['git', 'hg'])) {
             $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
             switch ($sourceType) {
                 case 'git':

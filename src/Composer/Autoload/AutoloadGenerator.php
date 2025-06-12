@@ -1288,7 +1288,11 @@ INITIALIZER;
                             $installPath = strtr(Platform::getCwd(), '\\', '/');
                         }
 
-                        $resolvedPath = Platform::realpath($installPath . '/' . $updir);
+                        try {
+                            $resolvedPath = Platform::realpath($installPath . '/' . $updir);
+                        } catch (\RuntimeException $e) {
+                            continue;
+                        }
 
                         $autoloads[] = preg_quote(strtr($resolvedPath, '\\', '/')) . '/' . $path . '($|/)';
                         continue;

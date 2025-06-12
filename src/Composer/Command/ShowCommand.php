@@ -904,7 +904,11 @@ EOT
         if ($isInstalledPackage) {
             $path = $this->requireComposer()->getInstallationManager()->getInstallPath($package);
             if (is_string($path)) {
-                $io->write('<info>path</info>     : ' . Platform::realpath($path));
+                try {
+                    $io->write('<info>path</info>     : ' . Platform::realpath($path));
+                } catch (\RuntimeException $exception) {
+                    $io->write('<info>path</info>     : ');
+                }
             } else {
                 $io->write('<info>path</info>     : null');
             }
@@ -1065,10 +1069,8 @@ EOT
         if (!PlatformRepository::isPlatformPackage($package->getName()) && $installedRepo->hasPackage($package)) {
             $path = $this->requireComposer()->getInstallationManager()->getInstallPath($package);
             if (is_string($path)) {
-                $path = realpath($path);
-                if ($path !== false) {
-                    $json['path'] = $path;
-                }
+                $path = Platform::realpath($path);
+                $json['path'] = $path;
             } else {
                 $json['path'] = null;
             }
