@@ -309,7 +309,12 @@ class EventDispatcher
                     }
                     $app->setAutoExit(false);
                     $cmd = new $className($event->getName());
-                    $app->add($cmd);
+                    if (method_exists($app, 'addCommand')) {
+                        $app->addCommand($cmd);
+                    } else {
+                        // Compatibility layer for symfony/console <7.4
+                        $app->add($cmd);
+                    }
                     $app->setDefaultCommand((string) $cmd->getName(), true);
                     try {
                         $args = implode(' ', array_map(static function ($arg) { return ProcessExecutor::escape($arg); }, $additionalArgs));
