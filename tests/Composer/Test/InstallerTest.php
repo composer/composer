@@ -372,7 +372,7 @@ class InstallerTest extends TestCase
 
             return $installer->run();
         });
-        $application->add($install);
+        method_exists($application, 'addCommand') ? $application->addCommand($install) : $application->add($install);
 
         $update = new Command('update');
         $update->addOption('ignore-platform-reqs', null, InputOption::VALUE_NONE);
@@ -420,7 +420,7 @@ class InstallerTest extends TestCase
 
             return $installer->run();
         });
-        $application->add($update);
+        method_exists($application, 'addCommand') ? $application->addCommand($update) : $application->add($update);
 
         if (!Preg::isMatch('{^(install|update)\b}', $run)) {
             throw new \UnexpectedValueException('The run command only supports install and update');
