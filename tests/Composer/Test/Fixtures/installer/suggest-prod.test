@@ -20,6 +20,7 @@ Suggestions are not displayed for when not updating the lock file
         { "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" } }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},
