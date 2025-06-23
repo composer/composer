@@ -18,6 +18,7 @@ use Composer\IO\BufferIO;
 use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Composer;
+use Composer\Package\PackageInterface;
 use Composer\PartialComposer;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
@@ -69,6 +70,8 @@ class EventDispatcher
     private $eventStack;
     /** @var list<string> */
     private $skipScripts;
+    /** @var string|null */
+    private $previousHash = null;
 
     /**
      * Constructor.
@@ -217,6 +220,15 @@ class EventDispatcher
                 }
                 $formattedEventNameWithArgs = $event->getName() . ($additionalArgs !== [] ? ' (' . implode(', ', $additionalArgs) . ')' : '');
                 if (!is_string($callable)) {
+                    // try setting up autoloading if we do not have a known class as target
+                    // or no valid callable (although in theory this case should not be salvageable by autoloading, it does not really hurt to try)
+                    if (
+                        (is_array($callable) && is_string($callable[0]) && !class_exists($callable[0], false))
+                        || !is_callable($callable)
+                    ) {
+                        $this->makeAutoloader($event);
+                    }
+
                     if (!is_callable($callable)) {
                         $className = is_object($callable[0]) ? get_class($callable[0]) : $callable[0];
 
@@ -271,6 +283,11 @@ class EventDispatcher
                     $className = substr($callable, 0, strpos($callable, '::'));
                     $methodName = substr($callable, strpos($callable, '::') + 2);
 
+                    // try to autoload it if the class is not known yet
+                    if (!class_exists($className, false)) {
+                        $this->makeAutoloader($event);
+                    }
+
                     if (!class_exists($className)) {
                         $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
                         continue;
@@ -289,6 +306,10 @@ class EventDispatcher
                     }
                 } elseif ($this->isCommandClass($callable)) {
                     $className = $callable;
+                    // try to autoload it if the class is not known yet
+                    if (!class_exists($className, false)) {
+                        $this->makeAutoloader($event);
+                    }
                     if (!class_exists($className)) {
                         $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
                         continue;
@@ -607,23 +628,6 @@ class EventDispatcher
             return [];
         }
 
-        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
-
-        if ($this->loader) {
-            $this->loader->unregister();
-        }
-
-        $generator = $this->composer->getAutoloadGenerator();
-        if ($event instanceof ScriptEvent) {
-            $generator->setDevMode($event->isDevMode());
-        }
-
-        $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
-        $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
-        $map = $generator->parseAutoloads($packageMap, $package);
-        $this->loader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
-        $this->loader->register(false);
-
         return $scripts[$event->getName()];
     }
 
@@ -648,7 +652,7 @@ class EventDispatcher
      */
     protected function isComposerScript(string $callable): bool
     {
-        return strpos($callable, '@') === 0 && strpos($callable, '@php ') !== 0 && strpos($callable, '@putenv ') !== 0;
+        return str_starts_with($callable, '@') && !str_starts_with($callable, '@php ') && !str_starts_with($callable, '@putenv ');
     }
 
     /**
@@ -713,5 +717,37 @@ class EventDispatcher
 
         // not great but also do not want to break everything here
         return 'unsupported';
+    }
+
+    private function makeAutoloader(Event $event): void
+    {
+        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
+
+        $package = $this->composer->getPackage();
+        if ($this->loader !== null) {
+            $this->loader->unregister();
+        }
+
+        $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
+        $generator = $this->composer->getAutoloadGenerator();
+        $hash = implode(',', array_map(function (PackageInterface $p) {
+            return $p->getName().'/'.$p->getVersion();
+        }, $packages));
+        if ($event instanceof ScriptEvent) {
+            $generator->setDevMode($event->isDevMode());
+            $hash .= $event->isDevMode() ? '/dev' : '';
+        }
+        $hash = hash('sha256', $hash);
+
+        if ($this->previousHash === $hash) {
+            return;
+        }
+
+        $this->previousHash = $hash;
+
+        $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
+        $map = $generator->parseAutoloads($packageMap, $package);
+        $this->loader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
+        $this->loader->register(false);
     }
 }
