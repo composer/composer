@@ -280,7 +280,8 @@ class Application extends BaseApplication
                     if ($this->has($command->getName())) {
                         $io->writeError('<warning>Plugin command '.$command->getName().' ('.get_class($command).') would override a Composer command and has been skipped</warning>');
                     } else {
-                        $this->add($command);
+                        // Compatibility layer for symfony/console <7.4
+                        method_exists($this, 'addCommand') ? $this->addCommand($command) : $this->add($command);
                     }
                 }
             } catch (NoSslException $e) {
@@ -380,7 +381,9 @@ class Application extends BaseApplication
 
                                 $aliases = $composer['scripts-aliases'][$script] ?? [];
 
-                                $this->add(new Command\ScriptAliasCommand($script, $description, $aliases));
+                                $scriptAlias = new Command\ScriptAliasCommand($script, $description, $aliases);
+                                // Compatibility layer for symfony/console <7.4
+                                method_exists($this, 'addCommand') ? $this->addCommand($scriptAlias) : $this->add($scriptAlias);
                             }
                         }
                     }

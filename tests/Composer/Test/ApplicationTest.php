@@ -63,7 +63,8 @@ class ApplicationTest extends TestCase
         }
 
         $application = new Application;
-        $application->add(new \Composer\Command\SelfUpdateCommand);
+        // Compatibility layer for symfony/console <7.4
+        method_exists($application, 'addCommand') ? $application->addCommand(new \Composer\Command\SelfUpdateCommand) : $application->add(new \Composer\Command\SelfUpdateCommand);
 
         if (!defined('COMPOSER_DEV_WARNING_TIME')) {
             define('COMPOSER_DEV_WARNING_TIME', time() - 1);
@@ -86,7 +87,8 @@ class ApplicationTest extends TestCase
     public function testProcessIsolationWorksMultipleTimes(): void
     {
         $application = new Application;
-        $application->add(new \Composer\Command\AboutCommand);
+        // Compatibility layer for symfony/console <7.4
+        method_exists($application, 'addCommand') ? $application->addCommand(new \Composer\Command\AboutCommand) : $application->add(new \Composer\Command\AboutCommand);
         self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
         self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
     }
