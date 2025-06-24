@@ -16,6 +16,7 @@ use Composer\Script\Event as ScriptEvent;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Platform;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
 use Composer\Console\Input\InputArgument;
@@ -173,7 +174,7 @@ EOT
             $description = '';
             try {
                 $cmd = $this->getApplication()->find($name);
-                if ($cmd instanceof ScriptAliasCommand) {
+                if ($cmd instanceof Command) {
                     $description = $cmd->getDescription();
                 }
             } catch (\Symfony\Component\Console\Exception\CommandNotFoundException $e) {

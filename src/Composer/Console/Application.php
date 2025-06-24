@@ -385,7 +385,14 @@ class Application extends BaseApplication
                                 //if the command points to a valid Command class, import its details directly
                                 if (is_string($dummy) && class_exists($dummy)) {
                                     $cmd = new $dummy;
-                                    if (!($cmd instanceof SymfonyCommand)) {
+                                    if ($cmd instanceof SymfonyCommand) {
+                                        if ($cmd->getName() === '' || $cmd->getName() === null) {
+                                            $cmd->setName($script);
+                                        }
+                                        if ($cmd->getDescription() === '') {
+                                            $cmd->setDescription($description);
+                                        }
+                                    } else {
                                         $cmd = null; //false alarm... maybe something that should be warned to the user?
                                     }
                                 }
