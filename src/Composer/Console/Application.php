@@ -20,6 +20,7 @@ use Composer\Util\Silencer;
 use LogicException;
 use RuntimeException;
 use Symfony\Component\Console\Application as BaseApplication;
+use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Helper\HelperSet;
@@ -381,9 +382,21 @@ class Application extends BaseApplication
 
                                 $aliases = $composer['scripts-aliases'][$script] ?? [];
 
-                                $scriptAlias = new Command\ScriptAliasCommand($script, $description, $aliases);
+                                //if the command points to a valid Command class, import its details directly
+                                if (is_string($dummy) && class_exists($dummy)) {
+                                    $cmd = new $dummy;
+                                    if (!($cmd instanceof SymfonyCommand)) {
+                                        $cmd = null; //false alarm... maybe something that should be warned to the user?
+                                    }
+                                }
+
+                                //fallback to usual aliasing behavior
+                                if (!isset($cmd)) {
+                                    $cmd = new Command\ScriptAliasCommand($script, $description, $aliases);
+                                }
+
                                 // Compatibility layer for symfony/console <7.4
-                                method_exists($this, 'addCommand') ? $this->addCommand($scriptAlias) : $this->add($scriptAlias);
+                                method_exists($this, 'addCommand') ? $this->addCommand($cmd) : $this->add($cmd);
                             }
                         }
                     }
@@ -602,7 +615,7 @@ class Application extends BaseApplication
 
     /**
      * Initializes all the composer commands.
-     * @return \Symfony\Component\Console\Command\Command[]
+     * @return SymfonyCommand[]
      */
     protected function getDefaultCommands(): array
     {
