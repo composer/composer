@@ -129,9 +129,9 @@ To remove a repository (repo is a short alias for repositories):
 
     <comment>%command.full_name% --unset repo.foo</comment>
 
-To disable packagist:
+To disable packagist.org:
 
-    <comment>%command.full_name% repo.packagist false</comment>
+    <comment>%command.full_name% repo.packagist.org false</comment>
 
 You can alter repositories in the global config.json file by passing in the
 <info>--global</info> option.
