@@ -7,68 +7,68 @@ namespace Composer\Autoload;
 class ComposerStaticInitPhar
 {
     public static $prefixLengthsPsr4 = array (
-        'S' => 
+        'S' =>
         array (
             'Sit\\' => 4,
         ),
-        'Q' => 
+        'Q' =>
         array (
             'Qux\\' => 4,
         ),
-        'D' => 
+        'D' =>
         array (
             'Dolor\\' => 6,
         ),
-        'B' => 
+        'B' =>
         array (
             'Baz\\' => 4,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Sit\\' => 
+        'Sit\\' =>
         array (
             0 => 'phar://' . __DIR__ . '/..' . '/a/a/dir/sit.phar/src',
         ),
-        'Qux\\' => 
+        'Qux\\' =>
         array (
             0 => 'phar://' . __DIR__ . '/../..' . '/dir/qux.phar/src',
         ),
-        'Dolor\\' => 
+        'Dolor\\' =>
         array (
             0 => 'phar://' . __DIR__ . '/..' . '/a/a/dolor.phar',
         ),
-        'Baz\\' => 
+        'Baz\\' =>
         array (
             0 => 'phar://' . __DIR__ . '/../..' . '/baz.phar',
         ),
     );
 
     public static $prefixesPsr0 = array (
-        'L' => 
+        'L' =>
         array (
-            'Lorem' => 
+            'Lorem' =>
             array (
                 0 => 'phar://' . __DIR__ . '/..' . '/a/a/lorem.phar',
             ),
         ),
-        'I' => 
+        'I' =>
         array (
-            'Ipsum' => 
+            'Ipsum' =>
             array (
                 0 => 'phar://' . __DIR__ . '/..' . '/a/a/dir/ipsum.phar/src',
             ),
         ),
-        'F' => 
+        'F' =>
         array (
-            'Foo' => 
+            'Foo' =>
             array (
                 0 => 'phar://' . __DIR__ . '/../..' . '/foo.phar',
             ),
         ),
-        'B' => 
+        'B' =>
         array (
-            'Bar' => 
+            'Bar' =>
             array (
                 0 => 'phar://' . __DIR__ . '/../..' . '/dir/bar.phar/src',
             ),
