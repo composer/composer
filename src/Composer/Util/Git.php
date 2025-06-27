@@ -228,7 +228,7 @@ class Git
                     $message = 'Enter your Bitbucket credentials to access private repos';
 
                     if (!$bitbucketUtil->authorizeOAuth($domain) && $this->io->isInteractive()) {
-                        $bitbucketUtil->authorizeOAuthInteractively($match[2], $message);
+                        $bitbucketUtil->authorizeOAuthInteractively($domain, $message);
                         $accessToken = $bitbucketUtil->getToken();
                         $this->io->setAuthentication($domain, 'x-token-auth', $accessToken);
                     }
