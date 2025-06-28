@@ -49,6 +49,7 @@ class AuthHelperTest extends TestCase
             'Accept-Encoding: gzip',
             'Connection: close',
         ];
+        $options = ['http' => ['header' => $headers]];
         $origin = 'http://example.org';
         $url = 'file://' . __FILE__;
 
@@ -57,10 +58,9 @@ class AuthHelperTest extends TestCase
             ->with($origin)
             ->willReturn(false);
 
-        self::assertSame(
-            $headers,
-            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
-        );
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
+
+        self::assertSame($headers, $options['http']['header']);
     }
 
     public function testAddAuthenticationHeaderWithBearerPassword(): void
@@ -69,6 +69,7 @@ class AuthHelperTest extends TestCase
             'Accept-Encoding: gzip',
             'Connection: close',
         ];
+        $options = ['http' => ['header' => $headers]];
         $origin = 'http://example.org';
         $url = 'file://' . __FILE__;
         $auth = [
@@ -80,10 +81,9 @@ class AuthHelperTest extends TestCase
 
         $expectedHeaders = array_merge($headers, ['Authorization: Bearer ' . $auth['username']]);
 
-        self::assertSame(
-            $expectedHeaders,
-            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
-        );
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
+
+        self::assertSame($expectedHeaders, $options['http']['header']);
     }
 
     public function testAddAuthenticationHeaderWithGithubToken(): void
@@ -92,6 +92,7 @@ class AuthHelperTest extends TestCase
             'Accept-Encoding: gzip',
             'Connection: close',
         ];
+        $options = ['http' => ['header' => $headers]];
         $origin = 'github.com';
         $url = 'https://api.github.com/';
         $auth = [
@@ -106,11 +107,9 @@ class AuthHelperTest extends TestCase
             ->with('Using GitHub token authentication', true, IOInterface::DEBUG);
 
         $expectedHeaders = array_merge($headers, ['Authorization: token ' . $auth['username']]);
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
 
-        self::assertSame(
-            $expectedHeaders,
-            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
-        );
+        self::assertSame($expectedHeaders, $options['http']['header']);
     }
 
     public function testAddAuthenticationHeaderWithGitlabOathToken(): void
@@ -119,6 +118,7 @@ class AuthHelperTest extends TestCase
             'Accept-Encoding: gzip',
             'Connection: close',
         ];
+        $options = ['http' => ['header' => $headers]];
         $origin = 'gitlab.com';
         $url = 'https://api.gitlab.com/';
         $auth = [
@@ -138,11 +138,29 @@ class AuthHelperTest extends TestCase
             ->with('Using GitLab OAuth token authentication', true, IOInterface::DEBUG);
 
         $expectedHeaders = array_merge($headers, ['Authorization: Bearer ' . $auth['username']]);
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
 
-        self::assertSame(
-            $expectedHeaders,
-            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
-        );
+        self::assertSame($expectedHeaders, $options['http']['header']);
+    }
+
+    public function testAddAuthenticationOptionsForClientCertificate(): void
+    {
+        $options = [];
+        $origin  = 'example.org';
+        $url     = 'file://' . __FILE__;
+        $certificateConfiguration = [
+            'local_cert' => 'certificate value',
+            'local_pk' => 'key value',
+            'passphrase' => 'passphrase value'
+        ];
+        $auth = [
+            'username' => (string)json_encode($certificateConfiguration),
+            'password' => 'client-certificate'
+        ];
+        $this->expectsAuthentication($origin, $auth);
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
+
+        self::assertSame($certificateConfiguration, $options['ssl']);
     }
 
     public static function gitlabPrivateTokenProvider(): array
@@ -162,6 +180,7 @@ class AuthHelperTest extends TestCase
             'Accept-Encoding: gzip',
             'Connection: close',
         ];
+        $options = ['http' => ['header' => $headers]];
         $origin = 'gitlab.com';
         $url = 'https://api.gitlab.com/';
         $auth = [
@@ -181,11 +200,9 @@ class AuthHelperTest extends TestCase
             ->with('Using GitLab private token authentication', true, IOInterface::DEBUG);
 
         $expectedHeaders = array_merge($headers, ['PRIVATE-TOKEN: ' . $auth['username']]);
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
 
-        self::assertSame(
-            $expectedHeaders,
-            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
-        );
+        self::assertSame($expectedHeaders, $options['http']['header']);
     }
 
     public function testAddAuthenticationHeaderWithBitbucketOathToken(): void
@@ -194,6 +211,7 @@ class AuthHelperTest extends TestCase
             'Accept-Encoding: gzip',
             'Connection: close',
         ];
+        $options = ['http' => ['header' => $headers]];
         $origin = 'bitbucket.org';
         $url = 'https://bitbucket.org/site/oauth2/authorize';
         $auth = [
@@ -203,21 +221,14 @@ class AuthHelperTest extends TestCase
 
         $this->expectsAuthentication($origin, $auth);
 
-        $this->config->expects($this->once())
-            ->method('get')
-            ->with('gitlab-domains')
-            ->willReturn([]);
-
         $this->io->expects($this->once())
             ->method('writeError')
             ->with('Using Bitbucket OAuth token authentication', true, IOInterface::DEBUG);
 
         $expectedHeaders = array_merge($headers, ['Authorization: Bearer ' . $auth['password']]);
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
 
-        self::assertSame(
-            $expectedHeaders,
-            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
-        );
+        self::assertSame($expectedHeaders, $options['http']['header']);
     }
 
     public static function bitbucketPublicUrlProvider(): array
@@ -237,6 +248,7 @@ class AuthHelperTest extends TestCase
             'Accept-Encoding: gzip',
             'Connection: close',
         ];
+        $options = ['http' => ['header' => $headers]];
         $origin = 'bitbucket.org';
         $auth = [
             'username' => 'x-token-auth',
@@ -245,15 +257,8 @@ class AuthHelperTest extends TestCase
 
         $this->expectsAuthentication($origin, $auth);
 
-        $this->config->expects($this->once())
-            ->method('get')
-            ->with('gitlab-domains')
-            ->willReturn([]);
-
-        self::assertSame(
-            $headers,
-            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
-        );
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
+        self::assertSame($headers, $options['http']['header']);
     }
 
     public static function basicHttpAuthenticationProvider(): array
@@ -299,13 +304,9 @@ class AuthHelperTest extends TestCase
             'Accept-Encoding: gzip',
             'Connection: close',
         ];
+        $options = ['http' => ['header' => $headers]];
 
         $this->expectsAuthentication($origin, $auth);
-
-        $this->config->expects($this->once())
-            ->method('get')
-            ->with('gitlab-domains')
-            ->willReturn([$origin]);
 
         $this->io->expects($this->once())
             ->method('writeError')
@@ -319,6 +320,42 @@ class AuthHelperTest extends TestCase
             $headers,
             ['Authorization: Basic ' . base64_encode($auth['username'] . ':' . $auth['password'])]
         );
+
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
+
+        self::assertSame($expectedHeaders, $options['http']['header']);
+    }
+
+    /**
+     * Tests that custom HTTP headers are correctly added to the request when using
+     * the 'custom-headers' authentication type.
+     */
+    public function testAddAuthenticationHeaderWithCustomHeaders(): void
+    {
+        $headers = [
+            'Accept-Encoding: gzip',
+            'Connection: close',
+        ];
+        $origin = 'example.org';
+        $url = 'https://example.org/packages.json';
+        $customHeaders = [
+            'API-TOKEN: abc123',
+            'X-CUSTOM-HEADER: value'
+        ];
+        $headersJson = json_encode($customHeaders);
+        // Ensure we have a string, not false from json_encode failure
+        $auth = [
+            'username' => $headersJson !== false ? $headersJson : null,
+            'password' => 'custom-headers',
+        ];
+
+        $this->expectsAuthentication($origin, $auth);
+
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('Using custom HTTP headers for authentication', true, IOInterface::DEBUG);
+
+        $expectedHeaders = array_merge($headers, $customHeaders);
 
         self::assertSame(
             $expectedHeaders,
@@ -603,6 +640,60 @@ class AuthHelperTest extends TestCase
         );
     }
 
+    /**
+     * @dataProvider basicHttpAuthenticationProvider
+     * @param array<string, string|null>                                  $auth
+     * @phpstan-param array{username: string|null, password: string|null} $auth
+     */
+    public function testAddAuthenticationHeaderIsWorking(string $url, string $origin, array $auth): void
+    {
+        set_error_handler(
+            static function (): bool {
+                return true;
+            },
+            E_USER_DEPRECATED
+        );
+
+        $this->expectsAuthentication($origin, $auth);
+        $headers = [
+            'Accept-Encoding: gzip',
+            'Connection: close',
+        ];
+
+        $this->expectsAuthentication($origin, $auth);
+
+        try {
+            $updatedHeaders = $this->authHelper->addAuthenticationHeader($headers, $origin, $url);
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertIsArray($updatedHeaders);
+
+
+    }
+
+    public function testAddAuthenticationHeaderDeprecation(): void
+    {
+        set_error_handler(
+            static function (int $errno, string $errstr) {
+                throw new \RuntimeException($errstr);
+            },
+            E_USER_DEPRECATED
+        );
+
+        $headers = [];
+        $origin  = 'example.org';
+        $url     = 'file://' . __FILE__;
+
+
+        $expectedException = new \RuntimeException('AuthHelper::addAuthenticationHeader is deprecated since Composer 2.9 use addAuthenticationOptions instead.');
+        $this->expectExceptionObject($expectedException);
+        try {
+            $this->authHelper->addAuthenticationHeader($headers, $origin, $url);
+        } finally {
+            restore_error_handler();
+        }
+    }
     /**
      * @param array<string, string|null> $auth
      *

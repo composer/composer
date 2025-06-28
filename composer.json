@@ -65,7 +65,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.8-dev"
+            "dev-main": "2.9-dev"
         },
         "phpstan": {
             "includes": [

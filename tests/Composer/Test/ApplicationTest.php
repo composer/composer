@@ -73,7 +73,11 @@ class ApplicationTest extends TestCase
         $output = new BufferedOutput();
         $application->doRun(new ArrayInput(['command' => 'self-update']), $output);
 
-        self::assertSame('', $output->fetch());
+        self::assertSame(
+            'This instance of Composer does not have the self-update command.'.PHP_EOL.
+            'This could be due to a number of reasons, such as Composer being installed as a system package on your OS, or Composer being installed as a package in the current project.'.PHP_EOL,
+            $output->fetch()
+        );
     }
 
     /**

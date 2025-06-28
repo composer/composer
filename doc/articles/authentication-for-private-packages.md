@@ -24,6 +24,7 @@ for credentials and save them (or a token if Composer is able to retrieve one).
 |[gitlab-token](#gitlab-token)|yes|
 |[github-oauth](#github-oauth)|yes|
 |[bitbucket-oauth](#bitbucket-oauth)|yes|
+|[Client TLS certificates](#client-tls-certificates)|no|
 
 Sometimes automatic authentication is not possible, or you may want to predefine
 authentication credentials.
@@ -202,10 +203,46 @@ php composer.phar config [--global] --editor --auth
 }
 ```
 
+## custom-headers
 
-## Custom token authentication
+Use custom HTTP headers for authentication with private repositories that require header-based authentication.
 
-### Manual custom token authentication
+### Command line custom-headers
+
+```shell
+php composer.phar config [--global] custom-headers.repo.example.org "API-TOKEN: YOUR-API-TOKEN" "X-CUSTOM-HEADER: Value"
+```
+
+In the above command, the config key `custom-headers.repo.example.org` consists of two parts:
+
+- `custom-headers` is the authentication method.
+- `repo.example.org` is the repository host name, you should replace it with the host name of your repository.
+
+You can provide multiple custom headers as separate arguments. Each header must be in the standard HTTP header format `"Header-Name: Header-Value"`.
+
+### Manual custom-headers
+
+```shell
+php composer.phar config [--global] --editor --auth
+```
+
+```json
+{
+    "custom-headers": {
+        "repo.example.org": [
+            "API-TOKEN: YOUR-API-TOKEN",
+            "X-CUSTOM-HEADER: Value"
+        ]
+    }
+}
+```
+
+## Inline custom-headers
+
+### Manual inline custom-headers
+
+For the inline custom-headers authentication method, the custom headers are defined directly
+in your `composer.json` file as part of the repository configuration.
 
 ```shell
 php composer.phar config [--global] --editor
@@ -216,11 +253,12 @@ php composer.phar config [--global] --editor
     "repositories": [
         {
             "type": "composer",
-            "url": "https://example.org",
-            "options":  {
+            "url": "https://repo.example.org",
+            "options": {
                 "http": {
                     "header": [
-                        "API-TOKEN: YOUR-API-TOKEN"
+                        "API-TOKEN: YOUR-API-TOKEN",
+                        "X-CUSTOM-HEADER: Value"
                     ]
                 }
             }
@@ -296,13 +334,33 @@ php composer.phar config [--global] --editor --auth
 
 ## github-oauth
 
-To create a new access token, head to your [token settings section on GitHub](https://github.com/settings/tokens) and [generate a new token](https://github.com/settings/tokens/new).
+GitHub currently offers two types of access tokens:
+
+- [Fine-grained tokens](https://github.com/settings/personal-access-tokens)
+- [Tokens (classic)](https://github.com/settings/personal-access-tokens)
+
+These can be found in [Settings](https://github.com/settings/profile), at the very bottom of the left-side menu ([Developer options](https://github.com/settings/apps)).
+
+Classic tokens are broader and less secure, whereas Fine-grained tokens can strictly limit which repository the token applies to, as well as which permissions it is granted for each property of the repository.
+
+> **Note:** It is [recommended](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#types-of-personal-access-tokens) to use the fine-grained tokens,
+> as you can have much tighter control over what is accessed and by whom.
+
+To create a new access token, head to your [token settings section on GitHub](https://github.com/settings/personal-access-tokens) and [generate a new token](https://github.com/settings/personal-access-tokens/new).
+
+Read more about [Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
+
+### Classic tokens
 
 For public repositories when rate limited, a token *without* any particular scope is sufficient (see `(no scope)` in the [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps)). Such tokens grant read-only access to public information.
 
 For private repositories, the `repo` scope is needed. Note that the token will be given broad read/write access to all of your private repositories and much more - see the [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps) for a complete list. As of writing (November 2021), it seems not to be possible to further limit permissions for such tokens.
 
-Read more about [Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token), or subscribe to the [roadmap item for better scoped tokens in GitHub](https://github.com/github/roadmap/issues/184).
+### Fine-grained tokens
+
+Fine-grained tokens allow you to choose specific repositories to which the token applies, and permissions to specific aspects or properties of the repository.
+
+In the case of a privately hosted composer package, you would most likely want to choose read-only access to content.
 
 ### Command line github-oauth
 
@@ -360,3 +418,34 @@ php composer.phar config [--global] --editor --auth
     }
 }
 ```
+
+## Client TLS certificates
+
+Accessing private repositories that require client TLS certificates.
+
+For global/project-wide configuration see [Handling private packages: Security section](handling-private-packages.md#security).
+
+### Manual client certificates
+
+```shell
+php composer.phar config [--global] --editor --auth
+```
+
+```json
+{
+    "client-certificate": {
+        "repo.example.org": {
+            "local_cert": "/path/to/certificate",
+            "local_pk": "/path/to/key",
+            "passphrase": "MySecretPassword"
+        }
+    }
+}
+```
+
+Supported options are `local_cert` (required), `local_pk`, `passphrase`.
+More information for options can be found at [SSL context options](https://www.php.net/manual/en/context.ssl.php)
+
+Options could be omitted:
+ - `local_pk`: in case of keeping certificate and private key in a single file;
+ - `passphrase`: in case of passwordless private key.

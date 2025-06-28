@@ -531,6 +531,10 @@ class Installer
 
         if (!$lockTransaction->getOperations()) {
             $this->io->writeError('Nothing to modify in lock file');
+
+            if ($this->minimalUpdate && $this->updateAllowList === null && $this->locker->isFresh()) {
+                $this->io->writeError('<warning>The --minimal-changes option should be used with package arguments or after modifying composer.json requirements, otherwise it will likely not yield any dependency changes.</warning>');
+            }
         }
 
         $exitCode = $this->extractDevPackages($lockTransaction, $platformRepo, $aliases, $policy, $lockedRepository);
@@ -957,10 +961,10 @@ class Installer
         }
 
         $preferredVersions = null;
-        if ($forUpdate && $this->minimalUpdate && $this->updateAllowList !== null && $lockedRepo !== null) {
+        if ($forUpdate && $this->minimalUpdate && $lockedRepo !== null) {
             $preferredVersions = [];
             foreach ($lockedRepo->getPackages() as $pkg) {
-                if ($pkg instanceof AliasPackage || in_array($pkg->getName(), $this->updateAllowList, true)) {
+                if ($pkg instanceof AliasPackage || ($this->updateAllowList !== null && in_array($pkg->getName(), $this->updateAllowList, true))) {
                     continue;
                 }
                 $preferredVersions[$pkg->getName()] = $pkg->getVersion();

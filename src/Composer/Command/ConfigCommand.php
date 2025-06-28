@@ -129,9 +129,9 @@ To remove a repository (repo is a short alias for repositories):
 
     <comment>%command.full_name% --unset repo.foo</comment>
 
-To disable packagist:
+To disable packagist.org:
 
-    <comment>%command.full_name% repo.packagist false</comment>
+    <comment>%command.full_name% repo.packagist.org false</comment>
 
 You can alter repositories in the global config.json file by passing in the
 <info>--global</info> option.
@@ -838,7 +838,7 @@ EOT
         }
 
         // handle auth
-        if (Preg::isMatch('/^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic|bearer)\.(.+)/', $settingKey, $matches)) {
+        if (Preg::isMatch('/^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic|custom-headers|bearer)\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->authConfigSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
@@ -867,6 +867,28 @@ EOT
                 }
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], ['username' => $values[0], 'password' => $values[1]]);
+            } elseif ($matches[1] === 'custom-headers') {
+                if (count($values) === 0) {
+                    throw new \RuntimeException('Expected at least one argument (header), got none');
+                }
+
+                // Validate headers format
+                $formattedHeaders = [];
+                foreach ($values as $header) {
+                    if (!is_string($header)) {
+                        throw new \RuntimeException('Headers must be strings in "Header-Name: Header-Value" format');
+                    }
+
+                    // Check if the header is in correct "Name: Value" format
+                    if (!Preg::isMatch('/^[^:]+:\s*.+$/', $header, $headerParts)) {
+                        throw new \RuntimeException('Header "' . $header . '" is not in "Header-Name: Header-Value" format');
+                    }
+
+                    $formattedHeaders[] = $header;
+                }
+
+                $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
+                $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], $formattedHeaders);
             }
 
             return 0;

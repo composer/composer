@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: shivammathur/setup-php@cf4cade2721270509d5b1c766ab3549210a39a2a # 2.33.0
+      - uses: shivammathur/setup-php@0f7f1d08e3e32076e51cae65eb0b0c871405b16e # 2.34.1
         with:
           coverage: "none"
           extensions: "intl"
@@ -42,7 +42,7 @@ jobs:
         run: "php -d phar.readonly=0 bin/compile"
 
       - name: Generate build provenance attestation
-        uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2.3.0
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
         with:
           subject-path: '${{ github.workspace }}/composer.phar'
 
@@ -58,7 +58,7 @@ jobs:
             ${{ secrets.GPG_KEY_161DFBE342889F01DDAC4E61CBB3D576F2A0946F }}
 
       - name: Create release
-        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
           body: TODO
           name: ${{ github.ref_name }}

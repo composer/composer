@@ -7,13 +7,13 @@ namespace Composer\Autoload;
 class ComposerStaticInitIncludePath
 {
     public static $prefixesPsr0 = array (
-        'M' => 
+        'M' =>
         array (
-            'Main\\Foo' => 
+            'Main\\Foo' =>
             array (
                 0 => __DIR__ . '/../..' . '/',
             ),
-            'Main\\Bar' => 
+            'Main\\Bar' =>
             array (
                 0 => __DIR__ . '/../..' . '/',
             ),

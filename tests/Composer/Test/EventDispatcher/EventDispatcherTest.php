@@ -94,7 +94,7 @@ class EventDispatcherTest extends TestCase
         $composer->setAutoloadGenerator($generator);
 
         $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
-        $package->method('getScripts')->will($this->returnValue(['scriptName' => ['scriptName']]));
+        $package->method('getScripts')->will($this->returnValue(['scriptName' => ['ClassName::testMethod']]));
         $composer->setPackage($package);
 
         $composer->setRepositoryManager($this->getRepositoryManagerMockForDevModePassingTest());
@@ -114,7 +114,7 @@ class EventDispatcherTest extends TestCase
             ->method('isDevMode')
             ->will($this->returnValue($devMode));
 
-        $dispatcher->hasEventListeners($event);
+        $dispatcher->dispatch('scriptName', $event);
     }
 
     public static function provideDevModes(): array

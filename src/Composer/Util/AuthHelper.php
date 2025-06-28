@@ -227,17 +227,52 @@ class AuthHelper
     }
 
     /**
+     * @deprecated use addAuthenticationOptions instead
+     *
      * @param string[] $headers
      *
      * @return string[] updated headers array
      */
     public function addAuthenticationHeader(array $headers, string $origin, string $url): array
     {
+        trigger_error('AuthHelper::addAuthenticationHeader is deprecated since Composer 2.9 use addAuthenticationOptions instead.', E_USER_DEPRECATED);
+
+        $options = ['http' => ['header' => &$headers]];
+        $options = $this->addAuthenticationOptions($options, $origin, $url);
+        return $options['http']['header'];
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed> updated options
+     */
+    public function addAuthenticationOptions(array $options, string $origin, string $url): array
+    {
+        if (!isset($options['http'])) {
+            $options['http'] = [];
+        }
+        if (!isset($options['http']['header'])) {
+            $options['http']['header'] = [];
+        }
+        $headers = &$options['http']['header'];
         if ($this->io->hasAuthentication($origin)) {
             $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($origin);
             if ($auth['password'] === 'bearer') {
                 $headers[] = 'Authorization: Bearer '.$auth['username'];
+            } elseif ($auth['password'] === 'custom-headers') {
+                // Handle custom HTTP headers from auth.json
+                $customHeaders = null;
+                if (is_string($auth['username'])) {
+                    $customHeaders = json_decode($auth['username'], true);
+                }
+                if (is_array($customHeaders)) {
+                    foreach ($customHeaders as $header) {
+                        $headers[] = $header;
+                    }
+                    $authenticationDisplayMessage = 'Using custom HTTP headers for authentication';
+                }
             } elseif ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
                 // only add the access_token if it is actually a github API URL
                 if (Preg::isMatch('{^https?://api\.github\.com/}', $url)) {
@@ -245,8 +280,8 @@ class AuthHelper
                     $authenticationDisplayMessage = 'Using GitHub token authentication';
                 }
             } elseif (
-                in_array($origin, $this->config->get('gitlab-domains'), true)
-                && in_array($auth['password'], ['oauth2', 'private-token', 'gitlab-ci-token'], true)
+                in_array($auth['password'], ['oauth2', 'private-token', 'gitlab-ci-token'], true)
+                && in_array($origin, $this->config->get('gitlab-domains'), true)
             ) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
@@ -264,6 +299,9 @@ class AuthHelper
                     $headers[] = 'Authorization: Bearer ' . $auth['password'];
                     $authenticationDisplayMessage = 'Using Bitbucket OAuth token authentication';
                 }
+            } elseif ('client-certificate' === $auth['password']) {
+                $options['ssl'] = array_merge($options['ssl'] ?? [], json_decode((string)$auth['username'], true));
+                $authenticationDisplayMessage = 'Using SSL client certificate';
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
@@ -275,10 +313,10 @@ class AuthHelper
                 $this->displayedOriginAuthentications[$origin] = $authenticationDisplayMessage;
             }
         } elseif (in_array($origin, ['api.bitbucket.org', 'api.github.com'], true)) {
-            return $this->addAuthenticationHeader($headers, str_replace('api.', '', $origin), $url);
+            return $this->addAuthenticationOptions($options, str_replace('api.', '', $origin), $url);
         }
 
-        return $headers;
+        return $options;
     }
 
     /**
