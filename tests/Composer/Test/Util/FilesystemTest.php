@@ -429,4 +429,31 @@ class FilesystemTest extends TestCase
     {
         self::assertEquals($expected, (new Filesystem())->isAbsolutePath($path));
     }
+
+    /**
+     * Same dataset as {@see FilesystemTest::isAbsolutePathDataProvider} but with different expected results.
+     */
+    public static function isStreamWrapperPathProvider(): array
+    {
+        return [
+            'unixPath' => ['/foo/bar', false],
+            'smbPath' => ['\\\\smb\\folder\\file.txt', false],
+            'windowsPath' => ['C:\\foo\\bar', false],
+            'streamPath' => ['composertestsstreamwrapper://path/to/whatever', true],
+            'fileStreamAbsolutePath' => ['file:///path/to/whatever', false],
+            'fileStreamRelativePath' => ['file://path/to/whatever', false],
+            'relativeSubPath' => ['foo/bar', false],
+            'relativeSubPath2' => ['./foo/bar', false],
+            'relativeParentPath' => ['../foo/bar', false],
+        ];
+    }
+
+    /**
+     * @covers \Composer\Util\Filesystem::isStreamWrapperPath
+     * @dataProvider isStreamWrapperPathProvider
+     */
+    public function testIsStreamWrapperPath(string $path, bool $expected): void
+    {
+        self::assertEquals($expected, Filesystem::isStreamWrapperPath($path));
+    }
 }

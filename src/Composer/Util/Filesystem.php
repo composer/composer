@@ -663,10 +663,19 @@ class Filesystem
         return $path;
     }
 
+    /**
+     * Is the file addressed with a streamwrapper:// prefix?
+     *
+     * `file://` is excluded – its paths can be relative, distinct from other stream wrappers which are always absolute.
+     *
+     * @see https://www.php.net/manual/en/intro.stream.php
+     *
+     * @param string $path Path to check
+     */
     public static function isStreamWrapperPath(string $path): bool
     {
-        if(!isset(self::$streamWrappersRegex)) {
             self::$streamWrappersRegex = sprintf( '{^(?:%s)://}', implode( '|', array_map( 'preg_quote', stream_get_wrappers() ) ) );
+            self::$streamWrappersRegex = sprintf('{^(?:%s)://}', implode('|', array_map('preg_quote', stream_get_wrappers())));
         }
 
         $path = Preg::replace('{^file://}i', '', $path);
