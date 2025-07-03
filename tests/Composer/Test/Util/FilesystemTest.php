@@ -456,4 +456,36 @@ class FilesystemTest extends TestCase
     {
         self::assertEquals($expected, Filesystem::isStreamWrapperPath($path));
     }
+
+    /**
+     * Similar dataset as {@see FilesystemTest::isAbsolutePathDataProvider} but with different expected results.
+     */
+    public static function isLocalPathProvider(): array
+    {
+        return [
+            'unixPath' => ['/foo/bar', true],
+            'smbPath' => ['\\\\smb\\folder\\file.txt', false],
+            'windowsPath' => ['C:\\foo\\bar', true],
+            'streamPath' => ['composertestsstreamwrapper://path/to/whatever', false],
+            'fileStreamAbsolutePath' => ['file:///path/to/whatever', true],
+            'fileStreamRelativePath' => ['file://path/to/whatever', true],
+            'relativeSubPath' => ['foo/bar', true],
+            'relativeSubPath2' => ['./foo/bar', true],
+            'relativeParentPath' => ['../foo/bar', true],
+        ];
+    }
+
+    /**
+     * The purpose of this method is to determine if a cache should be used. With stream wrappers, we can't tell
+     * if the path is local or not. Currently, we return false, meaning that a cache typically will be used. But
+     * it could be argued that caching is the business of whoever is implementing the stream wrapper, and we should
+     * treat it like a local path.
+     *
+     * @covers \Composer\Util\Filesystem::isLocalPath
+     * @dataProvider isLocalPathProvider
+     */
+    public function testIsLocalPath(string $path, bool $expected): void
+    {
+        self::assertEquals($expected, Filesystem::isLocalPath($path));
+    }
 }
