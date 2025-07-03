@@ -14,6 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Util\Platform;
 use Composer\Test\TestCase;
+use RuntimeException;
 
 /**
  * PlatformTest
@@ -105,5 +106,12 @@ class PlatformTest extends TestCase
         self::expectExceptionMessage('Invalid value for COMPOSER_TEST_BOOL_ENV');
 
         Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV');
+    }
+
+    public function testRealPathException(): void
+    {
+        // Test that `::realpath()` throws an exception on a non-existing path
+        $this->expectException(RuntimeException::class);
+        Platform::realpath('/path/does/not/exist');
     }
 }
