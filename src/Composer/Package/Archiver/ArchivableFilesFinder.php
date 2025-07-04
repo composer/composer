@@ -48,11 +48,7 @@ class ArchivableFilesFinder extends FilterIterator
     {
         $fs = new Filesystem();
 
-        try {
-            $sourcesRealPath = Platform::realpath($sources);
-        } catch (\RuntimeException $exception) {
-            throw new \RuntimeException('Could not realpath() the source directory "'.$sources.'"');
-        }
+        $sourcesRealPath = Platform::realpath($sources);
         $sources = $fs->normalizePath($sourcesRealPath);
 
         if ($ignoreFilters) {
