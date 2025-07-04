@@ -88,9 +88,6 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             throw new \RuntimeException('The package '.$package->getPrettyName().' has no dist url configured, cannot install.');
         }
         $realUrl = Platform::realpath($url);
-        if (false === $realUrl) {
-            throw new \RuntimeException('Failed to realpath '.$url);
-        }
 
         if (Platform::realpath($path) === $realUrl) {
             if ($output) {
