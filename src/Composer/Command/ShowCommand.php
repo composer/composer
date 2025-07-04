@@ -1068,11 +1068,12 @@ EOT
 
         if (!PlatformRepository::isPlatformPackage($package->getName()) && $installedRepo->hasPackage($package)) {
             $path = $this->requireComposer()->getInstallationManager()->getInstallPath($package);
+            $json['path'] = null;
             if (is_string($path)) {
-                $path = Platform::realpath($path);
-                $json['path'] = $path;
-            } else {
-                $json['path'] = null;
+                try {
+                    $json['path'] = Platform::realpath($path);
+                } catch (\RuntimeException $exception) {
+                }
             }
 
             if ($package->getReleaseDate() !== null) {
