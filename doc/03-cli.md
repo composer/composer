@@ -1275,7 +1275,7 @@ in performance gains.
 
 ### COMPOSER_MAX_PARALLEL_PROCESSES
 
-Set to an an integer to configure how many processes can be executed in parallel.
+Set to an integer to configure how many processes can be executed in parallel.
 This defaults to 10 and must be between 1 and 50.
 
 ### COMPOSER_IPRESOLVE
