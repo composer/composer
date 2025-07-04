@@ -674,7 +674,7 @@ class Filesystem
      */
     public static function isStreamWrapperPath(string $path): bool
     {
-            self::$streamWrappersRegex = sprintf( '{^(?:%s)://}', implode( '|', array_map( 'preg_quote', stream_get_wrappers() ) ) );
+        if (!isset(self::$streamWrappersRegex)) {
             self::$streamWrappersRegex = sprintf('{^(?:%s)://}', implode('|', array_map('preg_quote', stream_get_wrappers())));
         }
 
