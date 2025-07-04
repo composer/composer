@@ -108,6 +108,13 @@ class PlatformTest extends TestCase
         Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV');
     }
 
+    public function testRealPathFileStreamStripsScheme(): void
+    {
+        $file = __FILE__;
+        $streamPath = 'file://' . $file;
+        self::assertEquals($file, Platform::realpath($streamPath));
+    }
+
     public function testRealPathException(): void
     {
         // Test that `::realpath()` throws an exception on a non-existing path
