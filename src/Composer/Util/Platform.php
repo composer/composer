@@ -64,7 +64,9 @@ class Platform
      */
     public static function realpath(string $path): string
     {
-        if(Filesystem::isStreamWrapperPath($path)) {
+        $path = Preg::replace('{^file://}i', '', $path);
+
+        if (Filesystem::isStreamWrapperPath($path)) {
             return $path;
         }
 
