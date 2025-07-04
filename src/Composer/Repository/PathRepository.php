@@ -164,12 +164,12 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         }
 
         foreach ($urlMatches as $url) {
-            $path = Platform::realpath($url) . DIRECTORY_SEPARATOR;
-            $composerFilePath = $path.'composer.json';
-
-            if (!file_exists($composerFilePath)) {
+            try {
+                $path = Platform::realpath($url) . DIRECTORY_SEPARATOR;
+            } catch (\RuntimeException $exception) {
                 continue;
             }
+            $composerFilePath = $path.'composer.json';
 
             $json = file_get_contents($composerFilePath);
             $package = JsonFile::parseJson($json, $composerFilePath);
