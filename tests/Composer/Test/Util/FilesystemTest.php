@@ -476,10 +476,10 @@ class FilesystemTest extends TestCase
     }
 
     /**
-     * The purpose of this method is to determine if a cache should be used. With stream wrappers, we can't tell
-     * if the path is local or not. Currently, we return false, meaning that a cache typically will be used. But
-     * it could be argued that caching is the business of whoever is implementing the stream wrapper, and we should
-     * treat it like a local path.
+     * The purpose of this method is generally to determine if a cache should be used. With stream wrappers, we can't
+     * tell if the path is local or not. Currently, we return false, meaning that a cache typically will be used. While
+     * it could be argued that caching is the business of whoever is implementing the stream wrapper, some such as
+     * http:// and git:// are clearly remote paths, so we should return false for `::isLocalPath()` on stream wrappers.
      *
      * @covers \Composer\Util\Filesystem::isLocalPath
      * @dataProvider isLocalPathProvider
