@@ -361,7 +361,7 @@ class SvnDriver extends VcsDriver
     protected static function normalizeUrl(string $url): string
     {
         $fs = new Filesystem();
-        if ($fs->isAbsolutePath($url)) {
+        if ($fs->isAbsolutePath($url) && !Filesystem::isStreamWrapperPath($url)) {
             return 'file://' . strtr($url, '\\', '/');
         }
 
