@@ -387,6 +387,52 @@ Found 2 abandoned packages:
         ];
     }
 
+    public function testAuditWithIgnoreUnreachable(): void
+    {
+        $packages = [
+            new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
+        ];
+
+        // Create a mock RepositorySet that throws a TransportException
+        $repoSet = $this->getMockBuilder(RepositorySet::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getMatchingSecurityAdvisories'])
+            ->getMock();
+
+        $repoSet->method('getMatchingSecurityAdvisories')
+            ->willThrowException(new \Composer\Downloader\TransportException('The "https://example.org/packages.json" file could not be downloaded: HTTP/1.1 404 Not Found', 404));
+
+        $auditor = new Auditor();
+
+        // Test without ignoreUnreachable flag
+        try {
+            $auditor->audit(new BufferIO(), $repoSet, $packages, Auditor::FORMAT_PLAIN, false);
+            self::fail('Expected TransportException was not thrown');
+        } catch (\Composer\Downloader\TransportException $e) {
+            self::assertStringContainsString('HTTP/1.1 404 Not Found', $e->getMessage());
+        }
+
+        // Test with ignoreUnreachable flag
+        $io = new BufferIO();
+        $result = $auditor->audit($io, $repoSet, $packages, Auditor::FORMAT_PLAIN, false, [], Auditor::ABANDONED_IGNORE, [], true);
+        self::assertSame(Auditor::STATUS_OK, $result);
+
+        $output = $io->getOutput();
+        self::assertStringContainsString('Some repositories were unreachable', $output);
+        self::assertStringContainsString('The following repositories were unreachable:', $output);
+        self::assertStringContainsString('HTTP/1.1 404 Not Found', $output);
+
+        // Test with JSON format
+        $io = new BufferIO();
+        $result = $auditor->audit($io, $repoSet, $packages, Auditor::FORMAT_JSON, false, [], Auditor::ABANDONED_IGNORE, [], true);
+        self::assertSame(Auditor::STATUS_OK, $result);
+
+        $json = json_decode($io->getOutput(), true);
+        self::assertArrayHasKey('unreachable-repositories', $json);
+        self::assertCount(1, $json['unreachable-repositories']);
+        self::assertStringContainsString('HTTP/1.1 404 Not Found', $json['unreachable-repositories'][0]);
+    }
+
     /**
      * @dataProvider ignoreSeverityProvider
      * @phpstan-param array<\Composer\Package\Package> $packages
