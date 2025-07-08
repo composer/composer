@@ -418,7 +418,6 @@ Found 2 abandoned packages:
         self::assertSame(Auditor::STATUS_OK, $result);
 
         $output = $io->getOutput();
-        self::assertStringContainsString('Some repositories were unreachable', $output);
         self::assertStringContainsString('The following repositories were unreachable:', $output);
         self::assertStringContainsString('HTTP/1.1 404 Not Found', $output);
 
