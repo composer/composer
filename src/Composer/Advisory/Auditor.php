@@ -71,20 +71,16 @@ class Auditor
      */
     public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_FAIL, array $ignoredSeverities = [], bool $ignoreUnreachable = false): int
     {
-        $unreachableRepos = [];
-        try {
-            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY);
-            // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
-            // and ignores are set then we need to query again the full data to make sure it can be filtered
-            if (count($allAdvisories) > 0 && $ignoreList !== [] && $format === self::FORMAT_SUMMARY) {
-                $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packages, false);
-            }
-        } catch (\Composer\Downloader\TransportException $e) {
-            if (!$ignoreUnreachable) {
-                throw $e;
-            }
-            $unreachableRepos[] = $e->getMessage();
-            $allAdvisories = [];
+        $result = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY, $ignoreUnreachable);
+        $allAdvisories = $result['advisories'];
+        $unreachableRepos = $result['unreachableRepos'];
+
+        // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
+        // and ignores are set then we need to query again the full data to make sure it can be filtered
+        if (count($allAdvisories) > 0 && $ignoreList !== [] && $format === self::FORMAT_SUMMARY) {
+            $result = $repoSet->getMatchingSecurityAdvisories($packages, false, $ignoreUnreachable);
+            $allAdvisories = $result['advisories'];
+            $unreachableRepos = array_merge($unreachableRepos, $result['unreachableRepos']);
         }
         ['advisories' => $advisories, 'ignoredAdvisories' => $ignoredAdvisories] = $this->processAdvisories($allAdvisories, $ignoreList, $ignoredSeverities);
 
