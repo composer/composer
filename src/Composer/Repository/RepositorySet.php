@@ -290,7 +290,7 @@ class RepositorySet
             }
         }
 
-        $advisories = !empty($repoAdvisories) ? array_merge_recursive([], ...$repoAdvisories) : [];
+        $advisories = count($repoAdvisories) > 0 ? array_merge_recursive([], ...$repoAdvisories) : [];
         ksort($advisories);
 
         return $advisories;
