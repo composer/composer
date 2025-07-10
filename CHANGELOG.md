@@ -1,3 +1,14 @@
+### [2.8.10] 2025-07-10
+
+  * Fixed plugins appearing loaded despite not being loaded yet in some edge cases (#12442)
+  * Fixed forward compatibility with Symfony 7.4 (#12445)
+  * Fixed deprecation warning on PHP 8.4 when platform check fails (#12453)
+  * Fixed support for new planner role in GitLab (#12426)
+  * Fixed Bitbucket regression introduced in 2.8.0 (#12462)
+  * Fixed json schema issues with version validation (#12438)
+  * Fixed git prompt breaking some systems (#12437)
+  * Fixed warning on PHP 8.5 when curl is not loaded (#12472)
+
 ### [2.8.9] 2025-05-13
 
   * Fixed json schema issues with version validation (#12376)
@@ -2019,6 +2030,7 @@
 
   * Initial release
 
+[2.8.10]: https://github.com/composer/composer/compare/2.8.9...2.8.10
 [2.8.9]: https://github.com/composer/composer/compare/2.8.8...2.8.9
 [2.8.8]: https://github.com/composer/composer/compare/2.8.7...2.8.8
 [2.8.7]: https://github.com/composer/composer/compare/2.8.6...2.8.7
