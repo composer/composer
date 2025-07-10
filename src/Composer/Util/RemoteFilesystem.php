@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use Closure;
 use Composer\Config;
 use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
@@ -271,7 +272,7 @@ class RemoteFilesystem
             unset($options['max_file_size']);
         }
 
-        $ctx = StreamContextFactory::getContext($fileUrl, $options, ['notification' => [$this, 'callbackGet']]);
+        $ctx = StreamContextFactory::getContext($fileUrl, $options, ['notification' => Closure::fromCallable([$this, 'callbackGet'])]);
 
         $proxy = ProxyManager::getInstance()->getProxyForRequest($fileUrl);
         $usingProxy = $proxy->getStatus(' using proxy (%s)');
