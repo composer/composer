@@ -494,11 +494,17 @@ EOF;
         if (file_exists($dir)) {
             // transform $dir in the same way that exclude-from-classmap patterns are transformed so we can match them against each other
             $dirMatch = preg_quote(strtr(realpath($dir), '\\', '/'));
+            // also match against the non-realpath version for symlinks
+            $fs = new Filesystem();
+            $absDir = $fs->isAbsolutePath($dir) ? $dir : realpath(Platform::getCwd()).'/'.$dir;
+            $dirMatchNormalized = preg_quote(strtr($fs->normalizePath($absDir), '\\', '/'));
+
             foreach ($excluded as $index => $pattern) {
                 // extract the constant string prefix of the pattern here, until we reach a non-escaped regex special character
                 $pattern = Preg::replace('{^(([^.+*?\[^\]$(){}=!<>|:\\\\#-]+|\\\\[.+*?\[^\]$(){}=!<>|:#-])*).*}', '$1', $pattern);
                 // if the pattern is not a subset or superset of $dir, it is unrelated and we skip it
-                if (0 !== strpos($pattern, $dirMatch) && 0 !== strpos($dirMatch, $pattern)) {
+                if (0 !== strpos($pattern, $dirMatch) && 0 !== strpos($dirMatch, $pattern) &&
+                    0 !== strpos($pattern, $dirMatchNormalized) && 0 !== strpos($dirMatchNormalized, $pattern)) {
                     unset($excluded[$index]);
                 }
             }

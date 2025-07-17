@@ -2028,6 +2028,90 @@ EOF;
         self::assertFileContentEquals($a, $b);
     }
 
+    public function testAbsoluteSymlinkWithPsr4DoesNotGenerateWarnings(): void
+    {
+        $package = new RootPackage('test/package', '1.0', '1.0');
+
+        // Create a directory structure with PSR-4 autoloading
+        $this->fs->ensureDirectoryExists($this->workingDir.'/tools-real/vendor');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/tools-real/vendor/phpunit/phpunit/src/Framework/Exception');
+        file_put_contents(
+            $this->workingDir.'/tools-real/vendor/phpunit/phpunit/src/Framework/Exception/Exception.php',
+            '<?php namespace PHPUnit\Framework; class Exception extends \Exception {}'
+        );
+
+        // Create an absolute symlink
+        $target = $this->workingDir.'/tools-real';
+        $link = $this->workingDir.'/tools';
+
+        if (Platform::isWindows()) {
+            exec('mklink /j "' . str_replace('/', '\\', $link) . '" "' . str_replace('/', '\\', $target) . '"');
+        } else {
+            symlink($target, $link);
+        }
+
+        $package->setAutoload([
+            'psr-4' => ['MyTools\\' => 'tools/'],
+            'exclude-from-classmap' => ['**/vendor/']
+        ]);
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue([]));
+
+        // Capture IO output to check for warnings
+        $io = new BufferIO();
+        $this->generator = new AutoloadGenerator($this->eventDispatcher, $io);
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_9');
+
+        $output = $io->getOutput();
+
+        // Should not contain PSR-4 violation warnings
+        self::assertStringNotContainsString('does not comply with psr-4 autoloading standard', $output);
+    }
+
+    public function testAbsoluteSymlinkWithClassmapExcludeFromClassmap(): void
+    {
+        $package = new RootPackage('test/package', '1.0', '1.0');
+
+        // Create a directory structure with files
+        $this->fs->ensureDirectoryExists($this->workingDir.'/tools-real/vendor/phpunit/phpunit/src/Framework');
+        file_put_contents(
+            $this->workingDir.'/tools-real/vendor/phpunit/phpunit/src/Framework/Exception.php',
+            '<?php namespace PHPUnit\Framework; class Exception extends \Exception {}'
+        );
+        file_put_contents(
+            $this->workingDir.'/tools-real/MyClass.php',
+            '<?php class MyClass {}'
+        );
+
+        // Create an absolute symlink
+        $target = $this->workingDir.'/tools-real';
+        $link = $this->workingDir.'/tools';
+
+        if (Platform::isWindows()) {
+            exec('mklink /j "' . str_replace('/', '\\', $link) . '" "' . str_replace('/', '\\', $target) . '"');
+        } else {
+            symlink($target, $link);
+        }
+
+        $package->setAutoload([
+            'classmap' => ['tools/'],
+            'exclude-from-classmap' => ['**/vendor/']
+        ]);
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue([]));
+
+        $classMap = $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_9');
+
+        // Check that MyClass is included but vendor files are excluded
+        self::assertArrayHasKey('MyClass', $classMap->getMap());
+        self::assertArrayNotHasKey('PHPUnit\\Framework\\Exception', $classMap->getMap());
+    }
+
     public static function assertFileContentEquals(string $expected, string $actual, ?string $message = null): void
     {
         self::assertSame(
