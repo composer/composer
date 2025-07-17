@@ -34,10 +34,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ValidateCommand extends BaseCommand
 {
-    /**
+/**
  * Configures the validate command with options and help text.
  */
-protected function configure(): void
 
     protected function configure(): void
     {
