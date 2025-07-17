@@ -38,6 +38,8 @@ Partial updates always update path repos which are symlinked, but not those whic
         { "name": "c/uptodate", "version": "2.0.0" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {

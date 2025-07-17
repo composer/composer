@@ -31,6 +31,7 @@ Update package which is in lower prio repo but not main repo due to min-stabilit
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},

@@ -30,6 +30,7 @@ Ensure a partial update of a dependency updates dependencies which replace one o
         {"name": "root/req2", "version": "1.0.0", "type": "library", "require": {"dep/pkg1": "1.*"}}
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
@@ -48,6 +49,7 @@ update root/req1 --with-dependencies
         {"name": "root/req2", "version": "1.0.0", "type": "library", "require": {"dep/pkg1": "1.*"}}
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
