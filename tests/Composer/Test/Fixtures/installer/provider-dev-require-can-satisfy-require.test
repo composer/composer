@@ -40,6 +40,7 @@ update --no-dev
             "require": {"b/b": "1.0.0"}
         }
     ],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
