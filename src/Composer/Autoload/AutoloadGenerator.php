@@ -217,9 +217,10 @@ class AutoloadGenerator
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
+        $targetDir = Platform::realpath($vendorPath.'/'.$targetDir);
 
-        $vendorPathCode = $filesystem->findShortestPathCode(Platform::realpath($targetDir), $vendorPath, true);
-        $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, Platform::realpath($targetDir), true);
+        $vendorPathCode = $filesystem->findShortestPathCode($targetDir, $vendorPath, true);
+        $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, $targetDir, true);
 
         $appBaseDirCode = $filesystem->findShortestPathCode($vendorPath, $basePath, true);
         $appBaseDirCode = str_replace('__DIR__', '$vendorDir', $appBaseDirCode);
@@ -1162,10 +1163,10 @@ HEADER;
 
         $filesystem = new Filesystem();
 
-        $vendorPathCode = ' => ' . $filesystem->findShortestPathCode(Platform::realpath($targetDir), $vendorPath, true, true) . " . '/";
-        $vendorPharPathCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(Platform::realpath($targetDir), $vendorPath, true, true) . " . '/";
-        $appBaseDirCode = ' => ' . $filesystem->findShortestPathCode(Platform::realpath($targetDir), $basePath, true, true) . " . '/";
-        $appBaseDirPharCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode(Platform::realpath($targetDir), $basePath, true, true) . " . '/";
+        $vendorPathCode = ' => ' . $filesystem->findShortestPathCode($targetDir, $vendorPath, true, true) . " . '/";
+        $vendorPharPathCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode($targetDir, $vendorPath, true, true) . " . '/";
+        $appBaseDirCode = ' => ' . $filesystem->findShortestPathCode($targetDir, $basePath, true, true) . " . '/";
+        $appBaseDirPharCode = ' => \'phar://\' . ' . $filesystem->findShortestPathCode($targetDir, $basePath, true, true) . " . '/";
 
         $absoluteVendorPathCode = ' => ' . substr(var_export(rtrim($vendorDir, '\\/') . '/', true), 0, -1);
         $absoluteVendorPharPathCode = ' => ' . substr(var_export(rtrim('phar://' . $vendorDir, '\\/') . '/', true), 0, -1);
