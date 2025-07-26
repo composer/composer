@@ -13,6 +13,7 @@
 namespace Composer\Test\Package;
 
 use Composer\Json\JsonFile;
+use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Locker;
 use Composer\Plugin\PluginInterface;
 use Composer\IO\NullIO;
@@ -221,6 +222,124 @@ class LockerTest extends TestCase
             ->will($this->returnValue(['hash' => $differentHash, 'content-hash' => $differentHash]));
 
         self::assertFalse($locker->isFresh());
+    }
+
+    public static function provideGetPackageTimePath(): array
+    {
+        return [
+            'valid_path' => ['path' => __DIR__, 'isValidPath' => true],
+            'invalid_path' => ['path' => '/not/a/real/path', 'isValidPath' => false],
+        ];
+    }
+
+    /**
+     * Test to assert the behaviour of `Locker::getPackageTime()` does not change when replacing `realpath()` with
+     * `Platform::realpath()`.
+     *
+     * @dataProvider provideGetPackageTimePath
+     *
+     * @see Platform::realpath()
+     *
+     * @covers Locker::getPackageTime
+     */
+    public function testGetPackageTime(string $path, bool $isValidPath): void
+    {
+        $jsonLockFile = $this->createJsonFileMock();
+        $installationManager = $this->createInstallationManagerMock();
+
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+
+        $locker = new Locker(new NullIO, $jsonLockFile, $installationManager, $this->getJsonContent(), $processExecutor);
+
+        $package = $this->createPackageMock();
+
+        $package->expects($this->atLeastOnce())
+                ->method('getPrettyName')
+                ->willReturn('package/name');
+
+        $package->expects($this->atLeastOnce())
+                ->method('getPrettyVersion')
+                ->willReturn('1.0.0');
+
+        $package->expects($this->once())
+            ->method('isDev')
+            ->willReturn(true);
+
+        $package->expects($this->atLeastOnce())
+            ->method('getInstallationSource')
+            ->willReturn('source');
+
+        $packages = [$package];
+
+        $installationManager->expects($this->once())
+            ->method('getInstallPath')
+            ->with($package)
+            ->willReturn($path);
+
+        $package->expects($this->atLeastOnce())
+                ->method('getSourceType')
+                ->willReturn('git');
+
+        /**
+         * @see ArrayDumper::dump()
+         */
+        $package->expects($this->atLeastOnce())
+                ->method('getSourceReference')
+                ->willReturn('git');
+
+        if ($isValidPath) {
+            $processExecutor->expects($this->exactly(2))
+                            ->method('execute')
+                            ->willReturnOnConsecutiveCalls(
+                                $this->returnCallback(function (array $command, ?string &$output1) {
+                                    // Using `::withConsecutive()` to assert the parameters was failing.
+                                    $this->assertEquals([ 'git', '--version' ], $command);
+
+                                    $output1 = '2.49.0';
+
+                                    return 0;
+                                }),
+                                $this->returnCallback(function ($command, &$output2, ?string $path) {
+                                    $this->assertEquals([
+                                        'git',
+                                        'log',
+                                        '-n1',
+                                        '--pretty=%ct',
+                                        'git',
+                                    ], $command);
+                                    $this->assertEquals(__DIR__, $path);
+
+                                    $output2 = (string) time();
+
+                                    return 0;
+                                })
+                            );
+        } else {
+            $processExecutor->expects($this->never())
+                             ->method('execute');
+        }
+
+        $locker->setLockData(
+            $packages,
+            /** devPackages: */
+            null,
+            /** platformReqs: */
+            [],
+            /** platformDevReqs: */
+            [],
+            /** aliases: */
+            [],
+            /** minimumStability: */
+            'dev',
+            /** stabilityFlags: */
+            [],
+            /** preferStable: */
+            false,
+            /** preferLowest: */
+            false,
+            /** platformOverrides: */
+            []
+        );
     }
 
     /**
