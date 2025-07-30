@@ -286,4 +286,31 @@ class ConfigCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'config', 'setting-key' => 'audit.ignore', 'setting-value' => ['{"CVE-2024-5678":"reason"}'], '--json' => true, '--merge' => true]);
     }
+
+    /**
+     * @covers \Composer\Command\ConfigCommand::initialize
+     */
+    public function testCreatesComposerJsonIfNotExists(): void
+    {
+        $testTempDirPath = $this->initTempComposer();
+
+        $composerDirPath = $testTempDirPath . '/composer-home';
+
+        mkdir($composerDirPath);
+
+        $composerFilePath = $composerDirPath . '/composer.json';
+
+        assert(!file_exists($composerFilePath));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run([
+            'command' => 'global',
+            'command-name' => 'config',
+            '--no-interaction',
+        ]);
+
+        $appTester->assertCommandIsSuccessful();
+
+        self::assertFileExists($composerFilePath);
+    }
 }
