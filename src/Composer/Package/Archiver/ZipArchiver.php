@@ -14,6 +14,7 @@ namespace Composer\Package\Archiver;
 
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
+use RuntimeException;
 use ZipArchive;
 
 /**
@@ -35,7 +36,7 @@ class ZipArchiver implements ArchiverInterface
 
         try {
             $sources = Platform::realpath($sources);
-        } catch (\Exception $exception) {
+        } catch (RuntimeException $exception) {
         }
 
         $sources = $fs->normalizePath($sources);
