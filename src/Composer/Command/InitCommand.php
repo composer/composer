@@ -272,7 +272,7 @@ EOT
 
         $name = $input->getOption('name');
         if (null === $name) {
-            $cwd = Platform::realpath(".");
+            $cwd = Platform::getCwd();
             $name = basename($cwd);
             $name = $this->sanitizePackageNameComponent($name);
 
