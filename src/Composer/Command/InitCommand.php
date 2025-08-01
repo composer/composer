@@ -616,7 +616,7 @@ EOT
     private function getDefaultPackageName(): string
     {
         $git = $this->getGitConfig();
-        $cwd = Platform::realpath(".");
+        $cwd = Platform::getCwd();
         $name = basename($cwd);
         $name = $this->sanitizePackageNameComponent($name);
 
