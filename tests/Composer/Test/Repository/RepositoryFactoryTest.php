@@ -27,7 +27,7 @@ class RepositoryFactoryTest extends TestCase
         );
 
         $ref = new \ReflectionProperty($manager, 'repositoryClasses');
-        $ref->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $ref->setAccessible(true);
         $repositoryClasses = $ref->getValue($manager);
 
         self::assertEquals([

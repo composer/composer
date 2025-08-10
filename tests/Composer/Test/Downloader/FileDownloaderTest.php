@@ -94,7 +94,7 @@ class FileDownloaderTest extends TestCase
         $config = $this->getConfig(['vendor-dir' => '/vendor']);
         $downloader = $this->getDownloader(null, $config);
         $method = new \ReflectionMethod($downloader, 'getFileName');
-        $method->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $method->setAccessible(true);
 
         self::assertMatchesRegularExpression('#/vendor/composer/tmp-[a-z0-9]+\.js#', $method->invoke($downloader, $package, '/path'));
     }
@@ -345,7 +345,7 @@ class FileDownloaderTest extends TestCase
 
         // make sure the file expected to be downloaded is on disk already
         $method = new \ReflectionMethod($downloader, 'getFileName');
-        $method->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $method->setAccessible(true);
         $dlFile = $method->invoke($downloader, $package, $path);
         mkdir(dirname($dlFile), 0777, true);
         touch($dlFile);
@@ -396,7 +396,7 @@ class FileDownloaderTest extends TestCase
 
         // make sure the file expected to be downloaded is on disk already
         $method = new \ReflectionMethod($downloader, 'getFileName');
-        $method->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $method->setAccessible(true);
         $dlFile = $method->invoke($downloader, $newPackage, $path);
         mkdir(dirname($dlFile), 0777, true);
         touch($dlFile);

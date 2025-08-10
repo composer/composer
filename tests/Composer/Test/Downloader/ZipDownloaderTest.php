@@ -67,7 +67,7 @@ class ZipDownloaderTest extends TestCase
     {
         $reflectionClass = new \ReflectionClass('Composer\Downloader\ZipDownloader');
         $reflectedProperty = $reflectionClass->getProperty($name);
-        $reflectedProperty->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $reflectedProperty->setAccessible(true);
         $reflectedProperty->setValue($obj, $value);
     }
 

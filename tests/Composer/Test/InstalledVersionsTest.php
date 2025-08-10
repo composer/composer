@@ -31,7 +31,7 @@ class InstalledVersionsTest extends TestCase
         // disable multiple-ClassLoader-based checks of InstalledVersions by making it seem like no
         // class loaders are registered
         $prop = new \ReflectionProperty('Composer\Autoload\ClassLoader', 'registeredLoaders');
-        $prop->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $prop->setAccessible(true);
         self::$previousRegisteredLoaders = $prop->getValue();
         $prop->setValue(null, []);
     }
@@ -39,7 +39,7 @@ class InstalledVersionsTest extends TestCase
     public static function tearDownAfterClass(): void
     {
         $prop = new \ReflectionProperty('Composer\Autoload\ClassLoader', 'registeredLoaders');
-        $prop->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $prop->setAccessible(true);
         $prop->setValue(null, self::$previousRegisteredLoaders);
         InstalledVersions::reload(null); // @phpstan-ignore argument.type
     }
@@ -272,11 +272,11 @@ class InstalledVersionsTest extends TestCase
         // disable multiple-ClassLoader-based checks of InstalledVersions by making it seem like no
         // class loaders are registered
         $prop = new \ReflectionProperty(ClassLoader::class, 'registeredLoaders');
-        $prop->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $prop->setAccessible(true);
         $prop->setValue(null, array_slice(self::$previousRegisteredLoaders, 0, 1, true));
 
         $prop2 = new \ReflectionProperty(InstalledVersions::class, 'installedIsLocalDir');
-        $prop2->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $prop2->setAccessible(true);
         $prop2->setValue(null, true);
 
         self::assertFalse(InstalledVersions::isInstalled('foo/bar'));

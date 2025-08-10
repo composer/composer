@@ -31,7 +31,7 @@ class SvnTest extends TestCase
     {
         $svn = new Svn($url, new NullIO, new Config());
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialArgs');
-        $reflMethod->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $reflMethod->setAccessible(true);
 
         self::assertEquals($expect, $reflMethod->invoke($svn));
     }
@@ -51,7 +51,7 @@ class SvnTest extends TestCase
 
         $svn = new Svn($url, new NullIO(), new Config());
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCommand');
-        $reflMethod->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $reflMethod->setAccessible(true);
 
         self::assertEquals(
             ['svn', 'ls', '--non-interactive', '--', 'http://svn.example.org'],
@@ -74,7 +74,7 @@ class SvnTest extends TestCase
 
         $svn = new Svn($url, new NullIO, $config);
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialArgs');
-        $reflMethod->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $reflMethod->setAccessible(true);
 
         self::assertEquals(['--username', 'foo', '--password', 'bar'], $reflMethod->invoke($svn));
     }
@@ -97,7 +97,7 @@ class SvnTest extends TestCase
         $svn = new Svn($url, new NullIO, $config);
         $svn->setCacheCredentials(true);
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialArgs');
-        $reflMethod->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $reflMethod->setAccessible(true);
 
         self::assertEquals(['--username', 'foo', '--password', 'bar'], $reflMethod->invoke($svn));
     }
@@ -120,7 +120,7 @@ class SvnTest extends TestCase
         $svn = new Svn($url, new NullIO, $config);
         $svn->setCacheCredentials(false);
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialArgs');
-        $reflMethod->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) && $reflMethod->setAccessible(true);
 
         self::assertEquals(['--no-auth-cache', '--username', 'foo', '--password', 'bar'], $reflMethod->invoke($svn));
     }
