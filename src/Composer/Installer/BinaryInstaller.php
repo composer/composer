@@ -254,15 +254,14 @@ if (PHP_VERSION_ID < 80000) {
         {
             private \$handle;
             private \$position;
-            private \$realpath;
 
             public function stream_open(\$path, \$mode, \$options, &\$opened_path)
             {
                 // get rid of phpvfscomposer:// prefix for __FILE__ & __DIR__ resolution
                 \$opened_path = substr(\$path, 17);
-                \$this->realpath = realpath(\$opened_path) ?: \$opened_path;
-                \$opened_path = $phpunitHack1\$this->realpath;
-                \$this->handle = fopen(\$this->realpath, \$mode);
+                \$realpath = realpath(\$opened_path) ?: \$opened_path;
+                \$opened_path = $phpunitHack1\$realpath;
+                \$this->handle = fopen(\$realpath, \$mode);
                 \$this->position = 0;
 
                 return (bool) \$this->handle;
@@ -293,7 +292,7 @@ if (PHP_VERSION_ID < 80000) {
 
             public function stream_lock(\$operation)
             {
-                return \$operation ? flock(\$this->handle, \$operation) : true;
+                return ! \$operation || flock(\$this->handle, \$operation);
             }
 
             public function stream_seek(\$offset, \$whence)
