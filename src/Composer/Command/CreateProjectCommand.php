@@ -278,7 +278,7 @@ EOT
             && (
                 $input->getOption('remove-vcs')
                 || !$io->isInteractive()
-                || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ')
+                || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>y,n</comment>]? ')
             )
         ) {
             $finder = new Finder();
