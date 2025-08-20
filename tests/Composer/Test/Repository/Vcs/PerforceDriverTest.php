@@ -90,7 +90,7 @@ class PerforceDriverTest extends TestCase
     {
         $reflectionClass = new \ReflectionClass($this->driver);
         $property = $reflectionClass->getProperty('perforce');
-        (\PHP_VERSION_ID < 80100) && $property->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $property->setAccessible(true);
         $property->setValue($this->driver, $perforce);
     }
 

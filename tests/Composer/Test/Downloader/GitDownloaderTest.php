@@ -53,7 +53,7 @@ class GitDownloaderTest extends TestCase
     {
         // reset the static version cache
         $refl = new \ReflectionProperty('Composer\Util\Git', 'version');
-        (\PHP_VERSION_ID < 80100) && $refl->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $refl->setAccessible(true);
         $refl->setValue(null, $version);
     }
 

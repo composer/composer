@@ -189,7 +189,7 @@ GIT;
     {
         $reflectionClass = new \ReflectionClass($driver);
         $reflectionProperty = $reflectionClass->getProperty('repoDir');
-        (\PHP_VERSION_ID < 80100) && $reflectionProperty->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $reflectionProperty->setAccessible(true);
         $reflectionProperty->setValue($driver, $path);
     }
 }

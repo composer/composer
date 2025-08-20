@@ -177,11 +177,11 @@ class FilesystemRepository extends WritableArrayRepository
                 // in memory loaded data from above
                 try {
                     $reflProp = new \ReflectionProperty(\Composer\InstalledVersions::class, 'selfDir');
-                    (\PHP_VERSION_ID < 80100) && $reflProp->setAccessible(true);
+                    (\PHP_VERSION_ID < 80100) and $reflProp->setAccessible(true);
                     $reflProp->setValue(null, strtr($repoDir, '\\', '/'));
 
                     $reflProp = new \ReflectionProperty(\Composer\InstalledVersions::class, 'installedIsLocalDir');
-                    (\PHP_VERSION_ID < 80100) && $reflProp->setAccessible(true);
+                    (\PHP_VERSION_ID < 80100) and $reflProp->setAccessible(true);
                     $reflProp->setValue(null, true);
                 } catch (\ReflectionException $e) {
                     if (!Preg::isMatch('{Property .*? does not exist}i', $e->getMessage())) {
