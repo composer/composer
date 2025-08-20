@@ -613,6 +613,9 @@ EOT
             }
 
             $version = curl_version();
+            $libzVersion = isset($version['libz_version']) && $version['libz_version'] !== '' ? $version['libz_version'] : 'missing';
+            $brotliVersion = isset($version['brotli_version']) && $version['brotli_version'] !== '' ? $version['brotli_version'] : 'missing';
+            $sslVersion = isset($version['ssl_version']) && $version['ssl_version'] !== '' ? $version['ssl_version'] : 'missing';
             $hasZstd = isset($version['features']) && defined('CURL_VERSION_ZSTD') && 0 !== ($version['features'] & CURL_VERSION_ZSTD);
             $httpVersions = '1.0, 1.1';
             if (isset($version['features']) && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $version['features']) !== 0) {
@@ -623,10 +626,10 @@ EOT
             }
 
             return '<comment>'.$version['version'].'</comment> '.
-                'libz <comment>'.($version['libz_version'] ?? 'missing').'</comment> '.
-                'brotli <comment>'.($version['brotli_version'] ?? 'missing').'</comment> '.
+                'libz <comment>'.$libzVersion.'</comment> '.
+                'brotli <comment>'.$brotliVersion.'</comment> '.
                 'zstd <comment>'.($hasZstd ? 'supported' : 'missing').'</comment> '.
-                'ssl <comment>'.($version['ssl_version'] ?? 'missing').'</comment> '.
+                'ssl <comment>'.$sslVersion.'</comment> '.
                 'HTTP <comment>'.$httpVersions.'</comment>';
         }
 

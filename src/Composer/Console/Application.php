@@ -444,7 +444,7 @@ class Application extends BaseApplication
             // as http error codes are all beyond the 255 range of permitted exit codes
             if ($e instanceof TransportException) {
                 $reflProp = new \ReflectionProperty($e, 'code');
-                $reflProp->setAccessible(true);
+                (\PHP_VERSION_ID < 80100) and $reflProp->setAccessible(true);
                 $reflProp->setValue($e, Installer::ERROR_TRANSPORT_EXCEPTION);
             }
 

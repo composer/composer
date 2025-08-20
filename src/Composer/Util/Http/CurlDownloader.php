@@ -305,7 +305,9 @@ class CurlDownloader
         if (isset($this->jobs[$id], $this->jobs[$id]['curlHandle'])) {
             $job = $this->jobs[$id];
             curl_multi_remove_handle($this->multiHandle, $job['curlHandle']);
-            curl_close($job['curlHandle']);
+            if(\PHP_VERSION_ID < 80000) {
+                curl_close($job['curlHandle']);
+            }
             if (is_resource($job['headerHandle'])) {
                 fclose($job['headerHandle']);
             }
@@ -351,7 +353,9 @@ class CurlDownloader
             $error = curl_error($curlHandle);
             $errno = curl_errno($curlHandle);
             curl_multi_remove_handle($this->multiHandle, $curlHandle);
-            curl_close($curlHandle);
+            if (\PHP_VERSION_ID < 80000) {
+                curl_close($curlHandle);
+            }
 
             $headers = null;
             $statusCode = null;

@@ -307,8 +307,8 @@ class RemoteFilesystemTest extends TestCase
         $fs = new RemoteFilesystem($io, $this->getConfigMock(), $options);
         $ref = new ReflectionMethod($fs, 'getOptionsForUrl');
         $prop = new ReflectionProperty($fs, 'fileUrl');
-        $ref->setAccessible(true);
-        $prop->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $ref->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $prop->setAccessible(true);
 
         $prop->setValue($fs, $fileUrl);
 
@@ -337,7 +337,7 @@ class RemoteFilesystemTest extends TestCase
     private function callCallbackGet(RemoteFilesystem $fs, int $notificationCode, int $severity, string $message, int $messageCode, int $bytesTransferred, int $bytesMax): void
     {
         $ref = new ReflectionMethod($fs, 'callbackGet');
-        $ref->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $ref->setAccessible(true);
         $ref->invoke($fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax);
     }
 
@@ -348,7 +348,7 @@ class RemoteFilesystemTest extends TestCase
     private function setAttribute($object, string $attribute, $value): void
     {
         $attr = new ReflectionProperty($object, $attribute);
-        $attr->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $attr->setAccessible(true);
         $attr->setValue($object, $value);
     }
 
@@ -359,7 +359,7 @@ class RemoteFilesystemTest extends TestCase
     private function assertAttributeEqualsCustom($value, string $attribute, $object): void
     {
         $attr = new ReflectionProperty($object, $attribute);
-        $attr->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $attr->setAccessible(true);
         self::assertSame($value, $attr->getValue($object));
     }
 
