@@ -28,7 +28,7 @@ jobs:
         with:
           coverage: "none"
           extensions: "intl, zip"
-          ini-values: "memory_limit=-1, phar.readonly=0, error_reporting=E_ALL, display_errors=On"
+          ini-values: "memory_limit=-1, phar.readonly=0, error_reporting=E_ALL, display_errors=On, display_startup_errors=On"
           php-version: "8.4"
           tools: composer
 
