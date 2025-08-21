@@ -208,7 +208,7 @@ class Application extends BaseApplication
                         $io->writeError('<info>No composer.json in current directory, to use the one at '.$dir.' run interactively or set config.use-parent-dir to true</info>');
                         break;
                     }
-                    if ($useParentDirIfNoJsonAvailable === true || $io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ')) {
+                    if ($useParentDirIfNoJsonAvailable === true || $io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>y,n</comment>]? ')) {
                         if ($useParentDirIfNoJsonAvailable === true) {
                             $io->writeError('<info>No composer.json in current directory, changing working directory to '.$dir.'</info>');
                         } else {

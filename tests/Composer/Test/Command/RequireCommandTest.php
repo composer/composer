@@ -78,7 +78,7 @@ Package operations: 2 installs, 0 updates, 0 removals
   - Installing required/pkg (dev-foo-bar)
 Using version dev-foo-bar for required/pkg
 <warning>Version dev-foo-bar looks like it may be a feature branch which is unlikely to keep working in the long run and may be in an unstable state</warning>
-Are you sure you want to use this constraint (Y) or would you rather abort (n) the whole operation [Y,n]? '.'
+Are you sure you want to use this constraint (y) or would you rather abort (n) the whole operation [y,n]? '.'
 Installation failed, reverting ./composer.json to its original content.
 ', $appTester->getDisplay(true));
     }
