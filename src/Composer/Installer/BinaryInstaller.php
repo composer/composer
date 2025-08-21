@@ -292,7 +292,7 @@ if (PHP_VERSION_ID < 80000) {
 
             public function stream_lock(\$operation)
             {
-                return ! \$operation || flock(\$this->handle, \$operation);
+                return \$operation ? flock(\$this->handle, \$operation) : true;
             }
 
             public function stream_seek(\$offset, \$whence)
