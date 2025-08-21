@@ -91,9 +91,9 @@ jobs:
         if: "contains(matrix.dependencies, 'highest') || contains(matrix.dependencies, 'lowest')"
         run: "composer config platform --unset"
 
-      - name: "Allow alpha releases for latest-deps builds to catch problems earlier"
+      - name: "Allow dev releases for latest-deps builds to catch problems earlier"
         if: "contains(matrix.dependencies, 'highest')"
-        run: "composer config minimum-stability alpha"
+        run: "composer config minimum-stability dev"
 
       - name: "Update dependencies from composer.json using composer binary provided by system"
         if: "contains(matrix.dependencies, 'highest') || contains(matrix.dependencies, 'lowest')"
