@@ -22,9 +22,6 @@ use Composer\Console\Input\InputArgument;
  */
 class ExecCommand extends BaseCommand
 {
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this

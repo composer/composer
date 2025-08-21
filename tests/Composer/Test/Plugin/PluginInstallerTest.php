@@ -408,7 +408,7 @@ class PluginInstallerTest extends TestCase
                    return [$capabilityApi => $capabilityImplementation];
                }));
 
-        /** @var \Composer\Test\Plugin\Mock\Capability $capability */
+        /** @var Mock\Capability $capability */
         $capability = $this->pm->getPluginCapability($plugin, $capabilityApi, ['a' => 1, 'b' => 2]);
 
         self::assertInstanceOf($capabilityApi, $capability);

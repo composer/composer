@@ -594,7 +594,6 @@ class Config
     /**
      * Validates that the passed URL is allowed to be used by current config, or throws an exception.
      *
-     * @param IOInterface $io
      * @param mixed[]     $repoOptions
      */
     public function prohibitUrlByConfig(string $url, ?IOInterface $io = null, array $repoOptions = []): void

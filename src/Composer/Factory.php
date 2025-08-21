@@ -274,7 +274,7 @@ class Factory
      * @param  bool                              $disableScripts Whether scripts should not be run
      * @param  bool                              $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
      * @throws \InvalidArgumentException
-     * @throws \UnexpectedValueException
+     * @throws UnexpectedValueException
      * @return Composer|PartialComposer Composer if $fullLoad is true, otherwise PartialComposer
      * @phpstan-return ($fullLoad is true ? Composer : PartialComposer)
      */
@@ -471,9 +471,6 @@ class Factory
         return $factory->createGlobalComposer($io, static::createConfig($io), $disablePlugins, $disableScripts, true);
     }
 
-    /**
-     * @param Repository\RepositoryManager $rm
-     */
     protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, string $vendorDir, RootPackageInterface $rootPackage, ?ProcessExecutor $process = null): void
     {
         $fs = null;
@@ -504,10 +501,6 @@ class Factory
         return $composer;
     }
 
-    /**
-     * @param  IO\IOInterface             $io
-     * @param  EventDispatcher            $eventDispatcher
-     */
     public function createDownloadManager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, ProcessExecutor $process, ?EventDispatcher $eventDispatcher = null): Downloader\DownloadManager
     {
         $cache = null;
@@ -692,7 +685,7 @@ class Factory
 
         $authData = json_decode($composerAuthEnv);
         if (null === $authData) {
-            throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed, should be a valid JSON object');
+            throw new UnexpectedValueException('COMPOSER_AUTH environment variable is malformed, should be a valid JSON object');
         }
 
         if ($io instanceof IOInterface) {

@@ -569,7 +569,7 @@ TAGSPUBKEY
 
         try {
             // Test the phar validity
-            $phar = new \Phar($pharFile);
+            $phar = new Phar($pharFile);
             // Free the variable to unlock the file
             unset($phar);
             $result = true;

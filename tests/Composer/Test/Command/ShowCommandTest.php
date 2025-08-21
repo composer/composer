@@ -619,7 +619,7 @@ OUTPUT;
         $this->initTempComposer(['name' => 'vendor/package']);
 
         $appTester = $this->getApplicationTester();
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $appTester->run(['command' => 'show', '--self' => true, 'package' => 'vendor/package']);
     }
 
@@ -820,7 +820,7 @@ OUTPUT;
     public function providePackageAndTree(): \Generator
     {
         yield 'just package' => [
-            function () {
+            static function () {
                 $pgk = static::getPackage('vendor/package', '1.0.0');
 
                 return [$pgk];
@@ -829,7 +829,7 @@ OUTPUT;
             'vendor/package 1.0.0',
         ];
         yield 'package with one package requirement' => [
-            function () {
+            static function () {
                 $pgk = static::getPackage('vendor/package', '1.0.0');
                 $pgk->setRequires(['vendor/required-package' => new Link(
                     'vendor/package',
@@ -846,7 +846,7 @@ OUTPUT;
 `--vendor/required-package 1.0.0',
         ];
         yield 'package with platform requirement' => [
-            function () {
+            static function () {
                 $pgk = static::getPackage('vendor/package', '1.0.0');
                 $pgk->setRequires(['php' => new Link(
                     'vendor/package',
@@ -863,7 +863,7 @@ OUTPUT;
 `--php 8.2.0',
         ];
         yield 'package with json format' => [
-            function () {
+            static function () {
                 $pgk = static::getPackage('vendor/package', '1.0.0');
 
                 return [$pgk];

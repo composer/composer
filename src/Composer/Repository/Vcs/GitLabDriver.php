@@ -610,7 +610,6 @@ class GitLabDriver extends VcsDriver
     /**
      * @param  array<string> $configuredDomains
      * @param  array<string> $urlParts
-     * @param string         $portNumber
      *
      * @return string|false
      */

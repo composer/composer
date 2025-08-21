@@ -16,7 +16,6 @@ use Composer\IO\ConsoleIO;
 use Composer\Util\ProcessExecutor;
 use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
-use React\Promise\Promise;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;

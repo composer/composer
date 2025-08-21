@@ -319,7 +319,7 @@ class Git
                     $defaultUsername = null;
                     if (isset($authParts) && $authParts !== '') {
                         if (str_contains($authParts, ':')) {
-                            [$defaultUsername, ] = explode(':', $authParts, 2);
+                            [$defaultUsername] = explode(':', $authParts, 2);
                         } else {
                             $defaultUsername = $authParts;
                         }

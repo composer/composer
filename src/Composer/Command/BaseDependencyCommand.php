@@ -26,7 +26,6 @@ use Composer\Repository\RepositoryFactory;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Semver\Constraint\Bound;
-use Composer\Util\Platform;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Package\Version\VersionParser;
@@ -128,6 +127,7 @@ abstract class BaseDependencyCommand extends BaseCommand
             $this->getIO()->writeError('<info>Package "'.$needle.' '.$textConstraint.'" found in version "'.$matchedPackage->getPrettyVersion().'"'.$extraNotice.'.</info>');
         } elseif ($inverted) {
             $this->getIO()->write('<comment>Package "'.$needle.'" '.$matchedPackage->getPrettyVersion().' is already installed! To find out why, run `composer why '.$needle.'`</comment>');
+
             return 0;
         }
 

@@ -16,7 +16,6 @@ use Composer\Repository\Vcs\SvnDriver;
 use Composer\Config;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
-use Composer\Util\ProcessExecutor;
 
 class SvnDriverTest extends TestCase
 {

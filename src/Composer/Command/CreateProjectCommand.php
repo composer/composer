@@ -33,7 +33,6 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
-use Composer\Util\Silencer;
 use Composer\Console\Input\InputArgument;
 use Seld\Signal\SignalHandler;
 use Symfony\Component\Console\Input\InputInterface;

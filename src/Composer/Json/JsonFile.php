@@ -60,7 +60,6 @@ class JsonFile
      *
      * @param  string                    $path           path to a lockfile
      * @param  ?HttpDownloader           $httpDownloader required for loading http/https json files
-     * @param  ?IOInterface              $io
      * @throws \InvalidArgumentException
      */
     public function __construct(string $path, ?HttpDownloader $httpDownloader = null, ?IOInterface $io = null)
@@ -285,12 +284,12 @@ class JsonFile
             self::throwEncodeError(json_last_error());
         }
 
-        if (($options & JSON_PRETTY_PRINT) > 0 && $indent !== self::INDENT_DEFAULT ) {
+        if (($options & JSON_PRETTY_PRINT) > 0 && $indent !== self::INDENT_DEFAULT) {
             // Pretty printing and not using default indentation
             return Preg::replaceCallback(
                 '#^ {4,}#m',
                 static function ($match) use ($indent): string {
-                    return str_repeat($indent, (int)(strlen($match[0]) / 4));
+                    return str_repeat($indent, (int) (strlen($match[0]) / 4));
                 },
                 $json
             );
@@ -353,7 +352,6 @@ class JsonFile
     /**
      * Validates the syntax of a JSON string
      *
-     * @param  string                    $file
      * @throws \UnexpectedValueException
      * @throws ParsingException
      * @return bool                      true on success
@@ -375,11 +373,15 @@ class JsonFile
         }
 
         if ($file === null) {
-            throw new ParsingException('The input does not contain valid JSON' . "\n" . $result->getMessage(),
-                $result->getDetails());
+            throw new ParsingException(
+                'The input does not contain valid JSON' . "\n" . $result->getMessage(),
+                $result->getDetails()
+            );
         } else {
-            throw new ParsingException('"' . $file . '" does not contain valid JSON' . "\n" . $result->getMessage(),
-                $result->getDetails());
+            throw new ParsingException(
+                '"' . $file . '" does not contain valid JSON' . "\n" . $result->getMessage(),
+                $result->getDetails()
+            );
         }
     }
 
@@ -388,6 +390,7 @@ class JsonFile
         if (Preg::isMatchStrictGroups('#^([ \t]+)"#m', $json ?? '', $match)) {
             return $match[1];
         }
+
         return self::INDENT_DEFAULT;
     }
 }

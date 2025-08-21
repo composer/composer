@@ -99,10 +99,6 @@ class RepositoryFactory
         return self::createRepos($rm, $config->getRepositories());
     }
 
-    /**
-     * @param  EventDispatcher   $eventDispatcher
-     * @param  HttpDownloader    $httpDownloader
-     */
     public static function manager(IOInterface $io, Config $config, ?HttpDownloader $httpDownloader = null, ?EventDispatcher $eventDispatcher = null, ?ProcessExecutor $process = null): RepositoryManager
     {
         if ($httpDownloader === null) {

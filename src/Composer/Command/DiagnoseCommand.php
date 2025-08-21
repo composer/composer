@@ -30,13 +30,11 @@ use Composer\Repository\PlatformRepository;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\RepositorySet;
-use Composer\Repository\RootPackageRepository;
 use Composer\Util\ConfigValidator;
 use Composer\Util\Git;
 use Composer\Util\IniHelper;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\HttpDownloader;
-use Composer\Util\StreamContextFactory;
 use Composer\Util\Platform;
 use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
@@ -467,7 +465,6 @@ EOT
     }
 
     /**
-     * @param  string             $token
      * @throws TransportException
      * @return mixed|string
      */

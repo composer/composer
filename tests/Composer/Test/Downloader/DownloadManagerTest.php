@@ -258,7 +258,7 @@ class DownloadManagerTest extends TestCase
         $package
             ->expects($this->exactly(2))
             ->method('setInstallationSource')
-            ->willReturnCallback(function ($type) {
+            ->willReturnCallback(static function ($type) {
                 static $series = [
                     'dist',
                     'source',
@@ -1136,7 +1136,7 @@ class DownloadManagerTest extends TestCase
     }
 
     /**
-     * @return \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject
+     * @return PackageInterface&\PHPUnit\Framework\MockObject\MockObject
      */
     private function createPackageMock()
     {

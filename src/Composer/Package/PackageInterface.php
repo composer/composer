@@ -174,8 +174,6 @@ interface PackageInterface
 
     /**
      * Returns the reference of the distribution archive of this version, e.g. master, 1.0.0 or a commit hash for git
-     *
-     * @return ?string
      */
     public function getDistReference(): ?string;
 
@@ -183,8 +181,6 @@ interface PackageInterface
      * Returns the sha1 checksum for the distribution archive of this version
      *
      * Can be an empty string which should be treated as null
-     *
-     * @return ?string
      */
     public function getDistSha1Checksum(): ?string;
 
@@ -229,8 +225,6 @@ interface PackageInterface
 
     /**
      * Returns the release date of the package
-     *
-     * @return ?\DateTimeInterface
      */
     public function getReleaseDate(): ?\DateTimeInterface;
 
@@ -327,7 +321,6 @@ interface PackageInterface
     /**
      * Returns the settings for php extension packages
      *
-     * @return array|null
      *
      * @phpstan-return PhpExtConfig|null
      */
@@ -340,8 +333,6 @@ interface PackageInterface
 
     /**
      * Returns a reference to the repository that owns the package
-     *
-     * @return ?RepositoryInterface
      */
     public function getRepository(): ?RepositoryInterface;
 
@@ -359,8 +350,6 @@ interface PackageInterface
 
     /**
      * Returns the package notification url
-     *
-     * @return ?string
      */
     public function getNotificationUrl(): ?string;
 

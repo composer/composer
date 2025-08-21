@@ -16,7 +16,6 @@ use Composer\Repository\Vcs\GitHubDriver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
-use Composer\Util\ProcessExecutor;
 
 class GitHubDriverTest extends TestCase
 {

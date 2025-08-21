@@ -14,12 +14,10 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Config;
 use Composer\Repository\Vcs\GitBitbucketDriver;
-use Composer\Repository\Vcs\GitHubDriver;
 use Composer\Test\Mock\HttpDownloaderMock;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Http\Response;
 
 /**
  * @group bitbucket
@@ -48,7 +46,7 @@ class GitBitbucketDriverTest extends TestCase
             ],
         ]);
 
-        $this->httpDownloader = $this->getHttpDownloaderMock($this->io, $this->config);;
+        $this->httpDownloader = $this->getHttpDownloaderMock($this->io, $this->config);
     }
 
     protected function tearDown(): void
@@ -84,7 +82,7 @@ class GitBitbucketDriverTest extends TestCase
         self::expectExceptionMessage('https://bitbucket.org/user/repo.git does not appear to be a git repository, use https://bitbucket.org/user/repo but remember that Bitbucket no longer supports the mercurial repositories. https://bitbucket.org/blog/sunsetting-mercurial-support-in-bitbucket');
 
         $this->httpDownloader->expects([
-            ['url' => 'https://api.bitbucket.org/2.0/repositories/user/repo?fields=-project%2C-owner', 'body' => '{"scm":"hg","website":"","has_wiki":false,"name":"repo","links":{"branches":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/branches"},"tags":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/tags"},"clone":[{"href":"https:\/\/user@bitbucket.org\/user\/repo","name":"https"},{"href":"ssh:\/\/hg@bitbucket.org\/user\/repo","name":"ssh"}],"html":{"href":"https:\/\/bitbucket.org\/user\/repo"}},"language":"php","created_on":"2015-02-18T16:22:24.688+00:00","updated_on":"2016-05-17T13:20:21.993+00:00","is_private":true,"has_issues":false}']
+            ['url' => 'https://api.bitbucket.org/2.0/repositories/user/repo?fields=-project%2C-owner', 'body' => '{"scm":"hg","website":"","has_wiki":false,"name":"repo","links":{"branches":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/branches"},"tags":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/tags"},"clone":[{"href":"https:\/\/user@bitbucket.org\/user\/repo","name":"https"},{"href":"ssh:\/\/hg@bitbucket.org\/user\/repo","name":"ssh"}],"html":{"href":"https:\/\/bitbucket.org\/user\/repo"}},"language":"php","created_on":"2015-02-18T16:22:24.688+00:00","updated_on":"2016-05-17T13:20:21.993+00:00","is_private":true,"has_issues":false}'],
         ], true);
 
         $driver = $this->getDriver(['url' => 'https://bitbucket.org/user/repo.git']);

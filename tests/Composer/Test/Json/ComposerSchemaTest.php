@@ -31,7 +31,7 @@ class ComposerSchemaTest extends TestCase
                     'name' => 'pattern',
                     'params' => [
                         'pattern' => '^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$',
-                    ]
+                    ],
                 ],
             ],
         ];
@@ -102,7 +102,7 @@ class ComposerSchemaTest extends TestCase
                         'name' => 'pattern',
                         'params' => [
                             'pattern' => '^[vV]?\\d+(?:[.-]\\d+){0,3}[._-]?(?:(?:[sS][tT][aA][bB][lL][eE]|[bB][eE][tT][aA]|[bB]|[rR][cC]|[aA][lL][pP][hH][aA]|[aA]|[pP][aA][tT][cC][hH]|[pP][lL]|[pP])(?:(?:[.-]?\\d+)*)?)?(?:[.-]?[dD][eE][vV]|\\.x-dev)?(?:\\+.*)?$|^dev-.*$',
-                        ]
+                        ],
                     ],
                 ],
             ], $this->check($json));

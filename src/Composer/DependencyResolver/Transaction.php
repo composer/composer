@@ -76,6 +76,7 @@ class Transaction
                 if ($a instanceof AliasPackage !== $b instanceof AliasPackage) {
                     return $a instanceof AliasPackage ? -1 : 1;
                 }
+
                 // if names are the same, compare version, e.g. to sort aliases reliably, actual order does not matter
                 return strcmp($b->getVersion(), $a->getVersion());
             }

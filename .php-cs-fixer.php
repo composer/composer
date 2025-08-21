@@ -18,15 +18,19 @@ $finder = PhpCsFixer\Finder::create()
     ->notPath('Fixtures')
     ->notPath('Composer/Autoload/ClassLoader.php')
     ->notPath('Composer/InstalledVersions.php')
+    ->notPath('Composer/Test/Autoload/MinimumVersionSupport')
 ;
 
 $config = new PhpCsFixer\Config();
-return $config->setRules([
+return $config
+    ->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect())
+    ->setRules([
         '@PSR2' => true,
         'binary_operator_spaces' => true,
         'blank_line_before_statement' => ['statements' => ['declare', 'return']],
         'cast_spaces' => ['space' => 'single'],
         'header_comment' => ['header' => $header],
+        'statement_indentation' => ['stick_comment_to_next_continuous_control_statement' => true],
         'include' => true,
 
         'class_attributes_separation' => ['elements' => ['method' => 'one', 'trait_import' => 'none']],
@@ -35,7 +39,7 @@ return $config->setRules([
         'no_empty_statement' => true,
         'no_extra_blank_lines' => true,
         'no_leading_namespace_whitespace' => true,
-        'no_trailing_comma_in_singleline_array' => true,
+        'no_trailing_comma_in_singleline' => true,
         'no_whitespace_in_blank_line' => true,
         'object_operator_without_whitespace' => true,
         //'phpdoc_align' => true,
@@ -49,7 +53,7 @@ return $config->setRules([
         'phpdoc_trim' => true,
         'phpdoc_types' => true,
         'psr_autoloading' => true,
-        'single_blank_line_before_namespace' => true,
+        'blank_lines_before_namespace' => true,
         'standardize_not_equals' => true,
         'ternary_operator_spaces' => true,
         'trailing_comma_in_multiline' => ['elements' => ['arrays']],
@@ -75,7 +79,7 @@ return $config->setRules([
         'combine_nested_dirname' => true,
         'random_api_migration' => true,
         'ternary_to_null_coalescing' => true,
-        'phpdoc_to_param_type' => true,
+        'phpdoc_to_param_type' => false,
         'declare_strict_types' => true,
         'no_superfluous_phpdoc_tags' => [
             'allow_mixed' => true,

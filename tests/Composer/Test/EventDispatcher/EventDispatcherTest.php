@@ -514,7 +514,7 @@ class EventDispatcherTest extends TestCase
     /**
      * @param array<callable|string> $listeners
      *
-     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\EventDispatcher\EventDispatcher
+     * @return \PHPUnit\Framework\MockObject\MockObject&EventDispatcher
      */
     private function getDispatcherStubForListenersTest(array $listeners, IOInterface $io)
     {

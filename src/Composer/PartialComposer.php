@@ -39,12 +39,12 @@ class PartialComposer
     private $loop;
 
     /**
-     * @var Repository\RepositoryManager
+     * @var RepositoryManager
      */
     private $repositoryManager;
 
     /**
-     * @var Installer\InstallationManager
+     * @var InstallationManager
      */
     private $installationManager;
 

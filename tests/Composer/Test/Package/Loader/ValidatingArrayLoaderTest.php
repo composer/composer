@@ -423,10 +423,10 @@ class ValidatingArrayLoaderTest extends TestCase
             ],
             [
                 [
-                    'require' => ['acme/bar' => '^1.0']
+                    'require' => ['acme/bar' => '^1.0'],
                 ],
                 ['name : must be present'],
-            ]
+            ],
         ]);
     }
 
@@ -560,12 +560,12 @@ class ValidatingArrayLoaderTest extends TestCase
                 [
                     'name' => 'a/b',
                     'license' => ['XXXXX'],
-                ]
+                ],
             ],
             [
                 [
                     'name' => 'a/b',
-                    'license' => [['author'=>'bar'], 'MIT'],
+                    'license' => [['author' => 'bar'], 'MIT'],
                 ],
                 [
                     'License {"author":"bar"} should be a string.',
@@ -574,7 +574,7 @@ class ValidatingArrayLoaderTest extends TestCase
                 [
                     'name' => 'a/b',
                     'license' => ['MIT'],
-                ]
+                ],
             ],
         ];
     }

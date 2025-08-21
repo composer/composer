@@ -68,9 +68,6 @@ class HhvmDetectorTest extends TestCase
         self::assertSame(self::getVersionParser()->normalize($version), self::getVersionParser()->normalize($detectedVersion));
     }
 
-    /**
-     * @return ?string
-     */
     private static function versionIdToVersion(): ?string
     {
         if (!defined('HHVM_VERSION_ID')) {

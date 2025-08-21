@@ -36,7 +36,8 @@ class GlobalCommand extends BaseCommand
             $suggestions->suggestValues(array_values(array_filter(
                 array_map(static function (Command $command) {
                     return $command->isHidden() ? null : $command->getName();
-                }, $application->all()), function (?string $cmd) {
+                }, $application->all()),
+                static function (?string $cmd) {
                     return $cmd !== null;
                 }
             )));

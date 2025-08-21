@@ -15,7 +15,6 @@ namespace Composer\Downloader;
 use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Platform;
-use Composer\Util\ProcessExecutor;
 
 /**
  * GZip archive downloader.

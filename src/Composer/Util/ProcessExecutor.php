@@ -46,7 +46,7 @@ class ProcessExecutor
         ['show'],
         ['log'],
         ['branch'],
-        ['remote', 'set-url']
+        ['remote', 'set-url'],
     ];
 
     /** @var int */
@@ -139,7 +139,7 @@ class ProcessExecutor
             $process = new Process($command, $cwd, $env, null, static::getTimeout());
         }
 
-        if (! Platform::isWindows() && $tty) {
+        if (!Platform::isWindows() && $tty) {
             try {
                 $process->setTty(true);
             } catch (RuntimeException $e) {

@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Factory;
 use Composer\Json\JsonFile;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Input\InputInterface;

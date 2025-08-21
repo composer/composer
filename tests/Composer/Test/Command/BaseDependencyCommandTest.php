@@ -10,10 +10,8 @@
  * file that was distributed with this source code.
  */
 
-
 namespace Composer\Test\Command;
 
-use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
 use Symfony\Component\Console\Command\Command;
@@ -57,25 +55,25 @@ class BaseDependencyCommandTest extends TestCase
         yield '`why` command without package parameter' => [
             'why',
             [],
-            'Not enough arguments (missing: "package").'
+            'Not enough arguments (missing: "package").',
         ];
 
         yield '`why-not` command without package and version parameters' => [
             'why-not',
             [],
-            'Not enough arguments (missing: "package, version").'
+            'Not enough arguments (missing: "package, version").',
         ];
 
         yield '`why-not` command without package parameter' => [
             'why-not',
             ['version' => '*'],
-            'Not enough arguments (missing: "package").'
+            'Not enough arguments (missing: "package").',
         ];
 
         yield '`why-not` command without version parameter' => [
             'why-not',
             ['package' => 'vendor1/package1'],
-            'Not enough arguments (missing: "version").'
+            'Not enough arguments (missing: "version").',
         ];
     }
 
@@ -100,7 +98,8 @@ class BaseDependencyCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         self::assertEquals(
             Command::FAILURE,
-            $appTester->run(['command' => $command] + $parameters + ['--locked' => true]
+            $appTester->run(
+                ['command' => $command] + $parameters + ['--locked' => true]
             )
         );
     }
@@ -150,8 +149,8 @@ class BaseDependencyCommandTest extends TestCase
         $this->initTempComposer([
             'require' => [
                 'vendor1/package2' => '1.*',
-                'vendor2/package1' => '2.*'
-            ]
+                'vendor2/package1' => '2.*',
+            ],
         ]);
 
         $firstRequiredPackage = self::getPackage('vendor1/package2');
@@ -185,11 +184,11 @@ class BaseDependencyCommandTest extends TestCase
 
         $this->initTempComposer([
             'require' => [
-                'vendor1/package1' => '1.*'
+                'vendor1/package1' => '1.*',
             ],
             'require-dev' => [
-                'vendor2/package1' => '2.*'
-            ]
+                'vendor2/package1' => '2.*',
+            ],
         ]);
 
         $someRequiredPackage = self::getPackage('vendor1/package1');
@@ -210,12 +209,12 @@ class BaseDependencyCommandTest extends TestCase
     {
         yield '`why` command' => [
             'why',
-            ['package' => 'vendor1/package1']
+            ['package' => 'vendor1/package1'],
         ];
 
         yield '`why-not` command' => [
             'why-not',
-            ['package' => 'vendor1/package1', 'version' => '1.*']
+            ['package' => 'vendor1/package1', 'version' => '1.*'],
         ];
     }
 
@@ -242,7 +241,7 @@ class BaseDependencyCommandTest extends TestCase
                     'package' => [
                         ['name' => 'vendor1/package1', 'version' => '1.3.0', 'require' => ['vendor1/package2' => '^2']],
                         ['name' => 'vendor1/package2', 'version' => '2.3.0', 'require' => ['vendor1/package3' => '^1']],
-                        ['name' => 'vendor1/package3', 'version' => '2.1.0']
+                        ['name' => 'vendor1/package3', 'version' => '2.1.0'],
                     ],
                 ],
             ],
@@ -251,8 +250,8 @@ class BaseDependencyCommandTest extends TestCase
                 'vendor1/package3' => '2.3.0',
             ],
             'require-dev' => [
-                'vendor2/package1' => '2.*'
-            ]
+                'vendor2/package1' => '2.*',
+            ],
         ]);
 
         $firstRequiredPackage = self::getPackage('vendor1/package1', '1.3.0');
@@ -263,7 +262,7 @@ class BaseDependencyCommandTest extends TestCase
                 new MatchAllConstraint(),
                 Link::TYPE_REQUIRE,
                 '^2'
-            )
+            ),
         ]);
         $secondRequiredPackage = self::getPackage('vendor1/package2', '2.3.0');
         $secondRequiredPackage->setRequires([
@@ -273,7 +272,7 @@ class BaseDependencyCommandTest extends TestCase
                 new MatchAllConstraint(),
                 Link::TYPE_REQUIRE,
                 '^1'
-            )
+            ),
         ]);
         $thirdRequiredPackage = self::getPackage('vendor1/package3', '2.1.0');
         $someDevRequiredPackage = self::getPackage('vendor2/package1');
@@ -292,7 +291,7 @@ class BaseDependencyCommandTest extends TestCase
             'package' => $packageToBeInspected,
             '--tree' => $renderAsTree,
             '--recursive' => $renderRecursively,
-            '--locked' => true
+            '--locked' => true,
         ]);
 
         self::assertSame($expectedStatusCode, $appTester->getStatusCode());
@@ -308,7 +307,7 @@ class BaseDependencyCommandTest extends TestCase
         yield 'there is no installed package depending on the package' => [
             ['package' => 'vendor1/package1'],
             'There is no installed package depending on "vendor1/package1"',
-            1
+            1,
         ];
 
         yield 'a nested package dependency' => [
@@ -318,7 +317,7 @@ __root__         -     requires vendor1/package3 (2.3.0)
 vendor1/package2 2.3.0 requires vendor1/package3 (^1)
 OUTPUT
 ,
-            0
+            0,
         ];
 
         yield 'a nested package dependency (tree mode)' => [
@@ -331,7 +330,7 @@ vendor1/package3 2.1.0
    `--vendor1/package1 1.3.0 (requires vendor1/package2 ^2)
 OUTPUT
 ,
-            0
+            0,
         ];
 
         yield 'a nested package dependency (recursive mode)' => [
@@ -343,13 +342,13 @@ __root__         -     requires vendor1/package3 (2.3.0)
 vendor1/package2 2.3.0 requires vendor1/package3 (^1)
 OUTPUT
 ,
-            0
+            0,
         ];
 
         yield 'a simple package dev dependency' => [
             ['package' => 'vendor2/package1'],
             '__root__ - requires (for development) vendor2/package1 (2.*)',
-            0
+            0,
         ];
     }
 
@@ -377,7 +376,7 @@ OUTPUT
                         ['name' => 'vendor2/package1', 'version' => '2.0.0'],
                         ['name' => 'vendor2/package2', 'version' => '1.0.0', 'require' => ['vendor2/package3' => '1.4.*', 'php' => '^8.2']],
                         ['name' => 'vendor2/package3', 'version' => '1.4.0'],
-                        ['name' => 'vendor2/package3', 'version' => '1.5.0']
+                        ['name' => 'vendor2/package3', 'version' => '1.5.0'],
                     ],
                 ],
             ],
@@ -387,7 +386,7 @@ OUTPUT
             ],
             'require-dev' => [
                 'vendor2/package1' => '2.*',
-                'vendor2/package2' => '^1'
+                'vendor2/package2' => '^1',
             ],
             'config' => [
                 'platform' => [
@@ -430,7 +429,7 @@ OUTPUT
         $appTester->run([
             'command' => 'why-not',
             'package' => $packageToBeInspected,
-            'version' => $packageVersionToBeInspected
+            'version' => $packageVersionToBeInspected,
         ]);
 
         self::assertSame($expectedStatusCode, $appTester->getStatusCode());
@@ -450,7 +449,7 @@ __root__ - requires vendor1/package1 (1.*)
 Not finding what you were looking for? Try calling `composer require "vendor1/package1:3.*" --dry-run` to get another view on the problem.
 OUTPUT
 ,
-            1
+            1,
         ];
 
         yield 'it could not found the package and there is no installed package with a specific version' => [
@@ -461,7 +460,7 @@ There is no installed package depending on "vendor1/package1" in versions not ma
 Not finding what you were looking for? Try calling `composer require "vendor1/package1:^1.4" --dry-run` to get another view on the problem.
 OUTPUT
 ,
-            0
+            0,
         ];
 
         yield 'Package is already installed!' => [
@@ -470,7 +469,7 @@ OUTPUT
 Package "vendor1/package1" 1.3.0 is already installed! To find out why, run `composer why vendor1/package1`
 OUTPUT
 ,
-            0
+            0,
         ];
 
         yield 'an installed package requires an incompatible version of the inspected package' => [
@@ -480,7 +479,7 @@ vendor2/package2 1.0.0 requires vendor2/package3 (1.4.*)
 Not finding what you were looking for? Try calling `composer update "vendor2/package3:1.5.0" --dry-run` to get another view on the problem.
 OUTPUT
 ,
-            1
+            1,
         ];
 
         yield 'all compatible with the inspected platform package (range matching installed)' => [
@@ -490,7 +489,7 @@ Package "php ^8" found in version "8.3.2" (version provided by config.platform).
 There is no installed package depending on "php" in versions not matching ^8
 OUTPUT
 ,
-            0
+            0,
         ];
 
         yield 'an installed package requires an incompatible version of the inspected platform package (fixed non-matching package)' => [
@@ -500,7 +499,7 @@ __root__         -     requires php (^8)
 vendor2/package2 1.0.0 requires php (^8.2)
 OUTPUT
 ,
-            1
+            1,
         ];
     }
 }

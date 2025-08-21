@@ -36,7 +36,7 @@ class FundCommandTest extends TestCase
             'stable/pkg' => self::getPackage('stable/pkg', '1.0.0'),
         ];
         $devPackages = [
-            'dev/pkg' => self::getPackage('dev/pkg', '2.3.4.5')
+            'dev/pkg' => self::getPackage('dev/pkg', '2.3.4.5'),
         ];
 
         if (count($funding) !== 0) {
@@ -69,11 +69,11 @@ class FundCommandTest extends TestCase
                 ],
                 'require-dev' => [
                     'dev/pkg' => '~4.0',
-                ]
+                ],
             ],
             [],
             [],
-            "No funding links were found in your package dependencies. This doesn't mean they don't need your support!"
+            "No funding links were found in your package dependencies. This doesn't mean they don't need your support!",
         ];
 
         yield 'funding links set locally are used as fallback if not found remotely' => [
@@ -84,18 +84,18 @@ class FundCommandTest extends TestCase
                 ],
                 'require-dev' => [
                     'dev/pkg' => '~4.0',
-                ]
+                ],
             ],
             [],
             [
                 'first/pkg' => [
                     'type' => 'github',
-                    'url' => 'https://github.com/composer-test-data'
+                    'url' => 'https://github.com/composer-test-data',
                 ],
                 'dev/pkg' => [
                     'type' => 'github',
-                    'url' => 'https://github.com/composer-test-data-dev'
-                ]
+                    'url' => 'https://github.com/composer-test-data-dev',
+                ],
             ],
             "The following packages were found in your dependencies which publish funding information:
 
@@ -107,7 +107,7 @@ first
     https://github.com/sponsors/composer-test-data
 
 Please consider following these links and sponsoring the work of package authors!
-Thank you!"
+Thank you!",
         ];
 
         yield 'funding links set remotely are used as primary if found' => [
@@ -125,7 +125,7 @@ Thank you!"
                             // no default branch available so falling back to locally installed data
                             ['name' => 'stable/pkg', 'version' => '1.0.0', 'funding' => [['type' => 'github', 'url' => 'org2']]],
                         ],
-                    ]
+                    ],
                 ],
                 'require' => [
                     'first/pkg' => '^2.0',
@@ -133,22 +133,22 @@ Thank you!"
                 ],
                 'require-dev' => [
                     'dev/pkg' => '~4.0',
-                ]
+                ],
             ],
             [],
             [
                 'first/pkg' => [
                     'type' => 'github',
-                    'url' => 'https://github.com/composer-test-data'
+                    'url' => 'https://github.com/composer-test-data',
                 ],
                 'dev/pkg' => [
                     'type' => 'github',
-                    'url' => 'https://github.com/composer-test-data-dev'
+                    'url' => 'https://github.com/composer-test-data-dev',
                 ],
                 'stable/pkg' => [
                     'type' => 'github',
-                    'url' => 'https://github.com/composer-test-data-stable'
-                ]
+                    'url' => 'https://github.com/composer-test-data-stable',
+                ],
             ],
             "The following packages were found in your dependencies which publish funding information:
 
@@ -163,7 +163,7 @@ stable
     https://github.com/sponsors/composer-test-data-stable
 
 Please consider following these links and sponsoring the work of package authors!
-Thank you!"
+Thank you!",
         ];
 
         yield 'format funding links as JSON' => [
@@ -174,18 +174,18 @@ Thank you!"
                 ],
                 'require-dev' => [
                     'dev/pkg' => '~4.0',
-                ]
+                ],
             ],
             ['--format' => 'json'],
             [
                 'first/pkg' => [
                     'type' => 'github',
-                    'url' => 'https://github.com/composer-test-data'
+                    'url' => 'https://github.com/composer-test-data',
                 ],
                 'dev/pkg' => [
                     'type' => 'github',
-                    'url' => 'https://github.com/composer-test-data-dev'
-                ]
+                    'url' => 'https://github.com/composer-test-data-dev',
+                ],
             ],
             '{
     "dev": {
@@ -198,7 +198,7 @@ Thank you!"
             "pkg"
         ]
     }
-}'
+}',
         ];
     }
 }

@@ -35,12 +35,6 @@ class HgDownloaderTest extends TestCase
         }
     }
 
-    /**
-     * @param \Composer\IO\IOInterface $io
-     * @param \Composer\Config $config
-     * @param \Composer\Test\Mock\ProcessExecutorMock $executor
-     * @param \Composer\Util\Filesystem $filesystem
-     */
     protected function getDownloaderMock(?\Composer\IO\IOInterface $io = null, ?\Composer\Config $config = null, ?\Composer\Test\Mock\ProcessExecutorMock $executor = null, ?Filesystem $filesystem = null): HgDownloader
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();

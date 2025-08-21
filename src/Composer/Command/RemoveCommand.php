@@ -36,9 +36,6 @@ class RemoveCommand extends BaseCommand
 {
     use CompletionTrait;
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this

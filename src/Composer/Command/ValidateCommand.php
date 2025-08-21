@@ -17,8 +17,6 @@ use Composer\IO\IOInterface;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Repository\InstalledRepository;
-use Composer\Repository\PlatformRepository;
 use Composer\Util\ConfigValidator;
 use Composer\Util\Filesystem;
 use Symfony\Component\Console\Input\InputArgument;

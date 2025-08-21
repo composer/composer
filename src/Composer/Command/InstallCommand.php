@@ -32,9 +32,6 @@ class InstallCommand extends BaseCommand
 {
     use CompletionTrait;
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this

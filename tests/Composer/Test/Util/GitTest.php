@@ -14,7 +14,6 @@ namespace Composer\Test\Util;
 
 use Composer\Config;
 use Composer\IO\IOInterface;
-use Composer\Test\Mock\HttpDownloaderMock;
 use Composer\Util\Filesystem;
 use Composer\Util\Git;
 use Composer\Test\Mock\ProcessExecutorMock;
@@ -47,7 +46,7 @@ class GitTest extends TestCase
      */
     public function testRunCommandPublicGitHubRepositoryNotInitialClone(string $protocol, string $expectedUrl): void
     {
-        $commandCallable = function ($url) use ($expectedUrl): string {
+        $commandCallable = static function ($url) use ($expectedUrl): string {
             self::assertSame($expectedUrl, $url);
 
             return 'git command';
@@ -73,7 +72,7 @@ class GitTest extends TestCase
     {
         self::expectException('RuntimeException');
 
-        $commandCallable = function ($url): string {
+        $commandCallable = static function ($url): string {
             self::assertSame('https://github.com/acme/repo', $url);
 
             return 'git command';
@@ -187,8 +186,6 @@ class GitTest extends TestCase
     /**
      * @dataProvider privateBitbucketWithOauthProvider
      *
-     * @param string $gitUrl
-     * @param string $expectedUrl
      * @param array{'username': string, 'password': string}[] $initial_config
      */
     public function testRunCommandPrivateBitbucketRepositoryNotInitialCloneInteractiveWithOauth(string $gitUrl, string $expectedUrl, array $initial_config = []): void
@@ -224,34 +221,35 @@ class GitTest extends TestCase
 
         $this->io
             ->method('askConfirmation')
-            ->willReturnCallback(function () {
-               return true;
+            ->willReturnCallback(static function () {
+                return true;
             });
         $this->io->method('askAndHideAnswer')
-            ->willReturnCallback(function ($question) {
+            ->willReturnCallback(static function ($question) {
                 switch ($question) {
                     case 'Consumer Key (hidden): ':
                         return 'my-consumer-key';
                     case 'Consumer Secret (hidden): ':
                         return 'my-consumer-secret';
                 }
+
                 return '';
             });
 
         $this->io
             ->method('hasAuthentication')
             ->with($this->equalTo('bitbucket.org'))
-            ->willReturnCallback(function ($repositoryName) use (&$initial_config) {
+            ->willReturnCallback(static function ($repositoryName) use (&$initial_config) {
                 return isset($initial_config[$repositoryName]);
             });
         $this->io
             ->method('setAuthentication')
-            ->willReturnCallback(function (string $repositoryName, string $username, ?string $password = null) use (&$initial_config) {
+            ->willReturnCallback(static function (string $repositoryName, string $username, ?string $password = null) use (&$initial_config) {
                 $initial_config[$repositoryName] = ['username' => $username, 'password' => $password];
             });
         $this->io
             ->method('getAuthentication')
-            ->willReturnCallback(function (string $repositoryName) use (&$initial_config) {
+            ->willReturnCallback(static function (string $repositoryName) use (&$initial_config) {
                 if (isset($initial_config[$repositoryName])) {
                     return $initial_config[$repositoryName];
                 }
@@ -260,7 +258,7 @@ class GitTest extends TestCase
             });
         $downloader_mock = $this->getHttpDownloaderMock();
         $downloader_mock->expects([
-            ['url' => 'https://bitbucket.org/site/oauth2/access_token', 'status' => 200, 'body' => '{"expires_in": 600, "access_token": "my-access-token"}']
+            ['url' => 'https://bitbucket.org/site/oauth2/access_token', 'status' => 200, 'body' => '{"expires_in": 600, "access_token": "my-access-token"}'],
         ]);
         $this->git->setHttpDownloader($downloader_mock);
         // @phpstan-ignore method.deprecated

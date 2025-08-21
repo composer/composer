@@ -13,7 +13,6 @@
 namespace Composer\Test\Repository\Vcs;
 
 use Composer\Config;
-use Composer\IO\IOInterface;
 use Composer\Repository\Vcs\GitDriver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
