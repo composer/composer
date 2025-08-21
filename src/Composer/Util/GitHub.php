@@ -23,6 +23,8 @@ use Composer\Pcre\Preg;
  */
 class GitHub
 {
+    public const GITHUB_TOKEN_REGEX = '{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+|github_pat_[a-zA-Z0-9_]+)$}';
+
     /** @var IOInterface */
     protected $io;
     /** @var Config */
