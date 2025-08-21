@@ -27,7 +27,7 @@ jobs:
         include:
           - php-version: "7.2"
             experimental: false
-          - php-version: "8.3"
+          - php-version: "8.4"
             experimental: true
       fail-fast: false
 

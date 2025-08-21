@@ -1,3 +1,10 @@
+### [2.8.11] 2025-08-21
+
+  * Fixed PHP 8.5 deprecation warnings (#12504, #12493, #12505)
+  * Fixed `bump` command handling of 0.x versions (#12468)
+  * Fixed psr-4 warnings being shown in some cases when using symlinked directories (#12480)
+  * Fixed `audit` command failing hard if any advisory constraint was invalid (#12507)
+
 ### [2.8.10] 2025-07-10
 
   * Fixed plugins appearing loaded despite not being loaded yet in some edge cases (#12442)
@@ -2030,6 +2037,7 @@
 
   * Initial release
 
+[2.8.11]: https://github.com/composer/composer/compare/2.8.10...2.8.11
 [2.8.10]: https://github.com/composer/composer/compare/2.8.9...2.8.10
 [2.8.9]: https://github.com/composer/composer/compare/2.8.8...2.8.9
 [2.8.8]: https://github.com/composer/composer/compare/2.8.7...2.8.8

@@ -75,6 +75,7 @@ class VersionBumperTest extends TestCase
         yield 'upgrade bigger-or-eq to latest' => ['>=3.0', '3.4.5', '>=3.4.5'];
         yield 'upgrade bigger-or-eq to latest with v' => ['>=v3.0', '3.4.5', '>=3.4.5'];
         yield 'leave bigger-than untouched' => ['>2.2.3', '2.2.6', '>2.2.3'];
+        yield 'skip pre-stable releases' => ['^0.3 || ^0.4', '0.4.3', '^0.3 || ^0.4.3'];
         yield 'upgrade full wildcard to bigger-or-eq' => ['*', '1.2.3', '>=1.2.3'];
     }
 }
