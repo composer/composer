@@ -119,7 +119,7 @@ class PerforceDriverTest extends TestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Util\Perforce
+     * @return \PHPUnit\Framework\MockObject\MockObject&Perforce
      */
     protected function getMockPerforce()
     {

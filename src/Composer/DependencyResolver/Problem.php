@@ -332,7 +332,7 @@ class Problem
             $newConstraint = Preg::replace('{ +as +([^,\s|]+)$}', '', $constraint->getPrettyString());
             $packages = $repositorySet->findPackages($packageName, new MultiConstraint([
                 new Constraint(Constraint::STR_OP_EQ, $newConstraint),
-                new Constraint(Constraint::STR_OP_EQ, str_replace('#', '+', $newConstraint))
+                new Constraint(Constraint::STR_OP_EQ, str_replace('#', '+', $newConstraint)),
             ], false));
             if (\count($packages) > 0) {
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).'. The # character in branch names is replaced by a + character. Make sure to require it as "'.str_replace('#', '+', $constraint->getPrettyString()).'".'];

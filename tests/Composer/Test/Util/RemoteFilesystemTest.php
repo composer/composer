@@ -13,7 +13,6 @@
 namespace Composer\Test\Util;
 
 use Composer\Config;
-use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Util\AuthHelper;
 use Composer\Util\RemoteFilesystem;

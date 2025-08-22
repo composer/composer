@@ -562,7 +562,7 @@ class PerforceTest extends TestCase
     {
         $this->processExecutor->expects(
             [
-                ['p4', '-p', 'perforce.does.exist:port', 'info', '-s']
+                ['p4', '-p', 'perforce.does.exist:port', 'info', '-s'],
             ],
             true
         );

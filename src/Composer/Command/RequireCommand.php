@@ -16,9 +16,7 @@ use Composer\DependencyResolver\Request;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Loader\RootPackageLoader;
-use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
-use Composer\Package\Version\VersionBumper;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Repository\RepositorySet;
@@ -71,9 +69,6 @@ class RequireCommand extends BaseCommand
     /** @var bool */
     private $dependencyResolutionCompleted = false;
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this
@@ -556,7 +551,7 @@ EOT
             $this->updateFile($this->json, $requirements, $requireKey, $removeKey, $sortPackages);
             if ($locker->isLocked() && $composer->getConfig()->get('lock')) {
                 $stabilityFlags = RootPackageLoader::extractStabilityFlags($requirements, $composer->getPackage()->getMinimumStability(), []);
-                $locker->updateHash($this->json, function (array $lockData) use ($stabilityFlags) {
+                $locker->updateHash($this->json, static function (array $lockData) use ($stabilityFlags) {
                     foreach ($stabilityFlags as $packageName => $flag) {
                         $lockData['stability-flags'][$packageName] = $flag;
                     }

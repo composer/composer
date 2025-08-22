@@ -16,7 +16,6 @@ use Composer\Test\TestCase;
 
 class LicensesCommandTest extends TestCase
 {
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -131,26 +130,26 @@ class LicensesCommandTest extends TestCase
                 "dev/pkg" => [
                     "version" => "2.3.4.5",
                     "license" => [
-                        "MIT"
-                    ]
+                        "MIT",
+                    ],
                 ],
                 "first/pkg" => [
                     "version" => "2.3.4",
                     "license" => [
-                        "MIT"
-                    ]
+                        "MIT",
+                    ],
                 ],
                 "second/pkg" => [
                     "version" => "3.4.0",
                     "license" => [
-                        "LGPL-2.0-only"
-                    ]
+                        "LGPL-2.0-only",
+                    ],
                 ],
                 "third/pkg" => [
                     "version" => "1.5.4",
-                    "license" => []
-                ]
-            ]
+                    "license" => [],
+                ],
+            ],
         ];
 
         self::assertSame($expected, json_decode($appTester->getDisplay(), true));

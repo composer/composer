@@ -233,7 +233,7 @@ class FilesystemRepositoryTest extends TestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Json\JsonFile
+     * @return \PHPUnit\Framework\MockObject\MockObject&JsonFile
      */
     private function createJsonFileMock()
     {

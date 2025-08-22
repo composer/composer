@@ -413,7 +413,7 @@ class ComposerRepositoryTest extends TestCase
                         'timeout' => 10,
                         'content' => http_build_query(['packages' => ['foo/bar']]),
                     ]],
-                ]
+                ],
             ],
             true
         );

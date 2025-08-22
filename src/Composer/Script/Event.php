@@ -88,8 +88,6 @@ class Event extends BaseEvent
 
     /**
      * Set the originating event.
-     *
-     * @return ?BaseEvent
      */
     public function getOriginatingEvent(): ?BaseEvent
     {

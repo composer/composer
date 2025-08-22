@@ -74,7 +74,6 @@ class ArrayDumperTest extends TestCase
      * @dataProvider provideKeys
      *
      * @param mixed  $value
-     * @param string $method
      * @param mixed  $expectedValue
      */
     public function testKeys(string $key, $value, ?string $method = null, $expectedValue = null): void

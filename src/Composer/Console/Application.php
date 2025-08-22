@@ -455,15 +455,14 @@ class Application extends BaseApplication
     }
 
     /**
-     * @throws \RuntimeException
-     * @return ?string
+     * @throws RuntimeException
      */
     private function getNewWorkingDir(InputInterface $input): ?string
     {
         /** @var string|null $workingDir */
         $workingDir = $input->getParameterOption(['--working-dir', '-d'], null, true);
         if (null !== $workingDir && !is_dir($workingDir)) {
-            throw new \RuntimeException('Invalid working directory specified, '.$workingDir.' does not exist.');
+            throw new RuntimeException('Invalid working directory specified, '.$workingDir.' does not exist.');
         }
 
         return $workingDir;

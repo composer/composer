@@ -89,7 +89,7 @@ class AutoloadGeneratorTest extends TestCase
      * Map of setting name => return value configuration for the stub Config
      * object.
      *
-     * @var array<string, callable|boolean>
+     * @var array<string, callable|bool>
      */
     private $configValueMap;
 
@@ -403,7 +403,7 @@ class AutoloadGeneratorTest extends TestCase
         self::assertFileContentEquals(__DIR__.'/Fixtures/autoload_files_duplicates.php', $this->vendorDir.'/composer/autoload_files.php');
         $expected = '<warning>The following "files" autoload rules are included multiple times, this may cause issues and should be resolved:</warning>'.PHP_EOL.
             '<warning> - $baseDir . \'/foo.php\'</warning>'.PHP_EOL;
-        self::assertEquals($expected, $this->io->getOutput());;
+        self::assertEquals($expected, $this->io->getOutput());
     }
 
     public function testVendorsAutoloading(): void
@@ -1361,10 +1361,10 @@ EOF;
         $this->eventDispatcher
             ->expects($this->exactly(2))
             ->method('dispatchScript')
-            ->willReturnCallback(function ($type, $dev) {
+            ->willReturnCallback(static function ($type, $dev) {
                 static $series = [
                     [ScriptEvents::PRE_AUTOLOAD_DUMP, false],
-                    [ScriptEvents::POST_AUTOLOAD_DUMP, false]
+                    [ScriptEvents::POST_AUTOLOAD_DUMP, false],
                 ];
 
                 self::assertSame(array_shift($series), [$type, $dev]);
@@ -2052,7 +2052,7 @@ EOF;
 
         $package->setAutoload([
             'psr-4' => ['MyTools\\' => 'tools/'],
-            'exclude-from-classmap' => ['**/vendor/']
+            'exclude-from-classmap' => ['**/vendor/'],
         ]);
 
         $this->repository->expects($this->once())
@@ -2098,7 +2098,7 @@ EOF;
 
         $package->setAutoload([
             'classmap' => ['tools/'],
-            'exclude-from-classmap' => ['**/vendor/']
+            'exclude-from-classmap' => ['**/vendor/'],
         ]);
 
         $this->repository->expects($this->once())

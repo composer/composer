@@ -35,7 +35,7 @@ class Svn
     protected $hasAuth;
 
     /**
-     * @var \Composer\IO\IOInterface
+     * @var IOInterface
      */
     protected $io;
 
@@ -60,7 +60,7 @@ class Svn
     protected $qtyAuthTries = 0;
 
     /**
-     * @var \Composer\Config
+     * @var Config
      */
     protected $config;
 
@@ -69,9 +69,6 @@ class Svn
      */
     private static $version;
 
-    /**
-     * @param ProcessExecutor          $process
-     */
     public function __construct(string $url, IOInterface $io, Config $config, ?ProcessExecutor $process = null)
     {
         $this->url = $url;
@@ -185,7 +182,6 @@ class Svn
      * Repositories requests credentials, let's put them in.
      *
      * @throws \RuntimeException
-     * @return \Composer\Util\Svn
      */
     protected function doAuthDance(): Svn
     {

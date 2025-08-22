@@ -24,11 +24,11 @@ use Composer\Factory;
  */
 class PerforceDownloaderTest extends TestCase
 {
-    /** @var \Composer\Config */
+    /** @var Config */
     protected $config;
-    /** @var \Composer\Downloader\PerforceDownloader */
+    /** @var PerforceDownloader */
     protected $downloader;
-    /** @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject */
+    /** @var IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     protected $io;
     /** @var \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject */
     protected $package;
@@ -36,7 +36,7 @@ class PerforceDownloaderTest extends TestCase
     protected $processExecutor;
     /** @var string[] */
     protected $repoConfig;
-    /** @var \Composer\Repository\VcsRepository&\PHPUnit\Framework\MockObject\MockObject */
+    /** @var VcsRepository&\PHPUnit\Framework\MockObject\MockObject */
     protected $repository;
     /** @var string */
     protected $testPath;
@@ -59,7 +59,7 @@ class PerforceDownloaderTest extends TestCase
     }
 
     /**
-     * @return \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject
+     * @return IOInterface&\PHPUnit\Framework\MockObject\MockObject
      */
     protected function getMockIoInterface()
     {
@@ -87,7 +87,7 @@ class PerforceDownloaderTest extends TestCase
 
     /**
      * @param string[] $repoConfig
-     * @return \Composer\Repository\VcsRepository&\PHPUnit\Framework\MockObject\MockObject
+     * @return VcsRepository&\PHPUnit\Framework\MockObject\MockObject
      */
     protected function getMockRepository(array $repoConfig, IOInterface $io, Config $config)
     {

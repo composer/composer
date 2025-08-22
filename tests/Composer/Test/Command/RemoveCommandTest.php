@@ -107,7 +107,7 @@ class RemoveCommandTest extends TestCase
                 new MatchAllConstraint(),
                 Link::TYPE_REQUIRE,
                 '^1'
-            )
+            ),
         ]);
         $nestedPackage = self::getPackage('nested/req', '1.1.0');
 
@@ -129,7 +129,7 @@ class RemoveCommandTest extends TestCase
                         ['name' => 'root/req', 'version' => '1.0.0'],
                         ['name' => 'not/req', 'version' => '1.0.0'],
                     ],
-                ]
+                ],
             ],
             'require' => [
                 'root/req' => '1.*',
@@ -157,7 +157,7 @@ class RemoveCommandTest extends TestCase
                     'type' => 'package',
                     'package' => [
                         ['name' => 'root/req', 'version' => '1.0.0', 'type' => 'metapackage'],
-                        ['name' => 'root/another', 'version' => '1.0.0', 'type' => 'metapackage']
+                        ['name' => 'root/another', 'version' => '1.0.0', 'type' => 'metapackage'],
                     ],
                 ],
             ],
@@ -194,7 +194,7 @@ class RemoveCommandTest extends TestCase
                     'type' => 'package',
                     'package' => [
                         ['name' => 'root/req', 'version' => '1.0.0', 'type' => 'metapackage'],
-                        ['name' => 'root/another', 'version' => '1.0.0', 'type' => 'metapackage']
+                        ['name' => 'root/another', 'version' => '1.0.0', 'type' => 'metapackage'],
                     ],
                 ],
             ],
@@ -231,7 +231,7 @@ class RemoveCommandTest extends TestCase
                     'type' => 'package',
                     'package' => [
                         ['name' => 'root/req', 'version' => '1.0.0', 'type' => 'metapackage'],
-                        ['name' => 'root/another', 'version' => '1.0.0', 'type' => 'metapackage']
+                        ['name' => 'root/another', 'version' => '1.0.0', 'type' => 'metapackage'],
                     ],
                 ],
             ],
@@ -268,7 +268,7 @@ class RemoveCommandTest extends TestCase
                     'type' => 'package',
                     'package' => [
                         ['name' => 'root/req', 'version' => '1.0.0', 'type' => 'metapackage'],
-                        ['name' => 'root/another', 'version' => '1.0.0', 'type' => 'metapackage']
+                        ['name' => 'root/another', 'version' => '1.0.0', 'type' => 'metapackage'],
                     ],
                 ],
             ],

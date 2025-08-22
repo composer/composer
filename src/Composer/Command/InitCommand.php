@@ -29,8 +29,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\ExecutableFinder;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Console\Helper\FormatterHelper;
 
 /**
@@ -47,8 +45,6 @@ class InitCommand extends BaseCommand
 
     /**
      * @inheritDoc
-     *
-     * @return void
      */
     protected function configure(): void
     {
@@ -89,7 +85,7 @@ EOT
         $io = $this->getIO();
 
         $allowlist = ['name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license', 'autoload'];
-        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)), function ($val) { return $val !== null && $val !== []; });
+        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)), static function ($val) { return $val !== null && $val !== []; });
 
         if (isset($options['name']) && !Preg::isMatch('{^[a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$}D', $options['name'])) {
             throw new \InvalidArgumentException(
@@ -214,8 +210,6 @@ EOT
 
     /**
      * @inheritDoc
-     *
-     * @return void
      */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {

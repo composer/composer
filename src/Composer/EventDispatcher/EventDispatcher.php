@@ -14,7 +14,6 @@ namespace Composer\EventDispatcher;
 
 use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
-use Composer\IO\BufferIO;
 use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Composer;
@@ -78,7 +77,6 @@ class EventDispatcher
      *
      * @param PartialComposer $composer The composer instance
      * @param IOInterface     $io       The IOInterface instance
-     * @param ProcessExecutor $process
      */
     public function __construct(PartialComposer $composer, IOInterface $io, ?ProcessExecutor $process = null)
     {
@@ -88,7 +86,7 @@ class EventDispatcher
         $this->eventStack = [];
         $this->skipScripts = array_values(array_filter(
             array_map('trim', explode(',', (string) Platform::getEnv('COMPOSER_SKIP_SCRIPTS'))),
-            function ($val) {
+            static function ($val) {
                 return $val !== '';
             }
         ));
@@ -139,7 +137,7 @@ class EventDispatcher
     {
         assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
 
-        return $this->doDispatch(new Script\Event($eventName, $this->composer, $this->io, $devMode, $additionalArgs, $flags));
+        return $this->doDispatch(new ScriptEvent($eventName, $this->composer, $this->io, $devMode, $additionalArgs, $flags));
     }
 
     /**
@@ -271,7 +269,7 @@ class EventDispatcher
 
                         try {
                             /** @var InstallerEvent $event */
-                            $scriptEvent = new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode(), $args, $flags);
+                            $scriptEvent = new ScriptEvent($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode(), $args, $flags);
                             $scriptEvent->setOriginatingEvent($event);
                             $return = $this->dispatch($scriptName, $scriptEvent);
                         } catch (ScriptExecutionException $e) {
@@ -730,7 +728,7 @@ class EventDispatcher
 
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
         $generator = $this->composer->getAutoloadGenerator();
-        $hash = implode(',', array_map(function (PackageInterface $p) {
+        $hash = implode(',', array_map(static function (PackageInterface $p) {
             return $p->getName().'/'.$p->getVersion();
         }, $packages));
         if ($event instanceof ScriptEvent) {

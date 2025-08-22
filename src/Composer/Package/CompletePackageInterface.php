@@ -77,8 +77,6 @@ interface CompletePackageInterface extends PackageInterface
 
     /**
      * Returns the package description
-     *
-     * @return ?string
      */
     public function getDescription(): ?string;
 
@@ -89,8 +87,6 @@ interface CompletePackageInterface extends PackageInterface
 
     /**
      * Returns the package homepage
-     *
-     * @return ?string
      */
     public function getHomepage(): ?string;
 
@@ -162,8 +158,6 @@ interface CompletePackageInterface extends PackageInterface
 
     /**
      * Returns default base filename for archive
-     *
-     * @return ?string
      */
     public function getArchiveName(): ?string;
 

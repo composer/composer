@@ -34,8 +34,8 @@ class ExecCommandTest extends TestCase
     {
         $composerDir = $this->initTempComposer([
             'bin' => [
-                'a'
-            ]
+                'a',
+            ],
         ]);
 
         $composerBinDir = "$composerDir/vendor/bin";

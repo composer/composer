@@ -20,12 +20,12 @@ use Composer\Package\CompletePackage;
 abstract class ArchiverTestCase extends TestCase
 {
     /**
-     * @var \Composer\Util\Filesystem
+     * @var Filesystem
      */
     protected $filesystem;
 
     /**
-     * @var \Composer\Util\ProcessExecutor
+     * @var ProcessExecutor
      */
     protected $process;
 

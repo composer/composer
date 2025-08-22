@@ -156,6 +156,7 @@ class PluginManager
     {
         if ($this->arePluginsDisabled($isGlobalPlugin ? 'global' : 'local')) {
             $this->io->writeError('<warning>The "'.$package->getName().'" plugin was not loaded as plugins are disabled.</warning>');
+
             return;
         }
 

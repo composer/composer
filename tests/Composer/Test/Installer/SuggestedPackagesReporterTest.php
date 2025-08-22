@@ -12,9 +12,7 @@
 
 namespace Composer\Test\Installer;
 
-use Composer\InstalledVersions;
 use Composer\Installer\SuggestedPackagesReporter;
-use Composer\Semver\VersionParser;
 use Composer\Test\Mock\IOMock;
 use Composer\Test\TestCase;
 
@@ -29,7 +27,7 @@ class SuggestedPackagesReporterTest extends TestCase
     private $io;
 
     /**
-     * @var \Composer\Installer\SuggestedPackagesReporter
+     * @var SuggestedPackagesReporter
      */
     private $suggestedPackagesReporter;
 

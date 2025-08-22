@@ -257,14 +257,14 @@ class InstalledVersionsTest extends TestCase
             'c/c',
         ];
 
-        self::assertSame($names, \Composer\InstalledVersions::getInstalledPackagesByType('library'));
+        self::assertSame($names, InstalledVersions::getInstalledPackagesByType('library'));
     }
 
     public function testGetInstallPath(): void
     {
-        self::assertSame(realpath($this->root), realpath(\Composer\InstalledVersions::getInstallPath('__root__')));
-        self::assertSame('/foo/bar/vendor/c/c', \Composer\InstalledVersions::getInstallPath('c/c'));
-        self::assertNull(\Composer\InstalledVersions::getInstallPath('foo/impl'));
+        self::assertSame(realpath($this->root), realpath(InstalledVersions::getInstallPath('__root__')));
+        self::assertSame('/foo/bar/vendor/c/c', InstalledVersions::getInstallPath('c/c'));
+        self::assertNull(InstalledVersions::getInstallPath('foo/impl'));
     }
 
     public function testWithClassLoaderLoaded(): void

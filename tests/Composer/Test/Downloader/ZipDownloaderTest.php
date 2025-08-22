@@ -24,13 +24,13 @@ class ZipDownloaderTest extends TestCase
 {
     /** @var string */
     private $testDir;
-    /** @var \Composer\Util\HttpDownloader */
+    /** @var HttpDownloader */
     private $httpDownloader;
     /** @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $io;
     /** @var \Composer\Config&\PHPUnit\Framework\MockObject\MockObject */
     private $config;
-    /** @var \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject */
+    /** @var PackageInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $package;
     /** @var string */
     private $filename;
@@ -61,7 +61,7 @@ class ZipDownloaderTest extends TestCase
 
     /**
      * @param mixed $value
-     * @param ?\Composer\Test\Downloader\MockedZipDownloader $obj
+     * @param ?MockedZipDownloader $obj
      */
     public function setPrivateProperty(string $name, $value, $obj = null): void
     {
@@ -319,7 +319,7 @@ class ZipDownloaderTest extends TestCase
     }
 
     /**
-     * @param ?\React\Promise\PromiseInterface<mixed> $promise
+     * @param ?PromiseInterface<mixed> $promise
      */
     private function wait($promise): void
     {

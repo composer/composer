@@ -57,6 +57,7 @@ class ErrorHandler
             // can be fixed as we do not want to abort execution for those
             if (in_array($level, [E_WARNING, E_USER_WARNING], true) && str_contains($message, 'should either be used or intentionally ignored by casting it as (void)')) {
                 self::outputWarning('Ignored new PHP warning but it should be reported and fixed: '.$message.' in '.$file.':'.$line, true);
+
                 return true;
             }
 
@@ -69,6 +70,7 @@ class ErrorHandler
                     self::$io->writeError('<warning>More deprecation notices were hidden, run again with `-v` to show them.</warning>');
                     self::$hasShownDeprecationNotice = 2;
                 }
+
                 return true;
             }
             self::$hasShownDeprecationNotice = 1;
@@ -100,7 +102,7 @@ class ErrorHandler
                     }
 
                     return null;
-                }, array_slice(debug_backtrace(), 2)), function (?string $line) {
+                }, array_slice(debug_backtrace(), 2)), static function (?string $line) {
                     return $line !== null;
                 }));
             }

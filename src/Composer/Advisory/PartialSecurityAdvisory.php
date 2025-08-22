@@ -50,7 +50,7 @@ class PartialSecurityAdvisory implements JsonSerializable
             // try to keep only the essential part of the constraint to turn invalid ones like <=3.20-test2 into <=3.20 which is better than nothing
             try {
                 $affectedVersion = Preg::replace('{(^[>=<^~]*[\d.]+).*}', '$1', $data['affectedVersions']);
-                $constraint = $parser->parseConstraints($affectedVersion);;
+                $constraint = $parser->parseConstraints($affectedVersion);
             } catch (\UnexpectedValueException $e) {
                 $constraint = new Constraint('==', '0.0.0-invalid-version');
             }

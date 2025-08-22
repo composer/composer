@@ -16,7 +16,6 @@ use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
-use Composer\Util\ProcessExecutor;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 use React\Promise\PromiseInterface;
@@ -143,7 +142,7 @@ class ZipDownloader extends ArchiveDownloader
         }
 
         $io = $this->io;
-        $tryFallback = function (\Throwable $processError) use ($isLastChance, $io, $file, $path, $package, $executable): \React\Promise\PromiseInterface {
+        $tryFallback = function (\Throwable $processError) use ($isLastChance, $io, $file, $path, $package, $executable): PromiseInterface {
             if ($isLastChance) {
                 throw $processError;
             }
@@ -237,7 +236,7 @@ class ZipDownloader extends ArchiveDownloader
                             $filesToInspect = $totalFiles;
                         }
                     }
-                    if ($archiveSize !== false && $totalSize > $archiveSize * 100 && $totalSize > 50*1024*1024) {
+                    if ($archiveSize !== false && $totalSize > $archiveSize * 100 && $totalSize > 50 * 1024 * 1024) {
                         throw new \RuntimeException('Invalid zip file for "'.$package->getName().'" with compression ratio >99% (possible zip bomb)');
                     }
                 }

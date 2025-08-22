@@ -99,7 +99,7 @@ class ArchiveManager
             $parts['source_reference'] = substr(hash('sha1', $sourceReference), 0, 6);
         }
 
-        $parts = array_filter($parts, function (?string $part) {
+        $parts = array_filter($parts, static function (?string $part) {
             return $part !== null;
         });
         foreach ($parts as $key => $part) {
@@ -112,7 +112,6 @@ class ArchiveManager
     /**
      * @param array<string, string> $parts
      *
-     * @return string
      * @internal
      */
     public function getPackageFilenameFromParts(array $parts): string

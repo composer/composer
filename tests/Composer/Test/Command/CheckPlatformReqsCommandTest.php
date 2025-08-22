@@ -34,13 +34,13 @@ class CheckPlatformReqsCommandTest extends TestCase
             self::getPackage('ext-foobar', '2.3.4'),
         ];
         $devPackages = [
-            self::getPackage('ext-barbaz', '2.3.4.5')
+            self::getPackage('ext-barbaz', '2.3.4.5'),
         ];
 
         $this->createInstalledJson($packages, $devPackages);
 
         if ($lock) {
-           $this->createComposerLock($packages, $devPackages);
+            $this->createComposerLock($packages, $devPackages);
         }
 
         $appTester = $this->getApplicationTester();
@@ -68,11 +68,11 @@ class CheckPlatformReqsCommandTest extends TestCase
                 ],
                 'require-dev' => [
                     'ext-barbaz' => '~4.0',
-                ]
+                ],
             ],
             ['--no-dev' => true],
             'Checking non-dev platform requirements for packages in the vendor dir
-ext-foobar 2.3.4   success'
+ext-foobar 2.3.4   success',
         ];
 
         yield 'Checks requirements only from the lock file, not from installed packages.' => [
@@ -82,10 +82,10 @@ ext-foobar 2.3.4   success'
                 ],
                 'require-dev' => [
                     'ext-barbaz' => '~2.0',
-                ]
+                ],
             ],
             ['--lock' => true],
-            "Checking platform requirements using the lock file\next-barbaz 2.3.4.5   success \next-foobar 2.3.4     success"
+            "Checking platform requirements using the lock file\next-barbaz 2.3.4.5   success \next-foobar 2.3.4     success",
         ];
     }
 
@@ -93,18 +93,18 @@ ext-foobar 2.3.4   success'
     {
         $this->initTempComposer([
             'require' => [
-                'ext-foobar' => '^0.3'
+                'ext-foobar' => '^0.3',
             ],
             'require-dev' => [
-                'ext-barbaz' => '^2.3'
-            ]
+                'ext-barbaz' => '^2.3',
+            ],
         ]);
 
         $packages = [
             self::getPackage('ext-foobar', '2.3.4'),
         ];
         $devPackages = [
-            self::getPackage('ext-barbaz', '2.3.4.5')
+            self::getPackage('ext-barbaz', '2.3.4.5'),
         ];
 
         $this->createInstalledJson($packages, $devPackages);

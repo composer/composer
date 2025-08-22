@@ -153,6 +153,7 @@ class Cache
                 if ($wasEnabled) {
                     clearstatcache();
                     $this->enabled = null;
+
                     return $this->write($file, $contents);
                 }
 

@@ -118,7 +118,7 @@ class PostFileDownloadEvent extends Event
      *
      * If this download is of type metadata, null is returned.
      *
-     * @return \Composer\Package\PackageInterface|null The package.
+     * @return PackageInterface|null The package.
      * @deprecated Use getContext instead
      */
     public function getPackage(): ?PackageInterface

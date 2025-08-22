@@ -88,8 +88,8 @@ class StatusCommandTest extends TestCase
                 'installation_source' => 'source',
                 'type' => 'git',
                 'url' => 'https://github.com/composer/class-map-generator.git',
-                'reference' => '953cc4ea32e0c31f2185549c7d216d7921f03da9'
-            ]
+                'reference' => '953cc4ea32e0c31f2185549c7d216d7921f03da9',
+            ],
         ];
 
         yield 'locally modified package from dist' => [
@@ -101,8 +101,8 @@ class StatusCommandTest extends TestCase
                 'installation_source' => 'dist',
                 'type' => 'zip',
                 'url' => 'https://www.smarty.net/files/Smarty-3.1.7.zip',
-                'reference' => null
-            ]
+                'reference' => null,
+            ],
         ];
     }
 }

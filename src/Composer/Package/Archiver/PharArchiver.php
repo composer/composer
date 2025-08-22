@@ -56,7 +56,7 @@ class PharArchiver implements ArchiverInterface
                 $target = $filename . '.tar';
             }
 
-            $phar = new \PharData(
+            $phar = new PharData(
                 $target,
                 \FilesystemIterator::KEY_AS_PATHNAME | \FilesystemIterator::CURRENT_AS_FILEINFO,
                 '',

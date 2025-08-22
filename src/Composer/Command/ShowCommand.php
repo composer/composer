@@ -27,7 +27,6 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
-use Composer\Repository\ArrayRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
@@ -73,9 +72,6 @@ class ShowCommand extends BaseCommand
     /** @var ?RepositorySet */
     private $repositorySet;
 
-    /**
-     * @return void
-     */
     protected function configure(): void
     {
         $this
@@ -271,7 +267,7 @@ EOT
 
             if (!$installedRepo->getPackages()) {
                 $hasNonPlatformReqs = static function (array $reqs): bool {
-                    return (bool) array_filter(array_keys($reqs), function (string $name) {
+                    return (bool) array_filter(array_keys($reqs), static function (string $name) {
                         return !PlatformRepository::isPlatformPackage($name);
                     });
                 };
@@ -499,7 +495,7 @@ EOT
                 $hasOutdatedPackages = false;
 
                 if ($input->getOption('sort-by-age')) {
-                    usort($packages[$type], function ($a, $b) {
+                    usort($packages[$type], static function ($a, $b) {
                         if (is_object($a) && is_object($b)) {
                             return $a->getReleaseDate() <=> $b->getReleaseDate();
                         }
@@ -976,8 +972,6 @@ EOT
 
     /**
      * print link objects
-     *
-     * @param string                   $title
      */
     protected function printLinks(CompletePackageInterface $package, string $linkType, ?string $title = null): void
     {
@@ -1509,6 +1503,7 @@ EOT
                 if (str_starts_with($candidate->getVersion(), 'dev-') || str_starts_with($package->getVersion(), 'dev-')) {
                     return false;
                 }
+
                 return version_compare($candidate->getVersion(), $package->getVersion(), '<=');
             };
         }
@@ -1530,7 +1525,7 @@ EOT
         return $this->repositorySet;
     }
 
-    private function getRelativeTime(\DateTimeInterface $releaseDate): string
+    private function getRelativeTime(DateTimeInterface $releaseDate): string
     {
         if ($releaseDate->format('Ymd') === date('Ymd')) {
             return 'today';

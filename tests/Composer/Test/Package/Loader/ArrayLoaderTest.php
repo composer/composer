@@ -426,13 +426,13 @@ class ArrayLoaderTest extends TestCase
 
     public function testPackageLinksRequire(): void
     {
-        $config = array(
+        $config = [
             'name' => 'acme/package',
             'version' => 'dev-1',
             'require' => [
                 'foo/bar' => '1.0',
             ],
-        );
+        ];
 
         $package = $this->loader->load($config);
         self::assertArrayHasKey('foo/bar', $package->getRequires());
@@ -441,7 +441,7 @@ class ArrayLoaderTest extends TestCase
 
     public function testPackageLinksRequireInvalid(): void
     {
-        $config = array(
+        $config = [
             'name' => 'acme/package',
             'version' => 'dev-1',
             'require' => [
@@ -449,7 +449,7 @@ class ArrayLoaderTest extends TestCase
                     'random-string' => '1.0',
                 ],
             ],
-        );
+        ];
 
         $package = $this->loader->load($config);
         self::assertCount(0, $package->getRequires());
@@ -457,13 +457,13 @@ class ArrayLoaderTest extends TestCase
 
     public function testPackageLinksReplace(): void
     {
-        $config = array(
+        $config = [
             'name' => 'acme/package',
             'version' => 'dev-1',
             'replace' => [
                 'coyote/package' => 'self.version',
             ],
-        );
+        ];
 
         $package = $this->loader->load($config);
         self::assertArrayHasKey('coyote/package', $package->getReplaces());
@@ -472,11 +472,11 @@ class ArrayLoaderTest extends TestCase
 
     public function testPackageLinksReplaceInvalid(): void
     {
-        $config = array(
+        $config = [
             'name' => 'acme/package',
             'version' => 'dev-1',
             'replace' => 'coyote/package',
-        );
+        ];
 
         $package = $this->loader->load($config);
         self::assertCount(0, $package->getReplaces());
@@ -484,11 +484,11 @@ class ArrayLoaderTest extends TestCase
 
     public function testSupportStringValue(): void
     {
-        $config = array(
+        $config = [
             'name' => 'acme/package',
             'version' => 'dev-1',
             'support' => 'https://example.org',
-        );
+        ];
 
         $package = $this->loader->load($config);
         self::assertSame([], $package->getSupport());
