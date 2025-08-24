@@ -258,7 +258,7 @@ class DownloadManagerTest extends TestCase
         $package
             ->expects($this->exactly(2))
             ->method('setInstallationSource')
-            ->willReturnCallback(function ($type) {
+            ->willReturnCallback(static function ($type) {
                 static $series = [
                     'dist',
                     'source',
@@ -673,7 +673,7 @@ class DownloadManagerTest extends TestCase
 
         $manager = new DownloadManager($this->io, false, $this->filesystem);
         $method = new \ReflectionMethod($manager, 'getAvailableSources');
-        $method->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
         self::assertEquals($expected, $method->invoke($manager, $target, $initial ?? null));
     }
 
@@ -1136,7 +1136,7 @@ class DownloadManagerTest extends TestCase
     }
 
     /**
-     * @return \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject
+     * @return PackageInterface&\PHPUnit\Framework\MockObject\MockObject
      */
     private function createPackageMock()
     {

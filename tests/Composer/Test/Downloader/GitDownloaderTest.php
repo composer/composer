@@ -53,12 +53,12 @@ class GitDownloaderTest extends TestCase
     {
         // reset the static version cache
         $refl = new \ReflectionProperty('Composer\Util\Git', 'version');
-        $refl->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $refl->setAccessible(true);
         $refl->setValue(null, $version);
     }
 
     /**
-     * @param ?\Composer\Config $config
+     * @param ?Config $config
      */
     protected function setupConfig($config = null): Config
     {
@@ -73,12 +73,6 @@ class GitDownloaderTest extends TestCase
         return $config;
     }
 
-    /**
-     * @param \Composer\IO\IOInterface $io
-     * @param \Composer\Config $config
-     * @param \Composer\Test\Mock\ProcessExecutorMock $executor
-     * @param \Composer\Util\Filesystem $filesystem
-     */
     protected function getDownloaderMock(?\Composer\IO\IOInterface $io = null, ?Config $config = null, ?\Composer\Test\Mock\ProcessExecutorMock $executor = null, ?Filesystem $filesystem = null): GitDownloader
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
@@ -163,7 +157,7 @@ class GitDownloaderTest extends TestCase
         $this->setupConfig($config);
         $cachePath = $config->get('cache-vcs-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', 'https://example.com/composer/composer').'/';
 
-        $filesystem = new \Composer\Util\Filesystem;
+        $filesystem = new Filesystem;
         $filesystem->removeDirectory($cachePath);
 
         $expectedPath = Platform::isWindows() ? Platform::getCwd().'/composerPath' : 'composerPath';
@@ -173,7 +167,7 @@ class GitDownloaderTest extends TestCase
                 'cmd' => ['git', 'clone', '--mirror', '--', 'https://example.com/composer/composer', $cachePath],
                 'callback' => static function () use ($cachePath): void {
                     @mkdir($cachePath, 0777, true);
-                }
+                },
             ],
             ['cmd' => ['git', 'rev-parse', '--git-dir'], 'stdout' => '.'],
             ['git', 'rev-parse', '--quiet', '--verify', '1234567890123456789012345678901234567890^{commit}'],

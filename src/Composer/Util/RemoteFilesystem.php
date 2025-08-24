@@ -72,7 +72,6 @@ class RemoteFilesystem
      * @param IOInterface $io         The IO instance
      * @param Config      $config     The config
      * @param mixed[]     $options    The options
-     * @param AuthHelper  $authHelper
      */
     public function __construct(IOInterface $io, Config $config, array $options = [], bool $disableTls = false, ?AuthHelper $authHelper = null)
     {

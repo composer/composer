@@ -268,8 +268,10 @@ class Filesystem
                 if ($normalized !== $directory) {
                     try {
                         $this->ensureDirectoryExists($normalized);
+
                         return;
-                    } catch (\Throwable $ignoredEx) {}
+                    } catch (\Throwable $ignoredEx) {
+                    }
                 }
 
                 throw $e;

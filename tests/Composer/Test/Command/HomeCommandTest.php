@@ -66,12 +66,12 @@ class HomeCommandTest extends TestCase
                         'type' => 'package',
                         'package' => [
                             ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0'],
-                        ]
-                    ]
+                        ],
+                    ],
                 ],
                 'require' => [
-                    'vendor/package' => '^1.0'
-                ]
+                    'vendor/package' => '^1.0',
+                ],
             ],
             ['packages' => ['vendor/package']],
             <<<OUTPUT

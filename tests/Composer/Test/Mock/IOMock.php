@@ -12,14 +12,10 @@
 
 namespace Composer\Test\Mock;
 
-use Composer\Config;
 use Composer\IO\BufferIO;
 use Composer\IO\IOInterface;
 use Composer\Pcre\PcreException;
 use Composer\Pcre\Preg;
-use Composer\Util\HttpDownloader;
-use Composer\Util\Http\Response;
-use Composer\Downloader\TransportException;
 use Composer\Util\Platform;
 use LogicException;
 use PHPUnit\Framework\Assert;
@@ -67,7 +63,7 @@ class IOMock extends BufferIO
         foreach ($expectations as $expect) {
             if (isset($expect['ask'])) {
                 if (!array_key_exists('reply', $expect) || !is_string($expect['reply'])) {
-                    throw new \LogicException('A question\'s reply must be a string, use empty string for null replies');
+                    throw new LogicException('A question\'s reply must be a string, use empty string for null replies');
                 }
                 $inputs[] = $expect['reply'];
             }
@@ -145,7 +141,7 @@ class IOMock extends BufferIO
         Assert::assertTrue(true); // @phpstan-ignore staticMethod.alreadyNarrowedType
     }
 
-        /**
+    /**
      * @inheritDoc
      */
     public function ask($question, $default = null)

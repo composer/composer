@@ -239,6 +239,7 @@ class AuthHelper
 
         $options = ['http' => ['header' => &$headers]];
         $options = $this->addAuthenticationOptions($options, $origin, $url);
+
         return $options['http']['header'];
     }
 
@@ -300,7 +301,7 @@ class AuthHelper
                     $authenticationDisplayMessage = 'Using Bitbucket OAuth token authentication';
                 }
             } elseif ('client-certificate' === $auth['password']) {
-                $options['ssl'] = array_merge($options['ssl'] ?? [], json_decode((string)$auth['username'], true));
+                $options['ssl'] = array_merge($options['ssl'] ?? [], json_decode((string) $auth['username'], true));
                 $authenticationDisplayMessage = 'Using SSL client certificate';
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);

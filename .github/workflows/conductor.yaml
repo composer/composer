@@ -1,0 +1,34 @@
+# See the Conductor setup guide at https://packagist.com/docs/conductor/getting-started
+
+on:
+    repository_dispatch:
+        types:
+            - dependency_update
+
+name: Private Packagist Conductor
+
+permissions:
+    contents: write
+
+jobs:
+    conductor:
+        name: Private Packagist Conductor
+        runs-on: "ubuntu-latest"
+
+        steps:
+            - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+            # Install PHP. You can also replace this step by
+            # reusing an existing workflow that sets up PHP.
+            # Additional services required to run composer
+            # install/update, such as Node.js or a database,
+            # must be set up here too.
+            - name: Install PHP
+              uses: shivammathur/setup-php@20529878ed81ef8e78ddf08b480401e6101a850f # 2.35.3
+              with:
+                  php-version: "latest"
+                  coverage: "none"
+
+            # See the Conductor GitHub Action at https://github.com/packagist/conductor-github-action
+            - name: "Running Conductor"
+              uses: packagist/conductor-github-action@v1

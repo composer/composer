@@ -88,17 +88,17 @@ class Composer extends PartialComposer
     private $locker;
 
     /**
-     * @var Downloader\DownloadManager
+     * @var DownloadManager
      */
     private $downloadManager;
 
     /**
-     * @var Plugin\PluginManager
+     * @var PluginManager
      */
     private $pluginManager;
 
     /**
-     * @var Autoload\AutoloadGenerator
+     * @var AutoloadGenerator
      */
     private $autoloadGenerator;
 

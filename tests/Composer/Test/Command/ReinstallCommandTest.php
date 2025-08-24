@@ -20,7 +20,6 @@ class ReinstallCommandTest extends TestCase
     /**
      * @dataProvider caseProvider
      * @param array<mixed> $options
-     * @param string $expected
      */
     public function testReinstallCommand(array $options, string $expected): void
     {
@@ -32,7 +31,7 @@ class ReinstallCommandTest extends TestCase
                 'root/anotherreq' => '2.*',
                 'root/anotherreq2' => '2.*',
                 'root/lala' => '2.*',
-            ]
+            ],
         ]);
 
         $rootReqPackage = self::getPackage('root/req');
@@ -66,7 +65,7 @@ class ReinstallCommandTest extends TestCase
   - Removing root/anotherreq (1.0.0)
   - Installing root/anotherreq (1.0.0)
   - Installing root/anotherreq2 (1.0.0)
-  - Installing root/req (1.0.0)'
+  - Installing root/req (1.0.0)',
         ];
 
         yield 'reinstall packages by type' => [
@@ -78,13 +77,13 @@ class ReinstallCommandTest extends TestCase
   - Installing root/anotherreq (1.0.0)
   - Installing root/anotherreq2 (1.0.0)
   - Installing root/lala (1.0.0)
-  - Installing root/req (1.0.0)'
+  - Installing root/req (1.0.0)',
         ];
 
         yield 'reinstall a package that is not installed' => [
             ['packages' => ['root/unknownreq']],
             '<warning>Pattern "root/unknownreq" does not match any currently installed packages.</warning>
-<warning>Found no packages to reinstall, aborting.</warning>'
+<warning>Found no packages to reinstall, aborting.</warning>',
         ];
     }
 }

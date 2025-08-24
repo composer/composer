@@ -18,7 +18,6 @@ use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\Loader\RootPackageLoader;
-use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
@@ -32,7 +31,6 @@ use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Semver\Intervals;
 use Composer\Util\HttpDownloader;
 use Composer\Advisory\Auditor;
-use Composer\Util\Platform;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
@@ -47,10 +45,7 @@ class UpdateCommand extends BaseCommand
 {
     use CompletionTrait;
 
-    /**
-     * @return void
-     */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('update')
@@ -173,6 +168,7 @@ EOT
             if (isset($rootRequirements[$package]) && !Intervals::haveIntersections($parsedConstraint, $rootRequirements[$package]->getConstraint())) {
                 $io->writeError('<error>The temporary constraint "'.$constraint.'" for "'.$package.'" must be a subset of the constraint in your composer.json ('.$rootRequirements[$package]->getPrettyConstraint().')</error>');
                 $io->write('<info>Run `composer require '.$package.'` or `composer require '.$package.':'.$constraint.'` instead to replace the constraint</info>');
+
                 return self::FAILURE;
             }
         }
@@ -299,6 +295,7 @@ EOT
                 );
             }
         }
+
         return $result;
     }
 
@@ -379,7 +376,7 @@ EOT
     private function createVersionSelector(Composer $composer): VersionSelector
     {
         $repositorySet = new RepositorySet();
-        $repositorySet->addRepository(new CompositeRepository(array_filter($composer->getRepositoryManager()->getRepositories(), function (RepositoryInterface $repository) {
+        $repositorySet->addRepository(new CompositeRepository(array_filter($composer->getRepositoryManager()->getRepositories(), static function (RepositoryInterface $repository) {
             return !$repository instanceof PlatformRepository;
         })));
 

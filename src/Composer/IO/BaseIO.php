@@ -200,7 +200,7 @@ abstract class BaseIO implements IOInterface
                 );
                 continue;
             }
-            $this->checkAndSetAuthentication($domain, 'client-certificate', (string)json_encode($sslOptions));
+            $this->checkAndSetAuthentication($domain, 'client-certificate', (string) json_encode($sslOptions));
         }
 
         // setup process timeout
@@ -280,7 +280,7 @@ abstract class BaseIO implements IOInterface
         $message = (string) $message;
 
         if ($context !== []) {
-            $json = Silencer::call('json_encode', $context, JSON_INVALID_UTF8_IGNORE|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+            $json = Silencer::call('json_encode', $context, JSON_INVALID_UTF8_IGNORE | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             if ($json !== false) {
                 $message .= ' ' . $json;
             }

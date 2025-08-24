@@ -16,7 +16,6 @@ use Composer\IO\ConsoleIO;
 use Composer\Util\ProcessExecutor;
 use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
-use React\Promise\Promise;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -83,6 +82,7 @@ class ProcessExecutorTest extends TestCase
             ['echo https://foo:bar@example.org/', 'echo https://foo:***@example.org/'],
             ['echo http://foo@example.org', 'echo http://foo@example.org'],
             ['echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://***:***@github.com/'],
+            ['echo http://github_pat_1234567890abcdefghijkl_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW:x-oauth-token@github.com/', 'echo http://***:***@github.com/'],
             ["svn ls --verbose --non-interactive  --username 'foo' --password 'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"],
             ["svn ls --verbose --non-interactive  --username 'foo' --password 'bar \'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"],
         ];

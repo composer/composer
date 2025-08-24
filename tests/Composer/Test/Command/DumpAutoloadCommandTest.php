@@ -1,5 +1,15 @@
 <?php declare(strict_types=1);
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
@@ -53,8 +63,8 @@ class DumpAutoloadCommandTest extends TestCase
             'autoload' => [
                 'psr-4' => [
                     'Application\\' => 'src',
-                ]
-            ]
+                ],
+            ],
         ]);
         mkdir($dir . '/src/');
         file_put_contents($dir . '/src/Foo.php', '<?php namespace Application\Src; class Foo {}');
@@ -130,7 +140,7 @@ class DumpAutoloadCommandTest extends TestCase
                 "_readme" => [
                     "This file locks the dependencies of your project to a known state",
                     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
-                    "This file is @generated automatically"
+                    "This file is @generated automatically",
                 ],
                 "content-hash" => "d751713988987e9331980363e24189ce",
                 "packages" => [],
@@ -142,7 +152,7 @@ class DumpAutoloadCommandTest extends TestCase
                 "prefer-lowest" => false,
                 "platform" => [],
                 "platform-dev" => [],
-                "plugin-api-version" => "2.6.0"
+                "plugin-api-version" => "2.6.0",
             ]
         );
 
@@ -163,7 +173,7 @@ class DumpAutoloadCommandTest extends TestCase
                 "_readme" => [
                     "This file locks the dependencies of your project to a known state",
                     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
-                    "This file is @generated automatically"
+                    "This file is @generated automatically",
                 ],
                 "content-hash" => "2d4a6be9a93712c5d6a119b26734a047",
                 "packages" => [],
@@ -175,7 +185,7 @@ class DumpAutoloadCommandTest extends TestCase
                 "prefer-lowest" => false,
                 "platform" => [],
                 "platform-dev" => [],
-                "plugin-api-version" => "2.6.0"
+                "plugin-api-version" => "2.6.0",
             ]
         );
 

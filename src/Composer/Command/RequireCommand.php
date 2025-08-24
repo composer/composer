@@ -16,9 +16,7 @@ use Composer\DependencyResolver\Request;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Loader\RootPackageLoader;
-use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
-use Composer\Package\Version\VersionBumper;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Repository\RepositorySet;
@@ -71,10 +69,7 @@ class RequireCommand extends BaseCommand
     /** @var bool */
     private $dependencyResolutionCompleted = false;
 
-    /**
-     * @return void
-     */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('require')
@@ -544,7 +539,7 @@ EOT
 
             if (Preg::isMatch('{^dev-(?!main$|master$|trunk$|latest$)}', $requirements[$packageName])) {
                 $this->getIO()->warning('Version '.$requirements[$packageName].' looks like it may be a feature branch which is unlikely to keep working in the long run and may be in an unstable state');
-                if ($this->getIO()->isInteractive() && !$this->getIO()->askConfirmation('Are you sure you want to use this constraint (<comment>Y</comment>) or would you rather abort (<comment>n</comment>) the whole operation [<comment>Y,n</comment>]? ')) {
+                if ($this->getIO()->isInteractive() && !$this->getIO()->askConfirmation('Are you sure you want to use this constraint (<comment>y</comment>) or would you rather abort (<comment>n</comment>) the whole operation [<comment>y,n</comment>]? ')) {
                     $this->revertComposerFile();
 
                     return 1;
@@ -556,7 +551,7 @@ EOT
             $this->updateFile($this->json, $requirements, $requireKey, $removeKey, $sortPackages);
             if ($locker->isLocked() && $composer->getConfig()->get('lock')) {
                 $stabilityFlags = RootPackageLoader::extractStabilityFlags($requirements, $composer->getPackage()->getMinimumStability(), []);
-                $locker->updateHash($this->json, function (array $lockData) use ($stabilityFlags) {
+                $locker->updateHash($this->json, static function (array $lockData) use ($stabilityFlags) {
                     foreach ($stabilityFlags as $packageName => $flag) {
                         $lockData['stability-flags'][$packageName] = $flag;
                     }

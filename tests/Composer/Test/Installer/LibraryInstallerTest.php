@@ -22,12 +22,12 @@ use Composer\Config;
 class LibraryInstallerTest extends TestCase
 {
     /**
-     * @var \Composer\Composer
+     * @var Composer
      */
     protected $composer;
 
     /**
-     * @var \Composer\Config
+     * @var Config
      */
     protected $config;
 
@@ -62,7 +62,7 @@ class LibraryInstallerTest extends TestCase
     protected $io;
 
     /**
-     * @var \Composer\Util\Filesystem
+     * @var Filesystem
      */
     protected $fs;
 

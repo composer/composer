@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Package\AliasPackage;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,10 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DumpAutoloadCommand extends BaseCommand
 {
-    /**
-     * @return void
-     */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('dump-autoload')

@@ -13,7 +13,6 @@
 namespace Composer\Test\Repository\Vcs;
 
 use Composer\Config;
-use Composer\IO\IOInterface;
 use Composer\Repository\Vcs\GitDriver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
@@ -189,7 +188,7 @@ GIT;
     {
         $reflectionClass = new \ReflectionClass($driver);
         $reflectionProperty = $reflectionClass->getProperty('repoDir');
-        $reflectionProperty->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $reflectionProperty->setAccessible(true);
         $reflectionProperty->setValue($driver, $path);
     }
 }

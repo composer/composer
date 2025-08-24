@@ -40,9 +40,6 @@ class BinaryInstaller
     /** @var string|null */
     private $vendorDir;
 
-    /**
-     * @param Filesystem  $filesystem
-     */
     public function __construct(IOInterface $io, string $binDir, string $binCompat, ?Filesystem $filesystem = null, ?string $vendorDir = null)
     {
         $this->binDir = $binDir;
@@ -254,15 +251,14 @@ if (PHP_VERSION_ID < 80000) {
         {
             private \$handle;
             private \$position;
-            private \$realpath;
 
             public function stream_open(\$path, \$mode, \$options, &\$opened_path)
             {
                 // get rid of phpvfscomposer:// prefix for __FILE__ & __DIR__ resolution
                 \$opened_path = substr(\$path, 17);
-                \$this->realpath = realpath(\$opened_path) ?: \$opened_path;
-                \$opened_path = $phpunitHack1\$this->realpath;
-                \$this->handle = fopen(\$this->realpath, \$mode);
+                \$realpath = realpath(\$opened_path) ?: \$opened_path;
+                \$opened_path = $phpunitHack1\$realpath;
+                \$this->handle = fopen(\$realpath, \$mode);
                 \$this->position = 0;
 
                 return (bool) \$this->handle;

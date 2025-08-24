@@ -16,7 +16,6 @@ use Composer\Repository\Vcs\GitHubDriver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
-use Composer\Util\ProcessExecutor;
 
 class GitHubDriverTest extends TestCase
 {
@@ -622,7 +621,7 @@ FUNDING;
     protected function setAttribute($object, string $attribute, $value): void
     {
         $attr = new \ReflectionProperty($object, $attribute);
-        $attr->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $attr->setAccessible(true);
         $attr->setValue($object, $value);
     }
 }

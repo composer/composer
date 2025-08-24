@@ -47,7 +47,6 @@ class ComposerMirror
 
     /**
      * @param non-empty-string $mirrorUrl
-     * @return string
      */
     public static function processGitUrl(string $mirrorUrl, string $packageName, string $url, ?string $type): string
     {
@@ -68,7 +67,6 @@ class ComposerMirror
 
     /**
      * @param non-empty-string $mirrorUrl
-     * @return string
      */
     public static function processHgUrl(string $mirrorUrl, string $packageName, string $url, string $type): string
     {

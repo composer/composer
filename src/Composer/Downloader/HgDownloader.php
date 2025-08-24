@@ -14,7 +14,6 @@ namespace Composer\Downloader;
 
 use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
-use Composer\Util\ProcessExecutor;
 use Composer\Util\Hg as HgUtils;
 
 /**

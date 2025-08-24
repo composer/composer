@@ -225,7 +225,7 @@ class Locker
      * Returns the platform requirements stored in the lock file
      *
      * @param  bool                     $withDevReqs if true, the platform requirements from the require-dev block are also returned
-     * @return \Composer\Package\Link[]
+     * @return Link[]
      */
     public function getPlatformRequirements(bool $withDevReqs = false): array
     {

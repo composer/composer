@@ -22,7 +22,7 @@ use Composer\Util\Bitbucket;
  */
 class AuthHelperTest extends TestCase
 {
-    /** @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject */
+    /** @var IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $io;
 
     /** @var \Composer\Config&\PHPUnit\Framework\MockObject\MockObject */
@@ -146,16 +146,16 @@ class AuthHelperTest extends TestCase
     public function testAddAuthenticationOptionsForClientCertificate(): void
     {
         $options = [];
-        $origin  = 'example.org';
-        $url     = 'file://' . __FILE__;
+        $origin = 'example.org';
+        $url = 'file://' . __FILE__;
         $certificateConfiguration = [
             'local_cert' => 'certificate value',
             'local_pk' => 'key value',
-            'passphrase' => 'passphrase value'
+            'passphrase' => 'passphrase value',
         ];
         $auth = [
-            'username' => (string)json_encode($certificateConfiguration),
-            'password' => 'client-certificate'
+            'username' => (string) json_encode($certificateConfiguration),
+            'password' => 'client-certificate',
         ];
         $this->expectsAuthentication($origin, $auth);
         $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
@@ -340,7 +340,7 @@ class AuthHelperTest extends TestCase
         $url = 'https://example.org/packages.json';
         $customHeaders = [
             'API-TOKEN: abc123',
-            'X-CUSTOM-HEADER: value'
+            'X-CUSTOM-HEADER: value',
         ];
         $headersJson = json_encode($customHeaders);
         // Ensure we have a string, not false from json_encode failure
@@ -588,7 +588,7 @@ class AuthHelperTest extends TestCase
             'bitbucket.org' => [
                 'access-token' => 'bitbucket_access_token',
                 'access-token-expiration' => time() + 1800,
-            ]
+            ],
         ];
 
         $this->config
@@ -616,7 +616,7 @@ class AuthHelperTest extends TestCase
             ->expects($this->exactly(2))
             ->method('getAuthentication')
             ->willReturnCallback(
-                function ($repositoryName) use (&$getAuthenticationReturnValues) {
+                static function ($repositoryName) use (&$getAuthenticationReturnValues) {
                     return array_shift($getAuthenticationReturnValues);
                 }
             );
@@ -669,7 +669,6 @@ class AuthHelperTest extends TestCase
         }
         $this->assertIsArray($updatedHeaders);
 
-
     }
 
     public function testAddAuthenticationHeaderDeprecation(): void
@@ -682,9 +681,8 @@ class AuthHelperTest extends TestCase
         );
 
         $headers = [];
-        $origin  = 'example.org';
-        $url     = 'file://' . __FILE__;
-
+        $origin = 'example.org';
+        $url = 'file://' . __FILE__;
 
         $expectedException = new \RuntimeException('AuthHelper::addAuthenticationHeader is deprecated since Composer 2.9 use addAuthenticationOptions instead.');
         $this->expectExceptionObject($expectedException);
@@ -694,6 +692,7 @@ class AuthHelperTest extends TestCase
             restore_error_handler();
         }
     }
+
     /**
      * @param array<string, string|null> $auth
      *

@@ -23,7 +23,7 @@ class BufferIOTest extends TestCase
         $bufferIO = new BufferIO();
 
         $refl = new \ReflectionProperty($bufferIO, 'input');
-        $refl->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $refl->setAccessible(true);
         $input = $refl->getValue($bufferIO);
 
         if (!$input instanceof StreamableInputInterface) {

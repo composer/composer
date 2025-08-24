@@ -14,7 +14,6 @@ namespace Composer\Test;
 
 use Composer\Advisory\Auditor;
 use Composer\Config;
-use Composer\IO\IOInterface;
 use Composer\Util\Platform;
 
 class ConfigTest extends TestCase

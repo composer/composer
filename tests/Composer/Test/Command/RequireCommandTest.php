@@ -78,7 +78,7 @@ Package operations: 2 installs, 0 updates, 0 removals
   - Installing required/pkg (dev-foo-bar)
 Using version dev-foo-bar for required/pkg
 <warning>Version dev-foo-bar looks like it may be a feature branch which is unlikely to keep working in the long run and may be in an unstable state</warning>
-Are you sure you want to use this constraint (Y) or would you rather abort (n) the whole operation [Y,n]? '.'
+Are you sure you want to use this constraint (y) or would you rather abort (n) the whole operation [y,n]? '.'
 Installation failed, reverting ./composer.json to its original content.
 ', $appTester->getDisplay(true));
     }
@@ -224,7 +224,7 @@ OUTPUT
                     ],
                 ],
                 'require' => [
-                    'existing/dep' => '^1'
+                    'existing/dep' => '^1',
                 ],
             ],
             ['packages' => ['required/pkg'], '--no-install' => true],
@@ -267,9 +267,6 @@ OUTPUT
 
     /**
      * @dataProvider provideInconsistentRequireKeys
-     * @param bool $isDev
-     * @param bool $isInteractive
-     * @param string $expectedWarning
      */
     public function testInconsistentRequireKeys(bool $isDev, bool $isInteractive, string $expectedWarning): void
     {
@@ -305,13 +302,14 @@ OUTPUT
             '--no-audit' => true,
             '--dev' => $isDev,
             '--no-install' => true,
-            'packages' => ['required/pkg']
+            'packages' => ['required/pkg'],
         ];
 
-        if ($isInteractive)
+        if ($isInteractive) {
             $appTester->setInputs(['yes']);
-        else
+        } else {
             $command['--no-interaction'] = true;
+        }
 
         $appTester->run($command);
 
@@ -330,25 +328,25 @@ OUTPUT
         yield [
             true,
             false,
-            '<warning>required/pkg is currently present in the require key and you ran the command with the --dev flag, which will move it to the require-dev key.</warning>'
+            '<warning>required/pkg is currently present in the require key and you ran the command with the --dev flag, which will move it to the require-dev key.</warning>',
         ];
 
         yield [
             false,
             false,
-            '<warning>required/pkg is currently present in the require-dev key and you ran the command without the --dev flag, which will move it to the require key.</warning>'
+            '<warning>required/pkg is currently present in the require-dev key and you ran the command without the --dev flag, which will move it to the require key.</warning>',
         ];
 
         yield [
             true,
             true,
-            '<warning>required/pkg is currently present in the require key and you ran the command with the --dev flag, which will move it to the require-dev key.</warning>'
+            '<warning>required/pkg is currently present in the require key and you ran the command with the --dev flag, which will move it to the require-dev key.</warning>',
         ];
 
         yield [
             false,
             true,
-            '<warning>required/pkg is currently present in the require-dev key and you ran the command without the --dev flag, which will move it to the require key.</warning>'
+            '<warning>required/pkg is currently present in the require-dev key and you ran the command without the --dev flag, which will move it to the require key.</warning>',
         ];
     }
 }

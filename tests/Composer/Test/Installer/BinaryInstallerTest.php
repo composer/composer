@@ -40,7 +40,7 @@ class BinaryInstallerTest extends TestCase
     protected $io;
 
     /**
-     * @var \Composer\Util\Filesystem
+     * @var Filesystem
      */
     protected $fs;
 

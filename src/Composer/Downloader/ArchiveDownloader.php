@@ -106,7 +106,7 @@ abstract class ArchiveDownloader extends FileDownloader
             throw $e;
         }
 
-        return $promise->then(function () use ($package, $filesystem, $fileName, $temporaryDir, $path): \React\Promise\PromiseInterface {
+        return $promise->then(function () use ($package, $filesystem, $fileName, $temporaryDir, $path): PromiseInterface {
             if (file_exists($fileName)) {
                 $filesystem->unlink($fileName);
             }

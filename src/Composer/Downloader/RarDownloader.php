@@ -15,7 +15,6 @@ namespace Composer\Downloader;
 use React\Promise\PromiseInterface;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
-use Composer\Util\ProcessExecutor;
 use Composer\Package\PackageInterface;
 use RarArchive;
 

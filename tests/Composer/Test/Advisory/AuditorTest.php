@@ -340,7 +340,7 @@ Found 2 abandoned packages:
 
     /**
      * @dataProvider ignoredIdsProvider
-     * @phpstan-param array<\Composer\Package\Package> $packages
+     * @phpstan-param array<Package> $packages
      * @phpstan-param array<string>|array<string,string> $ignoredIds
      * @phpstan-param 0|positive-int $exitCode
      * @phpstan-param list<array{text: string, verbosity?: \Composer\IO\IOInterface::*, regex?: true}|array{ask: string, reply: string}|array{auth: array{string, string, string|null}}> $expectedOutput
@@ -389,7 +389,7 @@ Found 2 abandoned packages:
 
     /**
      * @dataProvider ignoreSeverityProvider
-     * @phpstan-param array<\Composer\Package\Package> $packages
+     * @phpstan-param array<Package> $packages
      * @phpstan-param array<string> $ignoredSeverities
      * @phpstan-param 0|positive-int $exitCode
      * @phpstan-param list<array{text: string, verbosity?: \Composer\IO\IOInterface::*, regex?: true}|array{ask: string, reply: string}|array{auth: array{string, string, string|null}}> $expectedOutput

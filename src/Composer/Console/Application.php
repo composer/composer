@@ -209,7 +209,7 @@ class Application extends BaseApplication
                         $io->writeError('<info>No composer.json in current directory, to use the one at '.$dir.' run interactively or set config.use-parent-dir to true</info>');
                         break;
                     }
-                    if ($useParentDirIfNoJsonAvailable === true || $io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ')) {
+                    if ($useParentDirIfNoJsonAvailable === true || $io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>y,n</comment>]? ')) {
                         if ($useParentDirIfNoJsonAvailable === true) {
                             $io->writeError('<info>No composer.json in current directory, changing working directory to '.$dir.'</info>');
                         } else {
@@ -462,7 +462,7 @@ class Application extends BaseApplication
             // as http error codes are all beyond the 255 range of permitted exit codes
             if ($e instanceof TransportException) {
                 $reflProp = new \ReflectionProperty($e, 'code');
-                $reflProp->setAccessible(true);
+                (\PHP_VERSION_ID < 80100) and $reflProp->setAccessible(true);
                 $reflProp->setValue($e, Installer::ERROR_TRANSPORT_EXCEPTION);
             }
 
@@ -473,15 +473,14 @@ class Application extends BaseApplication
     }
 
     /**
-     * @throws \RuntimeException
-     * @return ?string
+     * @throws RuntimeException
      */
     private function getNewWorkingDir(InputInterface $input): ?string
     {
         /** @var string|null $workingDir */
         $workingDir = $input->getParameterOption(['--working-dir', '-d'], null, true);
         if (null !== $workingDir && !is_dir($workingDir)) {
-            throw new \RuntimeException('Invalid working directory specified, '.$workingDir.' does not exist.');
+            throw new RuntimeException('Invalid working directory specified, '.$workingDir.' does not exist.');
         }
 
         return $workingDir;

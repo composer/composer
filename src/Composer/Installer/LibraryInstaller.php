@@ -49,9 +49,6 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
 
     /**
      * Initializes library installer.
-     *
-     * @param Filesystem      $filesystem
-     * @param BinaryInstaller $binaryInstaller
      */
     public function __construct(IOInterface $io, PartialComposer $composer, ?string $type = 'library', ?Filesystem $filesystem = null, ?BinaryInstaller $binaryInstaller = null)
     {

@@ -10,7 +10,6 @@
  * file that was distributed with this source code.
  */
 
-
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
@@ -122,7 +121,7 @@ OUTPUT;
 OUTPUT
         ];
 
-        $publishDataStripped= array_diff_key(
+        $publishDataStripped = array_diff_key(
             self::MINIMAL_VALID_CONFIGURATION,
             ['name' => true, 'type' => true, 'description' => true, 'license' => true]
         );

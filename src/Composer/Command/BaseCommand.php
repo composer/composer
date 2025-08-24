@@ -215,10 +215,8 @@ abstract class BaseCommand extends Command
 
     /**
      * @inheritDoc
-     *
-     * @return void
      */
-    protected function initialize(InputInterface $input, OutputInterface $output)
+    protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         // initialize a plugin-enabled Composer instance, either local or global
         $disablePlugins = $input->hasParameterOption('--no-plugins');
@@ -296,7 +294,6 @@ abstract class BaseCommand extends Command
      *
      * @param  mixed    $config either a configuration array or a filename to read from, if null it will read from
      *                          the default filename
-     * @return Composer
      */
     protected function createComposerInstance(InputInterface $input, IOInterface $io, $config = null, ?bool $disablePlugins = null, ?bool $disableScripts = null): Composer
     {

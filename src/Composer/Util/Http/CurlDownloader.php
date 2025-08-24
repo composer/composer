@@ -23,7 +23,6 @@ use Composer\Util\AuthHelper;
 use Composer\Util\Url;
 use Composer\Util\HttpDownloader;
 use React\Promise\Promise;
-use Symfony\Component\HttpFoundation\IpUtils;
 
 /**
  * @internal
@@ -241,8 +240,7 @@ class CurlDownloader
         if (0 === strpos($url, 'https://')) {
             if (\defined('CURL_VERSION_HTTP3') && \defined('CURL_HTTP_VERSION_3') && (CURL_VERSION_HTTP3 & $features) !== 0) {
                 curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_3);
-            }
-            elseif (\defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features) !== 0) {
+            } elseif (\defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features) !== 0) {
                 curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
             }
         }
@@ -305,7 +303,9 @@ class CurlDownloader
         if (isset($this->jobs[$id], $this->jobs[$id]['curlHandle'])) {
             $job = $this->jobs[$id];
             curl_multi_remove_handle($this->multiHandle, $job['curlHandle']);
-            curl_close($job['curlHandle']);
+            if (\PHP_VERSION_ID < 80000) {
+                curl_close($job['curlHandle']);
+            }
             if (is_resource($job['headerHandle'])) {
                 fclose($job['headerHandle']);
             }
@@ -351,7 +351,9 @@ class CurlDownloader
             $error = curl_error($curlHandle);
             $errno = curl_errno($curlHandle);
             curl_multi_remove_handle($this->multiHandle, $curlHandle);
-            curl_close($curlHandle);
+            if (\PHP_VERSION_ID < 80000) {
+                curl_close($curlHandle);
+            }
 
             $headers = null;
             $statusCode = null;

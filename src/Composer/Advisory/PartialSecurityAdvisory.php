@@ -12,6 +12,8 @@
 
 namespace Composer\Advisory;
 
+use Composer\Pcre\Preg;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\VersionParser;
 use JsonSerializable;
@@ -42,7 +44,18 @@ class PartialSecurityAdvisory implements JsonSerializable
      */
     public static function create(string $packageName, array $data, VersionParser $parser): self
     {
-        $constraint = $parser->parseConstraints($data['affectedVersions']);
+        try {
+            $constraint = $parser->parseConstraints($data['affectedVersions']);
+        } catch (\UnexpectedValueException $e) {
+            // try to keep only the essential part of the constraint to turn invalid ones like <=3.20-test2 into <=3.20 which is better than nothing
+            try {
+                $affectedVersion = Preg::replace('{(^[>=<^~]*[\d.]+).*}', '$1', $data['affectedVersions']);
+                $constraint = $parser->parseConstraints($affectedVersion);
+            } catch (\UnexpectedValueException $e) {
+                $constraint = new Constraint('==', '0.0.0-invalid-version');
+            }
+        }
+
         if (isset($data['title'], $data['sources'], $data['reportedAt'])) {
             return new SecurityAdvisory($packageName, $data['advisoryId'], $constraint, $data['title'], $data['sources'], new \DateTimeImmutable($data['reportedAt'], new \DateTimeZone('UTC')), $data['cve'] ?? null, $data['link'] ?? null, $data['severity'] ?? null);
         }

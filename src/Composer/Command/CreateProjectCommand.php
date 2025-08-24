@@ -33,7 +33,6 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
-use Composer\Util\Silencer;
 use Composer\Console\Input\InputArgument;
 use Seld\Signal\SignalHandler;
 use Symfony\Component\Console\Input\InputInterface;
@@ -278,7 +277,7 @@ EOT
             && (
                 $input->getOption('remove-vcs')
                 || !$io->isInteractive()
-                || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ')
+                || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>y,n</comment>]? ')
             )
         ) {
             $finder = new Finder();

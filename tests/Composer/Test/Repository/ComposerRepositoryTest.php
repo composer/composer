@@ -133,7 +133,7 @@ class ComposerRepositoryTest extends TestCase
 
         foreach ($properties as $property => $value) {
             $ref = new \ReflectionProperty($repo, $property);
-            $ref->setAccessible(true);
+            (\PHP_VERSION_ID < 80100) and $ref->setAccessible(true);
             $ref->setValue($repo, $value);
         }
 
@@ -162,7 +162,7 @@ class ComposerRepositoryTest extends TestCase
             ]));
 
         $reflMethod = new \ReflectionMethod(ComposerRepository::class, 'whatProvides');
-        $reflMethod->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $reflMethod->setAccessible(true);
         $packages = $reflMethod->invoke($repo, 'a');
 
         self::assertCount(5, $packages);
@@ -304,12 +304,12 @@ class ComposerRepositoryTest extends TestCase
         $object = new \ReflectionObject($repository);
 
         $method = $object->getMethod('canonicalizeUrl');
-        $method->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
 
         // ComposerRepository::__construct ensures that the repository URL has a
         // protocol, so reset it here in order to test all cases.
         $property = $object->getProperty('url');
-        $property->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $property->setAccessible(true);
         $property->setValue($repository, $repositoryUrl);
 
         self::assertSame($expected, $method->invoke($repository, $url));
@@ -413,7 +413,7 @@ class ComposerRepositoryTest extends TestCase
                         'timeout' => 10,
                         'content' => http_build_query(['packages' => ['foo/bar']]),
                     ]],
-                ]
+                ],
             ],
             true
         );

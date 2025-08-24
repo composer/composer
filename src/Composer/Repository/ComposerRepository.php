@@ -675,7 +675,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 $promises[] = $this->startCachedAsyncDownload($name, $name)
                     ->then(static function (array $spec) use (&$advisories, &$namesFound, &$packageConstraintMap, $name, $create): void {
-                        [$response, ] = $spec;
+                        [$response] = $spec;
 
                         if (!isset($response['security-advisories']) || !is_array($response['security-advisories'])) {
                             return;
@@ -1298,7 +1298,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @param string $url
      * @return non-empty-string
      */
     private function canonicalizeUrl(string $url): string

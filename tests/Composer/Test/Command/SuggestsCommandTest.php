@@ -116,7 +116,7 @@ class SuggestsCommandTest extends TestCase
                 [
                     'vendor8/dev-transitive' => new Link('vendor5/dev-package', 'vendor8/dev-transitive', self::getVersionConstraint('>=', '1.0'), Link::TYPE_DEV_REQUIRE, '^1.0'),
                 ]
-            )
+            ),
         ];
 
         $this->createInstalledJson($packages, $devPackages);
@@ -140,7 +140,7 @@ class SuggestsCommandTest extends TestCase
 vendor2/package2 suggests:
  - vendor4/dev-suggested: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'without lockfile, show suggested' => [
@@ -152,7 +152,7 @@ vendor2/package2 suggests:
 vendor2/package2 suggests:
  - vendor4/dev-suggested: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'with lockfile, show suggested (excluding dev)' => [
@@ -161,7 +161,7 @@ vendor2/package2 suggests:
             'vendor1/package1 suggests:
  - vendor3/suggested: helpful for vendor1/package1
 
-1 additional suggestions by transitive dependencies can be shown with --all'
+1 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'without lockfile, show suggested (excluding dev)' => [
@@ -173,7 +173,7 @@ vendor2/package2 suggests:
 vendor2/package2 suggests:
  - vendor4/dev-suggested: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'with lockfile, show all suggested' => [
@@ -189,7 +189,7 @@ vendor5/dev-package suggests:
  - vendor8/dev-transitive: helpful for vendor5/dev-package
 
 vendor6/package6 suggests:
- - vendor7/transitive: helpful for vendor6/package6'
+ - vendor7/transitive: helpful for vendor6/package6',
         ];
 
         yield 'without lockfile, show all suggested' => [
@@ -205,7 +205,7 @@ vendor5/dev-package suggests:
  - vendor8/dev-transitive: helpful for vendor5/dev-package
 
 vendor6/package6 suggests:
- - vendor7/transitive: helpful for vendor6/package6'
+ - vendor7/transitive: helpful for vendor6/package6',
         ];
 
         yield 'with lockfile, show all suggested (excluding dev)' => [
@@ -215,7 +215,7 @@ vendor6/package6 suggests:
  - vendor3/suggested: helpful for vendor1/package1
 
 vendor6/package6 suggests:
- - vendor7/transitive: helpful for vendor6/package6'
+ - vendor7/transitive: helpful for vendor6/package6',
         ];
 
         yield 'without lockfile, show all suggested (excluding dev)' => [
@@ -231,7 +231,7 @@ vendor5/dev-package suggests:
  - vendor8/dev-transitive: helpful for vendor5/dev-package
 
 vendor6/package6 suggests:
- - vendor7/transitive: helpful for vendor6/package6'
+ - vendor7/transitive: helpful for vendor6/package6',
         ];
 
         yield 'with lockfile, show suggested grouped by package' => [
@@ -243,7 +243,7 @@ vendor6/package6 suggests:
 vendor2/package2 suggests:
  - vendor4/dev-suggested: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'without lockfile, show suggested grouped by package' => [
@@ -255,7 +255,7 @@ vendor2/package2 suggests:
 vendor2/package2 suggests:
  - vendor4/dev-suggested: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'with lockfile, show suggested grouped by package (excluding dev)' => [
@@ -264,7 +264,7 @@ vendor2/package2 suggests:
             'vendor1/package1 suggests:
  - vendor3/suggested: helpful for vendor1/package1
 
-1 additional suggestions by transitive dependencies can be shown with --all'
+1 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'without lockfile, show suggested grouped by package (excluding dev)' => [
@@ -276,7 +276,7 @@ vendor2/package2 suggests:
 vendor2/package2 suggests:
  - vendor4/dev-suggested: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'with lockfile, show suggested grouped by suggestion' => [
@@ -288,7 +288,7 @@ vendor2/package2 suggests:
 vendor4/dev-suggested is suggested by:
  - vendor2/package2: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'without lockfile, show suggested grouped by suggestion' => [
@@ -300,7 +300,7 @@ vendor4/dev-suggested is suggested by:
 vendor4/dev-suggested is suggested by:
  - vendor2/package2: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'with lockfile, show suggested grouped by suggestion (excluding dev)' => [
@@ -309,7 +309,7 @@ vendor4/dev-suggested is suggested by:
             'vendor3/suggested is suggested by:
  - vendor1/package1: helpful for vendor1/package1
 
-1 additional suggestions by transitive dependencies can be shown with --all'
+1 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'without lockfile, show suggested grouped by suggestion (excluding dev)' => [
@@ -321,7 +321,7 @@ vendor4/dev-suggested is suggested by:
 vendor4/dev-suggested is suggested by:
  - vendor2/package2: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'with lockfile, show suggested grouped by package and suggestion' => [
@@ -340,7 +340,7 @@ vendor3/suggested is suggested by:
 vendor4/dev-suggested is suggested by:
  - vendor2/package2: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'without lockfile, show suggested grouped by package and suggestion' => [
@@ -359,7 +359,7 @@ vendor3/suggested is suggested by:
 vendor4/dev-suggested is suggested by:
  - vendor2/package2: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'with lockfile, show suggested grouped by package and suggestion (excluding dev)' => [
@@ -372,7 +372,7 @@ vendor4/dev-suggested is suggested by:
 vendor3/suggested is suggested by:
  - vendor1/package1: helpful for vendor1/package1
 
-1 additional suggestions by transitive dependencies can be shown with --all'
+1 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'without lockfile, show suggested grouped by package and suggestion (excluding dev)' => [
@@ -391,21 +391,21 @@ vendor3/suggested is suggested by:
 vendor4/dev-suggested is suggested by:
  - vendor2/package2: helpful for vendor2/package2
 
-2 additional suggestions by transitive dependencies can be shown with --all'
+2 additional suggestions by transitive dependencies can be shown with --all',
         ];
 
         yield 'with lockfile, show suggested for package' => [
             true,
             ['packages' => ['vendor2/package2']],
             'vendor2/package2 suggests:
- - vendor4/dev-suggested: helpful for vendor2/package2'
+ - vendor4/dev-suggested: helpful for vendor2/package2',
         ];
 
         yield 'without lockfile, show suggested for package' => [
             false,
             ['packages' => ['vendor2/package2']],
             'vendor2/package2 suggests:
- - vendor4/dev-suggested: helpful for vendor2/package2'
+ - vendor4/dev-suggested: helpful for vendor2/package2',
         ];
 
         yield 'with lockfile, list suggested' => [

@@ -111,7 +111,7 @@ class ConsoleIOTest extends TestCase
             ->willReturn(OutputInterface::VERBOSITY_NORMAL);
         $outputMock->expects($this->atLeast(7))
             ->method('write')
-            ->willReturnCallback(function (...$args) {
+            ->willReturnCallback(static function (...$args) {
                 static $series = null;
 
                 if ($series === null) {

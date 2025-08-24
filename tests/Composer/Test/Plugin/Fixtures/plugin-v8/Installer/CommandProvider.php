@@ -30,7 +30,7 @@ class CommandProvider implements CommandProviderCapability
 
 class Command extends BaseCommand
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('custom-plugin-command');
     }

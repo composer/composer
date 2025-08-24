@@ -193,8 +193,8 @@ class DefaultPolicy implements PolicyInterface
     {
         foreach ($source->getReplaces() as $link) {
             if ($link->getTarget() === $target->getName()
-//                && (null === $link->getConstraint() ||
-//                $link->getConstraint()->matches(new Constraint('==', $target->getVersion())))) {
+                // && (null === $link->getConstraint() ||
+                // $link->getConstraint()->matches(new Constraint('==', $target->getVersion())))) {
             ) {
                 return true;
             }

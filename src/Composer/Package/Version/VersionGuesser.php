@@ -23,7 +23,6 @@ use Composer\Util\HttpDownloader;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
-use React\Promise\CancellablePromiseInterface;
 use Symfony\Component\Process\Process;
 
 /**

@@ -63,7 +63,6 @@ class VersionSelector
      * Given a package name and optional version, returns the latest PackageInterface
      * that matches.
      *
-     * @param string                                           $targetPackageVersion
      * @param PlatformRequirementFilterInterface|bool|string[] $platformRequirementFilter
      * @param IOInterface|null                                 $io                        If passed, warnings will be output there in case versions cannot be selected due to platform requirements
      * @param callable(PackageInterface):bool|bool             $showWarnings

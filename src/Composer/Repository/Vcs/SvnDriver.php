@@ -50,7 +50,7 @@ class SvnDriver extends VcsDriver
     protected $cacheCredentials = true;
 
     /**
-     * @var \Composer\Util\Svn
+     * @var SvnUtil
      */
     private $util;
 

@@ -34,10 +34,7 @@ class FileDownloaderTest extends TestCase
     }
 
     /**
-     * @param \Composer\EventDispatcher\EventDispatcher $eventDispatcher
-     * @param \Composer\Cache $cache
      * @param \Composer\Util\HttpDownloader&\PHPUnit\Framework\MockObject\MockObject $httpDownloader
-     * @param \Composer\Util\Filesystem $filesystem
      */
     protected function getDownloader(?\Composer\IO\IOInterface $io = null, ?Config $config = null, ?EventDispatcher $eventDispatcher = null, ?\Composer\Cache $cache = null, $httpDownloader = null, ?Filesystem $filesystem = null): FileDownloader
     {
@@ -94,7 +91,7 @@ class FileDownloaderTest extends TestCase
         $config = $this->getConfig(['vendor-dir' => '/vendor']);
         $downloader = $this->getDownloader(null, $config);
         $method = new \ReflectionMethod($downloader, 'getFileName');
-        $method->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
 
         self::assertMatchesRegularExpression('#/vendor/composer/tmp-[a-z0-9]+\.js#', $method->invoke($downloader, $package, '/path'));
     }
@@ -175,7 +172,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyTo')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
+            ->will($this->returnCallback(static function ($cacheKey) use ($expectedCacheKey): bool {
                 self::assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
 
                 return false;
@@ -183,7 +180,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyFrom')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
+            ->will($this->returnCallback(static function ($cacheKey) use ($expectedCacheKey): bool {
                 self::assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
 
                 return false;
@@ -193,7 +190,7 @@ class FileDownloaderTest extends TestCase
         $httpDownloaderMock
             ->expects($this->any())
             ->method('addCopy')
-            ->will($this->returnCallback(function ($url) use ($expectedUrl) {
+            ->will($this->returnCallback(static function ($url) use ($expectedUrl) {
                 self::assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
 
                 return \React\Promise\resolve(
@@ -259,7 +256,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyTo')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
+            ->will($this->returnCallback(static function ($cacheKey) use ($expectedCacheKey): bool {
                 self::assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
 
                 return false;
@@ -267,7 +264,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyFrom')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
+            ->will($this->returnCallback(static function ($cacheKey) use ($expectedCacheKey): bool {
                 self::assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
 
                 return false;
@@ -277,7 +274,7 @@ class FileDownloaderTest extends TestCase
         $httpDownloaderMock
             ->expects($this->any())
             ->method('addCopy')
-            ->will($this->returnCallback(function ($url) use ($expectedUrl) {
+            ->will($this->returnCallback(static function ($url) use ($expectedUrl) {
                 self::assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
 
                 return \React\Promise\resolve(
@@ -345,7 +342,7 @@ class FileDownloaderTest extends TestCase
 
         // make sure the file expected to be downloaded is on disk already
         $method = new \ReflectionMethod($downloader, 'getFileName');
-        $method->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
         $dlFile = $method->invoke($downloader, $package, $path);
         mkdir(dirname($dlFile), 0777, true);
         touch($dlFile);
@@ -396,7 +393,7 @@ class FileDownloaderTest extends TestCase
 
         // make sure the file expected to be downloaded is on disk already
         $method = new \ReflectionMethod($downloader, 'getFileName');
-        $method->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
         $dlFile = $method->invoke($downloader, $newPackage, $path);
         mkdir(dirname($dlFile), 0777, true);
         touch($dlFile);

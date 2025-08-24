@@ -15,7 +15,6 @@ namespace Composer\Test\Command;
 use Composer\Command\InitCommand;
 use Composer\Json\JsonFile;
 use Composer\Test\TestCase;
-use Symfony\Component\Console\Tester\ApplicationTester;
 
 class InitCommandTest extends TestCase
 {
@@ -132,7 +131,7 @@ class InitCommandTest extends TestCase
     private function callParseAuthorString(InitCommand $command, string $string): array
     {
         $reflMethod = new \ReflectionMethod($command, 'parseAuthorString');
-        $reflMethod->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $reflMethod->setAccessible(true);
 
         return $reflMethod->invoke($command, $string);
     }
@@ -244,7 +243,7 @@ class InitCommandTest extends TestCase
                 [
                     'name' => 'Mr. Test',
                     'email' => 'test@example.org',
-                ]
+                ],
             ],
         ];
 
@@ -274,7 +273,7 @@ class InitCommandTest extends TestCase
             'authors' => [
                 [
                     'name' => 'Mr. Test',
-                ]
+                ],
             ],
         ];
 
@@ -294,7 +293,7 @@ class InitCommandTest extends TestCase
             '--no-interaction' => true,
             '--name' => 'test/pkg',
             '--repository' => [
-                '{"type":"vcs","url":"http://packages.example.com"}'
+                '{"type":"vcs","url":"http://packages.example.com"}',
             ],
         ]);
 
@@ -306,9 +305,9 @@ class InitCommandTest extends TestCase
             'repositories' => [
                 [
                     'type' => 'vcs',
-                    'url' => 'http://packages.example.com'
-                ]
-            ]
+                    'url' => 'http://packages.example.com',
+                ],
+            ],
         ];
 
         $file = new JsonFile($dir . '/composer.json');
@@ -341,22 +340,22 @@ class InitCommandTest extends TestCase
             'repositories' => [
                 [
                     'type' => 'vcs',
-                    'url' => 'http://vcs.example.com'
+                    'url' => 'http://vcs.example.com',
                 ],
                 [
                     'type' => 'composer',
-                    'url' => 'http://composer.example.com'
+                    'url' => 'http://composer.example.com',
                 ],
                 [
                     'type' => 'composer',
                     'url' => 'http://composer2.example.com',
                     'options' => [
                         'ssl' => [
-                            'verify_peer' => 'true'
-                        ]
-                    ]
-                ]
-            ]
+                            'verify_peer' => 'true',
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $file = new JsonFile($dir . '/composer.json');
@@ -420,7 +419,7 @@ class InitCommandTest extends TestCase
             '--no-interaction' => true,
             '--name' => 'test/pkg',
             '--require' => [
-                'first/pkg:1.0.0'
+                'first/pkg:1.0.0',
             ],
         ]);
 
@@ -429,7 +428,7 @@ class InitCommandTest extends TestCase
         $expected = [
             'name' => 'test/pkg',
             'require' => [
-                'first/pkg' => '1.0.0'
+                'first/pkg' => '1.0.0',
             ],
         ];
 
@@ -450,7 +449,7 @@ class InitCommandTest extends TestCase
             '--name' => 'test/pkg',
             '--require' => [
                 'first/pkg:1.0.0',
-                'second/pkg:^3.4'
+                'second/pkg:^3.4',
             ],
         ]);
 
@@ -500,7 +499,7 @@ class InitCommandTest extends TestCase
             '--no-interaction' => true,
             '--name' => 'test/pkg',
             '--require-dev' => [
-                'first/pkg:1.0.0'
+                'first/pkg:1.0.0',
             ],
         ]);
 
@@ -510,7 +509,7 @@ class InitCommandTest extends TestCase
             'name' => 'test/pkg',
             'require' => [],
             'require-dev' => [
-                'first/pkg' => '1.0.0'
+                'first/pkg' => '1.0.0',
             ],
         ];
 
@@ -531,7 +530,7 @@ class InitCommandTest extends TestCase
             '--name' => 'test/pkg',
             '--require-dev' => [
                 'first/pkg:1.0.0',
-                'second/pkg:^3.4'
+                'second/pkg:^3.4',
             ],
         ]);
 
@@ -581,7 +580,7 @@ class InitCommandTest extends TestCase
             'command' => 'init',
             '--no-interaction' => true,
             '--name' => 'test/pkg',
-            '--autoload' => 'testMapping/'
+            '--autoload' => 'testMapping/',
         ]);
 
         self::assertSame(0, $appTester->getStatusCode());
@@ -592,7 +591,7 @@ class InitCommandTest extends TestCase
             'autoload' => [
                 'psr-4' => [
                     'Test\\Pkg\\' => 'testMapping/',
-                ]
+                ],
             ],
         ];
 
@@ -611,7 +610,7 @@ class InitCommandTest extends TestCase
             'command' => 'init',
             '--no-interaction' => true,
             '--name' => 'test/pkg',
-            '--homepage' => 'https://example.org/'
+            '--homepage' => 'https://example.org/',
         ]);
 
         self::assertSame(0, $appTester->getStatusCode());
@@ -619,7 +618,7 @@ class InitCommandTest extends TestCase
         $expected = [
             'name' => 'test/pkg',
             'require' => [],
-            'homepage' => 'https://example.org/'
+            'homepage' => 'https://example.org/',
         ];
 
         $file = new JsonFile($dir . '/composer.json');
@@ -655,7 +654,7 @@ class InitCommandTest extends TestCase
             'command' => 'init',
             '--no-interaction' => true,
             '--name' => 'test/pkg',
-            '--description' => 'My first example package'
+            '--description' => 'My first example package',
         ]);
 
         self::assertSame(0, $appTester->getStatusCode());
@@ -663,7 +662,7 @@ class InitCommandTest extends TestCase
         $expected = [
             'name' => 'test/pkg',
             'require' => [],
-            'description' => 'My first example package'
+            'description' => 'My first example package',
         ];
 
         $file = new JsonFile($dir . '/composer.json');
@@ -681,7 +680,7 @@ class InitCommandTest extends TestCase
             'command' => 'init',
             '--no-interaction' => true,
             '--name' => 'test/pkg',
-            '--type' => 'library'
+            '--type' => 'library',
         ]);
 
         self::assertSame(0, $appTester->getStatusCode());
@@ -689,7 +688,7 @@ class InitCommandTest extends TestCase
         $expected = [
             'name' => 'test/pkg',
             'require' => [],
-            'type' => 'library'
+            'type' => 'library',
         ];
 
         $file = new JsonFile($dir . '/composer.json');
@@ -707,7 +706,7 @@ class InitCommandTest extends TestCase
             'command' => 'init',
             '--no-interaction' => true,
             '--name' => 'test/pkg',
-            '--license' => 'MIT'
+            '--license' => 'MIT',
         ]);
 
         self::assertSame(0, $appTester->getStatusCode());
@@ -715,7 +714,7 @@ class InitCommandTest extends TestCase
         $expected = [
             'name' => 'test/pkg',
             'require' => [],
-            'license' => 'MIT'
+            'license' => 'MIT',
         ];
 
         $file = new JsonFile($dir . '/composer.json');

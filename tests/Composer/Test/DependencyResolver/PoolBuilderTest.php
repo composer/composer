@@ -53,6 +53,7 @@ class PoolBuilderTest extends TestCase
             if (!isset(BasePackage::STABILITIES[$stability])) {
                 throw new \LogicException('Invalid stability given: '.$stability);
             }
+
             return BasePackage::STABILITIES[$stability];
         }, $stabilityFlags);
 

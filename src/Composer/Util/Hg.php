@@ -25,17 +25,17 @@ class Hg
     private static $version = false;
 
     /**
-     * @var \Composer\IO\IOInterface
+     * @var IOInterface
      */
     private $io;
 
     /**
-     * @var \Composer\Config
+     * @var Config
      */
     private $config;
 
     /**
-     * @var \Composer\Util\ProcessExecutor
+     * @var ProcessExecutor
      */
     private $process;
 
