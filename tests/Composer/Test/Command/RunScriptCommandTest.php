@@ -221,17 +221,17 @@ outeropt: set
 
     public function testExecutionOfSymfonyCommandWithConfiguration(): void
     {
-        $wrongName = 'dummy';
         $cmdName = 'custom-cmd-123';
+        $cmdAlias = "$cmdName-alias";
         $cmdDesc = 'This is a Symfony command with custom configuration';
+        $wrongDesc = 'this should be ignored';
 
         $this->initTempComposer([
             'scripts' => [
-                $wrongName => 'Test\\MyCommandWithDefinitions',
+                $cmdName => 'Test\\MyCommandWithDefinitions',
             ],
             'scripts-descriptions' => [
-                $wrongName => 'dummy description',
-                $cmdName => 'this should be ignored',
+                $cmdName => $wrongDesc,
             ],
             'autoload' => [
                 'psr-4' => [
@@ -252,12 +252,12 @@ use Symfony\Component\Console\Command\Command;
 
 class MyCommandWithDefinitions extends Command
 {
-    protected static \$defaultName = "$cmdName"; //same as calling setName()
-    protected static \$defaultDescription = "$cmdDesc"; //same as calling setDescription()
-
     protected function configure(): void
     {
-        \$this->setDefinition([new InputArgument('req-arg', InputArgument::REQUIRED, 'Required arg.')]);
+        \$this
+            ->setDescription('$cmdDesc')
+            ->setAliases(['$cmdAlias'])
+            ->setDefinition([new InputArgument('req-arg', InputArgument::REQUIRED, 'Required arg.')]);
     }
 
     public function execute(InputInterface \$input, OutputInterface \$output): int
@@ -275,10 +275,10 @@ TEST
         $appTester->run(['command' => $cmdName, 'req-arg' => 'lala']);
         self::assertSame("lala\n", $appTester->getDisplay(true));
 
-        //...not in composer.scripts...
-        $this->expectException(CommandNotFoundException::class);
+        //...with the alias defined there as well...
         $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => $wrongName, 'req-arg' => 'lala']);
+        $appTester->run(['command' => $cmdAlias, 'req-arg' => 'lala']);
+        self::assertSame("lala\n", $appTester->getDisplay(true));
 
         //...and also uses its own description, instead of the one in composer.scripts-descriptions
         $appTester = $this->getApplicationTester();
@@ -286,7 +286,7 @@ TEST
         $appTester->assertCommandIsSuccessful();
         $output = $appTester->getDisplay();
         self::assertStringContainsString($cmdDesc, $output, 'The custom description for the test script should be printed');
-        self::assertStringNotContainsString($wrongName, $output, 'The dummy script shouldn\'t show');
+        self::assertStringNotContainsString($wrongDesc, $output, 'The dummy description shouldn\'t show');
     }
 
     /** @return bool[][] **/

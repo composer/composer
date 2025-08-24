@@ -382,12 +382,16 @@ class Application extends BaseApplication
 
                                 $aliases = $composer['scripts-aliases'][$script] ?? [];
 
-                                //if the command points to a valid Command subclass, import its details directly
+                                //if the command is not an array of commands, and points to a valid Command subclass, import its details directly
                                 if (is_string($dummy) && class_exists($dummy) && is_subclass_of($dummy, SymfonyCommand::class)) {
                                     $cmd = new $dummy;
-                                    if ($cmd->getName() === '' || $cmd->getName() === null) {
-                                        $cmd->setName($script);
+
+                                    //makes sure the command class is find()'able by the name defined in composer.json
+                                    if ($cmd->getName() !== '' && $cmd->getName() !== null && $cmd->getName() !== $script) {
+                                        $io->writeError('<warning>The script named '.$script.' in composer.json has a mismatched name in its class definition. For consistency, either use the same name, or do not define one inside the class.</warning>');
                                     }
+                                    $cmd->setName($script);
+
                                     if ($cmd->getDescription() === '') {
                                         $cmd->setDescription($description);
                                     }
