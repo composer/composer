@@ -382,23 +382,17 @@ class Application extends BaseApplication
 
                                 $aliases = $composer['scripts-aliases'][$script] ?? [];
 
-                                //if the command points to a valid Command class, import its details directly
-                                if (is_string($dummy) && class_exists($dummy)) {
+                                //if the command points to a valid Command subclass, import its details directly
+                                if (is_string($dummy) && class_exists($dummy) && is_subclass_of($dummy, SymfonyCommand::class)) {
                                     $cmd = new $dummy;
-                                    if ($cmd instanceof SymfonyCommand) {
-                                        if ($cmd->getName() === '' || $cmd->getName() === null) {
-                                            $cmd->setName($script);
-                                        }
-                                        if ($cmd->getDescription() === '') {
-                                            $cmd->setDescription($description);
-                                        }
-                                    } else {
-                                        $cmd = null; //false alarm... maybe something that should be warned to the user?
+                                    if ($cmd->getName() === '' || $cmd->getName() === null) {
+                                        $cmd->setName($script);
                                     }
-                                }
-
-                                //fallback to usual aliasing behavior
-                                if (!isset($cmd)) {
+                                    if ($cmd->getDescription() === '') {
+                                        $cmd->setDescription($description);
+                                    }
+                                } else {
+                                    //fallback to usual aliasing behavior
                                     $cmd = new Command\ScriptAliasCommand($script, $description, $aliases);
                                 }
 
