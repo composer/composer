@@ -69,6 +69,7 @@ class VersionBumperTest extends TestCase
         yield 'upgrade patch-only-tilde, longer version' => ['~2.2.3', '2.2.6.2', '~2.2.6'];
         yield 'upgrade patch-only-tilde' => ['~2.2.3', '2.2.6', '~2.2.6'];
         yield 'upgrade patch-only-tilde, also .0s' => ['~2.0.0', '2.0.0', '~2.0.0'];
+        yield 'upgrade patch-only-tilde - with year based versions' => ['~2025.1.561', '2025.1.583', '~2025.1.583'];
         yield 'upgrade 4 bits tilde' => ['~2.2.3.1', '2.2.4', '~2.2.4.0'];
         yield 'upgrade 4 bits tilde/2' => ['~2.2.3.1', '2.2.4.0', '~2.2.4.0'];
         yield 'upgrade 4 bits tilde/3' => ['~2.2.3.1', '2.2.4.5', '~2.2.4.5'];

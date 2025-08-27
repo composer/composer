@@ -647,15 +647,15 @@ class RemoteFilesystem
     }
 
     /**
-     * @param string[]     $http_response_header
+     * @param string[]     $responseHeaders
      * @param mixed[]      $additionalOptions
      * @param string|false $result
      *
      * @return bool|string
      */
-    private function handleRedirect(array $http_response_header, array $additionalOptions, $result)
+    private function handleRedirect(array $responseHeaders, array $additionalOptions, $result)
     {
-        if ($locationHeader = Response::findHeaderValue($http_response_header, 'location')) {
+        if ($locationHeader = Response::findHeaderValue($responseHeaders, 'location')) {
             if (parse_url($locationHeader, PHP_URL_SCHEME)) {
                 // Absolute URL; e.g. https://example.com/composer
                 $targetUrl = $locationHeader;
@@ -687,9 +687,9 @@ class RemoteFilesystem
         }
 
         if (!$this->retry) {
-            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, got redirect without Location ('.$http_response_header[0].')');
-            $e->setHeaders($http_response_header);
-            $e->setResponse($this->decodeResult($result, $http_response_header));
+            $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, got redirect without Location ('.$responseHeaders[0].')');
+            $e->setHeaders($responseHeaders);
+            $e->setResponse($this->decodeResult($result, $responseHeaders));
 
             throw $e;
         }
@@ -699,13 +699,13 @@ class RemoteFilesystem
 
     /**
      * @param string|false $result
-     * @param string[]     $http_response_header
+     * @param string[]     $responseHeaders
      */
-    private function decodeResult($result, array $http_response_header): ?string
+    private function decodeResult($result, array $responseHeaders): ?string
     {
         // decode gzip
         if ($result && extension_loaded('zlib')) {
-            $contentEncoding = Response::findHeaderValue($http_response_header, 'content-encoding');
+            $contentEncoding = Response::findHeaderValue($responseHeaders, 'content-encoding');
             $decode = $contentEncoding && 'gzip' === strtolower($contentEncoding);
 
             if ($decode) {
