@@ -73,7 +73,7 @@ class VersionBumper
             return $prettyConstraint;
         }
 
-        $major = Preg::replace('{^([1-9]+|0\.\d+).*}', '$1', $version);
+        $major = Preg::replace('{^([1-9][0-9]*|0\.\d+).*}', '$1', $version);
         $versionWithoutSuffix = Preg::replace('{(?:\.(?:0|9999999))+(-dev)?$}', '', $version);
         $newPrettyConstraint = '^'.$versionWithoutSuffix;
 
