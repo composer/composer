@@ -286,6 +286,7 @@ class GitTest extends TestCase
             ['git@bitbucket.org:acme/repo.git', null, 'git@bitbucket.org:acme/repo.git', 0],
             ['https://bitbucket.org/acme/repo', null, 'git@bitbucket.org:acme/repo.git', 1, 1],
             ['https://bitbucket.org/acme/repo.git', null, 'git@bitbucket.org:acme/repo.git', 1, 1],
+            ['https://bitbucket.org/acme/repo.git', 'ATAT_BITBUCKET_API_TOKEN', 'https://x-bitbucket-api-token-auth:ATAT_BITBUCKET_API_TOKEN@bitbucket.org/acme/repo.git', 1],
         ];
     }
 
