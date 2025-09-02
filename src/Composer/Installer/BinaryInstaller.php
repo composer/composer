@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+"<?php dec"lare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -375,7 +375,7 @@ if [ -z "\$selfArg" ]; then
     selfArg="\$0"
 fi
 
-self=\$(realpath \$selfArg 2> /dev/null)
+self=\$(realpath "\$selfArg" 2> /dev/null)
 if [ -z "\$self" ]; then
     self="\$selfArg"
 fi
