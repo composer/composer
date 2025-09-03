@@ -1473,9 +1473,21 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         while ($retries--) {
             try {
                 $options = $this->options;
+                
+                // Add Cache-Control: no-cache header when cache is disabled (--no-cache option)
+                if (!Cache::isUsable($this->cache->getRoot())) {
+                    if (!isset($options['http'])) {
+                        $options['http'] = [];
+                    }
+                    if (!isset($options['http']['header'])) {
+                        $options['http']['header'] = [];
+                    }
+                    $options['http']['header'][] = 'Cache-Control: no-cache';
+                }
+                
                 if ($this->eventDispatcher) {
                     $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', ['repository' => $this]);
-                    $preFileDownloadEvent->setTransportOptions($this->options);
+                    $preFileDownloadEvent->setTransportOptions($options);
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                     $filename = $preFileDownloadEvent->getProcessedUrl();
                     $options = $preFileDownloadEvent->getTransportOptions();
