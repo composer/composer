@@ -31,6 +31,7 @@ Ensure that a partial update of a dependency does not conflict if the only way t
         {"name": "root/req2", "version": "1.0.0", "require": {"dep/pkg2": "1.*", "dep/pkg1": "*"}, "type": "library"}
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
@@ -50,6 +51,7 @@ update dep/pkg2 --with-dependencies
         {"name": "root/req2", "version": "1.0.0", "require": {"dep/pkg2": "1.*", "dep/pkg1": "*"}, "type": "library"}
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
