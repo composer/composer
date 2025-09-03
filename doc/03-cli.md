@@ -997,9 +997,9 @@ performance.
   `lib-*` and `ext-*`) and skip the [platform check](07-runtime.md#platform-check) for it.
   Multiple requirements can be ignored via wildcard.
 * **--strict-psr:** Return a failed exit code (1) if PSR-4 or PSR-0 mapping errors
-  are present. Requires --optimize to work.
+  are present in the current project (dependencies excluded). Requires `--optimize` to work.
 * **--strict-ambiguous:** Return a failed exit code (2) if the same class is found
-  in multiple files. Requires --optimize to work.
+  in multiple files. Requires `--optimize` to work.
 
 ## clear-cache / clearcache / cc
 
