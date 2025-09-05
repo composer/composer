@@ -1106,15 +1106,19 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if ($contents = $this->cache->read($cacheKey)) {
             $contents = json_decode($contents, true);
             $lastModified = $contents['last-modified'] ?? null;
+            // Free memory and do not pass this directly to the promise as otherwise
+            // we'd be hogging memory for all the promises created until they are resolved
+            unset($contents);
         }
 
         return $this->asyncFetchFile($url, $cacheKey, $lastModified)
-            ->then(static function ($response) use ($url, $cacheKey, $contents, $packageName): array {
+            ->then(function ($response) use ($url, $cacheKey, $packageName): array {
                 $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
 
                 if (true === $response) {
                     $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
-                    $response = $contents;
+                    $cache = $this->cache->read($cacheKey);
+                    $response = $cache !== false ? json_decode($cache, true) : false;
                 }
 
                 if (!isset($response['packages'][$packageName]) && !isset($response['security-advisories'])) {
