@@ -227,23 +227,26 @@ class RepositorySet
 
     /**
      * @param string[] $packageNames
-     * @return ($allowPartialAdvisories is true ? array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> : array<string, array<SecurityAdvisory>>)
+     * @return ($allowPartialAdvisories is true ? array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, unreachableRepos: array<string>} : array{advisories: array<string, array<SecurityAdvisory>>, unreachableRepos: array<string>})
      */
-    public function getSecurityAdvisories(array $packageNames, bool $allowPartialAdvisories = false): array
+    public function getSecurityAdvisories(array $packageNames, bool $allowPartialAdvisories, bool $ignoreUnreachable = false): array
     {
         $map = [];
         foreach ($packageNames as $name) {
             $map[$name] = new MatchAllConstraint();
         }
 
-        return $this->getSecurityAdvisoriesForConstraints($map, $allowPartialAdvisories);
+        $unreachableRepos = [];
+        $advisories = $this->getSecurityAdvisoriesForConstraints($map, $allowPartialAdvisories, $ignoreUnreachable, $unreachableRepos);
+
+        return ['advisories' => $advisories, 'unreachableRepos' => $unreachableRepos];
     }
 
     /**
      * @param PackageInterface[] $packages
-     * @return ($allowPartialAdvisories is true ? array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> : array<string, array<SecurityAdvisory>>)
+     * @return ($allowPartialAdvisories is true ? array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, unreachableRepos: array<string>} : array{advisories: array<string, array<SecurityAdvisory>>, unreachableRepos: array<string>})
      */
-    public function getMatchingSecurityAdvisories(array $packages, bool $allowPartialAdvisories = false): array
+    public function getMatchingSecurityAdvisories(array $packages, bool $allowPartialAdvisories = false, bool $ignoreUnreachable = false): array
     {
         $map = [];
         foreach ($packages as $package) {
@@ -258,25 +261,36 @@ class RepositorySet
             }
         }
 
-        return $this->getSecurityAdvisoriesForConstraints($map, $allowPartialAdvisories);
+        $unreachableRepos = [];
+        $advisories = $this->getSecurityAdvisoriesForConstraints($map, $allowPartialAdvisories, $ignoreUnreachable, $unreachableRepos);
+
+        return ['advisories' => $advisories, 'unreachableRepos' => $unreachableRepos];
     }
 
     /**
      * @param array<string, ConstraintInterface> $packageConstraintMap
+     * @param array<string> &$unreachableRepos Array to store messages about unreachable repositories
      * @return ($allowPartialAdvisories is true ? array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> : array<string, array<SecurityAdvisory>>)
      */
-    private function getSecurityAdvisoriesForConstraints(array $packageConstraintMap, bool $allowPartialAdvisories): array
+    private function getSecurityAdvisoriesForConstraints(array $packageConstraintMap, bool $allowPartialAdvisories, bool $ignoreUnreachable = false, array &$unreachableRepos = []): array
     {
         $repoAdvisories = [];
         foreach ($this->repositories as $repository) {
-            if (!$repository instanceof AdvisoryProviderInterface || !$repository->hasSecurityAdvisories()) {
-                continue;
-            }
+            try {
+                if (!$repository instanceof AdvisoryProviderInterface || !$repository->hasSecurityAdvisories()) {
+                    continue;
+                }
 
-            $repoAdvisories[] = $repository->getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories)['advisories'];
+                $repoAdvisories[] = $repository->getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories)['advisories'];
+            } catch (\Composer\Downloader\TransportException $e) {
+                if (!$ignoreUnreachable) {
+                    throw $e;
+                }
+                $unreachableRepos[] = $e->getMessage();
+            }
         }
 
-        $advisories = array_merge_recursive([], ...$repoAdvisories);
+        $advisories = count($repoAdvisories) > 0 ? array_merge_recursive([], ...$repoAdvisories) : [];
         ksort($advisories);
 
         return $advisories;
