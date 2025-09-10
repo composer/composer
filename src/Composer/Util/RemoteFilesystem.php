@@ -518,6 +518,10 @@ class RemoteFilesystem
     {
         $result = false;
 
+        if (\PHP_VERSION_ID >= 80400) {
+            http_clear_last_response_headers();
+        }
+
         try {
             $e = null;
             if ($maxFileSize !== null) {
