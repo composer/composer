@@ -183,6 +183,11 @@ EOT
         $io = $this->getIO();
         $this->config = Factory::createConfig($io);
 
+        // When using --global flag, set baseDir to home directory for correct absolute path resolution
+        if ($input->getOption('global')) {
+            $this->config->setBaseDir($this->config->get('home'));
+        }
+
         $configFile = $this->getComposerConfigFile($input, $this->config);
 
         // Create global composer.json if this was invoked using `composer global config`
