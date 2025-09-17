@@ -37,7 +37,7 @@
         "symfony/filesystem": "^5.4.45 || ^6.4.24 || ^7.1.10",
         "symfony/finder": "^5.4.45 || ^6.4.24 || ^7.1.10",
         "symfony/process": "^5.4.47 || ^6.4.25 || ^7.1.10",
-        "react/promise": "^2.11 || ^3.3",
+        "react/promise": "^3.3",
         "composer/pcre": "^2.2 || ^3.2",
         "symfony/polyfill-php73": "^1.24",
         "symfony/polyfill-php80": "^1.24",
