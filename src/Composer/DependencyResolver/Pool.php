@@ -40,20 +40,24 @@ class Pool implements \Countable
     protected $removedVersions = [];
     /** @var array<string, array<string, string>> Map of package object hash => removed normalized versions => removed pretty version */
     protected $removedVersionsByPackage = [];
+    /** @var array<string, array{merged: string[], byPackage: array<string, string[]>}> */
+    protected $requiredFeatures = [];
 
     /**
      * @param BasePackage[] $packages
      * @param BasePackage[] $unacceptableFixedOrLockedPackages
      * @param array<string, array<string, string>> $removedVersions
      * @param array<string, array<string, string>> $removedVersionsByPackage
+     * @param array<string, array{merged: string[], byPackage: array<string, string[]>}> $requiredFeatures
      */
-    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [])
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $requiredFeatures = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
         $this->unacceptableFixedOrLockedPackages = $unacceptableFixedOrLockedPackages;
         $this->removedVersions = $removedVersions;
         $this->removedVersionsByPackage = $removedVersionsByPackage;
+        $this->requiredFeatures = $requiredFeatures;
     }
 
     /**
@@ -261,5 +265,13 @@ class Pool implements \Countable
         }
 
         return $str;
+    }
+
+    /**
+     * @return array<string, array{merged: string[], byPackage: array<string, string[]>}>
+     */
+    public function getRequiredFeatures(): array
+    {
+        return $this->requiredFeatures;
     }
 }

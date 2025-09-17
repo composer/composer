@@ -21,6 +21,7 @@ namespace Composer\Package;
  *
  * @phpstan-import-type AutoloadRules from PackageInterface
  * @phpstan-import-type DevAutoloadRules from PackageInterface
+ * @phpstan-import-type FeatureConfig from PackageInterface
  */
 interface RootPackageInterface extends CompletePackageInterface
 {
@@ -170,4 +171,18 @@ interface RootPackageInterface extends CompletePackageInterface
      * @param mixed[] $extra
      */
     public function setExtra(array $extra): void;
+
+    /**
+     * Set features required
+     *
+     * @param array<string, string[]> $featuresRequires A list of features required per package
+     */
+    public function setFeaturesRequires(array $featuresRequires): void;
+
+    /**
+     * Set features provided
+     *
+     * @param array<string, FeatureConfig> $features A list of features provided for this package
+     */
+    public function setFeatures(array $features): void;
 }

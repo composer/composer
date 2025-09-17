@@ -85,6 +85,31 @@ class ArrayDumper
             ksort($data[$type]);
         }
 
+        if (count($package->getFeatures()) > 0) {
+            $data['feature'] = [];
+
+            foreach ($package->getFeatures() as $feature => $featureData) {
+                $data['feature'][$feature] = [];
+
+                if (isset($featureData['description'])) {
+                    $data['feature'][$feature]['description'] = $featureData['description'];
+                }
+
+                if (isset($featureData['require'])) {
+                    $data['feature'][$feature]['require'] = [];
+
+                    foreach ($featureData['require'] as $link) {
+                        $data['feature'][$feature]['require'][$link->getTarget()] = $link->getPrettyConstraint();
+                    }
+                }
+
+            }
+        }
+
+        if (count($package->getFeaturesRequires()) > 0) {
+            $data['require-feature'] = $package->getFeaturesRequires();
+        }
+
         $packages = $package->getSuggests();
         if (\count($packages) > 0) {
             ksort($packages);
