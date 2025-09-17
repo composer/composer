@@ -3685,7 +3685,7 @@ parameters:
 
 		-
 			message: "#^Function http_clear_last_response_headers not found\\.$#"
-			count: 1
+			count: 2
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
 		-
