@@ -424,7 +424,7 @@ class PoolBuilder
         $this->packagesToLoad = [];
 
         foreach ($repositories as $repoIndex => $repository) {
-            foreach ($packageBatches as $packageBatch) {
+            foreach ($packageBatches as $batchIndex => $packageBatch) {
                 if (0 === \count($packageBatch)) {
                     break;
                 }
@@ -438,9 +438,7 @@ class PoolBuilder
 
                 foreach ($result['namesFound'] as $name) {
                     // avoid loading the same package again from other repositories once it has been found
-                    foreach ($packageBatches as &$v)  {
-                        unset($v[$name]);
-                    }
+                    unset($packageBatches[$batchIndex][$name]);
                 }
                 foreach ($result['packages'] as $package) {
                     $this->loadedPerRepo[$repoIndex][$package->getName()][$package->getVersion()] = $package;
