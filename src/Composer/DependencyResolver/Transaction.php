@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\AliasPackage;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
@@ -164,7 +165,13 @@ class Transaction
                         // TODO different for lock?
                         if ($package->getVersion() !== $presentPackageMap[$package->getName()]->getVersion() ||
                             $package->getDistReference() !== $presentPackageMap[$package->getName()]->getDistReference() ||
-                            $package->getSourceReference() !== $presentPackageMap[$package->getName()]->getSourceReference()
+                            $package->getSourceReference() !== $presentPackageMap[$package->getName()]->getSourceReference() ||
+                            ($package instanceof CompletePackageInterface
+                                && $presentPackageMap[$package->getName()] instanceof CompletePackageInterface
+                                && ($package->isAbandoned() !== $presentPackageMap[$package->getName()]->isAbandoned()
+                                    || $package->getReplacementPackage() !== $presentPackageMap[$package->getName()]->getReplacementPackage()
+                                )
+                            )
                         ) {
                             $operations[] = new Operation\UpdateOperation($source, $package);
                         }
