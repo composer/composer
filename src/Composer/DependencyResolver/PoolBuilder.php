@@ -38,6 +38,8 @@ use Composer\Semver\Intervals;
  */
 class PoolBuilder
 {
+    private const LOAD_BATCH_SIZE = 50;
+
     /**
      * @var int[]
      * @phpstan-var array<key-of<BasePackage::STABILITIES>, BasePackage::STABILITY_*>
@@ -420,7 +422,7 @@ class PoolBuilder
         }
 
         // Load packages in chunks of 50 to prevent memory usage build-up due to caches of all sorts
-        $packageBatches = array_chunk($this->packagesToLoad, 50, true);
+        $packageBatches = array_chunk($this->packagesToLoad, self::LOAD_BATCH_SIZE, true);
         $this->packagesToLoad = [];
 
         foreach ($repositories as $repoIndex => $repository) {
@@ -451,7 +453,7 @@ class PoolBuilder
                 }
             }
 
-            $packageBatches = array_chunk(array_merge(...$packageBatches), 50, true);
+            $packageBatches = array_chunk(array_merge(...$packageBatches), self::LOAD_BATCH_SIZE, true);
         }
     }
 
