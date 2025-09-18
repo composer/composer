@@ -238,7 +238,7 @@ EOT
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
         $apcuPrefix = $input->getOption('apcu-autoloader-prefix');
         $apcu = $apcuPrefix !== null || $input->getOption('apcu-autoloader') || $config->get('apcu-autoloader');
-        $minimalChanges = $input->getOption('minimal-changes') || $config->get('minimal-changes');
+        $minimalChanges = $input->getOption('minimal-changes') || $config->get('update-with-minimal-changes');
 
         $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
         if ($input->getOption('with-all-dependencies')) {

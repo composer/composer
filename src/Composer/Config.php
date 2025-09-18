@@ -61,7 +61,7 @@ class Config
         'classmap-authoritative' => false,
         'apcu-autoloader' => false,
         'prepend-autoloader' => true,
-        'minimal-changes' => false,
+        'update-with-minimal-changes' => false,
         'github-domains' => ['github.com'],
         'bitbucket-expose-hostname' => true,
         'disable-tls' => false,

@@ -505,7 +505,7 @@ Defaults to `false`. Ignores error during `install` if there are any missing
 requirements - the lock file is not up to date with the latest changes in
 `composer.json`.
 
-## minimal-changes
+## update-with-minimal-changes
 
 Defaults to `false`. If set to true, Composer will only perform absolutely necessary
 changes to transitive dependencies during update.

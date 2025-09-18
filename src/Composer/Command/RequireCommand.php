@@ -442,7 +442,7 @@ EOT
         $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
         $apcuPrefix = $input->getOption('apcu-autoloader-prefix');
         $apcu = $apcuPrefix !== null || $input->getOption('apcu-autoloader') || $composer->getConfig()->get('apcu-autoloader');
-        $minimalChanges = $input->getOption('minimal-changes') || $composer->getConfig()->get('minimal-changes');
+        $minimalChanges = $input->getOption('minimal-changes') || $composer->getConfig()->get('update-with-minimal-changes');
 
         $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
         $flags = '';
