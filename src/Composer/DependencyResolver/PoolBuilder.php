@@ -38,6 +38,8 @@ use Composer\Semver\Intervals;
  */
 class PoolBuilder
 {
+    private const LOAD_BATCH_SIZE = 50;
+
     /**
      * @var int[]
      * @phpstan-var array<key-of<BasePackage::STABILITIES>, BasePackage::STABILITY_*>
@@ -419,33 +421,39 @@ class PoolBuilder
             $this->loadedPackages[$name] = $constraint;
         }
 
-        $packageBatch = $this->packagesToLoad;
+        // Load packages in chunks of 50 to prevent memory usage build-up due to caches of all sorts
+        $packageBatches = array_chunk($this->packagesToLoad, self::LOAD_BATCH_SIZE, true);
         $this->packagesToLoad = [];
 
         foreach ($repositories as $repoIndex => $repository) {
-            if (0 === \count($packageBatch)) {
-                break;
-            }
-
             // these repos have their packages fixed or locked if they need to be loaded so we
             // never need to load anything else from them
             if ($repository instanceof PlatformRepository || $repository === $request->getLockedRepository()) {
                 continue;
             }
-            $result = $repository->loadPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags, $this->loadedPerRepo[$repoIndex] ?? []);
 
-            foreach ($result['namesFound'] as $name) {
-                // avoid loading the same package again from other repositories once it has been found
-                unset($packageBatch[$name]);
+            if (0 === \count($packageBatches)) {
+                break;
             }
-            foreach ($result['packages'] as $package) {
-                $this->loadedPerRepo[$repoIndex][$package->getName()][$package->getVersion()] = $package;
 
-                if (in_array($package->getType(), $this->ignoredTypes, true) || ($this->allowedTypes !== null && !in_array($package->getType(), $this->allowedTypes, true))) {
-                    continue;
+            foreach ($packageBatches as $batchIndex => $packageBatch) {
+                $result = $repository->loadPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags, $this->loadedPerRepo[$repoIndex] ?? []);
+
+                foreach ($result['namesFound'] as $name) {
+                    // avoid loading the same package again from other repositories once it has been found
+                    unset($packageBatches[$batchIndex][$name]);
                 }
-                $this->loadPackage($request, $repositories, $package, !isset($this->pathRepoUnlocked[$package->getName()]));
+                foreach ($result['packages'] as $package) {
+                    $this->loadedPerRepo[$repoIndex][$package->getName()][$package->getVersion()] = $package;
+
+                    if (in_array($package->getType(), $this->ignoredTypes, true) || ($this->allowedTypes !== null && !in_array($package->getType(), $this->allowedTypes, true))) {
+                        continue;
+                    }
+                    $this->loadPackage($request, $repositories, $package, !isset($this->pathRepoUnlocked[$package->getName()]));
+                }
             }
+
+            $packageBatches = array_chunk(array_merge(...$packageBatches), self::LOAD_BATCH_SIZE, true);
         }
     }
 
