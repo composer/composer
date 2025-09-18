@@ -430,11 +430,11 @@ class PoolBuilder
                 continue;
             }
 
-            foreach ($packageBatches as $batchIndex => $packageBatch) {
-                if (0 === \count($packageBatch)) {
-                    break;
-                }
+            if (0 === \count($packageBatches)) {
+                break;
+            }
 
+            foreach ($packageBatches as $batchIndex => $packageBatch) {
                 $result = $repository->loadPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags, $this->loadedPerRepo[$repoIndex] ?? []);
 
                 foreach ($result['namesFound'] as $name) {
@@ -450,6 +450,8 @@ class PoolBuilder
                     $this->loadPackage($request, $repositories, $package, !isset($this->pathRepoUnlocked[$package->getName()]));
                 }
             }
+
+            $packageBatches = array_chunk(array_merge(...$packageBatches), 50, true);
         }
     }
 
