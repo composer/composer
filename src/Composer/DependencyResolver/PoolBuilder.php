@@ -424,16 +424,17 @@ class PoolBuilder
         $this->packagesToLoad = [];
 
         foreach ($repositories as $repoIndex => $repository) {
+            // these repos have their packages fixed or locked if they need to be loaded so we
+            // never need to load anything else from them
+            if ($repository instanceof PlatformRepository || $repository === $request->getLockedRepository()) {
+                continue;
+            }
+
             foreach ($packageBatches as $batchIndex => $packageBatch) {
                 if (0 === \count($packageBatch)) {
                     break;
                 }
 
-                // these repos have their packages fixed or locked if they need to be loaded so we
-                // never need to load anything else from them
-                if ($repository instanceof PlatformRepository || $repository === $request->getLockedRepository()) {
-                    continue;
-                }
                 $result = $repository->loadPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags, $this->loadedPerRepo[$repoIndex] ?? []);
 
                 foreach ($result['namesFound'] as $name) {
