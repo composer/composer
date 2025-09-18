@@ -467,6 +467,7 @@ EOT
             'classmap-authoritative' => [$booleanValidator, $booleanNormalizer],
             'apcu-autoloader' => [$booleanValidator, $booleanNormalizer],
             'prepend-autoloader' => [$booleanValidator, $booleanNormalizer],
+            'update-with-minimal-changes' => [$booleanValidator, $booleanNormalizer],
             'disable-tls' => [$booleanValidator, $booleanNormalizer],
             'secure-http' => [$booleanValidator, $booleanNormalizer],
             'bump-after-update' => [
