@@ -442,6 +442,7 @@ EOT
         $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
         $apcuPrefix = $input->getOption('apcu-autoloader-prefix');
         $apcu = $apcuPrefix !== null || $input->getOption('apcu-autoloader') || $composer->getConfig()->get('apcu-autoloader');
+        $minimalChanges = $input->getOption('minimal-changes') || $composer->getConfig()->get('minimal-changes');
 
         $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
         $flags = '';
@@ -481,7 +482,7 @@ EOT
             ->setPreferLowest($input->getOption('prefer-lowest'))
             ->setAudit(!$input->getOption('no-audit'))
             ->setAuditFormat($this->getAuditFormat($input))
-            ->setMinimalUpdate($input->getOption('minimal-changes'))
+            ->setMinimalUpdate($minimalChanges)
         ;
 
         // if no lock is present, or the file is brand new, we do not do a

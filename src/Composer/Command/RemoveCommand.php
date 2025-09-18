@@ -258,6 +258,7 @@ EOT
         $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
         $apcuPrefix = $input->getOption('apcu-autoloader-prefix');
         $apcu = $apcuPrefix !== null || $input->getOption('apcu-autoloader') || $composer->getConfig()->get('apcu-autoloader');
+        $minimalChanges = $input->getOption('minimal-changes') || $composer->getConfig()->get('minimal-changes');
 
         $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
         $flags = '';
@@ -284,7 +285,7 @@ EOT
             ->setDryRun($dryRun)
             ->setAudit(!$input->getOption('no-audit'))
             ->setAuditFormat($this->getAuditFormat($input))
-            ->setMinimalUpdate($input->getOption('minimal-changes'))
+            ->setMinimalUpdate($minimalChanges)
         ;
 
         // if no lock is present, we do not do a partial update as
