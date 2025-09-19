@@ -15,6 +15,7 @@ namespace Composer\Test\Command;
 use Composer\Command\InitCommand;
 use Composer\Json\JsonFile;
 use Composer\Test\TestCase;
+use InvalidArgumentException;
 
 class InitCommandTest extends TestCase
 {
@@ -31,90 +32,71 @@ class InitCommandTest extends TestCase
         $_SERVER['COMPOSER_DEFAULT_EMAIL'] = 'john@example.com';
     }
 
-    public function testParseValidAuthorString(): void
+    /**
+     * @dataProvider validAuthorStringProvider
+     */
+    public function testParseValidAuthorString(string $name, ?string $email, string $input): void
     {
-        $command = new InitCommand;
-        $author = $this->callParseAuthorString($command, 'John Smith <john@example.com>');
-        self::assertEquals('John Smith', $author['name']);
-        self::assertEquals('john@example.com', $author['email']);
+        $author = $this->callParseAuthorString(new InitCommand, $input);
+        self::assertSame($name, $author['name']);
+        self::assertSame($email, $author['email']);
     }
 
-    public function testParseValidAuthorStringWithoutEmail(): void
+    /**
+     * @return iterable<string, array{0: string, 1: string|null, 2: string}>
+     */
+    public static function validAuthorStringProvider(): iterable
     {
-        $command = new InitCommand;
-        $author = $this->callParseAuthorString($command, 'John Smith');
-        self::assertEquals('John Smith', $author['name']);
-        self::assertNull($author['email']);
-    }
-
-    public function testParseValidUtf8AuthorString(): void
-    {
-        $command = new InitCommand;
-        $author = $this->callParseAuthorString($command, 'Matti Meikäläinen <matti@example.com>');
-        self::assertEquals('Matti Meikäläinen', $author['name']);
-        self::assertEquals('matti@example.com', $author['email']);
-    }
-
-    public function testParseValidUtf8AuthorStringWithNonSpacingMarks(): void
-    {
+        yield 'simple' => [
+            'John Smith',
+            'john@example.com',
+            'John Smith <john@example.com>',
+        ];
+        yield 'without email' => [
+            'John Smith',
+            null,
+            'John Smith',
+        ];
+        yield 'UTF-8' => [
+            'Matti Meikäläinen',
+            'matti@example.com',
+            'Matti Meikäläinen <matti@example.com>',
+        ];
         // \xCC\x88 is UTF-8 for U+0308 diaeresis (umlaut) combining mark
-        $utf8_expected = "Matti Meika\xCC\x88la\xCC\x88inen";
-        $command = new InitCommand;
-        $author = $this->callParseAuthorString($command, $utf8_expected." <matti@example.com>");
-        self::assertEquals($utf8_expected, $author['name']);
-        self::assertEquals('matti@example.com', $author['email']);
-    }
-
-    public function testParseNumericAuthorString(): void
-    {
-        $command = new InitCommand;
-        $author = $this->callParseAuthorString($command, 'h4x0r <h4x@example.com>');
-        self::assertEquals('h4x0r', $author['name']);
-        self::assertEquals('h4x@example.com', $author['email']);
-    }
-
-    /**
-     * Test scenario for issue #5631
-     * @link https://github.com/composer/composer/issues/5631 Issue #5631
-     */
-    public function testParseValidAlias1AuthorString(): void
-    {
-        $command = new InitCommand;
-        $author = $this->callParseAuthorString(
-            $command,
-            'Johnathon "Johnny" Smith <john@example.com>'
-        );
-        self::assertEquals('Johnathon "Johnny" Smith', $author['name']);
-        self::assertEquals('john@example.com', $author['email']);
-    }
-
-    /**
-     * Test scenario for issue #5631
-     * @link https://github.com/composer/composer/issues/5631 Issue #5631
-     */
-    public function testParseValidAlias2AuthorString(): void
-    {
-        $command = new InitCommand;
-        $author = $this->callParseAuthorString(
-            $command,
-            'Johnathon (Johnny) Smith <john@example.com>'
-        );
-        self::assertEquals('Johnathon (Johnny) Smith', $author['name']);
-        self::assertEquals('john@example.com', $author['email']);
+        yield 'UTF-8 with non-spacing marks' => [
+            "Matti Meika\xCC\x88la\xCC\x88inen",
+            'matti@example.com',
+            "Matti Meika\xCC\x88la\xCC\x88inen <matti@example.com>",
+        ];
+        yield 'numeric author name' => [
+            'h4x0r',
+            'h4x@example.com',
+            'h4x0r <h4x@example.com>',
+        ];
+        // https://github.com/composer/composer/issues/5631 Issue #5631
+        yield 'alias 1' => [
+            'Johnathon "Johnny" Smith',
+            'john@example.com',
+            'Johnathon "Johnny" Smith <john@example.com>',
+        ];
+        // https://github.com/composer/composer/issues/5631 Issue #5631
+        yield 'alias 2' => [
+            'Johnathon (Johnny) Smith',
+            'john@example.com',
+            'Johnathon (Johnny) Smith <john@example.com>',
+        ];
     }
 
     public function testParseEmptyAuthorString(): void
     {
-        $command = new InitCommand;
-        self::expectException('InvalidArgumentException');
-        $this->callParseAuthorString($command, '');
+        $this->expectException(InvalidArgumentException::class);
+        $this->callParseAuthorString(new InitCommand, '');
     }
 
     public function testParseAuthorStringWithInvalidEmail(): void
     {
-        $command = new InitCommand;
-        self::expectException('InvalidArgumentException');
-        $this->callParseAuthorString($command, 'John Smith <john>');
+        $this->expectException(InvalidArgumentException::class);
+        $this->callParseAuthorString(new InitCommand, 'John Smith <john>');
     }
 
     public function testNamespaceFromValidPackageName(): void
