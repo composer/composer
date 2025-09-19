@@ -18,6 +18,19 @@ use Composer\Test\TestCase;
 
 class InitCommandTest extends TestCase
 {
+    private const DEFAULT_AUTHORS = [
+        'name' => 'John Smith',
+        'email' => 'john@example.com',
+    ];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $_SERVER['COMPOSER_DEFAULT_AUTHOR'] = 'John Smith';
+        $_SERVER['COMPOSER_DEFAULT_EMAIL'] = 'john@example.com';
+    }
+
     public function testParseValidAuthorString(): void
     {
         $command = new InitCommand;
@@ -136,46 +149,279 @@ class InitCommandTest extends TestCase
         return $reflMethod->invoke($command, $string);
     }
 
-    public function testRunNoInteraction(): void
-    {
-        $this->expectException(\RuntimeException::class);
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'init', '--no-interaction' => true]);
-    }
-
-    public function testRunInvalidNameArgument(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'init', '--no-interaction' => true, '--name' => 'test']);
-    }
-
-    public function testRunNameArgument(): void
+    /**
+     * @dataProvider runDataProvider
+     *
+     * @param array<string, mixed> $expected
+     * @param array<string, mixed> $arguments
+     */
+    public function testRunCommand(array $expected, array $arguments = []): void
     {
         $dir = $this->initTempComposer();
         unlink($dir . '/composer.json');
         unlink($dir . '/auth.json');
 
         $appTester = $this->getApplicationTester();
-        $appTester->run(['command' => 'init', '--no-interaction' => true, '--name' => 'test/pkg']);
+        $appTester->run(['command' => 'init', '--no-interaction' => true] + $arguments);
 
         self::assertSame(0, $appTester->getStatusCode());
 
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-        ];
-
         $file = new JsonFile($dir . '/composer.json');
         self::assertEquals($expected, $file->read());
+    }
+
+    /**
+     * @return iterable<string, array{0: array<string, mixed>, 1: array<string, mixed>}>
+     */
+    public static function runDataProvider(): iterable
+    {
+        yield 'name argument' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [],
+            ],
+            ['--name' => 'test/pkg'],
+        ];
+        yield 'name and author arguments' => [
+            [
+                'name' => 'test/pkg',
+                'require' => [],
+                'authors' => [
+                    [
+                        'name' => 'Mr. Test',
+                        'email' => 'test@example.org',
+                    ],
+                ],
+            ],
+            ['--name' => 'test/pkg', '--author' => 'Mr. Test <test@example.org>']
+        ];
+        yield 'name and author arguments without email' => [
+            [
+                'name' => 'test/pkg',
+                'require' => [],
+                'authors' => [
+                    [
+                        'name' => 'Mr. Test',
+                    ],
+                ],
+            ],
+            ['--name' => 'test/pkg', '--author' => 'Mr. Test']
+        ];
+        yield 'single repository argument' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [],
+                'repositories' => [
+                    [
+                        'type' => 'vcs',
+                        'url' => 'http://packages.example.com',
+                    ],
+                ],
+            ],
+            ['--name' => 'test/pkg', '--repository' => ['{"type":"vcs","url":"http://packages.example.com"}']],
+        ];
+        yield 'multiple repository arguments' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [],
+                'repositories' => [
+                    [
+                        'type' => 'vcs',
+                        'url' => 'http://vcs.example.com',
+                    ],
+                    [
+                        'type' => 'composer',
+                        'url' => 'http://composer.example.com',
+                    ],
+                    [
+                        'type' => 'composer',
+                        'url' => 'http://composer2.example.com',
+                        'options' => [
+                            'ssl' => [
+                                'verify_peer' => 'true',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            ['--name' => 'test/pkg', '--repository' => [
+                '{"type":"vcs","url":"http://vcs.example.com"}',
+                '{"type":"composer","url":"http://composer.example.com"}',
+                '{"type":"composer","url":"http://composer2.example.com","options":{"ssl":{"verify_peer":"true"}}}',
+            ]],
+        ];
+        yield 'stability argument' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [],
+                'minimum-stability' => 'dev',
+            ],
+            ['--name' => 'test/pkg', '--stability' => 'dev'],
+        ];
+        yield 'require one argument' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [
+                    'first/pkg' => '1.0.0',
+                ],
+            ],
+            ['--name' => 'test/pkg', '--require' => ['first/pkg:1.0.0']],
+        ];
+        yield 'require multiple arguments' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [
+                    'first/pkg' => '1.0.0',
+                    'second/pkg' => '^3.4',
+                ],
+            ],
+            ['--name' => 'test/pkg', '--require' => ['first/pkg:1.0.0', 'second/pkg:^3.4']],
+        ];
+        yield 'require-dev one argument' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [],
+                'require-dev' => [
+                    'first/pkg' => '1.0.0',
+                ],
+            ],
+            ['--name' => 'test/pkg', '--require-dev' => ['first/pkg:1.0.0']],
+        ];
+        yield 'require-dev multiple arguments' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [],
+                'require-dev' => [
+                    'first/pkg' => '1.0.0',
+                    'second/pkg' => '^3.4',
+                ],
+            ],
+            ['--name' => 'test/pkg', '--require-dev' => ['first/pkg:1.0.0', 'second/pkg:^3.4']],
+        ];
+        yield 'autoload argument' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [],
+                'autoload' => [
+                    'psr-4' => [
+                        'Test\\Pkg\\' => 'testMapping/',
+                    ],
+                ],
+            ],
+            ['--name' => 'test/pkg', '--autoload' => 'testMapping/'],
+        ];
+        yield 'homepage argument' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [],
+                'homepage' => 'https://example.org/',
+            ],
+            ['--name' => 'test/pkg', '--homepage' => 'https://example.org/'],
+        ];
+        yield 'description argument' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [],
+                'description' => 'My first example package',
+            ],
+            ['--name' => 'test/pkg', '--description' => 'My first example package'],
+        ];
+        yield 'type argument' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [],
+                'type' => 'project',
+            ],
+            ['--name' => 'test/pkg', '--type' => 'project'],
+        ];
+        yield 'license argument' => [
+            [
+                'name' => 'test/pkg',
+                'authors' => [self::DEFAULT_AUTHORS],
+                'require' => [],
+                'license' => 'MIT',
+            ],
+            ['--name' => 'test/pkg', '--license' => 'MIT'],
+        ];
+    }
+
+    /**
+     * @dataProvider runInvalidDataProvider
+     *
+     * @param class-string<\Throwable>|null $exception
+     * @param string|null $message
+     * @param array<string, mixed> $arguments
+     */
+    public function testRunCommandInvalid(?string $exception, ?string $message, array $arguments): void
+    {
+        if ($exception !== null) {
+            $this->expectException($exception);
+
+            if ($message !== null) {
+                $this->expectExceptionMessage($message);
+            }
+        }
+
+        $dir = $this->initTempComposer();
+        unlink($dir . '/composer.json');
+        unlink($dir . '/auth.json');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'init', '--no-interaction' => true] + $arguments, ['capture_stderr_separately' => true]);
+
+        if ($exception === null && $message !== null) {
+            self::assertSame(1, $appTester->getStatusCode());
+            self::assertMatchesRegularExpression($message, $appTester->getErrorOutput());
+        }
+    }
+
+    /**
+     * @return iterable<string, array{0: class-string<\Throwable>|null, 1: string|null, 2: array<string, mixed>}>
+     */
+    public static function runInvalidDataProvider(): iterable
+    {
+        yield 'invalid name argument' => [
+            \InvalidArgumentException::class,
+            null,
+            ['--name' => 'test'],
+        ];
+        yield 'invalid author argument' => [
+            \InvalidArgumentException::class,
+            null,
+            ['--name' => 'test/pkg', '--author' => 'Mr. Test <test>'],
+        ];
+        yield 'invalid stability argument' => [
+            null,
+            '/minimum-stability\s+:\s+Does not have a value in the enumeration/',
+            ['--name' => 'test/pkg', '--stability' => 'bogus'],
+        ];
+        yield 'invalid require argument' => [
+            \UnexpectedValueException::class,
+            "Option first is missing a version constraint, use e.g. first:^1.0",
+            ['--name' => 'test/pkg', '--require' => ['first']],
+        ];
+        yield 'invalid require-dev argument' => [
+            \UnexpectedValueException::class,
+            "Option first is missing a version constraint, use e.g. first:^1.0",
+            ['--name' => 'test/pkg', '--require-dev' => ['first']],
+        ];
+        yield 'invalid homepage argument' => [
+            null,
+            "/homepage\s*:\s*Invalid URL format/",
+            ['--name' => 'test/pkg', '--homepage' => 'not-a-url'],
+        ];
     }
 
     public function testRunGuessNameFromDirSanitizesDir(): void
@@ -187,13 +433,13 @@ class InitCommandTest extends TestCase
         $_SERVER['COMPOSER_DEFAULT_VENDOR'] = '.vendorName';
 
         $appTester = $this->getApplicationTester();
-        $appTester->setInputs(['', '', 'n', '', '', '', 'no', 'no', 'n', 'yes']);
-        $appTester->run(['command' => 'init']);
+        $appTester->run(['command' => 'init', '--no-interaction' => true]);
 
         self::assertSame(0, $appTester->getStatusCode());
 
         $expected = [
             'name' => 'vendor-name/foo-bar_baz.qux',
+            'authors' => [self::DEFAULT_AUTHORS],
             'require' => [],
         ];
 
@@ -201,524 +447,6 @@ class InitCommandTest extends TestCase
         self::assertEquals($expected, $file->read());
 
         unset($_SERVER['COMPOSER_DEFAULT_VENDOR']);
-    }
-
-    public function testRunInvalidAuthorArgumentInvalidEmail(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--author' => 'Mr. Test <test>',
-        ]);
-    }
-
-    public function testRunAuthorArgument(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--author' => 'Mr. Test <test@example.org>',
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'authors' => [
-                [
-                    'name' => 'Mr. Test',
-                    'email' => 'test@example.org',
-                ],
-            ],
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunAuthorArgumentMissingEmail(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--author' => 'Mr. Test',
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'authors' => [
-                [
-                    'name' => 'Mr. Test',
-                ],
-            ],
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunSingleRepositoryArgument(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--repository' => [
-                '{"type":"vcs","url":"http://packages.example.com"}',
-            ],
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'repositories' => [
-                [
-                    'type' => 'vcs',
-                    'url' => 'http://packages.example.com',
-                ],
-            ],
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunMultipleRepositoryArguments(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--repository' => [
-                '{"type":"vcs","url":"http://vcs.example.com"}',
-                '{"type":"composer","url":"http://composer.example.com"}',
-                '{"type":"composer","url":"http://composer2.example.com","options":{"ssl":{"verify_peer":"true"}}}',
-            ],
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'repositories' => [
-                [
-                    'type' => 'vcs',
-                    'url' => 'http://vcs.example.com',
-                ],
-                [
-                    'type' => 'composer',
-                    'url' => 'http://composer.example.com',
-                ],
-                [
-                    'type' => 'composer',
-                    'url' => 'http://composer2.example.com',
-                    'options' => [
-                        'ssl' => [
-                            'verify_peer' => 'true',
-                        ],
-                    ],
-                ],
-            ],
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunStability(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--stability' => 'dev',
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'minimum-stability' => 'dev',
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunInvalidStability(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--stability' => 'bogus',
-        ], ['capture_stderr_separately' => true]);
-
-        self::assertSame(1, $appTester->getStatusCode());
-
-        self::assertMatchesRegularExpression("/minimum-stability\s+:\s+Does not have a value in the enumeration/", $appTester->getErrorOutput());
-    }
-
-    public function testRunRequireOne(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--require' => [
-                'first/pkg:1.0.0',
-            ],
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [
-                'first/pkg' => '1.0.0',
-            ],
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunRequireMultiple(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--require' => [
-                'first/pkg:1.0.0',
-                'second/pkg:^3.4',
-            ],
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [
-                'first/pkg' => '1.0.0',
-                'second/pkg' => '^3.4',
-            ],
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunInvalidRequire(): void
-    {
-        $this->expectException(\UnexpectedValueException::class);
-        $this->expectExceptionMessage("Option first is missing a version constraint, use e.g. first:^1.0");
-
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--require' => [
-                'first',
-            ],
-        ]);
-    }
-
-    public function testRunRequireDevOne(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--require-dev' => [
-                'first/pkg:1.0.0',
-            ],
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'require-dev' => [
-                'first/pkg' => '1.0.0',
-            ],
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunRequireDevMultiple(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--require-dev' => [
-                'first/pkg:1.0.0',
-                'second/pkg:^3.4',
-            ],
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'require-dev' => [
-                'first/pkg' => '1.0.0',
-                'second/pkg' => '^3.4',
-            ],
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunInvalidRequireDev(): void
-    {
-        $this->expectException(\UnexpectedValueException::class);
-        $this->expectExceptionMessage("Option first is missing a version constraint, use e.g. first:^1.0");
-
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--require-dev' => [
-                'first',
-            ],
-        ]);
-    }
-
-    public function testRunAutoload(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--autoload' => 'testMapping/',
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'autoload' => [
-                'psr-4' => [
-                    'Test\\Pkg\\' => 'testMapping/',
-                ],
-            ],
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunHomepage(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--homepage' => 'https://example.org/',
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'homepage' => 'https://example.org/',
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunInvalidHomepage(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--homepage' => 'not-a-url',
-        ], ['capture_stderr_separately' => true]);
-
-        self::assertSame(1, $appTester->getStatusCode());
-        self::assertMatchesRegularExpression("/homepage\s*:\s*Invalid URL format/", $appTester->getErrorOutput());
-    }
-
-    public function testRunDescription(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--description' => 'My first example package',
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'description' => 'My first example package',
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunType(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--type' => 'library',
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'type' => 'library',
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
-    }
-
-    public function testRunLicense(): void
-    {
-        $dir = $this->initTempComposer();
-        unlink($dir . '/composer.json');
-        unlink($dir . '/auth.json');
-
-        $appTester = $this->getApplicationTester();
-        $appTester->run([
-            'command' => 'init',
-            '--no-interaction' => true,
-            '--name' => 'test/pkg',
-            '--license' => 'MIT',
-        ]);
-
-        self::assertSame(0, $appTester->getStatusCode());
-
-        $expected = [
-            'name' => 'test/pkg',
-            'require' => [],
-            'license' => 'MIT',
-        ];
-
-        $file = new JsonFile($dir . '/composer.json');
-        self::assertEquals($expected, $file->read());
     }
 
     public function testInteractiveRun(): void
