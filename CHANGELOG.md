@@ -1,3 +1,13 @@
+### [2.8.12] 2025-09-19
+
+  * Fixed json schema issues with version validation (#12512)
+  * Fixed PHP 8.5 deprecation warnings (#12513)
+  * Fixed support for Bitbucket API tokens (#12515)
+  * Fixed handling of spaces in paths when using binaries (#12524)
+  * Fixed `config --global` path resolution issue (#12537)
+  * Reduced peak memory usage while loading packages (#12516)
+  * Dropped react/promise 2.x support
+
 ### [2.8.11] 2025-08-21
 
   * Fixed PHP 8.5 deprecation warnings (#12504, #12493, #12505)
@@ -2037,6 +2047,7 @@
 
   * Initial release
 
+[2.8.12]: https://github.com/composer/composer/compare/2.8.11...2.8.12
 [2.8.11]: https://github.com/composer/composer/compare/2.8.10...2.8.11
 [2.8.10]: https://github.com/composer/composer/compare/2.8.9...2.8.10
 [2.8.9]: https://github.com/composer/composer/compare/2.8.8...2.8.9
