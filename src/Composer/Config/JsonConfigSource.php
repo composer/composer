@@ -125,6 +125,26 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * @inheritDoc
      */
+    public function setRepositoryUrl(string $name, string $url): void
+    {
+        $this->manipulateJson('setRepositoryUrl', static function (&$config, $name, $url): void {
+            foreach ($config['repositories'] ?? [] as $index => $repository) {
+                if ($name === $index) {
+                    $config['repositories'][$index]['url'] = $url;
+                    return;
+                }
+
+                if ($name === ($repository['name'] ?? null)) {
+                    $config['repositories'][$index]['url'] = $url;
+                    return;
+                }
+            }
+        }, $name, $url);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function removeRepository(string $name): void
     {
         $this->manipulateJson('removeRepository', static function (&$config, $repo): void {

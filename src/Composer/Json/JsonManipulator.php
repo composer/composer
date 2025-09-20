@@ -213,6 +213,58 @@ class JsonManipulator
         return $this->addListItem('repositories', $config, $append);
     }
 
+    public function setRepositoryUrl(string $name, string $url): bool
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+        $repositoryIndex = null;
+
+        foreach ($decoded['repositories'] ?? [] as $index => $repository) {
+            if ($name === $index) {
+                $repositoryIndex = $index;
+                break;
+            }
+
+            if ($name === ($repository['name'] ?? null)) {
+                $repositoryIndex = $index;
+                break;
+            }
+        }
+
+        if (null === $repositoryIndex) {
+            return false;
+        }
+
+        $listRegex = null;
+
+        if (is_int($repositoryIndex)) {
+            $listRegex = '{'.self::DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?"repositories"\s*:\s*\[\s*((?&json)\s*+,\s*+){' . max(0, $repositoryIndex) . '})(?P<repository>(?&object))(?P<end>.*)}sx';
+        }
+
+        $objectRegex = '{'.self::DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?"repositories"\s*:\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?' . preg_quote(JsonFile::encode($repositoryIndex)) . '\s*:\s*)(?P<repository>(?&object))(?P<end>.*)}sx';
+        $matches = null;
+
+        if (($listRegex !== null && Preg::isMatch($listRegex, $this->contents, $matches)) || Preg::isMatch($objectRegex, $this->contents, $matches)) {
+            assert(isset($matches['start']) && is_string($matches['start']));
+            assert(isset($matches['repository']) && is_string($matches['repository']));
+            assert(isset($matches['end']) && is_string($matches['end']));
+
+            // invalid match due to un-regexable content, abort
+            if (false === @json_decode($matches['repository'])) {
+                return false;
+            }
+
+            $repositoryRegex = '{'.self::DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?"url"\s*:\s*)(?P<url>(?&string))(?P<end>.*)}sx';
+
+            $this->contents = $matches['start'] . Preg::replaceCallback($repositoryRegex, static function (array $repositoryMatches) use ($url): string {
+                return $repositoryMatches['start'] . JsonFile::encode($url) . $repositoryMatches['end'];
+            }, $matches['repository']) . $matches['end'];
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function removeRepository(string $name): bool
     {
         return $this->doRemoveRepository($name) && $this->removeMainKeyIfEmpty('repositories');

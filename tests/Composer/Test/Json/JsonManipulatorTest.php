@@ -2329,6 +2329,203 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    /**
+     * @dataProvider provideTestSetUrlInRepository
+     */
+    public function testSetUrlInRepository(string $from, string $to, string $name, string $url): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertTrue($manipulator->setRepositoryUrl($name, $url));
+        self::assertEquals($to, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<array{0: string, 1: string, 2: string, 3: string}>
+     */
+    public static function provideTestSetUrlInRepository(): iterable
+    {
+        $from = '{
+    "repositories": {
+        "first": {
+            "type": "package",
+            "url": "https://first.test"
+        },
+        "foo": {
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        "bar": {
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    }
+}
+';
+        yield 'change first of three (assoc)' => [
+            $from,
+            '{
+    "repositories": {
+        "first": {
+            "type": "package",
+            "url": "https://new.example.org"
+        },
+        "foo": {
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        "bar": {
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    }
+}
+',
+            'first',
+            'https://new.example.org'
+        ];
+        yield 'change middle of three (assoc)' => [
+            $from,
+            '{
+    "repositories": {
+        "first": {
+            "type": "package",
+            "url": "https://first.test"
+        },
+        "foo": {
+            "type": "vcs",
+            "url": "https://new.example.org"
+        },
+        "bar": {
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    }
+}
+',
+            'foo',
+            'https://new.example.org'
+        ];
+        yield 'change last of three (assoc)' => [
+            $from,
+            '{
+    "repositories": {
+        "first": {
+            "type": "package",
+            "url": "https://first.test"
+        },
+        "foo": {
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        "bar": {
+            "type": "vcs",
+            "url": "https://new.example.org"
+        }
+    }
+}
+',
+            'bar',
+            'https://new.example.org'
+        ];
+
+        $from = '{
+    "repositories": [
+        {
+            "name": "first",
+            "type": "package",
+            "url": "https://first.test"
+        },
+        {
+            "name": "foo",
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        {
+            "name": "bar",
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    ]
+}
+';
+        yield 'change first of three (list)' => [
+            $from,
+            '{
+    "repositories": [
+        {
+            "name": "first",
+            "type": "package",
+            "url": "https://new.example.org"
+        },
+        {
+            "name": "foo",
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        {
+            "name": "bar",
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    ]
+}
+',
+            'first',
+            'https://new.example.org'
+        ];
+        yield 'change middle of three (list)' => [
+            $from,
+            '{
+    "repositories": [
+        {
+            "name": "first",
+            "type": "package",
+            "url": "https://first.test"
+        },
+        {
+            "name": "foo",
+            "type": "vcs",
+            "url": "https://new.example.org"
+        },
+        {
+            "name": "bar",
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    ]
+}
+',
+            'foo',
+            'https://new.example.org'
+        ];
+        yield 'change last of three (list)' => [
+            $from,
+            '{
+    "repositories": [
+        {
+            "name": "first",
+            "type": "package",
+            "url": "https://first.test"
+        },
+        {
+            "name": "foo",
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        {
+            "name": "bar",
+            "type": "vcs",
+            "url": "https://new.example.org"
+        }
+    ]
+}
+',
+            'bar',
+            'https://new.example.org'
+        ];
+    }
+
     public function testRemoveRepositoryRemovesFromAssocButDoesNotConvertsFromAssocToList(): void
     {
         $manipulator = new JsonManipulator('{
@@ -2949,7 +3146,7 @@ class JsonManipulatorTest extends TestCase
 
     /**
      * @dataProvider addListItemProvider
-     * @param array<string, mixed>|false $value
+     * @param array<string, mixed>|int|false $value
      */
     public function testAddListItem(string $from, string $to, string $mainNode, $value, bool $append): void
     {
@@ -2960,7 +3157,7 @@ class JsonManipulatorTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{0: string, 1: string, 2: string, 3: array<string, mixed>|false, 4: bool}>
+     * @return iterable<string, array{0: string, 1: string, 2: string, 3: array<string, mixed>|false|int, 4: bool}>
      */
     public static function addListItemProvider(): iterable
     {

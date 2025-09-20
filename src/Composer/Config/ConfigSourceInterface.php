@@ -30,6 +30,11 @@ interface ConfigSourceInterface
     public function addRepository(string $name, $config, bool $append = true): void;
 
     /**
+     * Changes the URL of the referenced repository by name
+     */
+    public function setRepositoryUrl(string $name, string $url): void;
+
+    /**
      * Remove a repository
      */
     public function removeRepository(string $name): void;
