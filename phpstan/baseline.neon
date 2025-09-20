@@ -261,6 +261,11 @@ parameters:
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
+			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
+			count: 1
+			path: ../src/Composer/Command/RepositoryCommand.php
+
+		-
 			message: "#^Only booleans are allowed in &&, Composer\\\\Package\\\\PackageInterface\\|false given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Command/CreateProjectCommand.php
@@ -569,6 +574,12 @@ parameters:
 			message: "#^Variable \\$match might not be defined\\.$#"
 			count: 2
 			path: ../src/Composer/Command/SelfUpdateCommand.php
+
+		# one of these parameters will be non-null
+		-
+			message: "#^Parameter \\#3 \\$referenceName of method Composer\\\\Config\\\\JsonConfigSource\\:\\:insertRepository\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Command/RepositoryCommand.php
 
 		-
 			message: "#^Argument of an invalid type array\\<int, array\\<string, array\\|string\\>\\>\\|string supplied for foreach, only iterables are supported\\.$#"
