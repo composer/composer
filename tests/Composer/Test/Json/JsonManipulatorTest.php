@@ -2580,6 +2580,586 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    /**
+     * @dataProvider addListItemProvider
+     * @param array<string, mixed>|false $value
+     */
+    public function testAddListItem(string $from, string $to, string $mainNode, $value, bool $append): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertTrue($manipulator->addListItem($mainNode, $value, $append));
+        self::assertEquals($to, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: string, 3: array<string, mixed>|false, 4: bool}>
+     */
+    public static function addListItemProvider(): iterable
+    {
+        yield 'int-array first append to unset' => [
+            '{}',
+            '{
+    "main": [1]
+}
+',
+            'main',
+            1,
+            true
+        ];
+        yield 'int-array (one-line) first append to empty' => [
+            '{
+    "main": [ ]
+}
+',
+            '{
+    "main": [1]
+}
+',
+            'main',
+            1,
+            true
+        ];
+        yield 'int-array (one-line) second append to non-empty-list' => [
+            '{
+    "main": [ 1 ]
+}
+',
+            '{
+    "main": [ 1, 2 ]
+}
+',
+            'main',
+            2,
+            true
+        ];
+        yield 'object-array first append to unset' => [
+            '{}',
+            '{
+    "main": [{
+        "value": 1
+    }]
+}
+',
+            'main',
+            ['value' => 1],
+            true
+        ];
+        yield 'object-array (one-line) first append to empty' => [
+            '{
+    "main": [ ]
+}
+',
+            '{
+    "main": [{
+        "value": 2
+    }]
+}
+',
+            'main',
+            ['value' => 2],
+            true
+        ];
+        yield 'mixed-array (one-line) second append to non-empty-list' => [
+            '{
+    "main": [ 1 ]
+}
+',
+            '{
+    "main": [ 1, {
+        "value": 2
+    } ]
+}
+',
+            'main',
+            ['value' => 2],
+            true
+        ];
+
+        yield 'int-array (multi-line) first append to empty' => [
+            '{
+    "main": [
+    ]
+}
+',
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            'main',
+            1,
+            true
+        ];
+        yield 'int-array (multi-line) second append to non-empty-list' => [
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            '{
+    "main": [
+        1,
+        2
+    ]
+}
+',
+            'main',
+            2,
+            true
+        ];
+        yield 'object-array (multi-line) first append to empty' => [
+            '{
+    "main": [
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "value": 1
+        }
+    ]
+}
+',
+            'main',
+            ['value' => 1],
+            true
+        ];
+        yield 'mixed-array (multi-line) second append to non-empty-list' => [
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            '{
+    "main": [
+        1,
+        {
+            "value": 2
+        }
+    ]
+}
+',
+            'main',
+            ['value' => 2],
+            true
+        ];
+
+        yield 'int-array first prepend to unset' => [
+            '{}',
+            '{
+    "main": [1]
+}
+',
+            'main',
+            1,
+            false
+        ];
+        yield 'int-array (one-line) first prepend to empty' => [
+            '{
+    "main": [ ]
+}
+',
+            '{
+    "main": [1]
+}
+',
+            'main',
+            1,
+            false
+        ];
+        yield 'int-array (one-line) second prepend to non-empty-list' => [
+            '{
+    "main": [ 1 ]
+}
+',
+            '{
+    "main": [ 2, 1 ]
+}
+',
+            'main',
+            2,
+            false
+        ];
+        yield 'object-array first prepend to unset' => [
+            '{}',
+            '{
+    "main": [{
+        "value": 1
+    }]
+}
+',
+            'main',
+            ['value' => 1],
+            false
+        ];
+        yield 'object-array (one-line) first prepend to empty' => [
+            '{
+    "main": [ ]
+}
+',
+            '{
+    "main": [{
+        "value": 1
+    }]
+}
+',
+            'main',
+            ['value' => 1],
+            false
+        ];
+        yield 'mixed-array (one-line) second prepend to non-empty-list' => [
+            '{
+    "main": [ 1 ]
+}
+',
+            '{
+    "main": [ {
+        "value": 2
+    }, 1 ]
+}
+',
+            'main',
+            ['value' => 2],
+            false
+        ];
+
+        yield 'int-array (multi-line) first prepend to empty' => [
+            '{
+    "main": [
+    ]
+}
+',
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            'main',
+            1,
+            false
+        ];
+        yield 'int-array (multi-line) second prepend to non-empty-list' => [
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            '{
+    "main": [
+        2,
+        1
+    ]
+}
+',
+            'main',
+            2,
+            false
+        ];
+        yield 'object-array (multi-line) first prepend to empty' => [
+            '{
+    "main": [
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "value": 1
+        }
+    ]
+}
+',
+            'main',
+            ['value' => 1],
+            false
+        ];
+        yield 'mixed-array (multi-line) second prepend to non-empty-list' => [
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "value": 2
+        },
+        1
+    ]
+}
+',
+            'main',
+            ['value' => 2],
+            false
+        ];
+    }
+
+    /**
+     * @dataProvider removeListItemProvider
+     */
+    public function testRemoveListItem(string $from, string $to, string $mainNode, int $indexToRemove): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertTrue($manipulator->removeListItem($mainNode, $indexToRemove));
+        self::assertEquals($to, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: string, 3: int}>
+     */
+    public static function removeListItemProvider(): iterable
+    {
+        yield 'int-array (one-line) remove first' => [
+            '{
+    "main": [
+        1, 2, 3
+    ]
+}',
+            '{
+    "main": [
+        2, 3
+    ]
+}
+',
+            'main',
+            0
+        ];
+        yield 'int-array (one-line) remove middle' => [
+            '{
+    "main": [
+        1, 2, 3
+    ]
+}',
+            '{
+    "main": [
+        1, 3
+    ]
+}
+',
+            'main',
+            1
+        ];
+        yield 'int-array (one-line) remove last' => [
+            '{
+    "main": [
+        1, 2, 3
+    ]
+}',
+            '{
+    "main": [
+        1, 2
+    ]
+}
+',
+            'main',
+            2
+        ];
+        yield 'int-array (multi-line) remove first' => [
+            '{
+    "main": [
+        1,
+        2,
+        3
+    ]
+}',
+            '{
+    "main": [
+        2,
+        3
+    ]
+}
+',
+            'main',
+            0
+        ];
+        yield 'int-array (multi-line) remove middle' => [
+            '{
+    "main": [
+        1,
+        2,
+        3
+    ]
+}',
+            '{
+    "main": [
+        1,
+        3
+    ]
+}
+',
+            'main',
+            1
+        ];
+        yield 'int-array (multi-line) remove last' => [
+            '{
+    "main": [
+        1,
+        2,
+        3
+    ]
+}',
+            '{
+    "main": [
+        1,
+        2
+    ]
+}
+',
+            'main',
+            2
+        ];
+    }
+
+    /**
+     * @dataProvider insertListItemProvider
+     * @param array<string, mixed> $value
+     */
+    public function testInsertListItem(string $from, string $to, string $mainNode, array $value, int $indexToInsertAt): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertTrue($manipulator->insertListItem($mainNode, $value, $indexToInsertAt));
+        self::assertEquals($to, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: string, 3: array<string, mixed>, 4: int}>
+     */
+    public static function insertListItemProvider(): iterable
+    {
+        yield 'insert at 0 to unset list' => [
+            '{
+}
+',
+            '{
+    "main": [{
+        "foo": 1
+    }]
+}
+',
+            'main',
+            ['foo' => 1],
+            0,
+        ];
+        yield 'insert at 0 to empty list' => [
+            '{
+    "main": [
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "foo": 1
+        }
+    ]
+}
+',
+            'main',
+            ['foo' => 1],
+            0,
+        ];
+        yield 'insert at 0 list of 2' => [
+            '{
+    "main": [
+        {
+            "foo": 2
+        },
+        {
+            "foo": 4
+        }
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "foo": 1
+        },
+        {
+            "foo": 2
+        },
+        {
+            "foo": 4
+        }
+    ]
+}
+',
+            'main',
+            ['foo' => 1],
+            0,
+        ];
+        yield 'insert at 1 list of 2' => [
+            '{
+    "main": [
+        {
+            "foo": 2
+        },
+        {
+            "foo": 4
+        }
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "foo": 2
+        },
+        {
+            "foo": 3
+        },
+        {
+            "foo": 4
+        }
+    ]
+}
+',
+            'main',
+            ['foo' => 3],
+            1,
+        ];
+        yield 'insert at 2 list of 2' => [
+            '{
+    "main": [
+        {
+            "foo": 2
+        },
+        {
+            "foo": 4
+        }
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "foo": 2
+        },
+        {
+            "foo": 4
+        },
+        {
+            "foo": 5
+        }
+    ]
+}
+',
+            'main',
+            ['foo' => 5],
+            2,
+        ];
+    }
+
     public function testEscapedUnicodeDoesNotCauseBacktrackLimitErrorGithubIssue8131(): void
     {
         $manipulator = new JsonManipulator('{
