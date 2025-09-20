@@ -163,6 +163,21 @@ class JsonManipulator
             return false;
         }
 
+        if (!$this->doConvertRepositoriesFromAssocToList()) {
+            return false;
+        }
+
+        if (is_array($config) && !is_numeric($name) && '' !== $name) {
+            $config = ['name' => $name] + $config;
+        } elseif ($config === false) {
+            $config = [$name => $config];
+        }
+
+        return $this->addListItem('repositories', $config, $append);
+    }
+
+    private function doConvertRepositoriesFromAssocToList(): bool
+    {
         $decoded = json_decode($this->contents, false);
 
         if (($decoded->repositories ?? null) instanceof \stdClass) {
@@ -198,19 +213,7 @@ class JsonManipulator
             }
         }
 
-        if ($name === '') {
-            return $this->addListItem('repositories', $config, $append);
-        }
-
-        if ($config === false) {
-            return $this->addListItem('repositories', [$name => $config], $append);
-        }
-
-        if (is_array($config) && !is_numeric($name)) {
-            $config = ['name' => $name] + $config;
-        }
-
-        return $this->addListItem('repositories', $config, $append);
+        return true;
     }
 
     public function setRepositoryUrl(string $name, string $url): bool
@@ -263,6 +266,52 @@ class JsonManipulator
         }
 
         return false;
+    }
+
+    /**
+     * @param array<string, mixed>|false $config
+     */
+    public function insertRepository(string $name, $config, string $referenceName, int $offset = 0): bool
+    {
+        if ("" !== $name && !$this->doRemoveRepository($name)) {
+            return false;
+        }
+
+        if (!$this->doConvertRepositoriesFromAssocToList()) {
+            return false;
+        }
+
+        $indexToInsert = null;
+        $decoded = JsonFile::parseJson($this->contents);
+
+        foreach ($decoded['repositories'] as $repositoryIndex => $repository) {
+            if (($repository['name'] ?? null) === $referenceName) {
+                $indexToInsert = $repositoryIndex;
+                break;
+            }
+
+            if ($repositoryIndex === $referenceName) {
+                $indexToInsert = $repositoryIndex;
+                break;
+            }
+
+            if ([$referenceName => false] === $repository) {
+                $indexToInsert = $repositoryIndex;
+                break;
+            }
+        }
+
+        if ($indexToInsert === null) {
+            return false;
+        }
+
+        if (is_array($config) && !is_numeric($name) && '' !== $name) {
+            $config = ['name' => $name] + $config;
+        } elseif ($config === false) {
+            $config = ['name' => $config];
+        }
+
+        return $this->insertListItem('repositories', $config, $indexToInsert + $offset);
     }
 
     public function removeRepository(string $name): bool

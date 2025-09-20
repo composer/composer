@@ -30,6 +30,16 @@ interface ConfigSourceInterface
     public function addRepository(string $name, $config, bool $append = true): void;
 
     /**
+     * Inserts a repository before/after another repository by name
+     *
+     * @param string        $name          Name
+     * @param mixed[]|false $config        Configuration
+     * @param string        $referenceName The referenced repository to search for and insert next to
+     * @param int           $offset        The offset to use for insert in reference to the looked-up repository
+     */
+    public function insertRepository(string $name, $config, string $referenceName, int $offset = 0): void;
+
+    /**
      * Changes the URL of the referenced repository by name
      */
     public function setRepositoryUrl(string $name, string $url): void;

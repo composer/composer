@@ -2526,6 +2526,54 @@ class JsonManipulatorTest extends TestCase
         ];
     }
 
+    public function testInsertRepositoryBeforeAndAfterByName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": {
+        "alpha": {
+            "type": "vcs",
+            "url": "https://example.org/a"
+        },
+        "omega": {
+            "type": "vcs",
+            "url": "https://example.org/o"
+        },
+        "packagist.org": false
+    }
+}');
+        self::assertTrue($manipulator->insertRepository('beta', ['type' => 'vcs', 'url' => 'https://example.org/b'], 'omega', 0));
+        self::assertTrue($manipulator->insertRepository('gamma', ['type' => 'vcs', 'url' => 'https://example.org/g'], 'alpha', 1));
+        self::assertTrue($manipulator->insertRepository('alpha', ['type' => 'vcs', 'url' => 'https://example.org/alpha'], 'gamma', 0));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "name": "alpha",
+            "type": "vcs",
+            "url": "https://example.org/alpha"
+        },
+        {
+            "name": "gamma",
+            "type": "vcs",
+            "url": "https://example.org/g"
+        },
+        {
+            "name": "beta",
+            "type": "vcs",
+            "url": "https://example.org/b"
+        },
+        {
+            "name": "omega",
+            "type": "vcs",
+            "url": "https://example.org/o"
+        },
+        {
+            "packagist.org": false
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
     public function testRemoveRepositoryRemovesFromAssocButDoesNotConvertsFromAssocToList(): void
     {
         $manipulator = new JsonManipulator('{

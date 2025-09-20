@@ -125,6 +125,64 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * @inheritDoc
      */
+    public function insertRepository(string $name, $config, string $referenceName, int $offset = 0): void
+    {
+        $this->manipulateJson('insertRepository', static function (&$config, string $name, $repoConfig, string $referenceName, int $offset): void {
+            if (!array_is_list($config['repositories'] ?? [])) {
+                $list = [];
+
+                foreach ($config['repositories'] as $repositoryIndex => $repository) {
+                    if (is_string($repositoryIndex) && is_array($repository)) {
+                        // convert to list entry with name
+                        if (!isset($repository['name'])) {
+                            $repository = ['name' => $repositoryIndex] + $repository;
+                        }
+                        $list[] = $repository;
+                    } elseif (is_string($repositoryIndex)) {
+                        // keep boolean entries (e.g. 'packagist.org' => false)
+                        $list[] = [$repositoryIndex => $repository];
+                    } else {
+                        $list[] = $repository;
+                    }
+                }
+
+                $config['repositories'] = $list;
+            }
+
+            // ensure uniqueness by removing any existing entries which use the same name
+            $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], function ($val) use ($name) {
+                return !isset($val['name']) || $val['name'] !== $name || $val !== [$name => false];
+            }));
+
+            $indexToInsert = null;
+
+            foreach ($config['repositories'] as $repositoryIndex => $repository) {
+                if (($repository['name'] ?? null) === $referenceName) {
+                    $indexToInsert = $repositoryIndex;
+                    break;
+                }
+
+                if ([$referenceName => false] === $repository) {
+                    $indexToInsert = $repositoryIndex;
+                    break;
+                }
+            }
+
+            if ($indexToInsert === null) {
+                throw new \RuntimeException(sprintf('The referenced repository "%s" does not exist.', $referenceName));
+            }
+
+            if (is_array($repoConfig) && $name !== '' && !isset($repoConfig['name'])) {
+                $repoConfig = ['name' => $name] + $repoConfig;
+            }
+
+            array_splice($config['repositories'], $indexToInsert + $offset, 0, [$repoConfig]);
+        }, $name, $config, $referenceName, $offset);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function setRepositoryUrl(string $name, string $url): void
     {
         $this->manipulateJson('setRepositoryUrl', static function (&$config, $name, $url): void {
