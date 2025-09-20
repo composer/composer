@@ -125,7 +125,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param mixed[] $composerLock
      * @return string the newly created temp dir
      */
-    public function initTempComposer(array $composerJson = [], array $authJson = [], array $composerLock = []): string
+    public function initTempComposer(array $composerJson = [], array $authJson = [], array $composerLock = [], bool $setupRepositories = true): string
     {
         $dir = self::getUniqueTmpDirectory();
 
@@ -143,8 +143,12 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             $authJson = new \stdClass;
         }
 
-        if (is_array($composerJson) && isset($composerJson['repositories']) && !isset($composerJson['repositories']['packagist.org'])) {
-            $composerJson['repositories']['packagist.org'] = false;
+        if ($setupRepositories && is_array($composerJson) && isset($composerJson['repositories']) && !isset($composerJson['repositories']['packagist.org']) && !in_array(['packagist.org' => false], $composerJson['repositories'], true)) {
+            if (array_is_list($composerJson['repositories'])) {
+                $composerJson['repositories'][] = ['packagist.org' => false];
+            } else {
+                $composerJson['repositories']['packagist.org'] = false;
+            }
         }
 
         chdir($dir);

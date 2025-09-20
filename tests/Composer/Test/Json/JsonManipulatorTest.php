@@ -1942,11 +1942,12 @@ class JsonManipulatorTest extends TestCase
 
         self::assertTrue($manipulator->addRepository('bar', ['type' => 'composer']));
         self::assertEquals('{
-  "repositories": {
-    "bar": {
+  "repositories": [
+    {
+      "name": "bar",
       "type": "composer"
     }
-  }
+  ]
 }
 ', $manipulator->getContents());
     }
@@ -1960,11 +1961,10 @@ class JsonManipulatorTest extends TestCase
         self::assertTrue($manipulator->addRepository('bar2', ['type' => 'composer']));
         self::assertEquals("{
 \t\"a\": \"b\",
-\t\"repositories\": {
-\t\t\"bar2\": {
-\t\t\t\"type\": \"composer\"
-\t\t}
-\t}
+\t\"repositories\": [{
+\t\t\"name\": \"bar2\",
+\t\t\"type\": \"composer\"
+\t}]
 }
 ", $manipulator->getContents());
     }
@@ -1972,25 +1972,28 @@ class JsonManipulatorTest extends TestCase
     public function testAddRepositoryCanAppend(): void
     {
         $manipulator = new JsonManipulator('{
-    "repositories": {
-        "foo": {
+    "repositories": [
+        {
+            "name": "foo",
             "type": "vcs",
             "url": "lala"
         }
-    }
+    ]
 }');
 
         self::assertTrue($manipulator->addRepository('bar', ['type' => 'composer'], true));
         self::assertEquals('{
-    "repositories": {
-        "foo": {
+    "repositories": [
+        {
+            "name": "foo",
             "type": "vcs",
             "url": "lala"
         },
-        "bar": {
+        {
+            "name": "bar",
             "type": "composer"
         }
-    }
+    ]
 }
 ', $manipulator->getContents());
     }
@@ -1998,27 +2001,309 @@ class JsonManipulatorTest extends TestCase
     public function testAddRepositoryCanPrepend(): void
     {
         $manipulator = new JsonManipulator('{
-    "repositories": {
-        "foo": {
+    "repositories": [
+        {
+            "name": "foo",
             "type": "vcs",
             "url": "lala"
         }
-    }
+    ]
 }');
 
         self::assertTrue($manipulator->addRepository('bar', ['type' => 'composer'], false));
         self::assertEquals('{
-    "repositories": {
-        "bar": {
+    "repositories": [
+        {
+            "name": "bar",
             "type": "composer"
         },
-        "foo": {
+        {
+            "name": "foo",
             "type": "vcs",
             "url": "lala"
         }
-    }
+    ]
 }
 ', $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: string, 3: array, 4: bool}>
+     */
+    public static function addRepositoryProvider(): iterable
+    {
+        yield 'prepend repository (list)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "foo/bar"
+        },
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository (list)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "type": "path",
+            "url": "foo/bar"
+        }
+    ]
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+        yield 'prepend repository by name (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '{
+    "repositories": [
+        {
+            "name": "foo",
+            "type": "path",
+            "url": "foo/bar"
+        },
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "packagist.org": false
+        }
+    ]
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository by name (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "packagist.org": false
+        },
+        {
+            "name": "foo",
+            "type": "path",
+            "url": "foo/bar"
+        }
+    ]
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+        yield 'prepend repository by name (list to assoc)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '{
+    "repositories": [
+        {
+            "name": "foo",
+            "type": "path",
+            "url": "foo/bar"
+        },
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository by name (list to assoc)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "name": "foo",
+            "type": "path",
+            "url": "foo/bar"
+        }
+    ]
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+        yield 'prepend repository (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "foo/bar"
+        },
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "packagist.org": false
+        }
+    ]
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "packagist.org": false
+        },
+        {
+            "type": "path",
+            "url": "foo/bar"
+        }
+    ]
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+    }
+
+    /**
+     * @dataProvider addRepositoryProvider
+     * @param array<string, mixed>|false $config
+     */
+    public function testAddRepository(string $from, string $to, string $name, $config, bool $append): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertTrue($manipulator->addRepository($name, $config, $append));
+        self::assertEquals($to, $manipulator->getContents());
     }
 
     public function testAddRepositoryCanOverrideDeepRepos(): void
@@ -2034,11 +2319,93 @@ class JsonManipulatorTest extends TestCase
 
         self::assertTrue($manipulator->addRepository('baz', ['type' => 'composer']));
         self::assertEquals('{
-    "repositories": {
-        "baz": {
+    "repositories": [
+        {
+            "name": "baz",
             "type": "composer"
         }
+    ]
+}
+', $manipulator->getContents());
     }
+
+    public function testRemoveRepositoryRemovesFromAssocButDoesNotConvertsFromAssocToList(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": {
+        "baz": {
+            "type": "package",
+            "package": {}
+        },
+        "packagist.org": false
+    }
+}');
+
+        self::assertTrue($manipulator->removeRepository('baz'));
+        self::assertEquals('{
+    "repositories": {
+        "packagist.org": false
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveRepositoryRemovesFromList(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "name": "baz",
+            "type": "package",
+            "package": {
+            }
+        },
+        {
+            "packagist.org": false
+        }
+    ]
+}');
+
+        self::assertTrue($manipulator->removeRepository('baz'));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "packagist.org": false
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddRepositoryConvertsFromAssocToList(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": {
+        "baz": {
+            "type": "package",
+            "package": {}
+        },
+        "packagist.org": false
+    }
+}');
+
+        self::assertTrue($manipulator->addRepository('foo', ['type' => 'composer']));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "name": "baz",
+            "type": "package",
+            "package": {
+            }
+        },
+        {
+            "packagist.org": false
+        },
+        {
+            "name": "foo",
+            "type": "composer"
+        }
+    ]
 }
 ', $manipulator->getContents());
     }

@@ -1,3 +1,5 @@
+  * Changed repository structure to contain a name attribute and is stored preferably as list instead of object (#9918)
+
 ### [2.8.12] 2025-09-19
 
   * Fixed json schema issues with version validation (#12512)

@@ -3,7 +3,8 @@
     "license": "MIT",
     "repositories": [
         {
-            "packagist": false
+            "type": "git",
+            "url": "example.tld"
         }
     ]
 }

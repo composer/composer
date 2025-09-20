@@ -243,6 +243,7 @@ class Config
             $newRepos = array_reverse($config['repositories'], true);
             foreach ($newRepos as $name => $repository) {
                 // disable a repository by name
+                // this is a code path, that will be used less as the next check will be preferred
                 if (false === $repository) {
                     $this->disableRepoByName((string) $name);
                     continue;

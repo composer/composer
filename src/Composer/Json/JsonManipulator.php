@@ -159,12 +159,115 @@ class JsonManipulator
      */
     public function addRepository(string $name, $config, bool $append = true): bool
     {
-        return $this->addSubNode('repositories', $name, $config, $append);
+        if ("" !== $name && !$this->doRemoveRepository($name)) {
+            return false;
+        }
+
+        $decoded = json_decode($this->contents, false);
+
+        if (($decoded->repositories ?? null) instanceof \stdClass) {
+            // delete from bottom to top, to ensure keys stay the same
+            $entriesToRevert = array_reverse(array_keys((array) $decoded->repositories));
+
+            foreach ($entriesToRevert as $entryKey) {
+                if (!$this->removeSubNode('repositories', (string) $entryKey)) {
+                    return false;
+                }
+            }
+
+            $this->changeEmptyMainKeyFromAssocToList('repositories');
+
+            // re-add in order
+            foreach (((array) $decoded->repositories) as $repositoryName => $repository) {
+                if (!$repository instanceof \stdClass) {
+                    if (!$this->addListItem('repositories', [$repositoryName => $repository], true)) {
+                        return false;
+                    }
+                } elseif (is_numeric($repositoryName)) {
+                    if (!$this->addListItem('repositories', $repository, true)) {
+                        return false;
+                    }
+                } else {
+                    $repository = (array) $repository;
+                    // prepend name property
+                    $repository = ['name' => $repositoryName] + $repository;
+                    if (!$this->addListItem('repositories', $repository, true)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        if ($name === '') {
+            return $this->addListItem('repositories', $config, $append);
+        }
+
+        if ($config === false) {
+            return $this->addListItem('repositories', [$name => $config], $append);
+        }
+
+        if (is_array($config) && !is_numeric($name)) {
+            $config = ['name' => $name] + $config;
+        }
+
+        return $this->addListItem('repositories', $config, $append);
     }
 
     public function removeRepository(string $name): bool
     {
-        return $this->removeSubNode('repositories', $name);
+        return $this->doRemoveRepository($name) && $this->removeMainKeyIfEmpty('repositories');
+    }
+
+    private function doRemoveRepository(string $name): bool
+    {
+        $decoded = json_decode($this->contents, false);
+        $isAssoc = ($decoded->repositories ?? null) instanceof \stdClass;
+
+        foreach ((array) ($decoded->repositories ?? []) as $repositoryIndex => $repository) {
+            if ($repositoryIndex === $name && $isAssoc) {
+                if (!$this->removeSubNode('repositories', $repositoryIndex)) {
+                    return false;
+                }
+
+                break;
+            }
+
+            if (($repository->name ?? null) === $name) {
+                if ($isAssoc) {
+                    if (!$this->removeSubNode('repositories', (string) $repositoryIndex)) {
+                        return false;
+                    }
+                } else {
+                    if (!$this->removeListItem('repositories', (int) $repositoryIndex)) {
+                        return false;
+                    }
+                }
+
+                break;
+            }
+
+            if ($isAssoc) {
+                if ($name === $repositoryIndex && false === $repository) {
+                    if (!$this->removeSubNode('repositories', $repositoryIndex)) {
+                        return false;
+                    }
+
+                    return true;
+                }
+            } else {
+                $repositoryAsArray = (array) $repository;
+
+                if (false === ($repositoryAsArray[$name] ?? null) && 1 === count($repositoryAsArray)) {
+                    if (!$this->removeListItem('repositories', (int)$repositoryIndex)) {
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -736,6 +839,33 @@ class JsonManipulator
             if (Preg::isMatch('#^\{\s*\}\s*$#', $this->contents)) {
                 $this->contents = "{\n}";
             }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function changeEmptyMainKeyFromAssocToList(string $key): bool
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+
+        if (!array_key_exists($key, $decoded)) {
+            return true;
+        }
+
+        $regex = '{'.self::DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?'.preg_quote(JsonFile::encode($key)).'\s*:\s*)(?P<removal>\{(?P<removal_space>\s*+)\})(?P<end>\s*,?\s*.*)}sx';
+        if (Preg::isMatch($regex, $this->contents, $matches)) {
+            assert(is_string($matches['start']));
+            assert(is_string($matches['removal']));
+            assert(is_string($matches['end']));
+
+            // invalid match due to un-regexable content, abort
+            if (false === @json_decode($matches['removal'])) {
+                return false;
+            }
+
+            $this->contents = $matches['start'] . '[' . $matches['removal_space'] . ']' . $matches['end'];
 
             return true;
         }

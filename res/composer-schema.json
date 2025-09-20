@@ -928,6 +928,7 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
+                "name": { "type":  "string" },
                 "type": { "type": "string", "enum": ["composer"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
@@ -955,6 +956,7 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
+                "name": { "type":  "string" },
                 "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "bitbucket", "git-bitbucket", "hg", "fossil", "perforce", "svn"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
@@ -988,6 +990,7 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
+                "name": { "type":  "string" },
                 "type": { "type": "string", "enum": ["path"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
@@ -1019,6 +1022,7 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
+                "name": { "type":  "string" },
                 "type": { "type": "string", "enum": ["artifact"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
@@ -1040,6 +1044,7 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
+                "name": { "type":  "string" },
                 "type": { "type": "string", "enum": ["pear"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
@@ -1062,6 +1067,7 @@
             "type": "object",
             "required": ["type", "package"],
             "properties": {
+                "name": { "type":  "string" },
                 "type": { "type": "string", "enum": ["package"] },
                 "canonical": { "type": "boolean" },
                 "only": {
