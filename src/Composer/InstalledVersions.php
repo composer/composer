@@ -253,6 +253,27 @@ class InstalledVersions
     }
 
     /**
+     * Check if an installed package has a specific feature
+     *
+     * @param  string $packageName
+     * @param  string $feature
+     *
+     * @return bool
+     */
+    public static function hasFeature($packageName, $feature)
+    {
+        foreach (self::getInstalled() as $installed) {
+            if (!isset($installed['versions'][$packageName])) {
+                continue;
+            }
+
+            return in_array($feature, $installed['versions'][$packageName], true);
+        }
+
+        return false;
+    }
+
+    /**
      * @return array
      * @psalm-return array{name: string, pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev: bool}
      */
