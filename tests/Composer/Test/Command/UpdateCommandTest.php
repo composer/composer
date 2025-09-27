@@ -21,15 +21,21 @@ class UpdateCommandTest extends TestCase
 {
     /**
      * @dataProvider provideUpdates
-     * @param array<mixed> $composerJson
-     * @param array<mixed> $command
+     * @param array<mixed>   $composerJson
+     * @param array<mixed>   $command
+     * @param ?array<string> $createLockPackages
      */
-    public function testUpdate(array $composerJson, array $command, string $expected, bool $createLock = false): void
+    public function testUpdate(array $composerJson, array $command, string $expected, ?array $createLockPackages = null): void
     {
         $this->initTempComposer($composerJson);
 
-        if ($createLock) {
-            $this->createComposerLock();
+        if ($createLockPackages !== null) {
+            $this->createComposerLock(array_map(
+                function (string $packages) {
+                    return self::getPackage($packages);
+                },
+                $createLockPackages
+            ));
         }
 
         $appTester = $this->getApplicationTester();
@@ -148,7 +154,8 @@ Bumping dependencies
 <warning>Alternatively you can use --dev-only to only bump dependencies within "require-dev".</warning>
 No requirements to update in ./composer.json.
 OUTPUT
-            , true
+            ,
+            [],
         ];
 
         yield 'update & bump with lock' => [
@@ -161,7 +168,8 @@ Nothing to modify in lock file
 Installing dependencies from lock file (including require-dev)
 Nothing to install, update or remove
 OUTPUT
-            , true
+            ,
+            [],
         ];
 
         yield 'update & bump dev only' => [
@@ -180,10 +188,11 @@ Package operations: 2 installs, 0 updates, 0 removals
 Bumping dependencies
 No requirements to update in ./composer.json.
 OUTPUT
-            , true
+            ,
+            [],
         ];
 
-        yield 'update & dump with failing update' => [
+        yield 'update & bump with failing update' => [
             $rootDepAndTransitiveDep,
             ['--with' => ['dep/pkg:^2'], '--bump-after-update' => true],
             <<<OUTPUT
@@ -209,6 +218,87 @@ Your requirements could not be resolved to an installable set of packages.
     - Root composer.json requires root/req 1.* -> satisfiable by root/req[1.0.0].
     - root/req 1.0.0 requires dep/pkg ^1 -> found dep/pkg[1.0.0, 1.0.1, 1.0.2] but it conflicts with your temporary update constraint (replaced/pkg:^2).
 OUTPUT
+        ];
+
+        $twoDepsThatMustBeUpdatedTogether = [
+            'type' => 'project',
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'acme/foo', 'version' => '1.0.0'],
+                        ['name' => 'acme/foo', 'version' => '1.2.0'],
+                        ['name' => 'acme/bar', 'version' => '1.0.0', 'require' => ['acme/foo' => '^1.0.0']],
+                        ['name' => 'acme/bar', 'version' => '1.2.0', 'require' => ['acme/foo' => '^1.2.0']],
+                    ],
+                ],
+            ],
+            'require' => [
+                'acme/foo' => '^1.0.0',
+                'acme/bar' => '^1.0.0',
+            ],
+        ];
+
+        yield 'update & bump without specifying package' => [
+            $twoDepsThatMustBeUpdatedTogether,
+            ['--bump-after-update' => true],
+            <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 2 updates, 0 removals
+  - Upgrading acme/bar (1.0.0 => 1.2.0)
+  - Upgrading acme/foo (1.0.0 => 1.2.0)
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
+  - Installing acme/foo (1.2.0)
+  - Installing acme/bar (1.2.0)
+Bumping dependencies
+./composer.json would be updated with:
+ - require.acme/foo: ^1.2.0
+ - require.acme/bar: ^1.2.0
+OUTPUT
+            ,
+            ['acme/foo', 'acme/bar'],
+        ];
+
+        yield 'update & bump of single dependency without "--with-all-dependencies"' => [
+            $twoDepsThatMustBeUpdatedTogether,
+            ['packages' => ['acme/bar:^1.2'], '--bump-after-update' => true],
+            <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires acme/bar ^1.0.0 -> satisfiable by acme/bar[1.2.0].
+    - acme/bar 1.2.0 requires acme/foo ^1.2.0 -> found acme/foo[1.2.0] but the package is fixed to 1.0.0 (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.
+
+Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
+OUTPUT
+            ,
+            ['acme/foo', 'acme/bar'],
+        ];
+
+        yield 'update & bump of single dependency with "--with-all-dependencies"' => [
+            $twoDepsThatMustBeUpdatedTogether,
+            ['packages' => ['acme/bar:^1.2'], '--bump-after-update' => true, '--with-all-dependencies' => true],
+            // below, "acme/foo" is updated, but not bumped
+            <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 2 updates, 0 removals
+  - Upgrading acme/bar (1.0.0 => 1.2.0)
+  - Upgrading acme/foo (1.0.0 => 1.2.0)
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
+  - Installing acme/foo (1.2.0)
+  - Installing acme/bar (1.2.0)
+Bumping dependencies
+./composer.json would be updated with:
+ - require.acme/bar: ^1.2.0
+OUTPUT
+            ,
+            ['acme/foo', 'acme/bar'],
         ];
     }
 
