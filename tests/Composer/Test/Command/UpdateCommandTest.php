@@ -282,7 +282,6 @@ OUTPUT
         yield 'update & bump of single dependency with "--with-all-dependencies"' => [
             $twoDepsThatMustBeUpdatedTogether,
             ['packages' => ['acme/bar:^1.2'], '--bump-after-update' => true, '--with-all-dependencies' => true],
-            // below, "acme/foo" is updated, but not bumped
             <<<OUTPUT
 Loading composer repositories with package information
 Updating dependencies
@@ -295,6 +294,7 @@ Package operations: 2 installs, 0 updates, 0 removals
   - Installing acme/bar (1.2.0)
 Bumping dependencies
 ./composer.json would be updated with:
+ - require.acme/foo: ^1.2.0
  - require.acme/bar: ^1.2.0
 OUTPUT
             ,
