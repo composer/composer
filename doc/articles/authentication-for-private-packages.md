@@ -339,28 +339,22 @@ GitHub currently offers two types of access tokens:
 - [Fine-grained tokens](https://github.com/settings/personal-access-tokens)
 - [Tokens (classic)](https://github.com/settings/personal-access-tokens)
 
-These can be found in [Settings](https://github.com/settings/profile), at the very bottom of the left-side menu ([Developer options](https://github.com/settings/apps)).
-
-Classic tokens are broader and less secure, whereas Fine-grained tokens can strictly limit which repository the token applies to, as well as which permissions it is granted for each property of the repository.
-
-> **Note:** It is [recommended](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#types-of-personal-access-tokens) to use the fine-grained tokens,
-> as you can have much tighter control over what is accessed and by whom.
-
-To create a new access token, head to your [token settings section on GitHub](https://github.com/settings/personal-access-tokens) and [generate a new token](https://github.com/settings/personal-access-tokens/new).
+These can be found in [Settings](https://github.com/settings/profile), at the very bottom of the left-side menu ([Developer options](https://github.com/settings/apps)). To create a new access token, head to your [token settings section on GitHub](https://github.com/settings/personal-access-tokens) and [generate a new token](https://github.com/settings/personal-access-tokens/new).
 
 Read more about [Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
 
-### Classic tokens
+It is [recommended](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#types-of-personal-access-tokens) to use fine-grained tokens,
+as you can have much tighter control over what can be accessed. Composer requires read-only access to repository metadata and contents.
 
-For public repositories when rate limited, a token *without* any particular scope is sufficient (see `(no scope)` in the [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps)). Such tokens grant read-only access to public information.
+When you are working with public repositories only but hit the GitHub rate limit, a fine-grained token with read-only access to public repositories is sufficient. Even without any additional permissions, tokens always include read-only access to all public repositories on GitHub.
 
-For private repositories, the `repo` scope is needed. Note that the token will be given broad read/write access to all of your private repositories and much more - see the [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps) for a complete list. As of writing (November 2021), it seems not to be possible to further limit permissions for such tokens.
+When you need to access private repositories as well, fine-grained tokens (as of September 2025) are limited in that you can only use them to access the private repositories of a single user or a single organisation at once. You may want to check the [GitHub documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#fine-grained-personal-access-tokens-limitations) on details about that. If this is not a problem for your use case, go ahead with a fine-grained token. The token can be bound to either all of your or the organisation's repositories, or even scoped down to only selected repositories. For Composer, read-only access to "Contents" is sufficient.
 
-### Fine-grained tokens
+If you need to work with repositories from different organisations, check if using directory-specific authentication configuration can meet your requirements.
 
-Fine-grained tokens allow you to choose specific repositories to which the token applies, and permissions to specific aspects or properties of the repository.
+As a last option, a "classic" token with the `repo` scope will give broad access to all of your private repositories – including write permissions and much more. The [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps) contains the complete list. Be careful when using this kind of token.
 
-In the case of a privately hosted composer package, you would most likely want to choose read-only access to content.
+Regardless of the type of token used, we recommend using tokens with a limited lifetime. This reduces the exposure in case the token is compromised.
 
 ### Command line github-oauth
 
