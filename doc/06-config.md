@@ -246,6 +246,22 @@ private repositories which will later be cloned in GitLab CI jobs with a
 using HTTP basic auth. By default, Composer will generate a git-over-SSH
 URL for private repositories and HTTP(S) only for public.
 
+## forgejo-domains
+
+Defaults to `["codeberg.org"]`. A list of domains of Forgejo servers.
+This is used if you use the `forgejo` repository type.
+
+## forgejo-token
+
+A list of domain names and username/access-tokens to authenticate against them. For
+example using `{"codeberg.org": {"username": "forgejo-user", "token": "access-token"}}` as the
+value of this option will let Composer authenticate against codeberg.org.
+Please note: If the package is not hosted at
+codeberg.org the domain names must be also specified with the
+[`forgejo-domains`](06-config.md#forgejo-domains) option.
+Further info can also be found [here](articles/authentication-for-private-packages.md#forgejo-token)
+
+
 ## disable-tls
 
 Defaults to `false`. If set to true all HTTPS URLs will be tried with HTTP
