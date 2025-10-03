@@ -54,5 +54,5 @@ install
     "platform-dev": {}
 }
 --EXPECT--
-Installing a/a (dev-master)
-Marking a/a (9999999-dev) as installed, alias of a/a (dev-master)
+Installing a/a (dev-master 459720f)
+Marking a/a (9999999-dev 459720f) as installed, alias of a/a (dev-master 459720f)
