@@ -25,7 +25,8 @@ class SearchCommandTest extends TestCase
     {
         $this->initTempComposer([
             'repositories' => [
-                'packages' => [
+                ['packagist.org' => false],
+                [
                     'type' => 'package',
                     'package' => [
                         ['name' => 'vendor-1/package-1', 'description' => 'generic description', 'version' => '1.0.0'],

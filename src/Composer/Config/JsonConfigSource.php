@@ -60,27 +60,144 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addRepository(string $name, $config, bool $append = true): void
     {
         $this->manipulateJson('addRepository', static function (&$config, $repo, $repoConfig) use ($append): void {
-            // if converting from an array format to hashmap format, and there is a {"packagist.org":false} repo, we have
-            // to convert it to "packagist.org": false key on the hashmap otherwise it fails schema validation
-            if (isset($config['repositories'])) {
-                foreach ($config['repositories'] as $index => $val) {
-                    if ($index === $repo) {
-                        continue;
+            if (!array_is_list($config['repositories'] ?? [])) {
+                $list = [];
+
+                foreach ($config['repositories'] as $repositoryIndex => $repository) {
+                    if (is_string($repositoryIndex) && is_array($repository)) {
+                        // convert to list entry with name
+                        if (!isset($repository['name'])) {
+                            $repository = ['name' => $repositoryIndex] + $repository;
+                        }
+                        $list[] = $repository;
+                    } elseif (is_string($repositoryIndex)) {
+                        // keep boolean entries (e.g. 'packagist.org' => false)
+                        $list[] = [$repositoryIndex => $repository];
+                    } else {
+                        $list[] = $repository;
                     }
-                    if (is_numeric($index) && ($val === ['packagist' => false] || $val === ['packagist.org' => false])) {
-                        unset($config['repositories'][$index]);
-                        $config['repositories']['packagist.org'] = false;
-                        break;
+                }
+
+                $config['repositories'] = $list;
+            }
+
+            if ($repoConfig === false) {
+                if (isset($config['repositories'])) {
+                    foreach ($config['repositories'] as &$repository) {
+                        if (($repository['name'] ?? null) === $repo) {
+                            $repository = [$repo => $repoConfig];
+
+                            return;
+                        }
+
+                        if ($repository === [$repo => false]) {
+                            return;
+                        }
                     }
+
+                    unset($repository);
+                } else {
+                    $config['repositories'] = [];
+                }
+
+                $config['repositories'][] = [$repo => $repoConfig];
+
+                return;
+            }
+
+            if (is_array($repoConfig) && $repo !== '' && !isset($repoConfig['name'])) {
+                $repoConfig = ['name' => $repo] + $repoConfig;
+            }
+
+            // ensure uniqueness by removing any existing entries which use the same name
+            $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], function ($val) use ($repo) {
+                return !isset($val['name']) || $val['name'] !== $repo || $val !== [$repo => false];
+            }));
+
+            if ($append) {
+                $config['repositories'][] = $repoConfig;
+            } else {
+                array_unshift($config['repositories'], $repoConfig);
+            }
+        }, $name, $config, $append);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function insertRepository(string $name, $config, string $referenceName, int $offset = 0): void
+    {
+        $this->manipulateJson('insertRepository', static function (&$config, string $name, $repoConfig, string $referenceName, int $offset): void {
+            if (!array_is_list($config['repositories'] ?? [])) {
+                $list = [];
+
+                foreach ($config['repositories'] as $repositoryIndex => $repository) {
+                    if (is_string($repositoryIndex) && is_array($repository)) {
+                        // convert to list entry with name
+                        if (!isset($repository['name'])) {
+                            $repository = ['name' => $repositoryIndex] + $repository;
+                        }
+                        $list[] = $repository;
+                    } elseif (is_string($repositoryIndex)) {
+                        // keep boolean entries (e.g. 'packagist.org' => false)
+                        $list[] = [$repositoryIndex => $repository];
+                    } else {
+                        $list[] = $repository;
+                    }
+                }
+
+                $config['repositories'] = $list;
+            }
+
+            // ensure uniqueness by removing any existing entries which use the same name
+            $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], function ($val) use ($name) {
+                return !isset($val['name']) || $val['name'] !== $name || $val !== [$name => false];
+            }));
+
+            $indexToInsert = null;
+
+            foreach ($config['repositories'] as $repositoryIndex => $repository) {
+                if (($repository['name'] ?? null) === $referenceName) {
+                    $indexToInsert = $repositoryIndex;
+                    break;
+                }
+
+                if ([$referenceName => false] === $repository) {
+                    $indexToInsert = $repositoryIndex;
+                    break;
                 }
             }
 
-            if ($append) {
-                $config['repositories'][$repo] = $repoConfig;
-            } else {
-                $config['repositories'] = [$repo => $repoConfig] + $config['repositories'];
+            if ($indexToInsert === null) {
+                throw new \RuntimeException(sprintf('The referenced repository "%s" does not exist.', $referenceName));
             }
-        }, $name, $config, $append);
+
+            if (is_array($repoConfig) && $name !== '' && !isset($repoConfig['name'])) {
+                $repoConfig = ['name' => $name] + $repoConfig;
+            }
+
+            array_splice($config['repositories'], $indexToInsert + $offset, 0, [$repoConfig]);
+        }, $name, $config, $referenceName, $offset);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setRepositoryUrl(string $name, string $url): void
+    {
+        $this->manipulateJson('setRepositoryUrl', static function (&$config, $name, $url): void {
+            foreach ($config['repositories'] ?? [] as $index => $repository) {
+                if ($name === $index) {
+                    $config['repositories'][$index]['url'] = $url;
+                    return;
+                }
+
+                if ($name === ($repository['name'] ?? null)) {
+                    $config['repositories'][$index]['url'] = $url;
+                    return;
+                }
+            }
+        }, $name, $url);
     }
 
     /**
@@ -89,7 +206,17 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeRepository(string $name): void
     {
         $this->manipulateJson('removeRepository', static function (&$config, $repo): void {
-            unset($config['repositories'][$repo]);
+            if (isset($config['repositories'][$repo])) {
+                unset($config['repositories'][$repo]);
+            } else {
+                $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], function ($val) use ($repo) {
+                    return !isset($val['name']) || $val['name'] !== $repo || $val !== [$repo => false];
+                }));
+            }
+
+            if ([] === $config['repositories']) {
+                unset($config['repositories']);
+            }
         }, $name);
     }
 

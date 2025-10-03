@@ -1,8 +1,9 @@
 {
     "name": "my-vend/my-app",
     "license": "MIT",
-    "repositories": {
-        "example_tld": {
+    "repositories": [
+        {
+            "name": "example_tld",
             "type": "composer",
             "url": "https://example.tld",
             "options": {
@@ -11,5 +12,5 @@
                 }
             }
         }
-    }
+    ]
 }
