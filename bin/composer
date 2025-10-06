@@ -15,6 +15,20 @@ if (PHP_VERSION_ID < 70205) {
     exit(1);
 }
 
+if (ini_get('opcache.enable_cli') && ini_get('opcache.preload')) {
+    register_shutdown_function(static function () {
+        $e = error_get_last();
+        if ($e !== null
+            && (
+                strpos($e['message'], 'Cannot redeclare class') !== false
+                || (strpos($e['message'], 'Declaration of') !== false && strpos($e['message'], 'must be compatible with') !== false)
+            )
+        ) {
+            echo 'Warning: The error above might be caused by the fact opcache.enable_cli is enabled and opcache.preload is set in php.ini. We recommend disabling opcache.enable_cli if you really need preloading on this machine.'.PHP_EOL;
+        }
+    });
+}
+
 setlocale(LC_ALL, 'C');
 require __DIR__.'/../src/bootstrap.php';
 
