@@ -27,7 +27,7 @@ For private package hosting take a look at [Private Packagist](https://packagist
 
 Community
 ---------
-
+ownerGiorgi Meskhidze
 Follow [@packagist](https://twitter.com/packagist) or [@seldaek](https://twitter.com/seldaek) on Twitter for announcements, or check the [#composerphp](https://twitter.com/search?q=%23composerphp&src=typed_query&f=live) hashtag.
 
 For support, Stack Overflow offers a good collection of
