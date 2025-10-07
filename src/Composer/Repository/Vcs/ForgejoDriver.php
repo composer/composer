@@ -325,13 +325,13 @@ class ForgejoDriver extends VcsDriver
             // Forgejo returns 404 for private repositories) and we
             // cannot ask for authentication credentials (because we
             // are not interactive) then we fallback to GitDriver.
-            $this->setupGitDriver($this->forgejoUrl->generateSshUr());
+            $this->setupGitDriver($this->forgejoUrl->generateSshUrl());
 
             return true;
         } catch (\RuntimeException $e) {
             $this->gitDriver = null;
 
-            $this->io->writeError('<error>Failed to clone the '.$this->forgejoUrl->generateSshUr().' repository, try running in interactive mode so that you can enter your Forgejo credentials</error>');
+            $this->io->writeError('<error>Failed to clone the '.$this->forgejoUrl->generateSshUrl().' repository, try running in interactive mode so that you can enter your Forgejo credentials</error>');
             throw $e;
         }
     }

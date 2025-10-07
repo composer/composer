@@ -51,6 +51,6 @@ class ForgejoUrlTest extends TestCase
     {
         $forgejoUrl = ForgejoUrl::create('git@codeberg.org:acme/repo.git');
 
-        $this->assertSame('git@codeberg.org:acme/repo.git', $forgejoUrl->generateSshUr());
+        $this->assertSame('git@codeberg.org:acme/repo.git', $forgejoUrl->generateSshUrl());
     }
 }

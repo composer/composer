@@ -70,7 +70,7 @@ final class ForgejoUrl
         );
     }
 
-    public function generateSshUr(): string
+    public function generateSshUrl(): string
     {
         return 'git@' . $this->originUrl . ':'.$this->owner.'/'.$this->repository.'.git';
     }
