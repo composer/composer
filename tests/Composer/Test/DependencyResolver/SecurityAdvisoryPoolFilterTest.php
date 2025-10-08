@@ -4,6 +4,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\Advisory\AuditConfig;
 use Composer\Advisory\Auditor;
+use Composer\Advisory\SecurityAdvisory;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\Package\CompletePackage;
@@ -16,15 +17,15 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 {
     public function testFilterPackagesByAdvisories(): void
     {
-        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, true, true);
+        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, true, true, [], false);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
             'package' => [],
             'security-advisories' => [
                 'acme/package' => [
-                    $this->generateSecurityAdvisory('acme/package', 'CVE-1999-1000', '>=1.0.0,<1.1.0'),
-                    $this->generateSecurityAdvisory('acme/package', 'CVE-1999-1001', '>=1.0.0,<1.1.0'),
+                    $advisory1 = $this->generateSecurityAdvisory('acme/package', 'CVE-1999-1000', '>=1.0.0,<1.1.0'),
+                    $advisory2 = $this->generateSecurityAdvisory('acme/package', 'CVE-1999-1001', '>=1.0.0,<1.1.0'),
                 ],
             ],
         ]);
@@ -42,14 +43,12 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $advisoryMap = $filteredPool->getAllSecurityRemovedPackageVersions();
         $this->assertArrayHasKey('acme/package', $advisoryMap);
         $this->assertArrayHasKey('1.0.0.0', $advisoryMap['acme/package']);
-        $this->assertSame(['CVE-1999-1000', 'CVE-1999-1001'], array_map(function ($advisory) {
-            return $advisory->cve;
-        }, $advisoryMap['acme/package']['1.0.0.0']->advisories));
+        $this->assertSame([$advisory1['advisoryId'], $advisory2['advisoryId']], $filteredPool->getSecurityAdvisoryIdentifiersForPackageVersion('acme/package', new Constraint('==', '1.0.0.0')));
     }
 
     public function testDontFilterPackagesByIgnoredAdvisories(): void
     {
-        $auditConfig = new AuditConfig(['CVE-2024-1234'], Auditor::ABANDONED_FAIL, true, true);
+        $auditConfig = new AuditConfig(['CVE-2024-1234'], Auditor::ABANDONED_FAIL, true, true, [], false);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -71,7 +70,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesWithBlockInsecureDisabled(): void
     {
-        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, false, true);
+        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, false, true, [], false);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -93,7 +92,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesWithAbandonedPackage(): void
     {
-        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, true, true);
+        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, true, true, [], false);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $abandonedPackage = new CompletePackage('acme/package', '1.0.0.0', '1.0');
@@ -111,6 +110,9 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $this->assertCount(0, $filteredPool->getAllSecurityRemovedPackageVersions());
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function generateSecurityAdvisory(string $packageName, ?string $cve, string $affectedVersions): array
     {
         return [

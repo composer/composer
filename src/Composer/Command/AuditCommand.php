@@ -35,7 +35,7 @@ class AuditCommand extends BaseCommand
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_TABLE, Auditor::FORMATS),
                 new InputOption('locked', null, InputOption::VALUE_NONE, 'Audit based on the lock file instead of the installed packages.'),
                 new InputOption('abandoned', null, InputOption::VALUE_REQUIRED, 'Behavior on abandoned packages. Must be "ignore", "report", or "fail".', null, Auditor::ABANDONEDS),
-                new InputOption('ignore-severity', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Ignore advisories of a certain severity level.', [], ['low', 'medium', 'high', 'critical']),
+                new InputOption('ignore-severity', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Ignore advisories of a certain severity level.', null, ['low', 'medium', 'high', 'critical']),
                 new InputOption('ignore-unreachable', null, InputOption::VALUE_NONE, 'Ignore repositories that are unreachable or return a non-200 status code.'),
             ])
             ->setHelp(
@@ -78,8 +78,8 @@ EOT
 
         $abandoned = $abandoned ?? $auditConfig->abandoned;
 
-        $ignoreSeverities = $input->getOption('ignore-severity') ?? [];
-        $ignoreUnreachable = $input->getOption('ignore-unreachable');
+        $ignoreSeverities = $input->getOption('ignore-severity') ?? $auditConfig->ignoreSeverity;
+        $ignoreUnreachable = $input->getOption('ignore-unreachable') ?? $auditConfig->ignoreUnreachable;
 
         return min(255, $auditor->audit(
             $this->getIO(),

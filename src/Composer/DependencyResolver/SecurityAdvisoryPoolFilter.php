@@ -14,7 +14,6 @@ namespace Composer\DependencyResolver;
 
 use Composer\Advisory\AuditConfig;
 use Composer\Advisory\Auditor;
-use Composer\Advisory\PackageWithSecurityAdvisories;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\Package\CompletePackage;
@@ -60,7 +59,7 @@ class SecurityAdvisoryPoolFilter
             }
 
             $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true);
-            $advisoryMap = $this->auditor->processAdvisories($allAdvisories, $this->auditConfig->ignoreList, [])['advisories'];
+            $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreList, [])['advisories'];
         }
 
         $packages = [];
@@ -78,7 +77,7 @@ class SecurityAdvisoryPoolFilter
             $matchingAdvisories = $this->getPackageMatchAdvisories($package, $advisoryMap);
             if (count($matchingAdvisories) > 0) {
                 foreach ($package->getNames(false) as $packageName) {
-                    $securityRemovedVersions[$packageName][$package->getVersion()] = new PackageWithSecurityAdvisories($packageName, $package->getPrettyVersion(), $matchingAdvisories);
+                    $securityRemovedVersions[$packageName][$package->getVersion()] = $matchingAdvisories;
                 }
 
                 continue;

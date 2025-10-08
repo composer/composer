@@ -384,11 +384,11 @@ class Problem
             }
 
             if ($pool->isAbandonedRemovedPackageVersion($packageName, $constraint)) {
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are abandoned.'];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are abandoned and you configured "block-abandoned" to true in your "abandon" config.'];
             }
 
             if ($pool->isSecurityRemovedPackageVersion($packageName, $constraint)) {
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they have security advisories.'];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they have security advisories. You can ignore the advisories if you still want to install this package version by adding the advisory IDs ("' . implode('", "', $pool->getSecurityAdvisoryIdentifiersForPackageVersion($packageName, $constraint)). '") to the audit "ignore" config. If you would turn this feature off entirely, you can set "block-insecure" to true in your "abandon" config.'];
             }
 
             return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'];
