@@ -38,6 +38,6 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - Root composer.json requires acme/library 1.0.0 (exact version match: 1.0.0 or 1.0.0.0), found acme/library[1.0.0] but these were not loaded, because they are abandoned.
+    - Root composer.json requires acme/library 1.0.0 (exact version match: 1.0.0 or 1.0.0.0), found acme/library[1.0.0] but these were not loaded, because they are abandoned and you configured "block-abandoned" to true in your "audit" config.
 
 --EXPECT--
