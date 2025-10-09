@@ -16,6 +16,7 @@ use Composer\Config;
 
 /**
  * @readonly
+ * @internal
  */
 class AuditConfig
 {
