@@ -447,6 +447,24 @@
                         "abandoned": {
                             "enum": ["ignore", "report", "fail"],
                             "description": "Whether abandoned packages should be ignored, reported as problems or cause an audit failure."
+                        },
+                        "ignore-abandoned": {
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "description": "A list of abandoned package names that are reported but let the audit command pass.",
+                                    "additionalProperties": {
+                                        "type": ["string", "string"]
+                                    }
+                                },
+                                {
+                                    "type": "array",
+                                    "description": "A set of abandoned package names that are reported but let the audit command pass.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ]
                         }
                     }
                 },

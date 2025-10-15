@@ -89,7 +89,8 @@ EOT
             $auditConfig['ignore'] ?? [],
             $abandoned,
             $ignoreSeverities,
-            $ignoreUnreachable
+            $ignoreUnreachable,
+            $auditConfig['ignore-abandoned'] ?? []
         ));
 
     }

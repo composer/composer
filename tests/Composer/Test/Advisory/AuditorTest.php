@@ -87,6 +87,51 @@ Reported at: 2022-05-25T13:21:00+00:00',
             'output' => 'No security vulnerability advisories found.',
         ];
 
+        yield 'abandoned packages individually ignored via full vendor' => [
+            'data' => [
+                'packages' => [
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => false,
+                'abandoned' => Auditor::ABANDONED_FAIL,
+                'ignore-abandoned' => ['vendor/*']
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => 'No security vulnerability advisories found.',
+        ];
+
+        yield 'abandoned packages individually ignored via package name' => [
+            'data' => [
+                'packages' => [
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => false,
+                'abandoned' => Auditor::ABANDONED_FAIL,
+                'ignore-abandoned' => [$abandonedWithReplacement->getName(), $abandonedNoReplacement->getName()]
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => 'No security vulnerability advisories found.',
+        ];
+
+        yield 'abandoned packages individually ignored not matching package name' => [
+            'data' => [
+                'packages' => [
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => false,
+                'abandoned' => Auditor::ABANDONED_FAIL,
+                'ignore-abandoned' => ['acme/test']
+            ],
+            'expected' => Auditor::STATUS_ABANDONED,
+            'output' => 'No security vulnerability advisories found.
+Found 2 abandoned packages:
+vendor/abandoned is abandoned. Use foo/bar instead.
+vendor/abandoned2 is abandoned. No replacement was suggested.',
+        ];
+
         yield 'abandoned packages reported only' => [
             'data' => [
                 'packages' => [
@@ -195,7 +240,7 @@ Found 2 abandoned packages:
             $this->expectException(InvalidArgumentException::class);
         }
         $auditor = new Auditor();
-        $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly'], [], $data['abandoned'] ?? Auditor::ABANDONED_IGNORE);
+        $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly'], [], $data['abandoned'] ?? Auditor::ABANDONED_IGNORE, [], false, $data['ignore-abandoned'] ?? []);
         self::assertSame($expected, $result);
         self::assertSame($output, trim(str_replace("\r", '', $io->getOutput())));
     }
