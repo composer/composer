@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d6ec3e3118ceb9c3cca5ced282f0cc7c",
+    "content-hash": "f45b6cb149a36014c6fc0fd5f6125817",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -2118,6 +2118,132 @@
         }
     ],
     "packages-dev": [
+        {
+            "name": "loophp/iterators",
+            "version": "3.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/loophp/iterators.git",
+                "reference": "a0ba41c111f9c3eb09642ad9260cd6753edeb3e0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/loophp/iterators/zipball/a0ba41c111f9c3eb09642ad9260cd6753edeb3e0",
+                "reference": "a0ba41c111f9c3eb09642ad9260cd6753edeb3e0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 8.1"
+            },
+            "require-dev": {
+                "drupol/php-conventions": "^5",
+                "ext-pcov": "*",
+                "phpbench/phpbench": "^1.2",
+                "phpstan/phpstan-strict-rules": "^1.0",
+                "phpunit/php-code-coverage": "^10",
+                "phpunit/phpunit": "^10"
+            },
+            "suggest": {
+                "ext-mbstring": "For UTF-8 support in the StringIteratorAggregate."
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "loophp\\iterators\\": "./src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pol Dellaiera",
+                    "email": "pol.dellaiera@protonmail.com",
+                    "homepage": "https://not-a-number.io",
+                    "role": "author"
+                }
+            ],
+            "description": "The missing PHP iterators.",
+            "homepage": "https://github.com/loophp/iterators",
+            "keywords": [
+                "iterators"
+            ],
+            "support": {
+                "issues": "https://github.com/loophp/iterators/issues",
+                "source": "https://github.com/loophp/iterators"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/drupol",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-08-27T16:04:50+00:00"
+        },
+        {
+            "name": "loophp/path-hasher",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/loophp/path-hasher.git",
+                "reference": "72347867e38c2aee1c073fcf4beca2608e1c9baf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/loophp/path-hasher/zipball/72347867e38c2aee1c073fcf4beca2608e1c9baf",
+                "reference": "72347867e38c2aee1c073fcf4beca2608e1c9baf",
+                "shasum": ""
+            },
+            "require": {
+                "loophp/iterators": "^3.2",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "ergebnis/composer-normalize": "^2.48",
+                "ext-pcov": "*",
+                "friendsofphp/php-cs-fixer": "^3.89",
+                "phpro/grumphp": "^2",
+                "phpunit/php-code-coverage": "^10",
+                "phpunit/phpunit": "^10"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Loophp\\PathHasher\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "EUPL-1.2"
+            ],
+            "authors": [
+                {
+                    "name": "Pol Dellaiera",
+                    "email": "pol.dellaiera@protonmail.com",
+                    "homepage": "https://not-a-number.io",
+                    "role": "author"
+                }
+            ],
+            "description": "Library to serialize a filesystem path",
+            "homepage": "https://github.com/loophp/path-hasher",
+            "keywords": [
+                "nar",
+                "nix",
+                "serializer"
+            ],
+            "support": {
+                "issues": "https://github.com/loophp/path-hasher/issues",
+                "source": "https://github.com/loophp/path-hasher"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/drupol",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-10-24T14:36:14+00:00"
+        },
         {
             "name": "phpstan/phpstan",
             "version": "1.12.32",
