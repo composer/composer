@@ -335,6 +335,37 @@ Example:
 
 Optional.
 
+### dist
+
+The distribution archive for the package.
+
+Properties:
+
+* **type:** The type of distribution archive (e.g. `zip`, `tar`, `phar`).
+* **url:** The URL to download the distribution archive.
+* **reference:** The specific commit, tag, or revision that this distribution represents.
+* **shasum:** The SHA-1 checksum of the distribution archive for verification.
+* **mirrors:** An array of alternative download URLs.
+
+Example:
+
+```json
+{
+    "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/Seldaek/monolog/zipball/10d85740180ecba7896c87e06a166e0c95a0e3b6",
+        "reference": "10d85740180ecba7896c87e06a166e0c95a0e3b6",
+        "shasum": "a1b8d00bb5bc3b0308e99a95e01bdbbefbe052b4",
+        "mirrors": [
+            "https://api.github.com/repos/alternative-one/monolog/zipball/10d85740180ecba7896c87e06a166e0c95a0e3b6",
+            "https://api.github.com/repos/alternative-two/monolog/zipball/10d85740180ecba7896c87e06a166e0c95a0e3b6"
+        ]
+    }
+}
+```
+
+Optional.
+
 ### Package links
 
 All of the following take an object which maps package names to
