@@ -306,6 +306,35 @@ An example:
 
 Optional.
 
+### source
+
+The source repository for the package.
+
+Properties:
+
+* **type:** The type of VCS (e.g. `git`, `svn`, `hg`).
+* **url:** The repository URL.
+* **reference:** The specific commit, tag, or revision (e.g. `master`, `1.0.0`, or a commit hash).
+* **mirrors:** An array of alternative repository URLs.
+
+Example:
+
+```json
+{
+    "source": {
+        "type": "git",
+        "url": "https://github.com/Seldaek/monolog.git",
+        "reference": "10d85740180ecba7896c87e06a166e0c95a0e3b6",
+        "mirrors": [
+            "https://api.github.com/repos/alternative-one/monolog.git",
+            "https://api.github.com/repos/alternative-two/monolog.git"
+        ]
+    }
+}
+```
+
+Optional.
+
 ### Package links
 
 All of the following take an object which maps package names to
