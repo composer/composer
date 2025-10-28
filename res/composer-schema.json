@@ -773,6 +773,10 @@
                 "allow-missing-requirements": {
                     "type": ["boolean"],
                     "description": "Defaults to false. If set to true, Composer will allow install when lock file is not up to date with the latest changes in composer.json."
+                },
+                "update-with-minimal-changes": {
+                    "type": ["boolean"],
+                    "description": "Defaults to false. If set to true, Composer will only perform absolutely necessary changes to transitive dependencies during update."
                 }
             }
         },

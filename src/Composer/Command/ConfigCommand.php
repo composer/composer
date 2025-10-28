@@ -183,6 +183,11 @@ EOT
         $io = $this->getIO();
         $this->config = Factory::createConfig($io);
 
+        // When using --global flag, set baseDir to home directory for correct absolute path resolution
+        if ($input->getOption('global')) {
+            $this->config->setBaseDir($this->config->get('home'));
+        }
+
         $configFile = $this->getComposerConfigFile($input, $this->config);
 
         // Create global composer.json if this was invoked using `composer global config`
@@ -467,6 +472,7 @@ EOT
             'classmap-authoritative' => [$booleanValidator, $booleanNormalizer],
             'apcu-autoloader' => [$booleanValidator, $booleanNormalizer],
             'prepend-autoloader' => [$booleanValidator, $booleanNormalizer],
+            'update-with-minimal-changes' => [$booleanValidator, $booleanNormalizer],
             'disable-tls' => [$booleanValidator, $booleanNormalizer],
             'secure-http' => [$booleanValidator, $booleanNormalizer],
             'bump-after-update' => [

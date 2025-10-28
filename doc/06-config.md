@@ -521,4 +521,10 @@ Defaults to `false`. Ignores error during `install` if there are any missing
 requirements - the lock file is not up to date with the latest changes in
 `composer.json`.
 
+## update-with-minimal-changes
+
+Defaults to `false`. If set to true, Composer will only perform absolutely necessary
+changes to transitive dependencies during update.
+Can also be set via the `COMPOSER_MINIMAL_CHANGES=1` env var.
+
 &larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;

@@ -239,6 +239,13 @@ class Git
                 // password in there.
                 if ($this->io->hasAuthentication($domain)) {
                     $auth = $this->io->getAuthentication($domain);
+
+                    // Bitbucket API tokens use the email address as the username for HTTP API calls and
+                    // either the Bitbucket username or 'x-bitbucket-api-token-auth' as the username for git operations.
+                    if (strpos((string) $auth['password'], 'ATAT') === 0) {
+                        $auth['username'] = 'x-bitbucket-api-token-auth';
+                    }
+
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $domain . '/' . $repo_with_git_part;
 
                     if (0 === $runCommands($authUrl)) {
