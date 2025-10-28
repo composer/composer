@@ -52,8 +52,8 @@ should be automatically selected.
 
 #### Binary dependencies
 
-- `7z` (or `7zz`)
-- `unzip` (if `7z` is missing)
+- `unzip`
+- `7z` (or `7zz`), if `unzip` is missing
 - `gzip`
 - `tar`
 - `unrar`
@@ -64,9 +64,10 @@ should be automatically selected.
 - Perforce (`p4`)
 - Subversion (`svn`)
 
-It's important to note that the need for these binary dependencies may vary
-depending on individual use cases. However, for most users, only 2 dependencies
-are essential for Composer: `7z` (or `7zz` or `unzip`), and `git`.
+The need for these binary dependencies may vary depending on individual use cases. For most users,
+only 2 dependencies are essential for Composer: `unzip` (or `7z`/`7zz`), and `git`. If the
+[ext-zip](https://www.php.net/manual/en/zip.installation.php) extension is available, only `git`
+is needed, but this is not recommended.
 
 Authors
 -------
