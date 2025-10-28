@@ -171,6 +171,34 @@ Since Composer 2.8, the option can be overridden via the
 [`--abandoned`](03-cli.md#audit) command line option, which overrides both the
 config value and the environment variable.
 
+### ignore-abandoned
+
+A list of abandoned package names that are reported but let the audit command pass.
+
+```json
+{
+    "config": {
+        "audit": {
+            "ignore-abandoned": {
+                "acme/*": "Work schedule for removal next month.",
+                "acme/package": "The package is not in use"
+            }
+        }
+    }
+}
+```
+
+or
+
+```json
+{
+    "config": {
+        "audit": {
+            "ignore-abandoned": ["acme/*", "acme/package"]
+        }
+    }
+}
+```
 
 ## use-parent-dir
 

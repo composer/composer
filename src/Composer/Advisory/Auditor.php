@@ -15,8 +15,10 @@ namespace Composer\Advisory;
 use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
+use Composer\Pcre\Preg;
 use Composer\Repository\RepositorySet;
 use Composer\Util\PackageInfo;
 use InvalidArgumentException;
@@ -65,11 +67,12 @@ class Auditor
      * @param string[] $ignoreList List of advisory IDs, remote IDs or CVE IDs that reported but not listed as vulnerabilities.
      * @param self::ABANDONED_* $abandoned
      * @param array<string> $ignoredSeverities List of ignored severity levels
+     * @param string[]|array<string, string> $ignoreAbandoned List of abandoned package name that reported but not listed as vulnerabilities.
      *
      * @return int-mask<self::STATUS_*> A bitmask of STATUS_* constants or 0 on success
      * @throws InvalidArgumentException If no packages are passed in
      */
-    public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_FAIL, array $ignoredSeverities = [], bool $ignoreUnreachable = false): int
+    public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_FAIL, array $ignoredSeverities = [], bool $ignoreUnreachable = false, array $ignoreAbandoned = []): int
     {
         $result = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY, $ignoreUnreachable);
         $allAdvisories = $result['advisories'];
@@ -89,7 +92,7 @@ class Auditor
         if ($abandoned === self::ABANDONED_IGNORE) {
             $abandonedPackages = [];
         } else {
-            $abandonedPackages = $this->filterAbandonedPackages($packages);
+            $abandonedPackages = $this->filterAbandonedPackages($packages, $ignoreAbandoned);
             if ($abandoned === self::ABANDONED_FAIL) {
                 $abandonedCount = count($abandonedPackages);
             }
@@ -156,12 +159,24 @@ class Auditor
 
     /**
      * @param array<PackageInterface> $packages
+     * @param string[]|array<string, string> $ignoreAbandoned
      * @return array<CompletePackageInterface>
      */
-    private function filterAbandonedPackages(array $packages): array
+    private function filterAbandonedPackages(array $packages, array $ignoreAbandoned): array
     {
-        return array_filter($packages, static function (PackageInterface $pkg): bool {
-            return $pkg instanceof CompletePackageInterface && $pkg->isAbandoned();
+        if (\count($ignoreAbandoned) > 0 && !\array_is_list($ignoreAbandoned)) {
+            $ignoredPackageNames = array_keys($ignoreAbandoned);
+        } else {
+            $ignoredPackageNames = $ignoreAbandoned;
+        }
+
+        $filter = null;
+        if (\count($ignoreAbandoned) !== 0) {
+            $filter = BasePackage::packageNamesToRegexp($ignoredPackageNames);
+        }
+
+        return array_filter($packages, static function (PackageInterface $pkg) use ($filter): bool {
+            return $pkg instanceof CompletePackageInterface && $pkg->isAbandoned() && ($filter === null || !Preg::isMatch($filter, $pkg->getName()));
         });
     }
 
