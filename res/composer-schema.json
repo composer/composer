@@ -452,9 +452,9 @@
                             "anyOf": [
                                 {
                                     "type": "object",
-                                    "description": "A list of abandoned package names that are reported but let the audit command pass.",
+                                    "description": "A list of abandoned package names (as key) mapping to a reason explaining why they are ignored.",
                                     "additionalProperties": {
-                                        "type": ["string", "string"]
+                                        "type": "string"
                                     }
                                 },
                                 {
