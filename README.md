@@ -52,8 +52,7 @@ should be automatically selected.
 
 #### Binary dependencies
 
-- `unzip`
-- `7z` (or `7zz`), if `unzip` is missing
+- `unzip` (or `7z`/`7zz`)
 - `gzip`
 - `tar`
 - `unrar`
