@@ -17,7 +17,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 {
     public function testFilterPackagesByAdvisories(): void
     {
-        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, true, true, [], false);
+        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, true, true, [], false, []);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -48,7 +48,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesByIgnoredAdvisories(): void
     {
-        $auditConfig = new AuditConfig(['CVE-2024-1234'], Auditor::ABANDONED_FAIL, true, true, [], false);
+        $auditConfig = new AuditConfig(['CVE-2024-1234'], Auditor::ABANDONED_FAIL, true, true, [], false, []);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -70,7 +70,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesWithBlockInsecureDisabled(): void
     {
-        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, false, true, [], false);
+        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, false, true, [], false, []);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -92,20 +92,24 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesWithAbandonedPackage(): void
     {
-        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, true, true, [], false);
+        $packageNameIgnoreAbandoned = 'acme/ignore-abandoned';
+        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, true, true, [], false, [$packageNameIgnoreAbandoned]);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $abandonedPackage = new CompletePackage('acme/package', '1.0.0.0', '1.0');
         $abandonedPackage->setAbandoned(true);
+        $ignoreAbandonedPackage = new CompletePackage($packageNameIgnoreAbandoned, '1.0.0.0', '1.0');
+        $ignoreAbandonedPackage->setAbandoned(true);
         $expectedPackage = new Package('acme/other', '1.1.0.0', '1.1');
 
         $pool = new Pool([
             $expectedPackage,
             $abandonedPackage,
+            $ignoreAbandonedPackage,
         ]);
         $filteredPool = $filter->filter($pool, []);
 
-        $this->assertSame([$expectedPackage], $filteredPool->getPackages());
+        $this->assertSame([$expectedPackage, $ignoreAbandonedPackage], $filteredPool->getPackages());
         $this->assertCount(1, $filteredPool->getAllAbandonedRemovedPackageVersions());
         $this->assertCount(0, $filteredPool->getAllSecurityRemovedPackageVersions());
     }

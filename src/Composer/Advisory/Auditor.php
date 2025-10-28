@@ -162,7 +162,7 @@ class Auditor
      * @param string[]|array<string, string> $ignoreAbandoned
      * @return array<CompletePackageInterface>
      */
-    private function filterAbandonedPackages(array $packages, array $ignoreAbandoned): array
+    public function filterAbandonedPackages(array $packages, array $ignoreAbandoned): array
     {
         if (\count($ignoreAbandoned) > 0 && !\array_is_list($ignoreAbandoned)) {
             $ignoredPackageNames = array_keys($ignoreAbandoned);

@@ -83,7 +83,7 @@ class AuditConfig
                 (bool) ($auditConfig['block-abandoned'] ?? false),
                 $auditConfig['ignore-severity'] ?? [],
                 (bool) ($auditConfig['ignore-unreachable'] ?? false),
-                $auditConfig['ignore-abandoned']
+                $auditConfig['ignore-abandoned'] ?? []
         );
     }
 }

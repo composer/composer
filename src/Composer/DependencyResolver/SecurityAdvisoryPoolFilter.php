@@ -66,11 +66,10 @@ class SecurityAdvisoryPoolFilter
         $securityRemovedVersions = [];
         $abandonedRemovedVersions = [];
         foreach ($pool->getPackages() as $package) {
-            if ($this->auditConfig->blockAbandoned && $package instanceof CompletePackage && $package->isAbandoned()) {
+            if ($this->auditConfig->blockAbandoned && count($this->auditor->filterAbandonedPackages([$package], $this->auditConfig->ignoreAbandonedPackages)) !== 0) {
                 foreach ($package->getNames(false) as $packageName) {
                     $abandonedRemovedVersions[$packageName][$package->getVersion()] = $package->getPrettyVersion();
                 }
-
                 continue;
             }
 
