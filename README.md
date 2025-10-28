@@ -65,7 +65,7 @@ should be automatically selected.
 
 The need for these binary dependencies may vary depending on individual use cases. For most users,
 only 2 dependencies are essential for Composer: `unzip` (or `7z`/`7zz`), and `git`. If the
-[ext-zip](https://www.php.net/manual/en/zip.installation.php) extension is available, only `git`
+[`ext-zip`](https://www.php.net/manual/en/zip.installation.php) extension is available, only `git`
 is needed, but this is not recommended.
 
 Authors
