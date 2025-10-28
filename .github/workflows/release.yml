@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - uses: shivammathur/setup-php@ec406be512d7077f68eed36e63f4d91bc006edc4 # 2.35.4
+      - uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # 2.35.5
         with:
           coverage: "none"
           extensions: "intl"
@@ -58,7 +58,7 @@ jobs:
             ${{ secrets.GPG_KEY_161DFBE342889F01DDAC4E61CBB3D576F2A0946F }}
 
       - name: Create release
-        uses: softprops/action-gh-release@6cbd405e2c4e67a21c47fa9e383d020e4e28b836 # v2.3.3
+        uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090 # v2.4.1
         with:
           body: TODO
           name: ${{ github.ref_name }}

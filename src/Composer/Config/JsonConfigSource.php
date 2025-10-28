@@ -227,7 +227,7 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('addConfigSetting', static function (&$config, $key, $val) use ($authConfig): void {
-            if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|custom-headers|platform)\.}', $key)) {
+            if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|custom-headers|forgejo-token|platform)\.}', $key)) {
                 [$key, $host] = explode('.', $key, 2);
                 if ($authConfig) {
                     $config[$key][$host] = $val;
@@ -247,7 +247,7 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('removeConfigSetting', static function (&$config, $key) use ($authConfig): void {
-            if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|custom-headers|platform)\.}', $key)) {
+            if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|custom-headers|forgejo-token|platform)\.}', $key)) {
                 [$key, $host] = explode('.', $key, 2);
                 if ($authConfig) {
                     unset($config[$key][$host]);
@@ -389,7 +389,7 @@ class JsonConfigSource implements ConfigSourceInterface
                     $config['autoload-dev'][$prop] = new \stdClass;
                 }
             }
-            foreach (['platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'custom-headers', 'preferred-install'] as $prop) {
+            foreach (['platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'custom-headers', 'forgejo-token', 'preferred-install'] as $prop) {
                 if (isset($config['config'][$prop]) && $config['config'][$prop] === []) {
                     $config['config'][$prop] = new \stdClass;
                 }

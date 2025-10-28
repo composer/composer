@@ -206,14 +206,23 @@ abstract class BasePackage implements PackageInterface
      */
     public function getFullPrettyVersion(bool $truncate = true, int $displayMode = PackageInterface::DISPLAY_SOURCE_REF_IF_DEV): string
     {
-        if ($displayMode === PackageInterface::DISPLAY_SOURCE_REF_IF_DEV &&
-            (!$this->isDev() || !\in_array($this->getSourceType(), ['hg', 'git']))
+        if (
+            $displayMode === PackageInterface::DISPLAY_SOURCE_REF_IF_DEV
+            && (
+                !$this->isDev()
+                || (
+                    !\in_array($this->getSourceType(), ['hg', 'git'])
+                    && ((string) $this->getSourceType() !== '' || (string) $this->getDistReference() === '')
+                )
+            )
         ) {
             return $this->getPrettyVersion();
         }
 
         switch ($displayMode) {
             case PackageInterface::DISPLAY_SOURCE_REF_IF_DEV:
+                $reference = (string) $this->getSourceReference() !== '' ? $this->getSourceReference() : $this->getDistReference();
+                break;
             case PackageInterface::DISPLAY_SOURCE_REF:
                 $reference = $this->getSourceReference();
                 break;

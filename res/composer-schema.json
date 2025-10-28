@@ -530,6 +530,24 @@
                         }
                     }
                 },
+                "forgejo-token": {
+                    "type": "object",
+                    "description": "An object of domain name => forgejo username/access token, typically {\"codeberg.org\":{\"username\": \"<username>\", \"token\": \"<access-token>\"}}.",
+                    "additionalProperties": {
+                        "type": ["object"],
+                        "required": ["username", "token"],
+                        "properties": {
+                            "username": {
+                                "type": "string",
+                                "description": "The username used for Forgejo authentication"
+                            },
+                            "token": {
+                                "type": "string",
+                                "description": "The access token used for Forgejo authentication"
+                            }
+                        }
+                    }
+                },
                 "disable-tls": {
                     "type": "boolean",
                     "description": "Defaults to `false`. If set to true all HTTPS URLs will be tried with HTTP instead and no network level encryption is performed. Enabling this is a security risk and is NOT recommended. The better way is to enable the php_openssl extension in php.ini."
@@ -683,6 +701,13 @@
                 "gitlab-domains": {
                     "type": "array",
                     "description": "A list of domains to use in gitlab mode. This is used for custom GitLab setups, defaults to [\"gitlab.com\"].",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "forgejo-domains": {
+                    "type": "array",
+                    "description": "A list of domains to use in forgejo mode. This is used for custom Forgejo setups, defaults to [\"codeberg.org\"].",
                     "items": {
                         "type": "string"
                     }
@@ -957,7 +982,7 @@
             "required": ["type", "url"],
             "properties": {
                 "name": { "type":  "string" },
-                "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "bitbucket", "git-bitbucket", "hg", "fossil", "perforce", "svn"] },
+                "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "bitbucket", "git-bitbucket", "hg", "fossil", "perforce", "svn", "forgejo"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
                 "only": {

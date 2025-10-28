@@ -25,6 +25,7 @@ for credentials and save them (or a token if Composer is able to retrieve one).
 |[github-oauth](#github-oauth)|yes|
 |[bitbucket-oauth](#bitbucket-oauth)|yes|
 |[Client TLS certificates](#client-tls-certificates)|no|
+|[forgejo-token](#forgejo-token)|yes|
 
 Sometimes automatic authentication is not possible, or you may want to predefine
 authentication credentials.
@@ -449,3 +450,41 @@ More information for options can be found at [SSL context options](https://www.p
 Options could be omitted:
  - `local_pk`: in case of keeping certificate and private key in a single file;
  - `passphrase`: in case of passwordless private key.
+
+## forgejo-token
+
+> **Note:** For the forge authentication to work on private Forgejo instances, the
+> [`forgejo-domains`](../06-config.md#forgejo-domains) section should also contain the domain.
+
+To create a new access token, go to your [applications section on Forgejo](https://codeberg.org/user/settings/applications)
+(or the equivalent URL on your private instance) and create a new access token. See also [the Forgejo access token documentation](https://docs.codeberg.org/advanced/access-token/) for more information.
+
+When creating a Forgejo access token, make sure it has the `read:repository` scope.
+
+### Command line forgejo-token
+
+```shell
+php composer.phar config [--global] forgejo-token.forgejo.example.org username access-token
+```
+
+In the above command, the config key `forgejo-token.forgejo.example.org` consists of two parts:
+
+- `forgejo-token` is the authentication method.
+- `forgejo.example.org` is the host name of your Forgejo instance, you should replace it with the host name of your Forgejo instance or use `codeberg.org` if you don't have a self-hosted Forgejo instance.
+
+### Manual forgejo-token
+
+```shell
+php composer.phar config [--global] --editor --auth
+```
+
+```json
+{
+    "forgejo-token": {
+        "forgejo.example.org": {
+            "username": "forgejo-user",
+            "token": "access-token"
+        }
+    }
+}
+```

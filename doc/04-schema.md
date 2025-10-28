@@ -428,7 +428,7 @@ dependencies from being installed.
 
 #### conflict
 
-Map of packages that conflict with this version of this package. They
+Map of packages that are incompatible with this version of this package. They
 will not be allowed to be installed together with your package.
 
 Note that when specifying ranges like `<1.0 >=1.1` in a `conflict` link,

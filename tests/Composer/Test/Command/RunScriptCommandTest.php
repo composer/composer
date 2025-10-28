@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\Script\Event as ScriptEvent;
 use Composer\Test\TestCase;
+use Symfony\Component\Console\Exception\CommandNotFoundException;
 
 class RunScriptCommandTest extends TestCase
 {
@@ -135,12 +136,16 @@ class RunScriptCommandTest extends TestCase
         self::assertSame($expectedAliases, $actualAliases, 'The custom aliases for the test command should be printed');
     }
 
-    public function testExecutionOfCustomSymfonyCommand(): void
+    public function testExecutionOfSimpleSymfonyCommand(): void
     {
+        $description = 'Sample description for test command';
         $this->initTempComposer([
             'scripts' => [
                 'test-direct' => 'Test\\MyCommand',
                 'test-ref' => ['@test-direct --inneropt innerarg'],
+            ],
+            'scripts-descriptions' => [
+                'test-direct' => $description
             ],
             'autoload' => [
                 'psr-4' => [
@@ -205,6 +210,83 @@ inneropt: set
 outeropt: set
 ', $appTester->getDisplay(true));
         self::assertSame(2, $appTester->getStatusCode());
+
+        //check if the description from composer.json is correctly shown
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'run-script', '--list' => true]);
+        $appTester->assertCommandIsSuccessful();
+        $output = $appTester->getDisplay();
+        self::assertStringContainsString($description, $output, 'The contents of scripts-description for the test script should be printed');
+    }
+
+    public function testExecutionOfSymfonyCommandWithConfiguration(): void
+    {
+        $cmdName = 'custom-cmd-123';
+        $cmdAlias = "$cmdName-alias";
+        $cmdDesc = 'This is a Symfony command with custom configuration';
+        $wrongDesc = 'this should be ignored';
+
+        $this->initTempComposer([
+            'scripts' => [
+                $cmdName => 'Test\\MyCommandWithDefinitions',
+            ],
+            'scripts-descriptions' => [
+                $cmdName => $wrongDesc,
+            ],
+            'autoload' => [
+                'psr-4' => [
+                    'Test\\' => '',
+                ],
+            ],
+        ]);
+
+        file_put_contents('MyCommandWithDefinitions.php', <<<TEST
+<?php
+
+namespace Test;
+
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Command\Command;
+
+class MyCommandWithDefinitions extends Command
+{
+    protected function configure(): void
+    {
+        \$this
+            ->setDescription('$cmdDesc')
+            ->setAliases(['$cmdAlias'])
+            ->setDefinition([new InputArgument('req-arg', InputArgument::REQUIRED, 'Required arg.')]);
+    }
+
+    public function execute(InputInterface \$input, OutputInterface \$output): int
+    {
+        \$output->writeln(\$input->getArgument('req-arg'));
+        return Command::SUCCESS;
+    }
+}
+
+TEST
+);
+
+        //makes sure the command executes with the name defined inside its `configure()`...
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => $cmdName, 'req-arg' => 'lala']);
+        self::assertSame("lala\n", $appTester->getDisplay(true));
+
+        //...with the alias defined there as well...
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => $cmdAlias, 'req-arg' => 'lala']);
+        self::assertSame("lala\n", $appTester->getDisplay(true));
+
+        //...and also uses its own description, instead of the one in composer.scripts-descriptions
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'run-script', '--list' => true]);
+        $appTester->assertCommandIsSuccessful();
+        $output = $appTester->getDisplay();
+        self::assertStringContainsString($cmdDesc, $output, 'The custom description for the test script should be printed');
+        self::assertStringNotContainsString($wrongDesc, $output, 'The dummy description shouldn\'t show');
     }
 
     /** @return bool[][] **/
