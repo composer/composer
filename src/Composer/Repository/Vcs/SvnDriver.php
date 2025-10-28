@@ -141,7 +141,7 @@ class SvnDriver extends VcsDriver
                 // and fix outdated invalid cache files
                 if ($res === '""') {
                     $res = 'null';
-                    $this->cache->write($identifier.'.json', (string) json_encode(null));
+                    $this->cache->write($identifier.'.json', $res);
                 }
 
                 return $this->infoCache[$identifier] = JsonFile::parseJson($res);
@@ -159,7 +159,7 @@ class SvnDriver extends VcsDriver
             }
 
             if ($this->shouldCache($identifier)) {
-                $this->cache->write($identifier.'.json', (string) json_encode($composer));
+                $this->cache->write($identifier.'.json', JsonFile::encode($composer, \JSON_UNESCAPED_UNICODE|\JSON_UNESCAPED_SLASHES));
             }
 
             $this->infoCache[$identifier] = $composer;
