@@ -170,14 +170,13 @@ class Auditor
             $ignoredPackageNames = $ignoreAbandoned;
         }
 
-        if (\count($ignoreAbandoned) === 0) {
-            return $packages;
+        $filter = null;
+        if (\count($ignoreAbandoned) !== 0) {
+            $filter = BasePackage::packageNamesToRegexp($ignoredPackageNames);
         }
 
-        $filter = BasePackage::packageNamesToRegexp($ignoredPackageNames);
-
         return array_filter($packages, static function (PackageInterface $pkg) use ($filter): bool {
-            return !Preg::isMatch($filter, $pkg->getName());
+            return $pkg instanceof CompletePackageInterface && $pkg->isAbandoned() && ($filter === null || !Preg::isMatch($filter, $pkg->getName()));
         });
     }
 
