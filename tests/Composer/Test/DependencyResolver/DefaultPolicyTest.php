@@ -105,6 +105,77 @@ class DefaultPolicyTest extends TestCase
         self::assertSame($expected, $selected);
     }
 
+    public function testSelectLowestWithPreferStablePrefersDevOverAlphaWhenPreferLowest(): void
+    {
+        $this->repo->addPackage($packageA1 = self::getPackage('A', 'dev-master'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', '1.0.0-alpha1'));
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
+
+        $literals = [$packageA1->getId(), $packageA2->getId()];
+        $expected = [$packageA1->getId()];
+
+        // When prefer-stable and prefer-lowest are both set, and no stable version exists,
+        // dev should be considered more stable than alpha/beta/RC
+        $policy = new DefaultPolicy(true, true);
+        $selected = $policy->selectPreferredPackages($pool, $literals);
+
+        self::assertSame($expected, $selected);
+    }
+
+    public function testSelectLowestWithPreferStablePrefersDevOverBetaWhenPreferLowest(): void
+    {
+        $this->repo->addPackage($packageA1 = self::getPackage('A', 'dev-master'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', '1.0.0-beta1'));
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
+
+        $literals = [$packageA1->getId(), $packageA2->getId()];
+        $expected = [$packageA1->getId()];
+
+        $policy = new DefaultPolicy(true, true);
+        $selected = $policy->selectPreferredPackages($pool, $literals);
+
+        self::assertSame($expected, $selected);
+    }
+
+    public function testSelectLowestWithPreferStablePrefersDevOverRCWhenPreferLowest(): void
+    {
+        $this->repo->addPackage($packageA1 = self::getPackage('A', 'dev-master'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', '1.0.0-RC1'));
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
+
+        $literals = [$packageA1->getId(), $packageA2->getId()];
+        $expected = [$packageA1->getId()];
+
+        $policy = new DefaultPolicy(true, true);
+        $selected = $policy->selectPreferredPackages($pool, $literals);
+
+        self::assertSame($expected, $selected);
+    }
+
+    public function testSelectLowestWithPreferStableStillPrefersStableWhenAvailable(): void
+    {
+        $this->repo->addPackage($packageA1 = self::getPackage('A', '1.0.0'));
+        $this->repo->addPackage($packageA2 = self::getPackage('A', 'dev-master'));
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
+
+        $literals = [$packageA1->getId(), $packageA2->getId()];
+        $expected = [$packageA1->getId()];
+
+        // Stable versions should still be preferred even with preferLowest
+        $policy = new DefaultPolicy(true, true);
+        $selected = $policy->selectPreferredPackages($pool, $literals);
+
+        self::assertSame($expected, $selected);
+    }
+
     public function testSelectNewestWithDevPicksNonDev(): void
     {
         $this->repo->addPackage($packageA1 = self::getPackage('A', 'dev-foo'));

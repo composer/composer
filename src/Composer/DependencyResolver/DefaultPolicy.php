@@ -53,6 +53,14 @@ class DefaultPolicy implements PolicyInterface
     public function versionCompare(PackageInterface $a, PackageInterface $b, string $operator): bool
     {
         if ($this->preferStable && ($stabA = $a->getStability()) !== ($stabB = $b->getStability())) {
+            if ($this->preferLowest && 'stable' !== $stabA && 'stable' !== $stabB) {
+                 // When prefer-lowest is set and no stable version has been released,
+                // "dev" should be considered more stable than "alpha", "beta" or "RC":
+                // this allows testing lowest versions with potential fixes applied
+                $stabA = 'dev' === $stabA ? 'stable' : $stabA;
+                $stabB = 'dev' === $stabB ? 'stable' : $stabB;
+            }
+
             return BasePackage::STABILITIES[$stabA] < BasePackage::STABILITIES[$stabB];
         }
 
