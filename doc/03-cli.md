@@ -1324,6 +1324,14 @@ If set to `1`, it is the equivalent of passing the `--prefer-stable` option to
 If set to `1`, it is the equivalent of passing the `--prefer-lowest` option to
 `update` or `require`.
 
+### COMPOSER_PREFER_DEV_OVER_PRERELEASE
+
+If set to `1`, when resolving dependencies with both `--prefer-stable` and
+`--prefer-lowest` enabled, dev versions are treated as more stable than
+alpha/beta/RC versions in cases where no stable release exists. This is useful
+to test lowest versions while still preferring branches that may contain
+critical fixes over prerelease versions.
+
 ### COMPOSER_MINIMAL_CHANGES
 
 If set to `1`, it is the equivalent of passing the `--minimal-changes` option to
