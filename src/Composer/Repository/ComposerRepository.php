@@ -63,6 +63,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $io;
     /** @var HttpDownloader */
     private $httpDownloader;
+    /** @var Config */
+    private $config;
     /** @var Loop */
     private $loop;
     /** @var Cache */
@@ -185,6 +187,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->versionParser = new VersionParser();
         $this->loader = new ArrayLoader($this->versionParser);
         $this->httpDownloader = $httpDownloader;
+        $this->config = $config;
         $this->eventDispatcher = $eventDispatcher;
         $this->repoConfig = $repoConfig;
         $this->loop = new Loop($this->httpDownloader);
@@ -804,6 +807,18 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         return [];
+    }
+
+    protected function addCacheBust(string $url): string
+    {
+        if ($this->config->has('cache-bust')) {
+            $bust = $this->config->get('cache-bust');
+            if (!empty($bust) && strpos($url, 'cachebust') === false) {
+                $param = 'cachebust=' . $bust;
+                $url .= (strpos($url, '?') === false ? '?' : '&') . $param;
+            }
+        }
+        return $url;
     }
 
     protected function configurePackageTransportOptions(PackageInterface $package): void
@@ -1459,6 +1474,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             throw new \InvalidArgumentException('$filename should not be an empty string');
         }
 
+        $filename = $this->addCacheBust($filename);
+
         if (null === $cacheKey) {
             $cacheKey = $filename;
             $filename = $this->baseUrl.'/'.$filename;
@@ -1473,15 +1490,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         while ($retries--) {
             try {
                 $options = $this->options;
+                $url = $this->addCacheBust($filename);
+
                 if ($this->eventDispatcher) {
-                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', ['repository' => $this]);
+                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $url, 'metadata', ['repository' => $this]);
                     $preFileDownloadEvent->setTransportOptions($this->options);
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
-                    $filename = $preFileDownloadEvent->getProcessedUrl();
+                    $url = $preFileDownloadEvent->getProcessedUrl();
                     $options = $preFileDownloadEvent->getTransportOptions();
                 }
 
-                $response = $this->httpDownloader->get($filename, $options);
+                $response = $this->httpDownloader->get($url, $options);
                 $json = (string) $response->getBody();
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     // undo downgrade before trying again if http seems to be hijacked or modifying content somehow
@@ -1568,11 +1587,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         try {
             $options = $this->options;
+            $url = $this->addCacheBust($filename);
+
             if ($this->eventDispatcher) {
-                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', ['repository' => $this]);
+                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $url, 'metadata', ['repository' => $this]);
                 $preFileDownloadEvent->setTransportOptions($this->options);
                 $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
-                $filename = $preFileDownloadEvent->getProcessedUrl();
+                $url = $preFileDownloadEvent->getProcessedUrl();
                 $options = $preFileDownloadEvent->getTransportOptions();
             }
 
@@ -1646,8 +1667,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $httpDownloader = $this->httpDownloader;
         $options = $this->options;
+        $url = $this->addCacheBust($filename);
+
         if ($this->eventDispatcher) {
-            $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', ['repository' => $this]);
+            $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $url, 'metadata', ['repository' => $this]);
             $preFileDownloadEvent->setTransportOptions($this->options);
             $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
             $filename = $preFileDownloadEvent->getProcessedUrl();

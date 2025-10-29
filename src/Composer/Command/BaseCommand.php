@@ -244,6 +244,11 @@ abstract class BaseCommand extends Command
         if ($composer) {
             $preCommandRunEvent = new PreCommandRunEvent(PluginEvents::PRE_COMMAND_RUN, $input, $this->getName());
             $composer->getEventDispatcher()->dispatch($preCommandRunEvent->getName(), $preCommandRunEvent);
+
+            if ($input->hasParameterOption('--cache-bust')) {
+                $cacheBust = $input->getParameterOption('--cache-bust');
+                $composer->getConfig()->merge(['config' => ['cache-bust' => $cacheBust]], Config::SOURCE_COMMAND);
+            }
         }
 
         if (true === $input->hasParameterOption(['--no-ansi']) && $input->hasOption('no-progress')) {

@@ -59,6 +59,7 @@ class Config
         'sort-packages' => false,
         'optimize-autoloader' => false,
         'classmap-authoritative' => false,
+        'cache-bust' => false,
         'apcu-autoloader' => false,
         'prepend-autoloader' => true,
         'update-with-minimal-changes' => false,
@@ -331,6 +332,7 @@ class Config
                 return (($flags & self::RELATIVE_PATHS) === self::RELATIVE_PATHS) ? $val : $this->realpath($val);
 
             // booleans with env var support
+            case 'cache-bust':
             case 'cache-read-only':
             case 'htaccess-protect':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config

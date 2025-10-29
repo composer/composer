@@ -430,4 +430,27 @@ class ComposerRepositoryTest extends TestCase
             'advisories' => [],
         ], $repository->getSecurityAdvisories(['foo/bar' => new Constraint('=', '1.0.0.0')]));
     }
+
+    public function testCacheBust(): void
+    {
+        $repoConfig = [
+            'url' => 'http://example.org',
+        ];
+
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                ['url' => 'http://example.org/packages.json?cachebust=1', 'body' => '{"packages": []}'],
+            ],
+            true
+        );
+
+        $config = FactoryMock::createConfig();
+        $config->merge(['config' => ['cache-bust' => '1']]);
+
+        $repository = new ComposerRepository($repoConfig, new NullIO, $config, $httpDownloader);
+        $repository->findPackage('foo/bar', new Constraint('=', '1.0.0.0'));
+
+        $httpDownloader->wait();
+    }
 }

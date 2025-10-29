@@ -134,6 +134,8 @@ resolution.
   a `+` makes it only ignore the upper-bound of the requirements. For example, if a package
   requires `php: ^7`, then the option `--ignore-platform-req=php+` would allow installing on PHP 8,
   but installation on PHP 5.6 would still fail.
+* **--cache-bust:** append a URL parameter to bypass the Packagist cache.
+  Only use this when the cache malfunctioning!
 
 ## update / u / upgrade
 
@@ -238,6 +240,8 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
 * **--bump-after-update:** Runs `bump` after performing the update. Set to `dev` or `no-dev` to only bump those dependencies.
+* **--cache-bust:** append a URL parameter to bypass the Packagist cache.
+  Only use this when the cache malfunctioning!
 
 Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has the same effect as specifying the option `--lock`, for example `composer update mirrors` is exactly the same as `composer update --lock`.
 
