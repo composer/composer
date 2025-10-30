@@ -892,9 +892,11 @@ to edit extra fields as json:
 php composer.phar config --json extra.foo.bar '{"baz": true, "qux": []}'
 ```
 
-## repo / repository
+## repository / repo
 
-The `repo` command manages repositories using a syntax similar to `git remote`. It is a friendlier alternative to `composer config repositories.*`.
+The `repo` command lets you manage repositories in your `composer.json`. It is a more powerful alternative to `composer config repositories.*`.
+
+### Usage
 
 ```shell
 php composer.phar repo list
@@ -909,11 +911,13 @@ php composer.phar repo disable packagist
 php composer.phar repo enable packagist
 ```
 
-- Use `--global` to modify the global `$COMPOSER_HOME/config.json`.
-- Use `--file` to modify a specific file instead of composer.json.
-- Use `--append` to add a repository with lower priority (append instead of prepend).
-- Use `--before <name>` to insert the new repository before an existing repository named `<name>`.
-- Use `--after <name>` to insert the new repository after an existing repository named `<name>`. The `<name>` must match an existing repository name.
+### Options
+
+- **--global (-g):** to modify the global `$COMPOSER_HOME/config.json`.
+- **--file (-f):** to modify a specific file instead of composer.json.
+- **--append:** to add a repository with lower priority (by default repositories are prepended and have thus higher priority than existing ones).
+- **--before <name>:** to insert the new repository before an existing repository named `<name>`.
+- **--after <name>:** to insert the new repository after an existing repository named `<name>`. The `<name>` must match an existing repository name.
 
 ## create-project
 
