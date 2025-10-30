@@ -37,17 +37,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  *  - composer repo disable packagist
  *  - composer repo enable packagist
  */
-class RepositoryCommand extends BaseCommand
+class RepositoryCommand extends BaseConfigCommand
 {
-    /** @var Config */
-    private $config;
-
-    /** @var JsonFile */
-    private $configFile;
-
-    /** @var JsonConfigSource */
-    private $configSource;
-
     protected function configure(): void
     {
         $this
@@ -84,43 +75,6 @@ Use --global/-g to alter the global config.json instead.
 Use --file to alter a specific file.
 EOT
             );
-    }
-
-    protected function initialize(InputInterface $input, OutputInterface $output): void
-    {
-        parent::initialize($input, $output);
-
-        if ($input->getOption('global') && null !== $input->getOption('file')) {
-            throw new \RuntimeException('--file and --global can not be combined');
-        }
-
-        $io = $this->getIO();
-        $this->config = Factory::createConfig($io);
-
-        $configFile = $this->getComposerConfigFile($input, $this->config);
-
-        // Create global composer.json if invoked via `composer global repo`
-        if (
-            ($configFile === 'composer.json' || $configFile === './composer.json')
-            && !file_exists($configFile)
-            && realpath(Platform::getCwd()) === realpath($this->config->get('home'))
-        ) {
-            file_put_contents($configFile, "{\n}\n");
-        }
-
-        $this->configFile = new JsonFile($configFile, null, $io);
-        $this->configSource = new JsonConfigSource($this->configFile);
-
-        // Initialize the global file if it's not there
-        if ($input->getOption('global') && !$this->configFile->exists()) {
-            touch($this->configFile->getPath());
-            $this->configFile->write(['config' => new \ArrayObject]);
-            Silencer::call('chmod', $this->configFile->getPath(), 0600);
-        }
-
-        if (!$this->configFile->exists()) {
-            throw new \RuntimeException(sprintf('File "%s" cannot be found in the current directory', $configFile));
-        }
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
