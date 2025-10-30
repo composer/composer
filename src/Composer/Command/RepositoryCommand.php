@@ -20,9 +20,10 @@ use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
-use Symfony\Component\Console\Input\InputArgument;
+use Composer\Console\Input\InputArgument;
+use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -42,18 +43,18 @@ class RepositoryCommand extends BaseConfigCommand
     protected function configure(): void
     {
         $this
-            ->setName('repo')
-            ->setAliases(['repository'])
+            ->setName('repository')
+            ->setAliases(['repo'])
             ->setDescription('Manages repositories')
             ->setDefinition([
                 new InputOption('global', 'g', InputOption::VALUE_NONE, 'Apply command to the global config file'),
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
                 new InputOption('append', null, InputOption::VALUE_NONE, 'When adding a repository, append it (lower priority) instead of prepending it'),
-                new InputOption('before', null, InputOption::VALUE_REQUIRED, 'When adding a repository, insert it before the given repository name'),
-                new InputOption('after', null, InputOption::VALUE_REQUIRED, 'When adding a repository, insert it after the given repository name'),
-                new InputArgument('action', InputArgument::OPTIONAL, 'Action to perform: list, add, remove, set-url, get-url, enable, disable', 'list'),
-                new InputArgument('name', InputArgument::OPTIONAL, 'Repository name (or special name packagist / packagist.org for enable/disable)'),
-                new InputArgument('arg1', InputArgument::OPTIONAL, 'Type for add, or new URL for set-url, or JSON config for add'),
+                new InputOption('before', null, InputOption::VALUE_REQUIRED, 'When adding a repository, insert it before the given repository name', null, $this->suggestRepoNames()),
+                new InputOption('after', null, InputOption::VALUE_REQUIRED, 'When adding a repository, insert it after the given repository name', null, $this->suggestRepoNames()),
+                new InputArgument('action', InputArgument::OPTIONAL, 'Action to perform: list, add, remove, set-url, get-url, enable, disable', 'list', ['list', 'add', 'remove', 'set-url', 'get-url', 'enable', 'disable']),
+                new InputArgument('name', InputArgument::OPTIONAL, 'Repository name (or special name packagist / packagist.org for enable/disable)', null, $this->suggestRepoNames()),
+                new InputArgument('arg1', InputArgument::OPTIONAL, 'Type for add, or new URL for set-url, or JSON config for add', null, $this->suggestTypeForAdd()),
                 new InputArgument('arg2', InputArgument::OPTIONAL, 'URL for add (if not using JSON)'),
             ])
             ->setHelp(<<<EOT
@@ -91,7 +92,7 @@ EOT
             case 'list':
             case 'ls':
             case 'show':
-                $this->listRepositories($repos, $output);
+                $this->listRepositories($repos);
                 return 0;
 
             case 'add':
@@ -140,6 +141,7 @@ EOT
                 return 0;
 
             case 'set-url':
+            case 'seturl':
                 if ($name === null || $arg1 === null) {
                     throw new \RuntimeException('Usage: composer repo set-url <name> <new-url>');
                 }
@@ -148,6 +150,7 @@ EOT
                 return 0;
 
             case 'get-url':
+            case 'geturl':
                 if ($name === null) {
                     throw new \RuntimeException('Usage: composer repo get-url <name>');
                 }
@@ -206,7 +209,7 @@ EOT
     /**
      * @param array<int|string, mixed> $repos
      */
-    private function listRepositories(array $repos, OutputInterface $output): void
+    private function listRepositories(array $repos): void
     {
         $io = $this->getIO();
         if ($repos === []) {
@@ -216,32 +219,61 @@ EOT
 
         foreach ($repos as $key => $repo) {
             if ($repo === false) {
-                $io->write('['.(string) $key.'] <info>disabled</info>', true, IOInterface::QUIET);
+                $io->write('['.$key.'] <info>disabled</info>', true, IOInterface::QUIET);
                 continue;
             }
 
             if (is_array($repo)) {
-                if (1 === count($repo) && false === current($repo)) {
-                    $io->write('['.(string) array_key_first($repo).'] <info>disabled</info>', true, IOInterface::QUIET);
+                if (1 === \count($repo) && false === current($repo)) {
+                    $io->write('['.array_key_first($repo).'] <info>disabled</info>', true, IOInterface::QUIET);
                     continue;
                 }
 
                 $name = $repo['name'] ?? $key;
                 $type = $repo['type'] ?? 'unknown';
                 $url = $repo['url'] ?? JsonFile::encode($repo);
-                $io->write('['.(string) $name.'] <info>'.$type.'</info> '.$url, true, IOInterface::QUIET);
+                $io->write('['.$name.'] <info>'.$type.'</info> '.$url, true, IOInterface::QUIET);
             }
         }
     }
 
-    /**
-     * Get the local composer.json, global config.json, or the file passed by the user
-     */
-    private function getComposerConfigFile(InputInterface $input, Config $config): string
+    private function suggestTypeForAdd(): \Closure
     {
-        return $input->getOption('global')
-            ? ($config->get('home') . '/config.json')
-            : ($input->getOption('file') ?: Factory::getComposerFile())
-            ;
+        return function (CompletionInput $input): array {
+            if ($input->getArgument('action') === 'add') {
+                return ['composer', 'vcs', 'artifact', 'path'];
+            }
+
+            return [];
+        };
+    }
+
+    private function suggestRepoNames(): \Closure
+    {
+        return function (CompletionInput $input): array {
+            if (in_array($input->getArgument('action'), ['enable', 'disable'], true)) {
+                return ['packagist.org'];
+            }
+
+            if (!in_array($input->getArgument('action'), ['remove', 'set-url', 'get-url'], true)) {
+                return [];
+            }
+
+            $config = Factory::createConfig();
+            $configFile = new JsonFile($this->getComposerConfigFile($input, $config));
+
+            $data = $configFile->read();
+            $repos = [];
+
+            foreach (($data['repositories'] ?? []) as $repo) {
+                if (isset($repo['name'])) {
+                    $repos[] = $repo['name'];
+                }
+            }
+
+            sort($repos);
+
+            return $repos;
+        };
     }
 }
