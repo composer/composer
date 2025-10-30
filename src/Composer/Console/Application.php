@@ -654,6 +654,7 @@ class Application extends BaseApplication
             new Command\FundCommand(),
             new Command\ReinstallCommand(),
             new Command\BumpCommand(),
+            new Command\RepositoryCommand(),
             new Command\SelfUpdateCommand(),
         ]);
     }

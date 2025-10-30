@@ -870,7 +870,7 @@ By default Packagist is added last which means that custom repositories can
 override packages from it.
 
 Using JSON object notation is also possible. However, JSON key/value pairs
-are to be considered unordered so consistent behaviour cannot be guaranteed.
+are to be considered unordered so consistent behaviour cannot be guaranteed and is deprecated.
 
 ```json
 {
@@ -880,6 +880,20 @@ are to be considered unordered so consistent behaviour cannot be guaranteed.
             "url": "http://packages.foo.com"
         }
     }
+}
+```
+
+It will be superseded by the name property
+
+```json
+{
+    "repositories": [
+        {
+            "name": "foo",
+            "type": "composer",
+            "url": "http://packages.foo.com"
+        }
+    ]
 }
 ```
 

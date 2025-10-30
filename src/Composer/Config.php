@@ -245,6 +245,7 @@ class Config
             $newRepos = array_reverse($config['repositories'], true);
             foreach ($newRepos as $name => $repository) {
                 // disable a repository by name
+                // this is a code path, that will be used less as the next check will be preferred
                 if (false === $repository) {
                     $this->disableRepoByName((string) $name);
                     continue;
@@ -263,7 +264,11 @@ class Config
 
                 // store repo
                 if (is_int($name)) {
-                    $this->repositories[] = $repository;
+                    if (!isset($this->repositories[$name])) {
+                        $this->repositories[$name] = $repository;
+                    } else {
+                        $this->repositories[] = $repository;
+                    }
                     $this->setSourceOfConfigValue($repository, 'repositories.' . array_search($repository, $this->repositories, true), $source);
                 } else {
                     if ($name === 'packagist') { // BC support for default "packagist" named repo

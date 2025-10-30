@@ -34,7 +34,7 @@ use Composer\Package\BasePackage;
  * @author Joshua Estes <Joshua.Estes@iostudio.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ConfigCommand extends BaseCommand
+class ConfigCommand extends BaseConfigCommand
 {
     /**
      * List of additional configurable package-properties
@@ -55,21 +55,6 @@ class ConfigCommand extends BaseCommand
         'suggest',
         'extra',
     ];
-
-    /**
-     * @var Config
-     */
-    protected $config;
-
-    /**
-     * @var JsonFile
-     */
-    protected $configFile;
-
-    /**
-     * @var JsonConfigSource
-     */
-    protected $configSource;
 
     /**
      * @var JsonFile
@@ -176,51 +161,16 @@ EOT
     {
         parent::initialize($input, $output);
 
-        if ($input->getOption('global') && null !== $input->getOption('file')) {
-            throw new \RuntimeException('--file and --global can not be combined');
-        }
-
-        $io = $this->getIO();
-        $this->config = Factory::createConfig($io);
-
-        // When using --global flag, set baseDir to home directory for correct absolute path resolution
-        if ($input->getOption('global')) {
-            $this->config->setBaseDir($this->config->get('home'));
-        }
-
-        $configFile = $this->getComposerConfigFile($input, $this->config);
-
-        // Create global composer.json if this was invoked using `composer global config`
-        if (
-            ($configFile === 'composer.json' || $configFile === './composer.json')
-            && !file_exists($configFile)
-            && realpath(Platform::getCwd()) === realpath($this->config->get('home'))
-        ) {
-            file_put_contents($configFile, "{\n}\n");
-        }
-
-        $this->configFile = new JsonFile($configFile, null, $io);
-        $this->configSource = new JsonConfigSource($this->configFile);
-
         $authConfigFile = $this->getAuthConfigFile($input, $this->config);
 
-        $this->authConfigFile = new JsonFile($authConfigFile, null, $io);
+        $this->authConfigFile = new JsonFile($authConfigFile, null, $this->getIO());
         $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);
 
         // Initialize the global file if it's not there, ignoring any warnings or notices
-        if ($input->getOption('global') && !$this->configFile->exists()) {
-            touch($this->configFile->getPath());
-            $this->configFile->write(['config' => new \ArrayObject]);
-            Silencer::call('chmod', $this->configFile->getPath(), 0600);
-        }
         if ($input->getOption('global') && !$this->authConfigFile->exists()) {
             touch($this->authConfigFile->getPath());
             $this->authConfigFile->write(['bitbucket-oauth' => new \ArrayObject, 'github-oauth' => new \ArrayObject, 'gitlab-oauth' => new \ArrayObject, 'gitlab-token' => new \ArrayObject, 'http-basic' => new \ArrayObject, 'bearer' => new \ArrayObject, 'forgejo-token' => new \ArrayObject()]);
             Silencer::call('chmod', $this->authConfigFile->getPath(), 0600);
-        }
-
-        if (!$this->configFile->exists()) {
-            throw new \RuntimeException(sprintf('File "%s" cannot be found in the current directory', $configFile));
         }
     }
 
@@ -1033,29 +983,6 @@ EOT
                 $io->write('[<fg=yellow;href=' . $link .'>' . $k . $key . '</>] <info>' . $value . '</info>' . $source, true, IOInterface::QUIET);
             }
         }
-    }
-
-    /**
-     * Get the local composer.json, global config.json, or the file passed by the user
-     */
-    private function getComposerConfigFile(InputInterface $input, Config $config): string
-    {
-        return $input->getOption('global')
-            ? ($config->get('home') . '/config.json')
-            : ($input->getOption('file') ?: Factory::getComposerFile())
-        ;
-    }
-
-    /**
-     * Get the local auth.json or global auth.json, or if the user passed in a file to use,
-     * the corresponding auth.json
-     */
-    private function getAuthConfigFile(InputInterface $input, Config $config): string
-    {
-        return $input->getOption('global')
-            ? ($config->get('home') . '/auth.json')
-            : dirname($this->getComposerConfigFile($input, $config)) . '/auth.json'
-        ;
     }
 
     /**

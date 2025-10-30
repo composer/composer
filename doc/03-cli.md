@@ -892,6 +892,33 @@ to edit extra fields as json:
 php composer.phar config --json extra.foo.bar '{"baz": true, "qux": []}'
 ```
 
+## repository / repo
+
+The `repo` command lets you manage repositories in your `composer.json`. It is a more powerful alternative to `composer config repositories.*`.
+
+### Usage
+
+```shell
+php composer.phar repo list
+php composer.phar repo add foo vcs https://github.com/acme/foo
+php composer.phar repo add bar '{"type":"composer","url":"https://repo.example.org"}'
+php composer.phar repo add baz vcs https://example.org --before foo
+php composer.phar repo add qux vcs https://example.org --after bar
+php composer.phar repo remove foo
+php composer.phar repo set-url foo https://git.example.org/acme/foo
+php composer.phar repo get-url foo
+php composer.phar repo disable packagist
+php composer.phar repo enable packagist
+```
+
+### Options
+
+- **--global (-g):** to modify the global `$COMPOSER_HOME/config.json`.
+- **--file (-f):** to modify a specific file instead of composer.json.
+- **--append:** to add a repository with lower priority (by default repositories are prepended and have thus higher priority than existing ones).
+- **--before <name>:** to insert the new repository before an existing repository named `<name>`.
+- **--after <name>:** to insert the new repository after an existing repository named `<name>`. The `<name>` must match an existing repository name.
+
 ## create-project
 
 You can use Composer to create new projects from an existing package. This is
