@@ -25,7 +25,7 @@ class RepositoryCommandTest extends TestCase
         $appTester->run(['command' => 'repo', 'action' => 'list']);
         $appTester->assertCommandIsSuccessful();
 
-        self::assertStringContainsString('No repositories configured', trim($appTester->getDisplay(true)));
+        self::assertSame('[packagist.org] composer https://repo.packagist.org', trim($appTester->getDisplay(true)));
         // composer.json should remain unchanged
         self::assertSame([], json_decode((string) file_get_contents('composer.json'), true));
     }

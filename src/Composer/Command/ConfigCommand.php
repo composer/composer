@@ -163,7 +163,7 @@ EOT
 
         $authConfigFile = $this->getAuthConfigFile($input, $this->config);
 
-        $this->authConfigFile = new JsonFile($authConfigFile, null, $io);
+        $this->authConfigFile = new JsonFile($authConfigFile, null, $this->getIO());
         $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);
 
         // Initialize the global file if it's not there, ignoring any warnings or notices

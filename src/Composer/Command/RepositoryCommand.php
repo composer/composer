@@ -12,14 +12,10 @@
 
 namespace Composer\Command;
 
-use Composer\Config;
-use Composer\Config\JsonConfigSource;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
-use Composer\Util\Platform;
-use Composer\Util\Silencer;
 use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -85,8 +81,8 @@ EOT
         $arg1 = $input->getArgument('arg1');
         $arg2 = $input->getArgument('arg2');
 
-        $data = $this->configFile->read();
-        $repos = $data['repositories'] ?? [];
+        $this->config->merge($this->configFile->read(), $this->configFile->getPath());
+        $repos = $this->config->getRepositories();
 
         switch ($action) {
             case 'list':
@@ -138,6 +134,10 @@ EOT
                     throw new \RuntimeException('You must pass the repository name to remove.');
                 }
                 $this->configSource->removeRepository((string) $name);
+                if (in_array($name, ['packagist', 'packagist.org'], true)) {
+                    $this->configSource->addRepository('packagist.org', false);
+                }
+
                 return 0;
 
             case 'set-url':
@@ -159,7 +159,7 @@ EOT
                     if (!is_string($url)) {
                         throw new \InvalidArgumentException('The '.$name.' repository does not have a URL');
                     }
-                    $this->getIO()->write($url, true, IOInterface::QUIET);
+                    $this->getIO()->write($url);
                     return 0;
                 }
                 // try named-list: find entry with matching name
@@ -170,7 +170,7 @@ EOT
                             if (!is_string($url)) {
                                 throw new \InvalidArgumentException('The '.$name.' repository does not have a URL');
                             }
-                            $this->getIO()->write($url, true, IOInterface::QUIET);
+                            $this->getIO()->write($url);
                             return 0;
                         }
                     }
@@ -212,27 +212,39 @@ EOT
     private function listRepositories(array $repos): void
     {
         $io = $this->getIO();
+
+        $packagistPresent = false;
+        foreach ($repos as $key => $repo) {
+            if (isset($repo['type'], $repo['url']) && $repo['type'] === 'composer' && str_ends_with((string) parse_url($repo['url'], PHP_URL_HOST), 'packagist.org')) {
+                $packagistPresent = true;
+                break;
+            }
+        }
+        if (!$packagistPresent) {
+            $repos[] = ['packagist.org' => false];
+        }
+
         if ($repos === []) {
-            $io->write('No repositories configured', true, IOInterface::QUIET);
+            $io->write('No repositories configured');
             return;
         }
 
         foreach ($repos as $key => $repo) {
             if ($repo === false) {
-                $io->write('['.$key.'] <info>disabled</info>', true, IOInterface::QUIET);
+                $io->write('['.$key.'] <info>disabled</info>');
                 continue;
             }
 
             if (is_array($repo)) {
                 if (1 === \count($repo) && false === current($repo)) {
-                    $io->write('['.array_key_first($repo).'] <info>disabled</info>', true, IOInterface::QUIET);
+                    $io->write('['.array_key_first($repo).'] <info>disabled</info>');
                     continue;
                 }
 
                 $name = $repo['name'] ?? $key;
                 $type = $repo['type'] ?? 'unknown';
                 $url = $repo['url'] ?? JsonFile::encode($repo);
-                $io->write('['.$name.'] <info>'.$type.'</info> '.$url, true, IOInterface::QUIET);
+                $io->write('['.$name.'] <info>'.$type.'</info> '.$url);
             }
         }
     }

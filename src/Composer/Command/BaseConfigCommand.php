@@ -87,7 +87,7 @@ abstract class BaseConfigCommand extends BaseCommand
     {
         return $input->getOption('global')
             ? ($config->get('home') . '/config.json')
-            : ($input->getOption('file') ?: Factory::getComposerFile())
+            : ($input->getOption('file') ?? Factory::getComposerFile())
         ;
     }
 
