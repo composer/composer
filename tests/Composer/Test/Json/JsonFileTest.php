@@ -410,7 +410,7 @@ class JsonFileTest extends TestCase
 
         $json = (string) file_get_contents(__DIR__ . '/Fixtures/composer-lock-merge-conflict-simple.txt');
 
-        $this->assertEquals($data, JsonFile::parseJson($json));
+        $this->assertEquals($data, JsonFile::parseJson($json, '/path/to/composer.lock'));
     }
 
     public function testComposerLockFileMergeConflictSimpleCRLF(): void
@@ -436,27 +436,37 @@ class JsonFileTest extends TestCase
 
         $json = (string) file_get_contents(__DIR__ . '/Fixtures/composer-lock-merge-conflict-simple.txt');
 
-        $this->assertEquals($data, JsonFile::parseJson($json));
+        $this->assertEquals($data, JsonFile::parseJson($json, '/path/to/composer.lock'));
     }
 
     public function testComposerLockFileMergeConflictComplex(): void
     {
+        // complex files have multiple conflict markers and can thus not be simply resolved
         $data = (string) file_get_contents(__DIR__ . '/Fixtures/composer-lock-merge-conflict-complex.txt');
 
         $this->expectException(ParsingException::class);
         // We don't care here what the error message says, just that there is an exception thrown.
         // Other tests verify that the message text is sensible.
-        JsonFile::parseJson($data);
+        JsonFile::parseJson($data, '/path/to/composer.lock');
     }
 
     public function testComposerLockFileMergeConflictComplexCRLF(): void
     {
+        // complex files have multiple conflict markers and can thus not be simply resolved
         $data = (string) file_get_contents(__DIR__ . '/Fixtures/composer-lock-merge-conflict-complex-crlf.txt');
 
         $this->expectException(ParsingException::class);
         // We don't care here what the error message says, just that there is an exception thrown.
         // Other tests verify that the message text is sensible.
-        JsonFile::parseJson($data);
+        JsonFile::parseJson($data, '/path/to/composer.lock');
+    }
+
+    public function testComposerLockFileMergeConflictExtended(): void
+    {
+        $data = (string) file_get_contents(__DIR__ . '/Fixtures/composer-lock-merge-conflict-extended.txt');
+
+        $json = JsonFile::parseJson($data, '/path/to/composer.lock');
+        self::assertSame('VCS merge conflict detected. Please run `composer update --lock`.', $json['content-hash']);
     }
 
     private function expectParseException(string $text, string $json): void

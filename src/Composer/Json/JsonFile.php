@@ -343,12 +343,20 @@ class JsonFile
         }
         $data = json_decode($json, true);
         if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
-            $lines = explode("\n", $json);
-            if (isset($lines[9]) && strpos($lines[9], '"content-hash": "') !== false && strpos($lines[7], '"content-hash": "') !== false) {
-                // We may have found a git merge conflict in composer.lock. Remove the offending lines and try again.
-                unset($lines[6], $lines[7], $lines[9], $lines[10]);
-                $lines[8] = '    "content-hash": "VCS merge conflict detected. Please run `composer update --lock`.",';
-                return self::parseJson(implode("\n", $lines), $file);
+            if ($file !== null && str_ends_with($file, '.lock') && str_contains($json, '"content-hash"')) {
+                $replaced = Preg::replace(
+                    '{\r?\n<<<<<<< [^\r\n]+\r?\n\s+"content-hash":.*?\r?\n(?:\|{7} [^\r\n]+\r?\n\s+"content-hash":.*?\r?\n)?=======\r?\n\s+"content-hash":.*?\r?\n>>>>>>> [^\r\n]+(\r?\n)}',
+                    '    "content-hash": "VCS merge conflict detected. Please run `composer update --lock`.",$1',
+                    $json,
+                    1,
+                    $count
+                );
+                if ($count === 1) {
+                    $data = json_decode($replaced, true);
+                    if ($data !== null) {
+                        return $data;
+                    }
+                }
             }
 
             self::validateSyntax($json, $file);
