@@ -170,6 +170,51 @@ class ComposerSchemaTest extends TestCase
         self::assertTrue($this->check($json), 'stable');
     }
 
+    public function assertAmbiguousRepositoryNotPossible(): void
+    {
+        $json = '{
+    "repositories": {
+        "foo": {
+            "name": "bar",
+            "type": "path",
+            "url": "vendor/package"
+        }
+    }
+}';
+        self::assertFalse($this->check($json));
+
+        $json = '{
+    "repositories": {
+        "foo": {
+            "type": "path",
+            "url": "vendor/package"
+        }
+    }
+}';
+        self::assertTrue($this->check($json));
+
+        $json = '{
+    "repositories": [
+        {
+            "name": "foo",
+            "type": "path",
+            "url": "vendor/package"
+        }
+    ]
+}';
+        self::assertTrue($this->check($json));
+
+        $json = '{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "vendor/package"
+        }
+    ]
+}';
+        self::assertTrue($this->check($json));
+    }
+
     /**
      * @return mixed
      */

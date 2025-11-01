@@ -194,7 +194,7 @@
             "description": "A set of additional repositories where packages can be found.",
             "additionalProperties": {
                 "anyOf": [
-                    { "$ref": "#/definitions/repository" },
+                    { "$ref": "#/definitions/anonymous-repository" },
                     { "type": "boolean", "enum": [false] }
                 ]
             },
@@ -965,6 +965,12 @@
                 { "$ref": "#/definitions/artifact-repository" },
                 { "$ref": "#/definitions/pear-repository" },
                 { "$ref": "#/definitions/package-repository" }
+            ]
+        },
+        "anonymous-repository": {
+            "allOf": [
+                { "$ref": "#/definitions/repository" },
+                { "not": { "required": ["name"] } }
             ]
         },
         "composer-repository": {
