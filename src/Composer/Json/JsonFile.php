@@ -75,7 +75,14 @@ class JsonFile
         }
         $this->httpDownloader = $httpDownloader;
         $this->io = $io;
-        $this::$envParser = $envParser ?? new JsonEnvParser($io);
+
+        if ($envParser !== null) {
+            self::$envParser = $envParser;
+        } elseif ($io !== null) {
+            self::$envParser = new JsonEnvParser($io);
+        } elseif (self::$envParser === null) {
+            self::$envParser = new JsonEnvParser();
+        }
     }
 
     public function getPath(): string
@@ -343,9 +350,10 @@ class JsonFile
      */
     public static function parseJson(?string $json, ?string $file = null)
     {
-        if (empty(static::$envParser)) {
-            static::$envParser = new JsonEnvParser();
+        if (self::$envParser === null) {
+            self::$envParser = new JsonEnvParser();
         }
+
         if (null === $json) {
             return null;
         }
@@ -353,6 +361,11 @@ class JsonFile
         if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
             self::validateSyntax($json, $file);
         }
+
+        if (!is_array($data)) {
+            return $data;
+        }
+
 
         $data = self::$envParser->apply($data, $file);
 
