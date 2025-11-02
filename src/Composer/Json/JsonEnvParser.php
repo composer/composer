@@ -13,7 +13,7 @@ class JsonEnvParser
 	/** @var IOInterface|null */
 	protected $io;
 
-	/** @var array<string, true> List of env var keys we already warned about */
+	/** @var array<string, true> Map of env/file combinations already warned about */
 	protected static $envVariablesComplainedAbout = [];
 
 	/** @param IOInterface|null $io */
@@ -69,12 +69,13 @@ class JsonEnvParser
 
 		if ($env === false || $env === null || $env === '') {
 			$context = $file !== null ? $file . ': ' : '';
+			$key = ($file ?? '') . '|' . $name;
 
-			if (!in_array($name, self::$envVariablesComplainedAbout)) {
+			if (!isset(self::$envVariablesComplainedAbout[$key])) {
 				if ($this->io !== null) {
 					$this->io->writeError($context . '<warning>Environment variable ' . $name . ' is not defined, please update your .env file</warning>');
 				}
-				self::$envVariablesComplainedAbout[] = $name;
+				self::$envVariablesComplainedAbout[$key] = true;
 			}
 
 			return '${' . $name . '}';
