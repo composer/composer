@@ -52,24 +52,26 @@ class JsonEnvParser
 		return Preg::replaceCallback(
 			'/\$\{([^}]+)\}/',
 			function (array $matches) use ($file): string {
-				return $this->resolvePlaceholder($matches[1], $file);
+				return $this->resolvePlaceholder($matches[1], $matches[0], $file);
 			},
 			$value
 		);
 	}
 
-	/** @return string Resolves a single placeholder to its environment value part of funtion replacePlaceholders. */
-	private function resolvePlaceholder(string $name, ?string $file = null): string
+	/**
+	 * @return string Resolves a single placeholder to its environment value part of funtion replacePlaceholders.
+	 */
+	private function resolvePlaceholder(string $name, string $placeholder, ?string $file = null): string
 	{
 		if ($name === '') {
-			return '';
+			return $placeholder;
 		}
 
 		$env = Platform::getEnv($name);
 
 		if ($env === false || $env === null || $env === '') {
 			$context = $file !== null ? $file . ': ' : '';
-			$key = ($file ?? '') . '|' . $name;
+			$key = ($file ?? '') . '|' . $placeholder;
 
 			if (!isset(self::$envVariablesComplainedAbout[$key])) {
 				if ($this->io !== null) {
@@ -78,7 +80,7 @@ class JsonEnvParser
 				self::$envVariablesComplainedAbout[$key] = true;
 			}
 
-			return '${' . $name . '}';
+			return $placeholder;
 		}
 
 		return (string) $env;
