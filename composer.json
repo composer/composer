@@ -43,7 +43,8 @@
         "symfony/polyfill-php73": "^1.24",
         "symfony/polyfill-php80": "^1.24",
         "symfony/polyfill-php81": "^1.24",
-        "seld/signal-handler": "^2.0"
+        "seld/signal-handler": "^2.0",
+        "vlucas/phpdotenv": "^5.6"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^6.4.25 || ^7.3.3 || ^8.0",

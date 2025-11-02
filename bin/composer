@@ -108,6 +108,12 @@ Platform::putEnv('COMPOSER_BINARY', realpath($_SERVER['argv'][0]));
 
 ErrorHandler::register();
 
+$rootPath = Platform::getCwd();
+if (file_exists($rootPath . '/.env')) {
+    $dotenv = Dotenv\Dotenv::createImmutable($rootPath);
+    $dotenv->load();
+}
+
 // run the command application
 $application = new Application();
 $application->run();
