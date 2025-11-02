@@ -36,6 +36,7 @@ use Composer\Console\Application;
 use Composer\XdebugHandler\XdebugHandler;
 use Composer\Util\Platform;
 use Composer\Util\ErrorHandler;
+use Symfony\Component\Dotenv\Dotenv;
 
 error_reporting(-1);
 
@@ -110,8 +111,8 @@ ErrorHandler::register();
 
 $rootPath = Platform::getCwd();
 if (file_exists($rootPath . '/.env')) {
-    $dotenv = Dotenv\Dotenv::createImmutable($rootPath);
-    $dotenv->load();
+    $dotenv = new Dotenv();
+    $dotenv->load(__DIR__.'/.env');
 }
 
 // run the command application
