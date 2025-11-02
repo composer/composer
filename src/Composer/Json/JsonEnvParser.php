@@ -22,7 +22,10 @@ class JsonEnvParser
 		$this->io = $io;
 	}
 
-	/** @return array<string|int, mixed> Recursively applies environment variables from string like ${EXAMPLE_VALUE} will take EXAMPLE_VALUE from the $_ENV and replace it. */
+	/**
+	 * @param array<string|int, mixed> $data
+	 * @return array<string|int, mixed>
+	 */
 	public function apply(array $data, ?string $file = null): array
 	{
 		$result = [];
@@ -43,7 +46,7 @@ class JsonEnvParser
 		return $result;
 	}
 
-	/** @return string Replaces placeholders within a string value as part of function apply. */
+	/** @return string */
 	private function replacePlaceholders(string $value, ?string $file = null): string
 	{
 		return Preg::replaceCallback(
@@ -58,17 +61,23 @@ class JsonEnvParser
 	/** @return string Resolves a single placeholder to its environment value part of funtion replacePlaceholders. */
 	private function resolvePlaceholder(string $name, ?string $file = null): string
 	{
+		if ($name === '') {
+			return '';
+		}
+
 		$env = Platform::getEnv($name);
 
-		if (empty($env)) {
+		if ($env === false || $env === null || $env === '') {
 			$context = $file !== null ? $file . ': ' : '';
 
 			if (!in_array($name, self::$envVariablesComplainedAbout)) {
-				$this->io->warning($context . 'Environment variable ' . $name . ' is not defined, please update your .env file');
+				if ($this->io !== null) {
+					$this->io->writeError($context . '<warning>Environment variable ' . $name . ' is not defined, please update your .env file</warning>');
+				}
 				self::$envVariablesComplainedAbout[] = $name;
 			}
 
-			return $name;
+			return '${' . $name . '}';
 		}
 
 		return (string) $env;
