@@ -20,7 +20,7 @@ class JsonEnvParser
 		$this->io = $io;
 	}
 
-	public function apply(array $data, string $file = ''): array
+	public function apply(array $data, ?string $file = null): array
 	{
 		$result = [];
 		foreach ($data as $key => $value) {
@@ -40,7 +40,7 @@ class JsonEnvParser
 		return $result;
 	}
 
-	private function replacePlaceholders(string $value, string $file): string
+	private function replacePlaceholders(string $value, ?string $file = null): string
 	{
 		return Preg::replaceCallback(
 			'/\$\{([^}]+)\}/',
@@ -51,7 +51,7 @@ class JsonEnvParser
 		);
 	}
 
-	private function resolvePlaceholder(string $name, string $file): string
+	private function resolvePlaceholder(string $name, ?string $file = null): string
 	{
 		$env = Platform::getEnv($name);
 
