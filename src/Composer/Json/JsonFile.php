@@ -54,6 +54,8 @@ class JsonFile
     private $io;
     /** @var string */
     private $indent = self::INDENT_DEFAULT;
+    /** @var JsonEnvParser */
+    static JsonEnvParser $envParser;
 
     /**
      * Initializes json file reader/parser.
@@ -62,7 +64,7 @@ class JsonFile
      * @param  ?HttpDownloader           $httpDownloader required for loading http/https json files
      * @throws \InvalidArgumentException
      */
-    public function __construct(string $path, ?HttpDownloader $httpDownloader = null, ?IOInterface $io = null)
+    public function __construct(string $path, ?HttpDownloader $httpDownloader = null, ?IOInterface $io = null, ?JsonEnvParser $envParser = null)
     {
         $this->path = $path;
 
@@ -71,6 +73,7 @@ class JsonFile
         }
         $this->httpDownloader = $httpDownloader;
         $this->io = $io;
+        $this::$envParser = $envParser ?? new JsonEnvParser($io);
     }
 
     public function getPath(): string
@@ -345,6 +348,8 @@ class JsonFile
         if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
             self::validateSyntax($json, $file);
         }
+
+        $data = self::$envParser->apply($data, $file);
 
         return $data;
     }
