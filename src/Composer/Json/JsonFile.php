@@ -56,8 +56,8 @@ class JsonFile
     private $io;
     /** @var string */
     private $indent = self::INDENT_DEFAULT;
-    /** @var JsonEnvParser */
-    static JsonEnvParser $envParser;
+    /** @var JsonEnvParser|null */
+    private static $envParser = null;
 
     /**
      * Initializes json file reader/parser.

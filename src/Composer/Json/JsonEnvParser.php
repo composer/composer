@@ -11,15 +11,18 @@ use Composer\Util\Platform;
 class JsonEnvParser
 {
 	/** @var IOInterface|null */
-	protected ?IOInterface $io;
+	protected $io;
 
-	protected static array $envVariablesComplainedAbout = [];
+	/** @var array<string, true> List of env var keys we already warned about */
+	protected static $envVariablesComplainedAbout = [];
 
+	/** @param IOInterface|null $io */
 	public function __construct(?IOInterface $io = null)
 	{
 		$this->io = $io;
 	}
 
+	/** @return array<string|int, mixed> Recursively applies environment variables from string like ${EXAMPLE_VALUE} will take EXAMPLE_VALUE from the $_ENV and replace it. */
 	public function apply(array $data, ?string $file = null): array
 	{
 		$result = [];
@@ -40,6 +43,7 @@ class JsonEnvParser
 		return $result;
 	}
 
+	/** @return string Replaces placeholders within a string value as part of function apply. */
 	private function replacePlaceholders(string $value, ?string $file = null): string
 	{
 		return Preg::replaceCallback(
@@ -51,6 +55,7 @@ class JsonEnvParser
 		);
 	}
 
+	/** @return string Resolves a single placeholder to its environment value part of funtion replacePlaceholders. */
 	private function resolvePlaceholder(string $name, ?string $file = null): string
 	{
 		$env = Platform::getEnv($name);
