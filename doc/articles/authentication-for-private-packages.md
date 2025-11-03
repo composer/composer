@@ -61,6 +61,7 @@ For all authentication methods it is possible to edit them using the command lin
 - [gitlab-token](#command-line-gitlab-token)
 - [github-oauth](#command-line-github-oauth)
 - [bitbucket-oauth](#command-line-bitbucket-oauth)
+- [forgejo-token](#command-line-forgejo-token)
 
 ### Manually editing global authentication credentials
 
@@ -84,6 +85,8 @@ For specific authentication implementations, see their sections;
 - [gitlab-token](#manual-gitlab-token)
 - [github-oauth](#manual-github-oauth)
 - [bitbucket-oauth](#manual-bitbucket-oauth)
+- [Client TLS certificates](#manual-client-certificates)
+- [forgejo-token](#manual-forgejo-token)
 
 Manually editing this file instead of using the command line may result in invalid json errors.
 To fix this you need to open the file in an editor and fix the error. To find the location of
