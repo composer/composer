@@ -76,7 +76,7 @@ class SecurityAdvisoryPoolFilter
                 continue;
             }
 
-            $matchingAdvisories = $this->getPackageMatchAdvisories($package, $advisoryMap);
+            $matchingAdvisories = $this->getMatchingAdvisories($package, $advisoryMap);
             if (count($matchingAdvisories) > 0) {
                 foreach ($package->getNames(false) as $packageName) {
                     $securityRemovedVersions[$packageName][$package->getVersion()] = $matchingAdvisories;
@@ -95,7 +95,7 @@ class SecurityAdvisoryPoolFilter
      * @param array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> $advisoryMap
      * @return list<PartialSecurityAdvisory|SecurityAdvisory>
      */
-    private function getPackageMatchAdvisories(PackageInterface $package, array $advisoryMap): array
+    private function getMatchingAdvisories(PackageInterface $package, array $advisoryMap): array
     {
         if ($package->isDev()) {
             return [];
