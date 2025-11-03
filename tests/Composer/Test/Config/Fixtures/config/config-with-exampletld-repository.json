@@ -1,10 +1,11 @@
 {
     "name": "my-vend/my-app",
     "license": "MIT",
-    "repositories": {
-        "example_tld": {
+    "repositories": [
+        {
+            "name": "example_tld",
             "type": "git",
             "url": "example.tld"
         }
-    }
+    ]
 }

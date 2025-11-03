@@ -61,8 +61,8 @@ class ConfigTest extends TestCase
 
         $data['local config adds above defaults'] = [
             [
-                1 => ['type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'],
-                0 => ['type' => 'pear', 'url' => 'http://pear.composer.org'],
+                0 => ['type' => 'vcs', 'url' => 'git://github.com/composer/composer.git'],
+                1 => ['type' => 'pear', 'url' => 'http://pear.composer.org'],
                 'packagist.org' => ['type' => 'composer', 'url' => 'https://repo.packagist.org'],
             ],
             [
@@ -84,7 +84,7 @@ class ConfigTest extends TestCase
 
         $data['local config can disable repos by name and re-add them anonymously to bring them above system config'] = [
             [
-                0 => ['type' => 'composer', 'url' => 'http://packagist.org'],
+                1 => ['type' => 'composer', 'url' => 'http://packagist.org'],
                 'example.com' => ['type' => 'composer', 'url' => 'http://example.com'],
             ],
             [
@@ -415,6 +415,7 @@ class ConfigTest extends TestCase
             'github-oauth',
             'gitlab-oauth',
             'gitlab-token',
+            'forgejo-token',
             'http-basic',
             'bearer',
         ];

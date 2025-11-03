@@ -447,6 +447,24 @@
                         "abandoned": {
                             "enum": ["ignore", "report", "fail"],
                             "description": "Whether abandoned packages should be ignored, reported as problems or cause an audit failure."
+                        },
+                        "ignore-abandoned": {
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "description": "A list of abandoned package names (as key) mapping to a reason explaining why they are ignored.",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                {
+                                    "type": "array",
+                                    "description": "A set of abandoned package names that are reported but let the audit command pass.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ]
                         }
                     }
                 },
@@ -527,6 +545,24 @@
                         "items": {
                             "type": "string",
                             "description": "A header in format 'Header-Name: Header-Value'"
+                        }
+                    }
+                },
+                "forgejo-token": {
+                    "type": "object",
+                    "description": "An object of domain name => forgejo username/access token, typically {\"codeberg.org\":{\"username\": \"<username>\", \"token\": \"<access-token>\"}}.",
+                    "additionalProperties": {
+                        "type": ["object"],
+                        "required": ["username", "token"],
+                        "properties": {
+                            "username": {
+                                "type": "string",
+                                "description": "The username used for Forgejo authentication"
+                            },
+                            "token": {
+                                "type": "string",
+                                "description": "The access token used for Forgejo authentication"
+                            }
                         }
                     }
                 },
@@ -683,6 +719,13 @@
                 "gitlab-domains": {
                     "type": "array",
                     "description": "A list of domains to use in gitlab mode. This is used for custom GitLab setups, defaults to [\"gitlab.com\"].",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "forgejo-domains": {
+                    "type": "array",
+                    "description": "A list of domains to use in forgejo mode. This is used for custom Forgejo setups, defaults to [\"codeberg.org\"].",
                     "items": {
                         "type": "string"
                     }
@@ -928,6 +971,7 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
+                "name": { "type":  "string" },
                 "type": { "type": "string", "enum": ["composer"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
@@ -955,7 +999,8 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
-                "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "bitbucket", "git-bitbucket", "hg", "fossil", "perforce", "svn"] },
+                "name": { "type":  "string" },
+                "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "bitbucket", "git-bitbucket", "hg", "fossil", "perforce", "svn", "forgejo"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
                 "only": {
@@ -988,6 +1033,7 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
+                "name": { "type":  "string" },
                 "type": { "type": "string", "enum": ["path"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
@@ -1019,6 +1065,7 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
+                "name": { "type":  "string" },
                 "type": { "type": "string", "enum": ["artifact"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
@@ -1040,6 +1087,7 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
+                "name": { "type":  "string" },
                 "type": { "type": "string", "enum": ["pear"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
@@ -1062,6 +1110,7 @@
             "type": "object",
             "required": ["type", "package"],
             "properties": {
+                "name": { "type":  "string" },
                 "type": { "type": "string", "enum": ["package"] },
                 "canonical": { "type": "boolean" },
                 "only": {

@@ -17,6 +17,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Util\Platform;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -28,6 +29,8 @@ class DefaultPolicy implements PolicyInterface
     private $preferStable;
     /** @var bool */
     private $preferLowest;
+    /** @var bool */
+    private $preferDevOverPrerelease;
     /** @var array<string, string>|null */
     private $preferredVersions;
     /** @var array<int, array<string, non-empty-list<int>>> */
@@ -43,6 +46,7 @@ class DefaultPolicy implements PolicyInterface
         $this->preferStable = $preferStable;
         $this->preferLowest = $preferLowest;
         $this->preferredVersions = $preferredVersions;
+        $this->preferDevOverPrerelease = (bool) Platform::getEnv('COMPOSER_PREFER_DEV_OVER_PRERELEASE');
     }
 
     /**
@@ -53,6 +57,14 @@ class DefaultPolicy implements PolicyInterface
     public function versionCompare(PackageInterface $a, PackageInterface $b, string $operator): bool
     {
         if ($this->preferStable && ($stabA = $a->getStability()) !== ($stabB = $b->getStability())) {
+            if ($this->preferLowest && $this->preferDevOverPrerelease && 'stable' !== $stabA && 'stable' !== $stabB) {
+                // When COMPOSER_PREFER_DEV_OVER_PRERELEASE is set and no stable version has been
+                // released, "dev" should be considered more stable than "alpha", "beta" or "RC";
+                // this allows testing lowest versions with potential fixes applied
+                $stabA = 'dev' === $stabA ? 'stable' : $stabA;
+                $stabB = 'dev' === $stabB ? 'stable' : $stabB;
+            }
+
             return BasePackage::STABILITIES[$stabA] < BasePackage::STABILITIES[$stabB];
         }
 

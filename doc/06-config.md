@@ -171,6 +171,34 @@ Since Composer 2.8, the option can be overridden via the
 [`--abandoned`](03-cli.md#audit) command line option, which overrides both the
 config value and the environment variable.
 
+### ignore-abandoned
+
+A list of abandoned package names that are reported but let the audit command pass.
+
+```json
+{
+    "config": {
+        "audit": {
+            "ignore-abandoned": {
+                "acme/*": "Work schedule for removal next month.",
+                "acme/package": "The package is not in use"
+            }
+        }
+    }
+}
+```
+
+or
+
+```json
+{
+    "config": {
+        "audit": {
+            "ignore-abandoned": ["acme/*", "acme/package"]
+        }
+    }
+}
+```
 
 ## use-parent-dir
 
@@ -245,6 +273,22 @@ private repositories which will later be cloned in GitLab CI jobs with a
 [GitLab CI_JOB_TOKEN](https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference)
 using HTTP basic auth. By default, Composer will generate a git-over-SSH
 URL for private repositories and HTTP(S) only for public.
+
+## forgejo-domains
+
+Defaults to `["codeberg.org"]`. A list of domains of Forgejo servers.
+This is used if you use the `forgejo` repository type.
+
+## forgejo-token
+
+A list of domain names and username/access-tokens to authenticate against them. For
+example using `{"codeberg.org": {"username": "forgejo-user", "token": "access-token"}}` as the
+value of this option will let Composer authenticate against codeberg.org.
+Please note: If the package is not hosted at
+codeberg.org the domain names must be also specified with the
+[`forgejo-domains`](06-config.md#forgejo-domains) option.
+Further info can also be found [here](articles/authentication-for-private-packages.md#forgejo-token)
+
 
 ## disable-tls
 
