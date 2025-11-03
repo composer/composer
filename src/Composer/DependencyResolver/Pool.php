@@ -86,6 +86,14 @@ class Pool implements \Countable
     }
 
     /**
+     * @return array<string, array<string, string>>
+     */
+    public function getAllRemovedVersions(): array
+    {
+        return $this->removedVersions;
+    }
+
+    /**
      * @return array<string, string>
      */
     public function getRemovedVersionsByPackage(string $objectHash): array
@@ -95,6 +103,14 @@ class Pool implements \Countable
         }
 
         return $this->removedVersionsByPackage[$objectHash];
+    }
+
+    /**
+     * @return array<string, array<string, string>>
+     */
+    public function getAllRemovedVersionsByPackage(): array
+    {
+        return $this->removedVersionsByPackage;
     }
 
     public function isSecurityRemovedPackageVersion(string $packageName, ?ConstraintInterface $constraint): bool

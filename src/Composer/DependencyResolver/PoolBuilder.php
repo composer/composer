@@ -350,8 +350,8 @@ class PoolBuilder
 
         $this->io->debug('Built pool.');
 
-        $pool = $this->runSecurityAdvisoryFilter($pool, $repositories);
         $pool = $this->runOptimizer($request, $pool);
+        $pool = $this->runSecurityAdvisoryFilter($pool, $repositories);
 
         Intervals::clear();
 
