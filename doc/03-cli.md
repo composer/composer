@@ -1043,10 +1043,13 @@ Lists the name, version and license of every package installed. Use
 
 ### Options
 
-* **--format:** Format of the output: text, json or summary (default: "text")
-* **--no-dev:** Remove dev dependencies from the output
+* **--format:** Format of the output: text, json or summary (default: "text").
+* **--no-dev:** Remove dev dependencies from the output.
 
 ## run-script / run
+
+To run [scripts](articles/scripts.md) manually you can use this command,
+give it the script name and optionally any required arguments.
 
 ### Options
 
@@ -1054,9 +1057,6 @@ Lists the name, version and license of every package installed. Use
 * **--dev:** Sets the dev mode.
 * **--no-dev:** Disable dev mode.
 * **--list (-l):** List user defined scripts.
-
-To run [scripts](articles/scripts.md) manually you can use this command,
-give it the script name and optionally any required arguments.
 
 ## exec
 
