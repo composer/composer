@@ -20,6 +20,7 @@ for credentials and save them (or a token if Composer is able to retrieve one).
 |       [Inline http-basic](#inline-http-basic)       |          no          |
 |             [HTTP Bearer](#http-bearer)             |          no          |
 |          [Custom Headers](#custom-headers)          |          no          |
+|   [Inline Custom Headers](#inline-custom-headers)   |          no          |
 |            [gitlab-oauth](#gitlab-oauth)            |         yes          |
 |            [gitlab-token](#gitlab-token)            |         yes          |
 |            [github-oauth](#github-oauth)            |         yes          |
@@ -78,6 +79,7 @@ For specific authentication implementations, see their sections;
 - [Inline http-basic](#manual-inline-http-basic)
 - [HTTP Bearer](#manual-http-bearer-authentication)
 - [Custom Headers](#manual-custom-headers)
+- [Inline Custom Headers](#manual-inline-custom-headers)
 - [gitlab-oauth](#manual-gitlab-oauth)
 - [gitlab-token](#manual-gitlab-token)
 - [github-oauth](#manual-github-oauth)
@@ -357,7 +359,8 @@ Classic tokens are broader and less secure, whereas Fine-grained tokens can stri
 applies to, as well as which permissions it is granted for each property of the repository.
 
 > **Note:** It
-> is [recommended](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#types-of-personal-access-tokens)
+>
+is [recommended](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#types-of-personal-access-tokens)
 > to use the fine-grained tokens,
 > as you can have much tighter control over what is accessed and by whom.
 
