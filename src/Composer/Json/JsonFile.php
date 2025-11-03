@@ -343,9 +343,10 @@ class JsonFile
         }
         $data = json_decode($json, true);
         if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
+            // attempt resolving simple conflicts in lock files so that one can run `composer update --lock` and get a valid lock file
             if ($file !== null && str_ends_with($file, '.lock') && str_contains($json, '"content-hash"')) {
                 $replaced = Preg::replace(
-                    '{\r?\n<<<<<<< [^\r\n]+\r?\n\s+"content-hash":.*?\r?\n(?:\|{7} [^\r\n]+\r?\n\s+"content-hash":.*?\r?\n)?=======\r?\n\s+"content-hash":.*?\r?\n>>>>>>> [^\r\n]+(\r?\n)}',
+                    '{\r?\n<<<<<<< [^\r\n]+\r?\n\s+"content-hash": *"[0-9a-f]+", *\r?\n(?:\|{7} [^\r\n]+\r?\n\s+"content-hash": *"[0-9a-f]+", *\r?\n)?=======\r?\n\s+"content-hash": *"[0-9a-f]+", *\r?\n>>>>>>> [^\r\n]+(\r?\n)}',
                     '    "content-hash": "VCS merge conflict detected. Please run `composer update --lock`.",$1',
                     $json,
                     1,
