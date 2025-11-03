@@ -78,12 +78,12 @@ class AuditConfig
 
         return new self(
             $auditConfig['ignore'] ?? [],
-                $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL,
-                (bool) ($auditConfig['block-insecure'] ?? true),
-                (bool) ($auditConfig['block-abandoned'] ?? false),
-                $auditConfig['ignore-severity'] ?? [],
-                (bool) ($auditConfig['ignore-unreachable'] ?? false),
-                $auditConfig['ignore-abandoned'] ?? []
+            $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL,
+            (bool) ($auditConfig['block-insecure'] ?? true),
+            (bool) ($auditConfig['block-abandoned'] ?? false),
+            $auditConfig['ignore-severity'] ?? [],
+            (bool) ($auditConfig['ignore-unreachable'] ?? false),
+            $auditConfig['ignore-abandoned'] ?? []
         );
     }
 }

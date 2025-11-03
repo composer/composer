@@ -173,7 +173,7 @@ config value and the environment variable.
 
 ### ignore-severity
 
-A list of severity levels that let the audit command pass even if there are security advisories
+Defaults to `[]`. A list of severity levels that let the audit command pass even if there are security advisories
 with the given severity.
 
 ```json
@@ -188,7 +188,7 @@ with the given severity.
 
 ### ignore-unreachable
 
-Should unreachable repositories be ignored during a `composer audit`. This can be helpful if you are running the command
+Defaults to `false`. Should unreachable repositories be ignored during a `composer audit`. This can be helpful if you are running the command
 in an environment from which not all repositories can be accessed.
 
 ```json

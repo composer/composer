@@ -42,7 +42,7 @@ class Pool implements \Countable
     protected $removedVersions = [];
     /** @var array<string, array<string, string>> Map of package object hash => removed normalized versions => removed pretty version */
     protected $removedVersionsByPackage = [];
-    /** @var array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> Map of package name => normalized version => pretty version */
+    /** @var array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> Map of package name => normalized version => security advisories */
     private $securityRemovedVersions = [];
     /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
     private $abandonedRemovedVersions = [];

@@ -24,6 +24,9 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 
+/**
+ * @internal
+ */
 class SecurityAdvisoryPoolFilter
 {
     /** @var Auditor */
