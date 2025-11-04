@@ -79,7 +79,9 @@ or another constraint if you want really specific versions.
 
 Once you've done this, you run:
 
-    php bin/satis build <configuration file> <build dir>
+```bash
+php bin/satis build <configuration file> <build dir>
+```
 
 When you ironed out that process, what you would typically do is run this
 command as a cron job on a server. It would then update all your package info
