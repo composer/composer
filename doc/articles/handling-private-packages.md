@@ -108,7 +108,9 @@ rebuilds whenever code is pushed into one of your repositories.
 To rebuild only particular packages, pass the package names on the command line
 like so:
 
-    php bin/satis build satis.json web/ this/package that/other-package
+```bash
+php bin/satis build satis.json web/ this/package that/other-package
+```
 
 Note that this will still need to pull and scan all of your VCS repositories
 because any VCS repository might contain (on any branch) one of the selected
@@ -130,7 +132,9 @@ to declare a *name* for all your package (this only work on VCS repositories typ
 If you want to scan only a single repository and update all packages found in
 it, pass the VCS repository URL as an optional argument:
 
-    php bin/satis build --repository-url https://only.my/repo.git satis.json web/
+```bash
+php bin/satis build --repository-url https://only.my/repo.git satis.json web/
+```
 
 ## Usage
 
@@ -175,7 +179,7 @@ Example using a custom repository using SSH (requires the SSH2 PECL extension):
 }
 ```
 
-> **Tip:** See [ssh2 context options] for more information.
+> **Tip:** See [ssh2 context options](https://secure.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options) for more information.
 
 Example using SSL/TLS (HTTPS) using a client certificate:
 
@@ -193,7 +197,7 @@ Example using SSL/TLS (HTTPS) using a client certificate:
 }
 ```
 
-> **Tip:** See [ssl context options] for more information.
+> **Tip:** See [ssl context options](https://secure.php.net/manual/en/context.ssl.php) for more information.
 
 Example using a custom HTTP Header field for token authentication:
 
@@ -277,7 +281,7 @@ Example: A `prefix-url` of `https://my-bucket.s3.amazonaws.com` (and
 
  * `output-html`: optional, `true` by default, when disabled (`false`) satis
    will not generate the `output-dir`/index.html page.
- * `twig-template`: optional, a path to a personalized [Twig] template for
+ * `twig-template`: optional, a path to a personalized [Twig](https://twig.sensiolabs.org/) template for
    the `output-dir`/index.html page.
 
 ### Abandoned packages
@@ -331,12 +335,6 @@ is set to true.
    provided as an argument when calling the `build` command.
  * `config`: optional, lets you define all config options from composer, except
    `archive-format` and `archive-dir` as the configuration is done through
-   [archive](#downloads) instead. See docs on [config schema] for more details.
+   [archive](#downloads) instead. See docs on [config schema](../06-config.md) for more details.
  * `notify-batch`: optional, specify a URL that will be called every time a
-   user installs a package. See [notify-batch].
-
-[ssh2 context options]: https://secure.php.net/manual/en/wrappers.ssh2.php#refsect1-wrappers.ssh2-options
-[ssl context options]: https://secure.php.net/manual/en/context.ssl.php
-[Twig]: https://twig.sensiolabs.org/
-[config schema]: https://getcomposer.org/doc/04-schema.md#config
-[notify-batch]: https://getcomposer.org/doc/05-repositories.md#notify-batch
+   user installs a package. See [notify-batch](../05-repositories.md#notify-batch).
