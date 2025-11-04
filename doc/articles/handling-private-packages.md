@@ -79,7 +79,7 @@ or another constraint if you want really specific versions.
 
 Once you've done this, you run:
 
-```bash
+```shell
 php bin/satis build <configuration file> <build dir>
 ```
 
@@ -108,7 +108,7 @@ rebuilds whenever code is pushed into one of your repositories.
 To rebuild only particular packages, pass the package names on the command line
 like so:
 
-```bash
+```shell
 php bin/satis build satis.json web/ this/package that/other-package
 ```
 
@@ -132,7 +132,7 @@ to declare a *name* for all your package (this only work on VCS repositories typ
 If you want to scan only a single repository and update all packages found in
 it, pass the VCS repository URL as an optional argument:
 
-```bash
+```shell
 php bin/satis build --repository-url https://only.my/repo.git satis.json web/
 ```
 
