@@ -280,9 +280,9 @@ Example: A `prefix-url` of `https://my-bucket.s3.amazonaws.com` (and
 ### Web outputs
 
  * `output-html`: optional, `true` by default, when disabled (`false`) satis
-   will not generate the `output-dir`/index.html page.
+   will not generate the `output-dir/index.html` page.
  * `twig-template`: optional, a path to a personalized [Twig](https://twig.sensiolabs.org/) template for
-   the `output-dir`/index.html page.
+   the `output-dir/index.html` page.
 
 ### Abandoned packages
 
