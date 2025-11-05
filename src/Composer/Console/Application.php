@@ -656,6 +656,7 @@ class Application extends BaseApplication
             new Command\BumpCommand(),
             new Command\RepositoryCommand(),
             new Command\SelfUpdateCommand(),
+            new Command\ListPlatformReqsCommand(),
         ]);
     }
 
