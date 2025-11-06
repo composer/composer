@@ -176,7 +176,7 @@ class InitCommandTest extends TestCase
                     ],
                 ],
             ],
-            ['--name' => 'test/pkg', '--author' => 'Mr. Test <test@example.org>']
+            ['--name' => 'test/pkg', '--author' => 'Mr. Test <test@example.org>'],
         ];
         yield 'name and author arguments without email' => [
             [
@@ -188,7 +188,7 @@ class InitCommandTest extends TestCase
                     ],
                 ],
             ],
-            ['--name' => 'test/pkg', '--author' => 'Mr. Test']
+            ['--name' => 'test/pkg', '--author' => 'Mr. Test'],
         ];
         yield 'single repository argument' => [
             [
@@ -343,7 +343,6 @@ class InitCommandTest extends TestCase
      * @dataProvider runInvalidDataProvider
      *
      * @param class-string<\Throwable>|null $exception
-     * @param string|null $message
      * @param array<string, mixed> $arguments
      */
     public function testRunCommandInvalid(?string $exception, ?string $message, array $arguments): void
@@ -375,12 +374,12 @@ class InitCommandTest extends TestCase
     public static function runInvalidDataProvider(): iterable
     {
         yield 'invalid name argument' => [
-            \InvalidArgumentException::class,
+            InvalidArgumentException::class,
             null,
             ['--name' => 'test'],
         ];
         yield 'invalid author argument' => [
-            \InvalidArgumentException::class,
+            InvalidArgumentException::class,
             null,
             ['--name' => 'test/pkg', '--author' => 'Mr. Test <test>'],
         ];

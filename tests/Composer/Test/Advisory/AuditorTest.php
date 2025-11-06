@@ -95,7 +95,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                 ],
                 'warningOnly' => false,
                 'abandoned' => Auditor::ABANDONED_FAIL,
-                'ignore-abandoned' => ['vendor/*']
+                'ignore-abandoned' => ['vendor/*'],
             ],
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.',
@@ -109,7 +109,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                 ],
                 'warningOnly' => false,
                 'abandoned' => Auditor::ABANDONED_FAIL,
-                'ignore-abandoned' => [$abandonedWithReplacement->getName(), $abandonedNoReplacement->getName()]
+                'ignore-abandoned' => [$abandonedWithReplacement->getName(), $abandonedNoReplacement->getName()],
             ],
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.',
@@ -123,7 +123,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                 ],
                 'warningOnly' => false,
                 'abandoned' => Auditor::ABANDONED_FAIL,
-                'ignore-abandoned' => ['acme/test']
+                'ignore-abandoned' => ['acme/test'],
             ],
             'expected' => Auditor::STATUS_ABANDONED,
             'output' => 'No security vulnerability advisories found.
@@ -447,7 +447,7 @@ Found 2 abandoned packages:
             ->getMock();
 
         $repoSet->method('getMatchingSecurityAdvisories')
-            ->willReturnCallback(function ($packages, $allowPartialAdvisories, $ignoreUnreachable) use ($errorMessage) {
+            ->willReturnCallback(static function ($packages, $allowPartialAdvisories, $ignoreUnreachable) use ($errorMessage) {
                 if (!$ignoreUnreachable) {
                     throw new \Composer\Downloader\TransportException($errorMessage, 404);
                 }
@@ -478,10 +478,10 @@ Found 2 abandoned packages:
                                 'CVE-2023-67890',
                                 'https://example.com/advisory/3',
                                 'high'
-                            )
-                        ]
+                            ),
+                        ],
                     ],
-                    'unreachableRepos' => [$errorMessage]
+                    'unreachableRepos' => [$errorMessage],
                 ];
             });
 

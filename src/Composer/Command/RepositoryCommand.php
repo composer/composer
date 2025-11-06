@@ -13,7 +13,6 @@
 namespace Composer\Command;
 
 use Composer\Factory;
-use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
 use Composer\Console\Input\InputArgument;
@@ -89,6 +88,7 @@ EOT
             case 'ls':
             case 'show':
                 $this->listRepositories($repos);
+
                 return 0;
 
             case 'add':
@@ -121,10 +121,12 @@ EOT
                     }
 
                     $this->configSource->insertRepository((string) $name, $repoConfig, $before ?? $after, $after !== null ? 1 : 0);
+
                     return 0;
                 }
 
                 $this->configSource->addRepository((string) $name, $repoConfig, (bool) $input->getOption('append'));
+
                 return 0;
 
             case 'remove':
@@ -147,6 +149,7 @@ EOT
                 }
 
                 $this->configSource->setRepositoryUrl($name, $arg1);
+
                 return 0;
 
             case 'get-url':
@@ -160,6 +163,7 @@ EOT
                         throw new \InvalidArgumentException('The '.$name.' repository does not have a URL');
                     }
                     $this->getIO()->write($url);
+
                     return 0;
                 }
                 // try named-list: find entry with matching name
@@ -171,6 +175,7 @@ EOT
                                 throw new \InvalidArgumentException('The '.$name.' repository does not have a URL');
                             }
                             $this->getIO()->write($url);
+
                             return 0;
                         }
                     }
@@ -185,6 +190,7 @@ EOT
                 if (in_array($name, ['packagist', 'packagist.org'], true)) {
                     // special handling mirrors ConfigCommand behavior
                     $this->configSource->addRepository('packagist.org', false, (bool) $input->getOption('append'));
+
                     return 0;
                 }
                 throw new \RuntimeException('Only packagist can be enabled/disabled using this command. Use add/remove for other repositories.');
@@ -197,6 +203,7 @@ EOT
                     // Remove a false flag by setting packagist.org to true via removing the key
                     // Here we re-add the default by removing overrides
                     $this->configSource->removeRepository('packagist.org');
+
                     return 0;
                 }
                 throw new \RuntimeException('Only packagist can be enabled/disabled using this command.');
@@ -226,6 +233,7 @@ EOT
 
         if ($repos === []) {
             $io->write('No repositories configured');
+
             return;
         }
 
@@ -251,7 +259,7 @@ EOT
 
     private function suggestTypeForAdd(): \Closure
     {
-        return function (CompletionInput $input): array {
+        return static function (CompletionInput $input): array {
             if ($input->getArgument('action') === 'add') {
                 return ['composer', 'vcs', 'artifact', 'path'];
             }

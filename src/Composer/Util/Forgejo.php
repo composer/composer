@@ -29,11 +29,6 @@ final class Forgejo
     /** @var HttpDownloader */
     private $httpDownloader;
 
-    /**
-     * @param IOInterface     $io
-     * @param Config          $config
-     * @param HttpDownloader  $httpDownloader
-     */
     public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader)
     {
         $this->io = $io;

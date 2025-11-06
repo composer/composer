@@ -16,7 +16,6 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\Script\Event as ScriptEvent;
 use Composer\Test\TestCase;
-use Symfony\Component\Console\Exception\CommandNotFoundException;
 
 class RunScriptCommandTest extends TestCase
 {
@@ -145,7 +144,7 @@ class RunScriptCommandTest extends TestCase
                 'test-ref' => ['@test-direct --inneropt innerarg'],
             ],
             'scripts-descriptions' => [
-                'test-direct' => $description
+                'test-direct' => $description,
             ],
             'autoload' => [
                 'psr-4' => [

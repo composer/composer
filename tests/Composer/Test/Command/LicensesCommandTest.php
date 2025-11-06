@@ -260,7 +260,7 @@ class LicensesCommandTest extends TestCase
         $this->expectExceptionMessage('Valid composer.json and composer.lock files are required to run this command with --locked');
 
         // Remove the lock file
-        @unlink( './composer.lock');
+        @unlink('./composer.lock');
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'license', '--locked' => true]);

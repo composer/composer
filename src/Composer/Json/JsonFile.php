@@ -276,7 +276,7 @@ class JsonFile
      * @param  string $indent  Indentation string
      * @return string Encoded json
      */
-    public static function encode($data, int $options = \JSON_UNESCAPED_SLASHES|\JSON_PRETTY_PRINT|\JSON_UNESCAPED_UNICODE, string $indent = self::INDENT_DEFAULT): string
+    public static function encode($data, int $options = \JSON_UNESCAPED_SLASHES | \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE, string $indent = self::INDENT_DEFAULT): string
     {
         $json = json_encode($data, $options);
 

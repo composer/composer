@@ -159,7 +159,7 @@ class SvnDriver extends VcsDriver
             }
 
             if ($this->shouldCache($identifier)) {
-                $this->cache->write($identifier.'.json', JsonFile::encode($composer, \JSON_UNESCAPED_UNICODE|\JSON_UNESCAPED_SLASHES));
+                $this->cache->write($identifier.'.json', JsonFile::encode($composer, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES));
             }
 
             $this->infoCache[$identifier] = $composer;

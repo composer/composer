@@ -359,7 +359,7 @@ class JsonManipulator
                 $repositoryAsArray = (array) $repository;
 
                 if (false === ($repositoryAsArray[$name] ?? null) && 1 === count($repositoryAsArray)) {
-                    if (!$this->removeListItem('repositories', (int)$repositoryIndex)) {
+                    if (!$this->removeListItem('repositories', (int) $repositoryIndex)) {
                         return false;
                     }
 

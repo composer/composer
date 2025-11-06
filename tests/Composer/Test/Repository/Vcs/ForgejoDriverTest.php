@@ -66,7 +66,7 @@ class ForgejoDriverTest extends TestCase
                     'private' => false,
                     'html_url' => 'https://codeberg.org/acme/repo',
                     'ssh_url' => 'git@codeberg.org:acme/repo.git',
-                    'clone_url' => 'https://codeberg.org/acme/repo.git'
+                    'clone_url' => 'https://codeberg.org/acme/repo.git',
                 ])],
             ],
             true
@@ -101,11 +101,11 @@ class ForgejoDriverTest extends TestCase
                     'private' => false,
                     'html_url' => 'https://codeberg.org/acme/repo',
                     'ssh_url' => 'git@codeberg.org:acme/repo.git',
-                    'clone_url' => 'https://codeberg.org/acme/repo.git'
+                    'clone_url' => 'https://codeberg.org/acme/repo.git',
                 ])],
                 ['url' => 'https://codeberg.org/api/v1/repos/acme/repo/branches?per_page=100', 'body' => (string) json_encode([
                     ['name' => 'main', 'commit' => ['id' => 'SOMESHA']],
-                ])]
+                ])],
             ],
             true
         );
@@ -127,11 +127,11 @@ class ForgejoDriverTest extends TestCase
                     'private' => false,
                     'html_url' => 'https://codeberg.org/acme/repo',
                     'ssh_url' => 'git@codeberg.org:acme/repo.git',
-                    'clone_url' => 'https://codeberg.org/acme/repo.git'
+                    'clone_url' => 'https://codeberg.org/acme/repo.git',
                 ])],
                 ['url' => 'https://codeberg.org/api/v1/repos/acme/repo/tags?per_page=100', 'body' => (string) json_encode([
-                    ['name' => '1.0', 'commit' => ['sha' => 'SOMESHA']]
-                ])]
+                    ['name' => '1.0', 'commit' => ['sha' => 'SOMESHA']],
+                ])],
             ],
             true
         );
@@ -153,9 +153,9 @@ class ForgejoDriverTest extends TestCase
                     'private' => false,
                     'html_url' => 'https://codeberg.org/acme/repo',
                     'ssh_url' => 'git@codeberg.org:acme/repo.git',
-                    'clone_url' => 'https://codeberg.org/acme/repo.git'
+                    'clone_url' => 'https://codeberg.org/acme/repo.git',
                 ])],
-                ['url' => 'https://codeberg.org/api/v1/repos/acme/repo/contents/composer.json?ref=main', 'body' => '{"encoding":"base64","content":""}']
+                ['url' => 'https://codeberg.org/api/v1/repos/acme/repo/contents/composer.json?ref=main', 'body' => '{"encoding":"base64","content":""}'],
             ],
             true
         );

@@ -60,7 +60,7 @@ class AuditConfig
      * @param Auditor::ABANDONED_* $abandoned
      * @param array<string> $ignoreSeverity
      * @param array<string>|array<string,string> $ignoreAbandonedPackages
-    */
+     */
     public function __construct(array $ignoreList, string $abandoned, bool $blockInsecure, bool $blockAbandoned, array $ignoreSeverity, bool $ignoreUnreachable, array $ignoreAbandonedPackages)
     {
         $this->ignoreList = $ignoreList;

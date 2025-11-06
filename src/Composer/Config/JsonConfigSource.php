@@ -110,7 +110,7 @@ class JsonConfigSource implements ConfigSourceInterface
             }
 
             // ensure uniqueness by removing any existing entries which use the same name
-            $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], function ($val) use ($repo) {
+            $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($repo) {
                 return !isset($val['name']) || $val['name'] !== $repo || $val !== [$repo => false];
             }));
 
@@ -150,7 +150,7 @@ class JsonConfigSource implements ConfigSourceInterface
             }
 
             // ensure uniqueness by removing any existing entries which use the same name
-            $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], function ($val) use ($name) {
+            $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($name) {
                 return !isset($val['name']) || $val['name'] !== $name || $val !== [$name => false];
             }));
 
@@ -189,11 +189,13 @@ class JsonConfigSource implements ConfigSourceInterface
             foreach ($config['repositories'] ?? [] as $index => $repository) {
                 if ($name === $index) {
                     $config['repositories'][$index]['url'] = $url;
+
                     return;
                 }
 
                 if ($name === ($repository['name'] ?? null)) {
                     $config['repositories'][$index]['url'] = $url;
+
                     return;
                 }
             }
@@ -209,7 +211,7 @@ class JsonConfigSource implements ConfigSourceInterface
             if (isset($config['repositories'][$repo])) {
                 unset($config['repositories'][$repo]);
             } else {
-                $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], function ($val) use ($repo) {
+                $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($repo) {
                     return !isset($val['name']) || $val['name'] !== $repo || $val !== [$repo => false];
                 }));
             }

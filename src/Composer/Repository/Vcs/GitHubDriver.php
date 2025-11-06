@@ -166,7 +166,7 @@ class GitHubDriver extends VcsDriver
                 $composer = $this->getBaseComposerInformation($identifier);
 
                 if ($this->shouldCache($identifier)) {
-                    $this->cache->write($identifier, JsonFile::encode($composer, \JSON_UNESCAPED_UNICODE|\JSON_UNESCAPED_SLASHES));
+                    $this->cache->write($identifier, JsonFile::encode($composer, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES));
                 }
             }
 

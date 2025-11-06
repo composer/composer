@@ -156,26 +156,26 @@ class RepositoryCommandTest extends TestCase
         $repositories = [
             'first' => ['type' => 'composer', 'url' => 'https://first.test'],
             'foo' => ['type' => 'vcs', 'url' => 'https://old.example.org'],
-            'bar' => ['type' => 'vcs', 'url' => 'https://other.example.org']
+            'bar' => ['type' => 'vcs', 'url' => 'https://other.example.org'],
         ];
 
         yield 'change first of three' => [
             $repositories,
             'first',
             'first',
-            'https://new.example.org'
+            'https://new.example.org',
         ];
         yield 'change middle of three' => [
             $repositories,
             'foo',
             'foo',
-            'https://new.example.org'
+            'https://new.example.org',
         ];
         yield 'change last of three' => [
             $repositories,
             'bar',
             'bar',
-            'https://new.example.org'
+            'https://new.example.org',
         ];
     }
 
@@ -209,26 +209,26 @@ class RepositoryCommandTest extends TestCase
         $repositories = [
             ['name' => 'first', 'type' => 'composer', 'url' => 'https://first.test'],
             ['name' => 'foo', 'type' => 'vcs', 'url' => 'https://old.example.org'],
-            ['name' => 'bar', 'type' => 'vcs', 'url' => 'https://other.example.org']
+            ['name' => 'bar', 'type' => 'vcs', 'url' => 'https://other.example.org'],
         ];
 
         yield 'change first of three' => [
             $repositories,
             'first',
             0,
-            'https://new.example.org'
+            'https://new.example.org',
         ];
         yield 'change middle of three' => [
             $repositories,
             'foo',
             1,
-            'https://new.example.org'
+            'https://new.example.org',
         ];
         yield 'change last of three' => [
             $repositories,
             'bar',
             2,
-            'https://new.example.org'
+            'https://new.example.org',
         ];
     }
 

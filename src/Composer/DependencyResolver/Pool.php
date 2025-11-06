@@ -131,7 +131,7 @@ class Pool implements \Countable
     {
         foreach ($this->securityRemovedVersions[$packageName] ?? [] as $version => $packageWithSecurityAdvisories) {
             if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
-                return array_map(function ($advisory) {
+                return array_map(static function ($advisory) {
                     return $advisory->advisoryId;
                 }, $packageWithSecurityAdvisories);
             }

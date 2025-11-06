@@ -166,9 +166,11 @@ class Transaction
                         if ($package->getVersion() !== $presentPackageMap[$package->getName()]->getVersion() ||
                             $package->getDistReference() !== $presentPackageMap[$package->getName()]->getDistReference() ||
                             $package->getSourceReference() !== $presentPackageMap[$package->getName()]->getSourceReference() ||
-                            ($package instanceof CompletePackageInterface
+                            (
+                                $package instanceof CompletePackageInterface
                                 && $presentPackageMap[$package->getName()] instanceof CompletePackageInterface
-                                && ($package->isAbandoned() !== $presentPackageMap[$package->getName()]->isAbandoned()
+                                && (
+                                    $package->isAbandoned() !== $presentPackageMap[$package->getName()]->isAbandoned()
                                     || $package->getReplacementPackage() !== $presentPackageMap[$package->getName()]->getReplacementPackage()
                                 )
                             )

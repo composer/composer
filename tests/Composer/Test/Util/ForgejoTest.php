@@ -14,7 +14,6 @@ namespace Composer\Test\Util;
 
 use Composer\Test\TestCase;
 use Composer\Util\Forgejo;
-use Composer\Util\GitHub;
 
 class ForgejoTest extends TestCase
 {

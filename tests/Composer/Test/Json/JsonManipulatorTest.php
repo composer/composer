@@ -2382,7 +2382,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'first',
-            'https://new.example.org'
+            'https://new.example.org',
         ];
         yield 'change middle of three (assoc)' => [
             $from,
@@ -2404,7 +2404,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'foo',
-            'https://new.example.org'
+            'https://new.example.org',
         ];
         yield 'change last of three (assoc)' => [
             $from,
@@ -2426,7 +2426,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'bar',
-            'https://new.example.org'
+            'https://new.example.org',
         ];
 
         $from = '{
@@ -2472,7 +2472,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'first',
-            'https://new.example.org'
+            'https://new.example.org',
         ];
         yield 'change middle of three (list)' => [
             $from,
@@ -2497,7 +2497,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'foo',
-            'https://new.example.org'
+            'https://new.example.org',
         ];
         yield 'change last of three (list)' => [
             $from,
@@ -2522,7 +2522,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'bar',
-            'https://new.example.org'
+            'https://new.example.org',
         ];
     }
 
@@ -3217,7 +3217,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             1,
-            true
+            true,
         ];
         yield 'int-array (one-line) first append to empty' => [
             '{
@@ -3230,7 +3230,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             1,
-            true
+            true,
         ];
         yield 'int-array (one-line) second append to non-empty-list' => [
             '{
@@ -3243,7 +3243,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             2,
-            true
+            true,
         ];
         yield 'object-array first append to unset' => [
             '{}',
@@ -3255,7 +3255,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             ['value' => 1],
-            true
+            true,
         ];
         yield 'object-array (one-line) first append to empty' => [
             '{
@@ -3270,7 +3270,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             ['value' => 2],
-            true
+            true,
         ];
         yield 'mixed-array (one-line) second append to non-empty-list' => [
             '{
@@ -3285,7 +3285,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             ['value' => 2],
-            true
+            true,
         ];
 
         yield 'int-array (multi-line) first append to empty' => [
@@ -3302,7 +3302,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             1,
-            true
+            true,
         ];
         yield 'int-array (multi-line) second append to non-empty-list' => [
             '{
@@ -3320,7 +3320,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             2,
-            true
+            true,
         ];
         yield 'object-array (multi-line) first append to empty' => [
             '{
@@ -3338,7 +3338,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             ['value' => 1],
-            true
+            true,
         ];
         yield 'mixed-array (multi-line) second append to non-empty-list' => [
             '{
@@ -3358,7 +3358,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             ['value' => 2],
-            true
+            true,
         ];
 
         yield 'int-array first prepend to unset' => [
@@ -3369,7 +3369,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             1,
-            false
+            false,
         ];
         yield 'int-array (one-line) first prepend to empty' => [
             '{
@@ -3382,7 +3382,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             1,
-            false
+            false,
         ];
         yield 'int-array (one-line) second prepend to non-empty-list' => [
             '{
@@ -3395,7 +3395,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             2,
-            false
+            false,
         ];
         yield 'object-array first prepend to unset' => [
             '{}',
@@ -3407,7 +3407,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             ['value' => 1],
-            false
+            false,
         ];
         yield 'object-array (one-line) first prepend to empty' => [
             '{
@@ -3422,7 +3422,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             ['value' => 1],
-            false
+            false,
         ];
         yield 'mixed-array (one-line) second prepend to non-empty-list' => [
             '{
@@ -3437,7 +3437,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             ['value' => 2],
-            false
+            false,
         ];
 
         yield 'int-array (multi-line) first prepend to empty' => [
@@ -3454,7 +3454,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             1,
-            false
+            false,
         ];
         yield 'int-array (multi-line) second prepend to non-empty-list' => [
             '{
@@ -3472,7 +3472,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             2,
-            false
+            false,
         ];
         yield 'object-array (multi-line) first prepend to empty' => [
             '{
@@ -3490,7 +3490,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             ['value' => 1],
-            false
+            false,
         ];
         yield 'mixed-array (multi-line) second prepend to non-empty-list' => [
             '{
@@ -3510,7 +3510,7 @@ class JsonManipulatorTest extends TestCase
 ',
             'main',
             ['value' => 2],
-            false
+            false,
         ];
     }
 
@@ -3543,7 +3543,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'main',
-            0
+            0,
         ];
         yield 'int-array (one-line) remove middle' => [
             '{
@@ -3558,7 +3558,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'main',
-            1
+            1,
         ];
         yield 'int-array (one-line) remove last' => [
             '{
@@ -3573,7 +3573,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'main',
-            2
+            2,
         ];
         yield 'int-array (multi-line) remove first' => [
             '{
@@ -3591,7 +3591,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'main',
-            0
+            0,
         ];
         yield 'int-array (multi-line) remove middle' => [
             '{
@@ -3609,7 +3609,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'main',
-            1
+            1,
         ];
         yield 'int-array (multi-line) remove last' => [
             '{
@@ -3627,7 +3627,7 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             'main',
-            2
+            2,
         ];
     }
 

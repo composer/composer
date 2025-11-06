@@ -55,7 +55,7 @@ final class ForgejoUrl
 
     public static function tryFrom(?string $repoUrl): ?self
     {
-        if ($repoUrl === null || ! Preg::isMatch(self::URL_REGEX, $repoUrl, $match)) {
+        if ($repoUrl === null || !Preg::isMatch(self::URL_REGEX, $repoUrl, $match)) {
             return null;
         }
 
