@@ -331,7 +331,7 @@ uninstalled.
 
 ### Options
 
-* **--unused** Remove unused packages that are not a direct or indirect dependency (anymore)
+* **--unused:** Remove unused packages that are not a direct or indirect dependency (anymore).
 * **--dev:** Remove packages from `require-dev`.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -1043,10 +1043,13 @@ Lists the name, version and license of every package installed. Use
 
 ### Options
 
-* **--format:** Format of the output: text, json or summary (default: "text")
-* **--no-dev:** Remove dev dependencies from the output
+* **--format:** Format of the output: text, json or summary (default: "text").
+* **--no-dev:** Remove dev dependencies from the output.
 
 ## run-script / run
+
+To run [scripts](articles/scripts.md) manually you can use this command,
+give it the script name and optionally any required arguments.
 
 ### Options
 
@@ -1054,9 +1057,6 @@ Lists the name, version and license of every package installed. Use
 * **--dev:** Sets the dev mode.
 * **--no-dev:** Disable dev mode.
 * **--list (-l):** List user defined scripts.
-
-To run [scripts](articles/scripts.md) manually you can use this command,
-give it the script name and optionally any required arguments.
 
 ## exec
 
@@ -1120,7 +1120,7 @@ php composer.phar audit
 * **--format (-f):** Audit output format. Must be "table" (default), "plain", "json", or "summary".
 * **--locked:** Audit packages from the lock file, regardless of what is currently in vendor dir.
 * **--abandoned:** Behavior on abandoned packages. Must be "ignore", "report",
-  or "fail".  See also [audit.abandoned](06-config.md#abandoned).  Passing this
+  or "fail".  See also [config.audit.abandoned](06-config.md#abandoned).  Passing this
   flag will override the config value and the environment variable.
 * **--ignore-severity:** Ignore advisories of a certain severity level. Can be passed one or more
   time to ignore multiple severities.
