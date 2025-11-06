@@ -28,22 +28,19 @@ class JsonEnvParser
 	 */
 	public function apply(array $data, ?string $file = null): array
 	{
-		$result = [];
-		foreach ($data as $key => $value) {
+		foreach ($data as $key => &$value) {
 			if (is_array($value)) {
-				$result[$key] = $this->apply($value, $file);
+				$value = $this->apply($value, $file);
 				continue;
 			}
 
 			if (is_string($value)) {
-				$result[$key] = $this->replacePlaceholders($value, $file);
+				$value = $this->replacePlaceholders($value, $file);
 				continue;
 			}
-
-			$result[$key] = $value;
 		}
 
-		return $result;
+		return $data;
 	}
 
 	/** @return string */
