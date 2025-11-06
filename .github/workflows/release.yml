@@ -14,7 +14,7 @@ env:
 jobs:
   build:
     permissions:
-      contents: write # for actions/create-release to create a release
+      contents: write # for gh to create a release
       id-token: write # for actions/attest-build-provenance to create a attestation certificate
       attestations: write # for actions/attest-build-provenance to upload the attestation
     name: Upload Release Asset
@@ -58,16 +58,10 @@ jobs:
             ${{ secrets.GPG_KEY_161DFBE342889F01DDAC4E61CBB3D576F2A0946F }}
 
       - name: Create release
-        uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090 # v2.4.1
-        with:
-          body: TODO
-          name: ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
-          draft: true
-          files: |
-            composer.phar
-            composer.phar.asc
-          fail_on_unmatched_files: true
+        run: gh release create "${{ github.ref_name }}" --title "${{ github.ref_name }}" --notes TODO --draft --verify-tag
+
+      - name: Upload release assets
+        run: gh release upload "${{ github.ref_name }}" composer.phar composer.phar.asc --clobber
 
       # This step requires a secret token with `pull` access to composer/docker. The default
       # secrets.GITHUB_TOKEN is scoped to this repository only which is not sufficient.
