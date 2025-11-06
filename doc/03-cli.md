@@ -907,8 +907,8 @@ php composer.phar repo add qux vcs https://example.org --after bar
 php composer.phar repo remove foo
 php composer.phar repo set-url foo https://git.example.org/acme/foo
 php composer.phar repo get-url foo
-php composer.phar repo disable packagist
-php composer.phar repo enable packagist
+php composer.phar repo disable packagist.org
+php composer.phar repo enable packagist.org
 ```
 
 ### Options
