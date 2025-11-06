@@ -39,11 +39,15 @@ class LicensesCommand extends BaseCommand
             ->setDefinition([
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text, json or summary', 'text', ['text', 'json', 'summary']),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
+                new InputOption('locked', null, InputOption::VALUE_NONE, 'Shows licenses from the lock file instead of installed packages.'),
             ])
             ->setHelp(
                 <<<EOT
 The license command displays detailed information about the licenses of
 the installed dependencies.
+
+Use --locked to show licenses from composer.lock instead of what's currently
+installed in the vendor directory.
 
 Read more at https://getcomposer.org/doc/03-cli.md#licenses
 EOT
@@ -59,12 +63,22 @@ EOT
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
         $root = $composer->getPackage();
-        $repo = $composer->getRepositoryManager()->getLocalRepository();
 
-        if ($input->getOption('no-dev')) {
-            $packages = RepositoryUtils::filterRequiredPackages($repo->getPackages(), $root);
-        } else {
+        if ($input->getOption('locked')) {
+            if (!$composer->getLocker()->isLocked()) {
+                throw new \UnexpectedValueException('Valid composer.json and composer.lock files are required to run this command with --locked');
+            }
+            $locker = $composer->getLocker();
+            $repo = $locker->getLockedRepository(!$input->getOption('no-dev'));
             $packages = $repo->getPackages();
+        } else {
+            $repo = $composer->getRepositoryManager()->getLocalRepository();
+
+            if ($input->getOption('no-dev')) {
+                $packages = RepositoryUtils::filterRequiredPackages($repo->getPackages(), $root);
+            } else {
+                $packages = $repo->getPackages();
+            }
         }
 
         $packages = PackageSorter::sortPackagesAlphabetically($packages);
