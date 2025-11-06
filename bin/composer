@@ -112,7 +112,7 @@ ErrorHandler::register();
 $rootPath = Platform::getCwd();
 if (file_exists($rootPath . '/.env')) {
     $dotenv = new Dotenv();
-    $dotenv->load(__DIR__.'/.env');
+    $dotenv->load($rootPath . '/.env');
 }
 
 // run the command application
