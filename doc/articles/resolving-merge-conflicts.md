@@ -53,6 +53,14 @@ Some improvement _could_ be made to git's conflict resolving by using a custom g
 
 An example of this can be found at [balbuf's composer git merge driver](https://github.com/balbuf/composer-git-merge-driver).
 
+### Handling the trivial case
+
+In a small number of cases, only the `content-hash` will show as being conflicted as the version control system may
+be able to cleanly merge the remaining text in the file. This typically happens when two different packages have
+been added or updated in each side of the merge, with no overlapping nor conflicting dependencies. When this occurs,
+running `composer update --lock` may be enough to remove the conflict marker and update the lock file hash. You may
+also run any other variant of `composer update` to remove the conflict marker and potentially update packages.
+
 ## Important considerations
 
 Keep in mind that whenever merge conflicts occur on the lock file, the information, about the exact version
