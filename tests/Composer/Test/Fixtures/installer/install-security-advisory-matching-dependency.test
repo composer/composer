@@ -1,5 +1,5 @@
 --TEST--
-Security advisory matching indirect dependency preventing a successful update.
+Security advisory matching a direct dependency that is locked does not prevent installs from lock file.
 --COMPOSER--
 {
     "name": "acme/project",
