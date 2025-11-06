@@ -16,7 +16,7 @@ specific logic.
 ## Alternative to custom installers with Composer 2.1+
 
 As of Composer 2.1, the `Composer\InstalledVersions` class has a
-[`getInstalledPackagesByType`](/07-runtime.md#knowing-which-packages-of-a-given-type-are-installed)
+[`getInstalledPackagesByType`](../07-runtime.md#knowing-which-packages-of-a-given-type-are-installed)
 method which can let you figure out at runtime which plugins/modules/extensions are installed.
 
 It is highly recommended to use that instead of building new custom
