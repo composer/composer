@@ -171,6 +171,65 @@ Since Composer 2.8, the option can be overridden via the
 [`--abandoned`](03-cli.md#audit) command line option, which overrides both the
 config value and the environment variable.
 
+### ignore-severity
+
+Defaults to `[]`. A list of severity levels that let the audit command pass even if there are security advisories
+with the given severity.
+
+```json
+{
+    "config": {
+        "audit": {
+            "ignore-severity": ["low"]
+        }
+    }
+}
+```
+
+### ignore-unreachable
+
+Defaults to `false`. Should unreachable repositories be ignored during a `composer audit`. This can be helpful if you are running the command
+in an environment from which not all repositories can be accessed.
+
+```json
+{
+    "config": {
+        "audit": {
+            "ignore-unreachable": true
+        }
+    }
+}
+```
+
+### block-insecure
+
+Defaults to `true`. If `true`, any package versions affected by security advisories cannot be used
+during a composer update/required/delete command unless the security advisories are ignored.
+
+```json
+{
+    "config": {
+        "audit": {
+            "block-insecure": false
+        }
+    }
+}
+```
+
+### block-abandoned
+
+Defaults to `false`. If `true`, any abandoned packages cannot be used during a composer update/required/delete command.
+
+
+```json
+{
+    "config": {
+        "audit": {
+            "block-abandoned": true
+        }
+    }
+}
+```
 ### ignore-abandoned
 
 A list of abandoned package names that are reported but let the audit command pass.

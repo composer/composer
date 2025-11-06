@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Advisory\AuditConfig;
 use Composer\Composer;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\RepositoryUtils;
@@ -68,17 +69,17 @@ EOT
             $repoSet->addRepository($repo);
         }
 
-        $auditConfig = $composer->getConfig()->get('audit');
+        $auditConfig = AuditConfig::fromConfig($composer->getConfig());
 
         $abandoned = $input->getOption('abandoned');
         if ($abandoned !== null && !in_array($abandoned, Auditor::ABANDONEDS, true)) {
             throw new \InvalidArgumentException('--audit must be one of '.implode(', ', Auditor::ABANDONEDS).'.');
         }
 
-        $abandoned = $abandoned ?? $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL;
+        $abandoned = $abandoned ?? $auditConfig->abandoned;
 
-        $ignoreSeverities = $input->getOption('ignore-severity') ?? [];
-        $ignoreUnreachable = $input->getOption('ignore-unreachable');
+        $ignoreSeverities = array_merge($input->getOption('ignore-severity'), $auditConfig->ignoreSeverity);
+        $ignoreUnreachable = $input->getOption('ignore-unreachable') || $auditConfig->ignoreUnreachable;
 
         return min(255, $auditor->audit(
             $this->getIO(),
@@ -86,11 +87,11 @@ EOT
             $packages,
             $this->getAuditFormat($input, 'format'),
             false,
-            $auditConfig['ignore'] ?? [],
+            $auditConfig->ignoreList,
             $abandoned,
             $ignoreSeverities,
             $ignoreUnreachable,
-            $auditConfig['ignore-abandoned'] ?? []
+            $auditConfig->ignoreAbandonedPackages
         ));
 
     }

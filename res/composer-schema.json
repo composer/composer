@@ -448,6 +448,27 @@
                             "enum": ["ignore", "report", "fail"],
                             "description": "Whether abandoned packages should be ignored, reported as problems or cause an audit failure."
                         },
+                        "ignore-severity": {
+                            "type": "array",
+                            "description": "A list of severities for which advisories with matching severity will be ignored, e.g. critical, high, medium, low, or none.",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "ignore-unreachable": {
+                            "type": "boolean",
+                            "description": "Whether repositories that are unreachable or return a non-200 status code shouldbe ignored or not."
+                        },
+                        "block-insecure": {
+                            "type": "boolean",
+                            "description": "Whether insecure versions should be blocked during a composer update/required command or not.",
+                            "default": true
+                        },
+                        "block-abandoned": {
+                            "type": "boolean",
+                            "description": "Whether abandoned versions should be blocked during a composer update/required command or not.",
+                            "default": false
+                        },
                         "ignore-abandoned": {
                             "anyOf": [
                                 {

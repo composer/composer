@@ -1,0 +1,81 @@
+--TEST--
+Security advisory matching a direct dependency that is locked does not prevent installs from lock file.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "1.0.0"
+    },
+    "config": {
+        "audit": {
+            "block-insecure": true
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0.0",
+                    "source": { "reference": "some.branch", "type": "git", "url": "" }
+                }
+            ],
+            "security-advisories": {
+                "acme/library": [
+                    {
+                        "advisoryId": "PKSA-1234-abcd-1234",
+                        "packageName": "acme/library",
+                        "remoteId": "test",
+                        "title": "Security Advisory",
+                        "link": null,
+                        "cve": null,
+                        "affectedVersions": ">=1.0.0,<1.1.0",
+                        "source": "Tests",
+                        "reportedAt": "2024-04-31 12:37:47",
+                        "composerRepository": "Package Repository",
+                        "severity": "high",
+                        "sources": [
+                            {
+                                "name": "Security Advisory",
+                                "remoteId": "test"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "acme/library",
+            "version": "1.0.0",
+            "source": { "reference": "some.branch", "type": "git", "url": "" }
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--RUN--
+install -v
+
+--EXPECT-EXIT-CODE--
+0
+
+--EXPECT-OUTPUT--
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Package operations: 1 install, 0 updates, 0 removals
+Generating autoload files
+--EXPECT--
+Installing acme/library (1.0.0)

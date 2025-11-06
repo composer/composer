@@ -162,7 +162,7 @@ class Auditor
      * @param string[]|array<string, string> $ignoreAbandoned
      * @return array<CompletePackageInterface>
      */
-    private function filterAbandonedPackages(array $packages, array $ignoreAbandoned): array
+    public function filterAbandonedPackages(array $packages, array $ignoreAbandoned): array
     {
         if (\count($ignoreAbandoned) > 0 && !\array_is_list($ignoreAbandoned)) {
             $ignoredPackageNames = array_keys($ignoreAbandoned);
@@ -186,7 +186,7 @@ class Auditor
      * @param array<string> $ignoredSeverities List of ignored severity levels
      * @phpstan-return array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, ignoredAdvisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>}
      */
-    private function processAdvisories(array $allAdvisories, array $ignoreList, array $ignoredSeverities): array
+    public function processAdvisories(array $allAdvisories, array $ignoreList, array $ignoredSeverities): array
     {
         if ($ignoreList === [] && $ignoredSeverities === []) {
             return ['advisories' => $allAdvisories, 'ignoredAdvisories' => []];

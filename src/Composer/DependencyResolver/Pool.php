@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Advisory\PartialSecurityAdvisory;
+use Composer\Advisory\SecurityAdvisory;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\CompilingMatcher;
@@ -40,20 +42,28 @@ class Pool implements \Countable
     protected $removedVersions = [];
     /** @var array<string, array<string, string>> Map of package object hash => removed normalized versions => removed pretty version */
     protected $removedVersionsByPackage = [];
+    /** @var array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> Map of package name => normalized version => security advisories */
+    private $securityRemovedVersions = [];
+    /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
+    private $abandonedRemovedVersions = [];
 
     /**
      * @param BasePackage[] $packages
      * @param BasePackage[] $unacceptableFixedOrLockedPackages
      * @param array<string, array<string, string>> $removedVersions
      * @param array<string, array<string, string>> $removedVersionsByPackage
+     * @param array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> $securityRemovedVersions
+     * @param array<string, array<string, string>> $abandonedRemovedVersions
      */
-    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [])
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
         $this->unacceptableFixedOrLockedPackages = $unacceptableFixedOrLockedPackages;
         $this->removedVersions = $removedVersions;
         $this->removedVersionsByPackage = $removedVersionsByPackage;
+        $this->securityRemovedVersions = $securityRemovedVersions;
+        $this->abandonedRemovedVersions = $abandonedRemovedVersions;
     }
 
     /**
@@ -76,6 +86,14 @@ class Pool implements \Countable
     }
 
     /**
+     * @return array<string, array<string, string>>
+     */
+    public function getAllRemovedVersions(): array
+    {
+        return $this->removedVersions;
+    }
+
+    /**
      * @return array<string, string>
      */
     public function getRemovedVersionsByPackage(string $objectHash): array
@@ -85,6 +103,68 @@ class Pool implements \Countable
         }
 
         return $this->removedVersionsByPackage[$objectHash];
+    }
+
+    /**
+     * @return array<string, array<string, string>>
+     */
+    public function getAllRemovedVersionsByPackage(): array
+    {
+        return $this->removedVersionsByPackage;
+    }
+
+    public function isSecurityRemovedPackageVersion(string $packageName, ?ConstraintInterface $constraint): bool
+    {
+        foreach ($this->securityRemovedVersions[$packageName] ?? [] as $version => $packageWithSecurityAdvisories) {
+            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getSecurityAdvisoryIdentifiersForPackageVersion(string $packageName, ?ConstraintInterface $constraint): array
+    {
+        foreach ($this->securityRemovedVersions[$packageName] ?? [] as $version => $packageWithSecurityAdvisories) {
+            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
+                return array_map(function ($advisory) {
+                    return $advisory->advisoryId;
+                }, $packageWithSecurityAdvisories);
+            }
+        }
+
+        return [];
+    }
+
+    public function isAbandonedRemovedPackageVersion(string $packageName, ?ConstraintInterface $constraint): bool
+    {
+        foreach ($this->abandonedRemovedVersions[$packageName] ?? [] as $version => $prettyVersion) {
+            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>>
+     */
+    public function getAllSecurityRemovedPackageVersions(): array
+    {
+        return $this->securityRemovedVersions;
+    }
+
+    /**
+     * @return array<string, array<string, string>>
+     */
+    public function getAllAbandonedRemovedPackageVersions(): array
+    {
+        return $this->abandonedRemovedVersions;
     }
 
     /**

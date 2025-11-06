@@ -16,6 +16,7 @@ use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\PoolBuilder;
 use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\Advisory\PartialSecurityAdvisory;
@@ -329,9 +330,9 @@ class RepositorySet
      * @param list<string>      $ignoredTypes Packages of those types are ignored
      * @param list<string>|null $allowedTypes Only packages of those types are allowed if set to non-null
      */
-    public function createPool(Request $request, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $ignoredTypes = [], ?array $allowedTypes = null): Pool
+    public function createPool(Request $request, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $ignoredTypes = [], ?array $allowedTypes = null, ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null): Pool
     {
-        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer, $this->temporaryConstraints);
+        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer, $this->temporaryConstraints, $securityAdvisoryPoolFilter);
         $poolBuilder->setIgnoredTypes($ignoredTypes);
         $poolBuilder->setAllowedTypes($allowedTypes);
 
