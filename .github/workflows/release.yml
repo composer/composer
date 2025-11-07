@@ -58,9 +58,13 @@ jobs:
             ${{ secrets.GPG_KEY_161DFBE342889F01DDAC4E61CBB3D576F2A0946F }}
 
       - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: gh release create "${{ github.ref_name }}" --title "${{ github.ref_name }}" --notes TODO --draft --verify-tag
 
       - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: gh release upload "${{ github.ref_name }}" composer.phar composer.phar.asc --clobber
 
       # This step requires a secret token with `pull` access to composer/docker. The default
