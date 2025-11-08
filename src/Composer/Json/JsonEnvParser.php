@@ -16,6 +16,9 @@ class JsonEnvParser
 	/** @var array<string, true> Map of env/file combinations already warned about */
 	protected static $envVariablesComplainedAbout = [];
 
+	/** @var bool Whether we already warned about unreadable dotenv file */
+	protected static $unreadableEnvWarned = false;
+
 	/** @param IOInterface|null $io */
 	public function __construct(?IOInterface $io = null)
 	{
@@ -67,12 +70,15 @@ class JsonEnvParser
 		$env = Platform::getEnv($name);
 
 		if ($env === false || $env === null || $env === '') {
-			$context = $file !== null ? $file . ': ' : '';
+			$env = $this->getEnvValue($name);
+		}
+
+		if ($env === null || $env === '') {
 			$key = ($file ?? '') . '|' . $placeholder;
 
 			if (!isset(self::$envVariablesComplainedAbout[$key])) {
-				if ($this->io !== null) {
-					$this->io->writeError($context . '<warning>Environment variable ' . $name . ' is not defined, please update your .env file</warning>');
+				if ($this->io instanceof IOInterface) {
+					$this->io->writeError('<warning>Environment variable \'' . $name . '\'' . ($file === null ? '' : ' (found in ' . $file . ')') . ' is not defined, please update your .env file (' . DOTENV_PATH . '). </warning>');
 				}
 				self::$envVariablesComplainedAbout[$key] = true;
 			}
@@ -81,5 +87,28 @@ class JsonEnvParser
 		}
 
 		return (string) $env;
+	}
+
+	private function getEnvValue(string $name): ?string
+	{
+		if (!is_readable(DOTENV_PATH)) {
+			if ($this->io instanceof IOInterface && self::$unreadableEnvWarned === false) {
+				$this->io->warning('Dotenv file ' . DOTENV_PATH . ' is not readable.');
+				self::$unreadableEnvWarned = true;
+			}
+			return null;
+		}
+
+		$content = file_get_contents(DOTENV_PATH);
+		if ($content === false) {
+			return null;
+		}
+
+		$pattern = '/^\s*' . preg_quote($name, '/') . '\s*=\s*(.*)$/m';
+		if (Preg::match($pattern, $content, $matches) === 1) {
+			return $matches[1];
+		}
+
+		return null;
 	}
 }

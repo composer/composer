@@ -56,8 +56,8 @@ class JsonFile
     private $io;
     /** @var string */
     private $indent = self::INDENT_DEFAULT;
-    /** @var JsonEnvParser|null */
-    private static $envParser = null;
+    /** @var ?JsonEnvParser|null */
+    private $envParser = null;
 
     /**
      * Initializes json file reader/parser.
@@ -75,14 +75,7 @@ class JsonFile
         }
         $this->httpDownloader = $httpDownloader;
         $this->io = $io;
-
-        if ($envParser !== null) {
-            self::$envParser = $envParser;
-        } elseif ($io !== null) {
-            self::$envParser = new JsonEnvParser($io);
-        } elseif (self::$envParser === null) {
-            self::$envParser = new JsonEnvParser();
-        }
+        $this->envParser = $envParser;
     }
 
     public function getPath(): string
@@ -136,7 +129,7 @@ class JsonFile
 
         $this->indent = self::detectIndenting($json);
 
-        return static::parseJson($json, $this->path);
+        return static::parseJson($json, $this->path, $this->envParser);
     }
 
     /**
@@ -348,12 +341,8 @@ class JsonFile
      * @throws ParsingException
      * @return mixed
      */
-    public static function parseJson(?string $json, ?string $file = null)
+    public static function parseJson(?string $json, ?string $file = null, ?JsonEnvParser $envParser = null)
     {
-        if (self::$envParser === null) {
-            self::$envParser = new JsonEnvParser();
-        }
-
         if (null === $json) {
             return null;
         }
@@ -366,8 +355,9 @@ class JsonFile
             return $data;
         }
 
-
-        $data = self::$envParser->apply($data, $file);
+        if ($envParser !== null) {
+            $data = $envParser->apply($data, $file);
+        }
 
         return $data;
     }

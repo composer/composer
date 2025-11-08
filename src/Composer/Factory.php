@@ -37,6 +37,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Version\VersionParser;
 use Composer\Downloader\TransportException;
+use Composer\Json\JsonEnvParser;
 use Composer\Json\JsonValidationException;
 use Composer\Repository\InstalledRepositoryInterface;
 use UnexpectedValueException;
@@ -206,7 +207,8 @@ class Factory
         }
 
         // load global auth file
-        $file = new JsonFile($config->get('home').'/auth.json');
+        $envParser = new JsonEnvParser($io);
+        $file = new JsonFile($config->get('home').'/auth.json', null, $io, $envParser);
         if ($file->exists()) {
             if ($io instanceof IOInterface) {
                 $io->writeError('Loading config file ' . $file->getPath(), true, IOInterface::DEBUG);
