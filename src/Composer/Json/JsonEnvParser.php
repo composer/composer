@@ -66,6 +66,15 @@ class JsonEnvParser
 	 */
 	private function resolvePlaceholder(string $name, string $placeholder, ?string $file = null): string
 	{
+		if (self::$dotEnvPath === null) {
+			if ($this->io instanceof IOInterface && self::$unreadableEnvWarned === false) {
+				$this->io->warning('Dotenv file path is not set.');
+				self::$unreadableEnvWarned = true;
+			}
+
+			return $placeholder;
+		}
+
 		if (!is_readable(self::$dotEnvPath)) {
 			if ($this->io instanceof IOInterface && self::$unreadableEnvWarned === false) {
 				$this->io->warning('Dotenv file ' . self::$dotEnvPath . ' is not readable.');
