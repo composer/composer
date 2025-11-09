@@ -66,6 +66,15 @@ class JsonEnvParser
 	 */
 	private function resolvePlaceholder(string $name, string $placeholder, ?string $file = null): string
 	{
+		if (!is_readable(self::$dotEnvPath)) {
+			if ($this->io instanceof IOInterface && self::$unreadableEnvWarned === false) {
+				$this->io->warning('Dotenv file ' . self::$dotEnvPath . ' is not readable.');
+				self::$unreadableEnvWarned = true;
+			}
+
+			return $placeholder;
+		}
+
 		if ($name === '') {
 			return $placeholder;
 		}
@@ -94,7 +103,7 @@ class JsonEnvParser
 
 	private function getEnvValue(string $name): ?string
 	{
-		if(self::getDotEnvPath() === null){
+		if (self::getDotEnvPath() === null) {
 			return null;
 		}
 
@@ -118,14 +127,7 @@ class JsonEnvParser
 	 */
 	public static function setDotEnvPath(string $path, ?IOInterface $io): void
 	{
-		if (!is_readable($path)) {
-			if ($io instanceof IOInterface && self::$unreadableEnvWarned === false) {
-				$io->warning('Dotenv file ' . $path . ' is not readable.');
-				self::$unreadableEnvWarned = true;
-			}
-		} else {
-			self::$dotEnvPath = $path;
-		}
+		self::$dotEnvPath = $path;
 	}
 
 	/**
