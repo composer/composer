@@ -19,6 +19,9 @@ class JsonEnvParser
 	/** @var bool Whether we already warned about unreadable dotenv file */
 	protected static $unreadableEnvWarned = false;
 
+	/** @var null|string Whether we already warned about unreadable dotenv file */
+	protected static $dotEnvPath = null;
+
 	/** @param IOInterface|null $io */
 	public function __construct(?IOInterface $io = null)
 	{
@@ -78,7 +81,7 @@ class JsonEnvParser
 
 			if (!isset(self::$envVariablesComplainedAbout[$key])) {
 				if ($this->io instanceof IOInterface) {
-					$this->io->writeError('<warning>Environment variable \'' . $name . '\'' . ($file === null ? '' : ' (found in ' . $file . ')') . ' is not defined, please update your .env file (' . DOTENV_PATH . '). </warning>');
+					$this->io->writeError('<warning>Environment variable \'' . $name . '\'' . ($file === null ? '' : ' (found in ' . $file . ')') . ' is not defined, please update your .env file (' . (self::getDotEnvPath() ?? 'not found') . '). </warning>');
 				}
 				self::$envVariablesComplainedAbout[$key] = true;
 			}
@@ -91,15 +94,11 @@ class JsonEnvParser
 
 	private function getEnvValue(string $name): ?string
 	{
-		if (!is_readable(DOTENV_PATH)) {
-			if ($this->io instanceof IOInterface && self::$unreadableEnvWarned === false) {
-				$this->io->warning('Dotenv file ' . DOTENV_PATH . ' is not readable.');
-				self::$unreadableEnvWarned = true;
-			}
+		if(self::getDotEnvPath() === null){
 			return null;
 		}
 
-		$content = file_get_contents(DOTENV_PATH);
+		$content = file_get_contents(self::getDotEnvPath());
 		if ($content === false) {
 			return null;
 		}
@@ -110,5 +109,30 @@ class JsonEnvParser
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param string $path
+	 * @param IOInterface|null $io
+	 * @return void
+	 */
+	public static function setDotEnvPath(string $path, ?IOInterface $io): void
+	{
+		if (!is_readable($path)) {
+			if ($io instanceof IOInterface && self::$unreadableEnvWarned === false) {
+				$io->warning('Dotenv file ' . $path . ' is not readable.');
+				self::$unreadableEnvWarned = true;
+			}
+		} else {
+			self::$dotEnvPath = $path;
+		}
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function getDotEnvPath(): ?string
+	{
+		return self::$dotEnvPath;
 	}
 }

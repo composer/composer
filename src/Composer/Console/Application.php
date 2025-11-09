@@ -42,6 +42,7 @@ use Composer\Util\ErrorHandler;
 use Composer\Util\HttpDownloader;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Exception\NoSslException;
+use Composer\Json\JsonEnvParser;
 use Composer\XdebugHandler\XdebugHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 
@@ -163,9 +164,9 @@ class Application extends BaseApplication
             Platform::putEnv('COMPOSER_CACHE_DIR', Platform::isWindows() ? 'nul' : '/dev/null');
         }
 
-        if(!defined('DOTENV_PATH')){
+        if(JsonEnvParser::getDotEnvPath() === null){
             $dotEnvPath = Platform::getCwd() . ('/' . ($input->getParameterOption('--dotenv', null) ?? '.env'));
-            define('DOTENV_PATH', $dotEnvPath);
+            JsonEnvParser::setDotEnvPath($dotEnvPath, $this->io);
         }
 
         // switch working dir
