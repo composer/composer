@@ -186,4 +186,83 @@ class LicensesCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'license', '--format' => 'unknown']);
     }
+
+    public function testLocked(): void
+    {
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'license', '--locked' => true]));
+
+        $expected = [
+            ["Name:", "test/pkg"],
+            ["Version:", "1.2.3"],
+            ["Licenses:", "MIT"],
+            ["Dependencies:"],
+            [],
+            ["Name", "Version", "Licenses"],
+            ["dev/pkg", "2.3.4.5", "MIT"],
+            ["first/pkg", "2.3.4", "MIT"],
+            ["second/pkg", "3.4.0", "LGPL-2.0-only"],
+            ["third/pkg", "1.5.4", "none"],
+        ];
+
+        array_walk_recursive($expected, static function (&$value) {
+            $value = preg_quote($value, '/');
+        });
+
+        foreach (explode(PHP_EOL, $appTester->getDisplay()) as $i => $line) {
+            if (trim($line) === '') {
+                continue;
+            }
+
+            if (!isset($expected[$i])) {
+                $this->fail('Got more output lines than expected');
+            }
+            self::assertMatchesRegularExpression("/" . implode("\s+", $expected[$i]) . "/", $line);
+        }
+    }
+
+    public function testLockedNoDev(): void
+    {
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'license', '--locked' => true, '--no-dev' => true]));
+
+        $expected = [
+            ["Name:", "test/pkg"],
+            ["Version:", "1.2.3"],
+            ["Licenses:", "MIT"],
+            ["Dependencies:"],
+            [],
+            ["Name", "Version", "Licenses"],
+            ["first/pkg", "2.3.4", "MIT"],
+            ["second/pkg", "3.4.0", "LGPL-2.0-only"],
+            ["third/pkg", "1.5.4", "none"],
+        ];
+
+        array_walk_recursive($expected, static function (&$value) {
+            $value = preg_quote($value, '/');
+        });
+
+        foreach (explode(PHP_EOL, $appTester->getDisplay()) as $i => $line) {
+            if (trim($line) === '') {
+                continue;
+            }
+
+            if (!isset($expected[$i])) {
+                $this->fail('Got more output lines than expected');
+            }
+            self::assertMatchesRegularExpression("/" . implode("\s+", $expected[$i]) . "/", $line);
+        }
+    }
+
+    public function testLockedWithoutLockFile(): void
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('Valid composer.json and composer.lock files are required to run this command with --locked');
+
+        // Remove the lock file
+        @unlink('./composer.lock');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'license', '--locked' => true]);
+    }
 }

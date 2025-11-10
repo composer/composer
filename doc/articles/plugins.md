@@ -99,7 +99,7 @@ plugin is loaded.
 
 To register a method to an event, implement the method `getSubscribedEvents()`
 and have it return an array. The array key must be the
-[event name](https://getcomposer.org/doc/articles/scripts.md#event-names)
+[event name](./scripts.md#event-names)
 and the value is the name of the method in this class to be called.
 
 > **Note:** If you don't know which event to listen to, you can run a Composer

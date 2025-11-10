@@ -159,12 +159,216 @@ class JsonManipulator
      */
     public function addRepository(string $name, $config, bool $append = true): bool
     {
-        return $this->addSubNode('repositories', $name, $config, $append);
+        if ("" !== $name && !$this->doRemoveRepository($name)) {
+            return false;
+        }
+
+        if (!$this->doConvertRepositoriesFromAssocToList()) {
+            return false;
+        }
+
+        if (is_array($config) && !is_numeric($name) && '' !== $name) {
+            $config = ['name' => $name] + $config;
+        } elseif ($config === false) {
+            $config = [$name => $config];
+        }
+
+        return $this->addListItem('repositories', $config, $append);
+    }
+
+    private function doConvertRepositoriesFromAssocToList(): bool
+    {
+        $decoded = json_decode($this->contents, false);
+
+        if (($decoded->repositories ?? null) instanceof \stdClass) {
+            // delete from bottom to top, to ensure keys stay the same
+            $entriesToRevert = array_reverse(array_keys((array) $decoded->repositories));
+
+            foreach ($entriesToRevert as $entryKey) {
+                if (!$this->removeSubNode('repositories', (string) $entryKey)) {
+                    return false;
+                }
+            }
+
+            $this->changeEmptyMainKeyFromAssocToList('repositories');
+
+            // re-add in order
+            foreach (((array) $decoded->repositories) as $repositoryName => $repository) {
+                if (!$repository instanceof \stdClass) {
+                    if (!$this->addListItem('repositories', [$repositoryName => $repository], true)) {
+                        return false;
+                    }
+                } elseif (is_numeric($repositoryName)) {
+                    if (!$this->addListItem('repositories', $repository, true)) {
+                        return false;
+                    }
+                } else {
+                    $repository = (array) $repository;
+                    // prepend name property
+                    $repository = ['name' => $repositoryName] + $repository;
+                    if (!$this->addListItem('repositories', $repository, true)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public function setRepositoryUrl(string $name, string $url): bool
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+        $repositoryIndex = null;
+
+        foreach ($decoded['repositories'] ?? [] as $index => $repository) {
+            if ($name === $index) {
+                $repositoryIndex = $index;
+                break;
+            }
+
+            if ($name === ($repository['name'] ?? null)) {
+                $repositoryIndex = $index;
+                break;
+            }
+        }
+
+        if (null === $repositoryIndex) {
+            return false;
+        }
+
+        $listRegex = null;
+
+        if (is_int($repositoryIndex)) {
+            $listRegex = '{'.self::DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?"repositories"\s*:\s*\[\s*((?&json)\s*+,\s*+){' . max(0, $repositoryIndex) . '})(?P<repository>(?&object))(?P<end>.*)}sx';
+        }
+
+        $objectRegex = '{'.self::DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?"repositories"\s*:\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?' . preg_quote(JsonFile::encode($repositoryIndex)) . '\s*:\s*)(?P<repository>(?&object))(?P<end>.*)}sx';
+        $matches = null;
+
+        if (($listRegex !== null && Preg::isMatch($listRegex, $this->contents, $matches)) || Preg::isMatch($objectRegex, $this->contents, $matches)) {
+            assert(isset($matches['start']) && is_string($matches['start']));
+            assert(isset($matches['repository']) && is_string($matches['repository']));
+            assert(isset($matches['end']) && is_string($matches['end']));
+
+            // invalid match due to un-regexable content, abort
+            if (false === @json_decode($matches['repository'])) {
+                return false;
+            }
+
+            $repositoryRegex = '{'.self::DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?"url"\s*:\s*)(?P<url>(?&string))(?P<end>.*)}sx';
+
+            $this->contents = $matches['start'] . Preg::replaceCallback($repositoryRegex, static function (array $repositoryMatches) use ($url): string {
+                return $repositoryMatches['start'] . JsonFile::encode($url) . $repositoryMatches['end'];
+            }, $matches['repository']) . $matches['end'];
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<string, mixed>|false $config
+     */
+    public function insertRepository(string $name, $config, string $referenceName, int $offset = 0): bool
+    {
+        if ("" !== $name && !$this->doRemoveRepository($name)) {
+            return false;
+        }
+
+        if (!$this->doConvertRepositoriesFromAssocToList()) {
+            return false;
+        }
+
+        $indexToInsert = null;
+        $decoded = JsonFile::parseJson($this->contents);
+
+        foreach ($decoded['repositories'] as $repositoryIndex => $repository) {
+            if (($repository['name'] ?? null) === $referenceName) {
+                $indexToInsert = $repositoryIndex;
+                break;
+            }
+
+            if ($repositoryIndex === $referenceName) {
+                $indexToInsert = $repositoryIndex;
+                break;
+            }
+
+            if ([$referenceName => false] === $repository) {
+                $indexToInsert = $repositoryIndex;
+                break;
+            }
+        }
+
+        if ($indexToInsert === null) {
+            return false;
+        }
+
+        if (is_array($config) && !is_numeric($name) && '' !== $name) {
+            $config = ['name' => $name] + $config;
+        } elseif ($config === false) {
+            $config = ['name' => $config];
+        }
+
+        return $this->insertListItem('repositories', $config, $indexToInsert + $offset);
     }
 
     public function removeRepository(string $name): bool
     {
-        return $this->removeSubNode('repositories', $name);
+        return $this->doRemoveRepository($name) && $this->removeMainKeyIfEmpty('repositories');
+    }
+
+    private function doRemoveRepository(string $name): bool
+    {
+        $decoded = json_decode($this->contents, false);
+        $isAssoc = ($decoded->repositories ?? null) instanceof \stdClass;
+
+        foreach ((array) ($decoded->repositories ?? []) as $repositoryIndex => $repository) {
+            if ($repositoryIndex === $name && $isAssoc) {
+                if (!$this->removeSubNode('repositories', $repositoryIndex)) {
+                    return false;
+                }
+
+                break;
+            }
+
+            if (($repository->name ?? null) === $name) {
+                if ($isAssoc) {
+                    if (!$this->removeSubNode('repositories', (string) $repositoryIndex)) {
+                        return false;
+                    }
+                } else {
+                    if (!$this->removeListItem('repositories', (int) $repositoryIndex)) {
+                        return false;
+                    }
+                }
+
+                break;
+            }
+
+            if ($isAssoc) {
+                if ($name === $repositoryIndex && false === $repository) {
+                    if (!$this->removeSubNode('repositories', $repositoryIndex)) {
+                        return false;
+                    }
+
+                    return true;
+                }
+            } else {
+                $repositoryAsArray = (array) $repository;
+
+                if (false === ($repositoryAsArray[$name] ?? null) && 1 === count($repositoryAsArray)) {
+                    if (!$this->removeListItem('repositories', (int) $repositoryIndex)) {
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -444,6 +648,226 @@ class JsonManipulator
     }
 
     /**
+     * @param mixed $value
+     */
+    public function addListItem(string $mainNode, $value, bool $append = true): bool
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+
+        // no main node yet
+        if (!isset($decoded[$mainNode])) {
+            if (!$this->addMainKey($mainNode, [])) {
+                return false;
+            }
+        }
+
+        // main node content not match-able
+        $nodeRegex = '{'.self::DEFINES.'^(?P<start> \s* \{ \s* (?: (?&string) \s* : (?&json) \s* , \s* )*?'.
+            preg_quote(JsonFile::encode($mainNode)).'\s*:\s*)(?P<content>(?&array))(?P<end>.*)}sx';
+
+        try {
+            if (!Preg::isMatch($nodeRegex, $this->contents, $match)) {
+                return false;
+            }
+        } catch (\RuntimeException $e) {
+            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+                return false;
+            }
+            throw $e;
+        }
+
+        assert(is_string($match['start']));
+        assert(is_string($match['content']));
+        assert(is_string($match['end']));
+
+        $children = $match['content'];
+        // invalid match due to un-regexable content, abort
+        if (false === @json_decode($children)) {
+            return false;
+        }
+
+        if (Preg::isMatch('#^\[(?P<leadingspace>\s*?)(?P<content>\S+.*?)?(?P<trailingspace>\s*)\]$#s', $children, $match)) {
+            $leadingWhitespace = $match['leadingspace'];
+            $whitespace = $match['trailingspace'];
+            $leadingItemWhitespace = $this->newline . $this->indent . $this->indent;
+            $trailingItemWhitespace = $whitespace;
+            $itemDepth = 1;
+
+            // keep oneline lists as one line
+            if (!str_contains($whitespace, $this->newline)) {
+                $leadingItemWhitespace = $leadingWhitespace;
+                $trailingItemWhitespace = $leadingWhitespace;
+                $itemDepth = 0;
+            }
+
+            if (null !== $match['content']) {
+                // child missing but non empty children
+                if ($append) {
+                    $children = Preg::replace(
+                        '#'.$whitespace.']$#',
+                        addcslashes(',' . $leadingItemWhitespace . $this->format($value, $itemDepth) . $trailingItemWhitespace . ']', '\\$'),
+                        $children
+                    );
+                } else {
+                    $whitespace = $match['leadingspace'];
+                    $children = Preg::replace(
+                        '#^\['.$whitespace.'#',
+                        addcslashes('[' . $whitespace . $this->format($value, $itemDepth) . ',' . $leadingItemWhitespace, '\\$'),
+                        $children
+                    );
+                }
+            } else {
+                // children present but empty
+                $children = '[' . $leadingItemWhitespace . $this->format($value, $itemDepth) . $trailingItemWhitespace . ']';
+            }
+        } else {
+            throw new \LogicException('Nothing matched above for: '.$children);
+        }
+
+        $this->contents = Preg::replaceCallback($nodeRegex, static function ($m) use ($children): string {
+            return $m['start'] . $children . $m['end'];
+        }, $this->contents);
+
+        return true;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function insertListItem(string $mainNode, $value, int $index): bool
+    {
+        if ($index < 0) {
+            throw new \InvalidArgumentException('Index can only be positive integer');
+        }
+
+        if ($index === 0) {
+            return $this->addListItem($mainNode, $value, false);
+        }
+
+        $decoded = JsonFile::parseJson($this->contents);
+
+        // no main node yet
+        if (!isset($decoded[$mainNode])) {
+            if (!$this->addMainKey($mainNode, [])) {
+                return false;
+            }
+        }
+
+        if (count($decoded[$mainNode]) === $index) {
+            return $this->addListItem($mainNode, $value, true);
+        }
+
+        // main node content not match-able
+        $nodeRegex = '{'.self::DEFINES.'^(?P<start> \s* \{ \s* (?: (?&string) \s* : (?&json) \s* , \s* )*?'.
+            preg_quote(JsonFile::encode($mainNode)).'\s*:\s*)(?P<content>(?&array))(?P<end>.*)}sx';
+
+        try {
+            if (!Preg::isMatch($nodeRegex, $this->contents, $match)) {
+                return false;
+            }
+        } catch (\RuntimeException $e) {
+            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+                return false;
+            }
+            throw $e;
+        }
+
+        assert(is_string($match['start']));
+        assert(is_string($match['content']));
+        assert(is_string($match['end']));
+
+        $children = $match['content'];
+        // invalid match due to un-regexable content, abort
+        if (false === @json_decode($children)) {
+            return false;
+        }
+
+        $listSkipToItemRegex = '{'.self::DEFINES.'^(?P<start>\[\s*((?&json)\s*+,\s*?){' . max(0, $index) . '})(?P<space_before_item>(\s*))(?P<end>.*)}sx';
+
+        $children = Preg::replaceCallback($listSkipToItemRegex, function ($m) use ($value): string {
+            return $m['start'] . $m['space_before_item'] . $this->format($value, 1) . ',' . $m['space_before_item'] . $m['end'];
+        }, $children);
+
+        $this->contents = Preg::replaceCallback($nodeRegex, static function ($m) use ($children): string {
+            return $m['start'] . $children . $m['end'];
+        }, $this->contents);
+
+        return true;
+    }
+
+    public function removeListItem(string $mainNode, int $nodeIndex): bool
+    {
+        // invalid index, that cannot be removed anyway
+        if ($nodeIndex < 0) {
+            return true;
+        }
+
+        $decoded = JsonFile::parseJson($this->contents);
+
+        // no node or empty node
+        if ([] === $decoded[$mainNode]) {
+            return true;
+        }
+
+        // no node content match-able
+        $nodeRegex = '{'.self::DEFINES.'^(?P<start> \s* \{ \s* (?: (?&string) \s* : (?&json) \s* , \s* )*?'.
+            preg_quote(JsonFile::encode($mainNode)).'\s*:\s*)(?P<content>(?&array))(?P<end>.*)}sx';
+        try {
+            if (!Preg::isMatch($nodeRegex, $this->contents, $match)) {
+                return false;
+            }
+        } catch (\RuntimeException $e) {
+            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+                return false;
+            }
+            throw $e;
+        }
+
+        assert(is_string($match['start']));
+        assert(is_string($match['content']));
+        assert(is_string($match['end']));
+
+        $children = $match['content'];
+
+        // invalid match due to un-regexable content, abort
+        if (false === @json_decode($children, true)) {
+            return false;
+        }
+
+        // no node to remove
+        if (!isset($decoded[$mainNode][$nodeIndex])) {
+            return true;
+        }
+
+        $contentRegex = '(?&json)';
+
+        if ($nodeIndex > 1) {
+            $startRegex = '(?&json)\s*+(?:,(?&json)\s*+){' . ($nodeIndex - 1) . '}';
+            // remove leading array separator in case we might remove the last
+            $contentRegex = '\s*+,?\s*+' . $contentRegex;
+            $endRegex = '(?:(\s*+,\s*+(?&json))*(?:\s*+(?&json))?)\s*+';
+        } elseif ($nodeIndex > 0) {
+            $startRegex = '(?&json)\s*+';
+            // remove leading array separator in case we might remove the last
+            $contentRegex = '\s*+,?\s*+' . $contentRegex;
+            $endRegex = '(?:(\s*+,\s*+(?&json))*(?:\s*+(?&json))?)\s*+';
+        } else {
+            $startRegex = '\s*+';
+            // remove trailing array separator when we delete first
+            $contentRegex = $contentRegex . '\s*+,?\s*+';
+            $endRegex = '(?:((?&json)\s*+,\s*+)*(?:\s*+(?&json))?)\s*+';
+        }
+
+        if (Preg::isMatch('{'.self::DEFINES.'(?P<start>\[' . $startRegex . ')(?P<content>' . $contentRegex . ')(?P<end>' . $endRegex . '\])}sx', $children, $childMatch)) {
+            $this->contents = $match['start'] . $childMatch['start'] . $childMatch['end'] . $match['end'];
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @param mixed  $content
      */
     public function addMainKey(string $key, $content): bool
@@ -516,6 +940,33 @@ class JsonManipulator
             if (Preg::isMatch('#^\{\s*\}\s*$#', $this->contents)) {
                 $this->contents = "{\n}";
             }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function changeEmptyMainKeyFromAssocToList(string $key): bool
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+
+        if (!array_key_exists($key, $decoded)) {
+            return true;
+        }
+
+        $regex = '{'.self::DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?'.preg_quote(JsonFile::encode($key)).'\s*:\s*)(?P<removal>\{(?P<removal_space>\s*+)\})(?P<end>\s*,?\s*.*)}sx';
+        if (Preg::isMatch($regex, $this->contents, $matches)) {
+            assert(is_string($matches['start']));
+            assert(is_string($matches['removal']));
+            assert(is_string($matches['end']));
+
+            // invalid match due to un-regexable content, abort
+            if (false === @json_decode($matches['removal'])) {
+                return false;
+            }
+
+            $this->contents = $matches['start'] . '[' . $matches['removal_space'] . ']' . $matches['end'];
 
             return true;
         }

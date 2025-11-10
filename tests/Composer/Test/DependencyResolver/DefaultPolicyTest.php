@@ -20,6 +20,7 @@ use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 
 class DefaultPolicyTest extends TestCase
 {
@@ -39,6 +40,11 @@ class DefaultPolicyTest extends TestCase
         $this->repoLocked = new LockArrayRepository;
 
         $this->policy = new DefaultPolicy;
+    }
+
+    protected function tearDown(): void
+    {
+        Platform::clearEnv('COMPOSER_PREFER_DEV_OVER_PRERELEASE');
     }
 
     public function testSelectSingle(): void
@@ -100,6 +106,69 @@ class DefaultPolicyTest extends TestCase
         $expected = [$packageA1->getId()];
 
         $policy = new DefaultPolicy(true);
+        $selected = $policy->selectPreferredPackages($pool, $literals);
+
+        self::assertSame($expected, $selected);
+    }
+
+    /**
+     * @testWith ["alpha1"]
+     *           ["beta1"]
+     *           ["RC1"]
+     */
+    public function testSelectLowestWithPreferDevOverPrerelease(string $stability): void
+    {
+        Platform::putEnv('COMPOSER_PREFER_DEV_OVER_PRERELEASE', '1');
+        $this->repo->addPackage($devPackage = self::getPackage('A', 'dev-master'));
+        $this->repo->addPackage($prereleasePackage = self::getPackage('A', '1.0.0-' . $stability));
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
+
+        $literals = [$devPackage->getId(), $prereleasePackage->getId()];
+        $expected = [$devPackage->getId()];
+
+        $policy = new DefaultPolicy(true, true);
+        $selected = $policy->selectPreferredPackages($pool, $literals);
+
+        self::assertSame($expected, $selected);
+    }
+
+    /**
+     * @testWith ["alpha1"]
+     *           ["beta1"]
+     *           ["RC1"]
+     */
+    public function testSelectLowestPrefersPrereleaseOverDev(string $stability): void
+    {
+        $this->repo->addPackage($devPackage = self::getPackage('A', 'dev-master'));
+        $this->repo->addPackage($prereleasePackage = self::getPackage('A', '1.0.0-' . $stability));
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
+
+        $literals = [$prereleasePackage->getId(), $devPackage->getId()];
+        $expected = [$prereleasePackage->getId()];
+
+        $policy = new DefaultPolicy(true, true);
+        $selected = $policy->selectPreferredPackages($pool, $literals);
+
+        self::assertSame($expected, $selected);
+    }
+
+    public function testSelectLowestWithPreferStableStillPrefersStable(): void
+    {
+        Platform::putEnv('COMPOSER_PREFER_DEV_OVER_PRERELEASE', '1');
+        $this->repo->addPackage($stablePackage = self::getPackage('A', '1.0.0'));
+        $this->repo->addPackage($devPackage = self::getPackage('A', 'dev-master'));
+        $this->repositorySet->addRepository($this->repo);
+
+        $pool = $this->repositorySet->createPoolForPackage('A', $this->repoLocked);
+
+        $literals = [$stablePackage->getId(), $devPackage->getId()];
+        $expected = [$stablePackage->getId()];
+
+        $policy = new DefaultPolicy(true, true);
         $selected = $policy->selectPreferredPackages($pool, $literals);
 
         self::assertSame($expected, $selected);

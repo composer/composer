@@ -1,7 +1,9 @@
 {
     "name": "my-vend/my-app",
     "license": "MIT",
-    "repositories": {
-        "packagist": false
-    }
+    "repositories": [
+        {
+            "packagist": false
+        }
+    ]
 }

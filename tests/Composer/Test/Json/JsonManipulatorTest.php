@@ -1942,11 +1942,12 @@ class JsonManipulatorTest extends TestCase
 
         self::assertTrue($manipulator->addRepository('bar', ['type' => 'composer']));
         self::assertEquals('{
-  "repositories": {
-    "bar": {
+  "repositories": [
+    {
+      "name": "bar",
       "type": "composer"
     }
-  }
+  ]
 }
 ', $manipulator->getContents());
     }
@@ -1960,11 +1961,10 @@ class JsonManipulatorTest extends TestCase
         self::assertTrue($manipulator->addRepository('bar2', ['type' => 'composer']));
         self::assertEquals("{
 \t\"a\": \"b\",
-\t\"repositories\": {
-\t\t\"bar2\": {
-\t\t\t\"type\": \"composer\"
-\t\t}
-\t}
+\t\"repositories\": [{
+\t\t\"name\": \"bar2\",
+\t\t\"type\": \"composer\"
+\t}]
 }
 ", $manipulator->getContents());
     }
@@ -1972,25 +1972,28 @@ class JsonManipulatorTest extends TestCase
     public function testAddRepositoryCanAppend(): void
     {
         $manipulator = new JsonManipulator('{
-    "repositories": {
-        "foo": {
+    "repositories": [
+        {
+            "name": "foo",
             "type": "vcs",
             "url": "lala"
         }
-    }
+    ]
 }');
 
         self::assertTrue($manipulator->addRepository('bar', ['type' => 'composer'], true));
         self::assertEquals('{
-    "repositories": {
-        "foo": {
+    "repositories": [
+        {
+            "name": "foo",
             "type": "vcs",
             "url": "lala"
         },
-        "bar": {
+        {
+            "name": "bar",
             "type": "composer"
         }
-    }
+    ]
 }
 ', $manipulator->getContents());
     }
@@ -1998,27 +2001,309 @@ class JsonManipulatorTest extends TestCase
     public function testAddRepositoryCanPrepend(): void
     {
         $manipulator = new JsonManipulator('{
-    "repositories": {
-        "foo": {
+    "repositories": [
+        {
+            "name": "foo",
             "type": "vcs",
             "url": "lala"
         }
-    }
+    ]
 }');
 
         self::assertTrue($manipulator->addRepository('bar', ['type' => 'composer'], false));
         self::assertEquals('{
-    "repositories": {
-        "bar": {
+    "repositories": [
+        {
+            "name": "bar",
             "type": "composer"
         },
-        "foo": {
+        {
+            "name": "foo",
             "type": "vcs",
             "url": "lala"
         }
-    }
+    ]
 }
 ', $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: string, 3: array, 4: bool}>
+     */
+    public static function addRepositoryProvider(): iterable
+    {
+        yield 'prepend repository (list)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "foo/bar"
+        },
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository (list)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "type": "path",
+            "url": "foo/bar"
+        }
+    ]
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+        yield 'prepend repository by name (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '{
+    "repositories": [
+        {
+            "name": "foo",
+            "type": "path",
+            "url": "foo/bar"
+        },
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "packagist.org": false
+        }
+    ]
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository by name (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "packagist.org": false
+        },
+        {
+            "name": "foo",
+            "type": "path",
+            "url": "foo/bar"
+        }
+    ]
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+        yield 'prepend repository by name (list to assoc)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '{
+    "repositories": [
+        {
+            "name": "foo",
+            "type": "path",
+            "url": "foo/bar"
+        },
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository by name (list to assoc)' => [
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        }
+    ]
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "name": "foo",
+            "type": "path",
+            "url": "foo/bar"
+        }
+    ]
+}
+',
+            'foo',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+        yield 'prepend repository (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "foo/bar"
+        },
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "packagist.org": false
+        }
+    ]
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            false,
+        ];
+        yield 'append repository (assoc)' => [
+            '{
+    "repositories": {
+        "0": {
+            "type": "git",
+            "url": "example.tld"
+        },
+        "packagist.org": false
+    }
+}
+',
+            '{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "example.tld"
+        },
+        {
+            "packagist.org": false
+        },
+        {
+            "type": "path",
+            "url": "foo/bar"
+        }
+    ]
+}
+',
+            '',
+            [
+                'type' => 'path',
+                'url' => 'foo/bar',
+            ],
+            true,
+        ];
+    }
+
+    /**
+     * @dataProvider addRepositoryProvider
+     * @param array<string, mixed>|false $config
+     */
+    public function testAddRepository(string $from, string $to, string $name, $config, bool $append): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertTrue($manipulator->addRepository($name, $config, $append));
+        self::assertEquals($to, $manipulator->getContents());
     }
 
     public function testAddRepositoryCanOverrideDeepRepos(): void
@@ -2034,11 +2319,338 @@ class JsonManipulatorTest extends TestCase
 
         self::assertTrue($manipulator->addRepository('baz', ['type' => 'composer']));
         self::assertEquals('{
-    "repositories": {
-        "baz": {
+    "repositories": [
+        {
+            "name": "baz",
             "type": "composer"
         }
+    ]
+}
+', $manipulator->getContents());
     }
+
+    /**
+     * @dataProvider provideTestSetUrlInRepository
+     */
+    public function testSetUrlInRepository(string $from, string $to, string $name, string $url): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertTrue($manipulator->setRepositoryUrl($name, $url));
+        self::assertEquals($to, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<array{0: string, 1: string, 2: string, 3: string}>
+     */
+    public static function provideTestSetUrlInRepository(): iterable
+    {
+        $from = '{
+    "repositories": {
+        "first": {
+            "type": "package",
+            "url": "https://first.test"
+        },
+        "foo": {
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        "bar": {
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    }
+}
+';
+        yield 'change first of three (assoc)' => [
+            $from,
+            '{
+    "repositories": {
+        "first": {
+            "type": "package",
+            "url": "https://new.example.org"
+        },
+        "foo": {
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        "bar": {
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    }
+}
+',
+            'first',
+            'https://new.example.org',
+        ];
+        yield 'change middle of three (assoc)' => [
+            $from,
+            '{
+    "repositories": {
+        "first": {
+            "type": "package",
+            "url": "https://first.test"
+        },
+        "foo": {
+            "type": "vcs",
+            "url": "https://new.example.org"
+        },
+        "bar": {
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    }
+}
+',
+            'foo',
+            'https://new.example.org',
+        ];
+        yield 'change last of three (assoc)' => [
+            $from,
+            '{
+    "repositories": {
+        "first": {
+            "type": "package",
+            "url": "https://first.test"
+        },
+        "foo": {
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        "bar": {
+            "type": "vcs",
+            "url": "https://new.example.org"
+        }
+    }
+}
+',
+            'bar',
+            'https://new.example.org',
+        ];
+
+        $from = '{
+    "repositories": [
+        {
+            "name": "first",
+            "type": "package",
+            "url": "https://first.test"
+        },
+        {
+            "name": "foo",
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        {
+            "name": "bar",
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    ]
+}
+';
+        yield 'change first of three (list)' => [
+            $from,
+            '{
+    "repositories": [
+        {
+            "name": "first",
+            "type": "package",
+            "url": "https://new.example.org"
+        },
+        {
+            "name": "foo",
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        {
+            "name": "bar",
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    ]
+}
+',
+            'first',
+            'https://new.example.org',
+        ];
+        yield 'change middle of three (list)' => [
+            $from,
+            '{
+    "repositories": [
+        {
+            "name": "first",
+            "type": "package",
+            "url": "https://first.test"
+        },
+        {
+            "name": "foo",
+            "type": "vcs",
+            "url": "https://new.example.org"
+        },
+        {
+            "name": "bar",
+            "type": "vcs",
+            "url": "https://other.example.org"
+        }
+    ]
+}
+',
+            'foo',
+            'https://new.example.org',
+        ];
+        yield 'change last of three (list)' => [
+            $from,
+            '{
+    "repositories": [
+        {
+            "name": "first",
+            "type": "package",
+            "url": "https://first.test"
+        },
+        {
+            "name": "foo",
+            "type": "vcs",
+            "url": "https://old.example.org"
+        },
+        {
+            "name": "bar",
+            "type": "vcs",
+            "url": "https://new.example.org"
+        }
+    ]
+}
+',
+            'bar',
+            'https://new.example.org',
+        ];
+    }
+
+    public function testInsertRepositoryBeforeAndAfterByName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": {
+        "alpha": {
+            "type": "vcs",
+            "url": "https://example.org/a"
+        },
+        "omega": {
+            "type": "vcs",
+            "url": "https://example.org/o"
+        },
+        "packagist.org": false
+    }
+}');
+        self::assertTrue($manipulator->insertRepository('beta', ['type' => 'vcs', 'url' => 'https://example.org/b'], 'omega', 0));
+        self::assertTrue($manipulator->insertRepository('gamma', ['type' => 'vcs', 'url' => 'https://example.org/g'], 'alpha', 1));
+        self::assertTrue($manipulator->insertRepository('alpha', ['type' => 'vcs', 'url' => 'https://example.org/alpha'], 'gamma', 0));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "name": "alpha",
+            "type": "vcs",
+            "url": "https://example.org/alpha"
+        },
+        {
+            "name": "gamma",
+            "type": "vcs",
+            "url": "https://example.org/g"
+        },
+        {
+            "name": "beta",
+            "type": "vcs",
+            "url": "https://example.org/b"
+        },
+        {
+            "name": "omega",
+            "type": "vcs",
+            "url": "https://example.org/o"
+        },
+        {
+            "packagist.org": false
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveRepositoryRemovesFromAssocButDoesNotConvertsFromAssocToList(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": {
+        "baz": {
+            "type": "package",
+            "package": {}
+        },
+        "packagist.org": false
+    }
+}');
+
+        self::assertTrue($manipulator->removeRepository('baz'));
+        self::assertEquals('{
+    "repositories": {
+        "packagist.org": false
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveRepositoryRemovesFromList(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "name": "baz",
+            "type": "package",
+            "package": {
+            }
+        },
+        {
+            "packagist.org": false
+        }
+    ]
+}');
+
+        self::assertTrue($manipulator->removeRepository('baz'));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "packagist.org": false
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddRepositoryConvertsFromAssocToList(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": {
+        "baz": {
+            "type": "package",
+            "package": {}
+        },
+        "packagist.org": false
+    }
+}');
+
+        self::assertTrue($manipulator->addRepository('foo', ['type' => 'composer']));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "name": "baz",
+            "type": "package",
+            "package": {
+            }
+        },
+        {
+            "packagist.org": false
+        },
+        {
+            "name": "foo",
+            "type": "composer"
+        }
+    ]
 }
 ', $manipulator->getContents());
     }
@@ -2578,6 +3190,586 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ', $manipulator->getContents());
+    }
+
+    /**
+     * @dataProvider addListItemProvider
+     * @param array<string, mixed>|int|false $value
+     */
+    public function testAddListItem(string $from, string $to, string $mainNode, $value, bool $append): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertTrue($manipulator->addListItem($mainNode, $value, $append));
+        self::assertEquals($to, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: string, 3: array<string, mixed>|false|int, 4: bool}>
+     */
+    public static function addListItemProvider(): iterable
+    {
+        yield 'int-array first append to unset' => [
+            '{}',
+            '{
+    "main": [1]
+}
+',
+            'main',
+            1,
+            true,
+        ];
+        yield 'int-array (one-line) first append to empty' => [
+            '{
+    "main": [ ]
+}
+',
+            '{
+    "main": [1]
+}
+',
+            'main',
+            1,
+            true,
+        ];
+        yield 'int-array (one-line) second append to non-empty-list' => [
+            '{
+    "main": [ 1 ]
+}
+',
+            '{
+    "main": [ 1, 2 ]
+}
+',
+            'main',
+            2,
+            true,
+        ];
+        yield 'object-array first append to unset' => [
+            '{}',
+            '{
+    "main": [{
+        "value": 1
+    }]
+}
+',
+            'main',
+            ['value' => 1],
+            true,
+        ];
+        yield 'object-array (one-line) first append to empty' => [
+            '{
+    "main": [ ]
+}
+',
+            '{
+    "main": [{
+        "value": 2
+    }]
+}
+',
+            'main',
+            ['value' => 2],
+            true,
+        ];
+        yield 'mixed-array (one-line) second append to non-empty-list' => [
+            '{
+    "main": [ 1 ]
+}
+',
+            '{
+    "main": [ 1, {
+        "value": 2
+    } ]
+}
+',
+            'main',
+            ['value' => 2],
+            true,
+        ];
+
+        yield 'int-array (multi-line) first append to empty' => [
+            '{
+    "main": [
+    ]
+}
+',
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            'main',
+            1,
+            true,
+        ];
+        yield 'int-array (multi-line) second append to non-empty-list' => [
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            '{
+    "main": [
+        1,
+        2
+    ]
+}
+',
+            'main',
+            2,
+            true,
+        ];
+        yield 'object-array (multi-line) first append to empty' => [
+            '{
+    "main": [
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "value": 1
+        }
+    ]
+}
+',
+            'main',
+            ['value' => 1],
+            true,
+        ];
+        yield 'mixed-array (multi-line) second append to non-empty-list' => [
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            '{
+    "main": [
+        1,
+        {
+            "value": 2
+        }
+    ]
+}
+',
+            'main',
+            ['value' => 2],
+            true,
+        ];
+
+        yield 'int-array first prepend to unset' => [
+            '{}',
+            '{
+    "main": [1]
+}
+',
+            'main',
+            1,
+            false,
+        ];
+        yield 'int-array (one-line) first prepend to empty' => [
+            '{
+    "main": [ ]
+}
+',
+            '{
+    "main": [1]
+}
+',
+            'main',
+            1,
+            false,
+        ];
+        yield 'int-array (one-line) second prepend to non-empty-list' => [
+            '{
+    "main": [ 1 ]
+}
+',
+            '{
+    "main": [ 2, 1 ]
+}
+',
+            'main',
+            2,
+            false,
+        ];
+        yield 'object-array first prepend to unset' => [
+            '{}',
+            '{
+    "main": [{
+        "value": 1
+    }]
+}
+',
+            'main',
+            ['value' => 1],
+            false,
+        ];
+        yield 'object-array (one-line) first prepend to empty' => [
+            '{
+    "main": [ ]
+}
+',
+            '{
+    "main": [{
+        "value": 1
+    }]
+}
+',
+            'main',
+            ['value' => 1],
+            false,
+        ];
+        yield 'mixed-array (one-line) second prepend to non-empty-list' => [
+            '{
+    "main": [ 1 ]
+}
+',
+            '{
+    "main": [ {
+        "value": 2
+    }, 1 ]
+}
+',
+            'main',
+            ['value' => 2],
+            false,
+        ];
+
+        yield 'int-array (multi-line) first prepend to empty' => [
+            '{
+    "main": [
+    ]
+}
+',
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            'main',
+            1,
+            false,
+        ];
+        yield 'int-array (multi-line) second prepend to non-empty-list' => [
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            '{
+    "main": [
+        2,
+        1
+    ]
+}
+',
+            'main',
+            2,
+            false,
+        ];
+        yield 'object-array (multi-line) first prepend to empty' => [
+            '{
+    "main": [
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "value": 1
+        }
+    ]
+}
+',
+            'main',
+            ['value' => 1],
+            false,
+        ];
+        yield 'mixed-array (multi-line) second prepend to non-empty-list' => [
+            '{
+    "main": [
+        1
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "value": 2
+        },
+        1
+    ]
+}
+',
+            'main',
+            ['value' => 2],
+            false,
+        ];
+    }
+
+    /**
+     * @dataProvider removeListItemProvider
+     */
+    public function testRemoveListItem(string $from, string $to, string $mainNode, int $indexToRemove): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertTrue($manipulator->removeListItem($mainNode, $indexToRemove));
+        self::assertEquals($to, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: string, 3: int}>
+     */
+    public static function removeListItemProvider(): iterable
+    {
+        yield 'int-array (one-line) remove first' => [
+            '{
+    "main": [
+        1, 2, 3
+    ]
+}',
+            '{
+    "main": [
+        2, 3
+    ]
+}
+',
+            'main',
+            0,
+        ];
+        yield 'int-array (one-line) remove middle' => [
+            '{
+    "main": [
+        1, 2, 3
+    ]
+}',
+            '{
+    "main": [
+        1, 3
+    ]
+}
+',
+            'main',
+            1,
+        ];
+        yield 'int-array (one-line) remove last' => [
+            '{
+    "main": [
+        1, 2, 3
+    ]
+}',
+            '{
+    "main": [
+        1, 2
+    ]
+}
+',
+            'main',
+            2,
+        ];
+        yield 'int-array (multi-line) remove first' => [
+            '{
+    "main": [
+        1,
+        2,
+        3
+    ]
+}',
+            '{
+    "main": [
+        2,
+        3
+    ]
+}
+',
+            'main',
+            0,
+        ];
+        yield 'int-array (multi-line) remove middle' => [
+            '{
+    "main": [
+        1,
+        2,
+        3
+    ]
+}',
+            '{
+    "main": [
+        1,
+        3
+    ]
+}
+',
+            'main',
+            1,
+        ];
+        yield 'int-array (multi-line) remove last' => [
+            '{
+    "main": [
+        1,
+        2,
+        3
+    ]
+}',
+            '{
+    "main": [
+        1,
+        2
+    ]
+}
+',
+            'main',
+            2,
+        ];
+    }
+
+    /**
+     * @dataProvider insertListItemProvider
+     * @param array<string, mixed> $value
+     */
+    public function testInsertListItem(string $from, string $to, string $mainNode, array $value, int $indexToInsertAt): void
+    {
+        $manipulator = new JsonManipulator($from);
+
+        self::assertTrue($manipulator->insertListItem($mainNode, $value, $indexToInsertAt));
+        self::assertEquals($to, $manipulator->getContents());
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: string, 3: array<string, mixed>, 4: int}>
+     */
+    public static function insertListItemProvider(): iterable
+    {
+        yield 'insert at 0 to unset list' => [
+            '{
+}
+',
+            '{
+    "main": [{
+        "foo": 1
+    }]
+}
+',
+            'main',
+            ['foo' => 1],
+            0,
+        ];
+        yield 'insert at 0 to empty list' => [
+            '{
+    "main": [
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "foo": 1
+        }
+    ]
+}
+',
+            'main',
+            ['foo' => 1],
+            0,
+        ];
+        yield 'insert at 0 list of 2' => [
+            '{
+    "main": [
+        {
+            "foo": 2
+        },
+        {
+            "foo": 4
+        }
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "foo": 1
+        },
+        {
+            "foo": 2
+        },
+        {
+            "foo": 4
+        }
+    ]
+}
+',
+            'main',
+            ['foo' => 1],
+            0,
+        ];
+        yield 'insert at 1 list of 2' => [
+            '{
+    "main": [
+        {
+            "foo": 2
+        },
+        {
+            "foo": 4
+        }
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "foo": 2
+        },
+        {
+            "foo": 3
+        },
+        {
+            "foo": 4
+        }
+    ]
+}
+',
+            'main',
+            ['foo' => 3],
+            1,
+        ];
+        yield 'insert at 2 list of 2' => [
+            '{
+    "main": [
+        {
+            "foo": 2
+        },
+        {
+            "foo": 4
+        }
+    ]
+}
+',
+            '{
+    "main": [
+        {
+            "foo": 2
+        },
+        {
+            "foo": 4
+        },
+        {
+            "foo": 5
+        }
+    ]
+}
+',
+            'main',
+            ['foo' => 5],
+            2,
+        ];
     }
 
     public function testEscapedUnicodeDoesNotCauseBacktrackLimitErrorGithubIssue8131(): void

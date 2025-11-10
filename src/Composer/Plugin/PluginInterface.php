@@ -32,7 +32,7 @@ interface PluginInterface
      *
      * @var string
      */
-    public const PLUGIN_API_VERSION = '2.6.0';
+    public const PLUGIN_API_VERSION = '2.9.0';
 
     /**
      * Apply plugin modifications to Composer

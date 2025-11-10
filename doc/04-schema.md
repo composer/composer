@@ -428,7 +428,7 @@ dependencies from being installed.
 
 #### conflict
 
-Map of packages that conflict with this version of this package. They
+Map of packages that are incompatible with this version of this package. They
 will not be allowed to be installed together with your package.
 
 Note that when specifying ranges like `<1.0 >=1.1` in a `conflict` link,
@@ -870,7 +870,7 @@ By default Packagist is added last which means that custom repositories can
 override packages from it.
 
 Using JSON object notation is also possible. However, JSON key/value pairs
-are to be considered unordered so consistent behaviour cannot be guaranteed.
+are to be considered unordered so consistent behaviour cannot be guaranteed and is deprecated.
 
 ```json
 {
@@ -880,6 +880,20 @@ are to be considered unordered so consistent behaviour cannot be guaranteed.
             "url": "http://packages.foo.com"
         }
     }
+}
+```
+
+It will be superseded by the name property
+
+```json
+{
+    "repositories": [
+        {
+            "name": "foo",
+            "type": "composer",
+            "url": "http://packages.foo.com"
+        }
+    ]
 }
 ```
 

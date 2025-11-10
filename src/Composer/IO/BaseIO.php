@@ -119,6 +119,7 @@ abstract class BaseIO implements IOInterface
         $githubOauth = $config->get('github-oauth');
         $gitlabOauth = $config->get('gitlab-oauth');
         $gitlabToken = $config->get('gitlab-token');
+        $forgejoToken = $config->get('forgejo-token');
         $httpBasic = $config->get('http-basic');
         $bearerToken = $config->get('bearer');
         $customHeaders = $config->get('custom-headers');
@@ -163,6 +164,15 @@ abstract class BaseIO implements IOInterface
             $username = is_array($token) ? $token["username"] : $token;
             $password = is_array($token) ? $token["token"] : 'private-token';
             $this->checkAndSetAuthentication($domain, $username, $password);
+        }
+
+        foreach ($forgejoToken as $domain => $cred) {
+            if (!in_array($domain, $config->get('forgejo-domains'), true)) {
+                $this->debug($domain.' is not in the configured forgejo-domains, adding it implicitly as authentication is configured for this domain');
+                $config->merge(['config' => ['forgejo-domains' => array_merge($config->get('forgejo-domains'), [$domain])]], 'implicit-due-to-auth');
+            }
+
+            $this->checkAndSetAuthentication($domain, $cred['username'], $cred['token']);
         }
 
         // reload http basic credentials from config if available

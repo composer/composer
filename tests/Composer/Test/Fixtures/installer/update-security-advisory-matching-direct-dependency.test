@@ -1,0 +1,65 @@
+--TEST--
+Security advisory matching direct dependency preventing a successful update.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "1.0.0"
+    },
+    "config": {
+        "audit": {
+            "block-insecure": true
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0.0",
+                    "source": { "reference": "some.branch", "type": "git", "url": "" }
+                }
+            ],
+            "security-advisories": {
+                "acme/library": [
+                    {
+                        "advisoryId": "PKSA-1234-abcd-1234",
+                        "packageName": "acme/library",
+                        "remoteId": "test",
+                        "title": "Security Advisory",
+                        "link": null,
+                        "cve": null,
+                        "affectedVersions": ">=1.0.0,<1.1.0",
+                        "source": "Tests",
+                        "reportedAt": "2024-04-31 12:37:47",
+                        "composerRepository": "Package Repository",
+                        "severity": "high",
+                        "sources": [
+                            {
+                                "name": "Security Advisory",
+                                "remoteId": "test"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
+--RUN--
+update -v
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires acme/library 1.0.0 (exact version match: 1.0.0 or 1.0.0.0), found acme/library[1.0.0] but these were not loaded, because they are affected by security advisories. To ignore the advisories, add ("PKSA-1234-abcd-1234") to the audit "ignore" config. To turn the feature off entirely, you can set "block-insecure" to false in your "audit" config.
+
+--EXPECT--

@@ -87,6 +87,51 @@ Reported at: 2022-05-25T13:21:00+00:00',
             'output' => 'No security vulnerability advisories found.',
         ];
 
+        yield 'abandoned packages individually ignored via full vendor' => [
+            'data' => [
+                'packages' => [
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => false,
+                'abandoned' => Auditor::ABANDONED_FAIL,
+                'ignore-abandoned' => ['vendor/*'],
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => 'No security vulnerability advisories found.',
+        ];
+
+        yield 'abandoned packages individually ignored via package name' => [
+            'data' => [
+                'packages' => [
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => false,
+                'abandoned' => Auditor::ABANDONED_FAIL,
+                'ignore-abandoned' => [$abandonedWithReplacement->getName(), $abandonedNoReplacement->getName()],
+            ],
+            'expected' => Auditor::STATUS_OK,
+            'output' => 'No security vulnerability advisories found.',
+        ];
+
+        yield 'abandoned packages individually ignored not matching package name' => [
+            'data' => [
+                'packages' => [
+                    $abandonedWithReplacement,
+                    $abandonedNoReplacement,
+                ],
+                'warningOnly' => false,
+                'abandoned' => Auditor::ABANDONED_FAIL,
+                'ignore-abandoned' => ['acme/test'],
+            ],
+            'expected' => Auditor::STATUS_ABANDONED,
+            'output' => 'No security vulnerability advisories found.
+Found 2 abandoned packages:
+vendor/abandoned is abandoned. Use foo/bar instead.
+vendor/abandoned2 is abandoned. No replacement was suggested.',
+        ];
+
         yield 'abandoned packages reported only' => [
             'data' => [
                 'packages' => [
@@ -195,7 +240,7 @@ Found 2 abandoned packages:
             $this->expectException(InvalidArgumentException::class);
         }
         $auditor = new Auditor();
-        $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly'], [], $data['abandoned'] ?? Auditor::ABANDONED_IGNORE);
+        $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly'], [], $data['abandoned'] ?? Auditor::ABANDONED_IGNORE, [], false, $data['ignore-abandoned'] ?? []);
         self::assertSame($expected, $result);
         self::assertSame($output, trim(str_replace("\r", '', $io->getOutput())));
     }
@@ -385,6 +430,110 @@ Found 2 abandoned packages:
                 ['text' => 'Found 3 ignored security vulnerability advisories affecting 1 package:'],
             ],
         ];
+    }
+
+    public function testAuditWithIgnoreUnreachable(): void
+    {
+        $packages = [
+            new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
+        ];
+
+        $errorMessage = 'The "https://example.org/packages.json" file could not be downloaded: HTTP/1.1 404 Not Found';
+
+        // Create a mock RepositorySet that simulates multiple repositories with the middle one being unreachable
+        $repoSet = $this->getMockBuilder(RepositorySet::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getMatchingSecurityAdvisories'])
+            ->getMock();
+
+        $repoSet->method('getMatchingSecurityAdvisories')
+            ->willReturnCallback(static function ($packages, $allowPartialAdvisories, $ignoreUnreachable) use ($errorMessage) {
+                if (!$ignoreUnreachable) {
+                    throw new \Composer\Downloader\TransportException($errorMessage, 404);
+                }
+
+                // Simulate multiple repositories with the middle one being unreachable
+                // First and third repositories have advisories, middle one is unreachable
+                return [
+                    'advisories' => [
+                        'vendor1/package1' => [
+                            new SecurityAdvisory(
+                                'vendor1/package1',
+                                'CVE-2023-12345',
+                                new \Composer\Semver\Constraint\Constraint('=', '3.0.0.0'),
+                                'First repo advisory',
+                                [['name' => 'test', 'remoteId' => '1']],
+                                new \DateTimeImmutable('2023-01-01', new \DateTimeZone('UTC')),
+                                'CVE-2023-12345',
+                                'https://example.com/advisory/1',
+                                'medium'
+                            ),
+                            new SecurityAdvisory(
+                                'vendor1/package1',
+                                'CVE-2023-67890',
+                                new \Composer\Semver\Constraint\Constraint('=', '3.0.0.0'),
+                                'Third repo advisory',
+                                [['name' => 'test', 'remoteId' => '3']],
+                                new \DateTimeImmutable('2023-01-01', new \DateTimeZone('UTC')),
+                                'CVE-2023-67890',
+                                'https://example.com/advisory/3',
+                                'high'
+                            ),
+                        ],
+                    ],
+                    'unreachableRepos' => [$errorMessage],
+                ];
+            });
+
+        $auditor = new Auditor();
+
+        // Test without ignoreUnreachable flag
+        try {
+            $auditor->audit(new BufferIO(), $repoSet, $packages, Auditor::FORMAT_PLAIN, false);
+            self::fail('Expected TransportException was not thrown');
+        } catch (\Composer\Downloader\TransportException $e) {
+            self::assertStringContainsString('HTTP/1.1 404 Not Found', $e->getMessage());
+        }
+
+        // Test with ignoreUnreachable flag
+        $io = new BufferIO();
+        $result = $auditor->audit($io, $repoSet, $packages, Auditor::FORMAT_PLAIN, false, [], Auditor::ABANDONED_IGNORE, [], true);
+
+        // Should find advisories from the reachable repositories
+        self::assertSame(Auditor::STATUS_VULNERABLE, $result);
+
+        $output = $io->getOutput();
+        self::assertStringContainsString('The following repositories were unreachable:', $output);
+        self::assertStringContainsString('HTTP/1.1 404 Not Found', $output);
+
+        // Verify that advisories from reachable repositories were found
+        self::assertStringContainsString('First repo advisory', $output);
+        self::assertStringContainsString('Third repo advisory', $output);
+        self::assertStringContainsString('CVE-2023-12345', $output);
+        self::assertStringContainsString('CVE-2023-67890', $output);
+
+        // Test with JSON format
+        $io = new BufferIO();
+        $result = $auditor->audit($io, $repoSet, $packages, Auditor::FORMAT_JSON, false, [], Auditor::ABANDONED_IGNORE, [], true);
+        self::assertSame(Auditor::STATUS_VULNERABLE, $result);
+
+        $json = json_decode($io->getOutput(), true);
+        self::assertArrayHasKey('unreachable-repositories', $json);
+        self::assertCount(1, $json['unreachable-repositories']);
+        self::assertStringContainsString('HTTP/1.1 404 Not Found', $json['unreachable-repositories'][0]);
+
+        // Verify that advisories from reachable repositories were included in JSON output
+        self::assertArrayHasKey('advisories', $json);
+        self::assertArrayHasKey('vendor1/package1', $json['advisories']);
+        self::assertCount(2, $json['advisories']['vendor1/package1']);
+
+        // Check first advisory
+        self::assertSame('CVE-2023-12345', $json['advisories']['vendor1/package1'][0]['cve']);
+        self::assertSame('First repo advisory', $json['advisories']['vendor1/package1'][0]['title']);
+
+        // Check second advisory
+        self::assertSame('CVE-2023-67890', $json['advisories']['vendor1/package1'][1]['cve']);
+        self::assertSame('Third repo advisory', $json['advisories']['vendor1/package1'][1]['title']);
     }
 
     /**

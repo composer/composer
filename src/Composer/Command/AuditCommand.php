@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Advisory\AuditConfig;
 use Composer\Composer;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\RepositoryUtils;
@@ -35,12 +36,15 @@ class AuditCommand extends BaseCommand
                 new InputOption('locked', null, InputOption::VALUE_NONE, 'Audit based on the lock file instead of the installed packages.'),
                 new InputOption('abandoned', null, InputOption::VALUE_REQUIRED, 'Behavior on abandoned packages. Must be "ignore", "report", or "fail".', null, Auditor::ABANDONEDS),
                 new InputOption('ignore-severity', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Ignore advisories of a certain severity level.', [], ['low', 'medium', 'high', 'critical']),
+                new InputOption('ignore-unreachable', null, InputOption::VALUE_NONE, 'Ignore repositories that are unreachable or return a non-200 status code.'),
             ])
             ->setHelp(
                 <<<EOT
 The <info>audit</info> command checks for security vulnerability advisories for installed packages.
 
 If you do not want to include dev dependencies in the audit you can omit them with --no-dev
+
+If you want to ignore repositories that are unreachable or return a non-200 status code, use --ignore-unreachable
 
 Read more at https://getcomposer.org/doc/03-cli.md#audit
 EOT
@@ -65,16 +69,17 @@ EOT
             $repoSet->addRepository($repo);
         }
 
-        $auditConfig = $composer->getConfig()->get('audit');
+        $auditConfig = AuditConfig::fromConfig($composer->getConfig());
 
         $abandoned = $input->getOption('abandoned');
         if ($abandoned !== null && !in_array($abandoned, Auditor::ABANDONEDS, true)) {
             throw new \InvalidArgumentException('--audit must be one of '.implode(', ', Auditor::ABANDONEDS).'.');
         }
 
-        $abandoned = $abandoned ?? $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL;
+        $abandoned = $abandoned ?? $auditConfig->abandoned;
 
-        $ignoreSeverities = $input->getOption('ignore-severity') ?? [];
+        $ignoreSeverities = array_merge($input->getOption('ignore-severity'), $auditConfig->ignoreSeverity);
+        $ignoreUnreachable = $input->getOption('ignore-unreachable') || $auditConfig->ignoreUnreachable;
 
         return min(255, $auditor->audit(
             $this->getIO(),
@@ -82,9 +87,11 @@ EOT
             $packages,
             $this->getAuditFormat($input, 'format'),
             false,
-            $auditConfig['ignore'] ?? [],
+            $auditConfig->ignoreList,
             $abandoned,
-            $ignoreSeverities
+            $ignoreSeverities,
+            $ignoreUnreachable,
+            $auditConfig->ignoreAbandonedPackages
         ));
 
     }

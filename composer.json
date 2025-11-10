@@ -23,6 +23,7 @@
     ],
     "require": {
         "php": "^7.2.5 || ^8.0",
+        "ext-json": "*",
         "composer/ca-bundle": "^1.5",
         "composer/class-map-generator": "^1.4.0",
         "composer/metadata-minifier": "^1.0",
@@ -53,9 +54,10 @@
         "phpstan/phpstan-symfony": "^1.4.0"
     },
     "suggest": {
-        "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages",
-        "ext-zip": "Enabling the zip extension allows you to unzip archives",
-        "ext-zlib": "Allow gzip compression of HTTP requests"
+        "ext-curl": "Provides HTTP support (will fallback to PHP streams if missing)",
+        "ext-openssl": "Enables access to repositories and packages over HTTPS",
+        "ext-zip": "Allows direct extraction of ZIP archives (unzip/7z binaries will be used instead if available)",
+        "ext-zlib": "Enables gzip for HTTP requests"
     },
     "config": {
         "platform": {
