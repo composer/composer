@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -54,6 +56,8 @@ class JsonFile
     private $io;
     /** @var string */
     private $indent = self::INDENT_DEFAULT;
+    /** @var JsonEnvParser|null */
+    private $envParser;
 
     /**
      * Initializes json file reader/parser.
@@ -62,7 +66,7 @@ class JsonFile
      * @param  ?HttpDownloader           $httpDownloader required for loading http/https json files
      * @throws \InvalidArgumentException
      */
-    public function __construct(string $path, ?HttpDownloader $httpDownloader = null, ?IOInterface $io = null)
+    public function __construct(string $path, ?HttpDownloader $httpDownloader = null, ?IOInterface $io = null, ?JsonEnvParser $envParser = null)
     {
         $this->path = $path;
 
@@ -71,6 +75,7 @@ class JsonFile
         }
         $this->httpDownloader = $httpDownloader;
         $this->io = $io;
+        $this->envParser = $envParser;
     }
 
     public function getPath(): string
@@ -100,7 +105,7 @@ class JsonFile
                 $json = $this->httpDownloader->get($this->path)->getBody();
             } else {
                 if (!Filesystem::isReadable($this->path)) {
-                    throw new \RuntimeException('The file "'.$this->path.'" is not readable.');
+                    throw new \RuntimeException('The file "' . $this->path . '" is not readable.');
                 }
                 if ($this->io && $this->io->isDebug()) {
                     $realpathInfo = '';
@@ -115,16 +120,16 @@ class JsonFile
         } catch (TransportException $e) {
             throw new \RuntimeException($e->getMessage(), 0, $e);
         } catch (\Exception $e) {
-            throw new \RuntimeException('Could not read '.$this->path."\n\n".$e->getMessage());
+            throw new \RuntimeException('Could not read ' . $this->path . "\n\n" . $e->getMessage());
         }
 
         if ($json === false) {
-            throw new \RuntimeException('Could not read '.$this->path);
+            throw new \RuntimeException('Could not read ' . $this->path);
         }
 
         $this->indent = self::detectIndenting($json);
 
-        return static::parseJson($json, $this->path);
+        return static::parseJson($json, $this->path, $this->envParser);
     }
 
     /**
@@ -147,12 +152,12 @@ class JsonFile
         if (!is_dir($dir)) {
             if (file_exists($dir)) {
                 throw new \UnexpectedValueException(
-                    realpath($dir).' exists and is not a directory.'
+                    realpath($dir) . ' exists and is not a directory.'
                 );
             }
             if (!@mkdir($dir, 0777, true)) {
                 throw new \UnexpectedValueException(
-                    $dir.' does not exist and could not be created.'
+                    $dir . ' does not exist and could not be created.'
                 );
             }
         }
@@ -160,7 +165,7 @@ class JsonFile
         $retries = 3;
         while ($retries--) {
             try {
-                $this->filePutContentsIfModified($this->path, static::encode($hash, $options, $this->indent). ($options & JSON_PRETTY_PRINT ? "\n" : ''));
+                $this->filePutContentsIfModified($this->path, static::encode($hash, $options, $this->indent) . ($options & JSON_PRETTY_PRINT ? "\n" : ''));
                 break;
             } catch (\Exception $e) {
                 if ($retries > 0) {
@@ -202,7 +207,7 @@ class JsonFile
     public function validateSchema(int $schema = self::STRICT_SCHEMA, ?string $schemaFile = null): bool
     {
         if (!Filesystem::isReadable($this->path)) {
-            throw new \RuntimeException('The file "'.$this->path.'" is not readable.');
+            throw new \RuntimeException('The file "' . $this->path . '" is not readable.');
         }
         $content = file_get_contents($this->path);
         $data = json_decode($content);
@@ -249,7 +254,7 @@ class JsonFile
             $schemaData->additionalProperties = false;
             $schemaData->required = ['name', 'description'];
         } elseif ($schema === self::AUTH_SCHEMA && $isComposerSchemaFile) {
-            $schemaData = (object) ['$ref' => $schemaFile.'#/properties/config', '$schema' => "https://json-schema.org/draft-04/schema#"];
+            $schemaData = (object) ['$ref' => $schemaFile . '#/properties/config', '$schema' => "https://json-schema.org/draft-04/schema#"];
         }
 
         $validator = new Validator();
@@ -260,9 +265,9 @@ class JsonFile
         if (!$validator->isValid()) {
             $errors = [];
             foreach ($validator->getErrors() as $error) {
-                $errors[] = ($error['property'] ? $error['property'].' : ' : '').$error['message'];
+                $errors[] = ($error['property'] ? $error['property'] . ' : ' : '') . $error['message'];
             }
-            throw new JsonValidationException('"'.$source.'" does not match the expected JSON schema', $errors);
+            throw new JsonValidationException('"' . $source . '" does not match the expected JSON schema', $errors);
         }
 
         return true;
@@ -324,7 +329,7 @@ class JsonFile
                 $msg = 'Unknown error';
         }
 
-        throw new \RuntimeException('JSON encoding failed: '.$msg);
+        throw new \RuntimeException('JSON encoding failed: ' . $msg);
     }
 
     /**
@@ -336,7 +341,7 @@ class JsonFile
      * @throws ParsingException
      * @return mixed
      */
-    public static function parseJson(?string $json, ?string $file = null)
+    public static function parseJson(?string $json, ?string $file = null, ?JsonEnvParser $envParser = null)
     {
         if (null === $json) {
             return null;
@@ -361,6 +366,14 @@ class JsonFile
             }
 
             self::validateSyntax($json, $file);
+        }
+
+        if (!is_array($data)) {
+            return $data;
+        }
+
+        if ($envParser !== null) {
+            $data = $envParser->apply($data, $file);
         }
 
         return $data;

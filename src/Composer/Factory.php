@@ -37,6 +37,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Version\VersionParser;
 use Composer\Downloader\TransportException;
+use Composer\Json\JsonEnvParser;
 use Composer\Json\JsonValidationException;
 use Composer\Repository\InstalledRepositoryInterface;
 use UnexpectedValueException;
@@ -206,7 +207,8 @@ class Factory
         }
 
         // load global auth file
-        $file = new JsonFile($config->get('home').'/auth.json');
+        $envParser = new JsonEnvParser($io);
+        $file = new JsonFile($config->get('home').'/auth.json', null, $io, $envParser);
         if ($file->exists()) {
             if ($io instanceof IOInterface) {
                 $io->writeError('Loading config file ' . $file->getPath(), true, IOInterface::DEBUG);
@@ -330,8 +332,9 @@ class Factory
         if (isset($composerFile)) {
             $io->writeError('Loading config file ' . $composerFile .' ('.realpath($composerFile).')', true, IOInterface::DEBUG);
             $config->setConfigSource(new JsonConfigSource(new JsonFile(realpath($composerFile), null, $io)));
+            $envParser = new JsonEnvParser($io);
 
-            $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json', null, $io);
+            $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json', null, $io, $envParser);
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 self::validateJsonSchema($io, $localAuthFile, JsonFile::AUTH_SCHEMA);

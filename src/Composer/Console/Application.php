@@ -42,6 +42,7 @@ use Composer\Util\ErrorHandler;
 use Composer\Util\HttpDownloader;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Exception\NoSslException;
+use Composer\Json\JsonEnvParser;
 use Composer\XdebugHandler\XdebugHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 
@@ -161,6 +162,11 @@ class Application extends BaseApplication
         if ($input->hasParameterOption('--no-cache')) {
             $io->writeError('Disabling cache usage', true, IOInterface::DEBUG);
             Platform::putEnv('COMPOSER_CACHE_DIR', Platform::isWindows() ? 'nul' : '/dev/null');
+        }
+
+        if(JsonEnvParser::getDotEnvPath() === null){
+            $dotEnvPath = Platform::getCwd() . ('/' . ($input->getParameterOption('--dotenv', null) ?? '.env'));
+            JsonEnvParser::setDotEnvPath($dotEnvPath, $this->io);
         }
 
         // switch working dir
@@ -701,6 +707,7 @@ class Application extends BaseApplication
         $definition->addOption(new InputOption('--no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'));
         $definition->addOption(new InputOption('--working-dir', '-d', InputOption::VALUE_REQUIRED, 'If specified, use the given directory as working directory.'));
         $definition->addOption(new InputOption('--no-cache', null, InputOption::VALUE_NONE, 'Prevent use of the cache'));
+        $definition->addOption(new InputOption('--dotenv', null, InputOption::VALUE_REQUIRED, 'Path to a .env file used for ${ENV} placeholders.'));
 
         return $definition;
     }

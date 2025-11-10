@@ -36,6 +36,7 @@ use Composer\Console\Application;
 use Composer\XdebugHandler\XdebugHandler;
 use Composer\Util\Platform;
 use Composer\Util\ErrorHandler;
+use Symfony\Component\Dotenv\Dotenv;
 
 error_reporting(-1);
 
