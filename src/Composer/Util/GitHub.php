@@ -105,16 +105,17 @@ class GitHub
         ]);
 
         $this->io->writeError([
-            '1. When working with _public_ GitHub repositories only, use a fine-grained token with read-only access to public information.',
+            '1. When you don\'t use \'vcs\'  type \'repositories\'  in composer.json and do not need to clone source or download dist files',
+            'from private GitHub repositories over HTTPS, use a fine-grained token with read-only access to public information.',
             'Use the following URL to create such a token:',
             'https://'.$originUrl.'/settings/personal-access-tokens/new?name=' . str_replace('%20', '+', rawurlencode($note)),
             '',
         ]);
 
         $this->io->writeError([
-            '2. When you need to work with _private_ GitHub repositories as well, but they all belong to a single user or organisation,',
-            'use a fine-grained token with repository read permissions only. You can start with the following URL, but you may need to',
-            'change the resource owner to the right user or organisation. Additionally, you can scope permissions down to apply only to selected repositories.',
+            '2. When all relevant _private_ GitHub repositories belong to a single user or organisation, use a fine-grained token with',
+            'repository "content" read-only permissions. You can start with the following URL, but you may need to change the resource owner',
+            'to the right user or organisation. Additionally, you can scope permissions down to apply only to selected repositories.',
             'https://'.$originUrl.'/settings/personal-access-tokens/new?contents=read&name=' . str_replace('%20', '+', rawurlencode($note)),
             '',
         ]);
