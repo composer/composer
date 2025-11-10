@@ -346,11 +346,16 @@ Read more about [Personal Access Tokens](https://docs.github.com/en/authenticati
 It is [recommended](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#types-of-personal-access-tokens) to use fine-grained tokens,
 as you can have much tighter control over what can be accessed. Composer requires read-only access to repository metadata and contents.
 
-When you are working with public repositories only but hit the GitHub rate limit, a fine-grained token with read-only access to public repositories is sufficient. Even without any additional permissions, tokens always include read-only access to all public repositories on GitHub.
+In most cases, a fine-grained token with read-only access to public repositories might be sufficient. Even without any additional permissions, these tokens [raise your API rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api).
 
-When you need to access private repositories as well, fine-grained tokens (as of September 2025) are limited in that you can only use them to access the private repositories of a single user or a single organisation at once. You may want to check the [GitHub documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#fine-grained-personal-access-tokens-limitations) on details about that. If this is not a problem for your use case, go ahead with a fine-grained token. The token can be bound to either all of your or the organisation's repositories, or even scoped down to only selected repositories. For Composer, read-only access to "Contents" is sufficient.
+Additional permissions will be necessary in the following cases:
 
-If you need to work with repositories from different organisations, check if using directory-specific authentication configuration can meet your requirements.
+- You are using `vcs` type `repositories` entries in your `composer.json` file pointing to private repositories.
+- You are cloning `source` or downloading `dist` files for private repositories over HTTPS (and not over SSH, for example).
+
+In these cases, create a fine-grained token with read-only access to "contents". The token can be bound to either all of your or the organisation's repositories, or even scoped down to only selected repositories.
+
+As of November 2025, fine-grained tokens are limited in that you can only use them to access the private repositories of a single user _or_ a single organisation at once. You may want to check the [GitHub documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#fine-grained-personal-access-tokens-limitations) on details about that. If you need to work with repositories from different organisations, check if using directory-specific authentication configuration can meet your requirements.
 
 As a last option, a "classic" token with the `repo` scope will give broad access to all of your private repositories – including write permissions and much more. The [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps) contains the complete list. Be careful when using this kind of token.
 
