@@ -144,7 +144,7 @@ Package operations: 2 installs, 0 updates, 0 removals
 Bumping dependencies
 <warning>Warning: Bumping dependency constraints is not recommended for libraries as it will narrow down your dependencies and may cause problems for your users.</warning>
 <warning>If your package is not a library, you can explicitly specify the "type" by using "composer config type project".</warning>
-<warning>Alternatively you can use --dev-only to only bump dependencies within "require-dev".</warning>
+<warning>Alternatively you can use --bump-after-update=dev to only bump dependencies within "require-dev".</warning>
 No requirements to update in ./composer.json.
 OUTPUT
             , true,
