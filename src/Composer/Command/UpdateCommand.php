@@ -292,7 +292,8 @@ EOT
                     $bumpAfterUpdate === 'dev',
                     $bumpAfterUpdate === 'no-dev',
                     $input->getOption('dry-run'),
-                    $input->getArgument('packages')
+                    $input->getArgument('packages'),
+                    '--bump-after-update=dev'
                 );
             }
         }
