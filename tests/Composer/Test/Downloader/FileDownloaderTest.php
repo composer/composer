@@ -12,10 +12,16 @@
 
 namespace Composer\Test\Downloader;
 
+use Composer\Autoload\AutoloadGenerator;
 use Composer\Downloader\FileDownloader;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\IO\NullIO;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
+use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\RepositoryManager;
+use Composer\Test\Mock\HttpDownloaderMock;
+use Composer\Test\Mock\InstallationManagerMock;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Http\Response;
@@ -153,6 +159,9 @@ class FileDownloaderTest extends TestCase
         $composer = new Composer;
         $composer->setPackage($rootPackage);
         $composer->setConfig($config);
+        $composer->setRepositoryManager($rm = new RepositoryManager(new NullIO(), $config, new HttpDownloaderMock()));
+        $rm->setLocalRepository(new InstalledArrayRepository([]));
+        $composer->setInstallationManager(new InstallationManagerMock());
 
         $expectedUrl = 'foobar';
         $expectedCacheKey = 'dummy/pkg/'.hash('sha1', $expectedUrl).'.';
@@ -165,6 +174,7 @@ class FileDownloaderTest extends TestCase
         $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, static function (PreFileDownloadEvent $event) use ($expectedUrl): void {
             $event->setProcessedUrl($expectedUrl);
         });
+        $composer->setAutoloadGenerator(new AutoloadGenerator($dispatcher));
 
         $cacheMock = $this->getMockBuilder('Composer\Cache')
             ->disableOriginalConstructor()
@@ -236,6 +246,9 @@ class FileDownloaderTest extends TestCase
         $composer = new Composer;
         $composer->setPackage($rootPackage);
         $composer->setConfig($config);
+        $composer->setRepositoryManager($rm = new RepositoryManager(new NullIO(), $config, new HttpDownloaderMock()));
+        $rm->setLocalRepository(new InstalledArrayRepository([]));
+        $composer->setInstallationManager(new InstallationManagerMock());
 
         $expectedUrl = 'url';
         $customCacheKey = 'xyzzy';
@@ -249,6 +262,7 @@ class FileDownloaderTest extends TestCase
         $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, static function (PreFileDownloadEvent $event) use ($customCacheKey): void {
             $event->setCustomCacheKey($customCacheKey);
         });
+        $composer->setAutoloadGenerator(new AutoloadGenerator($dispatcher));
 
         $cacheMock = $this->getMockBuilder('Composer\Cache')
             ->disableOriginalConstructor()

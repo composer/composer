@@ -12,6 +12,7 @@
 
 namespace Composer\Test\EventDispatcher;
 
+use Composer\Autoload\AutoloadGenerator;
 use Composer\EventDispatcher\Event;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\EventDispatcher\ScriptExecutionException;
@@ -19,6 +20,12 @@ use Composer\Installer\InstallerEvents;
 use Composer\Config;
 use Composer\Composer;
 use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
+use Composer\Repository\ArrayRepository;
+use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\RepositoryManager;
+use Composer\Test\Mock\HttpDownloaderMock;
+use Composer\Test\Mock\InstallationManagerMock;
 use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
 use Composer\Script\ScriptEvents;
@@ -667,6 +674,10 @@ class EventDispatcherTest extends TestCase
         $composer->setConfig($config);
         $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
         $composer->setPackage($package);
+        $composer->setRepositoryManager($rm = new RepositoryManager(new NullIO(), $config, new HttpDownloaderMock()));
+        $rm->setLocalRepository(new InstalledArrayRepository([]));
+        $composer->setAutoloadGenerator(new AutoloadGenerator(new EventDispatcher($composer, new NullIO())));
+        $composer->setInstallationManager(new InstallationManagerMock());
 
         return $composer;
     }

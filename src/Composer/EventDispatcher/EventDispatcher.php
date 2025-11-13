@@ -71,6 +71,8 @@ class EventDispatcher
     private $skipScripts;
     /** @var string|null */
     private $previousHash = null;
+    /** @var array<string, true> */
+    private $previousListeners = [];
 
     /**
      * Constructor.
@@ -218,15 +220,7 @@ class EventDispatcher
                 }
                 $formattedEventNameWithArgs = $event->getName() . ($additionalArgs !== [] ? ' (' . implode(', ', $additionalArgs) . ')' : '');
                 if (!is_string($callable)) {
-                    // try setting up autoloading if we do not have a known class as target
-                    // or no valid callable (although in theory this case should not be salvageable by autoloading, it does not really hurt to try)
-                    if (
-                        (is_array($callable) && is_string($callable[0]) && !class_exists($callable[0], false))
-                        || !is_callable($callable)
-                    ) {
-                        $this->makeAutoloader($event);
-                    }
-
+                    $this->makeAutoloader($event, $callable);
                     if (!is_callable($callable)) {
                         $className = is_object($callable[0]) ? get_class($callable[0]) : $callable[0];
 
@@ -281,11 +275,7 @@ class EventDispatcher
                     $className = substr($callable, 0, strpos($callable, '::'));
                     $methodName = substr($callable, strpos($callable, '::') + 2);
 
-                    // try to autoload it if the class is not known yet
-                    if (!class_exists($className, false)) {
-                        $this->makeAutoloader($event);
-                    }
-
+                    $this->makeAutoloader($event, $callable);
                     if (!class_exists($className)) {
                         $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
                         continue;
@@ -304,10 +294,8 @@ class EventDispatcher
                     }
                 } elseif ($this->isCommandClass($callable)) {
                     $className = $callable;
-                    // try to autoload it if the class is not known yet
-                    if (!class_exists($className, false)) {
-                        $this->makeAutoloader($event);
-                    }
+
+                    $this->makeAutoloader($event, [$callable, 'run']);
                     if (!class_exists($className)) {
                         $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
                         continue;
@@ -717,21 +705,38 @@ class EventDispatcher
         return 'unsupported';
     }
 
-    private function makeAutoloader(Event $event): void
+    /**
+     * @param mixed $callable Technically a callable shape but as the class may not be autoloadable yet PHP might not see it this way, so we cannot type hint as such
+     */
+    private function makeAutoloader(Event $event, $callable): void
     {
         assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
 
-        $package = $this->composer->getPackage();
-        if ($this->loader !== null) {
-            $this->loader->unregister();
+        if (is_array($callable)) {
+            if (is_string($callable[0])) {
+                $callableKey = $callable[0] . '::' . $callable[1];
+            } else {
+                $callableKey = get_class($callable[0]).'::'.$callable[1];
+            }
+        } elseif (is_string($callable)) {
+            $callableKey = $callable;
+        } elseif ($callable instanceof \Closure) {
+            $callableKey = 'closure';
+        } else {
+            $callableKey = 'unknown';
         }
+        if (isset($this->previousListeners[$callableKey])) {
+            return;
+        }
+        $this->previousListeners[$callableKey] = true;
 
+        $package = $this->composer->getPackage();
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
         $generator = $this->composer->getAutoloadGenerator();
         $hash = implode(',', array_map(static function (PackageInterface $p) {
             return $p->getName().'/'.$p->getVersion();
         }, $packages));
-        if ($event instanceof ScriptEvent) {
+        if ($event instanceof ScriptEvent || $event instanceof PackageEvent || $event instanceof InstallerEvent) {
             $generator->setDevMode($event->isDevMode());
             $hash .= $event->isDevMode() ? '/dev' : '';
         }
@@ -745,6 +750,11 @@ class EventDispatcher
 
         $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
         $map = $generator->parseAutoloads($packageMap, $package);
+
+        if ($this->loader !== null) {
+            $this->loader->unregister();
+        }
+
         $this->loader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
         $this->loader->register(false);
     }
