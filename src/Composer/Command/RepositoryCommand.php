@@ -58,7 +58,8 @@ This command lets you manage repositories in your composer.json.
 Examples:
   composer repo list
   composer repo add foo vcs https://github.com/acme/foo
-  composer repo add bar '{"type":"composer","url":"https://repo.example.org"}'
+  composer repo add bar composer https://repo.packagist.com/bar
+  composer repo add zips '{"type":"artifact","url":"/path/to/dir/with/zips"}'
   composer repo add baz vcs https://example.org --before foo
   composer repo add qux vcs https://example.org --after bar
   composer repo remove foo

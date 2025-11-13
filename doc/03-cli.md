@@ -894,21 +894,19 @@ php composer.phar config --json extra.foo.bar '{"baz": true, "qux": []}'
 
 ## repository / repo
 
-The `repo` command lets you manage repositories in your `composer.json`. It is a more powerful alternative to `composer config repositories.*`.
+The `repo` command lets you manage repositories in your `composer.json`. It is more powerful and recommended over using `composer config repositories.*` to manipulate the repositories configuration. Refer to [Repositories](05-repositories.md) documentation for details on the available types and configuration options.
 
 ### Usage
 
 ```shell
-php composer.phar repo list
-php composer.phar repo add foo vcs https://github.com/acme/foo
-php composer.phar repo add bar '{"type":"composer","url":"https://repo.example.org"}'
-php composer.phar repo add baz vcs https://example.org --before foo
-php composer.phar repo add qux vcs https://example.org --after bar
-php composer.phar repo remove foo
-php composer.phar repo set-url foo https://git.example.org/acme/foo
-php composer.phar repo get-url foo
-php composer.phar repo disable packagist.org
-php composer.phar repo enable packagist.org
+repo [options] list
+repo [options] add [repo-name] [repo-type] [url]
+repo [options] add [repo-name] [json-repo-definition]
+repo [options] remove [repo-name]
+repo [options] set-url [repo-name] [url]
+repo [options] get-url [repo-name]
+repo [options] enable packagist.org
+repo [options] disable packagist.org
 ```
 
 ### Options
@@ -918,6 +916,22 @@ php composer.phar repo enable packagist.org
 - **--append:** to add a repository with lower priority (by default repositories are prepended and have thus higher priority than existing ones).
 - **--before <name>:** to insert the new repository before an existing repository named `<name>`.
 - **--after <name>:** to insert the new repository after an existing repository named `<name>`. The `<name>` must match an existing repository name.
+
+### Examples
+
+```shell
+php composer.phar repo list
+php composer.phar repo add foo vcs https://github.com/acme/foo
+php composer.phar repo add bar composer https://repo.packagist.com/bar
+php composer.phar repo add zips '{"type":"artifact","url":"/path/to/dir/with/zips"}'
+php composer.phar repo add baz vcs https://example.org --before foo
+php composer.phar repo add qux vcs https://example.org --after bar
+php composer.phar repo remove foo
+php composer.phar repo set-url foo https://git.example.org/acme/foo
+php composer.phar repo get-url foo
+php composer.phar repo disable packagist.org
+php composer.phar repo enable packagist.org
+```
 
 ## create-project
 
