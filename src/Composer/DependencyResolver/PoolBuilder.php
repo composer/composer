@@ -350,8 +350,10 @@ class PoolBuilder
 
         $this->io->debug('Built pool.');
 
-        $pool = $this->runOptimizer($request, $pool);
+        // filter vulnerable packages before optimizing the pool otherwise we may end up with inconsistent state where the optimizer took away versions
+        // that were not vulnerable and now suddenly the vulnerable ones are removed and we are missing some versions to make it solvable
         $pool = $this->runSecurityAdvisoryFilter($pool, $repositories);
+        $pool = $this->runOptimizer($request, $pool);
 
         Intervals::clear();
 
