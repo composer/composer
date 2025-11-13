@@ -30,8 +30,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  *  - composer repo remove foo
  *  - composer repo set-url foo https://git.example.org/acme/foo
  *  - composer repo get-url foo
- *  - composer repo disable packagist
- *  - composer repo enable packagist
+ *  - composer repo disable packagist.org
+ *  - composer repo enable packagist.org
  */
 class RepositoryCommand extends BaseConfigCommand
 {
@@ -48,7 +48,7 @@ class RepositoryCommand extends BaseConfigCommand
                 new InputOption('before', null, InputOption::VALUE_REQUIRED, 'When adding a repository, insert it before the given repository name', null, $this->suggestRepoNames()),
                 new InputOption('after', null, InputOption::VALUE_REQUIRED, 'When adding a repository, insert it after the given repository name', null, $this->suggestRepoNames()),
                 new InputArgument('action', InputArgument::OPTIONAL, 'Action to perform: list, add, remove, set-url, get-url, enable, disable', 'list', ['list', 'add', 'remove', 'set-url', 'get-url', 'enable', 'disable']),
-                new InputArgument('name', InputArgument::OPTIONAL, 'Repository name (or special name packagist / packagist.org for enable/disable)', null, $this->suggestRepoNames()),
+                new InputArgument('name', InputArgument::OPTIONAL, 'Repository name (or special name packagist.org for enable/disable)', null, $this->suggestRepoNames()),
                 new InputArgument('arg1', InputArgument::OPTIONAL, 'Type for add, or new URL for set-url, or JSON config for add', null, $this->suggestTypeForAdd()),
                 new InputArgument('arg2', InputArgument::OPTIONAL, 'URL for add (if not using JSON)'),
             ])
@@ -65,8 +65,8 @@ Examples:
   composer repo remove foo
   composer repo set-url foo https://git.example.org/acme/foo
   composer repo get-url foo
-  composer repo disable packagist
-  composer repo enable packagist
+  composer repo disable packagist.org
+  composer repo enable packagist.org
 
 Use --global/-g to alter the global config.json instead.
 Use --file to alter a specific file.
@@ -186,7 +186,7 @@ EOT
 
             case 'disable':
                 if ($name === null) {
-                    throw new \RuntimeException('Usage: composer repo disable packagist');
+                    throw new \RuntimeException('Usage: composer repo disable packagist.org');
                 }
                 if (in_array($name, ['packagist', 'packagist.org'], true)) {
                     // special handling mirrors ConfigCommand behavior
@@ -194,11 +194,11 @@ EOT
 
                     return 0;
                 }
-                throw new \RuntimeException('Only packagist can be enabled/disabled using this command. Use add/remove for other repositories.');
+                throw new \RuntimeException('Only packagist.org can be enabled/disabled using this command. Use add/remove for other repositories.');
 
             case 'enable':
                 if ($name === null) {
-                    throw new \RuntimeException('Usage: composer repo enable packagist');
+                    throw new \RuntimeException('Usage: composer repo enable packagist.org');
                 }
                 if (in_array($name, ['packagist', 'packagist.org'], true)) {
                     // Remove a false flag by setting packagist.org to true via removing the key
@@ -207,7 +207,7 @@ EOT
 
                     return 0;
                 }
-                throw new \RuntimeException('Only packagist can be enabled/disabled using this command.');
+                throw new \RuntimeException('Only packagist.org can be enabled/disabled using this command.');
 
             default:
                 throw new \InvalidArgumentException('Unknown action "'.$action.'". Use list, add, remove, set-url, get-url, enable, disable');
