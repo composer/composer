@@ -1,3 +1,10 @@
+### [2.9.1] 2025-11-13
+
+  * Fixed regression in phpunit binary proxies (#12601)
+  * Fixed script handler autoloading issues (#12606)
+  * Fixed null call of Command::setDescription in some cases (#12605)
+  * Fixed --prefer-lowest builds sometimes failing due to the filtering of versions with known vulnerabilities (#12603)
+
 ### [2.9.0] 2025-11-13
 
   * Fixed a couple minor issues with --bump-after-update (#12598)
@@ -2080,6 +2087,7 @@
 
   * Initial release
 
+[2.9.1]: https://github.com/composer/composer/compare/2.9.0...2.9.1
 [2.9.0]: https://github.com/composer/composer/compare/2.9.0-RC1...2.9.0
 [2.9.0-RC1]: https://github.com/composer/composer/compare/2.8.12...2.9.0-RC1
 [2.8.12]: https://github.com/composer/composer/compare/2.8.11...2.8.12
