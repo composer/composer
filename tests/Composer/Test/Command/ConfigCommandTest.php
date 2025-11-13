@@ -117,6 +117,86 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'autoload-dev.psr-4', '--unset' => true],
             ['autoload-dev' => ['classmap' => ['test']]],
         ];
+        yield 'set audit.ignore-unreachable' => [
+            [],
+            ['setting-key' => 'audit.ignore-unreachable', 'setting-value' => ['true']],
+            ['config' => ['audit' => ['ignore-unreachable' => true]]],
+        ];
+        yield 'set audit.block-insecure' => [
+            [],
+            ['setting-key' => 'audit.block-insecure', 'setting-value' => ['false']],
+            ['config' => ['audit' => ['block-insecure' => false]]],
+        ];
+        yield 'set audit.block-abandoned' => [
+            [],
+            ['setting-key' => 'audit.block-abandoned', 'setting-value' => ['true']],
+            ['config' => ['audit' => ['block-abandoned' => true]]],
+        ];
+        yield 'unset audit.ignore-unreachable' => [
+            ['config' => ['audit' => ['ignore-unreachable' => true]]],
+            ['setting-key' => 'audit.ignore-unreachable', '--unset' => true],
+            ['config' => ['audit' => []]],
+        ];
+        yield 'set audit.ignore-severity' => [
+            [],
+            ['setting-key' => 'audit.ignore-severity', 'setting-value' => ['low', 'medium']],
+            ['config' => ['audit' => ['ignore-severity' => ['low', 'medium']]]],
+        ];
+        yield 'set audit.ignore as array' => [
+            [],
+            ['setting-key' => 'audit.ignore', 'setting-value' => ['["CVE-2024-1234","GHSA-xxxx-yyyy"]'], '--json' => true],
+            ['config' => ['audit' => ['ignore' => ['CVE-2024-1234', 'GHSA-xxxx-yyyy']]]],
+        ];
+        yield 'set audit.ignore as object' => [
+            [],
+            ['setting-key' => 'audit.ignore', 'setting-value' => ['{"CVE-2024-1234":"False positive","GHSA-xxxx-yyyy":"Not applicable"}'], '--json' => true],
+            ['config' => ['audit' => ['ignore' => ['CVE-2024-1234' => 'False positive', 'GHSA-xxxx-yyyy' => 'Not applicable']]]],
+        ];
+        yield 'merge audit.ignore array' => [
+            ['config' => ['audit' => ['ignore' => ['CVE-2024-1234']]]],
+            ['setting-key' => 'audit.ignore', 'setting-value' => ['["CVE-2024-5678"]'], '--json' => true, '--merge' => true],
+            ['config' => ['audit' => ['ignore' => ['CVE-2024-1234', 'CVE-2024-5678']]]],
+        ];
+        yield 'merge audit.ignore object' => [
+            ['config' => ['audit' => ['ignore' => ['CVE-2024-1234' => 'Old reason']]]],
+            ['setting-key' => 'audit.ignore', 'setting-value' => ['{"CVE-2024-5678":"New advisory"}'], '--json' => true, '--merge' => true],
+            ['config' => ['audit' => ['ignore' => ['CVE-2024-5678' => 'New advisory', 'CVE-2024-1234' => 'Old reason']]]],
+        ];
+        yield 'overwrite audit.ignore key with merge' => [
+            ['config' => ['audit' => ['ignore' => ['CVE-2024-1234' => 'Old reason']]]],
+            ['setting-key' => 'audit.ignore', 'setting-value' => ['{"CVE-2024-1234":"New reason"}'], '--json' => true, '--merge' => true],
+            ['config' => ['audit' => ['ignore' => ['CVE-2024-1234' => 'New reason']]]],
+        ];
+        yield 'set audit.ignore-abandoned as array' => [
+            [],
+            ['setting-key' => 'audit.ignore-abandoned', 'setting-value' => ['["vendor/package1","vendor/package2"]'], '--json' => true],
+            ['config' => ['audit' => ['ignore-abandoned' => ['vendor/package1', 'vendor/package2']]]],
+        ];
+        yield 'set audit.ignore-abandoned as object' => [
+            [],
+            ['setting-key' => 'audit.ignore-abandoned', 'setting-value' => ['{"vendor/package1":"Still maintained","vendor/package2":"Fork available"}'], '--json' => true],
+            ['config' => ['audit' => ['ignore-abandoned' => ['vendor/package1' => 'Still maintained', 'vendor/package2' => 'Fork available']]]],
+        ];
+        yield 'merge audit.ignore-abandoned array' => [
+            ['config' => ['audit' => ['ignore-abandoned' => ['vendor/package1']]]],
+            ['setting-key' => 'audit.ignore-abandoned', 'setting-value' => ['["vendor/package2"]'], '--json' => true, '--merge' => true],
+            ['config' => ['audit' => ['ignore-abandoned' => ['vendor/package1', 'vendor/package2']]]],
+        ];
+        yield 'merge audit.ignore-abandoned object' => [
+            ['config' => ['audit' => ['ignore-abandoned' => ['vendor/package1' => 'Old reason']]]],
+            ['setting-key' => 'audit.ignore-abandoned', 'setting-value' => ['{"vendor/package2":"New reason"}'], '--json' => true, '--merge' => true],
+            ['config' => ['audit' => ['ignore-abandoned' => ['vendor/package2' => 'New reason', 'vendor/package1' => 'Old reason']]]],
+        ];
+        yield 'unset audit.ignore' => [
+            ['config' => ['audit' => ['ignore' => ['CVE-2024-1234']]]],
+            ['setting-key' => 'audit.ignore', '--unset' => true],
+            ['config' => ['audit' => []]],
+        ];
+        yield 'unset audit.ignore-abandoned' => [
+            ['config' => ['audit' => ['ignore-abandoned' => ['vendor/package1']]]],
+            ['setting-key' => 'audit.ignore-abandoned', '--unset' => true],
+            ['config' => ['audit' => []]],
+        ];
     }
 
     /**
@@ -183,5 +263,27 @@ class ConfigCommandTest extends TestCase
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'config', '--file' => 'alt.composer.json', '--global' => true]);
+    }
+
+    public function testConfigThrowsForInvalidSeverity(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('valid severities include: low, medium, high, critical');
+
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'audit.ignore-severity', 'setting-value' => ['low', 'invalid']]);
+    }
+
+    public function testConfigThrowsWhenMergingArrayWithObject(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Cannot merge array and object');
+
+        $this->initTempComposer(['config' => ['audit' => ['ignore' => ['CVE-2024-1234']]]]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'audit.ignore', 'setting-value' => ['{"CVE-2024-5678":"reason"}'], '--json' => true, '--merge' => true]);
     }
 }
