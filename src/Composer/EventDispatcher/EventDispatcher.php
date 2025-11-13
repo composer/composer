@@ -722,10 +722,6 @@ class EventDispatcher
         assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
 
         $package = $this->composer->getPackage();
-        if ($this->loader !== null) {
-            $this->loader->unregister();
-        }
-
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
         $generator = $this->composer->getAutoloadGenerator();
         $hash = implode(',', array_map(static function (PackageInterface $p) {
@@ -745,6 +741,11 @@ class EventDispatcher
 
         $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
         $map = $generator->parseAutoloads($packageMap, $package);
+
+        if ($this->loader !== null) {
+            $this->loader->unregister();
+        }
+
         $this->loader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
         $this->loader->register(false);
     }
