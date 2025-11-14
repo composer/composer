@@ -405,6 +405,19 @@ class ConfigTest extends TestCase
         $result = $config->get('audit');
         self::assertArrayHasKey('ignore', $result);
         self::assertSame(['A', 'B', 'A', 'C'], $result['ignore']);
+
+        // Test COMPOSER_SECURITY_BLOCKING_ABANDONED env var
+        Platform::putEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED', '1');
+        $result = $config->get('audit');
+        Platform::clearEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
+        self::assertArrayHasKey('block-abandoned', $result);
+        self::assertSame(true, $result['block-abandoned']);
+
+        Platform::putEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED', '0');
+        $result = $config->get('audit');
+        Platform::clearEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
+        self::assertArrayHasKey('block-abandoned', $result);
+        self::assertSame(false, $result['block-abandoned']);
     }
 
     public function testGetDefaultsToAnEmptyArray(): void

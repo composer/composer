@@ -1358,6 +1358,10 @@ If set to `1`, it is the equivalent of passing the `--no-audit` option to `requi
 
 If set to `1`, it is the equivalent of passing the `--no-security-blocking` option to `require`, `update`, `remove`, or `create-project` command. This allows installing packages with security advisories or that are abandoned.
 
+### COMPOSER_SECURITY_BLOCKING_ABANDONED
+
+If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `audit.block-abandoned` config to `true`). If set to `0`, disables blocking of abandoned packages. Note that `COMPOSER_NO_SECURITY_BLOCKING=1` takes precedence and forces all security blocking to be disabled, including abandoned package blocking.
+
 ### COMPOSER_NO_DEV
 
 If set to `1`, it is the equivalent of passing the `--update-no-dev` option to `require`
