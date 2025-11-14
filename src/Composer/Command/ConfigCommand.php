@@ -80,7 +80,7 @@ class ConfigCommand extends BaseConfigCommand
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
                 new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
                 new InputOption('json', 'j', InputOption::VALUE_NONE, 'JSON decode the setting value, to be used with extra.* keys'),
-                new InputOption('merge', 'm', InputOption::VALUE_NONE, 'Merge the setting value with the current value, to be used with extra.* keys in combination with --json'),
+                new InputOption('merge', 'm', InputOption::VALUE_NONE, 'Merge the setting value with the current value, to be used with extra.* or audit.ignore[-abandoned] keys in combination with --json'),
                 new InputOption('append', null, InputOption::VALUE_NONE, 'When adding a repository, append it (lowest priority) to the existing ones instead of prepending it (highest priority)'),
                 new InputOption('source', null, InputOption::VALUE_NONE, 'Display where the config value is loaded from'),
                 new InputArgument('setting-key', null, 'Setting key', null, $this->suggestSettingKeys()),
@@ -489,6 +489,9 @@ EOT
                     return $val;
                 },
             ],
+            'audit.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
+            'audit.block-insecure' => [$booleanValidator, $booleanNormalizer],
+            'audit.block-abandoned' => [$booleanValidator, $booleanNormalizer],
         ];
         $multiConfigValues = [
             'github-protocols' => [
@@ -533,10 +536,16 @@ EOT
                     return $vals;
                 },
             ],
-            'audit.ignore' => [
+            'audit.ignore-severity' => [
                 static function ($vals) {
                     if (!is_array($vals)) {
                         return 'array expected';
+                    }
+
+                    foreach ($vals as $val) {
+                        if (!in_array($val, ['low', 'medium', 'high', 'critical'], true)) {
+                            return 'valid severities include: low, medium, high, critical';
+                        }
                     }
 
                     return true;
@@ -789,6 +798,44 @@ EOT
         // handle unsetting platform
         if ($settingKey === 'platform' && $input->getOption('unset')) {
             $this->configSource->removeConfigSetting($settingKey);
+
+            return 0;
+        }
+
+        // handle audit.ignore and audit.ignore-abandoned with --merge support
+        if (in_array($settingKey, ['audit.ignore', 'audit.ignore-abandoned'], true)) {
+            if ($input->getOption('unset')) {
+                $this->configSource->removeConfigSetting($settingKey);
+
+                return 0;
+            }
+
+            $value = $values;
+            if ($input->getOption('json')) {
+                $value = JsonFile::parseJson($values[0]);
+                if (!is_array($value)) {
+                    throw new \RuntimeException('Expected an array or object for '.$settingKey);
+                }
+            }
+
+            if ($input->getOption('merge')) {
+                $currentConfig = $this->configFile->read();
+                $currentValue = $currentConfig['config']['audit'][str_replace('audit.', '', $settingKey)] ?? null;
+
+                if ($currentValue !== null && is_array($currentValue) && is_array($value)) {
+                    if (array_is_list($currentValue) && array_is_list($value)) {
+                        // Both are lists, merge them
+                        $value = array_merge($currentValue, $value);
+                    } elseif (!array_is_list($currentValue) && !array_is_list($value)) {
+                        // Both are associative arrays (objects), merge them
+                        $value = $value + $currentValue;
+                    } else {
+                        throw new \RuntimeException('Cannot merge array and object for '.$settingKey);
+                    }
+                }
+            }
+
+            $this->configSource->addConfigSetting($settingKey, $value);
 
             return 0;
         }
