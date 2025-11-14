@@ -284,8 +284,6 @@ EOT
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setDryRun($dryRun)
-            ->setAudit(!$input->getOption('no-audit'))
-            ->setAuditFormat($this->getAuditFormat($input))
             ->setAuditConfig($this->createAuditConfig($composer->getConfig(), $input))
             ->setMinimalUpdate($minimalChanges)
         ;

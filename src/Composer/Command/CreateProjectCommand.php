@@ -248,8 +248,6 @@ EOT
                 ->setOptimizeAutoloader($config->get('optimize-autoloader'))
                 ->setClassMapAuthoritative($config->get('classmap-authoritative'))
                 ->setApcuAutoloader($config->get('apcu-autoloader'))
-                ->setAudit(!$input->getOption('no-audit'))
-                ->setAuditFormat($this->getAuditFormat($input))
                 ->setAuditConfig($this->createAuditConfig($config, $input));
 
             if (!$composer->getLocker()->isLocked()) {

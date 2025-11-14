@@ -475,10 +475,20 @@ abstract class BaseCommand extends Command
      */
     protected function createAuditConfig(Config $config, InputInterface $input): AuditConfig
     {
-        $auditConfig = AuditConfig::fromConfig($config);
+        // Handle both --audit and --no-audit flags
+        if ($input->hasOption('audit')) {
+            $audit = (bool) $input->getOption('audit');
+        } else {
+            $audit = !($input->hasOption('no-audit') && $input->getOption('no-audit'));
+        }
+        $auditFormat = $input->hasOption('audit-format') ? $this->getAuditFormat($input) : Auditor::FORMAT_SUMMARY;
+
+        $auditConfig = AuditConfig::fromConfig($config, $audit, $auditFormat);
 
         if ($input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking')) {
             $auditConfig = new AuditConfig(
+                $auditConfig->audit,
+                $auditConfig->auditFormat,
                 $auditConfig->ignoreList,
                 $auditConfig->abandoned,
                 false, // blockInsecure

@@ -21,6 +21,16 @@ use Composer\Config;
 class AuditConfig
 {
     /**
+     * @var bool Whether to run audit
+     */
+    public $audit;
+
+    /**
+     * @var Auditor::FORMAT_*
+     */
+    public $auditFormat;
+
+    /**
      * @var array<string>|array<string,string> List of advisory IDs, remote IDs or CVE IDs that reported but not listed as vulnerabilities.
      */
     public $ignoreList;
@@ -56,13 +66,16 @@ class AuditConfig
     public $ignoreAbandonedPackages;
 
     /**
+     * @param Auditor::FORMAT_* $auditFormat
      * @param array<string>|array<string,string> $ignoreList
      * @param Auditor::ABANDONED_* $abandoned
      * @param array<string> $ignoreSeverity
      * @param array<string>|array<string,string> $ignoreAbandonedPackages
      */
-    public function __construct(array $ignoreList, string $abandoned, bool $blockInsecure, bool $blockAbandoned, array $ignoreSeverity, bool $ignoreUnreachable, array $ignoreAbandonedPackages)
+    public function __construct(bool $audit, string $auditFormat, array $ignoreList, string $abandoned, bool $blockInsecure, bool $blockAbandoned, array $ignoreSeverity, bool $ignoreUnreachable, array $ignoreAbandonedPackages)
     {
+        $this->audit = $audit;
+        $this->auditFormat = $auditFormat;
         $this->ignoreList = $ignoreList;
         $this->abandoned = $abandoned;
         $this->blockInsecure = $blockInsecure;
@@ -72,11 +85,16 @@ class AuditConfig
         $this->ignoreAbandonedPackages = $ignoreAbandonedPackages;
     }
 
-    public static function fromConfig(Config $config): self
+    /**
+     * @param Auditor::FORMAT_* $auditFormat
+     */
+    public static function fromConfig(Config $config, bool $audit = true, string $auditFormat = Auditor::FORMAT_SUMMARY): self
     {
         $auditConfig = $config->get('audit');
 
         return new self(
+            $audit,
+            $auditFormat,
             $auditConfig['ignore'] ?? [],
             $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL,
             (bool) ($auditConfig['block-insecure'] ?? true),

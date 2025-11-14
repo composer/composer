@@ -267,8 +267,6 @@ EOT
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
             ->setTemporaryConstraints($temporaryConstraints)
-            ->setAudit(!$input->getOption('no-audit'))
-            ->setAuditFormat($this->getAuditFormat($input))
             ->setAuditConfig($this->createAuditConfig($composer->getConfig(), $input))
             ->setMinimalUpdate($minimalChanges)
         ;

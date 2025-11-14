@@ -481,8 +481,6 @@ EOT
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
-            ->setAudit(!$input->getOption('no-audit'))
-            ->setAuditFormat($this->getAuditFormat($input))
             ->setAuditConfig($this->createAuditConfig($composer->getConfig(), $input))
             ->setMinimalUpdate($minimalChanges)
         ;
