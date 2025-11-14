@@ -472,6 +472,16 @@ class Config
                     $result['abandoned'] = $abandonedEnv;
                 }
 
+                $blockAbandonedEnv = $this->getComposerEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
+                if (false !== $blockAbandonedEnv) {
+                    if (!in_array($blockAbandonedEnv, ['0', '1'], true)) {
+                        throw new \RuntimeException(
+                            "Invalid value for COMPOSER_SECURITY_BLOCKING_ABANDONED: {$blockAbandonedEnv}. Expected 0 or 1."
+                        );
+                    }
+                    $result['block-abandoned'] = (bool) (int) $blockAbandonedEnv;
+                }
+
                 return $result;
 
             default:

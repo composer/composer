@@ -26,7 +26,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 {
     public function testFilterPackagesByAdvisories(): void
     {
-        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, true, true, [], false, []);
+        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, [], Auditor::ABANDONED_FAIL, true, true, [], false, []);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -57,7 +57,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesByIgnoredAdvisories(): void
     {
-        $auditConfig = new AuditConfig(['CVE-2024-1234'], Auditor::ABANDONED_FAIL, true, true, [], false, []);
+        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, ['CVE-2024-1234'], Auditor::ABANDONED_FAIL, true, true, [], false, []);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -79,7 +79,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesWithBlockInsecureDisabled(): void
     {
-        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, false, true, [], false, []);
+        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, [], Auditor::ABANDONED_FAIL, false, true, [], false, []);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -102,7 +102,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
     public function testDontFilterPackagesWithAbandonedPackage(): void
     {
         $packageNameIgnoreAbandoned = 'acme/ignore-abandoned';
-        $auditConfig = new AuditConfig([], Auditor::ABANDONED_FAIL, true, true, [], false, [$packageNameIgnoreAbandoned]);
+        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, [], Auditor::ABANDONED_FAIL, true, true, [], false, [$packageNameIgnoreAbandoned]);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $abandonedPackage = new CompletePackage('acme/package', '1.0.0.0', '1.0');

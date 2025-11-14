@@ -155,6 +155,10 @@ Defaults to `report` in Composer 2.6, and defaults to `fail` from Composer 2.7 o
 - `report` means abandoned packages are reported as an error but do not cause the command to exit with a non-zero code.
 - `fail` means abandoned packages will cause audits to fail with a non-zero code.
 
+Note, that this only applies to auditing, and not to the blocking of insecure
+packages. To configure abandoned packages blocking, see the [`block-abandoned`](#block-abandoned)
+option.
+
 ```json
 {
     "config": {

@@ -180,6 +180,8 @@ class Installer
     protected $errorOnAudit = false;
     /** @var Auditor::FORMAT_* */
     protected $auditFormat = Auditor::FORMAT_SUMMARY;
+    /** @var AuditConfig|null */
+    private $auditConfig = null;
     /** @var list<string> */
     private $ignoredTypes = ['php-ext', 'php-ext-zend'];
     /** @var list<string>|null */
@@ -417,7 +419,9 @@ class Installer
             gc_enable();
         }
 
-        if ($this->audit) {
+        $auditConfig = $this->getAuditConfig();
+
+        if ($auditConfig->audit) {
             if ($this->update && !$this->install) {
                 $packages = $lockedRepository->getCanonicalPackages();
                 $target = 'locked';
@@ -433,9 +437,7 @@ class Installer
                         $repoSet->addRepository($repo);
                     }
 
-                    $auditConfig = AuditConfig::fromConfig($this->config);
-
-                    return $auditor->audit($this->io, $repoSet, $packages, $this->auditFormat, true, $auditConfig->ignoreList, $auditConfig->abandoned, $auditConfig->ignoreSeverity, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedPackages) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
+                    return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreList, $auditConfig->abandoned, $auditConfig->ignoreSeverity, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedPackages) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {
@@ -1107,9 +1109,18 @@ class Installer
         return new PoolOptimizer($policy);
     }
 
+    private function getAuditConfig(): AuditConfig
+    {
+        if (null === $this->auditConfig) {
+            $this->auditConfig = AuditConfig::fromConfig($this->config, $this->audit, $this->auditFormat);
+        }
+
+        return $this->auditConfig;
+    }
+
     private function createSecurityAuditPoolFilter(): ?SecurityAdvisoryPoolFilter
     {
-        $auditConfig = AuditConfig::fromConfig($this->config);
+        $auditConfig = $this->getAuditConfig();
 
         if ($auditConfig->blockInsecure || $auditConfig->blockAbandoned) {
             return new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
@@ -1485,10 +1496,13 @@ class Installer
 
     /**
      * Should an audit be run after installation is complete?
+     *
+     * @deprecated Use setAuditConfig instead of calling this
      */
     public function setAudit(bool $audit): self
     {
         $this->audit = $audit;
+        $this->auditConfig = null; // Invalidate cached config
 
         return $this;
     }
@@ -1507,10 +1521,23 @@ class Installer
      * What format should be used for audit output?
      *
      * @param Auditor::FORMAT_* $auditFormat
+     *
+     * @deprecated Use setAuditConfig instead of calling this
      */
     public function setAuditFormat(string $auditFormat): self
     {
         $this->auditFormat = $auditFormat;
+        $this->auditConfig = null; // Invalidate cached config
+
+        return $this;
+    }
+
+    /**
+     * Sets a custom AuditConfig to override the default configuration from Config
+     */
+    public function setAuditConfig(AuditConfig $auditConfig): self
+    {
+        $this->auditConfig = $auditConfig;
 
         return $this;
     }
