@@ -1352,11 +1352,11 @@ Accepts a comma-seperated list of event names, e.g. `post-install-cmd` for which
 
 ### COMPOSER_NO_AUDIT
 
-If set to `1`, it is the equivalent of passing the `--no-audit` option to `require`, `update`, `remove` or `create-project` command.
+If set to `1`, it is the equivalent of passing the `--no-audit` option to a `require`, `update`, `remove` or `create-project` command.
 
 ### COMPOSER_NO_SECURITY_BLOCKING
 
-If set to `1`, it is the equivalent of passing the `--no-security-blocking` option to `require`, `update`, `remove`, or `create-project` command. This allows installing packages with security advisories or that are abandoned.
+If set to `1`, it is the equivalent of passing the `--no-security-blocking` option to a `require`, `update`, `remove`, or `create-project` command. This allows installing packages with security advisories or that are abandoned.
 
 ### COMPOSER_SECURITY_BLOCKING_ABANDONED
 
