@@ -26,6 +26,7 @@ use Composer\Plugin\PreCommandRunEvent;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
 use Composer\Advisory\Auditor;
+use Composer\Advisory\AuditConfig;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
@@ -258,6 +259,7 @@ abstract class BaseCommand extends Command
             'COMPOSER_MINIMAL_CHANGES' => ['minimal-changes'],
             'COMPOSER_WITH_DEPENDENCIES' => ['with-dependencies'],
             'COMPOSER_WITH_ALL_DEPENDENCIES' => ['with-all-dependencies'],
+            'COMPOSER_NO_SECURITY_BLOCKING' => ['no-security-blocking'],
         ];
         foreach ($envOptions as $envName => $optionNames) {
             foreach ($optionNames as $optionName) {
@@ -464,5 +466,29 @@ abstract class BaseCommand extends Command
         }
 
         return $val;
+    }
+
+    /**
+     * Creates an AuditConfig from the Config object, optionally overriding security blocking based on input options
+     *
+     * @internal
+     */
+    protected function createAuditConfig(Config $config, InputInterface $input): AuditConfig
+    {
+        $auditConfig = AuditConfig::fromConfig($config);
+
+        if ($input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking')) {
+            $auditConfig = new AuditConfig(
+                $auditConfig->ignoreList,
+                $auditConfig->abandoned,
+                false, // blockInsecure
+                false, // blockAbandoned
+                $auditConfig->ignoreSeverity,
+                $auditConfig->ignoreUnreachable,
+                $auditConfig->ignoreAbandonedPackages
+            );
+        }
+
+        return $auditConfig;
     }
 }

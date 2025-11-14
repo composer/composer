@@ -180,6 +180,8 @@ class Installer
     protected $errorOnAudit = false;
     /** @var Auditor::FORMAT_* */
     protected $auditFormat = Auditor::FORMAT_SUMMARY;
+    /** @var AuditConfig|null */
+    private $auditConfig = null;
     /** @var list<string> */
     private $ignoredTypes = ['php-ext', 'php-ext-zend'];
     /** @var list<string>|null */
@@ -1109,7 +1111,7 @@ class Installer
 
     private function createSecurityAuditPoolFilter(): ?SecurityAdvisoryPoolFilter
     {
-        $auditConfig = AuditConfig::fromConfig($this->config);
+        $auditConfig = $this->auditConfig ?? AuditConfig::fromConfig($this->config);
 
         if ($auditConfig->blockInsecure || $auditConfig->blockAbandoned) {
             return new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
@@ -1511,6 +1513,16 @@ class Installer
     public function setAuditFormat(string $auditFormat): self
     {
         $this->auditFormat = $auditFormat;
+
+        return $this;
+    }
+
+    /**
+     * Sets a custom AuditConfig to override the default configuration from Config
+     */
+    public function setAuditConfig(AuditConfig $auditConfig): self
+    {
+        $this->auditConfig = $auditConfig;
 
         return $this;
     }
