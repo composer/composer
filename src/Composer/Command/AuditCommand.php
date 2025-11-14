@@ -78,7 +78,7 @@ EOT
 
         $abandoned = $abandoned ?? $auditConfig->abandoned;
 
-        $ignoreSeverities = array_merge($input->getOption('ignore-severity'), $auditConfig->ignoreSeverity);
+        $ignoreSeverities = array_merge($input->getOption('ignore-severity'), $auditConfig->ignoreSeverityForAudit);
         $ignoreUnreachable = $input->getOption('ignore-unreachable') || $auditConfig->ignoreUnreachable;
 
         return min(255, $auditor->audit(
@@ -87,11 +87,11 @@ EOT
             $packages,
             $this->getAuditFormat($input, 'format'),
             false,
-            $auditConfig->ignoreList,
+            $auditConfig->ignoreListForAudit,
             $abandoned,
             $ignoreSeverities,
             $ignoreUnreachable,
-            $auditConfig->ignoreAbandonedPackages
+            $auditConfig->ignoreAbandonedForAudit
         ));
 
     }

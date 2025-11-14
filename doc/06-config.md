@@ -119,7 +119,9 @@ Security audit configuration options
 
 ### ignore
 
-A list of advisory ids, remote ids or CVE ids that are reported but let the audit command pass.
+A list of advisory ids, remote ids or CVE ids that are ignored during auditing and/or blocking.
+
+#### Simple format with reasons:
 
 ```json
 {
@@ -135,7 +137,7 @@ A list of advisory ids, remote ids or CVE ids that are reported but let the audi
 }
 ```
 
-or
+#### Simple format without reasons:
 
 ```json
 {
@@ -146,6 +148,38 @@ or
     }
 }
 ```
+
+#### Detailed format with apply scope:
+
+The detailed format allows you to control whether an ignore applies to auditing only, blocking only, or both. The `apply` field accepts:
+- `audit` - Only ignore during auditing (advisory doesn't appear in audit reports, but package is still blocked during updates)
+- `block` - Only ignore during blocking (package can be used during updates, but advisory still appears in audit reports)
+- `all` - Ignore during both auditing and blocking (default behavior)
+
+```json
+{
+    "config": {
+        "audit": {
+            "ignore": {
+                "CVE-1234": {
+                    "apply": "audit",
+                    "reason": "False positive, don't show in reports but still block during updates"
+                },
+                "GHSA-xx": {
+                    "apply": "block",
+                    "reason": "Allow during updates but still report in audits"
+                },
+                "PKSA-yy": {
+                    "apply": "all",
+                    "reason": "Ignore completely in all contexts"
+                }
+            }
+        }
+    }
+}
+```
+
+All formats can be mixed together in the same configuration.
 
 ### abandoned
 
@@ -177,7 +211,9 @@ config value and the environment variable.
 
 ### ignore-abandoned
 
-A list of abandoned package names that are reported but let the audit command pass.
+A list of abandoned package names that are ignored during auditing and/or blocking.
+
+#### Simple format with reasons:
 
 ```json
 {
@@ -192,7 +228,7 @@ A list of abandoned package names that are reported but let the audit command pa
 }
 ```
 
-or
+#### Simple format without reasons:
 
 ```json
 {
@@ -204,20 +240,75 @@ or
 }
 ```
 
-### ignore-severity
+#### Detailed format with apply scope:
 
-Defaults to `[]`. A list of severity levels that let the audit command pass even if there are security advisories
-with the given severity.
+The detailed format allows you to control whether an ignore applies to auditing only, blocking only, or both. The `apply` field accepts:
+- `audit` - Only ignore during auditing (package doesn't appear in audit reports, but is still blocked during updates if `block-abandoned` is enabled)
+- `block` - Only ignore during blocking (package can be used during updates even if `block-abandoned` is enabled, but still appears in audit reports)
+- `all` - Ignore during both auditing and blocking (default behavior)
 
 ```json
 {
     "config": {
         "audit": {
-            "ignore-severity": ["low"]
+            "ignore-abandoned": {
+                "acme/package": {
+                    "apply": "block",
+                    "reason": "Allow during updates but still report as abandoned"
+                },
+                "vendor/*": {
+                    "apply": "all",
+                    "reason": "We maintain these packages internally"
+                }
+            }
         }
     }
 }
 ```
+
+All formats can be mixed together in the same configuration.
+
+### ignore-severity
+
+Defaults to `[]`. A list of severity levels that are ignored during auditing and/or blocking.
+
+#### Simple format:
+
+```json
+{
+    "config": {
+        "audit": {
+            "ignore-severity": ["low", "medium"]
+        }
+    }
+}
+```
+
+#### Detailed format with apply scope:
+
+The detailed format allows you to control whether an ignore applies to auditing only, blocking only, or both. The `apply` field accepts:
+- `audit` - Only ignore during auditing (advisories with this severity don't appear in audit reports, but packages are still blocked during updates)
+- `block` - Only ignore during blocking (packages can be used during updates, but advisories with this severity still appear in audit reports)
+- `all` - Ignore during both auditing and blocking (default behavior)
+
+```json
+{
+    "config": {
+        "audit": {
+            "ignore-severity": {
+                "low": {
+                    "apply": "all"
+                },
+                "medium": {
+                    "apply": "block"
+                }
+            }
+        }
+    }
+}
+```
+
+All formats can be mixed together in the same configuration.
 
 ### ignore-unreachable
 

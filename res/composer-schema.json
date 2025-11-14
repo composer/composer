@@ -430,9 +430,33 @@
                             "anyOf": [
                                 {
                                     "type": "object",
-                                    "description": "A list of advisory ids, remote ids or CVE ids (keys) and the explanations (values) for why they're being ignored. The listed items are reported but let the audit command pass.",
+                                    "description": "A list of advisory ids, remote ids or CVE ids (keys) with either explanations (string values) or detailed configuration (object values with 'apply' and 'reason' fields) for why they're being ignored.",
                                     "additionalProperties": {
-                                        "type": ["string", "string"]
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "description": "Explanation for ignoring this advisory (applies to both audit and blocking)"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Detailed configuration for ignoring this advisory",
+                                                "properties": {
+                                                    "apply": {
+                                                        "type": "string",
+                                                        "enum": ["audit", "block", "all"],
+                                                        "description": "Where to apply this ignore: 'audit' (only auditing), 'block' (only blocking), or 'all' (both)"
+                                                    },
+                                                    "reason": {
+                                                        "type": "string",
+                                                        "description": "Explanation for ignoring this advisory"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "null",
+                                                "description": "Ignore without explanation (applies to both audit and blocking)"
+                                            }
+                                        ]
                                     }
                                 },
                                 {
@@ -449,11 +473,42 @@
                             "description": "Whether abandoned packages should be ignored, reported as problems or cause an audit failure."
                         },
                         "ignore-severity": {
-                            "type": "array",
-                            "description": "A list of severities for which advisories with matching severity will be ignored, e.g. critical, high, medium, low, or none.",
-                            "items": {
-                                "type": "string"
-                            }
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "description": "A list of severities (keys) with either explanations (string values) or detailed configuration (object values with 'apply' fields) for why they're being ignored.",
+                                    "additionalProperties": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "description": "Explanation for ignoring this severity (applies to both audit and blocking)"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Detailed configuration for ignoring this severity",
+                                                "properties": {
+                                                    "apply": {
+                                                        "type": "string",
+                                                        "enum": ["audit", "block", "all"],
+                                                        "description": "Where to apply this ignore: 'audit' (only auditing), 'block' (only blocking), or 'all' (both)"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "null",
+                                                "description": "Ignore without explanation (applies to both audit and blocking)"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "array",
+                                    "description": "A list of severities for which advisories with matching severity will be ignored, e.g. critical, high, medium, low, or none.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ]
                         },
                         "ignore-unreachable": {
                             "type": "boolean",
@@ -473,9 +528,33 @@
                             "anyOf": [
                                 {
                                     "type": "object",
-                                    "description": "A list of abandoned package names (as key) mapping to a reason explaining why they are ignored.",
+                                    "description": "A list of abandoned package names (keys) with either explanations (string values) or detailed configuration (object values with 'apply' and 'reason' fields) for why they're being ignored.",
                                     "additionalProperties": {
-                                        "type": "string"
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "description": "Explanation for ignoring this abandoned package (applies to both audit and blocking)"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Detailed configuration for ignoring this abandoned package",
+                                                "properties": {
+                                                    "apply": {
+                                                        "type": "string",
+                                                        "enum": ["audit", "block", "all"],
+                                                        "description": "Where to apply this ignore: 'audit' (only auditing), 'block' (only blocking), or 'all' (both)"
+                                                    },
+                                                    "reason": {
+                                                        "type": "string",
+                                                        "description": "Explanation for ignoring this abandoned package"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "null",
+                                                "description": "Ignore without explanation (applies to both audit and blocking)"
+                                            }
+                                        ]
                                     }
                                 },
                                 {

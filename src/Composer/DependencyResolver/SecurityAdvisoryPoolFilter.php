@@ -61,14 +61,14 @@ class SecurityAdvisoryPoolFilter
             }
 
             $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true);
-            $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreList, [])['advisories'];
+            $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking, $this->auditConfig->ignoreSeverityForBlocking)['advisories'];
         }
 
         $packages = [];
         $securityRemovedVersions = [];
         $abandonedRemovedVersions = [];
         foreach ($pool->getPackages() as $package) {
-            if ($this->auditConfig->blockAbandoned && count($this->auditor->filterAbandonedPackages([$package], $this->auditConfig->ignoreAbandonedPackages)) !== 0) {
+            if ($this->auditConfig->blockAbandoned && count($this->auditor->filterAbandonedPackages([$package], $this->auditConfig->ignoreAbandonedForBlocking)) !== 0) {
                 foreach ($package->getNames(false) as $packageName) {
                     $abandonedRemovedVersions[$packageName][$package->getVersion()] = $package->getPrettyVersion();
                 }
