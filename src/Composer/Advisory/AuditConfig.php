@@ -31,7 +31,7 @@ class AuditConfig
     public $auditFormat;
 
     /**
-     * @var array<string>|array<string,string> List of advisory IDs, remote IDs or CVE IDs that reported but not listed as vulnerabilities.
+     * @var array<string>|array<string,string> List of advisory IDs, remote IDs, CVE IDs or package names that reported but not listed as vulnerabilities.
      */
     public $ignoreList;
 
@@ -67,7 +67,7 @@ class AuditConfig
 
     /**
      * @param Auditor::FORMAT_* $auditFormat
-     * @param array<string>|array<string,string> $ignoreList
+     * @param array<string>|array<string,string> $ignoreList List of advisory IDs, remote IDs, CVE IDs or package names to ignore
      * @param Auditor::ABANDONED_* $abandoned
      * @param array<string> $ignoreSeverity
      * @param array<string>|array<string,string> $ignoreAbandonedPackages

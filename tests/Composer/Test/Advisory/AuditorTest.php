@@ -316,6 +316,41 @@ Found 2 abandoned packages:
                 ['text' => 'Reported at: 2015-05-25T13:21:00+00:00'],
             ],
         ];
+        yield 'ignore by package name' => [
+            [
+                new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
+            ],
+            ['vendor1/package1'],
+            0,
+            [
+                ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
+                ['text' => 'Package: vendor1/package1'],
+                ['text' => 'Severity: medium'],
+                ['text' => 'CVE: CVE1'],
+                ['text' => 'Title: advisory1'],
+                ['text' => 'URL: https://advisory.example.com/advisory1'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2022-05-25T13:21:00+00:00'],
+            ],
+        ];
+        yield 'ignore by package name with reasoning' => [
+            [
+                new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
+            ],
+            ['vendor1/package1' => 'Package has known safe usage'],
+            0,
+            [
+                ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
+                ['text' => 'Package: vendor1/package1'],
+                ['text' => 'Severity: medium'],
+                ['text' => 'CVE: CVE1'],
+                ['text' => 'Title: advisory1'],
+                ['text' => 'URL: https://advisory.example.com/advisory1'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2022-05-25T13:21:00+00:00'],
+                ['text' => 'Ignore reason: Package has known safe usage'],
+            ],
+        ];
         yield '1 vulnerability, 0 ignored' => [
             [
                 new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
