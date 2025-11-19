@@ -44,7 +44,7 @@ class SecurityAdvisoryPoolFilter
     /**
      * @param array<RepositoryInterface> $repositories
      */
-    public function filter(Pool $pool, array $repositories): Pool
+    public function filter(Pool $pool, array $repositories, Request $request): Pool
     {
         if (!$this->auditConfig->blockInsecure) {
             return $pool;
@@ -57,7 +57,7 @@ class SecurityAdvisoryPoolFilter
 
         $packagesForAdvisories = [];
         foreach ($pool->getPackages() as $package) {
-            if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName())) {
+            if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
                 $packagesForAdvisories[] = $package;
             }
         }
