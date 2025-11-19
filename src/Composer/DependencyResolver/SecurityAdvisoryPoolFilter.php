@@ -46,29 +46,34 @@ class SecurityAdvisoryPoolFilter
      */
     public function filter(Pool $pool, array $repositories, Request $request): Pool
     {
-        $advisoryMap = [];
-        if ($this->auditConfig->blockInsecure) {
-            $repoSet = new RepositorySet();
-            foreach ($repositories as $repo) {
-                $repoSet->addRepository($repo);
-            }
-
-            $packagesForAdvisories = [];
-            foreach ($pool->getPackages() as $package) {
-                if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
-                    $packagesForAdvisories[] = $package;
-                }
-            }
-
-            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true);
-            $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreList, [])['advisories'];
+        if (!$this->auditConfig->blockInsecure) {
+            return $pool;
         }
+
+        $repoSet = new RepositorySet();
+        foreach ($repositories as $repo) {
+            $repoSet->addRepository($repo);
+        }
+
+        $packagesForAdvisories = [];
+        foreach ($pool->getPackages() as $package) {
+            if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
+                $packagesForAdvisories[] = $package;
+            }
+        }
+
+        $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true, true);
+        if ($this->auditor->needsCompleteAdvisoryLoad($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking)) {
+            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, false, true);
+        }
+
+        $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking, $this->auditConfig->ignoreSeverityForBlocking)['advisories'];
 
         $packages = [];
         $securityRemovedVersions = [];
         $abandonedRemovedVersions = [];
         foreach ($pool->getPackages() as $package) {
-            if ($this->auditConfig->blockAbandoned && count($this->auditor->filterAbandonedPackages([$package], $this->auditConfig->ignoreAbandonedPackages)) !== 0) {
+            if ($this->auditConfig->blockAbandoned && count($this->auditor->filterAbandonedPackages([$package], $this->auditConfig->ignoreAbandonedForBlocking)) !== 0) {
                 foreach ($package->getNames(false) as $packageName) {
                     $abandonedRemovedVersions[$packageName][$package->getVersion()] = $package->getPrettyVersion();
                 }

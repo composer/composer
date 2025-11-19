@@ -20,8 +20,10 @@ use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositorySet;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Test\TestCase;
 use Composer\Advisory\Auditor;
+use DateTimeImmutable;
 use InvalidArgumentException;
 
 class AuditorTest extends TestCase
@@ -54,6 +56,7 @@ class AuditorTest extends TestCase
             'output' => '<warning>Found 2 security vulnerability advisories affecting 1 package:</warning>
 Package: vendor1/package1
 Severity: high
+Advisory ID: ID4
 CVE: CVE3
 Title: advisory4
 URL: https://advisory.example.com/advisory4
@@ -62,6 +65,7 @@ Reported at: 2022-05-25T13:21:00+00:00
 --------
 Package: vendor1/package1
 Severity: medium
+Advisory ID: ID5
 CVE: '.'
 Title: advisory5
 URL: https://advisory.example.com/advisory5
@@ -185,6 +189,7 @@ Found 2 abandoned packages:
 +-------------------+----------------------------------------------------------------------------------+
 | Package           | vendor1/package1                                                                 |
 | Severity          | high                                                                             |
+| Advisory ID       | ID4                                                                              |
 | CVE               | CVE3                                                                             |
 | Title             | advisory4                                                                        |
 | URL               | https://advisory.example.com/advisory4                                           |
@@ -194,6 +199,7 @@ Found 2 abandoned packages:
 +-------------------+----------------------------------------------------------------------------------+
 | Package           | vendor1/package1                                                                 |
 | Severity          | medium                                                                           |
+| Advisory ID       | ID5                                                                              |
 | CVE               |                                                                                  |
 | Title             | advisory5                                                                        |
 | URL               | https://advisory.example.com/advisory5                                           |
@@ -257,6 +263,7 @@ Found 2 abandoned packages:
                 ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
                 ['text' => 'Package: vendor1/package1'],
                 ['text' => 'Severity: medium'],
+                ['text' => 'Advisory ID: ID1'],
                 ['text' => 'CVE: CVE1'],
                 ['text' => 'Title: advisory1'],
                 ['text' => 'URL: https://advisory.example.com/advisory1'],
@@ -274,6 +281,7 @@ Found 2 abandoned packages:
                 ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
                 ['text' => 'Package: vendor1/package1'],
                 ['text' => 'Severity: medium'],
+                ['text' => 'Advisory ID: ID1'],
                 ['text' => 'CVE: CVE1'],
                 ['text' => 'Title: advisory1'],
                 ['text' => 'URL: https://advisory.example.com/advisory1'],
@@ -292,6 +300,7 @@ Found 2 abandoned packages:
                 ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
                 ['text' => 'Package: vendor1/package2'],
                 ['text' => 'Severity: medium'],
+                ['text' => 'Advisory ID: ID2'],
                 ['text' => 'CVE: '],
                 ['text' => 'Title: advisory2'],
                 ['text' => 'URL: https://advisory.example.com/advisory2'],
@@ -309,11 +318,49 @@ Found 2 abandoned packages:
                 ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
                 ['text' => 'Package: vendorx/packagex'],
                 ['text' => 'Severity: medium'],
+                ['text' => 'Advisory ID: IDx'],
                 ['text' => 'CVE: CVE5'],
                 ['text' => 'Title: advisory17'],
                 ['text' => 'URL: https://advisory.example.com/advisory17'],
                 ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
                 ['text' => 'Reported at: 2015-05-25T13:21:00+00:00'],
+            ],
+        ];
+        yield 'ignore by package name' => [
+            [
+                new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
+            ],
+            ['vendor1/package1'],
+            0,
+            [
+                ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
+                ['text' => 'Package: vendor1/package1'],
+                ['text' => 'Severity: medium'],
+                ['text' => 'Advisory ID: ID1'],
+                ['text' => 'CVE: CVE1'],
+                ['text' => 'Title: advisory1'],
+                ['text' => 'URL: https://advisory.example.com/advisory1'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2022-05-25T13:21:00+00:00'],
+            ],
+        ];
+        yield 'ignore by package name with reasoning' => [
+            [
+                new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
+            ],
+            ['vendor1/package1' => 'Package has known safe usage'],
+            0,
+            [
+                ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
+                ['text' => 'Package: vendor1/package1'],
+                ['text' => 'Severity: medium'],
+                ['text' => 'Advisory ID: ID1'],
+                ['text' => 'CVE: CVE1'],
+                ['text' => 'Title: advisory1'],
+                ['text' => 'URL: https://advisory.example.com/advisory1'],
+                ['text' => 'Affected versions: >=3,<3.4.3|>=1,<2.5.6'],
+                ['text' => 'Reported at: 2022-05-25T13:21:00+00:00'],
+                ['text' => 'Ignore reason: Package has known safe usage'],
             ],
         ];
         yield '1 vulnerability, 0 ignored' => [
@@ -326,6 +373,7 @@ Found 2 abandoned packages:
                 ['text' => 'Found 1 security vulnerability advisory affecting 1 package:'],
                 ['text' => 'Package: vendor1/package1'],
                 ['text' => 'Severity: medium'],
+                ['text' => 'Advisory ID: ID1'],
                 ['text' => 'CVE: CVE1'],
                 ['text' => 'Title: advisory1'],
                 ['text' => 'URL: https://advisory.example.com/advisory1'],
@@ -347,6 +395,7 @@ Found 2 abandoned packages:
                 ['text' => 'Found 3 ignored security vulnerability advisories affecting 2 packages:'],
                 ['text' => 'Package: vendor2/package1'],
                 ['text' => 'Severity: medium'],
+                ['text' => 'Advisory ID: ID3'],
                 ['text' => 'CVE: CVE2'],
                 ['text' => 'Title: advisory3'],
                 ['text' => 'URL: https://advisory.example.com/advisory3'],
@@ -356,6 +405,7 @@ Found 2 abandoned packages:
                 ['text' => '--------'],
                 ['text' => 'Package: vendor2/package1'],
                 ['text' => 'Severity: medium'],
+                ['text' => 'Advisory ID: ID6'],
                 ['text' => 'CVE: CVE4'],
                 ['text' => 'Title: advisory6'],
                 ['text' => 'URL: https://advisory.example.com/advisory6'],
@@ -365,6 +415,7 @@ Found 2 abandoned packages:
                 ['text' => '--------'],
                 ['text' => 'Package: vendorx/packagex'],
                 ['text' => 'Severity: medium'],
+                ['text' => 'Advisory ID: IDx'],
                 ['text' => 'CVE: CVE5'],
                 ['text' => 'Title: advisory17'],
                 ['text' => 'URL: https://advisory.example.com/advisory17'],
@@ -374,6 +425,7 @@ Found 2 abandoned packages:
                 ['text' => 'Found 1 security vulnerability advisory affecting 1 package:'],
                 ['text' => 'Package: vendor3/package1'],
                 ['text' => 'Severity: medium'],
+                ['text' => 'Advisory ID: ID7'],
                 ['text' => 'CVE: CVE5'],
                 ['text' => 'Title: advisory7'],
                 ['text' => 'URL: https://advisory.example.com/advisory7'],
@@ -781,5 +833,57 @@ Found 2 abandoned packages:
         ];
 
         return $advisories;
+    }
+
+    /**
+     * @dataProvider needsCompleteLoadProvider
+     * @param array<string, array<SecurityAdvisory|PartialSecurityAdvisory>> $advisories
+     * @param array<string> $ignoreList
+     */
+    public function testNeedsCompleteAdvisoryLoad(array $advisories, array $ignoreList, bool $expected): void
+    {
+        $auditor = new Auditor();
+        self::assertSame($expected, $auditor->needsCompleteAdvisoryLoad($advisories, $ignoreList));
+    }
+
+    /**
+     * @return array<array{array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>, array<string>, bool}>
+     */
+    public static function needsCompleteLoadProvider(): array
+    {
+        return [
+            'no filter or advisories' => [[], [], false],
+            'packagist filters are IDs so work fine with partial advisories' => [[], ['PKSA-foo-bar'], false],
+            'packagist filters are IDs so work fine with partial advisories/2' => [
+                ['vendor1/package1' => [
+                    new SecurityAdvisory('foo/bar', '123', new Constraint('=', '1.0.0.0'), 'test', [['name' => 'foo', 'remoteId' => 'remoteID']], new DateTimeImmutable()),
+                    new PartialSecurityAdvisory('foo/bar', '1234', new Constraint('=', '1.0.0.0')),
+                ]],
+                ['PKSA-foo-bar'],
+                false
+            ],
+            'no advisories no need to load any further' => [[], ['CVE-2025-1234'], false],
+            'no advisories no need to load any further/2' => [['vendor1/package1' => []], ['CVE-2025-1234'], false],
+            'CVE filter or other non-packagist ones might need to fully load for safety if partial advisories are present' => [
+                ['vendor1/package1' => [
+                    new SecurityAdvisory('foo/bar', '123', new Constraint('=', '1.0.0.0'), 'test', [['name' => 'foo', 'remoteId' => 'remoteID']], new DateTimeImmutable()),
+                    new PartialSecurityAdvisory('foo/bar', '1234', new Constraint('=', '1.0.0.0')),
+                ]],
+                ['CVE-2025-1234'],
+                true,
+            ],
+            'filter does not trigger load if all advisories are fully loaded' => [
+                [
+                    'vendor1/package1' => [
+                        new SecurityAdvisory('foo/bar', '123', new Constraint('=', '1.0.0.0'), 'test', [['name' => 'foo', 'remoteId' => 'remoteID']], new DateTimeImmutable()),
+                    ],
+                    'vendor1/package2' => [
+                        new SecurityAdvisory('foo/bar', '1234', new Constraint('=', '1.0.0.0'), 'test', [['name' => 'foo', 'remoteId' => 'remoteID']], new DateTimeImmutable()),
+                    ]
+                ],
+                ['CVE-2025-1234'],
+                false,
+            ],
+        ];
     }
 }
