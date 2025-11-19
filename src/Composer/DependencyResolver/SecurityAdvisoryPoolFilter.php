@@ -62,7 +62,11 @@ class SecurityAdvisoryPoolFilter
             }
         }
 
-        $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true);
+        $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true, true);
+        if ($this->auditor->needsCompleteAdvisoryLoad($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking)) {
+            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, false, true);
+        }
+
         $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking, $this->auditConfig->ignoreSeverityForBlocking)['advisories'];
 
         $packages = [];

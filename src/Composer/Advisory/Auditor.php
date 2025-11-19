@@ -80,7 +80,7 @@ class Auditor
 
         // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
         // and ignores are set then we need to query again the full data to make sure it can be filtered
-        if (count($allAdvisories) > 0 && $ignoreList !== [] && $format === self::FORMAT_SUMMARY) {
+        if ($format === self::FORMAT_SUMMARY && $this->needsCompleteAdvisoryLoad($allAdvisories, $ignoreList)) {
             $result = $repoSet->getMatchingSecurityAdvisories($packages, false, $ignoreUnreachable);
             $allAdvisories = $result['advisories'];
             $unreachableRepos = array_merge($unreachableRepos, $result['unreachableRepos']);
@@ -155,6 +155,35 @@ class Auditor
         }
 
         return $auditBitmask;
+    }
+
+    /**
+     * @param array<string, array<SecurityAdvisory|PartialSecurityAdvisory>> $advisories
+     * @param array<string, string>|array<string> $ignoreList
+     * @return bool
+     */
+    public function needsCompleteAdvisoryLoad(array $advisories, array $ignoreList): bool
+    {
+        if (\count($advisories) === 0) {
+            return false;
+        }
+
+        // no partial advisories present
+        if (array_all($advisories, static function (array $pkgAdvisories) {
+            return array_all($pkgAdvisories, static function ($advisory) { return $advisory instanceof SecurityAdvisory; });
+        })) {
+            return false;
+        }
+
+        if (\count($ignoreList) > 0 && !\array_is_list($ignoreList)) {
+            $ignoredIds = array_keys($ignoreList);
+        } else {
+            $ignoredIds = $ignoreList;
+        }
+
+        return array_any($ignoredIds, static function ($id) {
+            return !str_starts_with($id, 'PKSA-');
+        });
     }
 
     /**
@@ -304,6 +333,7 @@ class Auditor
                 $headers = [
                     'Package',
                     'Severity',
+                    'Advisory ID',
                     'CVE',
                     'Title',
                     'URL',
@@ -313,16 +343,13 @@ class Auditor
                 $row = [
                     $advisory->packageName,
                     $this->getSeverity($advisory),
+                    $this->getAdvisoryId($advisory),
                     $this->getCVE($advisory),
                     $advisory->title,
                     $this->getURL($advisory),
                     $advisory->affectedVersions->getPrettyString(),
                     $advisory->reportedAt->format(DATE_ATOM),
                 ];
-                if ($advisory->cve === null) {
-                    $headers[] = 'Advisory ID';
-                    $row[] = $advisory->advisoryId;
-                }
                 if ($advisory instanceof IgnoredSecurityAdvisory) {
                     $headers[] = 'Ignore reason';
                     $row[] = $advisory->ignoreReason ?? 'None specified';
@@ -352,10 +379,8 @@ class Auditor
                 }
                 $error[] = "Package: ".$advisory->packageName;
                 $error[] = "Severity: ".$this->getSeverity($advisory);
+                $error[] = "Advisory ID: ".$this->getAdvisoryId($advisory);
                 $error[] = "CVE: ".$this->getCVE($advisory);
-                if ($advisory->cve === null) {
-                    $error[] = "Advisory ID: ".$advisory->advisoryId;
-                }
                 $error[] = "Title: ".OutputFormatter::escape($advisory->title);
                 $error[] = "URL: ".$this->getURL($advisory);
                 $error[] = "Affected versions: ".OutputFormatter::escape($advisory->affectedVersions->getPrettyString());
@@ -423,6 +448,15 @@ class Auditor
         }
 
         return $advisory->severity;
+    }
+
+    private function getAdvisoryId(SecurityAdvisory $advisory): string
+    {
+        if (str_starts_with($advisory->advisoryId, 'PKSA-')) {
+            return '<href=https://packagist.org/security-advisories/'.$advisory->advisoryId.'>'.$advisory->advisoryId.'</>';
+        }
+
+        return $advisory->advisoryId;
     }
 
     private function getCVE(SecurityAdvisory $advisory): string
