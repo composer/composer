@@ -1307,11 +1307,6 @@ being found during installation even though they should be present.
 See the [proxy documentation](faqs/how-to-use-composer-behind-a-proxy.md) for more details
 on how to use proxy env vars.
 
-### COMPOSER_AUDIT_ABANDONED
-
-Set to `ignore`, `report` or `fail` to override the [audit.abandoned](06-config.md#abandoned)
-config option.
-
 ### COMPOSER_MAX_PARALLEL_HTTP
 
 Set to an integer to configure how many files can be downloaded in parallel. This
@@ -1354,13 +1349,18 @@ Accepts a comma-seperated list of event names, e.g. `post-install-cmd` for which
 
 If set to `1`, it is the equivalent of passing the `--no-audit` option to a `require`, `update`, `remove` or `create-project` command.
 
+### COMPOSER_AUDIT_ABANDONED
+
+Set to `ignore`, `report` or `fail` to override the [audit.abandoned](06-config.md#abandoned)
+config option.
+
 ### COMPOSER_NO_SECURITY_BLOCKING
 
-If set to `1`, it is the equivalent of passing the `--no-security-blocking` option to a `require`, `update`, `remove`, or `create-project` command. This allows installing packages with security advisories or that are abandoned.
+If set to `1`, it is the equivalent of passing the `--no-security-blocking` option to a `require`, `update`, `remove`, or `create-project` command. This allows installing packages with security advisories or that are abandoned. It overrides the config option [audit.block-insecure](06-config.md#block-insecure).
 
 ### COMPOSER_SECURITY_BLOCKING_ABANDONED
 
-If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `audit.block-abandoned` config to `true`). If set to `0`, disables blocking of abandoned packages. Note that `COMPOSER_NO_SECURITY_BLOCKING=1` takes precedence and forces all security blocking to be disabled, including abandoned package blocking.
+If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `audit.block-abandoned` config to `true`). If set to `0`, disables blocking of abandoned packages. Note that this setting does not have any effect if security blocking is generally disabled. It overrides the config option [audit.block-abandoned](06-config.md#block-abandoned).
 
 ### COMPOSER_NO_DEV
 

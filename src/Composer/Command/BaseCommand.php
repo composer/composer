@@ -491,7 +491,7 @@ abstract class BaseCommand extends Command
                 $auditConfig->auditFormat,
                 $auditConfig->auditAbandoned,
                 false, // blockInsecure
-                false, // blockAbandoned
+                $auditConfig->blockAbandoned,
                 $auditConfig->ignoreUnreachable,
                 $auditConfig->ignoreListForAudit,
                 $auditConfig->ignoreListForBlocking,

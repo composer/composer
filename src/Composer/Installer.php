@@ -1122,7 +1122,7 @@ class Installer
     {
         $auditConfig = $this->getAuditConfig();
 
-        if ($auditConfig->blockInsecure || $auditConfig->blockAbandoned) {
+        if ($auditConfig->blockInsecure) {
             return new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
         }
 

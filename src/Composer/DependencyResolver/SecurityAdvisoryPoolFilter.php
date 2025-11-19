@@ -46,23 +46,24 @@ class SecurityAdvisoryPoolFilter
      */
     public function filter(Pool $pool, array $repositories): Pool
     {
-        $advisoryMap = [];
-        if ($this->auditConfig->blockInsecure) {
-            $repoSet = new RepositorySet();
-            foreach ($repositories as $repo) {
-                $repoSet->addRepository($repo);
-            }
-
-            $packagesForAdvisories = [];
-            foreach ($pool->getPackages() as $package) {
-                if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName())) {
-                    $packagesForAdvisories[] = $package;
-                }
-            }
-
-            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true);
-            $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking, $this->auditConfig->ignoreSeverityForBlocking)['advisories'];
+        if (!$this->auditConfig->blockInsecure) {
+            return $pool;
         }
+
+        $repoSet = new RepositorySet();
+        foreach ($repositories as $repo) {
+            $repoSet->addRepository($repo);
+        }
+
+        $packagesForAdvisories = [];
+        foreach ($pool->getPackages() as $package) {
+            if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName())) {
+                $packagesForAdvisories[] = $package;
+            }
+        }
+
+        $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true);
+        $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking, $this->auditConfig->ignoreSeverityForBlocking)['advisories'];
 
         $packages = [];
         $securityRemovedVersions = [];
