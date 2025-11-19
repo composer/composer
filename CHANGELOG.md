@@ -1,3 +1,11 @@
+### [2.9.2] 2025-11-19
+
+  * Added new `--no-security-blocking` flag to disable/configure security blocking (#12617)
+  * Added a way to set [`audit > ignore`](https://getcomposer.org/doc/06-config.md#detailed-format-with-apply-scope-) to act only on audits or only on security blocking (#12618, #12612)
+  * Fixed `config` command not being able to set the new audit settings (#12609)
+  * Fixed handling audit.ignore to support CVE ids while doing security blocking, but advisory IDs are still preferred for performance reasons (#12624)
+  * Fixed partial updates failing when another package in the lock file has a known security advisory (#12626)
+
 ### [2.9.1] 2025-11-13
 
   * Fixed regression in phpunit binary proxies (#12601)
@@ -2087,6 +2095,7 @@
 
   * Initial release
 
+[2.9.2]: https://github.com/composer/composer/compare/2.9.1...2.9.2
 [2.9.1]: https://github.com/composer/composer/compare/2.9.0...2.9.1
 [2.9.0]: https://github.com/composer/composer/compare/2.9.0-RC1...2.9.0
 [2.9.0-RC1]: https://github.com/composer/composer/compare/2.8.12...2.9.0-RC1
