@@ -430,7 +430,7 @@
                             "anyOf": [
                                 {
                                     "type": "object",
-                                    "description": "A list of advisory ids, remote ids or CVE ids (keys) with either explanations (string values) or detailed configuration (object values with 'apply' and 'reason' fields) for why they're ignored.",
+                                    "description": "A list of advisory ids, remote ids, CVE ids or package names (keys) with either explanations (string values) or detailed configuration (object values with 'apply' and 'reason' fields) for why they're ignored.",
                                     "additionalProperties": {
                                         "anyOf": [
                                             {
@@ -461,7 +461,7 @@
                                 },
                                 {
                                     "type": "array",
-                                    "description": "A set of advisory ids, remote ids or CVE ids that are reported but let the audit command pass. Applies to audit reports and version blocking.",
+                                    "description": "A set of advisory ids, remote ids, CVE ids or package names that are reported but let the audit command pass. Applies to audit reports and version blocking.",
                                     "items": {
                                         "type": "string"
                                     }
