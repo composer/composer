@@ -64,7 +64,7 @@ class Auditor
      * @param PackageInterface[] $packages
      * @param self::FORMAT_* $format The format that will be used to output audit results.
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
-     * @param string[] $ignoreList List of advisory IDs, remote IDs or CVE IDs that reported but not listed as vulnerabilities.
+     * @param string[] $ignoreList List of advisory IDs, remote IDs, CVE IDs or package names that reported but not listed as vulnerabilities.
      * @param self::ABANDONED_* $abandoned
      * @param array<string> $ignoredSeverities List of ignored severity levels
      * @param string[]|array<string, string> $ignoreAbandoned List of abandoned package name that reported but not listed as vulnerabilities.
@@ -182,7 +182,7 @@ class Auditor
 
     /**
      * @phpstan-param array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> $allAdvisories
-     * @param array<string>|array<string,string> $ignoreList List of advisory IDs, remote IDs or CVE IDs that reported but not listed as vulnerabilities.
+     * @param array<string>|array<string,string> $ignoreList List of advisory IDs, remote IDs, CVE IDs or package names that reported but not listed as vulnerabilities.
      * @param array<string> $ignoredSeverities List of ignored severity levels
      * @phpstan-return array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, ignoredAdvisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>}
      */
@@ -205,6 +205,11 @@ class Auditor
         foreach ($allAdvisories as $package => $pkgAdvisories) {
             foreach ($pkgAdvisories as $advisory) {
                 $isActive = true;
+
+                if (in_array($package, $ignoredIds, true)) {
+                    $isActive = false;
+                    $ignoreReason = $ignoreList[$package] ?? null;
+                }
 
                 if (in_array($advisory->advisoryId, $ignoredIds, true)) {
                     $isActive = false;
