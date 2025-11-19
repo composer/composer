@@ -437,7 +437,7 @@ class Installer
                         $repoSet->addRepository($repo);
                     }
 
-                    return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->abandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedForAudit) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
+                    return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->auditAbandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedForAudit) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {

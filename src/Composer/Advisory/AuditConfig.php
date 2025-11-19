@@ -33,7 +33,7 @@ class AuditConfig
     /**
      * @var Auditor::ABANDONED_*
      */
-    public $abandoned;
+    public $auditAbandoned;
 
     /**
      * @var bool Should insecure versions be blocked during a composer update/required command
@@ -82,7 +82,7 @@ class AuditConfig
 
     /**
      * @param Auditor::FORMAT_* $auditFormat
-     * @param Auditor::ABANDONED_* $abandoned
+     * @param Auditor::ABANDONED_* $auditAbandoned
      * @param list<string> $ignoreListForAudit
      * @param list<string> $ignoreListForBlocking
      * @param list<string> $ignoreSeverityForAudit
@@ -90,11 +90,11 @@ class AuditConfig
      * @param list<string> $ignoreAbandonedForAudit
      * @param list<string> $ignoreAbandonedForBlocking
      */
-    public function __construct(bool $audit, string $auditFormat, string $abandoned, bool $blockInsecure, bool $blockAbandoned, bool $ignoreUnreachable, array $ignoreListForAudit, array $ignoreListForBlocking, array $ignoreSeverityForAudit, array $ignoreSeverityForBlocking, array $ignoreAbandonedForAudit, array $ignoreAbandonedForBlocking)
+    public function __construct(bool $audit, string $auditFormat, string $auditAbandoned, bool $blockInsecure, bool $blockAbandoned, bool $ignoreUnreachable, array $ignoreListForAudit, array $ignoreListForBlocking, array $ignoreSeverityForAudit, array $ignoreSeverityForBlocking, array $ignoreAbandonedForAudit, array $ignoreAbandonedForBlocking)
     {
         $this->audit = $audit;
         $this->auditFormat = $auditFormat;
-        $this->abandoned = $abandoned;
+        $this->auditAbandoned = $auditAbandoned;
         $this->blockInsecure = $blockInsecure;
         $this->blockAbandoned = $blockAbandoned;
         $this->ignoreUnreachable = $ignoreUnreachable;
