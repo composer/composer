@@ -352,7 +352,7 @@ class PoolBuilder
 
         // filter vulnerable packages before optimizing the pool otherwise we may end up with inconsistent state where the optimizer took away versions
         // that were not vulnerable and now suddenly the vulnerable ones are removed and we are missing some versions to make it solvable
-        $pool = $this->runSecurityAdvisoryFilter($pool, $repositories);
+        $pool = $this->runSecurityAdvisoryFilter($pool, $repositories, $request);
         $pool = $this->runOptimizer($request, $pool);
 
         Intervals::clear();
@@ -817,7 +817,7 @@ class PoolBuilder
     /**
      * @param RepositoryInterface[] $repositories
      */
-    private function runSecurityAdvisoryFilter(Pool $pool, array $repositories): Pool
+    private function runSecurityAdvisoryFilter(Pool $pool, array $repositories, Request $request): Pool
     {
         if (null === $this->securityAdvisoryPoolFilter) {
             return $pool;
@@ -828,7 +828,7 @@ class PoolBuilder
         $before = microtime(true);
         $total = \count($pool->getPackages());
 
-        $pool = $this->securityAdvisoryPoolFilter->filter($pool, $repositories);
+        $pool = $this->securityAdvisoryPoolFilter->filter($pool, $repositories, $request);
 
         $filtered = $total - \count($pool->getPackages());
 

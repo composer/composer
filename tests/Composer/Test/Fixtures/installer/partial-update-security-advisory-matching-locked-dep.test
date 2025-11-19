@@ -1,0 +1,82 @@
+--TEST--
+Security advisory matching a locked dependency should not prevent a successful PARTIAL update.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "1.0.0",
+        "acme/updated": "^1"
+    },
+    "config": {
+        "audit": {
+            "block-insecure": true
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0.0",
+                    "source": { "reference": "some.branch", "type": "git", "url": "" }
+                },
+                {
+                    "name": "acme/updated",
+                    "version": "1.0.0",
+                    "source": { "reference": "some.branch", "type": "git", "url": "" }
+                },
+                {
+                    "name": "acme/updated",
+                    "version": "1.1.0",
+                    "source": { "reference": "some.branch", "type": "git", "url": "" }
+                }
+            ],
+            "security-advisories": {
+                "acme/library": [
+                    {
+                        "advisoryId": "PKSA-1234-abcd-1234",
+                        "packageName": "acme/library",
+                        "remoteId": "test",
+                        "title": "Security Advisory",
+                        "link": null,
+                        "cve": null,
+                        "affectedVersions": ">=1.0.0,<1.1.0",
+                        "source": "Tests",
+                        "reportedAt": "2024-04-31 12:37:47",
+                        "composerRepository": "Package Repository",
+                        "severity": "high",
+                        "sources": [
+                            {
+                                "name": "Security Advisory",
+                                "remoteId": "test"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
+--LOCK--
+{
+    "packages": [
+        {"name": "acme/library", "version": "1.0.0", "type": "library"},
+        {"name": "acme/updated", "version": "1.0.0", "type": "library"}
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--RUN--
+update -v acme/updated
+
+--EXPECT--
+Installing acme/library (1.0.0)
+Installing acme/updated (1.1.0)

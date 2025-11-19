@@ -15,6 +15,7 @@ namespace Composer\Test\DependencyResolver;
 use Composer\Advisory\AuditConfig;
 use Composer\Advisory\Auditor;
 use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
@@ -43,7 +44,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             $expectedPackage1 = new Package('acme/package', '2.0.0.0', '2.0'),
             $expectedPackage2 = new Package('acme/other', '1.0.0.0', '1.0'),
         ]);
-        $filteredPool = $filter->filter($pool, [$repository]);
+        $filteredPool = $filter->filter($pool, [$repository], new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
         $this->assertTrue($filteredPool->isSecurityRemovedPackageVersion('acme/package', new Constraint('==', '1.0.0.0')));
@@ -70,7 +71,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             $expectedPackage1 = new Package('acme/package', '1.0.0.0', '1.0'),
             $expectedPackage2 = new Package('acme/package', '1.1.0.0', '1.1'),
         ]);
-        $filteredPool = $filter->filter($pool, [$repository]);
+        $filteredPool = $filter->filter($pool, [$repository], new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
         $this->assertCount(0, $filteredPool->getAllAbandonedRemovedPackageVersions());
@@ -92,7 +93,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             $expectedPackage1 = new Package('acme/package', '1.0.0.0', '1.0'),
             $expectedPackage2 = new Package('acme/package', '1.1.0.0', '1.1'),
         ]);
-        $filteredPool = $filter->filter($pool, [$repository]);
+        $filteredPool = $filter->filter($pool, [$repository], new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
         $this->assertCount(0, $filteredPool->getAllAbandonedRemovedPackageVersions());
@@ -116,7 +117,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             $abandonedPackage,
             $ignoreAbandonedPackage,
         ]);
-        $filteredPool = $filter->filter($pool, []);
+        $filteredPool = $filter->filter($pool, [], new Request());
 
         $this->assertSame([$expectedPackage, $ignoreAbandonedPackage], $filteredPool->getPackages());
         $this->assertCount(1, $filteredPool->getAllAbandonedRemovedPackageVersions());
