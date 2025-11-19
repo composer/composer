@@ -489,13 +489,16 @@ abstract class BaseCommand extends Command
             $auditConfig = new AuditConfig(
                 $auditConfig->audit,
                 $auditConfig->auditFormat,
-                $auditConfig->ignoreList,
-                $auditConfig->abandoned,
+                $auditConfig->auditAbandoned,
                 false, // blockInsecure
-                false, // blockAbandoned
-                $auditConfig->ignoreSeverity,
+                $auditConfig->blockAbandoned,
                 $auditConfig->ignoreUnreachable,
-                $auditConfig->ignoreAbandonedPackages
+                $auditConfig->ignoreListForAudit,
+                $auditConfig->ignoreListForBlocking,
+                $auditConfig->ignoreSeverityForAudit,
+                $auditConfig->ignoreSeverityForBlocking,
+                $auditConfig->ignoreAbandonedForAudit,
+                $auditConfig->ignoreAbandonedForBlocking
             );
         }
 

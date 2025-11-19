@@ -76,9 +76,9 @@ EOT
             throw new \InvalidArgumentException('--audit must be one of '.implode(', ', Auditor::ABANDONEDS).'.');
         }
 
-        $abandoned = $abandoned ?? $auditConfig->abandoned;
+        $abandoned = $abandoned ?? $auditConfig->auditAbandoned;
 
-        $ignoreSeverities = array_merge($input->getOption('ignore-severity'), $auditConfig->ignoreSeverity);
+        $ignoreSeverities = array_merge($input->getOption('ignore-severity'), $auditConfig->ignoreSeverityForAudit);
         $ignoreUnreachable = $input->getOption('ignore-unreachable') || $auditConfig->ignoreUnreachable;
 
         return min(255, $auditor->audit(
@@ -87,11 +87,11 @@ EOT
             $packages,
             $this->getAuditFormat($input, 'format'),
             false,
-            $auditConfig->ignoreList,
+            $auditConfig->ignoreListForAudit,
             $abandoned,
             $ignoreSeverities,
             $ignoreUnreachable,
-            $auditConfig->ignoreAbandonedPackages
+            $auditConfig->ignoreAbandonedForAudit
         ));
 
     }

@@ -424,20 +424,44 @@
                 },
                 "audit": {
                     "type": "object",
-                    "description": "Security audit configuration options",
+                    "description": "Security audit and version blocking configuration options",
                     "properties": {
                         "ignore": {
                             "anyOf": [
                                 {
                                     "type": "object",
-                                    "description": "A list of advisory ids, remote ids or CVE ids (keys) and the explanations (values) for why they're being ignored. The listed items are reported but let the audit command pass.",
+                                    "description": "A list of advisory ids, remote ids, CVE ids or package names (keys) with either explanations (string values) or detailed configuration (object values with 'apply' and 'reason' fields) for why they're ignored.",
                                     "additionalProperties": {
-                                        "type": ["string", "string"]
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "description": "Explanation for ignoring this advisory (applies to audit reports and version blocking)"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Detailed configuration for ignoring this advisory",
+                                                "properties": {
+                                                    "apply": {
+                                                        "type": "string",
+                                                        "enum": ["audit", "block", "all"],
+                                                        "description": "Where to apply this ignore: 'audit' (only audit reports), 'block' (only version blocking), or 'all' (both)"
+                                                    },
+                                                    "reason": {
+                                                        "type": "string",
+                                                        "description": "Explanation for ignoring this advisory, e.g. vulnerable code path not reachable in application"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "null",
+                                                "description": "Ignore without explanation (applies to audit reports and version blocking)"
+                                            }
+                                        ]
                                     }
                                 },
                                 {
                                     "type": "array",
-                                    "description": "A set of advisory ids, remote ids or CVE ids that are reported but let the audit command pass.",
+                                    "description": "A set of advisory ids, remote ids, CVE ids or package names that are reported but let the audit command pass. Applies to audit reports and version blocking.",
                                     "items": {
                                         "type": "string"
                                     }
@@ -446,41 +470,96 @@
                         },
                         "abandoned": {
                             "enum": ["ignore", "report", "fail"],
-                            "description": "Whether abandoned packages should be ignored, reported as problems or cause an audit failure."
+                            "description": "Whether abandoned packages should be ignored, reported as problems or cause an audit failure. Applies only to audit reports, not to version blocking."
                         },
                         "ignore-severity": {
-                            "type": "array",
-                            "description": "A list of severities for which advisories with matching severity will be ignored, e.g. critical, high, medium, low, or none.",
-                            "items": {
-                                "type": "string"
-                            }
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "description": "A list of severities (keys) with either explanations (string values) or detailed configuration (object values with 'apply' fields) for why they're ignored.",
+                                    "additionalProperties": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "description": "Explanation for ignoring this severity (applies to audit reports and version blocking)"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Detailed configuration for ignoring this severity",
+                                                "properties": {
+                                                    "apply": {
+                                                        "type": "string",
+                                                        "enum": ["audit", "block", "all"],
+                                                        "description": "Where to apply this ignore: 'audit' (only audit reports), 'block' (only version blocking), or 'all' (both)"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "null",
+                                                "description": "Ignore without explanation (applies to audit reports and version blocking)"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "array",
+                                    "description": "A list of severities for which advisories with matching severity will be ignored, e.g. critical, high, medium, low, or none. Applies to audit reports and version blocking.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ]
                         },
                         "ignore-unreachable": {
                             "type": "boolean",
-                            "description": "Whether repositories that are unreachable or return a non-200 status code shouldbe ignored or not."
+                            "description": "Whether repositories that are unreachable or return a non-200 status code should be ignored or not. Applies only to the composer audit command, does not affect audit report summaries in other commands or version blocking."
                         },
                         "block-insecure": {
                             "type": "boolean",
-                            "description": "Whether insecure versions should be blocked during a composer update/required command or not.",
+                            "description": "Whether insecure versions should be blocked during a composer update/require command or not.",
                             "default": true
                         },
                         "block-abandoned": {
                             "type": "boolean",
-                            "description": "Whether abandoned versions should be blocked during a composer update/required command or not.",
+                            "description": "Whether abandoned packages should be blocked during a composer update/require command or not. Applies only if blocking of insecure versions is enabled.",
                             "default": false
                         },
                         "ignore-abandoned": {
                             "anyOf": [
                                 {
                                     "type": "object",
-                                    "description": "A list of abandoned package names (as key) mapping to a reason explaining why they are ignored.",
+                                    "description": "A list of abandoned package names (keys) with either explanations (string values) or detailed configuration (object values with 'apply' and 'reason' fields) for why they're ignored.",
                                     "additionalProperties": {
-                                        "type": "string"
+                                        "anyOf": [
+                                            {
+                                                "type": "string",
+                                                "description": "Explanation for ignoring this abandoned package (applies to audit reports and version blocking)"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Detailed configuration for ignoring this abandoned package",
+                                                "properties": {
+                                                    "apply": {
+                                                        "type": "string",
+                                                        "enum": ["audit", "block", "all"],
+                                                        "description": "Where to apply this ignore: 'audit' (only audit reports), 'block' (only version blocking), or 'all' (both)"
+                                                    },
+                                                    "reason": {
+                                                        "type": "string",
+                                                        "description": "Explanation for ignoring this abandoned package"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "null",
+                                                "description": "Ignore without explanation (applies to audit reports and version blocking)"
+                                            }
+                                        ]
                                     }
                                 },
                                 {
                                     "type": "array",
-                                    "description": "A set of abandoned package names that are reported but let the audit command pass.",
+                                    "description": "A set of abandoned package names that are reported but let the audit command pass and that are not blocked during updates/requires.",
                                     "items": {
                                         "type": "string"
                                     }
