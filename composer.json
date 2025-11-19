@@ -43,6 +43,7 @@
         "symfony/polyfill-php73": "^1.24",
         "symfony/polyfill-php80": "^1.24",
         "symfony/polyfill-php81": "^1.24",
+        "symfony/polyfill-php84": "^1.30",
         "seld/signal-handler": "^2.0"
     },
     "require-dev": {
