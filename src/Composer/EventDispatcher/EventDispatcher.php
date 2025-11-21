@@ -710,7 +710,9 @@ class EventDispatcher
      */
     private function makeAutoloader(Event $event, $callable): void
     {
-        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
+        if (!$this->composer instanceof Composer) {
+            return;
+        }
 
         if (is_array($callable)) {
             if (is_string($callable[0])) {
