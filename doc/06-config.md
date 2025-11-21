@@ -122,7 +122,7 @@ dependencies, ensuring they cannot be installed.
 
 ### ignore
 
-A list of advisory ids, remote ids or CVE ids that are ignored in audit reports and/or version blocking.
+A list of advisory ids, remote ids, CVE ids or package names (not recommended) that are ignored in audit reports and/or version blocking.
 
 #### Simple format with reasons:
 
