@@ -719,12 +719,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     continue;
                 }
                 if (count($list) > 0) {
-                    $advisories[$name] = array_filter(array_map(
+                    $advisories[$name] = array_values(array_filter(array_map(
                         static function ($data) use ($name, $create) {
                             return $create($data, $name);
                         },
                         $list
-                    ));
+                    )));
                 }
                 $namesFound[$name] = true;
             }
