@@ -64,6 +64,7 @@ class ApplicationTest extends TestCase
 
         $application = new Application;
         // Compatibility layer for symfony/console <7.4
+        // @phpstan-ignore method.notFound, function.alreadyNarrowedType
         method_exists($application, 'addCommand') ? $application->addCommand(new \Composer\Command\SelfUpdateCommand) : $application->add(new \Composer\Command\SelfUpdateCommand);
 
         if (!defined('COMPOSER_DEV_WARNING_TIME')) {
@@ -88,6 +89,7 @@ class ApplicationTest extends TestCase
     {
         $application = new Application;
         // Compatibility layer for symfony/console <7.4
+        // @phpstan-ignore method.notFound, function.alreadyNarrowedType
         method_exists($application, 'addCommand') ? $application->addCommand(new \Composer\Command\AboutCommand) : $application->add(new \Composer\Command\AboutCommand);
         self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
         self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
