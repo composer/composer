@@ -1122,7 +1122,7 @@ class Installer
     {
         $auditConfig = $this->getAuditConfig();
 
-        if ($auditConfig->blockInsecure) {
+        if ($auditConfig->blockInsecure && !$this->updateMirrors) {
             return new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
         }
 
