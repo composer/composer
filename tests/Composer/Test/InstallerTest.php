@@ -375,6 +375,7 @@ class InstallerTest extends TestCase
             return $installer->run();
         });
         // Compatibility layer for symfony/console <7.4
+        // @phpstan-ignore method.notFound, function.alreadyNarrowedType
         method_exists($application, 'addCommand') ? $application->addCommand($install) : $application->add($install);
 
         $update = new Command('update');
@@ -424,6 +425,7 @@ class InstallerTest extends TestCase
             return $installer->run();
         });
         // Compatibility layer for symfony/console <7.4
+        // @phpstan-ignore method.notFound, function.alreadyNarrowedType
         method_exists($application, 'addCommand') ? $application->addCommand($update) : $application->add($update);
 
         if (!Preg::isMatch('{^(install|update)\b}', $run)) {
