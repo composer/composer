@@ -149,6 +149,8 @@ class Installer
     /** @var string|null */
     protected $apcuAutoloaderPrefix = null;
     /** @var bool */
+    protected $strictPsr = false;
+    /** @var bool */
     protected $devMode = false;
     /** @var bool */
     protected $dryRun = false;
@@ -361,7 +363,7 @@ class Installer
             $this->autoloadGenerator->setApcu($this->apcuAutoloader, $this->apcuAutoloaderPrefix);
             $this->autoloadGenerator->setRunScripts($this->runScripts);
             $this->autoloadGenerator->setPlatformRequirementFilter($this->platformRequirementFilter);
-            $this
+            $classMap = $this
                 ->autoloadGenerator
                 ->dump(
                     $this->config,
@@ -373,6 +375,10 @@ class Installer
                     null,
                     $this->locker
                 );
+
+            if ($this->strictPsr && count($classMap->getPsrViolations()) > 0) {
+                return 1;
+            }
         }
 
         if ($this->install && $this->executeOperations) {
@@ -1278,6 +1284,16 @@ class Installer
     {
         $this->apcuAutoloader = $apcuAutoloader;
         $this->apcuAutoloaderPrefix = $apcuAutoloaderPrefix;
+
+        return $this;
+    }
+
+    /**
+     * Whether or not to be strict about PSR violations.
+     */
+    public function setStrictPsr(bool $strictPsr): self
+    {
+        $this->strictPsr = $strictPsr;
 
         return $this;
     }
