@@ -183,7 +183,8 @@ class AuditConfig
             $audit,
             $auditFormat,
             $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL,
-            (bool) ($auditConfig['block-insecure'] ?? true),
+            // @TODO Change this to true in Composer 3.0.
+            (bool) ($auditConfig['block-insecure'] ?? false),
             (bool) ($auditConfig['block-abandoned'] ?? false),
             (bool) ($auditConfig['ignore-unreachable'] ?? false),
             $ignoreListParsed['audit'],
