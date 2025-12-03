@@ -988,6 +988,37 @@
             "additionalProperties": {
                 "type": "array"
             }
+        },
+        "require-feature" : {
+            "type": "object",
+            "description": "This is an object of package name (keys) and associated features (values) that are required.",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "feature": {
+            "type": "object",
+            "description": "List of features (keys) that this package provides.",
+            "additionalProperties": {
+                "type": "object",
+                "description": "The features configuration, which is a list of requirements and their constraints.",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "A description of the feature."
+                    },
+                    "require": {
+                        "type": "object",
+                        "description": "This is an object of package name (keys) and associated constraints (values) that are required.",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

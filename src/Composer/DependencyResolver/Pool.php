@@ -46,6 +46,8 @@ class Pool implements \Countable
     private $securityRemovedVersions = [];
     /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
     private $abandonedRemovedVersions = [];
+    /** @var array<string, array{merged: string[], byPackage: array<string, string[]>}> */
+    protected $requiredFeatures = [];
 
     /**
      * @param BasePackage[] $packages
@@ -54,8 +56,9 @@ class Pool implements \Countable
      * @param array<string, array<string, string>> $removedVersionsByPackage
      * @param array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> $securityRemovedVersions
      * @param array<string, array<string, string>> $abandonedRemovedVersions
+     * @param array<string, array{merged: string[], byPackage: array<string, string[]>}> $requiredFeatures
      */
-    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [])
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [], array $requiredFeatures = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
@@ -64,6 +67,7 @@ class Pool implements \Countable
         $this->removedVersionsByPackage = $removedVersionsByPackage;
         $this->securityRemovedVersions = $securityRemovedVersions;
         $this->abandonedRemovedVersions = $abandonedRemovedVersions;
+        $this->requiredFeatures = $requiredFeatures;
     }
 
     /**
@@ -341,5 +345,13 @@ class Pool implements \Countable
         }
 
         return $str;
+    }
+
+    /**
+     * @return array<string, array{merged: string[], byPackage: array<string, string[]>}>
+     */
+    public function getRequiredFeatures(): array
+    {
+        return $this->requiredFeatures;
     }
 }

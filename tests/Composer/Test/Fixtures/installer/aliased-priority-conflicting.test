@@ -64,6 +64,7 @@ Aliases take precedence over default package even if default is selected
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [
         {
             "alias": "dev-master",

@@ -30,6 +30,7 @@ Installing an old alias that doesn't exist anymore from a lock is possible
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},
