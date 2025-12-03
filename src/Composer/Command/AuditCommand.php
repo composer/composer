@@ -73,7 +73,7 @@ EOT
 
         $abandoned = $input->getOption('abandoned');
         if ($abandoned !== null && !in_array($abandoned, Auditor::ABANDONEDS, true)) {
-            throw new \InvalidArgumentException('--audit must be one of '.implode(', ', Auditor::ABANDONEDS).'.');
+            throw new \InvalidArgumentException('--abandoned must be one of '.implode(', ', Auditor::ABANDONEDS).'.');
         }
 
         $abandoned = $abandoned ?? $auditConfig->auditAbandoned;
