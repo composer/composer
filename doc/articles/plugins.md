@@ -109,10 +109,10 @@ and the value is the name of the method in this class to be called.
 ```php
 public static function getSubscribedEvents()
 {
-    return array(
+    return [
         'post-autoload-dump' => 'methodToBeCalled',
         // ^ event name ^         ^ method name ^
-    );
+    ];
 }
 ```
 
@@ -125,10 +125,10 @@ priority 1, etc.
 ```php
 public static function getSubscribedEvents()
 {
-    return array(
+    return [
         // Will be called before events with priority 0
-        'post-autoload-dump' => array('methodToBeCalled', 1)
-    );
+        'post-autoload-dump' => ['methodToBeCalled', 1]
+    ];
 }
 ```
 
@@ -139,12 +139,12 @@ omitted, it will default to 0.
 ```php
 public static function getSubscribedEvents()
 {
-    return array(
-        'post-autoload-dump' => array(
-            array('methodToBeCalled'      ), // Priority defaults to 0
-            array('someOtherMethodName', 1), // This fires first
-        )
-    );
+    return [
+        'post-autoload-dump' => [
+            ['methodToBeCalled'      ], // Priority defaults to 0
+            ['someOtherMethodName', 1], // This fires first
+        ]
+    ];
 }
 ```
 
@@ -183,11 +183,11 @@ class AwsPlugin implements PluginInterface, EventSubscriberInterface
 
     public static function getSubscribedEvents()
     {
-        return array(
-            PluginEvents::PRE_FILE_DOWNLOAD => array(
-                array('onPreFileDownload', 0)
-            ),
-        );
+        return [
+            PluginEvents::PRE_FILE_DOWNLOAD => [
+                ['onPreFileDownload', 0]
+            ],
+        ];
     }
 
     public function onPreFileDownload(PreFileDownloadEvent $event)
@@ -231,9 +231,9 @@ class Plugin implements PluginInterface, Capable
 
     public function getCapabilities()
     {
-        return array(
+        return [
             'Composer\Plugin\Capability\CommandProvider' => 'My\Composer\CommandProvider',
-        );
+        ];
     }
 }
 ```
@@ -257,7 +257,7 @@ class CommandProvider implements CommandProviderCapability
 {
     public function getCommands()
     {
-        return array(new Command);
+        return [new Command];
     }
 }
 
