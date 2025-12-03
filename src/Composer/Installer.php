@@ -376,7 +376,7 @@ class Installer
                     $this->locker
                 );
 
-            if ($this->strictPsr && count($classMap->getPsrViolations()) > 0) {
+            if ($this->strictPsrAutoloader && count($classMap->getPsrViolations()) > 0) {
                 return 1;
             }
         }
