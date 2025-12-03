@@ -145,11 +145,11 @@ class Installer
     /** @var bool */
     protected $classMapAuthoritative = false;
     /** @var bool */
+    protected $strictPsrAutoloader = false;
+    /** @var bool */
     protected $apcuAutoloader = false;
     /** @var string|null */
     protected $apcuAutoloaderPrefix = null;
-    /** @var bool */
-    protected $strictPsr = false;
     /** @var bool */
     protected $devMode = false;
     /** @var bool */
@@ -1291,9 +1291,9 @@ class Installer
     /**
      * Whether or not to be strict about PSR violations.
      */
-    public function setStrictPsr(bool $strictPsr): self
+    public function setStrictPsrAutoloader(bool $strictPsr): self
     {
-        $this->strictPsr = $strictPsr;
+        $this->strictPsrAutoloader = $strictPsr;
 
         return $this;
     }

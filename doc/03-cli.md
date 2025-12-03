@@ -121,6 +121,8 @@ resolution.
   a bit of time to run so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
+* **--strict-psr-autoloader:** Return a failed exit code (1) if PSR-4 or PSR-0 mapping errors
+  are present in the current project (dependencies excluded). Requires `--optimize-autoloader` to work.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu-autoloader`.
@@ -134,8 +136,6 @@ resolution.
   a `+` makes it only ignore the upper-bound of the requirements. For example, if a package
   requires `php: ^7`, then the option `--ignore-platform-req=php+` would allow installing on PHP 8,
   but installation on PHP 5.6 would still fail.
-* **--strict-psr:** Return a failed exit code (1) if PSR-4 or PSR-0 mapping errors
-  are present in the current project (dependencies excluded). Requires `--optimize-autoloader` to work.
 
 ## update / u / upgrade
 
