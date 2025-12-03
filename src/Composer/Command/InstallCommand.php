@@ -59,7 +59,7 @@ class InstallCommand extends BaseCommand
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
-                new InputOption('strict-psr', null, InputOption::VALUE_NONE, 'Return a failed status code (1) if PSR-4 or PSR-0 mapping errors are present. Requires --optimize to work.'),
+                new InputOption('strict-psr', null, InputOption::VALUE_NONE, 'Return a failed status code (1) if PSR-4 or PSR-0 mapping errors are present. Requires --optimize-autoloader to work.'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Should not be provided, use composer require instead to add a given package to composer.json.'),
             ])
             ->setHelp(
