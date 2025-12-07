@@ -75,6 +75,9 @@ class ProcessExecutor
     /** @var array<string, string> */
     private static $executables = [];
 
+    /** @var array<string,string> */
+    private $environment = [];
+
     public function __construct(?IOInterface $io = null)
     {
         $this->io = $io;
@@ -122,6 +125,7 @@ class ProcessExecutor
      */
     private function runProcess($command, ?string $cwd, ?array $env, bool $tty, &$output = null): ?int
     {
+        $env = array_merge($this->environment, $env !== null ? $env : []);
         // On Windows, we don't rely on the OS to find the executable if possible to avoid lookups
         // in the current directory which could be untrusted. Instead we use the ExecutableFinder.
 
@@ -596,5 +600,13 @@ class ProcessExecutor
         }
 
         return self::$executables[$name] ?? $name;
+    }
+
+    /**
+     * @param array<string,string> $environment
+     * @return void
+     */
+    public function setEnvironment(array $environment): void {
+        $this->environment = $environment;
     }
 }

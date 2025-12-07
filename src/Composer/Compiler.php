@@ -49,6 +49,10 @@ class Compiler
         }
 
         $process = new ProcessExecutor();
+        $process->setEnvironment([
+            'GIT_CONFIG_GLOBAL' => '/dev/null',
+            'GIT_CONFIG_SYSTEM' => '/dev/null',
+        ]);
 
         if (0 !== $process->execute(['git', 'log', '--pretty=%H', '-n1', 'HEAD'], $output, dirname(__DIR__, 2))) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
