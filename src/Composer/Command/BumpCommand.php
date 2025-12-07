@@ -121,7 +121,10 @@ EOT
         unset($contents);
 
         $composer = $this->requireComposer();
-        if ($composer->getLocker()->isLocked()) {
+        $hasLockfileDisabled = !$composer->getConfig()->has('lock') || $composer->getConfig()->get('lock');
+        if (!$hasLockfileDisabled) {
+            $repo = $composer->getLocker()->getLockedRepository(true);
+        } elseif ($composer->getLocker()->isLocked()) {
             if (!$composer->getLocker()->isFresh()) {
                 $io->writeError('<error>The lock file is not up to date with the latest changes in composer.json. Run the appropriate `update` to fix that before you use the `bump` command.</error>');
 

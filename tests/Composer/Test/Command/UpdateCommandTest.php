@@ -472,4 +472,40 @@ OUTPUT
         self::assertStringContainsString('Locking vulnerable/pkg (1.1.0)', $display);
         self::assertStringNotContainsString('Locking vulnerable/pkg (1.0.0)', $display);
     }
+
+    public function testBumpAfterUpdateWithoutLockfile(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/a', 'version' => '1.0.0'],
+                        ['name' => 'root/a', 'version' => '1.1.0'],
+                    ],
+                ],
+            ],
+            'require-dev' => [
+                'root/a' => '^1.0.0',
+            ],
+            'config' => [
+                'lock' => false
+            ]
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge(['command' => 'update', '--dry-run' => true,  '--no-audit' => true, '--bump-after-update' => 'dev']));
+
+        $expected = <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Package operations: 1 install, 0 updates, 0 removals
+  - Installing root/a (1.1.0)
+Bumping dependencies
+./composer.json would be updated with:
+ - require-dev.root/a: ^1.1.0
+OUTPUT;
+
+        self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+    }
 }
