@@ -32,8 +32,8 @@ class AuditConfigTest extends TestCase
 
         $auditConfig = AuditConfig::fromConfig($config);
 
-        $this->assertSame(['CVE-2024-1234', 'CVE-2024-5678'], $auditConfig->ignoreListForAudit);
-        $this->assertSame(['CVE-2024-1234', 'CVE-2024-5678'], $auditConfig->ignoreListForBlocking);
+        $this->assertSame(['CVE-2024-1234' => null, 'CVE-2024-5678' => null], $auditConfig->ignoreListForAudit);
+        $this->assertSame(['CVE-2024-1234' => null, 'CVE-2024-5678' => null], $auditConfig->ignoreListForBlocking);
     }
 
     public function testDetailedFormatAuditOnly(): void
@@ -54,7 +54,7 @@ class AuditConfigTest extends TestCase
 
         $auditConfig = AuditConfig::fromConfig($config);
 
-        $this->assertSame(['CVE-2024-1234'], $auditConfig->ignoreListForAudit);
+        $this->assertSame(['CVE-2024-1234' => 'Only ignore for auditing'], $auditConfig->ignoreListForAudit);
         $this->assertSame([], $auditConfig->ignoreListForBlocking);
     }
 
@@ -77,7 +77,7 @@ class AuditConfigTest extends TestCase
         $auditConfig = AuditConfig::fromConfig($config);
 
         $this->assertSame([], $auditConfig->ignoreListForAudit);
-        $this->assertSame(['CVE-2024-1234'], $auditConfig->ignoreListForBlocking);
+        $this->assertSame(['CVE-2024-1234' => 'Only ignore for blocking'], $auditConfig->ignoreListForBlocking);
     }
 
     public function testMixedFormats(): void
@@ -104,14 +104,14 @@ class AuditConfigTest extends TestCase
         $auditConfig = AuditConfig::fromConfig($config);
 
         $this->assertSame([
-            'CVE-2024-1234',
-            'CVE-2024-5678',
-            'CVE-2024-9999',
+            'CVE-2024-1234' => null,
+            'CVE-2024-5678' => 'Simple reason',
+            'CVE-2024-9999' => 'Detailed reason',
         ], $auditConfig->ignoreListForAudit);
         $this->assertSame([
-            'CVE-2024-1234',
-            'CVE-2024-5678',
-            'CVE-2024-8888',
+            'CVE-2024-1234' => null,
+            'CVE-2024-5678' => 'Simple reason',
+            'CVE-2024-8888' => null,
         ], $auditConfig->ignoreListForBlocking);
     }
 
@@ -128,8 +128,8 @@ class AuditConfigTest extends TestCase
 
         $auditConfig = AuditConfig::fromConfig($config);
 
-        $this->assertSame(['low', 'medium'], $auditConfig->ignoreSeverityForAudit);
-        $this->assertSame(['low', 'medium'], $auditConfig->ignoreSeverityForBlocking);
+        $this->assertSame(['low' => null, 'medium' => null], $auditConfig->ignoreSeverityForAudit);
+        $this->assertSame(['low' => null, 'medium' => null], $auditConfig->ignoreSeverityForBlocking);
     }
 
     public function testIgnoreSeverityDetailedFormat(): void
@@ -153,8 +153,8 @@ class AuditConfigTest extends TestCase
 
         $auditConfig = AuditConfig::fromConfig($config);
 
-        $this->assertSame(['low'], $auditConfig->ignoreSeverityForAudit);
-        $this->assertSame(['medium'], $auditConfig->ignoreSeverityForBlocking);
+        $this->assertSame(['low' => 'We accept low severity issues'], $auditConfig->ignoreSeverityForAudit);
+        $this->assertSame(['medium' => null], $auditConfig->ignoreSeverityForBlocking);
     }
 
     public function testIgnoreAbandonedSimpleFormat(): void
@@ -170,8 +170,8 @@ class AuditConfigTest extends TestCase
 
         $auditConfig = AuditConfig::fromConfig($config);
 
-        $this->assertSame(['vendor/package1', 'vendor/package2'], $auditConfig->ignoreAbandonedForAudit);
-        $this->assertSame(['vendor/package1', 'vendor/package2'], $auditConfig->ignoreAbandonedForBlocking);
+        $this->assertSame(['vendor/package1' => null, 'vendor/package2' => null], $auditConfig->ignoreAbandonedForAudit);
+        $this->assertSame(['vendor/package1' => null, 'vendor/package2' => null], $auditConfig->ignoreAbandonedForBlocking);
     }
 
     public function testIgnoreAbandonedDetailedFormat(): void
@@ -196,8 +196,8 @@ class AuditConfigTest extends TestCase
 
         $auditConfig = AuditConfig::fromConfig($config);
 
-        $this->assertSame(['vendor/package1'], $auditConfig->ignoreAbandonedForAudit);
-        $this->assertSame(['vendor/package2'], $auditConfig->ignoreAbandonedForBlocking);
+        $this->assertSame(['vendor/package1' => 'Report but do not block'], $auditConfig->ignoreAbandonedForAudit);
+        $this->assertSame(['vendor/package2' => 'Block but do not report'], $auditConfig->ignoreAbandonedForBlocking);
     }
 
     public function testInvalidApplyValue(): void
