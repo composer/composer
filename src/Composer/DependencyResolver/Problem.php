@@ -12,6 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Advisory\PartialSecurityAdvisory;
+use Composer\Advisory\SecurityAdvisory;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
@@ -26,6 +28,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\MultiConstraint;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 
 /**
  * Represents a problem detected while solving dependencies
@@ -388,7 +391,30 @@ class Problem
             }
 
             if ($pool->isSecurityRemovedPackageVersion($packageName, $constraint)) {
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are affected by security advisories. To ignore the advisories, add ("' . implode('", "', $pool->getSecurityAdvisoryIdentifiersForPackageVersion($packageName, $constraint)). '") to the audit "ignore" config. To turn the feature off entirely, you can set "block-insecure" to false in your "audit" config.'];
+                $advisories = $repositorySet->getMatchingSecurityAdvisories($packages, false, true);
+                if (isset($advisories['advisories'][$packageName]) && \count($advisories['advisories'][$packageName]) > 0) {
+                    $advisoriesList = array_map(static function (SecurityAdvisory $advisory): string {
+                        if ($advisory->link !== null && $advisory->link !== '') {
+                            return '<href='.OutputFormatter::escape($advisory->link).'>'.$advisory->advisoryId.'</>';
+                        }
+
+                        if (str_starts_with($advisory->advisoryId, 'PKSA-')) {
+                            return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisory->advisoryId).'>'.$advisory->advisoryId.'</>';
+                        }
+
+                        return $advisory->advisoryId;
+                    }, $advisories['advisories'][$packageName]);
+                } else {
+                    $advisoriesList = array_map(static function (string $advisoryId): string {
+                        if (str_starts_with($advisoryId, 'PKSA-')) {
+                            return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisoryId).'>'.$advisoryId.'</>';
+                        }
+
+                        return $advisoryId;
+                    }, $pool->getSecurityAdvisoryIdentifiersForPackageVersion($packageName, $constraint));
+                }
+
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are affected by security advisories ("' . implode('", "', $advisoriesList). '"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add them to the audit "ignore" config. To turn the feature off entirely, you can set "block-insecure" to false in your "audit" config.'];
             }
 
             return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'];
