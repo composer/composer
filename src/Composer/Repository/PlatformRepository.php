@@ -78,7 +78,7 @@ class PlatformRepository extends ArrayRepository
         $this->hhvmDetector = $hhvmDetector ?: new HhvmDetector();
         foreach ($overrides as $name => $version) {
             if (!is_string($version) && false !== $version) { // @phpstan-ignore-line
-                throw new \UnexpectedValueException('config.platform.'.$name.' should be a string or false, but got '.gettype($version).' '.var_export($version, true));
+                throw new \UnexpectedValueException('config.platform.'.$name.' should be a string or false, but got '.get_debug_type($version).' '.var_export($version, true));
             }
             if ($name === 'php' && $version === false) {
                 throw new \UnexpectedValueException('config.platform.'.$name.' cannot be set to false as you cannot disable php entirely.');

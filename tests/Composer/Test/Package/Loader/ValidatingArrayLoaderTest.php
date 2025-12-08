@@ -309,7 +309,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     'homepage' => 43,
                 ],
                 [
-                    'homepage : should be a string, integer given',
+                    'homepage : should be a string, int given',
                 ],
             ],
             [
@@ -408,7 +408,7 @@ class ValidatingArrayLoaderTest extends TestCase
                 ],
                 [
                     'source.type : must be present',
-                    'source.url : should be a string, integer given',
+                    'source.url : should be a string, int given',
                     'source.reference : must be present',
                     'dist.type : must be present',
                     'dist.url : must be present',

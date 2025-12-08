@@ -252,7 +252,7 @@ REGEX;
             } elseif (is_null($value)) {
                 $lines .= "null,\n";
             } else {
-                throw new \UnexpectedValueException('Unexpected type '.gettype($value));
+                throw new \UnexpectedValueException('Unexpected type '.get_debug_type($value));
             }
         }
 

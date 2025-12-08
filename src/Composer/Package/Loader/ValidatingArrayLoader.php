@@ -93,7 +93,7 @@ class ValidatingArrayLoader implements LoaderInterface
                     continue;
                 }
                 if (!is_string($platform)) {
-                    $this->errors[] = 'config.platform.' . $key . ' : invalid value ('.gettype($platform).' '.var_export($platform, true).'): expected string or false';
+                    $this->errors[] = 'config.platform.' . $key . ' : invalid value ('.get_debug_type($platform).' '.var_export($platform, true).'): expected string or false';
                     continue;
                 }
                 try {
@@ -186,7 +186,7 @@ class ValidatingArrayLoader implements LoaderInterface
         if ($this->validateArray('authors')) {
             foreach ($this->config['authors'] as $key => $author) {
                 if (!is_array($author)) {
-                    $this->errors[] = 'authors.'.$key.' : should be an array, '.gettype($author).' given';
+                    $this->errors[] = 'authors.'.$key.' : should be an array, '.get_debug_type($author).' given';
                     unset($this->config['authors'][$key]);
                     continue;
                 }
@@ -245,7 +245,7 @@ class ValidatingArrayLoader implements LoaderInterface
         if ($this->validateArray('funding') && !empty($this->config['funding'])) {
             foreach ($this->config['funding'] as $key => $fundingOption) {
                 if (!is_array($fundingOption)) {
-                    $this->errors[] = 'funding.'.$key.' : should be an array, '.gettype($fundingOption).' given';
+                    $this->errors[] = 'funding.'.$key.' : should be an array, '.get_debug_type($fundingOption).' given';
                     unset($this->config['funding'][$key]);
                     continue;
                 }
@@ -386,13 +386,13 @@ class ValidatingArrayLoader implements LoaderInterface
                     $this->errors[] = $srcType . '.reference : must be present';
                 }
                 if (isset($this->config[$srcType]['type']) && !is_string($this->config[$srcType]['type'])) {
-                    $this->errors[] = $srcType . '.type : should be a string, '.gettype($this->config[$srcType]['type']).' given';
+                    $this->errors[] = $srcType . '.type : should be a string, '.get_debug_type($this->config[$srcType]['type']).' given';
                 }
                 if (isset($this->config[$srcType]['url']) && !is_string($this->config[$srcType]['url'])) {
-                    $this->errors[] = $srcType . '.url : should be a string, '.gettype($this->config[$srcType]['url']).' given';
+                    $this->errors[] = $srcType . '.url : should be a string, '.get_debug_type($this->config[$srcType]['url']).' given';
                 }
                 if (isset($this->config[$srcType]['reference']) && !is_string($this->config[$srcType]['reference']) && !is_int($this->config[$srcType]['reference'])) {
-                    $this->errors[] = $srcType . '.reference : should be a string or int, '.gettype($this->config[$srcType]['reference']).' given';
+                    $this->errors[] = $srcType . '.reference : should be a string or int, '.get_debug_type($this->config[$srcType]['reference']).' given';
                 }
                 if (isset($this->config[$srcType]['reference']) && Preg::isMatch('{^\s*-}', (string) $this->config[$srcType]['reference'])) {
                     $this->errors[] = $srcType . '.reference : must not start with a "-", "'.$this->config[$srcType]['reference'].'" given';
@@ -416,7 +416,7 @@ class ValidatingArrayLoader implements LoaderInterface
             } else {
                 foreach ($this->config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
                     if (!is_string($targetBranch)) {
-                        $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.json_encode($targetBranch).') must be a string, "'.gettype($targetBranch).'" received.';
+                        $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.json_encode($targetBranch).') must be a string, "'.get_debug_type($targetBranch).'" received.';
                         unset($this->config['extra']['branch-alias'][$sourceBranch]);
 
                         continue;
@@ -542,7 +542,7 @@ class ValidatingArrayLoader implements LoaderInterface
     private function validateString(string $property, bool $mandatory = false): bool
     {
         if (isset($this->config[$property]) && !is_string($this->config[$property])) {
-            $this->errors[] = $property.' : should be a string, '.gettype($this->config[$property]).' given';
+            $this->errors[] = $property.' : should be a string, '.get_debug_type($this->config[$property]).' given';
             unset($this->config[$property]);
 
             return false;
@@ -566,7 +566,7 @@ class ValidatingArrayLoader implements LoaderInterface
     private function validateArray(string $property, bool $mandatory = false): bool
     {
         if (isset($this->config[$property]) && !is_array($this->config[$property])) {
-            $this->errors[] = $property.' : should be an array, '.gettype($this->config[$property]).' given';
+            $this->errors[] = $property.' : should be an array, '.get_debug_type($this->config[$property]).' given';
             unset($this->config[$property]);
 
             return false;
@@ -597,7 +597,7 @@ class ValidatingArrayLoader implements LoaderInterface
         $pass = true;
         foreach ($this->config[$property] as $key => $value) {
             if (!is_string($value) && !is_numeric($value)) {
-                $this->errors[] = $property.'.'.$key.' : must be a string or int, '.gettype($value).' given';
+                $this->errors[] = $property.'.'.$key.' : must be a string or int, '.get_debug_type($value).' given';
                 unset($this->config[$property][$key]);
                 $pass = false;
 

@@ -389,7 +389,7 @@ class ArrayLoader implements LoaderInterface
     private function createLink(string $source, string $sourceVersion, string $description, string $target, string $prettyConstraint): Link
     {
         if (!\is_string($prettyConstraint)) {
-            throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.\gettype($prettyConstraint) . ' (' . var_export($prettyConstraint, true) . ')');
+            throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.\get_debug_type($prettyConstraint) . ' (' . var_export($prettyConstraint, true) . ')');
         }
         if ('self.version' === $prettyConstraint) {
             $parsedConstraint = $this->versionParser->parseConstraints($sourceVersion);

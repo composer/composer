@@ -30,7 +30,7 @@ final class PlatformRequirementFilterFactory
         throw new \InvalidArgumentException(
             sprintf(
                 'PlatformRequirementFilter: Unknown $boolOrList parameter %s. Please report at https://github.com/composer/composer/issues/new.',
-                gettype($boolOrList)
+                get_debug_type($boolOrList)
             )
         );
     }

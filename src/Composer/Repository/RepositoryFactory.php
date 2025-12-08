@@ -154,7 +154,7 @@ class RepositoryFactory
                 throw new \UnexpectedValueException('"repositories" should be an array of repository definitions, only a single repository was given');
             }
             if (!is_array($repo)) {
-                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') should be an array, '.gettype($repo).' given');
+                throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') should be an array, '.get_debug_type($repo).' given');
             }
             if (!isset($repo['type'])) {
                 throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') must have a type defined');
