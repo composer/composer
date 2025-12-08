@@ -164,7 +164,7 @@ class GitDriver extends VcsDriver
      */
     public function getChangeDate(string $identifier): ?\DateTimeImmutable
     {
-        $this->process->execute(['git', '-c', 'log.showSignature=false', 'log', '-1', '--format=%at', $identifier], $output, $this->repoDir);
+        $this->process->execute(['git', 'rev-list', '--no-commit-header', '-n1', '--format=%at', $identifier], $output, $this->repoDir);
 
         return new \DateTimeImmutable('@'.trim($output), new \DateTimeZone('UTC'));
     }
