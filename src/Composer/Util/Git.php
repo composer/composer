@@ -361,7 +361,9 @@ class Git
                 $this->filesystem->removeDirectory($origCwd);
             }
 
-            $lastCommand = implode(' ', $lastCommand);
+            if (\is_array($lastCommand)) {
+                $lastCommand = implode(' ', $lastCommand);
+            }
             if (count($credentials) > 0) {
                 $lastCommand = $this->maskCredentials($lastCommand, $credentials);
                 $errorMsg = $this->maskCredentials($errorMsg, $credentials);
