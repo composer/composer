@@ -50,13 +50,13 @@ class Compiler
 
         $process = new ProcessExecutor();
 
-        if (0 !== $process->execute(['git', 'log', '--pretty=%H', '-n1', 'HEAD'], $output, dirname(__DIR__, 2))) {
-            throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
+        if (0 !== $process->execute(['git', 'rev-list', '--no-commit-header', '-n1', '--format=%H', 'HEAD'], $output, dirname(__DIR__, 2))) {
+            throw new \RuntimeException('Can\'t run git rev-list. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($output);
 
-        if (0 !== $process->execute(['git', 'log', '-n1', '--pretty=%ci', 'HEAD'], $output, dirname(__DIR__, 2))) {
-            throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
+        if (0 !== $process->execute(['git', 'rev-list', '--no-commit-header', '-n1', '--format=%ci', 'HEAD'], $output, dirname(__DIR__, 2))) {
+            throw new \RuntimeException('Can\'t run git rev-list. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
 
         $this->versionDate = new \DateTime(trim($output));

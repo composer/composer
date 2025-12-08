@@ -554,7 +554,7 @@ class Locker
                 case 'git':
                     GitUtil::cleanEnv();
 
-                    $command = array_merge(['git', 'log', '-n1', '--pretty=%ct', (string) $sourceRef], GitUtil::getNoShowSignatureFlags($this->process));
+                    $command = array_merge(['git', 'rev-list', '--no-commit-header', '-n1', '--format=%ct', (string) $sourceRef], GitUtil::getNoShowSignatureFlags($this->process));
                     if (0 === $this->process->execute($command, $output, $path) && Preg::isMatch('{^\s*\d+\s*$}', $output)) {
                         $datetime = new \DateTime('@'.trim($output), new \DateTimeZone('UTC'));
                     }

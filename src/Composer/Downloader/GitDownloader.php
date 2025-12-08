@@ -535,7 +535,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     protected function getCommitLogs(string $fromReference, string $toReference, string $path): string
     {
         $path = $this->normalizePath($path);
-        $command = array_merge(['git', 'log', $fromReference.'..'.$toReference, '--pretty=format:%h - %an: %s'], GitUtil::getNoShowSignatureFlags($this->process));
+        $command = array_merge(['git', 'rev-list', '--no-commit-header', '--format=%h - %an: %s', $fromReference.'..'.$toReference], GitUtil::getNoShowSignatureFlags($this->process));
 
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());

@@ -4,9 +4,9 @@
 $cwd = getcwd();
 assert(is_string($cwd));
 chdir(__DIR__.'/../');
-$ts = rtrim(exec('git log -n1 --pretty=%ct HEAD'));
+$ts = rtrim(exec('git rev-list --no-commit-header -n1 --format=%ct HEAD'));
 if (!is_numeric($ts)) {
-    echo 'Could not detect date using "git log -n1 --pretty=%ct HEAD"'.PHP_EOL;
+    echo 'Could not detect date using "git rev-list --no-commit-header -n1 --format=%ct HEAD"'.PHP_EOL;
     exit(1);
 }
 // Install with the current version to force it having the right ClassLoader version
