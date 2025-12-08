@@ -51,44 +51,44 @@ class AuditConfig
     public $ignoreUnreachable;
 
     /**
-     * @var list<string> List of advisory IDs to ignore during auditing
+     * @var array<string, string|null> List of advisory IDs to ignore during auditing => reason for ignoring
      */
     public $ignoreListForAudit;
 
     /**
-     * @var list<string> List of advisory IDs to ignore during blocking
+     * @var array<string, string|null> List of advisory IDs to ignore during blocking
      */
     public $ignoreListForBlocking;
 
     /**
-     * @var list<string> List of severities to ignore during auditing
+     * @var array<string, string|null> List of severities to ignore during auditing
      */
     public $ignoreSeverityForAudit;
 
     /**
-     * @var list<string> List of severities to ignore during blocking
+     * @var array<string, string|null> List of severities to ignore during blocking
      */
     public $ignoreSeverityForBlocking;
 
     /**
-     * @var list<string> List of abandoned packages to ignore during auditing
+     * @var array<string, string|null> List of abandoned packages to ignore during auditing
      */
     public $ignoreAbandonedForAudit;
 
     /**
-     * @var list<string> List of abandoned packages to ignore during blocking
+     * @var array<string, string|null> List of abandoned packages to ignore during blocking
      */
     public $ignoreAbandonedForBlocking;
 
     /**
      * @param Auditor::FORMAT_* $auditFormat
      * @param Auditor::ABANDONED_* $auditAbandoned
-     * @param list<string> $ignoreListForAudit
-     * @param list<string> $ignoreListForBlocking
-     * @param list<string> $ignoreSeverityForAudit
-     * @param list<string> $ignoreSeverityForBlocking
-     * @param list<string> $ignoreAbandonedForAudit
-     * @param list<string> $ignoreAbandonedForBlocking
+     * @param array<string, string|null> $ignoreListForAudit
+     * @param array<string, string|null> $ignoreListForBlocking
+     * @param array<string, string|null> $ignoreSeverityForAudit
+     * @param array<string, string|null> $ignoreSeverityForBlocking
+     * @param array<string, string|null> $ignoreAbandonedForAudit
+     * @param array<string, string|null> $ignoreAbandonedForBlocking
      */
     public function __construct(bool $audit, string $auditFormat, string $auditAbandoned, bool $blockInsecure, bool $blockAbandoned, bool $ignoreUnreachable, array $ignoreListForAudit, array $ignoreListForBlocking, array $ignoreSeverityForAudit, array $ignoreSeverityForBlocking, array $ignoreAbandonedForAudit, array $ignoreAbandonedForBlocking)
     {
@@ -113,7 +113,7 @@ class AuditConfig
      * Detailed format: ['CVE-123' => ['apply' => 'audit|block|all', 'reason' => '...']]
      *
      * @param array<mixed> $config
-     * @return array{audit: list<string>, block: list<string>}
+     * @return array{audit: array<string, string|null>, block: array<string, string|null>}
      */
     private static function parseIgnoreWithApply(array $config): array
     {
@@ -125,16 +125,19 @@ class AuditConfig
             if (is_int($key) && is_string($value)) {
                 $id = $value;
                 $apply = 'all';
+                $reason = null;
             }
             // Simple format with reason: ['CVE-123' => 'reason']
             elseif (is_string($value)) {
                 $id = $key;
                 $apply = 'all';
+                $reason = $value;
             }
             // Detailed format: ['CVE-123' => ['apply' => '...', 'reason' => '...']]
             elseif (is_array($value)) {
                 $id = $key;
                 $apply = $value['apply'] ?? 'all';
+                $reason = $value['reason'] ?? null;
 
                 // Validate apply value
                 if (!in_array($apply, ['audit', 'block', 'all'], true)) {
@@ -147,6 +150,7 @@ class AuditConfig
             elseif ($value === null) {
                 $id = $key;
                 $apply = 'all';
+                $reason = null;
             }
             else {
                 continue;
@@ -154,16 +158,16 @@ class AuditConfig
 
             // Store in appropriate lists based on apply scope
             if ($apply === 'audit' || $apply === 'all') {
-                $forAudit[] = $id;
+                $forAudit[$id] = $reason;
             }
             if ($apply === 'block' || $apply === 'all') {
-                $forBlock[] = $id;
+                $forBlock[$id] = $reason;
             }
         }
 
         return [
-            'audit' => array_values(array_unique($forAudit)),
-            'block' => array_values(array_unique($forBlock)),
+            'audit' => $forAudit,
+            'block' => $forBlock,
         ];
     }
 

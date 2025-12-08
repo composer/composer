@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Advisory;
 
+use Composer\Advisory\AuditConfig;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\IO\BufferIO;
@@ -99,7 +100,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                 ],
                 'warningOnly' => false,
                 'abandoned' => Auditor::ABANDONED_FAIL,
-                'ignore-abandoned' => ['vendor/*'],
+                'ignore-abandoned' => ['vendor/*' => null],
             ],
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.',
@@ -113,7 +114,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                 ],
                 'warningOnly' => false,
                 'abandoned' => Auditor::ABANDONED_FAIL,
-                'ignore-abandoned' => [$abandonedWithReplacement->getName(), $abandonedNoReplacement->getName()],
+                'ignore-abandoned' => [$abandonedWithReplacement->getName() => null, $abandonedNoReplacement->getName() => null],
             ],
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.',
@@ -127,7 +128,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                 ],
                 'warningOnly' => false,
                 'abandoned' => Auditor::ABANDONED_FAIL,
-                'ignore-abandoned' => ['acme/test'],
+                'ignore-abandoned' => ['acme/test' => 'ignoring because yolo'],
             ],
             'expected' => Auditor::STATUS_ABANDONED,
             'output' => 'No security vulnerability advisories found.
@@ -257,7 +258,7 @@ Found 2 abandoned packages:
             [
                 new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
             ],
-            ['CVE1'],
+            ['CVE1' => null],
             0,
             [
                 ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
@@ -294,7 +295,7 @@ Found 2 abandoned packages:
             [
                 new Package('vendor1/package2', '3.0.0.0', '3.0.0'),
             ],
-            ['ID2'],
+            ['ID2' => null],
             0,
             [
                 ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
@@ -312,7 +313,7 @@ Found 2 abandoned packages:
             [
                 new Package('vendorx/packagex', '3.0.0.0', '3.0.0'),
             ],
-            ['RemoteIDx'],
+            ['RemoteIDx' => null],
             0,
             [
                 ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
@@ -330,7 +331,7 @@ Found 2 abandoned packages:
             [
                 new Package('vendor1/package1', '3.0.0.0', '3.0.0'),
             ],
-            ['vendor1/package1'],
+            ['vendor1/package1' => null],
             0,
             [
                 ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
@@ -389,7 +390,7 @@ Found 2 abandoned packages:
                 // ID3, ID6
                 new Package('vendor2/package1', '3.0.0.0', '3.0.0'),
             ],
-            ['RemoteIDx', 'ID3', 'ID6'],
+            ['RemoteIDx' => null, 'ID3' => null, 'ID6' => null],
             1,
             [
                 ['text' => 'Found 3 ignored security vulnerability advisories affecting 2 packages:'],
@@ -456,7 +457,7 @@ Found 2 abandoned packages:
             [
                 new Package('vendor1/package1', '2.0.0.0', '2.0.0'),
             ],
-            ['medium'],
+            ['medium' => null],
             1,
             [
                 ['text' => 'Found 2 ignored security vulnerability advisories affecting 1 package:'],
@@ -466,7 +467,7 @@ Found 2 abandoned packages:
             [
                 new Package('vendor1/package1', '2.0.0.0', '2.0.0'),
             ],
-            ['high'],
+            ['high' => null],
             1,
             [
                 ['text' => 'Found 1 ignored security vulnerability advisory affecting 1 package:'],
@@ -476,7 +477,7 @@ Found 2 abandoned packages:
             [
                 new Package('vendor1/package1', '2.0.0.0', '2.0.0'),
             ],
-            ['high', 'medium'],
+            ['high' => null, 'medium' => null],
             0,
             [
                 ['text' => 'Found 3 ignored security vulnerability advisories affecting 1 package:'],
@@ -847,29 +848,29 @@ Found 2 abandoned packages:
     }
 
     /**
-     * @return array<array{array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>, array<string>, bool}>
+     * @return array<array{array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>, array<string, string|null>, bool}>
      */
     public static function needsCompleteLoadProvider(): array
     {
         return [
             'no filter or advisories' => [[], [], false],
-            'packagist filters are IDs so work fine with partial advisories' => [[], ['PKSA-foo-bar'], false],
+            'packagist filters are IDs so work fine with partial advisories' => [[], ['PKSA-foo-bar' => null], false],
             'packagist filters are IDs so work fine with partial advisories/2' => [
                 ['vendor1/package1' => [
                     new SecurityAdvisory('foo/bar', '123', new Constraint('=', '1.0.0.0'), 'test', [['name' => 'foo', 'remoteId' => 'remoteID']], new DateTimeImmutable()),
                     new PartialSecurityAdvisory('foo/bar', '1234', new Constraint('=', '1.0.0.0')),
                 ]],
-                ['PKSA-foo-bar'],
+                ['PKSA-foo-bar' => 'this is fine 🔥'],
                 false
             ],
-            'no advisories no need to load any further' => [[], ['CVE-2025-1234'], false],
-            'no advisories no need to load any further/2' => [['vendor1/package1' => []], ['CVE-2025-1234'], false],
+            'no advisories no need to load any further' => [[], ['CVE-2025-1234' => null], false],
+            'no advisories no need to load any further/2' => [['vendor1/package1' => []], ['CVE-2025-1234' => null], false],
             'CVE filter or other non-packagist ones might need to fully load for safety if partial advisories are present' => [
                 ['vendor1/package1' => [
                     new SecurityAdvisory('foo/bar', '123', new Constraint('=', '1.0.0.0'), 'test', [['name' => 'foo', 'remoteId' => 'remoteID']], new DateTimeImmutable()),
                     new PartialSecurityAdvisory('foo/bar', '1234', new Constraint('=', '1.0.0.0')),
                 ]],
-                ['CVE-2025-1234'],
+                ['CVE-2025-1234' => null],
                 true,
             ],
             'filter does not trigger load if all advisories are fully loaded' => [
@@ -881,7 +882,7 @@ Found 2 abandoned packages:
                         new SecurityAdvisory('foo/bar', '1234', new Constraint('=', '1.0.0.0'), 'test', [['name' => 'foo', 'remoteId' => 'remoteID']], new DateTimeImmutable()),
                     ]
                 ],
-                ['CVE-2025-1234'],
+                ['CVE-2025-1234' => null],
                 false,
             ],
         ];

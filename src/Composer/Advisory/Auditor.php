@@ -64,10 +64,10 @@ class Auditor
      * @param PackageInterface[] $packages
      * @param self::FORMAT_* $format The format that will be used to output audit results.
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
-     * @param string[] $ignoreList List of advisory IDs, remote IDs, CVE IDs or package names that reported but not listed as vulnerabilities.
+     * @param array<string, string|null> $ignoreList List of advisory IDs, remote IDs, CVE IDs or package names that reported but not listed as vulnerabilities.
      * @param self::ABANDONED_* $abandoned
-     * @param array<string> $ignoredSeverities List of ignored severity levels
-     * @param string[]|array<string, string> $ignoreAbandoned List of abandoned package name that reported but not listed as vulnerabilities.
+     * @param array<string, string|null> $ignoredSeverities List of ignored severity levels
+     * @param array<string, string|null> $ignoreAbandoned List of abandoned package name that reported but not listed as vulnerabilities.
      *
      * @return int-mask<self::STATUS_*> A bitmask of STATUS_* constants or 0 on success
      * @throws InvalidArgumentException If no packages are passed in
@@ -159,7 +159,7 @@ class Auditor
 
     /**
      * @param array<string, array<SecurityAdvisory|PartialSecurityAdvisory>> $advisories
-     * @param array<string, string>|array<string> $ignoreList
+     * @param array<string, string|null> $ignoreList
      * @return bool
      */
     public function needsCompleteAdvisoryLoad(array $advisories, array $ignoreList): bool
@@ -175,33 +175,23 @@ class Auditor
             return false;
         }
 
-        if (\count($ignoreList) > 0 && !\array_is_list($ignoreList)) {
-            $ignoredIds = array_keys($ignoreList);
-        } else {
-            $ignoredIds = $ignoreList;
-        }
+        $ignoredIds = array_keys($ignoreList);
 
-        return array_any($ignoredIds, static function ($id) {
+        return array_any($ignoredIds, static function (string $id) {
             return !str_starts_with($id, 'PKSA-');
         });
     }
 
     /**
      * @param array<PackageInterface> $packages
-     * @param string[]|array<string, string> $ignoreAbandoned
+     * @param array<string, string|null> $ignoreAbandoned
      * @return array<CompletePackageInterface>
      */
     public function filterAbandonedPackages(array $packages, array $ignoreAbandoned): array
     {
-        if (\count($ignoreAbandoned) > 0 && !\array_is_list($ignoreAbandoned)) {
-            $ignoredPackageNames = array_keys($ignoreAbandoned);
-        } else {
-            $ignoredPackageNames = $ignoreAbandoned;
-        }
-
         $filter = null;
         if (\count($ignoreAbandoned) !== 0) {
-            $filter = BasePackage::packageNamesToRegexp($ignoredPackageNames);
+            $filter = BasePackage::packageNamesToRegexp(array_keys($ignoreAbandoned));
         }
 
         return array_filter($packages, static function (PackageInterface $pkg) use ($filter): bool {
@@ -211,20 +201,14 @@ class Auditor
 
     /**
      * @phpstan-param array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> $allAdvisories
-     * @param array<string>|array<string,string> $ignoreList List of advisory IDs, remote IDs, CVE IDs or package names that reported but not listed as vulnerabilities.
-     * @param array<string> $ignoredSeverities List of ignored severity levels
+     * @param array<string, string|null> $ignoreList List of advisory IDs, remote IDs, CVE IDs or package names that reported but not listed as vulnerabilities.
+     * @param array<string, string|null> $ignoredSeverities List of ignored severity levels
      * @phpstan-return array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, ignoredAdvisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>}
      */
     public function processAdvisories(array $allAdvisories, array $ignoreList, array $ignoredSeverities): array
     {
         if ($ignoreList === [] && $ignoredSeverities === []) {
             return ['advisories' => $allAdvisories, 'ignoredAdvisories' => []];
-        }
-
-        if (\count($ignoreList) > 0 && !\array_is_list($ignoreList)) {
-            $ignoredIds = array_keys($ignoreList);
-        } else {
-            $ignoredIds = $ignoreList;
         }
 
         $advisories = [];
@@ -235,29 +219,29 @@ class Auditor
             foreach ($pkgAdvisories as $advisory) {
                 $isActive = true;
 
-                if (in_array($package, $ignoredIds, true)) {
+                if (array_key_exists($package, $ignoreList)) {
                     $isActive = false;
                     $ignoreReason = $ignoreList[$package] ?? null;
                 }
 
-                if (in_array($advisory->advisoryId, $ignoredIds, true)) {
+                if (array_key_exists($advisory->advisoryId, $ignoreList)) {
                     $isActive = false;
                     $ignoreReason = $ignoreList[$advisory->advisoryId] ?? null;
                 }
 
                 if ($advisory instanceof SecurityAdvisory) {
-                    if (in_array($advisory->severity, $ignoredSeverities, true)) {
+                    if (is_string($advisory->severity) && array_key_exists($advisory->severity, $ignoredSeverities)) {
                         $isActive = false;
-                        $ignoreReason = "Ignored via --ignore-severity={$advisory->severity}";
+                        $ignoreReason = $ignoredSeverities[$advisory->severity] ?? $advisory->severity.' severity is ignored';
                     }
 
-                    if (in_array($advisory->cve, $ignoredIds, true)) {
+                    if (is_string($advisory->cve) && array_key_exists($advisory->cve, $ignoreList)) {
                         $isActive = false;
                         $ignoreReason = $ignoreList[$advisory->cve] ?? null;
                     }
 
                     foreach ($advisory->sources as $source) {
-                        if (in_array($source['remoteId'], $ignoredIds, true)) {
+                        if (array_key_exists($source['remoteId'], $ignoreList)) {
                             $isActive = false;
                             $ignoreReason = $ignoreList[$source['remoteId']] ?? null;
                             break;
