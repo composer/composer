@@ -300,8 +300,8 @@ class AuthHelper
                     $headers[] = 'Authorization: Bearer ' . $auth['password'];
                     $authenticationDisplayMessage = 'Using Bitbucket OAuth token authentication';
                 }
-            } elseif ('client-certificate' === $auth['password']) {
-                $options['ssl'] = array_merge($options['ssl'] ?? [], json_decode((string) $auth['username'], true));
+            } elseif ('client-certificate' === $auth['username']) {
+                $options['ssl'] = array_merge($options['ssl'] ?? [], json_decode((string) $auth['password'], true));
                 $authenticationDisplayMessage = 'Using SSL client certificate';
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
