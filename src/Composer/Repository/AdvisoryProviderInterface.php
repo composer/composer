@@ -28,7 +28,7 @@ interface AdvisoryProviderInterface
 
     /**
      * @param array<string, ConstraintInterface> $packageConstraintMap Map of package name to constraint (can be MatchAllConstraint to fetch all advisories)
-     * @return ($allowPartialAdvisories is true ? array{namesFound: string[], advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>} : array{namesFound: string[], advisories: array<string, array<SecurityAdvisory>>})
+     * @return ($allowPartialAdvisories is true ? array{namesFound: string[], advisories: array<string, list<PartialSecurityAdvisory|SecurityAdvisory>>} : array{namesFound: string[], advisories: array<string, list<SecurityAdvisory>>})
      */
     public function getSecurityAdvisories(array $packageConstraintMap, bool $allowPartialAdvisories = false): array;
 }

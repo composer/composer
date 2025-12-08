@@ -430,4 +430,109 @@ class ComposerRepositoryTest extends TestCase
             'advisories' => [],
         ], $repository->getSecurityAdvisories(['foo/bar' => new Constraint('=', '1.0.0.0')]));
     }
+
+    public function testGetSecurityAdvisoriesAssertRepositoryAdvisoriesIsZeroIndexedArrayWithConsecutiveKeys(): void
+    {
+        $packageName = 'foo/bar';
+        $advisory1 = $this->generateSecurityAdvisory($packageName, 'CVE-1999-1000', '>=1.0.0,<1.1.0');
+        $advisory2 = $this->generateSecurityAdvisory($packageName, 'CVE-1999-1000', '>=2.0.0');
+        $advisory3 = $this->generateSecurityAdvisory($packageName, 'CVE-1999-1000', '>=1.0.0,<1.1.0');
+
+        $expectedPackageAdvisories = [
+            $advisory1,
+            $advisory3,
+        ];
+
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'packages' => [
+                            $packageName => [
+                                'dev-branch' => ['name' => $packageName],
+                                'v1.0.0' => ['name' => $packageName],
+                            ],
+                        ],
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'security-advisories' => [
+                            'api-url' => 'https://example.org/security-advisories',
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+                [
+                    'url' => 'https://example.org/security-advisories',
+                    'body' => JsonFile::encode([
+                        'advisories' => [
+                            $packageName => [
+                                $advisory1,
+                                $advisory2,
+                                $advisory3,
+                            ],
+                        ],
+                    ]),
+                    'options' => [
+                        'http' => [
+                            'verify_peer' => false,
+                            'method' => 'POST',
+                            'header' => [
+                                'Content-type: application/x-www-form-urlencoded',
+                            ],
+                            'timeout' => 10,
+                            'content' => http_build_query(['packages' => [$packageName]]),
+                        ],
+                    ],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        [
+            'advisories' => $actualAdvisories,
+        ] = $repository->getSecurityAdvisories([$packageName => new Constraint('=', '1.0.0.0')]);
+
+        $this->assertIsArray($actualAdvisories);
+        $this->assertArrayHasKey($packageName, $actualAdvisories);
+        $actualPackageAdvisories = $actualAdvisories[$packageName];
+        $this->assertSameSize($expectedPackageAdvisories, $actualPackageAdvisories);
+        foreach ($expectedPackageAdvisories as $i => $expectedAdvisory) {
+            $this->assertArrayHasKey($i, $actualPackageAdvisories);
+            $this->assertSame($expectedAdvisory['advisoryId'], $actualPackageAdvisories[$i]->advisoryId);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function generateSecurityAdvisory(string $packageName, ?string $cve, string $affectedVersions): array
+    {
+        return [
+            'advisoryId' => uniqid('PKSA-'),
+            'packageName' => $packageName,
+            'remoteId' => 'test',
+            'title' => 'Security Advisory',
+            'link' => null,
+            'cve' => $cve,
+            'affectedVersions' => $affectedVersions,
+            'source' => 'Tests',
+            'reportedAt' => '2024-04-31 12:37:47',
+            'composerRepository' => 'Package Repository',
+            'severity' => 'high',
+            'sources' => [
+                [
+                    'name' => 'Security Advisory',
+                    'remoteId' => 'test',
+                ],
+            ],
+        ];
+    }
 }

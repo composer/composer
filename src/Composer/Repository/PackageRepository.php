@@ -89,7 +89,7 @@ class PackageRepository extends ArrayRepository implements AdvisoryProviderInter
         $advisories = [];
         foreach ($this->securityAdvisories as $packageName => $packageAdvisories) {
             if (isset($packageConstraintMap[$packageName])) {
-                $advisories[$packageName] = array_filter(array_map(function (array $data) use ($packageName, $allowPartialAdvisories, $packageConstraintMap, $parser) {
+                $advisories[$packageName] = array_values(array_filter(array_map(function (array $data) use ($packageName, $allowPartialAdvisories, $packageConstraintMap, $parser) {
                     $advisory = PartialSecurityAdvisory::create($packageName, $data, $parser);
                     if (!$allowPartialAdvisories && !$advisory instanceof SecurityAdvisory) {
                         throw new \RuntimeException('Advisory for '.$packageName.' could not be loaded as a full advisory from '.$this->getRepoName() . PHP_EOL . var_export($data, true));
@@ -100,10 +100,10 @@ class PackageRepository extends ArrayRepository implements AdvisoryProviderInter
                     }
 
                     return $advisory;
-                }, $packageAdvisories));
+                }, $packageAdvisories)));
             }
         }
 
-        return ['advisories' => $advisories, 'namesFound' => array_keys($advisories)];
+        return ['advisories' => array_filter($advisories, static function ($adv): bool { return \count($adv) > 0; }), 'namesFound' => array_keys($advisories)];
     }
 }

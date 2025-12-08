@@ -683,12 +683,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                         $namesFound[$name] = true;
                         if (count($response['security-advisories']) > 0) {
-                            $advisories[$name] = array_filter(array_map(
+                            $advisories[$name] = array_values(array_filter(array_map(
                                 static function ($data) use ($name, $create) {
                                     return $create($data, $name);
                                 },
                                 $response['security-advisories']
-                            ));
+                            )));
                         }
                         unset($packageConstraintMap[$name]);
                     });
@@ -719,18 +719,18 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     continue;
                 }
                 if (count($list) > 0) {
-                    $advisories[$name] = array_filter(array_map(
+                    $advisories[$name] = array_values(array_filter(array_map(
                         static function ($data) use ($name, $create) {
                             return $create($data, $name);
                         },
                         $list
-                    ));
+                    )));
                 }
                 $namesFound[$name] = true;
             }
         }
 
-        return ['namesFound' => array_keys($namesFound), 'advisories' => array_filter($advisories)];
+        return ['namesFound' => array_keys($namesFound), 'advisories' => array_filter($advisories, static function ($adv): bool { return \count($adv) > 0; })];
     }
 
     public function getProviders(string $packageName)
