@@ -1195,6 +1195,10 @@ github-oauth, bitbucket-oauth, ... objects as needed](articles/authentication-fo
 and following the
 [spec from the config](06-config.md).
 
+### COMPOSER_BIN_COMPAT
+
+Override the [`bin-compat`](06-config.md#bin-compat) config setting.
+
 ### COMPOSER_BIN_DIR
 
 By setting this option you can change the `bin` ([Vendor Binaries](articles/vendor-binaries.md))
