@@ -154,8 +154,8 @@ class AuthHelperTest extends TestCase
             'passphrase' => 'passphrase value',
         ];
         $auth = [
-            'username' => (string) json_encode($certificateConfiguration),
-            'password' => 'client-certificate',
+            'username' => 'client-certificate',
+            'password' => (string) json_encode($certificateConfiguration),
         ];
         $this->expectsAuthentication($origin, $auth);
         $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
