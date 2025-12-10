@@ -60,6 +60,7 @@ update
             "type": "library"
         }
     ],
+    "packages-feature": [],
     "aliases": [{
         "package": "a/aliased",
         "version": "dev-next",

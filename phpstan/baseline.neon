@@ -1042,7 +1042,7 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Decisions.php
 
 		-
-			message: "#^Cannot call method getPrettyString\\(\\) on array\\<string, Composer\\\\Package\\\\BasePackage\\|Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|string\\>\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
+			message: "#^Cannot call method getPrettyString\\(\\) on array\\<string, array\\<string\\>\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|string\\>\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|string\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Problem.php
 
@@ -1052,12 +1052,17 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Problem.php
 
 		-
-			message: "#^Cannot cast array\\{package\\: Composer\\\\Package\\\\BasePackage\\}\\|array\\{packageName\\: string, constraint\\: Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\}\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|non\\-empty\\-string to string\\.$#"
+			message: "#^Cannot cast array\\{package\\: Composer\\\\Package\\\\BasePackage\\}\\|array\\{packageName\\: string, constraint\\: Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\}\\|array\\{packageName\\: string, feature\\: string, requiredBy\\: array\\<string\\>\\}\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|non\\-empty\\-string to string\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Problem.php
 
 		-
-			message: "#^Method Composer\\\\DependencyResolver\\\\Rule\\:\\:getReason\\(\\) should return 2\\|3\\|6\\|7\\|10\\|12\\|13\\|14 but returns int\\<0, 255\\>\\.$#"
+			message: "#^Method Composer\\\\DependencyResolver\\\\Rule\\:\\:getReason\\(\\) should return 2\\|3\\|6\\|7\\|10\\|12\\|13\\|14\\|15 but returns int\\<0, 255\\>\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/Rule.php
+
+		-
+			message: "#^Cannot access offset 'packageName' on array\\{package\\: Composer\\\\Package\\\\BasePackage\\}\\|array\\{packageName\\: string, constraint\\: Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\}\\|array\\{packageName\\: string, feature\\: string, requiredBy\\: array\\<string\\>\\}\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\|non\\-empty\\-string\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Rule.php
 
