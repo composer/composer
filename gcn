@@ -1,0 +1,20 @@
+// --- Scroll -> Arc offset (stops on last image) ---
+const SCROLL_START = 600;          // where arc interaction starts
+const SCROLL_END = 3000;           // end of virtual scroll
+const scrollRange = SCROLL_END - SCROLL_START;
+
+// how many "steps" we can scroll through
+const maxOffsetSteps = TOTAL_IMAGES - 1;
+
+// normalize scroll AFTER SCROLL_START
+const scrollAfter = Math.min(Math.max(scrollRef.current - SCROLL_START, 0), scrollRange);
+
+// map to 0..maxOffsetSteps
+const offsetSteps = (scrollAfter / scrollRange) * maxOffsetSteps;
+
+// snap option (if you want hard snapping to each card)
+// const offsetSteps = Math.round((scrollAfter / scrollRange) * maxOffsetSteps);
+
+// Apply offset: moving forward shifts indices left along the arc
+const currentArcAngle = startAngle + (i - offsetSteps) * step;
+const arcRad = (currentArcAngle * Math.PI) / 180;
