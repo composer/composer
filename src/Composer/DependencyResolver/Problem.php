@@ -390,31 +390,40 @@ class Problem
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are abandoned and you configured "block-abandoned" to true in your "audit" config.'];
             }
 
-            if ($pool->isSecurityRemovedPackageVersion($packageName, $constraint)) {
-                $advisories = $repositorySet->getMatchingSecurityAdvisories($packages, false, true);
-                if (isset($advisories['advisories'][$packageName]) && \count($advisories['advisories'][$packageName]) > 0) {
-                    $advisoriesList = array_map(static function (SecurityAdvisory $advisory): string {
-                        if ($advisory->link !== null && $advisory->link !== '') {
-                            return '<href='.OutputFormatter::escape($advisory->link).'>'.$advisory->advisoryId.'</>';
-                        }
+            // Separate packages by their removal reason to provide accurate error messages
+            $securityRemovedVersions = $pool->getAllSecurityRemovedPackageVersions()[$packageName] ?? [];
+            $releaseAgeRemovedVersions = $pool->getAllReleaseAgeRemovedPackageVersions()[$packageName] ?? [];
 
-                        if (str_starts_with($advisory->advisoryId, 'PKSA-')) {
-                            return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisory->advisoryId).'>'.$advisory->advisoryId.'</>';
-                        }
+            $securityPackages = array_filter($packages, static function ($p) use ($securityRemovedVersions): bool {
+                return isset($securityRemovedVersions[$p->getVersion()]);
+            });
+            $releaseAgePackages = array_filter($packages, static function ($p) use ($releaseAgeRemovedVersions): bool {
+                return isset($releaseAgeRemovedVersions[$p->getVersion()]);
+            });
 
-                        return $advisory->advisoryId;
-                    }, $advisories['advisories'][$packageName]);
-                } else {
-                    $advisoriesList = array_map(static function (string $advisoryId): string {
-                        if (str_starts_with($advisoryId, 'PKSA-')) {
-                            return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisoryId).'>'.$advisoryId.'</>';
-                        }
+            $hasSecurityRemoved = \count($securityPackages) > 0;
+            $hasReleaseAgeRemoved = \count($releaseAgePackages) > 0;
 
-                        return $advisoryId;
-                    }, $pool->getSecurityAdvisoryIdentifiersForPackageVersion($packageName, $constraint));
-                }
+            // Handle combined case: both security and release-age filters removed versions
+            if ($hasSecurityRemoved && $hasReleaseAgeRemoved) {
+                $advisoriesList = self::getAdvisoriesListForPackages($securityPackages, $repositorySet, $pool, $packageName);
+                $releaseAgeInfo = $pool->getReleaseAgeInfoForPackageVersion($packageName, $constraint);
+                $timeInfo = $releaseAgeInfo !== null ? ' (available in '.$releaseAgeInfo['availableIn'].')' : '';
 
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are affected by security advisories ("' . implode('", "', $advisoriesList). '"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add them to the audit "ignore" config. To turn the feature off entirely, you can set "block-insecure" to false in your "audit" config.'];
+                // Don't pass pool to getPackageList to avoid adding all removed versions - we only want versions specific to each filter
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($securityPackages, $isVerbose).' but these were not loaded, because they are affected by security advisories ("' . implode('", "', $advisoriesList). '"). Go to https://packagist.org/security-advisories/ to find advisory details. Additionally, '.self::getPackageList($releaseAgePackages, $isVerbose).' were not loaded because they do not meet the minimum-release-age requirement'.$timeInfo.'. To resolve this, add the security advisories to the audit "ignore" config, or add the package to "minimum-release-age.exceptions", or wait for the newer versions to become available.'];
+            }
+
+            if ($hasSecurityRemoved) {
+                $advisoriesList = self::getAdvisoriesListForPackages($securityPackages, $repositorySet, $pool, $packageName);
+
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($securityPackages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are affected by security advisories ("' . implode('", "', $advisoriesList). '"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add them to the audit "ignore" config. To turn the feature off entirely, you can set "block-insecure" to false in your "audit" config.'];
+            }
+
+            if ($hasReleaseAgeRemoved) {
+                $releaseAgeInfo = $pool->getReleaseAgeInfoForPackageVersion($packageName, $constraint);
+                $timeInfo = $releaseAgeInfo !== null ? ' (available in '.$releaseAgeInfo['availableIn'].')' : '';
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($releaseAgePackages, $isVerbose, $pool, $constraint).' but these were not loaded because they do not meet the minimum-release-age requirement'.$timeInfo.'. To bypass this for specific packages, add them to "minimum-release-age.exceptions". To disable entirely, set "minimum-release-age.minimum-age" to null.'];
             }
 
             return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'];
@@ -682,6 +691,51 @@ class Problem
         }
 
         return $constraint !== null ? ' '.$constraint->getPrettyString() : '';
+    }
+
+    /**
+     * Get a list of formatted advisory identifiers for the given packages
+     *
+     * @param PackageInterface[] $packages
+     * @return string[]
+     */
+    private static function getAdvisoriesListForPackages(array $packages, RepositorySet $repositorySet, Pool $pool, string $packageName): array
+    {
+        $advisories = $repositorySet->getMatchingSecurityAdvisories($packages, false, true);
+        if (isset($advisories['advisories'][$packageName]) && \count($advisories['advisories'][$packageName]) > 0) {
+            return array_map(static function (SecurityAdvisory $advisory): string {
+                if ($advisory->link !== null && $advisory->link !== '') {
+                    return '<href='.OutputFormatter::escape($advisory->link).'>'.$advisory->advisoryId.'</>';
+                }
+
+                if (str_starts_with($advisory->advisoryId, 'PKSA-')) {
+                    return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisory->advisoryId).'>'.$advisory->advisoryId.'</>';
+                }
+
+                return $advisory->advisoryId;
+            }, $advisories['advisories'][$packageName]);
+        }
+
+        // Fallback: get advisory IDs from the pool's tracking
+        $advisoryIds = [];
+        $securityRemovedVersions = $pool->getAllSecurityRemovedPackageVersions()[$packageName] ?? [];
+        foreach ($packages as $package) {
+            $version = $package->getVersion();
+            if (isset($securityRemovedVersions[$version])) {
+                foreach ($securityRemovedVersions[$version] as $advisory) {
+                    $advisoryId = $advisory->advisoryId;
+                    if (!isset($advisoryIds[$advisoryId])) {
+                        if (str_starts_with($advisoryId, 'PKSA-')) {
+                            $advisoryIds[$advisoryId] = '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisoryId).'>'.$advisoryId.'</>';
+                        } else {
+                            $advisoryIds[$advisoryId] = $advisoryId;
+                        }
+                    }
+                }
+            }
+        }
+
+        return array_values($advisoryIds);
     }
 
     private static function getProvidersList(RepositorySet $repositorySet, string $packageName, int $maxProviders): ?string
