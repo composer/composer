@@ -551,7 +551,7 @@ class ReleaseAgePoolFilterTest extends TestCase
 
         // Should have oldest fix from each constraint part: 3.6.0 and 4.2.0
         $this->assertCount(2, $filteredPool->getPackages());
-        $packageVersions = array_map(fn($p) => $p->getPrettyVersion(), $filteredPool->getPackages());
+        $packageVersions = array_map(function ($p) { return $p->getPrettyVersion(); }, $filteredPool->getPackages());
         $this->assertContains('3.6.0', $packageVersions);
         $this->assertContains('4.2.0', $packageVersions);
     }
@@ -603,7 +603,7 @@ class ReleaseAgePoolFilterTest extends TestCase
 
         // Should have oldest fix from each constraint part: 3.5.18 and 3.6.3
         $this->assertCount(2, $filteredPool->getPackages());
-        $packageVersions = array_map(fn($p) => $p->getPrettyVersion(), $filteredPool->getPackages());
+        $packageVersions = array_map(function ($p) { return $p->getPrettyVersion(); }, $filteredPool->getPackages());
         $this->assertContains('3.5.18', $packageVersions);
         $this->assertContains('3.6.3', $packageVersions);
     }
