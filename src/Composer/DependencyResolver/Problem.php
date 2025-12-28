@@ -721,16 +721,20 @@ class Problem
         $securityRemovedVersions = $pool->getAllSecurityRemovedPackageVersions()[$packageName] ?? [];
         foreach ($packages as $package) {
             $version = $package->getVersion();
-            if (isset($securityRemovedVersions[$version])) {
-                foreach ($securityRemovedVersions[$version] as $advisory) {
-                    $advisoryId = $advisory->advisoryId;
-                    if (!isset($advisoryIds[$advisoryId])) {
-                        if (str_starts_with($advisoryId, 'PKSA-')) {
-                            $advisoryIds[$advisoryId] = '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisoryId).'>'.$advisoryId.'</>';
-                        } else {
-                            $advisoryIds[$advisoryId] = $advisoryId;
-                        }
-                    }
+            if (!isset($securityRemovedVersions[$version])) {
+                continue;
+            }
+
+            foreach ($securityRemovedVersions[$version] as $advisory) {
+                $advisoryId = $advisory->advisoryId;
+                if (isset($advisoryIds[$advisoryId])) {
+                    continue;
+                }
+
+                if (str_starts_with($advisoryId, 'PKSA-')) {
+                    $advisoryIds[$advisoryId] = '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisoryId).'>'.$advisoryId.'</>';
+                } else {
+                    $advisoryIds[$advisoryId] = $advisoryId;
                 }
             }
         }
