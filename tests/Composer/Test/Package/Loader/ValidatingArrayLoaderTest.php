@@ -198,6 +198,50 @@ class ValidatingArrayLoaderTest extends TestCase
                     'dist' => ['url' => 'https://example.org', 'reference' => 'foobar', 'type' => 'baz'],
                 ],
             ],
+            [ // valid php-ext configuration
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'extension-name' => 'ext-xdebug',
+                        'priority' => 80,
+                        'support-zts' => true,
+                        'support-nts' => false,
+                        'build-path' => 'my-extension-source',
+                        'download-url-method' => 'composer-default',
+                        'os-families' => ['linux', 'darwin'],
+                        'configure-options' => [
+                            [
+                                'name' => 'enable-xdebug',
+                                'needs-value' => false,
+                                'description' => 'Enable xdebug support',
+                            ],
+                            [
+                                'name' => 'with-xdebug-path',
+                                'needs-value' => true,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [ // valid php-ext with os-families-exclude
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext-zend',
+                    'php-ext' => [
+                        'os-families-exclude' => ['windows'],
+                    ],
+                ],
+            ],
+            [ // valid php-ext with null build-path
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'build-path' => null,
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -426,6 +470,239 @@ class ValidatingArrayLoaderTest extends TestCase
                     'require' => ['acme/bar' => '^1.0'],
                 ],
                 ['name : must be present'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'library',
+                    'php-ext' => ['extension-name' => 'ext-foobar'],
+                ],
+                ['php-ext can only be set by packages of type "php-ext" or "php-ext-zend" which must be C extensions'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'extension-name' => 123,
+                    ],
+                ],
+                ['php-ext.extension-name : should be a string, int given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'priority' => 'invalid',
+                    ],
+                ],
+                ['php-ext.priority : should be an integer, string given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'support-zts' => 'yes',
+                    ],
+                ],
+                ['php-ext.support-zts : should be a boolean, string given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'support-nts' => 1,
+                    ],
+                ],
+                ['php-ext.support-nts : should be a boolean, int given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'build-path' => 123,
+                    ],
+                ],
+                ['php-ext.build-path : should be a string or null, int given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'download-url-method' => 123,
+                    ],
+                ],
+                ['php-ext.download-url-method : should be a string, int given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'download-url-method' => 'invalid-method',
+                    ],
+                ],
+                ['php-ext.download-url-method : invalid value (invalid-method), must be one of composer-default, pre-packaged-source'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'os-families' => ['linux'],
+                        'os-families-exclude' => ['windows'],
+                    ],
+                ],
+                ['php-ext : os-families and os-families-exclude cannot both be specified'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'os-families' => 'linux',
+                    ],
+                ],
+                ['php-ext.os-families : should be an array, string given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'os-families' => [],
+                    ],
+                ],
+                ['php-ext.os-families : must contain at least one element'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'os-families' => ['invalid-os', 'linux'],
+                    ],
+                ],
+                ['php-ext.os-families.0 : invalid value (invalid-os), must be one of windows, bsd, darwin, solaris, linux, unknown'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'os-families' => [123],
+                    ],
+                ],
+                ['php-ext.os-families.0 : should be a string, int given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'os-families-exclude' => 'windows',
+                    ],
+                ],
+                ['php-ext.os-families-exclude : should be an array, string given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'os-families-exclude' => [],
+                    ],
+                ],
+                ['php-ext.os-families-exclude : must contain at least one element'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'os-families-exclude' => ['invalid'],
+                    ],
+                ],
+                ['php-ext.os-families-exclude.0 : invalid value (invalid), must be one of windows, bsd, darwin, solaris, linux, unknown'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'configure-options' => 'invalid',
+                    ],
+                ],
+                ['php-ext.configure-options : should be an array, string given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'configure-options' => ['invalid'],
+                    ],
+                ],
+                ['php-ext.configure-options.0 : should be an array, string given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'configure-options' => [
+                            ['description' => 'test'],
+                        ],
+                    ],
+                ],
+                ['php-ext.configure-options.0.name : must be present'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'configure-options' => [
+                            ['name' => 123],
+                        ],
+                    ],
+                ],
+                ['php-ext.configure-options.0.name : should be a string, int given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'configure-options' => [
+                            [
+                                'name' => 'valid-name',
+                                'needs-value' => 'yes',
+                            ],
+                        ],
+                    ],
+                ],
+                ['php-ext.configure-options.0.needs-value : should be a boolean, string given'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'configure-options' => [
+                            [
+                                'name' => 'valid-name',
+                                'description' => 123,
+                            ],
+                        ],
+                    ],
+                ],
+                ['php-ext.configure-options.0.description : should be a string, int given'],
             ],
         ]);
     }
