@@ -197,6 +197,46 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'audit.ignore-abandoned', '--unset' => true],
             ['config' => ['audit' => []]],
         ];
+        yield 'set minimum-release-age.minimum-age with duration string' => [
+            [],
+            ['setting-key' => 'minimum-release-age.minimum-age', 'setting-value' => ['7 days']],
+            ['config' => ['minimum-release-age' => ['minimum-age' => '7 days']]],
+        ];
+        yield 'set minimum-release-age.minimum-age with integer' => [
+            [],
+            ['setting-key' => 'minimum-release-age.minimum-age', 'setting-value' => ['43200']],
+            ['config' => ['minimum-release-age' => ['minimum-age' => 43200]]],
+        ];
+        yield 'set minimum-release-age.minimum-age to null' => [
+            ['config' => ['minimum-release-age' => ['minimum-age' => '7 days']]],
+            ['setting-key' => 'minimum-release-age.minimum-age', 'setting-value' => ['null']],
+            ['config' => ['minimum-release-age' => ['minimum-age' => null]]],
+        ];
+        yield 'unset minimum-release-age.minimum-age' => [
+            ['config' => ['minimum-release-age' => ['minimum-age' => '7 days']]],
+            ['setting-key' => 'minimum-release-age.minimum-age', '--unset' => true],
+            ['config' => ['minimum-release-age' => []]],
+        ];
+        yield 'set minimum-release-age.exceptions' => [
+            [],
+            ['setting-key' => 'minimum-release-age.exceptions', 'setting-value' => ['[{"package":"vendor/*","reason":"trusted"}]'], '--json' => true],
+            ['config' => ['minimum-release-age' => ['exceptions' => [['package' => 'vendor/*', 'reason' => 'trusted']]]]],
+        ];
+        yield 'merge minimum-release-age.exceptions' => [
+            ['config' => ['minimum-release-age' => ['exceptions' => [['package' => 'vendor/*', 'reason' => 'trusted']]]]],
+            ['setting-key' => 'minimum-release-age.exceptions', 'setting-value' => ['[{"package":"other/*"}]'], '--json' => true, '--merge' => true],
+            ['config' => ['minimum-release-age' => ['exceptions' => [['package' => 'vendor/*', 'reason' => 'trusted'], ['package' => 'other/*']]]]],
+        ];
+        yield 'unset minimum-release-age.exceptions' => [
+            ['config' => ['minimum-release-age' => ['exceptions' => [['package' => 'vendor/*']]]]],
+            ['setting-key' => 'minimum-release-age.exceptions', '--unset' => true],
+            ['config' => ['minimum-release-age' => []]],
+        ];
+        yield 'unset minimum-release-age' => [
+            ['config' => ['minimum-release-age' => ['minimum-age' => '7 days', 'exceptions' => []]]],
+            ['setting-key' => 'minimum-release-age', '--unset' => true],
+            ['config' => []],
+        ];
     }
 
     /**
