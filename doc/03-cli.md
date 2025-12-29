@@ -956,7 +956,7 @@ provide a version as a third argument, otherwise the latest version is used.
 If the directory does not currently exist, it will be created during installation.
 
 ```shell
-php composer.phar create-project doctrine/orm path "2.2.*"
+php composer.phar create-project composer/hello-world my-project
 ```
 
 It is also possible to run the command without params in a directory with an
