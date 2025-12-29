@@ -485,7 +485,7 @@ abstract class BaseCommand extends Command
 
         $auditConfig = AuditConfig::fromConfig($config, $audit, $auditFormat);
 
-        if ($input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking')) {
+        if ((bool) Platform::getEnv('COMPOSER_NO_SECURITY_BLOCKING') || ($input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking'))) {
             $auditConfig = new AuditConfig(
                 $auditConfig->audit,
                 $auditConfig->auditFormat,
