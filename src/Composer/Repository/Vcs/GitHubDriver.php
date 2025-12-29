@@ -46,6 +46,8 @@ class GitHubDriver extends VcsDriver
     private $isArchived = false;
     /** @var array<int, array{type: string, url: string}>|false|null */
     private $fundingInfo;
+    /** @var bool */
+    private $allowGitFallback = true;
 
     /**
      * Git Driver
@@ -71,6 +73,10 @@ class GitHubDriver extends VcsDriver
         }
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
         $this->cache->setReadOnly($this->config->get('cache-read-only'));
+
+        if (isset($this->repoConfig['allow-git-fallback']) && $this->repoConfig['allow-git-fallback'] === false) {
+            $this->allowGitFallback = false;
+        }
 
         if ($this->config->get('use-github-api') === false || (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api'])) {
             $this->setupGitDriver($this->url);
@@ -486,7 +492,7 @@ class GitHubDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive()) {
-                        $this->attemptCloneFallback();
+                        $this->attemptCloneFallback($e);
 
                         return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
@@ -516,7 +522,7 @@ class GitHubDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive() && $fetchingRepoData) {
-                        $this->attemptCloneFallback();
+                        $this->attemptCloneFallback($e);
 
                         return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
@@ -568,7 +574,7 @@ class GitHubDriver extends VcsDriver
             $this->repoData = $this->getContents($repoDataUrl, true)->decodeJson();
         } catch (TransportException $e) {
             if ($e->getCode() === 499) {
-                $this->attemptCloneFallback();
+                $this->attemptCloneFallback($e);
             } else {
                 throw $e;
             }
@@ -598,8 +604,12 @@ class GitHubDriver extends VcsDriver
      * @return true
      * @throws \RuntimeException
      */
-    protected function attemptCloneFallback(): bool
+    protected function attemptCloneFallback(?\Throwable $e = null): bool
     {
+        if (!$this->allowGitFallback) {
+            throw new \RuntimeException('Fallback to git driver disabled', 0, $e);
+        }
+
         $this->isPrivate = true;
 
         try {
@@ -620,6 +630,9 @@ class GitHubDriver extends VcsDriver
 
     protected function setupGitDriver(string $url): void
     {
+        if (!$this->allowGitFallback) {
+            throw new \RuntimeException('Fallback to git driver disabled');
+        }
         $this->gitDriver = new GitDriver(
             ['url' => $url],
             $this->io,
