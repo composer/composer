@@ -71,6 +71,9 @@ class PluginManager
     /** @var bool */
     private $runningInGlobalDir = false;
 
+    /** @var array<string, true> */
+    private $autoloadedPackages = [];
+
     /** @var int */
     private static $classCounter = 0;
 
@@ -234,7 +237,10 @@ class PluginManager
         $autoloadPackages = $this->collectDependencies($installedRepo, $autoloadPackages, $package);
 
         $generator = $this->composer->getAutoloadGenerator();
-        $autoloads = [[$rootPackage, '']];
+        $autoloads = [];
+        if ($this->shouldAutoloadPackage($rootPackage, '')) {
+            $autoloads[] = [$rootPackage, ''];
+        }
         foreach ($autoloadPackages as $autoloadPackage) {
             if ($autoloadPackage === $rootPackage) {
                 continue;
@@ -244,7 +250,14 @@ class PluginManager
             if ($installPath === null) {
                 continue;
             }
-            $autoloads[] = [$autoloadPackage, $installPath];
+            // call shouldAutoloadPackage first here to ensure the plugin package gets marked in the autoloadedPackages array
+            if ($this->shouldAutoloadPackage($autoloadPackage, $installPath) || $autoloadPackage === $package) {
+                $autoloads[] = [$autoloadPackage, $installPath];
+            }
+        }
+
+        if (\count($autoloads) === 0) {
+            throw new \LogicException('At least the plugin package should always be autoloaded for the code below to work');
         }
 
         $map = $generator->parseAutoloads($autoloads, $rootPackage);
@@ -302,6 +315,18 @@ class PluginManager
                 throw new \UnexpectedValueException('Plugin '.$package->getName().' could not be initialized, class not found: '.$class);
             }
         }
+    }
+
+    private function shouldAutoloadPackage(PackageInterface $package, string $path): bool
+    {
+        $key = $package->getName().':'.$package->getVersion().':'.$path;
+        if (isset($this->autoloadedPackages[$key])) {
+            return false;
+        }
+
+        $this->autoloadedPackages[$key] = true;
+
+        return true;
     }
 
     /**
