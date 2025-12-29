@@ -268,10 +268,128 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        $this->validateArray('php-ext');
-        if (isset($this->config['php-ext']) && !in_array($this->config['type'] ?? '', ['php-ext', 'php-ext-zend'], true)) {
-            $this->errors[] = 'php-ext can only be set by packages of type "php-ext" or "php-ext-zend" which must be C extensions';
-            unset($this->config['php-ext']);
+        if (isset($this->config['php-ext']) && $this->validateArray('php-ext')) {
+            if (!in_array($this->config['type'] ?? '', ['php-ext', 'php-ext-zend'], true)) {
+                $this->errors[] = 'php-ext can only be set by packages of type "php-ext" or "php-ext-zend" which must be C extensions';
+                unset($this->config['php-ext']);
+            }
+
+            $phpExt = &$this->config['php-ext'];
+
+            if (isset($phpExt['extension-name']) && !is_string($phpExt['extension-name'])) {
+                $this->errors[] = 'php-ext.extension-name : should be a string, '.get_debug_type($phpExt['extension-name']).' given';
+                unset($phpExt['extension-name']);
+            }
+
+            if (isset($phpExt['priority']) && !is_int($phpExt['priority'])) {
+                $this->errors[] = 'php-ext.priority : should be an integer, '.get_debug_type($phpExt['priority']).' given';
+                unset($phpExt['priority']);
+            }
+
+            if (isset($phpExt['support-zts']) && !is_bool($phpExt['support-zts'])) {
+                $this->errors[] = 'php-ext.support-zts : should be a boolean, '.get_debug_type($phpExt['support-zts']).' given';
+                unset($phpExt['support-zts']);
+            }
+
+            if (isset($phpExt['support-nts']) && !is_bool($phpExt['support-nts'])) {
+                $this->errors[] = 'php-ext.support-nts : should be a boolean, '.get_debug_type($phpExt['support-nts']).' given';
+                unset($phpExt['support-nts']);
+            }
+
+            if (isset($phpExt['build-path']) && !is_string($phpExt['build-path']) && !is_null($phpExt['build-path'])) {
+                $this->errors[] = 'php-ext.build-path : should be a string or null, '.get_debug_type($phpExt['build-path']).' given';
+                unset($phpExt['build-path']);
+            }
+
+            if (isset($phpExt['download-url-method'])) {
+                if (!is_string($phpExt['download-url-method'])) {
+                    $this->errors[] = 'php-ext.download-url-method : should be a string, '.get_debug_type($phpExt['download-url-method']).' given';
+                    unset($phpExt['download-url-method']);
+                } elseif (!in_array($phpExt['download-url-method'], ['composer-default', 'pre-packaged-source'], true)) {
+                    $this->errors[] = 'php-ext.download-url-method : invalid value ('.$phpExt['download-url-method'].'), must be one of composer-default, pre-packaged-source';
+                    unset($phpExt['download-url-method']);
+                }
+            }
+
+            if (isset($phpExt['os-families']) && isset($phpExt['os-families-exclude'])) {
+                $this->errors[] = 'php-ext : os-families and os-families-exclude cannot both be specified';
+                unset($phpExt['os-families'], $phpExt['os-families-exclude']);
+            } else {
+                $validOsFamilies = ['windows', 'bsd', 'darwin', 'solaris', 'linux', 'unknown'];
+
+                foreach (['os-families', 'os-families-exclude'] as $fieldName) {
+                    if (isset($phpExt[$fieldName])) {
+                        if (!is_array($phpExt[$fieldName])) {
+                            $this->errors[] = 'php-ext.'.$fieldName.' : should be an array, '.get_debug_type($phpExt[$fieldName]).' given';
+                            unset($phpExt[$fieldName]);
+                        } elseif ([] === $phpExt[$fieldName]) {
+                            $this->errors[] = 'php-ext.'.$fieldName.' : must contain at least one element';
+                            unset($phpExt[$fieldName]);
+                        } else {
+                            foreach ($phpExt[$fieldName] as $key => $osFamily) {
+                                if (!is_string($osFamily)) {
+                                    $this->errors[] = 'php-ext.'.$fieldName.'.'.$key.' : should be a string, '.get_debug_type($osFamily).' given';
+                                    unset($phpExt[$fieldName][$key]);
+                                } elseif (!in_array($osFamily, $validOsFamilies, true)) {
+                                    $this->errors[] = 'php-ext.'.$fieldName.'.'.$key.' : invalid value ('.$osFamily.'), must be one of '.implode(', ', $validOsFamilies);
+                                    unset($phpExt[$fieldName][$key]);
+                                }
+                            }
+                            if ([] === $phpExt[$fieldName]) {
+                                unset($phpExt[$fieldName]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (isset($phpExt['configure-options'])) {
+                if (!is_array($phpExt['configure-options'])) {
+                    $this->errors[] = 'php-ext.configure-options : should be an array, '.get_debug_type($phpExt['configure-options']).' given';
+                    unset($phpExt['configure-options']);
+                } else {
+                    foreach ($phpExt['configure-options'] as $key => $option) {
+                        if (!is_array($option)) {
+                            $this->errors[] = 'php-ext.configure-options.'.$key.' : should be an array, '.get_debug_type($option).' given';
+                            unset($phpExt['configure-options'][$key]);
+                            continue;
+                        }
+
+                        if (!isset($option['name'])) {
+                            $this->errors[] = 'php-ext.configure-options.'.$key.'.name : must be present';
+                            unset($phpExt['configure-options'][$key]);
+                            continue;
+                        }
+
+                        if (!is_string($option['name'])) {
+                            $this->errors[] = 'php-ext.configure-options.'.$key.'.name : should be a string, '.get_debug_type($option['name']).' given';
+                            unset($phpExt['configure-options'][$key]);
+                            continue;
+                        }
+
+                        if (isset($option['needs-value']) && !is_bool($option['needs-value'])) {
+                            $this->errors[] = 'php-ext.configure-options.'.$key.'.needs-value : should be a boolean, '.get_debug_type($option['needs-value']).' given';
+                            unset($phpExt['configure-options'][$key]['needs-value']);
+                        }
+
+                        if (isset($option['description']) && !is_string($option['description'])) {
+                            $this->errors[] = 'php-ext.configure-options.'.$key.'.description : should be a string, '.get_debug_type($option['description']).' given';
+                            unset($phpExt['configure-options'][$key]['description']);
+                        }
+                    }
+
+                    if ([] === $phpExt['configure-options']) {
+                        unset($phpExt['configure-options']);
+                    }
+                }
+            }
+
+            // If php-ext is now empty, unset it
+            if ([] === $phpExt) {
+                unset($this->config['php-ext']);
+            }
+
+            unset($phpExt);
         }
 
         $unboundConstraint = new Constraint('=', '10000000-dev');
