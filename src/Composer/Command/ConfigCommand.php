@@ -24,6 +24,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Config;
 use Composer\Config\JsonConfigSource;
+use Composer\DependencyResolver\ReleaseAgeConfig;
 use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -492,6 +493,28 @@ EOT
             'audit.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
             'audit.block-insecure' => [$booleanValidator, $booleanNormalizer],
             'audit.block-abandoned' => [$booleanValidator, $booleanNormalizer],
+            'minimum-release-age.minimum-age' => [
+                static function ($val): bool {
+                    if ($val === 'null' || $val === '') {
+                        return true;
+                    }
+                    try {
+                        ReleaseAgeConfig::parseDuration($val);
+                        return true;
+                    } catch (\RuntimeException $e) {
+                        return false;
+                    }
+                },
+                static function ($val) {
+                    if ($val === 'null' || $val === '') {
+                        return null;
+                    }
+                    if (is_numeric($val)) {
+                        return (int) $val;
+                    }
+                    return $val;
+                },
+            ],
         ];
         $multiConfigValues = [
             'github-protocols' => [
@@ -558,6 +581,13 @@ EOT
 
         // allow unsetting audit config entirely
         if ($input->getOption('unset') && $settingKey === 'audit') {
+            $this->configSource->removeConfigSetting($settingKey);
+
+            return 0;
+        }
+
+        // allow unsetting minimum-release-age config entirely
+        if ($input->getOption('unset') && $settingKey === 'minimum-release-age') {
             $this->configSource->removeConfigSetting($settingKey);
 
             return 0;
@@ -832,6 +862,44 @@ EOT
                     } else {
                         throw new \RuntimeException('Cannot merge array and object for '.$settingKey);
                     }
+                }
+            }
+
+            $this->configSource->addConfigSetting($settingKey, $value);
+
+            return 0;
+        }
+
+        // handle minimum-release-age.exceptions with --merge support
+        if ($settingKey === 'minimum-release-age.exceptions') {
+            if ($input->getOption('unset')) {
+                $this->configSource->removeConfigSetting($settingKey);
+
+                return 0;
+            }
+
+            $value = $values;
+            if ($input->getOption('json')) {
+                $value = JsonFile::parseJson($values[0]);
+                if (!is_array($value)) {
+                    throw new \RuntimeException('Expected an array for '.$settingKey);
+                }
+                foreach ($value as $index => $item) {
+                    if (!is_array($item) || !isset($item['package'])) {
+                        throw new \RuntimeException('Each exception must be an object with a "package" key at index '.$index);
+                    }
+                }
+            }
+
+            if ($input->getOption('merge')) {
+                $currentConfig = $this->configFile->read();
+                $currentValue = $currentConfig['config']['minimum-release-age']['exceptions'] ?? null;
+
+                if ($currentValue !== null && is_array($currentValue) && is_array($value)) {
+                    if (!array_is_list($currentValue) || !array_is_list($value)) {
+                        throw new \RuntimeException('minimum-release-age.exceptions must be an array, not an object');
+                    }
+                    $value = array_merge($currentValue, $value);
                 }
             }
 

@@ -95,6 +95,7 @@ class InstallerTest extends TestCase
                         return true;
                     case 'platform':
                     case 'audit':
+                    case 'minimum-release-age':
                         return [];
                 }
 

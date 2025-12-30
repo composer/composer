@@ -568,6 +568,46 @@
                         }
                     }
                 },
+                "minimum-release-age": {
+                    "type": "object",
+                    "description": "Configuration for filtering out newly released package versions to reduce the risk of exposure to supply chain attacks.",
+                    "properties": {
+                        "minimum-age": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "description": "A duration string (e.g., '7 days', '24 hours', '1 week') representing the minimum age a package version must have before it can be installed."
+                                },
+                                {
+                                    "type": "integer",
+                                    "description": "Minimum age in seconds."
+                                },
+                                {
+                                    "type": "null",
+                                    "description": "Set to null to disable the feature."
+                                }
+                            ]
+                        },
+                        "exceptions": {
+                            "type": "array",
+                            "description": "A list of packages that should bypass the minimum release age check.",
+                            "items": {
+                                "type": "object",
+                                "required": ["package"],
+                                "properties": {
+                                    "package": {
+                                        "type": "string",
+                                        "description": "Package name or pattern (e.g., 'vendor/*', 'vendor/package')."
+                                    },
+                                    "reason": {
+                                        "type": "string",
+                                        "description": "Explanation for why this package is excepted from the minimum release age requirement."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 "notify-on-install": {
                     "type": "boolean",
                     "description": "Composer allows repositories to define a notification URL, so that they get notified whenever a package from that repository is installed. This option allows you to disable that behaviour, defaults to true."
