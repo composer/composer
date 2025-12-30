@@ -237,8 +237,12 @@ class CurlDownloader
         $version = curl_version();
         $features = $version['features'];
 
+        $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
+
         if (0 === strpos($url, 'https://')) {
-            if (\defined('CURL_VERSION_HTTP3') && \defined('CURL_HTTP_VERSION_3') && (CURL_VERSION_HTTP3 & $features) !== 0) {
+            $willUseProxy = $proxy->getStatus() !== '' && !$proxy->isExcludedByNoProxy();
+
+            if (!$willUseProxy && \defined('CURL_VERSION_HTTP3') && \defined('CURL_HTTP_VERSION_3') && (CURL_VERSION_HTTP3 & $features) !== 0) {
                 curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_3);
             } elseif (\defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features) !== 0) {
                 curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
@@ -266,7 +270,6 @@ class CurlDownloader
             }
         }
 
-        $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
         curl_setopt_array($curlHandle, $proxy->getCurlOptions($options['ssl'] ?? []));
 
         $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
