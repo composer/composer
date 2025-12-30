@@ -240,7 +240,7 @@ class CurlDownloader
         $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
 
         if (0 === strpos($url, 'https://')) {
-            $willUseProxy = !empty($proxy->getStatus()) && !$proxy->isExcludedByNoProxy();
+            $willUseProxy = $proxy->getStatus() !== '' && !$proxy->isExcludedByNoProxy();
 
             if (!$willUseProxy && \defined('CURL_VERSION_HTTP3') && \defined('CURL_HTTP_VERSION_3') && (CURL_VERSION_HTTP3 & $features) !== 0) {
                 curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_3);
