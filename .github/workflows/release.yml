@@ -14,20 +14,20 @@ env:
 jobs:
   build:
     permissions:
-      contents: write # for actions/create-release to create a release
+      contents: write # for gh to create a release
+      id-token: write # for actions/attest-build-provenance to create a attestation certificate
+      attestations: write # for actions/attest-build-provenance to upload the attestation
     name: Upload Release Asset
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+      - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # 2.36.0
         with:
           coverage: "none"
           extensions: "intl"
           ini-values: "memory_limit=-1"
-          php-version: "8.0"
+          php-version: "8.4"
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         run: "composer install ${{ env.COMPOSER_FLAGS }}"
@@ -41,26 +41,10 @@ jobs:
       - name: Build phar file
         run: "php -d phar.readonly=0 bin/compile"
 
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate build provenance attestation
+        uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: true
-          body: TODO
-
-      - name: Upload phar
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./composer.phar
-          asset_name: composer.phar
-          asset_content_type: application/octet-stream
+          subject-path: '${{ github.workspace }}/composer.phar'
 
       - name: Configure GPG key and sign phar
         run: |
@@ -73,29 +57,27 @@ jobs:
           GPG_SIGNING_KEY: |
             ${{ secrets.GPG_KEY_161DFBE342889F01DDAC4E61CBB3D576F2A0946F }}
 
-      - name: Upload phar signature
-        uses: actions/upload-release-asset@v1
+      - name: Create release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./composer.phar.asc
-          asset_name: composer.phar.asc
-          asset_content_type: application/octet-stream
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" --title "${{ github.ref_name }}" --notes TODO --draft --verify-tag
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.ref_name }}" composer.phar composer.phar.asc --clobber
 
       # This step requires a secret token with `pull` access to composer/docker. The default
       # secrets.GITHUB_TOKEN is scoped to this repository only which is not sufficient.
       - name: "Open issue @ Docker repository"
-        uses: actions/github-script@v6
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           github-token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           script: |
-            // github.ref value looks like 'refs/tags/TAG', cleanup
-            const tag = "${{ github.ref }}".replace(/refs\/tags\//, '');
             // create new issue on Docker repository
             github.rest.issues.create({
               owner: "${{ github.repository_owner }}",
               repo: "docker",
-              title: `New Composer tag: ${ tag }`,
-              body: `https://github.com/${{ github.repository }}/releases/tag/${ tag }`,
+              title: `New Composer tag: ${{ github.ref_name }}`,
+              body: `https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}`,
             });
