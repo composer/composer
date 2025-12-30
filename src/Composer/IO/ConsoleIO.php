@@ -12,6 +12,7 @@
 
 namespace Composer\IO;
 
+use Composer\Pcre\Preg;
 use Composer\Question\StrictConfirmationQuestion;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -120,6 +121,8 @@ class ConsoleIO extends BaseIO
      */
     public function write($messages, bool $newline = true, int $verbosity = self::NORMAL)
     {
+        $messages = self::sanitize($messages);
+
         $this->doWrite($messages, $newline, false, $verbosity);
     }
 
@@ -128,6 +131,8 @@ class ConsoleIO extends BaseIO
      */
     public function writeError($messages, bool $newline = true, int $verbosity = self::NORMAL)
     {
+        $messages = self::sanitize($messages);
+
         $this->doWrite($messages, $newline, true, $verbosity);
     }
 
@@ -252,7 +257,7 @@ class ConsoleIO extends BaseIO
     {
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
-        $question = new Question($question, $default);
+        $question = new Question(self::sanitize($question), is_string($default) ? self::sanitize($default) : $default);
 
         return $helper->ask($this->input, $this->getErrorOutput(), $question);
     }
@@ -264,7 +269,7 @@ class ConsoleIO extends BaseIO
     {
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
-        $question = new StrictConfirmationQuestion($question, $default);
+        $question = new StrictConfirmationQuestion(self::sanitize($question), is_string($default) ? self::sanitize($default) : $default);
 
         return $helper->ask($this->input, $this->getErrorOutput(), $question);
     }
@@ -276,7 +281,7 @@ class ConsoleIO extends BaseIO
     {
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
-        $question = new Question($question, $default);
+        $question = new Question(self::sanitize($question), is_string($default) ? self::sanitize($default) : $default);
         $question->setValidator($validator);
         $question->setMaxAttempts($attempts);
 
@@ -290,7 +295,7 @@ class ConsoleIO extends BaseIO
     {
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
-        $question = new Question($question);
+        $question = new Question(self::sanitize($question));
         $question->setHidden(true);
 
         return $helper->ask($this->input, $this->getErrorOutput(), $question);
@@ -303,7 +308,7 @@ class ConsoleIO extends BaseIO
     {
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = $this->helperSet->get('question');
-        $question = new ChoiceQuestion($question, $choices, $default);
+        $question = new ChoiceQuestion(self::sanitize($question), self::sanitize($choices), is_string($default) ? self::sanitize($default) : $default);
         $question->setMaxAttempts($attempts ?: null); // IOInterface requires false, and Question requires null or int
         $question->setErrorMessage($errorMessage);
         $question->setMultiselect($multiselect);
@@ -341,5 +346,36 @@ class ConsoleIO extends BaseIO
         }
 
         return $this->output;
+    }
+
+    /**
+     * Sanitize string to remove control characters
+     *
+     * If $allowNewlines is true, \x0A (\n) and \x0D\x0A (\r\n) are let through. Single \r are still sanitized away to prevent overwriting whole lines.
+     *
+     * All other control chars (except NULL bytes) as well as ANSI escape sequences are removed.
+     *
+     * @param string|iterable<string> $messages
+     * @return string|array<string>
+     * @phpstan-return ($messages is string ? string : array<string>)
+     */
+    public static function sanitize($messages, bool $allowNewlines = true)
+    {
+        // Match ANSI escape sequences:
+        // - CSI (Control Sequence Introducer): ESC [ params intermediate final
+        // - OSC (Operating System Command): ESC ] ... ESC \ or BEL
+        // - Other ESC sequences: ESC followed by any character
+        $escapePattern = '\x1B\[[\x30-\x3F]*[\x20-\x2F]*[\x40-\x7E]|\x1B\].*?(?:\x1B\\\\|\x07)|\x1B.';
+        $pattern = $allowNewlines ? "{{$escapePattern}|[\x01-\x09\x0B\x0C\x0E-\x1A]|\r(?!\n)}u" : "{{$escapePattern}|[\x01-\x1A]}u";
+        if (is_string($messages)) {
+            return Preg::replace($pattern, '', $messages);
+        }
+
+        $sanitized = [];
+        foreach ($messages as $key => $message) {
+            $sanitized[$key] = Preg::replace($pattern, '', $message);
+        }
+
+        return $sanitized;
     }
 }

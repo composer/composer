@@ -341,7 +341,7 @@ class Auditor
                 $io->getTable()
                     ->setHorizontal()
                     ->setHeaders($headers)
-                    ->addRow($row)
+                    ->addRow(ConsoleIO::sanitize($row))
                     ->setColumnWidth(1, 80)
                     ->setColumnMaxWidth(1, 80)
                     ->render();
@@ -412,7 +412,7 @@ class Auditor
 
         foreach ($packages as $pkg) {
             $replacement = $pkg->getReplacementPackage() !== null ? $pkg->getReplacementPackage() : 'none';
-            $table->addRow([$this->getPackageNameWithLink($pkg), $replacement]);
+            $table->addRow(ConsoleIO::sanitize([$this->getPackageNameWithLink($pkg), $replacement]));
         }
 
         $table->render();
