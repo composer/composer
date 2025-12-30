@@ -38,6 +38,8 @@ class DownloadManager
     private $filesystem;
     /** @var array<string, DownloaderInterface> */
     private $downloaders = [];
+    /** @var bool */
+    private $sourceFallback = true;
 
     /**
      * Initializes download manager.
@@ -85,6 +87,16 @@ class DownloadManager
     public function setPreferences(array $preferences): self
     {
         $this->packagePreferences = $preferences;
+
+        return $this;
+    }
+
+    /**
+     * Allow fallback to alternative sources when download fails.
+     */
+    public function setSourceFallback(bool $sourceFallback): self
+    {
+        $this->sourceFallback = $sourceFallback;
 
         return $this;
     }
@@ -195,9 +207,18 @@ class DownloadManager
                 return \React\Promise\resolve(null);
             }
 
-            $handleError = static function ($e) use ($sources, $source, $package, $io, $download) {
+            $handleError = function ($e) use ($sources, $source, $package, $io, $download) {
                 if ($e instanceof \RuntimeException && !$e instanceof IrrecoverableDownloadException) {
-                    if (!$sources) {
+                    if (count($sources) === 0 || !$this->sourceFallback) {
+                        if (!$this->sourceFallback && count($sources) > 0) {
+                            $io->writeError(
+                                '    <warning>Failed to download '.
+                                $package->getPrettyName().
+                                ' from ' . $source . ': '.
+                                $e->getMessage().'</warning>'
+                            );
+                            $io->writeError('    <warning>Source fallback is disabled via config. Not trying alternative sources.</warning>');
+                        }
                         throw $e;
                     }
 

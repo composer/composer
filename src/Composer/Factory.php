@@ -529,6 +529,10 @@ class Factory
             $dm->setPreferences($preferred);
         }
 
+        if (!$config->get('source-fallback')) {
+            $dm->setSourceFallback(false);
+        }
+
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config, $process, $fs));
         $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config, $process, $fs));
         $dm->setDownloader('fossil', new Downloader\FossilDownloader($io, $config, $process, $fs));
