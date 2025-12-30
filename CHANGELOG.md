@@ -1,3 +1,7 @@
+### [2.2.26] 2025-12-30
+
+  * Security: Fixed ANSI sequence injection (GHSA-59pp-r3rg-353g / CVE-2025-67746)
+
 ### [2.2.25] 2024-12-11
 
   * Fixed deprecation notices appearing on this LTS version in case it is used on modern PHP. Modern PHP support is not guaranteed nor tested for though and the main purpose of LTS releases is legacy PHP versions support. (#12217)
@@ -1524,6 +1528,7 @@
 
   * Initial release
 
+[2.2.26]: https://github.com/composer/composer/compare/2.2.25...2.2.26
 [2.2.25]: https://github.com/composer/composer/compare/2.2.24...2.2.25
 [2.2.24]: https://github.com/composer/composer/compare/2.2.23...2.2.24
 [2.2.23]: https://github.com/composer/composer/compare/2.2.22...2.2.23
