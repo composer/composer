@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "composer/ca-bundle",
-            "version": "1.4.5",
+            "version": "1.4.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "3e039dc3212d43e9f0fd315e7e212f82f7af5026"
+                "reference": "fe6574568d60a79013d91b361a55bf0cc1ebc298"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/3e039dc3212d43e9f0fd315e7e212f82f7af5026",
-                "reference": "3e039dc3212d43e9f0fd315e7e212f82f7af5026",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/fe6574568d60a79013d91b361a55bf0cc1ebc298",
+                "reference": "fe6574568d60a79013d91b361a55bf0cc1ebc298",
                 "shasum": ""
             },
             "require": {
@@ -64,7 +64,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/ca-bundle/issues",
-                "source": "https://github.com/composer/ca-bundle/tree/1.4.5"
+                "source": "https://github.com/composer/ca-bundle/tree/1.4.11"
             },
             "funding": [
                 {
@@ -74,13 +74,9 @@
                 {
                     "url": "https://github.com/composer",
                     "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/composer/composer",
-                    "type": "tidelift"
                 }
             ],
-            "time": "2024-11-27T15:35:19+00:00"
+            "time": "2025-12-08T15:10:35+00:00"
         },
         {
             "name": "composer/metadata-minifier",
@@ -224,16 +220,16 @@
         },
         {
             "name": "composer/semver",
-            "version": "3.4.3",
+            "version": "3.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "4313d26ada5e0c4edfbd1dc481a92ff7bff91f12"
+                "reference": "198166618906cb2de69b95d7d47e5fa8aa1b2b95"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/4313d26ada5e0c4edfbd1dc481a92ff7bff91f12",
-                "reference": "4313d26ada5e0c4edfbd1dc481a92ff7bff91f12",
+                "url": "https://api.github.com/repos/composer/semver/zipball/198166618906cb2de69b95d7d47e5fa8aa1b2b95",
+                "reference": "198166618906cb2de69b95d7d47e5fa8aa1b2b95",
                 "shasum": ""
             },
             "require": {
@@ -285,7 +281,7 @@
             "support": {
                 "irc": "ircs://irc.libera.chat:6697/composer",
                 "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/composer/semver/tree/3.4.3"
+                "source": "https://github.com/composer/semver/tree/3.4.4"
             },
             "funding": [
                 {
@@ -295,34 +291,30 @@
                 {
                     "url": "https://github.com/composer",
                     "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/composer/composer",
-                    "type": "tidelift"
                 }
             ],
-            "time": "2024-09-19T14:15:21+00:00"
+            "time": "2025-08-20T19:15:30+00:00"
         },
         {
             "name": "composer/spdx-licenses",
-            "version": "1.5.8",
+            "version": "1.5.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/spdx-licenses.git",
-                "reference": "560bdcf8deb88ae5d611c80a2de8ea9d0358cc0a"
+                "reference": "edf364cefe8c43501e21e88110aac10b284c3c9f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/spdx-licenses/zipball/560bdcf8deb88ae5d611c80a2de8ea9d0358cc0a",
-                "reference": "560bdcf8deb88ae5d611c80a2de8ea9d0358cc0a",
+                "url": "https://api.github.com/repos/composer/spdx-licenses/zipball/edf364cefe8c43501e21e88110aac10b284c3c9f",
+                "reference": "edf364cefe8c43501e21e88110aac10b284c3c9f",
                 "shasum": ""
             },
             "require": {
                 "php": "^5.3.2 || ^7.0 || ^8.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "^0.12.55",
-                "symfony/phpunit-bridge": "^4.2 || ^5"
+                "phpstan/phpstan": "^1.11",
+                "symfony/phpunit-bridge": "^3 || ^7"
             },
             "type": "library",
             "extra": {
@@ -365,7 +357,7 @@
             "support": {
                 "irc": "ircs://irc.libera.chat:6697/composer",
                 "issues": "https://github.com/composer/spdx-licenses/issues",
-                "source": "https://github.com/composer/spdx-licenses/tree/1.5.8"
+                "source": "https://github.com/composer/spdx-licenses/tree/1.5.9"
             },
             "funding": [
                 {
@@ -381,7 +373,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-11-20T07:44:33+00:00"
+            "time": "2025-05-12T21:07:07+00:00"
         },
         {
             "name": "composer/xdebug-handler",
@@ -1069,12 +1061,12 @@
             },
             "type": "library",
             "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                },
                 "branch-alias": {
                     "dev-main": "1.19-dev"
-                },
-                "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
                 }
             },
             "autoload": {
@@ -1706,5 +1698,5 @@
     "platform-overrides": {
         "php": "5.3.9"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

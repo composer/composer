@@ -367,8 +367,8 @@ class ConsoleIO extends BaseIO
      * All other control chars (except NULL bytes) as well as ANSI escape sequences are removed.
      *
      * @param string|iterable<string> $messages
+     * @param bool $allowNewlines
      * @return string|array<string>
-     * @phpstan-return ($messages is string ? string : array<string>)
      */
     public static function sanitize($messages, $allowNewlines = true)
     {

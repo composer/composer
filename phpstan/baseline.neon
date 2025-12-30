@@ -3926,6 +3926,36 @@ parameters:
 			path: ../src/Composer/IO/ConsoleIO.php
 
 		-
+			message: "#^Parameter \\#1 \\$question of class Composer\\\\Question\\\\StrictConfirmationQuestion constructor expects string, array\\<string\\>\\|string given\\.$#"
+			count: 1
+			path: ../src/Composer/IO/ConsoleIO.php
+
+		-
+			message: "#^Parameter \\#1 \\$question of class Symfony\\\\Component\\\\Console\\\\Question\\\\ChoiceQuestion constructor expects string, array\\<string\\>\\|string given\\.$#"
+			count: 1
+			path: ../src/Composer/IO/ConsoleIO.php
+
+		-
+			message: "#^Parameter \\#1 \\$question of class Symfony\\\\Component\\\\Console\\\\Question\\\\Question constructor expects string, array\\<string\\>\\|string given\\.$#"
+			count: 3
+			path: ../src/Composer/IO/ConsoleIO.php
+
+		-
+			message: "#^Parameter \\#2 \\$choices of class Symfony\\\\Component\\\\Console\\\\Question\\\\ChoiceQuestion constructor expects array, array\\<string\\>\\|string given\\.$#"
+			count: 1
+			path: ../src/Composer/IO/ConsoleIO.php
+
+		-
+			message: "#^Parameter \\#2 \\$default of class Composer\\\\Question\\\\StrictConfirmationQuestion constructor expects bool, array\\<string\\>\\|bool\\|string given\\.$#"
+			count: 1
+			path: ../src/Composer/IO/ConsoleIO.php
+
+		-
+			message: "#^Parameter \\#2 \\$default of class Symfony\\\\Component\\\\Console\\\\Question\\\\Question constructor expects bool\\|float\\|int\\|string\\|null, array\\<string\\>\\|string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/IO/ConsoleIO.php
+
+		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/IO/ConsoleIO.php
