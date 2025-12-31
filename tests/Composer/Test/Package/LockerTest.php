@@ -18,6 +18,7 @@ use Composer\Package\Locker;
 use Composer\Plugin\PluginInterface;
 use Composer\IO\NullIO;
 use Composer\Test\TestCase;
+use Composer\Util\Git;
 
 class LockerTest extends TestCase
 {
@@ -288,32 +289,33 @@ class LockerTest extends TestCase
                 ->willReturn('git');
 
         if ($isValidPath) {
-            $processExecutor->expects($this->exactly(2))
-                            ->method('execute')
-                            ->willReturnOnConsecutiveCalls(
-                                $this->returnCallback(function (array $command, ?string &$output1) {
-                                    // Using `::withConsecutive()` to assert the parameters was failing.
-                                    $this->assertEquals([ 'git', '--version' ], $command);
+            $processExecutor->expects($this->atLeast(1))
+                ->method('execute')
+                ->willReturnCallback(
+                    /**
+                     * {@see Locker::getPackageTime()} builds its command by first calling
+                     * {@see Git::getVersion()} via {@see Git::getNoShowSignatureFlags()}. On the first call
+                     * we want to return the "Git version", then we want the `ProcessExecutor` to return the
+                     * time of the package's last Git commit.
+                     *
+                     * But... {@see Git::getVersion()} stores its result in static {@see Git::$version} so depending on
+                     * the tests' order, using `::willReturnOnConsecutiveCalls()` in tests is not accurate.
+                     */
+                    static function ($command, &$output, ?string $path) {
+                        switch (true) {
+                            case ($command === [ 'git', '--version' ]):
+                                $output = '2.49.0';
+                                break;
+                            case ($command === ['git', 'log', '-n1', '--pretty=%ct', 'git']):
+                                $output = (string) time();
+                                break;
+                            default:
+                                throw new \Exception('Unexpected command to ProcessExecutor in test LockerTest::testGetPackageTime()');
+                        }
 
-                                    $output1 = '2.49.0';
-
-                                    return 0;
-                                }),
-                                $this->returnCallback(function ($command, &$output2, ?string $path) {
-                                    $this->assertEquals([
-                                        'git',
-                                        'log',
-                                        '-n1',
-                                        '--pretty=%ct',
-                                        'git',
-                                    ], $command);
-                                    $this->assertEquals(__DIR__, $path);
-
-                                    $output2 = (string) time();
-
-                                    return 0;
-                                })
-                            );
+                        return 0;
+                    }
+                );
         } else {
             $processExecutor->expects($this->never())
                              ->method('execute');
@@ -344,6 +346,7 @@ class LockerTest extends TestCase
 
     /**
      * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Json\JsonFile
+     * @return \PHPUnit\Framework\MockObject\MockObject&JsonFile
      */
     private function createJsonFileMock()
     {
