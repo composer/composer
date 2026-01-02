@@ -203,8 +203,9 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             }
 
             $output = '';
-            if ('auto' === $reference && is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute(array_merge(['git', 'rev-list', '--no-commit-header', '-n1', '--format=%H', 'HEAD'], GitUtil::getNoShowSignatureFlags($this->process)), $output, $path)) {
-                $package['dist']['reference'] = trim($output);
+            $command = GitUtil::buildRevListCommand($this->process, array_merge(['-n1', '--format=%H', 'HEAD'], GitUtil::getNoShowSignatureFlags($this->process)));
+            if ('auto' === $reference && is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute($command, $output, $path)) {
+                $package['dist']['reference'] = trim(GitUtil::parseRevListOutput($output, $this->process));
             }
 
             if (!isset($package['version'])) {

@@ -467,6 +467,54 @@ class Git
         return explode(' ', substr($flags, 1));
     }
 
+    /**
+     * Checks if git version supports --no-commit-header flag (git 2.33+)
+     *
+     * @internal
+     */
+    public static function supportsNoCommitHeaderFlag(ProcessExecutor $process): bool
+    {
+        $gitVersion = self::getVersion($process);
+
+        return $gitVersion !== null && version_compare($gitVersion, '2.33.0-rc0', '>=');
+    }
+
+    /**
+     * Builds a git rev-list command with --no-commit-header flag when supported (git 2.33+)
+     *
+     * @internal
+     * @param list<string> $arguments Additional arguments for git rev-list
+     * @return non-empty-list<string>
+     */
+    public static function buildRevListCommand(ProcessExecutor $process, array $arguments): array
+    {
+        $command = ['git', 'rev-list'];
+        if (self::supportsNoCommitHeaderFlag($process)) {
+            $command[] = '--no-commit-header';
+        }
+
+        return array_merge($command, $arguments);
+    }
+
+    /**
+     * Parses git rev-list output, removing 'commit <hash>' header lines for git < 2.33.
+     *
+     * When --no-commit-header is not available (git < 2.33), git rev-list --format outputs
+     * "commit <hash>" before formatted output. This removes those lines.
+     *
+     * @internal
+     */
+    public static function parseRevListOutput(string $output, ProcessExecutor $process): string
+    {
+        // If git supports --no-commit-header, output is already clean
+        if (self::supportsNoCommitHeaderFlag($process)) {
+            return $output;
+        }
+
+        // Filter out "commit <hash>" lines for older git versions
+        return Preg::replace('{^commit [a-f0-9]{40}\n?}m', '', $output);
+    }
+
     private function checkRefIsInMirror(string $dir, string $ref): bool
     {
         if (is_dir($dir) && 0 === $this->process->execute(['git', 'rev-parse', '--git-dir'], $output, $dir) && trim($output) === '.') {
@@ -539,9 +587,9 @@ class Git
         return null;
     }
 
-    public static function cleanEnv(): void
+    public static function cleanEnv(?ProcessExecutor $process = null): void
     {
-        $gitVersion = self::getVersion(new ProcessExecutor());
+        $gitVersion = self::getVersion($process ?? new ProcessExecutor());
         if ($gitVersion !== null && version_compare($gitVersion, '2.3.0', '>=')) {
             // added in git 2.3.0, prevents prompting the user for username/password
             if (Platform::getEnv('GIT_TERMINAL_PROMPT') !== '0') {

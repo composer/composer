@@ -65,7 +65,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             return \React\Promise\resolve(null);
         }
 
-        GitUtil::cleanEnv();
+        GitUtil::cleanEnv($this->process);
 
         $cachePath = $this->config->get('cache-vcs-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($url)).'/';
         $gitVersion = GitUtil::getVersion($this->process);
@@ -90,7 +90,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      */
     protected function doInstall(PackageInterface $package, string $path, string $url): PromiseInterface
     {
-        GitUtil::cleanEnv();
+        GitUtil::cleanEnv($this->process);
         $path = $this->normalizePath($path);
         $cachePath = $this->config->get('cache-vcs-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($url)).'/';
         $ref = $package->getSourceReference();
@@ -149,7 +149,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      */
     protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): PromiseInterface
     {
-        GitUtil::cleanEnv();
+        GitUtil::cleanEnv($this->process);
         $path = $this->normalizePath($path);
         if (!$this->hasMetadataRepository($path)) {
             throw new \RuntimeException('The .git directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
@@ -213,7 +213,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      */
     public function getLocalChanges(PackageInterface $package, string $path): ?string
     {
-        GitUtil::cleanEnv();
+        GitUtil::cleanEnv($this->process);
         if (!$this->hasMetadataRepository($path)) {
             return null;
         }
@@ -230,7 +230,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
     public function getUnpushedChanges(PackageInterface $package, string $path): ?string
     {
-        GitUtil::cleanEnv();
+        GitUtil::cleanEnv($this->process);
         $path = $this->normalizePath($path);
         if (!$this->hasMetadataRepository($path)) {
             return null;
@@ -327,7 +327,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      */
     protected function cleanChanges(PackageInterface $package, string $path, bool $update): PromiseInterface
     {
-        GitUtil::cleanEnv();
+        GitUtil::cleanEnv($this->process);
         $path = $this->normalizePath($path);
 
         $unpushed = $this->getUnpushedChanges($package, $path);
@@ -535,13 +535,13 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     protected function getCommitLogs(string $fromReference, string $toReference, string $path): string
     {
         $path = $this->normalizePath($path);
-        $command = array_merge(['git', 'rev-list', '--no-commit-header', '--format=%h - %an: %s', $fromReference.'..'.$toReference], GitUtil::getNoShowSignatureFlags($this->process));
+        $command = GitUtil::buildRevListCommand($this->process, array_merge(['--format=%h - %an: %s', $fromReference.'..'.$toReference], GitUtil::getNoShowSignatureFlags($this->process)));
 
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . implode(' ', $command) . "\n\n" . $this->process->getErrorOutput());
         }
 
-        return $output;
+        return GitUtil::parseRevListOutput($output, $this->process);
     }
 
     /**

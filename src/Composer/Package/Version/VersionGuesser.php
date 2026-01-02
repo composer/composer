@@ -133,7 +133,7 @@ class VersionGuesser
      */
     private function guessGitVersion(array $packageConfig, string $path): array
     {
-        GitUtil::cleanEnv();
+        GitUtil::cleanEnv($this->process);
         $commit = null;
         $version = null;
         $prettyVersion = null;
@@ -197,9 +197,9 @@ class VersionGuesser
         }
 
         if (null === $commit) {
-            $command = array_merge(['git', 'rev-list', '--no-commit-header', '--format=%H', '-n1', 'HEAD'], GitUtil::getNoShowSignatureFlags($this->process));
+            $command = GitUtil::buildRevListCommand($this->process, array_merge(['--format=%H', '-n1', 'HEAD'], GitUtil::getNoShowSignatureFlags($this->process)));
             if (0 === $this->process->execute($command, $output, $path)) {
-                $commit = trim($output) ?: null;
+                $commit = trim(GitUtil::parseRevListOutput($output, $this->process)) ?: null;
             }
         }
 
