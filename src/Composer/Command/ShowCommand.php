@@ -742,10 +742,10 @@ EOT
                 }
             }
             if (isset($package['description']) && $writeDescription) {
-                $description = strtok($package['description'], "\r\n");
+                $description = (string) strtok($package['description'], "\r\n");
 
                 // Compute remaining width available for the description.
-                $remaining = (int) ($width - $nameLength - $versionLength - $releaseDateLength - 4);
+                $remaining = $width - $nameLength - $versionLength - $releaseDateLength - 4;
                 if ($writeLatest) {
                     $remaining -= $latestLength;
                 }
