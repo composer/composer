@@ -355,6 +355,8 @@ class ConsoleIO extends BaseIO
      *
      * All other control chars (except NULL bytes) as well as ANSI escape sequences are removed.
      *
+     * Invalid unicode sequences are turned into question marks.
+     *
      * @param string|iterable<string> $messages
      * @return string|array<string>
      * @phpstan-return ($messages is string ? string : array<string>)
@@ -368,14 +370,44 @@ class ConsoleIO extends BaseIO
         $escapePattern = '\x1B\[[\x30-\x3F]*[\x20-\x2F]*[\x40-\x7E]|\x1B\].*?(?:\x1B\\\\|\x07)|\x1B.';
         $pattern = $allowNewlines ? "{{$escapePattern}|[\x01-\x09\x0B\x0C\x0E-\x1A]|\r(?!\n)}u" : "{{$escapePattern}|[\x01-\x1A]}u";
         if (is_string($messages)) {
+            $messages = self::ensureValidUtf8($messages);
             return Preg::replace($pattern, '', $messages);
         }
 
         $sanitized = [];
         foreach ($messages as $key => $message) {
+            $message = self::ensureValidUtf8($message);
             $sanitized[$key] = Preg::replace($pattern, '', $message);
         }
 
         return $sanitized;
+    }
+
+    /**
+     * Ensures a string is valid UTF-8, replacing invalid byte sequences with '?'
+     */
+    private static function ensureValidUtf8(string $string): string
+    {
+        // Quick check: if string is already valid UTF-8, return as-is
+        if (function_exists('mb_check_encoding') && mb_check_encoding($string, 'UTF-8')) {
+            return $string;
+        }
+
+        // Use mb_convert_encoding to replace invalid sequences with '?'
+        // This makes it visible when data quality issues occur
+        if (function_exists('mb_convert_encoding')) {
+            return mb_convert_encoding($string, 'UTF-8', 'UTF-8');
+        }
+
+        // Fallback to iconv if mbstring unavailable
+        if (function_exists('iconv')) {
+            $cleaned = @iconv('UTF-8', 'UTF-8//TRANSLIT', $string);
+            if ($cleaned !== false) {
+                return $cleaned;
+            }
+        }
+
+        // Last resort: return as-is (should never happen - Composer requires mbstring OR iconv)
+        return $string;
     }
 }
