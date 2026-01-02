@@ -256,16 +256,6 @@ parameters:
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ConfigCommand.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RepositoryCommand.php
-
-		-
 			message: "#^Only booleans are allowed in &&, Composer\\\\Package\\\\PackageInterface\\|false given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Command/CreateProjectCommand.php
@@ -491,6 +481,11 @@ parameters:
 			path: ../src/Composer/Command/RemoveCommand.php
 
 		-
+			message: "#^Parameter \\#3 \\$referenceName of method Composer\\\\Config\\\\JsonConfigSource\\:\\:insertRepository\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Command/RepositoryCommand.php
+
+		-
 			message: "#^Cannot call method getRepoName\\(\\) on Composer\\\\Repository\\\\RepositoryInterface\\|null\\.$#"
 			count: 2
 			path: ../src/Composer/Command/RequireCommand.php
@@ -574,12 +569,6 @@ parameters:
 			message: "#^Variable \\$match might not be defined\\.$#"
 			count: 2
 			path: ../src/Composer/Command/SelfUpdateCommand.php
-
-		# one of these parameters will be non-null
-		-
-			message: "#^Parameter \\#3 \\$referenceName of method Composer\\\\Config\\\\JsonConfigSource\\:\\:insertRepository\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RepositoryCommand.php
 
 		-
 			message: "#^Argument of an invalid type array\\<int, array\\<string, array\\|string\\>\\>\\|string supplied for foreach, only iterables are supported\\.$#"
@@ -1378,11 +1367,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a ternary operator condition, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/EventDispatcher/EventDispatcher.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, Composer\\\\Autoload\\\\ClassLoader\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
@@ -2660,16 +2644,6 @@ parameters:
 			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
 
 		-
-			message: "#^Cannot call method read\\(\\) on Composer\\\\Cache\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
-
-		-
-			message: "#^Cannot call method write\\(\\) on Composer\\\\Cache\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 4
 			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
@@ -2726,16 +2700,6 @@ parameters:
 
 		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
-
-		-
-			message: "#^Cannot call method read\\(\\) on Composer\\\\Cache\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
-
-		-
-			message: "#^Cannot call method write\\(\\) on Composer\\\\Cache\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
 
@@ -2822,16 +2786,6 @@ parameters:
 		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 4
-			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
-
-		-
-			message: "#^Cannot call method read\\(\\) on Composer\\\\Cache\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
-
-		-
-			message: "#^Cannot call method write\\(\\) on Composer\\\\Cache\\|null\\.$#"
-			count: 1
 			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
 
 		-
@@ -2935,16 +2889,6 @@ parameters:
 			path: ../src/Composer/Repository/Vcs/PerforceDriver.php
 
 		-
-			message: "#^Cannot call method read\\(\\) on Composer\\\\Cache\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/SvnDriver.php
-
-		-
-			message: "#^Cannot call method write\\(\\) on Composer\\\\Cache\\|null\\.$#"
-			count: 2
-			path: ../src/Composer/Repository/Vcs/SvnDriver.php
-
-		-
 			message: "#^Method Composer\\\\Repository\\\\Vcs\\\\SvnDriver\\:\\:getRootIdentifier\\(\\) should return string but returns string\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/Vcs/SvnDriver.php
@@ -2963,16 +2907,6 @@ parameters:
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/Vcs/SvnDriver.php
-
-		-
-			message: "#^Cannot call method read\\(\\) on Composer\\\\Cache\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/VcsDriver.php
-
-		-
-			message: "#^Cannot call method write\\(\\) on Composer\\\\Cache\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/VcsDriver.php
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
@@ -4306,6 +4240,11 @@ parameters:
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Package/Dumper/ArrayDumperTest.php
+
+		-
+			message: "#^Only booleans are allowed in and, null given on the right side\\.$#"
+			count: 2
+			path: ../tests/Composer/Test/Package/Version/VersionGuesserTest.php
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"

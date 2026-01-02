@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Json\JsonFile;
 use Composer\CaBundle\CaBundle;
 use Composer\Pcre\Preg;
+use Composer\Util\Git;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Finder\Finder;
 use Seld\PharUtils\Timestamps;
@@ -50,16 +51,18 @@ class Compiler
 
         $process = new ProcessExecutor();
 
-        if (0 !== $process->execute(['git', 'rev-list', '--no-commit-header', '-n1', '--format=%H', 'HEAD'], $output, dirname(__DIR__, 2))) {
+        $command = Git::buildRevListCommand($process, ['-n1', '--format=%H', 'HEAD']);
+        if (0 !== $process->execute($command, $output, dirname(__DIR__, 2))) {
             throw new \RuntimeException('Can\'t run git rev-list. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
-        $this->version = trim($output);
+        $this->version = trim(Git::parseRevListOutput($output, $process));
 
-        if (0 !== $process->execute(['git', 'rev-list', '--no-commit-header', '-n1', '--format=%ci', 'HEAD'], $output, dirname(__DIR__, 2))) {
+        $command = Git::buildRevListCommand($process, ['-n1', '--format=%ci', 'HEAD']);
+        if (0 !== $process->execute($command, $output, dirname(__DIR__, 2))) {
             throw new \RuntimeException('Can\'t run git rev-list. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
 
-        $this->versionDate = new \DateTime(trim($output));
+        $this->versionDate = new \DateTime(trim(Git::parseRevListOutput($output, $process)));
         $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
         if (0 === $process->execute(['git', 'describe', '--tags', '--exact-match', 'HEAD'], $output, dirname(__DIR__, 2))) {
