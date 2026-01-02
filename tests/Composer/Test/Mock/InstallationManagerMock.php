@@ -46,7 +46,7 @@ class InstallationManagerMock extends InstallationManager
     {
     }
 
-    public function execute(InstalledRepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true, $downloadOnly = false): void
+    public function execute(InstalledRepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true, $downloadOnly = false, ?array $restrictedRootFeatures = null): void
     {
         foreach ($operations as $operation) {
             $method = $operation->getOperationType();

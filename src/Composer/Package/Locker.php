@@ -157,9 +157,10 @@ class Locker
      * Searches and returns an array of locked packages, retrieved from registered repositories.
      *
      * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
+     * @param  array<string>|null                       $restrictedRootFeatures list of features to restrict install
      * @throws \RuntimeException
      */
-    public function getLockedRepository(bool $withDevReqs = false): LockArrayRepository
+    public function getLockedRepository(bool $withDevReqs = false, ?array $restrictedRootFeatures = null): LockArrayRepository
     {
         $lockData = $this->getLockData();
         $packages = new LockArrayRepository();
@@ -170,6 +171,20 @@ class Locker
                 $lockedPackages = array_merge($lockedPackages, $lockData['packages-dev']);
             } else {
                 throw new \RuntimeException('The lock file does not contain require-dev information, run install with the --no-dev option or delete it and run composer update to generate a new lock file.');
+            }
+        }
+
+        if ($restrictedRootFeatures === null) {
+            foreach ($lockData['packages-feature'] ?? [] as $featurePackages) {
+                $lockedPackages = array_merge($lockedPackages, $featurePackages);
+            }
+        } else {
+            foreach ($restrictedRootFeatures as $feature) {
+                if (isset($lockData['packages-feature'][$feature])) {
+                    $lockedPackages = array_merge($lockedPackages, $lockData['packages-feature'][$feature]);
+                } else {
+                    throw new \RuntimeException('The lock file does not contain information for the feature "'.$feature.'", run install with the --feature option or delete it and run composer update to generate a new lock file.');
+                }
             }
         }
 
@@ -344,18 +359,19 @@ class Locker
     /**
      * Locks provided data into lockfile.
      *
-     * @param PackageInterface[]          $packages          array of packages
-     * @param PackageInterface[]|null     $devPackages       array of dev packages or null if installed without --dev
-     * @param array<string, string>       $platformReqs      array of package name => constraint for required platform packages
-     * @param array<string, string>       $platformDevReqs   array of package name => constraint for dev-required platform packages
-     * @param string[][]                  $aliases           array of aliases
-     * @param array<string, int>          $stabilityFlags
-     * @param array<string, string|false> $platformOverrides
-     * @param bool                        $write             Whether to actually write data to disk, useful in tests and for --dry-run
+     * @param PackageInterface[]                     $packages          array of packages
+     * @param PackageInterface[]|null                $devPackages       array of dev packages or null if installed without --dev
+     * @param array<string, PackageInterface[]>|null $featurePackages   array of packages for each feature or null if no features
+     * @param array<string, string>                  $platformReqs      array of package name => constraint for required platform packages
+     * @param array<string, string>                  $platformDevReqs   array of package name => constraint for dev-required platform packages
+     * @param string[][]                             $aliases           array of aliases
+     * @param array<string, int>                     $stabilityFlags
+     * @param array<string, string|false>            $platformOverrides
+     * @param bool                                   $write             Whether to actually write data to disk, useful in tests and for --dry-run
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      */
-    public function setLockData(array $packages, ?array $devPackages, array $platformReqs, array $platformDevReqs, array $aliases, string $minimumStability, array $stabilityFlags, bool $preferStable, bool $preferLowest, array $platformOverrides, bool $write = true): bool
+    public function setLockData(array $packages, ?array $devPackages, ?array $featurePackages, array $platformReqs, array $platformDevReqs, array $aliases, string $minimumStability, array $stabilityFlags, bool $preferStable, bool $preferLowest, array $platformOverrides, bool $write = true): bool
     {
         // keep old default branch names normalized to DEFAULT_BRANCH_ALIAS for BC as that is how Composer 1 outputs the lock file
         // when loading the lock file the version is anyway ignored in Composer 2, so it has no adverse effect
@@ -374,6 +390,7 @@ class Locker
             'content-hash' => $this->contentHash,
             'packages' => $this->lockPackages($packages),
             'packages-dev' => null,
+            'packages-feature' => null,
             'aliases' => $aliases,
             'minimum-stability' => $minimumStability,
             'stability-flags' => $stabilityFlags,
@@ -383,6 +400,14 @@ class Locker
 
         if (null !== $devPackages) {
             $lock['packages-dev'] = $this->lockPackages($devPackages);
+        }
+
+        if (null !== $featurePackages) {
+            $lock['packages-feature'] = [];
+
+            foreach ($featurePackages as $feature => $featurePackage) {
+                $lock['packages-feature'][$feature] = $this->lockPackages($featurePackage);
+            }
         }
 
         $lock['platform'] = $platformReqs;

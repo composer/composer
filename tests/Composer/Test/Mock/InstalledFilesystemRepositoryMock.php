@@ -21,7 +21,7 @@ class InstalledFilesystemRepositoryMock extends InstalledFilesystemRepository
     {
     }
 
-    public function write($devMode, InstallationManager $installationManager): void
+    public function write($devMode, InstallationManager $installationManager, ?array $restrictedRootFeatures = null): void
     {
     }
 }
