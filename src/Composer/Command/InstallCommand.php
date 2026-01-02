@@ -60,6 +60,7 @@ class InstallCommand extends BaseCommand
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
+                new InputOption('source-fallback', null, InputOption::VALUE_NEGATABLE, 'Whether to fall back to alternative sources (dist/source) on download failure.'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Should not be provided, use composer require instead to add a given package to composer.json.'),
             ])
             ->setHelp(
@@ -127,6 +128,7 @@ EOT
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
+            ->setSourceFallback($input->getOption('source-fallback') ?? $config->get('source-fallback'))
             ->setDevMode(!$input->getOption('no-dev'))
             ->setDumpAutoloader(!$input->getOption('no-autoloader'))
             ->setOptimizeAutoloader($optimize)

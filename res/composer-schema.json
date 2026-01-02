@@ -572,6 +572,10 @@
                     "type": "boolean",
                     "description": "Composer allows repositories to define a notification URL, so that they get notified whenever a package from that repository is installed. This option allows you to disable that behaviour, defaults to true."
                 },
+                "source-fallback": {
+                    "type": "boolean",
+                    "description": "If true (default), Composer will fall back to a different installation source (e.g., from dist to source or vice versa) when a download fails. Set to false to disable this behavior."
+                },
                 "github-protocols": {
                     "type": "array",
                     "description": "A list of protocols to use for github.com clones, in priority order, defaults to [\"https\", \"ssh\", \"git\"].",

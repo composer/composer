@@ -68,6 +68,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
+                new InputOption('source-fallback', null, InputOption::VALUE_NEGATABLE, 'Whether to fall back to alternative sources (dist/source) on download failure.'),
                 new InputOption('with-dependencies', 'w', InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, except those which are root requirements (can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var).'),
                 new InputOption('with-all-dependencies', 'W', InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, including those which are root requirements (can also be set via the COMPOSER_WITH_ALL_DEPENDENCIES=1 env var).'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
@@ -253,6 +254,7 @@ EOT
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
+            ->setSourceFallback($input->getOption('source-fallback') ?? $config->get('source-fallback'))
             ->setDevMode(!$input->getOption('no-dev'))
             ->setDumpAutoloader(!$input->getOption('no-autoloader'))
             ->setOptimizeAutoloader($optimize)
