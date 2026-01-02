@@ -743,13 +743,32 @@ EOT
             }
             if (isset($package['description']) && $writeDescription) {
                 $description = strtok($package['description'], "\r\n");
-                $remaining = $width - $nameLength - $versionLength - $releaseDateLength - 4;
+
+                // Compute remaining width available for the description.
+                $remaining = (int) ($width - $nameLength - $versionLength - $releaseDateLength - 4);
                 if ($writeLatest) {
                     $remaining -= $latestLength;
                 }
-                if (strlen($description) > $remaining) {
-                    $description = mb_substr($description, 0, $remaining - 3, 'UTF-8') . '...';
+
+                // If nothing fits, clear the description.
+                if ($remaining <= 0) {
+                    $description = '';
+                } elseif (extension_loaded('mbstring')) {
+                    // Use mb_strwidth/mb_strimwidth to measure and trim by display width
+                    // (CJK characters count as width 2). mb_strimwidth counts the trim
+                    // marker ('...') in the width parameter, so pass $remaining directly.
+                    if (mb_strwidth($description, 'UTF-8') > $remaining) {
+                        $description = mb_strimwidth($description, 0, $remaining, '...', 'UTF-8');
+                    }
+                } else {
+                    // Fallback when mbstring is not available: do a conservative byte-based cut.
+                    // Ensure cut length is non-negative and leave room for the ellipsis.
+                    $cut = max(0, $remaining - 3);
+                    if (strlen($description) > $cut) {
+                        $description = substr($description, 0, $cut) . '...';
+                    }
                 }
+
                 $io->write(' ' . $description, false);
             }
             if (array_key_exists('path', $package)) {
