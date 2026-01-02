@@ -24,6 +24,8 @@ class VersionGuesserTest extends TestCase
 {
     public function setUp(): void
     {
+        parent::setUp();
+
         if (!function_exists('proc_open')) {
             $this->markTestSkipped('proc_open() is not available');
         }
@@ -35,6 +37,8 @@ class VersionGuesserTest extends TestCase
 
     public function tearDown(): void
     {
+        parent::tearDown();
+
         $reflProp = new \ReflectionProperty(GitUtil::class, 'version');
         (\PHP_VERSION_ID < 80100) and $reflProp->setAccessible(true);
         $reflProp->setValue(null, false);
