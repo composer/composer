@@ -748,7 +748,7 @@ EOT
                     $remaining -= $latestLength;
                 }
                 if (strlen($description) > $remaining) {
-                    $description = substr($description, 0, $remaining - 3) . '...';
+                    $description = mb_substr($description, 0, $remaining - 3, 'UTF-8') . '...';
                 }
                 $io->write(' ' . $description, false);
             }
