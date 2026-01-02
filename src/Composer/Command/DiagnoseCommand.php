@@ -84,8 +84,71 @@ EOT
         $io = $this->getIO();
 
         if ($composer) {
+            $config = $composer->getConfig();
+
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+            $this->process = $composer->getLoop()->getProcessExecutor() ?? new ProcessExecutor($io);
+       } else {
+            $config = Factory::createConfig();
+
+            $this->process = new ProcessExecutor($io);
+        }
+
+        $config->merge(['config' => ['secure-http' => false]], Config::SOURCE_COMMAND);
+        $config->prohibitUrlByConfig('http://repo.packagist.org', new NullIO);
+
+        $this->httpDownloader = Factory::createHttpDownloader($io, $config);
+
+        if (strpos(__FILE__, 'phar:') === 0) {
+            $io->write('Checking pubkeys: ', false);
+            $this->outputResult($this->checkPubKeys($config));
+
+            $io->write('Checking Composer version: ', false);
+            $this->outputResult($this->checkVersion($config));
+        }
+
+        $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::getVersion()));
+
+        $io->write('Checking Composer and its dependencies for vulnerabilities: ', false);
+        $this->outputResult($this->checkComposerAudit($config));
+
+        $platformOverrides = $config->get('platform') ?: [];
+        $platformRepo = new PlatformRepository([], $platformOverrides);
+        $phpPkg = $platformRepo->findPackage('php', '*');
+        $phpVersion = $phpPkg->getPrettyVersion();
+        if ($phpPkg instanceof CompletePackageInterface && str_contains((string) $phpPkg->getDescription(), 'overridden')) {
+            $phpVersion .= ' - ' . $phpPkg->getDescription();
+        }
+
+        $io->write(sprintf('PHP version: <comment>%s</comment>', $phpVersion));
+
+        if (defined('PHP_BINARY')) {
+            $io->write(sprintf('PHP binary path: <comment>%s</comment>', PHP_BINARY));
+        }
+
+        $io->write('OpenSSL version: ' . (defined('OPENSSL_VERSION_TEXT') ? '<comment>'.OPENSSL_VERSION_TEXT.'</comment>' : '<error>missing</error>'));
+        $io->write('curl version: ' . $this->getCurlVersion());
+
+        $finder = new ExecutableFinder;
+        $hasSystemUnzip = (bool) $finder->find('unzip');
+        $bin7zip = '';
+        if ($hasSystem7zip = (bool) $finder->find('7z', null, ['C:\Program Files\7-Zip'])) {
+            $bin7zip = '7z';
+        }
+        if (!Platform::isWindows() && !$hasSystem7zip && $hasSystem7zip = (bool) $finder->find('7zz')) {
+            $bin7zip = '7zz';
+        }
+
+        $io->write(
+            'zip: ' . (extension_loaded('zip') ? '<comment>extension present</comment>' : '<comment>extension not loaded</comment>')
+            . ', ' . ($hasSystemUnzip ? '<comment>unzip present</comment>' : '<comment>unzip not available</comment>')
+            . ', ' . ($hasSystem7zip ? '<comment>7-Zip present ('.$bin7zip.')</comment>' : '<comment>7-Zip not available</comment>')
+            . (($hasSystem7zip || $hasSystemUnzip) && !function_exists('proc_open') ? ', <warning>proc_open is disabled or not present, unzip/7-z will not be usable</warning>' : '')
+        );
+
+        if ($composer) {
+            $io->write('Active plugins: '.implode(', ', $composer->getPluginManager()->getRegisteredPlugins()));
 
             $io->write('Checking composer.json: ', false);
             $this->outputResult($this->checkComposerSchema());
@@ -94,22 +157,7 @@ EOT
                 $io->write('Checking composer.lock: ', false);
                 $this->outputResult($this->checkComposerLockSchema($composer->getLocker()));
             }
-
-            $this->process = $composer->getLoop()->getProcessExecutor() ?? new ProcessExecutor($io);
-        } else {
-            $this->process = new ProcessExecutor($io);
         }
-
-        if ($composer) {
-            $config = $composer->getConfig();
-        } else {
-            $config = Factory::createConfig();
-        }
-
-        $config->merge(['config' => ['secure-http' => false]], Config::SOURCE_COMMAND);
-        $config->prohibitUrlByConfig('http://repo.packagist.org', new NullIO);
-
-        $this->httpDownloader = Factory::createHttpDownloader($io, $config);
 
         $io->write('Checking platform settings: ', false);
         $this->outputResult($this->checkPlatform());
@@ -195,53 +243,6 @@ EOT
 
         $io->write('Checking disk free space: ', false);
         $this->outputResult($this->checkDiskSpace($config));
-
-        if (strpos(__FILE__, 'phar:') === 0) {
-            $io->write('Checking pubkeys: ', false);
-            $this->outputResult($this->checkPubKeys($config));
-
-            $io->write('Checking Composer version: ', false);
-            $this->outputResult($this->checkVersion($config));
-        }
-
-        $io->write('Checking Composer and its dependencies for vulnerabilities: ', false);
-        $this->outputResult($this->checkComposerAudit($config));
-
-        $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::getVersion()));
-
-        $platformOverrides = $config->get('platform') ?: [];
-        $platformRepo = new PlatformRepository([], $platformOverrides);
-        $phpPkg = $platformRepo->findPackage('php', '*');
-        $phpVersion = $phpPkg->getPrettyVersion();
-        if ($phpPkg instanceof CompletePackageInterface && str_contains((string) $phpPkg->getDescription(), 'overridden')) {
-            $phpVersion .= ' - ' . $phpPkg->getDescription();
-        }
-
-        $io->write(sprintf('PHP version: <comment>%s</comment>', $phpVersion));
-
-        if (defined('PHP_BINARY')) {
-            $io->write(sprintf('PHP binary path: <comment>%s</comment>', PHP_BINARY));
-        }
-
-        $io->write('OpenSSL version: ' . (defined('OPENSSL_VERSION_TEXT') ? '<comment>'.OPENSSL_VERSION_TEXT.'</comment>' : '<error>missing</error>'));
-        $io->write('curl version: ' . $this->getCurlVersion());
-
-        $finder = new ExecutableFinder;
-        $hasSystemUnzip = (bool) $finder->find('unzip');
-        $bin7zip = '';
-        if ($hasSystem7zip = (bool) $finder->find('7z', null, ['C:\Program Files\7-Zip'])) {
-            $bin7zip = '7z';
-        }
-        if (!Platform::isWindows() && !$hasSystem7zip && $hasSystem7zip = (bool) $finder->find('7zz')) {
-            $bin7zip = '7zz';
-        }
-
-        $io->write(
-            'zip: ' . (extension_loaded('zip') ? '<comment>extension present</comment>' : '<comment>extension not loaded</comment>')
-            . ', ' . ($hasSystemUnzip ? '<comment>unzip present</comment>' : '<comment>unzip not available</comment>')
-            . ', ' . ($hasSystem7zip ? '<comment>7-Zip present ('.$bin7zip.')</comment>' : '<comment>7-Zip not available</comment>')
-            . (($hasSystem7zip || $hasSystemUnzip) && !function_exists('proc_open') ? ', <warning>proc_open is disabled or not present, unzip/7-z will not be usable</warning>' : '')
-        );
 
         return $this->exitCode;
     }
