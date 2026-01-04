@@ -494,6 +494,37 @@ class ConsoleIOTest extends TestCase
                 'allowNewlines' => true,
                 'expected' => "Warning: File not found\nRetrying...",
             ],
+            // Malformed UTF-8 handling
+            'malformed UTF-8 single byte' => [
+                'input' => "Hello\xFFWorld",
+                'allowNewlines' => true,
+                'expected' => "Hello?World",
+            ],
+            'malformed UTF-8 multiple bytes' => [
+                'input' => "Test\xC3\x28Data",
+                'allowNewlines' => true,
+                'expected' => "Test?(Data",
+            ],
+            'malformed UTF-8 with ANSI escape' => [
+                'input' => "Line\xFF\x1B[31mColor\xFE",
+                'allowNewlines' => true,
+                'expected' => "Line?Color?",
+            ],
+            'malformed UTF-8 in array' => [
+                'input' => ["Item\xFF", "Data\xC3\x28"],
+                'allowNewlines' => true,
+                'expected' => ["Item?", "Data?("],
+            ],
+            'valid UTF-8 unchanged' => [
+                'input' => "Hello 世界 Test",
+                'allowNewlines' => true,
+                'expected' => "Hello 世界 Test",
+            ],
+            'mixed valid and invalid UTF-8' => [
+                'input' => "Hello\xFF世界\xFETest",
+                'allowNewlines' => true,
+                'expected' => "Hello?世界?Test",
+            ],
         ];
     }
 }
