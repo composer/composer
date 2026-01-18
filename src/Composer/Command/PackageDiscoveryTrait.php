@@ -25,6 +25,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\ConfigurableRepositoryInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositorySet;
@@ -110,11 +111,17 @@ trait PackageDiscoveryTrait
                 }
 
                 //automatically add package repository if local
-                $repos = $composer->getRepositoryManager()->getRepositories();
+                $repos = [];
+                if(null !== $composer){
+                    $repos = $composer->getRepositoryManager()->getRepositories();
+                }
 
                 $repoURLs = [];
 
                 foreach($repos as $repo){
+                    if (!$repo instanceof ConfigurableRepositoryInterface) {
+                        continue;
+                    }
                     $repoConfig = $repo->getRepoConfig();
                     $repoURLs[] = $repoConfig['url'];
                 }
@@ -122,7 +129,7 @@ trait PackageDiscoveryTrait
                 $isLocalPackage = $requirement['name'][0] === '/'
                 || $requirement['name'][0] === '.';
 
-                $alreadyExists = in_array($requirement['name'], $repoURLs);
+                $alreadyExists = in_array($requirement['name'], $repoURLs, true);
                 $treatedPath = str_replace("\\", '/', $requirement['name']);
 
                 if($isLocalPackage){
