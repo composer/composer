@@ -12,10 +12,12 @@
 
 namespace Composer\Command;
 
+use Composer\Config\JsonConfigSource;
 use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
@@ -96,6 +98,7 @@ trait PackageDiscoveryTrait
      */
     final protected function determineRequirements(InputInterface $input, OutputInterface $output, array $requires = [], ?PlatformRepository $platformRepo = null, string $preferredStability = 'stable', bool $useBestVersionConstraint = true, bool $fixed = false): array
     {
+        $composer = $this->tryComposer();
         if (count($requires) > 0) {
             $requires = $this->normalizeRequirements($requires);
             $result = [];
@@ -106,22 +109,59 @@ trait PackageDiscoveryTrait
                     $io->writeError('<warning>The "'.$requirement['version'].'" constraint for "'.$requirement['name'].'" appears too strict and will likely not match what you want. See https://getcomposer.org/constraints</warning>');
                 }
 
+                //automatically add package repository if local
+                $repos = $composer->getRepositoryManager()->getRepositories();
+
+                $repoURLs = [];
+
+                foreach($repos as $repo){
+                    $repoConfig = $repo->getRepoConfig();
+                    $repoURLs[] = $repoConfig['url'];
+                }
+
+                $isLocalPackage = $requirement['name'][0] === '/'
+                || $requirement['name'][0] === '.';
+
+                $alreadyExists = in_array($requirement['name'], $repoURLs);
+                $treatedPath = str_replace("\\", '/', $requirement['name']);
+
+                if($isLocalPackage){
+                    $jsonFileInstance = new JsonFile($treatedPath.'/composer.json');
+                    $requirement['name'] = $jsonFileInstance->read()['name'];
+
+                    if(!$alreadyExists){
+                        $configSource = new JsonConfigSource(new JsonFile('composer.json'));
+
+                        $configSource->addRepository($requirement['name'], [
+                            'type' => 'path',
+                            'url' => $treatedPath,
+                            'options' => [
+                                'symlink' => true
+                            ]
+                        ], true);
+                    }
+                }
+
                 if (!isset($requirement['version'])) {
-                    // determine the best version automatically
-                    [$name, $version] = $this->findBestVersionAndNameForPackage($this->getIO(), $input, $requirement['name'], $platformRepo, $preferredStability, $fixed);
-
-                    // replace package name from packagist.org
-                    $requirement['name'] = $name;
-
-                    if ($useBestVersionConstraint) {
-                        $requirement['version'] = $version;
-                        $io->writeError(sprintf(
-                            'Using version <info>%s</info> for <info>%s</info>',
-                            $requirement['version'],
-                            $requirement['name']
-                        ));
+                    if($isLocalPackage){
+                        $requirement['version'] = 'dev-main';
                     } else {
-                        $requirement['version'] = 'guess';
+                        // determine the best version automatically
+                        [$name, $version] = $this->findBestVersionAndNameForPackage($this->getIO(), $input, $requirement['name'], $platformRepo, $preferredStability, $fixed);
+
+                        // replace package name from packagist.org
+                        $requirement['name'] = $name;
+
+                        if ($useBestVersionConstraint) {
+                            $requirement['version'] = $version;
+                            $io->writeError(sprintf(
+                                'Using version <info>%s</info> for <info>%s</info>',
+                                $requirement['version'],
+                                $requirement['name']
+                            ));
+                        } else {
+                            $requirement['version'] = 'guess';
+                        }
                     }
                 }
 
@@ -134,7 +174,6 @@ trait PackageDiscoveryTrait
         $versionParser = new VersionParser();
 
         // Collect existing packages
-        $composer = $this->tryComposer();
         $installedRepo = null;
         if (null !== $composer) {
             $installedRepo = $composer->getRepositoryManager()->getLocalRepository();
