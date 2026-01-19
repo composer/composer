@@ -46,7 +46,7 @@ jobs:
         run: "echo \"directory=$(composer config cache-dir)\" >> $GITHUB_OUTPUT"
 
       - name: "Cache dependencies installed with composer"
-        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
         with:
           path: "${{ steps.determine-composer-cache-directory.outputs.directory }}"
           key: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}-${{ hashFiles('**/composer.lock') }}"
