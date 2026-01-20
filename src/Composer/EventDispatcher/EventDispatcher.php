@@ -360,12 +360,7 @@ class EventDispatcher
 
                     if ($this->io->isVerbose()) {
                         $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
-                    } elseif (
-                        // do not output the command being run when using `composer exec` as it is fairly obvious the user is running it
-                        $event->getName() !== '__exec_command'
-                        // do not output the command being run when using `composer <script-name>` as it is also fairly obvious the user is running it
-                        && ($event->getFlags()['script-alias-input'] ?? null) === null
-                    ) {
+                    } elseif ($this->eventNeedsToOutput($event)) {
                         $this->io->writeError(sprintf('> %s', $exec));
                     }
 
@@ -510,11 +505,26 @@ class EventDispatcher
     {
         if ($this->io->isVerbose()) {
             $this->io->writeError(sprintf('> %s: %s::%s', $event->getName(), $className, $methodName));
-        } else {
+        } elseif ($this->eventNeedsToOutput($event)) {
             $this->io->writeError(sprintf('> %s::%s', $className, $methodName));
         }
 
         return $className::$methodName($event);
+    }
+
+    private function eventNeedsToOutput(Event $event): bool
+    {
+        // do not output the command being run when using `composer exec` as it is fairly obvious the user is running it
+        if ($event->getName() === '__exec_command') {
+            return false;
+        }
+
+        // do not output the command being run when using `composer <script-name>` as it is also fairly obvious the user is running it
+        if (($event->getFlags()['script-alias-input'] ?? null) !== null) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
