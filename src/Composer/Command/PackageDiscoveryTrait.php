@@ -126,7 +126,8 @@ trait PackageDiscoveryTrait
                     $repoURLs[] = $repoConfig['url'];
                 }
 
-                $isLocalPackage = $requirement['name'][0] === '/'
+                $fs = new Filesystem();
+                $isLocalPackage = $fs->isAbsolutePath($requirement['name'])
                 || $requirement['name'][0] === '.';
 
                 $alreadyExists = in_array($requirement['name'], $repoURLs, true);
