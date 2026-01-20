@@ -168,7 +168,7 @@ class Application extends BaseApplication
         if (null !== $newWorkDir) {
             $oldWorkingDir = Platform::getCwd(true);
             chdir($newWorkDir);
-            $this->initialWorkingDirectory = $newWorkDir;
+            $this->initialWorkingDirectory = getcwd();
             $cwd = Platform::getCwd(true);
             $io->writeError('Changed CWD to ' . ($cwd !== '' ? $cwd : $newWorkDir), true, IOInterface::DEBUG);
         }
