@@ -396,7 +396,7 @@ class ConsoleIO extends BaseIO
         // Use mb_convert_encoding to replace invalid sequences with '?'
         // This makes it visible when data quality issues occur
         if (function_exists('mb_convert_encoding')) {
-            return mb_convert_encoding($string, 'UTF-8', 'UTF-8');
+            return (string) mb_convert_encoding($string, 'UTF-8', 'UTF-8');
         }
 
         // Fallback to iconv if mbstring unavailable
