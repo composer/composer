@@ -130,22 +130,29 @@ trait PackageDiscoveryTrait
                 $isLocalPackage = $fs->isAbsolutePath($requirement['name'])
                 || $requirement['name'][0] === '.';
 
-                $alreadyExists = in_array($requirement['name'], $repoURLs, true);
-                $treatedPath = str_replace("\\", '/', $requirement['name']);
-
                 if($isLocalPackage){
-                    $jsonFileInstance = new JsonFile($treatedPath.'/composer.json');
-                    $requirement['name'] = $jsonFileInstance->read()['name'];
 
-                    if(!$alreadyExists){
+                    $treatedPath = str_replace("\\", '/', $requirement['name']);
+
+                    $jsonFileInstance = new JsonFile($treatedPath . '/composer.json');
+
+                    if (!$jsonFileInstance->exists()) {
+                        throw new \Exception($treatedPath . " was not found");
+                    }
+
+                    $jsonConfigFromPackage = $jsonFileInstance->read();
+                    if (!isset($jsonConfigFromPackage['name'])) {
+                        throw new \Exception("Package name inside composer.json at " . $treatedPath . " is not set");
+                    }
+
+                    $requirement['name'] = $jsonConfigFromPackage['name'];
+
+                    if(!in_array($treatedPath, $repoURLs, true)){
                         $configSource = new JsonConfigSource(new JsonFile('composer.json'));
 
                         $configSource->addRepository($requirement['name'], [
                             'type' => 'path',
-                            'url' => $treatedPath,
-                            'options' => [
-                                'symlink' => true
-                            ]
+                            'url' => $treatedPath
                         ], true);
                     }
                 }
