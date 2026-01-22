@@ -1,3 +1,12 @@
+### [2.9.4] 2026-01-22
+
+  * Added active plugins to the diagnose command output (#12706)
+  * Fixed `HTTP/3` causing issues with proxies (#12699)
+  * Fixed `show` command regression with long descriptions containing unicode characters (#12704)
+  * Fixed regression handling invalid unicode sequences in output (#12707)
+  * Fixed `git rev-list` usages to support older pre-2.33 git versions (#12705)
+  * Fixed issue handling paths with `=` in them on Windows (#12726)
+
 ### [2.9.3] 2025-12-30
 
   * Security: Fixed ANSI sequence injection (GHSA-59pp-r3rg-353g / CVE-2025-67746)
@@ -2109,6 +2118,7 @@
 
   * Initial release
 
+[2.9.4]: https://github.com/composer/composer/compare/2.9.3...2.9.4
 [2.9.3]: https://github.com/composer/composer/compare/2.9.2...2.9.3
 [2.9.2]: https://github.com/composer/composer/compare/2.9.1...2.9.2
 [2.9.1]: https://github.com/composer/composer/compare/2.9.0...2.9.1
