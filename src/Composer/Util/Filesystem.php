@@ -115,6 +115,11 @@ class Filesystem
         }
 
         if (Platform::isWindows()) {
+            // Work around bug on MSYS for safety if the path contains an equal sign, see https://github.com/composer/composer/issues/11568
+            if (str_contains($directory, '=')) {
+                return $this->removeDirectoryPhp($directory);
+            }
+
             $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape(realpath($directory)));
         } else {
             $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
@@ -150,6 +155,11 @@ class Filesystem
         }
 
         if (Platform::isWindows()) {
+            // Work around bug on MSYS for safety if the path contains an equal sign, see https://github.com/composer/composer/issues/11568
+            if (str_contains($directory, '=')) {
+                return \React\Promise\resolve($this->removeDirectoryPhp($directory));
+            }
+
             $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape(realpath($directory)));
         } else {
             $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
