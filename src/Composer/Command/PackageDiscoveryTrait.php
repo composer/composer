@@ -126,7 +126,7 @@ trait PackageDiscoveryTrait
                         continue;
                     }
                     $repoConfig = $repo->getRepoConfig();
-                    $repoURLs[] = $repoConfig['url'];
+                    $repoURLs[] = str_replace("\\", '/', $repoConfig['url']);
                 }
 
                 $fs = new Filesystem();
@@ -149,6 +149,9 @@ trait PackageDiscoveryTrait
                     }
 
                     $requirement['name'] = $jsonConfigFromPackage['name'];
+                    if (isset($jsonConfigFromPackage['version'])) {
+                        $requirement['version'] = $jsonConfigFromPackage['version'];
+                    }
 
                     if(!in_array($treatedPath, $repoURLs, true)){
                         $configSource = new JsonConfigSource(new JsonFile('composer.json'));
