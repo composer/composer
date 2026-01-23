@@ -123,7 +123,7 @@ trait PackageDiscoveryTrait
                         continue;
                     }
                     $repoConfig = $repo->getRepoConfig();
-                    $repoURLs[] = $repoConfig['url'];
+                    $repoURLs[] = str_replace("\\", '/', $repoConfig['url']);
                 }
 
                 $fs = new Filesystem();
