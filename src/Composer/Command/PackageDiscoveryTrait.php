@@ -26,6 +26,7 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\ConfigurableRepositoryInterface;
+use Composer\Repository\PathRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositorySet;
@@ -112,8 +113,10 @@ trait PackageDiscoveryTrait
 
                 //automatically add package repository if local
                 $repos = [];
+                $config = null;
                 if(null !== $composer){
                     $repos = $composer->getRepositoryManager()->getRepositories();
+                    $config = $composer->getConfig();
                 }
 
                 $repoURLs = [];
@@ -150,33 +153,37 @@ trait PackageDiscoveryTrait
                     if(!in_array($treatedPath, $repoURLs, true)){
                         $configSource = new JsonConfigSource(new JsonFile('composer.json'));
 
-                        $configSource->addRepository($requirement['name'], [
+                        $repoConfig = [
                             'type' => 'path',
                             'url' => $treatedPath
-                        ], true);
+                        ];
+
+                        $configSource->addRepository($requirement['name'], $repoConfig, true);
+
+                        if(null !== $config){
+                            $repository = new PathRepository($repoConfig, $io, $config);
+                            $repoSet = $this->getRepositorySet($input);
+                            $repoSet->addRepository($repository);
+                        }
                     }
                 }
 
                 if (!isset($requirement['version'])) {
-                    if($isLocalPackage){
-                        $requirement['version'] = 'dev-main';
+                    // determine the best version automatically
+                    [$name, $version] = $this->findBestVersionAndNameForPackage($this->getIO(), $input, $requirement['name'], $platformRepo, $preferredStability, $fixed);
+
+                    // replace package name from packagist.org
+                    $requirement['name'] = $name;
+
+                    if ($useBestVersionConstraint) {
+                        $requirement['version'] = $version;
+                        $io->writeError(sprintf(
+                            'Using version <info>%s</info> for <info>%s</info>',
+                            $requirement['version'],
+                            $requirement['name']
+                        ));
                     } else {
-                        // determine the best version automatically
-                        [$name, $version] = $this->findBestVersionAndNameForPackage($this->getIO(), $input, $requirement['name'], $platformRepo, $preferredStability, $fixed);
-
-                        // replace package name from packagist.org
-                        $requirement['name'] = $name;
-
-                        if ($useBestVersionConstraint) {
-                            $requirement['version'] = $version;
-                            $io->writeError(sprintf(
-                                'Using version <info>%s</info> for <info>%s</info>',
-                                $requirement['version'],
-                                $requirement['name']
-                            ));
-                        } else {
-                            $requirement['version'] = 'guess';
-                        }
+                        $requirement['version'] = 'guess';
                     }
                 }
 
