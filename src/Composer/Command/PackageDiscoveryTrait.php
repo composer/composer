@@ -146,6 +146,9 @@ trait PackageDiscoveryTrait
                     }
 
                     $requirement['name'] = $jsonConfigFromPackage['name'];
+                    if (isset($jsonConfigFromPackage['version'])) {
+                        $requirement['version'] = $jsonConfigFromPackage['version'];
+                    }
 
                     if(!in_array($treatedPath, $repoURLs, true)){
                         $configSource = new JsonConfigSource(new JsonFile('composer.json'));
