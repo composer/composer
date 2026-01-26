@@ -31,6 +31,7 @@ Verify that partial updates warn about using patterns in the argument which have
         { "name": "b/b", "version": "1.0.0" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},

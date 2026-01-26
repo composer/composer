@@ -60,6 +60,8 @@ class InstallCommand extends BaseCommand
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
+                new InputOption('no-features', null, InputOption::VALUE_NONE, 'Do not install any local features.'),
+                new InputOption('feature', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Install a specific feature from the root package.', null, []),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Should not be provided, use composer require instead to add a given package to composer.json.'),
             ])
             ->setHelp(
@@ -106,6 +108,20 @@ EOT
             $io->writeError('<warning>Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled.</warning>');
         }
 
+        $restrictFeatures = null;
+
+        if (($features = $input->getOption('feature')) !== []) {
+            $restrictFeatures = $features;
+        }
+
+        if ($input->getOption('no-features')) {
+            if ($restrictFeatures !== null) {
+                $io->writeError('<warning>You are using both "no-features" and "feature" option. No features will be installed.</warning>');
+            }
+
+            $restrictFeatures = [];
+        }
+
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'install', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
@@ -135,6 +151,7 @@ EOT
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setAuditConfig($this->createAuditConfig($composer->getConfig(), $input))
             ->setErrorOnAudit($input->getOption('audit'))
+            ->setRestrictedRootFeatures($restrictFeatures)
         ;
 
         if ($input->getOption('no-plugins')) {

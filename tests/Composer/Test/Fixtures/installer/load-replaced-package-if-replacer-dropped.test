@@ -27,6 +27,7 @@ Ensure that a package gets loaded which was previously skipped due to replacemen
         {"name": "root/no-update", "version": "1.0.0", "require": {"replaced/pkg": "1.0.0"}}
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},

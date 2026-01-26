@@ -1,0 +1,73 @@
+--TEST--
+Feature requiring the same package should have the locked version duplicated in each feature
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "b/b", "version": "1.0.0" },
+                { "name": "c/c", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "feature": {
+        "b": {
+            "description": "Feature B",
+            "require": {
+                "b/b": "1.0.0"
+            }
+        },
+        "c": {
+            "description": "Feature C",
+            "require": {
+                "b/b": "1.0.0",
+                "c/c": "1.0.0"
+            }
+        }
+    }
+}
+--RUN--
+install --feature b --no-dev
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "1.0.0",
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "packages-feature": {
+        "b": [
+            {
+                "name": "b/b", "version": "1.0.0",
+                "type": "library"
+            }
+        ],
+        "c": [
+            {
+                "name": "b/b", "version": "1.0.0",
+                "type": "library"
+            },
+            {
+                "name": "c/c", "version": "1.0.0",
+                "type": "library"
+            }
+       ]
+    },
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--EXPECT--
+Installing a/a (1.0.0)
+Installing b/b (1.0.0)

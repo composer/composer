@@ -36,6 +36,7 @@ Update mirrors with a new root require which is not yet in lock should simply ig
     "packages-dev": [
         {"name": "b/b", "version": "1.0.0", "type": "library"}
     ],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},
@@ -54,6 +55,7 @@ update mirrors
     "packages-dev": [
         {"name": "b/b", "version": "1.0.0", "type": "library"}
     ],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},

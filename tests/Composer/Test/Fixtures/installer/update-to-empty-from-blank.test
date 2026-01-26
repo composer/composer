@@ -9,6 +9,7 @@ update
 {
     "packages": [],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},

@@ -36,6 +36,7 @@ Partial update from lock file should update everything to the state of the lock,
         { "name": "f/dependency", "version": "1.0.0" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
@@ -65,6 +66,7 @@ update b/unstable
         { "name": "f/dependency", "version": "1.0.0", "type": "library" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},

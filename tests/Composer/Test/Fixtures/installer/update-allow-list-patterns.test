@@ -52,6 +52,7 @@ Update with a package allow list only updates those corresponding to the pattern
         { "name": "no/regexp", "version": "1.0" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},

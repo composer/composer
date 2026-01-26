@@ -1,0 +1,48 @@
+--TEST--
+Installing a package with a feature and requiring it should install the feature dependencies
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "feature": { "b": { "require": { "b/b": "1.0.0" } } } },
+                { "name": "b/b", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "require-feature": {
+        "a/a": ["b"]
+    }
+}
+--RUN--
+update
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "1.0.0",
+            "feature": { "b": { "require": { "b/b": "1.0.0" } } },
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "1.0.0",
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "packages-feature": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--EXPECT--
+Installing a/a (1.0.0)
+Installing b/b (1.0.0)

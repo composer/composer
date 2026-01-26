@@ -29,6 +29,7 @@ Updating a dev package for new reference updates the url and reference
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {"a/a":20},
@@ -56,6 +57,7 @@ update
         }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {"a/a":20},

@@ -20,6 +20,8 @@ use Composer\Pcre\Preg;
 /**
  * @author Nils Adermann <naderman@naderman.de>
  * @internal
+ *
+ * @phpstan-import-type FeatureConfig from \Composer\Package\PackageInterface
  */
 class LockTransaction extends Transaction
 {
@@ -42,7 +44,7 @@ class LockTransaction extends Transaction
     protected $unlockableMap;
 
     /**
-     * @var array{dev: BasePackage[], non-dev: BasePackage[], all: BasePackage[]}
+     * @var array{dev: BasePackage[], non-dev: BasePackage[], all: BasePackage[], features: array<string, BasePackage[]>}
      */
     protected $resultPackages;
 
@@ -63,7 +65,7 @@ class LockTransaction extends Transaction
 
     public function setResultPackages(Pool $pool, Decisions $decisions): void
     {
-        $this->resultPackages = ['all' => [], 'non-dev' => [], 'dev' => []];
+        $this->resultPackages = ['all' => [], 'non-dev' => [], 'dev' => [], 'features' => []];
         foreach ($decisions as $i => $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
 
@@ -78,12 +80,16 @@ class LockTransaction extends Transaction
         }
     }
 
-    public function setNonDevPackages(LockTransaction $extractionResult): void
+    /**
+     * @param array<string, LockTransaction> $extractionResultPerFeatures
+     */
+    public function setNonDevPackages(LockTransaction $extractionResult, array $extractionResultPerFeatures): void
     {
         $packages = $extractionResult->getNewLockPackages(false);
 
         $this->resultPackages['dev'] = $this->resultPackages['non-dev'];
         $this->resultPackages['non-dev'] = [];
+        $this->resultPackages['features'] = [];
 
         foreach ($packages as $package) {
             foreach ($this->resultPackages['dev'] as $i => $resultPackage) {
@@ -93,6 +99,25 @@ class LockTransaction extends Transaction
                     unset($this->resultPackages['dev'][$i]);
                 }
             }
+        }
+
+        $toRemoveFromDev = [];
+
+        foreach ($extractionResultPerFeatures as $featureName => $featureExtractionResult) {
+            $packages = $featureExtractionResult->getNewLockPackages(false);
+
+            foreach ($packages as $package) {
+                foreach ($this->resultPackages['dev'] as $i => $resultPackage) {
+                    if ($package->getName() === $resultPackage->getName()) {
+                        $this->resultPackages['features'][$featureName][] = $resultPackage;
+                        $toRemoveFromDev[$i] = true;
+                    }
+                }
+            }
+        }
+
+        foreach ($toRemoveFromDev as $i => $_) {
+            unset($this->resultPackages['dev'][$i]);
         }
     }
 
@@ -114,6 +139,30 @@ class LockTransaction extends Transaction
             }
 
             $packages[] = $package;
+        }
+
+        return $packages;
+    }
+
+    /**
+     * @return array<string, BasePackage[]> A lock transaction per feature
+     */
+    public function getNewLockFeaturesPackages(bool $updateMirrors = false): array
+    {
+        $packages = [];
+        foreach ($this->resultPackages['features'] as $name => $featurePackages) {
+            foreach ($featurePackages as $package) {
+                if ($package instanceof AliasPackage) {
+                    continue;
+                }
+
+                // if we're just updating mirrors we need to reset everything to the same as currently "present" packages' references to keep the lock file as-is
+                if ($updateMirrors === true && !array_key_exists(spl_object_hash($package), $this->presentMap)) {
+                    $package = $this->updateMirrorAndUrls($package);
+                }
+
+                $packages[$name][] = $package;
+            }
         }
 
         return $packages;

@@ -22,6 +22,7 @@ Newly defined root alias does not get loaded if package is loaded from lock file
         { "name": "some/dep", "version": "dev-main" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},

@@ -30,6 +30,7 @@ Partial update from lock file should apply lock file and if an unstable package 
         { "name": "d/removed", "version": "1.0.0" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {

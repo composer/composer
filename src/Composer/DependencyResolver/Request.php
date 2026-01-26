@@ -56,6 +56,8 @@ class Request
     protected $updateAllowTransitiveDependencies = false;
     /** @var non-empty-list<string>|null */
     private $restrictedPackages = null;
+    /** @var array<string, string[]> */
+    protected $requiresFeature = [];
 
     public function __construct(?LockArrayRepository $lockedRepository = null)
     {
