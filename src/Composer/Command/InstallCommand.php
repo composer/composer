@@ -56,6 +56,7 @@ class InstallCommand extends BaseCommand
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
+                new InputOption('strict-psr-autoloader', null, InputOption::VALUE_NONE, 'Return a failed status code (1) if PSR-4 or PSR-0 mapping errors are present. Requires --optimize-autoloader to work.'),
                 new InputOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
@@ -119,6 +120,10 @@ EOT
         $apcuPrefix = $input->getOption('apcu-autoloader-prefix');
         $apcu = $apcuPrefix !== null || $input->getOption('apcu-autoloader') || $config->get('apcu-autoloader');
 
+        if ($input->getOption('strict-psr-autoloader') && !$optimize && !$authoritative) {
+            throw new \InvalidArgumentException('--strict-psr-autoloader mode only works with optimized autoloader, use --optimize-autoloader or --classmap-authoritative if you want a strict return value.');
+        }
+
         $composer->getInstallationManager()->setOutputProgress(!$input->getOption('no-progress'));
 
         $install
@@ -131,6 +136,7 @@ EOT
             ->setDumpAutoloader(!$input->getOption('no-autoloader'))
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
+            ->setStrictPsrAutoloader($input->getOption('strict-psr-autoloader'))
             ->setApcuAutoloader($apcu, $apcuPrefix)
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setAuditConfig($this->createAuditConfig($composer->getConfig(), $input))
