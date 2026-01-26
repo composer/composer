@@ -105,6 +105,7 @@ class RequireCommand extends BaseCommand
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
                 new InputOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
+                new InputOption('source-fallback', null, InputOption::VALUE_NEGATABLE, 'Whether to fall back to alternative sources (dist/source) on download failure.'),
             ])
             ->setHelp(
                 <<<EOT
@@ -471,6 +472,7 @@ EOT
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
+            ->setSourceFallback($input->getOption('source-fallback') ?? $composer->getConfig()->get('source-fallback'))
             ->setDevMode($updateDevMode)
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)

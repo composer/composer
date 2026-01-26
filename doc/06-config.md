@@ -113,6 +113,38 @@ optionally be an object with package name patterns for keys for more granular in
 > configuration in global and package configurations the string notation
 > is translated to a `*` package pattern.
 
+## source-fallback
+
+Defaults to `true`. When set to `true`, Composer will automatically fall back
+to an alternative installation source (e.g., from dist to source or vice versa)
+when a download fails. Set to `false` to disable this behavior and fail immediately
+if the preferred source is unavailable.
+
+```json
+{
+    "config": {
+        "source-fallback": false
+    }
+}
+```
+
+This can also be specified on the command line:
+
+```bash
+composer install --no-source-fallback
+composer update --source-fallback
+```
+
+Or via the `COMPOSER_SOURCE_FALLBACK` environment variable:
+
+```bash
+COMPOSER_SOURCE_FALLBACK=0 composer install
+```
+
+> **Note:** When this option is disabled and a download fails, Composer will
+> immediately throw an error instead of trying alternative sources. Make sure
+> your preferred installation source (`preferred-install`) is correctly configured.
+
 ## audit
 
 Security audit and version blocking configuration options. Audit reports can be generated with `composer audit`
