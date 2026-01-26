@@ -1,0 +1,48 @@
+--TEST--
+Test that providers are not installed unless really required by something
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "foo/polyfill",
+                    "provide": {
+                        "foo/requirement": "1.0.0"
+                    },
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/indirect",
+                    "require": {
+                        "foo/polyfill": "1.0.0"
+                    },
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/indirect",
+                    "version": "1.0.1"
+                },
+                {
+                    "name": "foo/requirement",
+                    "require": {
+                        "foo/does-not-exist": "1.0.0"
+                    },
+                    "version": "1.0.0"
+                }
+            ]
+        }
+    ],
+    "require": {
+        "foo/requirement": "1.0.0",
+        "foo/indirect": "^1.0"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT--
+Installing foo/polyfill (1.0.0)
+Installing foo/indirect (1.0.0)
