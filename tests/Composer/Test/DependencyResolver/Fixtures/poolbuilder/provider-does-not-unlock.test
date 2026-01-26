@@ -1,0 +1,47 @@
+--TEST--
+Do not automatically unlock provider if a package that requires it's provided implementation is updated.
+This prevents potential unlocking of many packages where there are many implementors installed.
+
+--REQUEST--
+{
+    "require": {
+        "provider/pkg": "*",
+        "root/req": "*"
+    },
+    "locked": [
+        {"name": "root/req", "version": "1.0.0", "require": {"provided/pkg": "1.0.0"}},
+        {"name": "provider/pkg", "version": "1.0.0", "provide": {"provided/pkg": "1.0.0"}}
+    ],
+    "allowList": [
+        "root/req"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "root/req", "version": "1.0.0", "require": {"provided/pkg": "1.0.0"}},
+        {"name": "root/req", "version": "2.0.0", "require": {"provided/pkg": "2.0.0"}},
+        {"name": "provider/pkg", "version": "1.0.0", "provide": {"provided/pkg": "1.0.0"}},
+        {"name": "provider/pkg", "version": "2.0.0", "provide": {"provided/pkg": "2.0.0"}}
+    ]
+]
+
+--EXPECT--
+[
+    "provider/pkg-1.0.0.0 (locked)",
+    "root/req-1.0.0.0",
+    "root/req-2.0.0.0"
+]
+
+--EXPECT-OPTIMIZED--
+[
+    "provider/pkg-1.0.0.0 (locked)",
+    "root/req-1.0.0.0",
+    "root/req-2.0.0.0"
+]
