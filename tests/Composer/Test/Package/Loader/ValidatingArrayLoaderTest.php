@@ -242,6 +242,24 @@ class ValidatingArrayLoaderTest extends TestCase
                     ],
                 ],
             ],
+            [ // valid php-ext with one download-url-method in a list
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'download-url-method' => ['pre-packaged-binary'],
+                    ],
+                ],
+            ],
+            [ // valid php-ext with multiple download-url-methods
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'download-url-method' => ['pre-packaged-binary', 'pre-packaged-source', 'composer-default'],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -537,7 +555,7 @@ class ValidatingArrayLoaderTest extends TestCase
                         'download-url-method' => 123,
                     ],
                 ],
-                ['php-ext.download-url-method : should be a string, int given'],
+                ['php-ext.download-url-method : should be an array or a string, int given'],
             ],
             [
                 [
@@ -547,7 +565,54 @@ class ValidatingArrayLoaderTest extends TestCase
                         'download-url-method' => 'invalid-method',
                     ],
                 ],
-                ['php-ext.download-url-method : invalid value (invalid-method), must be one of composer-default, pre-packaged-source'],
+                ['php-ext.download-url-method.0 : invalid value (invalid-method), must be one of composer-default, pre-packaged-source, pre-packaged-binary'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'download-url-method' => [],
+                    ],
+                ],
+                ['php-ext.download-url-method : must contain at least one element'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'download-url-method' => [1, true, []],
+                    ],
+                ],
+                [
+                    'php-ext.download-url-method.0 : should be a string, int given',
+                    'php-ext.download-url-method.1 : should be a string, bool given',
+                    'php-ext.download-url-method.2 : should be a string, array given',
+                ],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'download-url-method' => ['invalid-method', 'composer-default'],
+                    ],
+                ],
+                ['php-ext.download-url-method.0 : invalid value (invalid-method), must be one of composer-default, pre-packaged-source, pre-packaged-binary'],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
+                    'type' => 'php-ext',
+                    'php-ext' => [
+                        'download-url-method' => ['invalid-method', 'another-invalid-method'],
+                    ],
+                ],
+                [
+                    'php-ext.download-url-method.0 : invalid value (invalid-method), must be one of composer-default, pre-packaged-source, pre-packaged-binary',
+                    'php-ext.download-url-method.1 : invalid value (another-invalid-method), must be one of composer-default, pre-packaged-source, pre-packaged-binary',
+                ],
             ],
             [
                 [
