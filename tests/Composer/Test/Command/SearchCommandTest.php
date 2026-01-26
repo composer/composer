@@ -127,4 +127,31 @@ OUTPUT
             ['tokens' => ['invalid-package-name']],
         ];
     }
+
+    public function testVerboseOutput(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                ['packagist.org' => false],
+                [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'vendor-1/package-1', 'description' => 'generic description', 'version' => '1.0.0'],
+                        ['name' => 'vendor-1/package-2', 'description' => 'another package', 'version' => '1.0.0'],
+                        ['name' => 'foo/bar', 'description' => 'generic description', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'search', 'tokens' => ['vendor-1'], '-vvv' => true]);
+
+        $output = $appTester->getDisplay(true);
+        self::assertStringContainsString('Searched installed array repo (defining 0 package), found 0 result(s)', $output);
+        self::assertStringContainsString('Searched platform repo, found 0 result(s)', $output);
+        self::assertStringContainsString('Searched package repo (defining 3 packages), found 2 result(s)', $output);
+        self::assertStringContainsString('vendor-1/package-1', $output);
+        self::assertStringContainsString('vendor-1/package-2', $output);
+    }
 }
