@@ -53,7 +53,7 @@ class VersionParser extends SemverVersionParser
         $result = [];
 
         for ($i = 0, $count = count($pairs); $i < $count; $i++) {
-            $pair = Preg::replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
+            $pair = Preg::replace('{^([^= ]+)(?:=| |:(?!\\\\))(.*)$}', '$1 $2', trim($pairs[$i]));
             if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/') && !Preg::isMatch('{(?<=[a-z0-9_/-])\*|\*(?=[a-z0-9_/-])}i', $pairs[$i + 1]) && !PlatformRepository::isPlatformPackage($pairs[$i + 1])) {
                 $pair .= ' '.$pairs[$i + 1];
                 $i++;
