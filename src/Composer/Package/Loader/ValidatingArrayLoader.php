@@ -302,12 +302,27 @@ class ValidatingArrayLoader implements LoaderInterface
             }
 
             if (isset($phpExt['download-url-method'])) {
-                if (!is_string($phpExt['download-url-method'])) {
-                    $this->errors[] = 'php-ext.download-url-method : should be a string, '.get_debug_type($phpExt['download-url-method']).' given';
+                if (!is_array($phpExt['download-url-method']) && !is_string($phpExt['download-url-method'])) {
+                    $this->errors[] = 'php-ext.download-url-method : should be an array or a string, '.get_debug_type($phpExt['download-url-method']).' given';
                     unset($phpExt['download-url-method']);
-                } elseif (!in_array($phpExt['download-url-method'], ['composer-default', 'pre-packaged-source'], true)) {
-                    $this->errors[] = 'php-ext.download-url-method : invalid value ('.$phpExt['download-url-method'].'), must be one of composer-default, pre-packaged-source';
-                    unset($phpExt['download-url-method']);
+                } else {
+                    $validDownloadUrlMethods = ['composer-default', 'pre-packaged-source', 'pre-packaged-binary'];
+                    $definedDownloadUrlMethods = is_array($phpExt['download-url-method']) ? $phpExt['download-url-method'] : [$phpExt['download-url-method']];
+
+                    if ([] === $definedDownloadUrlMethods) {
+                        $this->errors[] = 'php-ext.download-url-method : must contain at least one element';
+                        unset($phpExt['download-url-method']);
+                    } else {
+                        foreach ($definedDownloadUrlMethods as $key => $downloadUrlMethod) {
+                            if (!is_string($downloadUrlMethod)) {
+                                $this->errors[] = 'php-ext.download-url-method.'.$key.' : should be a string, '.get_debug_type($downloadUrlMethod).' given';
+                                unset($phpExt['download-url-method']);
+                            } elseif (!in_array($downloadUrlMethod, $validDownloadUrlMethods, true)) {
+                                $this->errors[] = 'php-ext.download-url-method.'.$key.' : invalid value ('.$downloadUrlMethod.'), must be one of ' . implode(', ', $validDownloadUrlMethods);
+                                unset($phpExt['download-url-method']);
+                            }
+                        }
+                    }
                 }
             }
 
