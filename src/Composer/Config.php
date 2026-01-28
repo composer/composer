@@ -91,6 +91,7 @@ class Config
         'client-certificate' => [],
         'forgejo-domains' => ['codeberg.org'],
         'forgejo-token' => [],
+        'minimum-release-age' => ['minimum-age' => null, 'exceptions' => []],
     ];
 
     /** @var array<string, mixed> */
