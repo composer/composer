@@ -109,12 +109,6 @@ class Filesystem
         }
 
         if (Platform::isWindows()) {
-            // Work around bug on MSYS for safety if the path contains an equal sign, see https://github.com/composer/composer/issues/11568
-            // TODO remove if https://github.com/symfony/symfony/issues/62921 is fixed and we can upgrade to a version with the fix
-            if (str_contains($directory, '=')) {
-                return $this->removeDirectoryPhp($directory);
-            }
-
             $cmd = ['rmdir', '/S', '/Q', Platform::realpath($directory)];
         } else {
             $cmd = ['rm', '-rf', $directory];
@@ -150,12 +144,6 @@ class Filesystem
         }
 
         if (Platform::isWindows()) {
-            // Work around bug on MSYS for safety if the path contains an equal sign, see https://github.com/composer/composer/issues/11568
-            // TODO remove if https://github.com/symfony/symfony/issues/62921 is fixed and we can upgrade to a version with the fix
-            if (str_contains($directory, '=')) {
-                return \React\Promise\resolve($this->removeDirectoryPhp($directory));
-            }
-
             $cmd = ['rmdir', '/S', '/Q', Platform::realpath($directory)];
         } else {
             $cmd = ['rm', '-rf', $directory];
