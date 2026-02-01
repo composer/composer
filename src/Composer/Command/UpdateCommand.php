@@ -13,6 +13,8 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
@@ -284,6 +286,18 @@ EOT
             }
 
             if (false !== $bumpAfterUpdate) {
+                $updatedPackages = [];
+                $lockTransaction = $install->getLockTransaction();
+                if ($lockTransaction !== null) {
+                    foreach ($lockTransaction->getOperations() as $operation) {
+                        if ($operation instanceof InstallOperation) {
+                            $updatedPackages[] = $operation->getPackage()->getName();
+                        } elseif ($operation instanceof UpdateOperation) {
+                            $updatedPackages[] = $operation->getTargetPackage()->getName();
+                        }
+                    }
+                }
+
                 $io->writeError('<info>Bumping dependencies</info>');
                 $bumpCommand = new BumpCommand();
                 $bumpCommand->setComposer($composer);
@@ -292,7 +306,7 @@ EOT
                     $bumpAfterUpdate === 'dev',
                     $bumpAfterUpdate === 'no-dev',
                     $input->getOption('dry-run'),
-                    $input->getArgument('packages'),
+                    $updatedPackages,
                     '--bump-after-update=dev'
                 );
             }
