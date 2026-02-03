@@ -116,12 +116,12 @@ class Runtime
     {
         $result = [];
 
-        if (Preg::match('~<h2>\s*<a[^>]*>([^<]+)</a>\s*</h2>~i', $html, $matches)) {
+        if ((bool) Preg::match('~<h2>\s*<a[^>]*>([^<]+)</a>\s*</h2>~i', $html, $matches)) {
             $result[] = trim(html_entity_decode($matches[1]));
             $result[] = '';
         }
 
-        if (Preg::matchAll('~<tr>\s*<td class="e">\s*(.*?)\s*</td>\s*<td class="v">\s*(.*?)\s*</td>\s*</tr>~is', $html, $matches)) {
+        if ((bool) Preg::matchAll('~<tr>\s*<td class="e">\s*(.*?)\s*</td>\s*<td class="v">\s*(.*?)\s*</td>\s*</tr>~is', $html, $matches)) {
             $count = min(\count($matches[1]), \count($matches[2]));
 
             for ($i = 0; $i < $count; $i++) {
