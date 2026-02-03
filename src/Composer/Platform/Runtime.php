@@ -101,6 +101,13 @@ class Runtime
         ob_start();
         $reflector->info();
 
-        return ob_get_clean();
+        $info = (string) ob_get_clean();
+
+        if ('cli' === PHP_SAPI) {
+            return $info;
+        }
+
+        // If not in CLI mode, info returns HTML. Strip tags for maximum compatibility.
+        return strip_tags($info);
     }
 }
