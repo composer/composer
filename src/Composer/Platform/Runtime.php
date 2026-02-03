@@ -112,6 +112,9 @@ class Runtime
         return self::parseHtmlExtensionInfo($info);
     }
 
+    /**
+     * @internal Only public for unit tests
+     */
     public static function parseHtmlExtensionInfo(string $html): string
     {
         $result = [];
