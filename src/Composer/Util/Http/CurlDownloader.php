@@ -575,7 +575,7 @@ class CurlDownloader
     private function isAuthenticatedRetryNeeded(array $job, Response $response): array
     {
         if (in_array($response->getStatusCode(), [401, 403]) && $job['attributes']['retryAuthFailure']) {
-            $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $response->getHeaders(), $job['attributes']['retries']);
+            $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $response->getHeaders(), $job['attributes']['retries'], $response->getBody());
 
             if ($result['retry']) {
                 return $result;
