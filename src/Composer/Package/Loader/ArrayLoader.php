@@ -399,10 +399,20 @@ class ArrayLoader implements LoaderInterface
         if (!\is_string($prettyConstraint)) {
             throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.\get_debug_type($prettyConstraint) . ' (' . var_export($prettyConstraint, true) . ')');
         }
+
         if ('self.version' === $prettyConstraint) {
-            $parsedConstraint = $this->versionParser->parseConstraints($sourceVersion);
+            $version = $sourceVersion;
         } else {
-            $parsedConstraint = $this->versionParser->parseConstraints($prettyConstraint);
+            $version = $prettyConstraint;
+        }
+
+        try {
+            $parsedConstraint = $this->versionParser->parseConstraints($version);
+        } catch (\UnexpectedValueException $e) {
+            throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a valid version constraint, got "'.$version.'"',
+                $e->getCode(),
+                $e
+            );
         }
 
         return new Link($source, $target, $parsedConstraint, $description, $prettyConstraint);
