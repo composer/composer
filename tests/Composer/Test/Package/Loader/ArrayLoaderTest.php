@@ -493,4 +493,16 @@ class ArrayLoaderTest extends TestCase
         $package = $this->loader->load($config);
         self::assertSame([], $package->getSupport());
     }
+
+    public function testInvalidVersion(): void
+    {
+        $config = [
+            'name' => 'acme/package',
+            'version' => 'AA',
+        ];
+
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('Failed to normalize version for package "acme/package". Invalid version string "AA"');
+        $this->loader->load($config);
+    }
 }
