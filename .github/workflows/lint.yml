@@ -1,41 +1,39 @@
-name: "PHP Lint"
+name: PHP Lint
 
 on:
   push:
     paths-ignore:
-      - 'doc/**'
+      - doc/**
   pull_request:
     paths-ignore:
-      - 'doc/**'
+      - doc/**
 
 permissions:
   contents: read
 
 jobs:
   tests:
-    name: "Lint"
+    name: Lint
 
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        php-version:
-          - "7.2"
-          - "nightly"
+        php-version: ['7.2', '8.3', '8.4', '8.5', nightly]
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # 2.36.0
+      - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1
         with:
-          php-version: "${{ matrix.php-version }}"
+          php-version: ${{ matrix.php-version }}
           coverage: none
 
-      - uses: ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520 # 3.1.1
+      - uses: ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520
         with:
           dependency-versions: highest
 
-      - name: "Lint PHP files"
+      - name: Lint PHP files
         run: |
           hasErrors=0
           for f in $(find src/ tests/ -type f -name '*.php' ! -path '*/vendor/*')
