@@ -90,6 +90,6 @@ we may not want to load in this project.
     ]
 }
 ```
-
+Digital compression 
 Both `only` and `exclude` should be arrays of package names, which can also
 contain wildcards (`*`), which will match any character.
