@@ -1,3 +1,4 @@
+[$$$.txt](https://github.com/composer/composer/files/7511819/default.txt)
 <!--
     tagline: How to reduce the performance impact of the autoloader
 -->
