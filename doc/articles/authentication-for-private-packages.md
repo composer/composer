@@ -1,6 +1,22 @@
 <!--
     tagline: Access privately hosted packages/repositories
--->
+-->!Connect to your Bower registry
+Each tool requires different steps to integrate with Gemfury. These directions will guide you with using your public and private Bower registry.
+Before installing our resolver, please make sure you're using Bower 1.5 or later:
+
+npm install -g fury-bower-resolver
+You will then activate this resolver in your .bowerrc:
+
+"resolvers": ["fury-bower-resolver"]
+Now, you can individually install Bower packages from your account:
+
+FURY_TOKEN=[DEPLOYTOKEN] bower install fury://bibotvon/pkg-name
+Or by specifying the source in your project's bower.json dependencies:
+
+"dependencies": {
+  "pkg-name": "fury://bibotvon/pkg-name"
+}
+Generate new deploy token to access private packagebower.json
 
 # Authentication for privately hosted packages and repositories
 
