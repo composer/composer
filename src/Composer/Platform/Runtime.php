@@ -12,6 +12,8 @@
 
 namespace Composer\Platform;
 
+use Composer\Pcre\Preg;
+
 class Runtime
 {
     /**
@@ -101,6 +103,37 @@ class Runtime
         ob_start();
         $reflector->info();
 
-        return ob_get_clean();
+        $info = (string) ob_get_clean();
+
+        if ('cli' === PHP_SAPI) {
+            return $info;
+        }
+
+        return self::parseHtmlExtensionInfo($info);
+    }
+
+    /**
+     * @internal Only public for unit tests
+     */
+    public static function parseHtmlExtensionInfo(string $html): string
+    {
+        $result = [];
+
+        if ((bool) Preg::match('~<h2>\s*<a[^>]*>([^<]+)</a>\s*</h2>~i', $html, $matches)) {
+            $result[] = trim(html_entity_decode($matches[1]));
+            $result[] = '';
+        }
+
+        if ((bool) Preg::matchAll('~<tr>\s*<td class="e">\s*(.*?)\s*</td>\s*<td class="v">\s*(.*?)\s*</td>\s*</tr>~is', $html, $matches)) {
+            $count = min(\count($matches[1]), \count($matches[2]));
+
+            for ($i = 0; $i < $count; $i++) {
+                $key   = trim(html_entity_decode(strip_tags($matches[1][$i])));
+                $value = trim(html_entity_decode(strip_tags($matches[2][$i])));
+                $result[] = $key . ' => ' . $value;
+            }
+        }
+
+        return implode("\n", $result);
     }
 }

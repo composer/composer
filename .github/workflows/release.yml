@@ -15,8 +15,8 @@ jobs:
   build:
     permissions:
       contents: write # for gh to create a release
-      id-token: write # for actions/attest-build-provenance to create a attestation certificate
-      attestations: write # for actions/attest-build-provenance to upload the attestation
+      id-token: write # for actions/attest to create a attestation certificate
+      attestations: write # for actions/attest to upload the attestation
     name: Upload Release Asset
     runs-on: ubuntu-latest
     steps:
@@ -42,7 +42,7 @@ jobs:
         run: "php -d phar.readonly=0 bin/compile"
 
       - name: Generate build provenance attestation
-        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: '${{ github.workspace }}/composer.phar'
 
