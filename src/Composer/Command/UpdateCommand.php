@@ -298,17 +298,19 @@ EOT
                     }
                 }
 
-                $io->writeError('<info>Bumping dependencies</info>');
-                $bumpCommand = new BumpCommand();
-                $bumpCommand->setComposer($composer);
-                $result = $bumpCommand->doBump(
-                    $io,
-                    $bumpAfterUpdate === 'dev',
-                    $bumpAfterUpdate === 'no-dev',
-                    $input->getOption('dry-run'),
-                    $updatedPackages,
-                    '--bump-after-update=dev'
-                );
+                if (\count($updatedPackages) > 0) {
+                    $io->writeError('<info>Bumping dependencies</info>');
+                    $bumpCommand = new BumpCommand();
+                    $bumpCommand->setComposer($composer);
+                    $result = $bumpCommand->doBump(
+                        $io,
+                        $bumpAfterUpdate === 'dev',
+                        $bumpAfterUpdate === 'no-dev',
+                        $input->getOption('dry-run'),
+                        $updatedPackages,
+                        '--bump-after-update=dev'
+                    );
+                }
             }
         }
 
