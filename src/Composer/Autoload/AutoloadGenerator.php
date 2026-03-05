@@ -581,7 +581,11 @@ EOF;
      */
     public function parseAutoloads(array $packageMap, PackageInterface $rootPackage, $filteredDevPackages = false)
     {
-        $rootPackageMap = array_shift($packageMap);
+        if (isset($packageMap[0][0]) && $packageMap[0][0] instanceof RootPackageInterface) {
+            $rootPackageMap = array_shift($packageMap);
+        } else {
+            $rootPackageMap = null;
+        }
         if (is_array($filteredDevPackages)) {
             $packageMap = array_filter($packageMap, static function ($item) use ($filteredDevPackages): bool {
                 return !in_array($item[0]->getName(), $filteredDevPackages, true);
@@ -590,7 +594,9 @@ EOF;
             $packageMap = $this->filterPackageMap($packageMap, $rootPackage);
         }
         $sortedPackageMap = $this->sortPackageMap($packageMap);
-        $sortedPackageMap[] = $rootPackageMap;
+        if ($rootPackageMap !== null) {
+            $sortedPackageMap[] = $rootPackageMap;
+        }
         $reverseSortedMap = array_reverse($sortedPackageMap);
 
         // reverse-sorted means root first, then dependents, then their dependents, etc.
