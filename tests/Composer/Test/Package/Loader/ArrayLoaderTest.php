@@ -372,6 +372,14 @@ class ArrayLoaderTest extends TestCase
         self::assertArrayHasKey('1', $links);
     }
 
+    public function testParseLinksInvalidVersion(): void
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('Link constraint in Plugin requires > composer-plugin-api should be a valid version constraint, got "^^^"');
+
+        $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, ['composer-plugin-api' => '^^^']);
+    }
+
     public function testNoneStringVersion(): void
     {
         $config = [
@@ -492,5 +500,17 @@ class ArrayLoaderTest extends TestCase
 
         $package = $this->loader->load($config);
         self::assertSame([], $package->getSupport());
+    }
+
+    public function testInvalidVersion(): void
+    {
+        $config = [
+            'name' => 'acme/package',
+            'version' => 'AA',
+        ];
+
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('Failed to normalize version for package "acme/package": Invalid version string "AA"');
+        $this->loader->load($config);
     }
 }

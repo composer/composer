@@ -127,7 +127,15 @@ class ArrayLoader implements LoaderInterface
                 $version = $this->versionParser->normalize($config['version']);
             }
         } else {
-            $version = $this->versionParser->normalize($config['version']);
+            try {
+                $version = $this->versionParser->normalize($config['version']);
+            } catch (\UnexpectedValueException $e) {
+                throw new \UnexpectedValueException(
+                    'Failed to normalize version for package "'.$config['name'].'": '.$e->getMessage(),
+                    $e->getCode(),
+                    $e
+                );
+            }
         }
 
         return new $class($config['name'], $version, $config['version']);
@@ -391,10 +399,20 @@ class ArrayLoader implements LoaderInterface
         if (!\is_string($prettyConstraint)) {
             throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.\get_debug_type($prettyConstraint) . ' (' . var_export($prettyConstraint, true) . ')');
         }
+
         if ('self.version' === $prettyConstraint) {
-            $parsedConstraint = $this->versionParser->parseConstraints($sourceVersion);
+            $constraint = $sourceVersion;
         } else {
-            $parsedConstraint = $this->versionParser->parseConstraints($prettyConstraint);
+            $constraint = $prettyConstraint;
+        }
+
+        try {
+            $parsedConstraint = $this->versionParser->parseConstraints($constraint);
+        } catch (\UnexpectedValueException $e) {
+            throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a valid version constraint, got "'.$constraint.'"',
+                $e->getCode(),
+                $e
+            );
         }
 
         return new Link($source, $target, $parsedConstraint, $description, $prettyConstraint);
