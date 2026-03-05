@@ -46,6 +46,8 @@ class Pool implements \Countable
     private $securityRemovedVersions = [];
     /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
     private $abandonedRemovedVersions = [];
+    /** @var array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>> Map of package name => normalized version => release age info */
+    private $releaseAgeRemovedVersions = [];
 
     /**
      * @param BasePackage[] $packages
@@ -54,8 +56,9 @@ class Pool implements \Countable
      * @param array<string, array<string, string>> $removedVersionsByPackage
      * @param array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> $securityRemovedVersions
      * @param array<string, array<string, string>> $abandonedRemovedVersions
+     * @param array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>> $releaseAgeRemovedVersions
      */
-    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [])
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [], array $releaseAgeRemovedVersions = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
@@ -64,6 +67,7 @@ class Pool implements \Countable
         $this->removedVersionsByPackage = $removedVersionsByPackage;
         $this->securityRemovedVersions = $securityRemovedVersions;
         $this->abandonedRemovedVersions = $abandonedRemovedVersions;
+        $this->releaseAgeRemovedVersions = $releaseAgeRemovedVersions;
     }
 
     /**
@@ -165,6 +169,45 @@ class Pool implements \Countable
     public function getAllAbandonedRemovedPackageVersions(): array
     {
         return $this->abandonedRemovedVersions;
+    }
+
+    public function isReleaseAgeRemovedPackageVersion(string $packageName, ?ConstraintInterface $constraint): bool
+    {
+        foreach ($this->releaseAgeRemovedVersions[$packageName] ?? [] as $version => $info) {
+            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get release age info for the package version that will be available soonest
+     *
+     * @return array{prettyVersion: string, releaseDate: string, availableIn: string}|null
+     */
+    public function getReleaseAgeInfoForPackageVersion(string $packageName, ?ConstraintInterface $constraint): ?array
+    {
+        $earliest = null;
+        foreach ($this->releaseAgeRemovedVersions[$packageName] ?? [] as $version => $info) {
+            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
+                // Find the version with the earliest release date (will be available soonest)
+                if ($earliest === null || $info['releaseDate'] < $earliest['releaseDate']) {
+                    $earliest = $info;
+                }
+            }
+        }
+
+        return $earliest;
+    }
+
+    /**
+     * @return array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>>
+     */
+    public function getAllReleaseAgeRemovedPackageVersions(): array
+    {
+        return $this->releaseAgeRemovedVersions;
     }
 
     /**

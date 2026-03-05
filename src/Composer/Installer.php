@@ -25,6 +25,8 @@ use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
+use Composer\DependencyResolver\ReleaseAgePoolFilter;
+use Composer\DependencyResolver\ReleaseAgeConfig;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\DependencyResolver\PolicyInterface;
@@ -502,7 +504,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter());
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createReleaseAgePoolFilter());
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
@@ -1124,6 +1126,17 @@ class Installer
 
         if ($auditConfig->blockInsecure && !$this->updateMirrors) {
             return new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
+        }
+
+        return null;
+    }
+
+    private function createReleaseAgePoolFilter(): ?ReleaseAgePoolFilter
+    {
+        $releaseAgeConfig = ReleaseAgeConfig::fromConfig($this->config);
+
+        if ($releaseAgeConfig->isEnabled() && !$this->updateMirrors) {
+            return new ReleaseAgePoolFilter($releaseAgeConfig);
         }
 
         return null;

@@ -32,6 +32,8 @@ class SecurityAdvisoryPoolFilter
     private $auditor;
     /** @var AuditConfig $auditConfig */
     private $auditConfig;
+    /** @var array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> */
+    private $advisoryMap = [];
 
     public function __construct(
         Auditor $auditor,
@@ -39,6 +41,19 @@ class SecurityAdvisoryPoolFilter
     ) {
         $this->auditor = $auditor;
         $this->auditConfig = $auditConfig;
+    }
+
+    /**
+     * Get the advisory map built during filtering
+     *
+     * This allows other filters (like ReleaseAgePoolFilter) to identify
+     * security fixes that should bypass release age restrictions.
+     *
+     * @return array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>
+     */
+    public function getAdvisoryMap(): array
+    {
+        return $this->advisoryMap;
     }
 
     /**
@@ -67,7 +82,7 @@ class SecurityAdvisoryPoolFilter
             $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, false, true);
         }
 
-        $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking, $this->auditConfig->ignoreSeverityForBlocking)['advisories'];
+        $this->advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking, $this->auditConfig->ignoreSeverityForBlocking)['advisories'];
 
         $packages = [];
         $securityRemovedVersions = [];
@@ -80,7 +95,7 @@ class SecurityAdvisoryPoolFilter
                 continue;
             }
 
-            $matchingAdvisories = $this->getMatchingAdvisories($package, $advisoryMap);
+            $matchingAdvisories = $this->getMatchingAdvisories($package, $this->advisoryMap);
             if (count($matchingAdvisories) > 0) {
                 foreach ($package->getNames(false) as $packageName) {
                     $securityRemovedVersions[$packageName][$package->getVersion()] = $matchingAdvisories;

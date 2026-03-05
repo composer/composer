@@ -362,6 +362,101 @@ version blocking is not disabled by setting [`block-insecure`](#block-insecure) 
 }
 ```
 
+## minimum-release-age
+
+Configuration for filtering out newly released package versions to reduce the risk of exposure to supply
+chain attacks. By introducing a waiting period before new package versions can be installed, you reduce
+the risk of installing packages that may have been compromised shortly after release - many vulnerable
+package versions are identified and removed within hours or days of being published.
+
+### minimum-age
+
+A duration string (e.g., `"7 days"`, `"24 hours"`, `"1 week"`) or integer (seconds) representing the
+minimum age a package version must have before it can be installed. Set to `null` to disable the feature.
+
+```json
+{
+    "config": {
+        "minimum-release-age": {
+            "minimum-age": "7 days"
+        }
+    }
+}
+```
+
+The following package types are never filtered by this setting:
+- **Dev versions** (e.g., `dev-main`) - These represent mutable branch state
+- **Already locked packages** - Packages in your `composer.lock` are not affected
+- **Platform packages** - PHP extensions and platform requirements
+- **Packages without release date** - Allowed through conservatively
+- **Security fixes** - Versions that fix known security vulnerabilities (see below)
+
+### Security fix bypass
+
+Package versions that fix known security vulnerabilities automatically bypass the release age requirement.
+This ensures that security fixes propagate quickly while still reducing the risk of exposure to supply chain
+attacks for regular releases.
+
+A version is detected as a security fix when:
+1. The package has known security advisories (for other versions)
+2. This version is NOT affected by those advisories
+3. This version was released AFTER the advisory was published
+4. This version was released within 2x the minimum release age after the advisory
+
+For example, with a 7-day minimum release age: if a security advisory is published on January 1st affecting
+versions `<2.0.0`, and version `2.0.1` is released on January 3rd (not affected by the advisory),
+that version will bypass the release age requirement and be immediately available. However, a version released
+on January 20th would be subject to the normal minimum release age since it's outside the 14-day bypass window.
+
+> **Note:** To limit exposure, only the **oldest** security fix version that matches your constraints
+> will bypass the release age requirement. Subsequent patch releases (e.g., `2.0.2`, `2.0.3`) will still
+> be subject to the normal waiting period. This ensures you get access to security fixes quickly while
+> maintaining protection against potentially compromised follow-up releases.
+
+### exceptions
+
+A list of packages that should bypass the minimum release age check. Each exception can include
+a `reason` field to document why the package is excepted - this helps team members understand
+the rationale for exceptions.
+
+```json
+{
+    "config": {
+        "minimum-release-age": {
+            "minimum-age": "7 days",
+            "exceptions": [
+                {
+                    "package": "mycompany/*",
+                    "reason": "We trust the code in our own packages"
+                },
+                {
+                    "package": "symfony/security-bundle",
+                    "reason": "Security fixes need to be applied immediately"
+                }
+            ]
+        }
+    }
+}
+```
+
+Package patterns support wildcards (e.g., `vendor/*` matches all packages from that vendor).
+
+### Environment variable
+
+You can override the minimum release age setting using the `COMPOSER_MINIMUM_RELEASE_AGE`
+environment variable:
+
+```bash
+# Disable the feature temporarily
+COMPOSER_MINIMUM_RELEASE_AGE=0 composer update
+
+# Set to a specific duration
+COMPOSER_MINIMUM_RELEASE_AGE="24 hours" composer update
+```
+
+The environment variable only overrides the `minimum-age` value - any package exceptions
+configured in `composer.json` are still respected.
+
 ## use-parent-dir
 
 When running Composer in a directory where there is no composer.json, if there
