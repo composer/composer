@@ -91,6 +91,7 @@ class Config
         'client-certificate' => [],
         'forgejo-domains' => ['codeberg.org'],
         'forgejo-token' => [],
+        'source-fallback' => true,
     ];
 
     /** @var array<string, mixed> */
@@ -338,6 +339,7 @@ class Config
             // booleans with env var support
             case 'cache-read-only':
             case 'htaccess-protect':
+            case 'source-fallback':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 

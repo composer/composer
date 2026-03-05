@@ -52,6 +52,7 @@ class ReinstallCommand extends BaseCommand
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('type', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Filter packages to reinstall by type(s)', null, $this->suggestInstalledPackageTypes(false)),
+                new InputOption('source-fallback', null, InputOption::VALUE_NEGATABLE, 'Whether to fall back to alternative sources (dist/source) on download failure.'),
                 new InputArgument('packages', InputArgument::IS_ARRAY, 'List of package names to reinstall, can include a wildcard (*) to match any substring.', null, $this->suggestInstalledPackage(false)),
             ])
             ->setHelp(
@@ -160,6 +161,7 @@ EOT
 
         $downloadManager->setPreferSource($preferSource);
         $downloadManager->setPreferDist($preferDist);
+        $downloadManager->setSourceFallback($input->getOption('source-fallback') ?? $config->get('source-fallback'));
 
         $devMode = $localRepo->getDevMode() !== null ? $localRepo->getDevMode() : true;
 
