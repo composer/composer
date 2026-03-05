@@ -118,24 +118,24 @@ class ArrayLoader implements LoaderInterface
             $config['version'] = (string) $config['version'];
         }
 
-        try {
-            // handle already normalized versions
-            if (isset($config['version_normalized']) && is_string($config['version_normalized'])) {
-                $version = $config['version_normalized'];
+        // handle already normalized versions
+        if (isset($config['version_normalized']) && is_string($config['version_normalized'])) {
+            $version = $config['version_normalized'];
 
-                // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEFAULT_BRANCH_ALIAS, we renormalize it
-                if ($version === VersionParser::DEFAULT_BRANCH_ALIAS) {
-                    $version = $this->versionParser->normalize($config['version']);
-                }
-            } else {
-                    $version = $this->versionParser->normalize($config['version']);
+            // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEFAULT_BRANCH_ALIAS, we renormalize it
+            if ($version === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                $version = $this->versionParser->normalize($config['version']);
             }
-        } catch (\UnexpectedValueException $e) {
-            throw new \UnexpectedValueException(
-                'Failed to normalize version for package "'.$config['name'].'". '.$e->getMessage(),
-                $e->getCode(),
-                $e
-            );
+        } else {
+            try {
+                $version = $this->versionParser->normalize($config['version']);
+            } catch (\UnexpectedValueException $e) {
+                throw new \UnexpectedValueException(
+                    'Failed to normalize version for package "'.$config['name'].'": '.$e->getMessage(),
+                    $e->getCode(),
+                    $e
+                );
+            }
         }
 
         return new $class($config['name'], $version, $config['version']);
@@ -401,15 +401,15 @@ class ArrayLoader implements LoaderInterface
         }
 
         if ('self.version' === $prettyConstraint) {
-            $version = $sourceVersion;
+            $constraint = $sourceVersion;
         } else {
-            $version = $prettyConstraint;
+            $constraint = $prettyConstraint;
         }
 
         try {
-            $parsedConstraint = $this->versionParser->parseConstraints($version);
+            $parsedConstraint = $this->versionParser->parseConstraints($constraint);
         } catch (\UnexpectedValueException $e) {
-            throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a valid version constraint, got "'.$version.'"',
+            throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a valid version constraint, got "'.$constraint.'"',
                 $e->getCode(),
                 $e
             );
