@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 
@@ -125,12 +126,16 @@ class CompositeRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function search(string $query, int $mode = 0, ?string $type = null): array
+    public function search(string $query, int $mode = 0, ?string $type = null, ?IOInterface $io = null): array
     {
         $matches = [];
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
-            $matches[] = $repository->search($query, $mode, $type);
+            $results = $repository->search($query, $mode, $type);
+            if ($io !== null) {
+                $io->writeError('Searched '.$repository->getRepoName().', found <info>'.count($results).'</info> result(s)');
+            }
+            $matches[] = $results;
         }
 
         return \count($matches) > 0 ? array_merge(...$matches) : [];
