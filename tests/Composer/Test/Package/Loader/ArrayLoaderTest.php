@@ -510,7 +510,7 @@ class ArrayLoaderTest extends TestCase
         ];
 
         $this->expectException(\UnexpectedValueException::class);
-        $this->expectExceptionMessage('Failed to normalize version for package "acme/package". Invalid version string "AA"');
+        $this->expectExceptionMessage('Failed to normalize version for package "acme/package": Invalid version string "AA"');
         $this->loader->load($config);
     }
 }
