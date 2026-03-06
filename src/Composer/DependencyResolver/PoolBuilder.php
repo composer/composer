@@ -112,6 +112,14 @@ class PoolBuilder
     private $ignoredTypes = [];
     /** @var list<string>|null */
     private $allowedTypes = null;
+    /** @var array<string, array{merged: string[], byPackage: array<string, string[]>}> */
+    private $requiredFeatures = [];
+    /** @var array<string, int[]> */
+    private $packagesFeatures = [];
+    /** @var array<string, string[]> */
+    private $featuresToLoad = [];
+    /** @var array<string, string[]> */
+    private $featuresLoaded = [];
 
     /**
      * If provided, only these package names are loaded
@@ -281,8 +289,15 @@ class PoolBuilder
             }
         }
 
-        while (\count($this->packagesToLoad) > 0) {
-            $this->loadPackagesMarkedForLoading($request, $repositories);
+        // first pass where we get all packages that need to be loaded without features
+        while (\count($this->packagesToLoad) > 0 || \count($this->featuresToLoad) > 0) {
+            if (\count($this->packagesToLoad) > 0) {
+                $this->loadPackagesMarkedForLoading($request, $repositories);
+            }
+
+            if (\count($this->featuresToLoad) > 0) {
+                $this->loadFeaturesMarkedForLoading();
+            }
         }
 
         if (\count($this->temporaryConstraints) > 0) {
@@ -336,7 +351,7 @@ class PoolBuilder
             $this->unacceptableFixedOrLockedPackages = $prePoolCreateEvent->getUnacceptableFixedPackages();
         }
 
-        $pool = new Pool($this->packages, $this->unacceptableFixedOrLockedPackages);
+        $pool = new Pool($this->packages, $this->unacceptableFixedOrLockedPackages, [], [], [], [], $this->requiredFeatures);
 
         $this->aliasMap = [];
         $this->packagesToLoad = [];
@@ -464,6 +479,51 @@ class PoolBuilder
         }
     }
 
+    private function loadFeaturesMarkedForLoading(): void {
+        foreach ($this->featuresToLoad as $packageName => $features) {
+            if (!isset($this->packagesFeatures[$packageName])) {
+                if (count($this->packagesToLoad) === 0) {
+                    // package not loaded and there is no more package to load, which means a required feature
+                    // has been declared on a package that is not required, then remove this feature from the list
+                    // to avoid infinite loop, and let the resolver throw an error
+                    unset($this->featuresToLoad[$packageName]);
+
+                    continue;
+                }
+
+                // if package not already loaded then skip it and wait for package to be loaded
+                continue;
+            }
+
+            // we iterate over all possible features of the package to load
+            foreach ($this->packagesFeatures[$packageName] as $packageIndex) {
+                $packageFeatures = $this->packages[$packageIndex]->getFeatures();
+
+                foreach ($features as $feature) {
+                    if (!isset($packageFeatures[$feature])) {
+                        // can happen if a bad feature is provided, or a version did not have this feature yet (or it
+                        // has been removed)
+                        // we will let the solver throw an error in the case of a bad feature
+                        continue;
+                    }
+
+                    $packageFeatureRequire = $packageFeatures[$feature]['require'] ?? [];
+
+                    foreach ($packageFeatureRequire as $link) {
+                        // if package is already loaded skip it
+                        if (isset($this->loadedPackages[$link->getTarget()])) {
+                            continue;
+                        }
+
+                        $this->packagesToLoad[$link->getTarget()] = $link->getConstraint();
+                    }
+                }
+            }
+
+            unset($this->featuresToLoad[$packageName]);
+        }
+    }
+
     /**
      * @param RepositoryInterface[] $repositories
      */
@@ -471,6 +531,7 @@ class PoolBuilder
     {
         $index = $this->indexCounter++;
         $this->packages[$index] = $package;
+        $this->packagesFeatures[$package->getName()][] = $index;
 
         if ($package instanceof AliasPackage) {
             $this->aliasMap[spl_object_hash($package->getAliasOf())][$index] = $package;
@@ -510,6 +571,31 @@ class PoolBuilder
             $newIndex = $this->indexCounter++;
             $this->packages[$newIndex] = $aliasPackage;
             $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$newIndex] = $aliasPackage;
+        }
+
+        // Here we load the required feature of the package and building our global list of features
+        foreach ($package->getFeaturesRequires() as $packageName => $features) {
+            if (!isset($this->requiredFeatures[$packageName])) {
+                $this->requiredFeatures[$packageName] = [
+                    'merged' => [],
+                    'byPackage' => [],
+                ];
+            }
+
+            // We merge all features that may be required by different packages
+            // Meaning a feature can be added by multiple packages and we take the combination of all required features
+            $this->requiredFeatures[$packageName]['merged'] = array_merge($this->requiredFeatures[$packageName]['merged'], $features);
+            $this->requiredFeatures[$packageName]['byPackage'][$package->getName()] = $features;
+
+            // Get already loaded features
+            $loadedFeaturesForPackage = $this->featuresLoaded[$packageName] ?? [];
+
+            // If the feature is not loaded yet, we mark it for loading
+            foreach ($features as $feature) {
+                if (!in_array($feature, $loadedFeaturesForPackage, true)) {
+                    $this->featuresToLoad[$packageName][] = $feature;
+                }
+            }
         }
 
         foreach ($package->getRequires() as $link) {

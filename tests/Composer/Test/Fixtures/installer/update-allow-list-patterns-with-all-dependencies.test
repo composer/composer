@@ -49,6 +49,7 @@ Update with a package allow list pattern and all-dependencies flag updates packa
         { "name": "unrelated/pkg-dependency", "version": "1.0.0" }
     ],
     "packages-dev": [],
+    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},
