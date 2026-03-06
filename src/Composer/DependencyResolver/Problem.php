@@ -417,6 +417,12 @@ class Problem
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are affected by security advisories ("' . implode('", "', $advisoriesList). '"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add them to the audit "ignore" config. To turn the feature off entirely, you can set "block-insecure" to false in your "audit" config.'];
             }
 
+            if ($pool->isFilterListRemovedPackageVersion($packageName, $constraint)) {
+                $filters = $pool->getFilterListEntryForPackageVersion($packageName, $constraint);
+
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the "filter.don-filter-packages" config. To turn the feature off entirely, you can set "filter" to false.'];
+            }
+
             return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'];
         }
 

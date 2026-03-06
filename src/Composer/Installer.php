@@ -24,6 +24,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
@@ -502,7 +503,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter());
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), new FilterListPoolFilter());
 
         $this->io->writeError('<info>Updating dependencies</info>');
 

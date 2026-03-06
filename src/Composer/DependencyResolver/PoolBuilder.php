@@ -156,6 +156,9 @@ class PoolBuilder
     /** @var ?SecurityAdvisoryPoolFilter */
     private $securityAdvisoryPoolFilter;
 
+    /** @var ?FilterListPoolFilter */
+    private $filterListPoolFilter;
+
     /**
      * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
      * @phpstan-param array<key-of<BasePackage::STABILITIES>, BasePackage::STABILITY_*> $acceptableStabilities
@@ -167,7 +170,7 @@ class PoolBuilder
      * @phpstan-param array<string, string> $rootReferences
      * @param array<string, ConstraintInterface> $temporaryConstraints Runtime temporary constraints that will be used to filter packages
      */
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $temporaryConstraints = [], ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $temporaryConstraints = [], ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null, ?FilterListPoolFilter $filterListPoolFilter = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
@@ -178,6 +181,7 @@ class PoolBuilder
         $this->io = $io;
         $this->temporaryConstraints = $temporaryConstraints;
         $this->securityAdvisoryPoolFilter = $securityAdvisoryPoolFilter;
+        $this->filterListPoolFilter = $filterListPoolFilter;
     }
 
     /**
@@ -353,6 +357,7 @@ class PoolBuilder
         // filter vulnerable packages before optimizing the pool otherwise we may end up with inconsistent state where the optimizer took away versions
         // that were not vulnerable and now suddenly the vulnerable ones are removed and we are missing some versions to make it solvable
         $pool = $this->runSecurityAdvisoryFilter($pool, $repositories, $request);
+        $pool = $this->runFilterListFilter($pool, $repositories, $request);
         $pool = $this->runOptimizer($request, $pool);
 
         Intervals::clear();
@@ -806,6 +811,39 @@ class PoolBuilder
         $this->io->write(sprintf('Pool optimizer completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERY_VERBOSE);
         $this->io->write(sprintf(
             '<info>Found %s package versions referenced in your dependency graph. %s (%d%%) were optimized away.</info>',
+            number_format($total),
+            number_format($filtered),
+            round(100 / $total * $filtered)
+        ), true, IOInterface::VERY_VERBOSE);
+
+        return $pool;
+    }
+
+    /**
+     * @param RepositoryInterface[] $repositories
+     */
+    private function runFilterListFilter(Pool $pool, array $repositories, Request $request): Pool
+    {
+        if (null === $this->filterListPoolFilter) {
+            return $pool;
+        }
+
+        $this->io->debug('Running filter list pool filter.');
+
+        $before = microtime(true);
+        $total = \count($pool->getPackages());
+
+        $pool = $this->filterListPoolFilter->filter($pool, $repositories, $request);
+
+        $filtered = $total - \count($pool->getPackages());
+
+        if (0 === $filtered) {
+            return $pool;
+        }
+
+        $this->io->write(sprintf('Filter list pool filter completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERY_VERBOSE);
+        $this->io->write(sprintf(
+            '<info>Found %s package versions referenced in your dependency graph. %s (%d%%) were filtered away by filter lists.</info>',
             number_format($total),
             number_format($filtered),
             round(100 / $total * $filtered)

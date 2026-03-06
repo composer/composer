@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\FilterList\FilterListEntry;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Version\VersionParser;
@@ -24,13 +25,16 @@ use Composer\Pcre\Preg;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class PackageRepository extends ArrayRepository implements AdvisoryProviderInterface
+class PackageRepository extends ArrayRepository implements AdvisoryProviderInterface, FilterListProviderInterface
 {
     /** @var mixed[] */
     private $config;
 
     /** @var mixed[] */
     private $securityAdvisories;
+
+    /** @var mixed[] */
+    private $filter;
 
     /**
      * Initializes filesystem repository.
@@ -48,6 +52,7 @@ class PackageRepository extends ArrayRepository implements AdvisoryProviderInter
         }
 
         $this->securityAdvisories = $config['security-advisories'] ?? [];
+        $this->filter = $config['filter'] ?? [];
     }
 
     /**
@@ -79,9 +84,6 @@ class PackageRepository extends ArrayRepository implements AdvisoryProviderInter
         return count($this->securityAdvisories) > 0;
     }
 
-    /**
-     * @todo not sure if this is a good idea, just helped setting up the test fixtures
-     */
     public function getSecurityAdvisories(array $packageConstraintMap, bool $allowPartialAdvisories = false): array
     {
         $parser = new VersionParser();
@@ -105,5 +107,33 @@ class PackageRepository extends ArrayRepository implements AdvisoryProviderInter
         }
 
         return ['advisories' => array_filter($advisories, static function ($adv): bool { return \count($adv) > 0; }), 'namesFound' => array_keys($advisories)];
+    }
+
+    public function hasFilter(): bool
+    {
+        return count($this->filter) > 0;
+    }
+
+    public function getFilters(array $packageConstraintMap): array
+    {
+        $parser = new VersionParser();
+
+        $filter = [];
+        foreach ($this->filter as $listName => $listEntries) {
+            foreach ($listEntries as $data) {
+                $entry = FilterListEntry::create($listName, $data, $parser);
+                if (!isset($packageConstraintMap[$entry->packageName])) {
+                    continue;
+                }
+
+                if (!$entry->constraint->matches($packageConstraintMap[$entry->packageName])) {
+                    continue;
+                }
+
+                $filter[$listName][] = $entry;
+            }
+        }
+
+        return $filter;
     }
 }

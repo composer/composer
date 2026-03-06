@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\FilterList\FilterListEntry;
 use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
@@ -46,7 +47,7 @@ use React\Promise\PromiseInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface
+class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
 {
     /**
      * @var mixed[]
@@ -731,6 +732,65 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         return ['namesFound' => array_keys($namesFound), 'advisories' => array_filter($advisories, static function ($adv): bool { return \count($adv) > 0; })];
+    }
+
+    public function hasFilter(): bool
+    {
+        $this->loadRootServerFile(600);
+
+        return $this->hasAvailablePackageList;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFilters(array $packageConstraintMap): array
+    {
+        $this->loadRootServerFile(600);
+
+        // respect available-package-patterns / available-packages directives from the repo
+        if ($this->hasAvailablePackageList) {
+            foreach ($packageConstraintMap as $name => $constraint) {
+                if (!$this->lazyProvidersRepoContains(strtolower($name))) {
+                    unset($packageConstraintMap[$name]);
+                }
+            }
+        }
+
+        $parser = new VersionParser();
+        $filter = [];
+        $promises = [];
+        foreach ($packageConstraintMap as $name => $constraint) {
+            $name = strtolower($name);
+
+            // skip platform packages, root package and composer-plugin-api
+            if (PlatformRepository::isPlatformPackage($name) || '__root__' === $name) {
+                continue;
+            }
+
+            $promises[] = $this->startCachedAsyncDownload($name, $name)
+                ->then(static function (array $spec) use (&$filter, $name, $constraint, $parser): void {
+                    [$response] = $spec;
+
+                    if (!isset($response['filter']) || !is_array($response['filter'])) {
+                        return;
+                    }
+
+                    foreach ($response['filter'] as $listName => $data) {
+                        $data['package'] = $name;
+                        $entry = FilterListEntry::create($listName, $data, $parser);
+                        if (!$entry->constraint->matches($constraint)) {
+                            continue;
+                        }
+
+                        $filter[$entry->packageName][] = $entry;
+                    }
+                });
+        }
+
+        $this->loop->wait($promises);
+
+        return $filter;
     }
 
     public function getProviders(string $packageName)
