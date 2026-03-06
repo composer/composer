@@ -53,6 +53,25 @@ class HttpDownloaderTest extends TestCase
         }
     }
 
+    public function testPreventUrlAccessCallableBlocksDownload(): void
+    {
+        if (!extension_loaded('curl')) {
+            self::markTestSkipped('curl extension is required');
+        }
+
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $downloader = new HttpDownloader($io, $this->getConfigMock());
+
+        $this->expectException(\Composer\Downloader\TransportException::class);
+        $this->expectExceptionMessage('Access to "https://example.org/blocked" is blocked.');
+
+        $downloader->get('https://example.org/blocked', [
+            'prevent_url_access_callable' => static function (string $url): bool {
+                return true;
+            },
+        ]);
+    }
+
     public function testOutputWarnings(): void
     {
         $io = new BufferIO();

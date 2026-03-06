@@ -181,6 +181,14 @@ class CurlDownloader
             $this->config->prohibitUrlByConfig($url, $this->io, $options);
         }
 
+        if (
+            isset($options['prevent_url_access_callable']) &&
+            is_callable($options['prevent_url_access_callable']) &&
+            $options['prevent_url_access_callable']($url)
+        ) {
+            throw new TransportException('Access to "'.$url.'" is blocked.');
+        }
+
         $curlHandle = curl_init();
         $headerHandle = fopen('php://temp/maxmemory:32768', 'w+b');
         if (false === $headerHandle) {
