@@ -13,6 +13,8 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
@@ -284,17 +286,31 @@ EOT
             }
 
             if (false !== $bumpAfterUpdate) {
-                $io->writeError('<info>Bumping dependencies</info>');
-                $bumpCommand = new BumpCommand();
-                $bumpCommand->setComposer($composer);
-                $result = $bumpCommand->doBump(
-                    $io,
-                    $bumpAfterUpdate === 'dev',
-                    $bumpAfterUpdate === 'no-dev',
-                    $input->getOption('dry-run'),
-                    $input->getArgument('packages'),
-                    '--bump-after-update=dev'
-                );
+                $updatedPackages = [];
+                $lockTransaction = $install->getLockTransaction();
+                if ($lockTransaction !== null) {
+                    foreach ($lockTransaction->getOperations() as $operation) {
+                        if ($operation instanceof InstallOperation) {
+                            $updatedPackages[] = $operation->getPackage()->getName();
+                        } elseif ($operation instanceof UpdateOperation) {
+                            $updatedPackages[] = $operation->getTargetPackage()->getName();
+                        }
+                    }
+                }
+
+                if (\count($updatedPackages) > 0) {
+                    $io->writeError('<info>Bumping dependencies</info>');
+                    $bumpCommand = new BumpCommand();
+                    $bumpCommand->setComposer($composer);
+                    $result = $bumpCommand->doBump(
+                        $io,
+                        $bumpAfterUpdate === 'dev',
+                        $bumpAfterUpdate === 'no-dev',
+                        $input->getOption('dry-run'),
+                        $updatedPackages,
+                        '--bump-after-update=dev'
+                    );
+                }
             }
         }
 
