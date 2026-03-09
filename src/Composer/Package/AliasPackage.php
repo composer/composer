@@ -80,7 +80,7 @@ class AliasPackage extends BasePackage
         $aliasFeatures = $aliasOf->getFeatures();
 
         foreach ($aliasFeatures as $name => $feature) {
-            $this->features[$name]['require'] = $this->replaceSelfVersionDependencies($aliasFeatures[$name]['require'], Link::TYPE_REQUIRE);
+            $this->features[$name]['require'] = $this->replaceSelfVersionDependencies($aliasFeatures[$name]['require'] ?? [], Link::TYPE_REQUIRE);
         }
     }
 
