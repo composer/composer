@@ -24,7 +24,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 /**
  * @author Nils Adermann <naderman@naderman.de>
  * @author Ruben Gonzalez <rubenrua@gmail.com>
- * @phpstan-type ReasonData Link|BasePackage|string|int|array{packageName: string, constraint: ConstraintInterface}|array{packageName: string, feature: string, requiredBy: string[]}|array{package: BasePackage}
+ * @phpstan-type ReasonData Link|BasePackage|string|int|array{packageName: string, constraint: ConstraintInterface}|array{packageName: string, feature: string, requiredBy: string[], found: bool}|array{package: BasePackage}
  */
 abstract class Rule
 {
@@ -37,7 +37,7 @@ abstract class Rule
     public const RULE_LEARNED = 12; // int (rule id)
     public const RULE_PACKAGE_ALIAS = 13; // BasePackage
     public const RULE_PACKAGE_INVERSE_ALIAS = 14; // BasePackage
-    public const RULE_REQUIRE_FEATURE = 15; // array{packageName: string, feature: string, requiredBy: string[]}
+    public const RULE_REQUIRE_FEATURE = 15; // array{packageName: string, feature: string, requiredBy: string[], found: bool}
 
     // bitfield defs
     private const BITFIELD_TYPE = 0;
@@ -428,7 +428,7 @@ abstract class Rule
 
                 return $aliasPackage->getPrettyString() .' is an alias of '.$package->getPrettyString().' and must be installed with it.';
             case self::RULE_REQUIRE_FEATURE:
-                /** @var array{packageName: string, feature: string, requiredBy: string[]} $reasonData */
+                /** @var array{packageName: string, feature: string, requiredBy: string[], found: bool} $reasonData */
                 $reasonData = $this->getReasonData();
                 $packageListString = implode(", ", array_map(function ($packageName) {
                     if ($packageName === '__root__') {
@@ -438,7 +438,11 @@ abstract class Rule
                     return $packageName;
                 }, $reasonData['requiredBy']));
 
-                return $packageListString.' requires feature "'.$reasonData['feature'].'" for '. $reasonData['packageName'] . '.' ;
+                if ($reasonData['found']) {
+                    return $packageListString.' requires feature "'.$reasonData['feature'].'" for '. $reasonData['packageName'] . '.';
+                }
+
+                return $packageListString.' requires feature "'.$reasonData['feature'].'" for '. $reasonData['packageName'] . ' -> could not be found.' ;
             default:
                 $ruleText = '';
                 foreach ($literals as $i => $literal) {

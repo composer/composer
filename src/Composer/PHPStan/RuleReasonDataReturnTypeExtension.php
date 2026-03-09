@@ -25,6 +25,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
@@ -51,7 +52,7 @@ final class RuleReasonDataReturnTypeExtension implements DynamicMethodReturnType
 
         $types = [
             Rule::RULE_ROOT_REQUIRE => new ConstantArrayType([new ConstantStringType('packageName'), new ConstantStringType('constraint')], [new StringType, new ObjectType(ConstraintInterface::class)]),
-            Rule::RULE_REQUIRE_FEATURE => new ConstantArrayType([new ConstantStringType('packageName'), new ConstantStringType('feature'), new ConstantStringType('requiredBy')], [new StringType, new StringType(), new ArrayType(new MixedType(), new StringType())]),
+            Rule::RULE_REQUIRE_FEATURE => new ConstantArrayType([new ConstantStringType('packageName'), new ConstantStringType('feature'), new ConstantStringType('requiredBy'), new ConstantStringType('found')], [new StringType, new StringType(), new ArrayType(new MixedType(), new StringType()), new BooleanType()]),
             Rule::RULE_FIXED => new ConstantArrayType([new ConstantStringType('package')], [new ObjectType(BasePackage::class)]),
             Rule::RULE_PACKAGE_CONFLICT => new ObjectType(Link::class),
             Rule::RULE_PACKAGE_REQUIRES => new ObjectType(Link::class),

@@ -1,0 +1,26 @@
+--TEST--
+Ensure a replacer package deals with branch aliases
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "dev-master", "replace": {"c/c": "self.version" }, "extra": { "branch-alias": {"dev-master": "1.0.x-dev"} } },
+                { "name": "b/b", "version": "1.0.0", "features": { "b": { "require": {"c/c": "1.*"} } } },
+                { "name": "c/c", "version": "dev-master", "extra": { "branch-alias": {"dev-master": "1.0.x-dev"} } }
+            ]
+        }
+    ],
+    "require": {
+        "b/b": "1.*"
+    },
+    "require-features": { "b/b": ["b"] },
+    "minimum-stability": "dev"
+}
+--RUN--
+install
+--EXPECT--
+Installing b/b (1.0.0)
+Installing c/c (dev-master)
+Marking c/c (1.0.x-dev) as installed, alias of c/c (dev-master)

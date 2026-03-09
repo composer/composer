@@ -48,15 +48,17 @@ class RuleSetGenerator
      * This rule is of the form (A|B|C), A, B, and C are the providers of the feature requirement
      *
      * @param  BasePackage[] $providers The providers of the requirement
-     * @param  Rule::RULE_* $reason A RULE_* constant describing the reason for generating this rule
-     * @param  mixed $reasonData Any data, e.g. the requirement name, that goes with the reason
-     * @return Rule The generated rule or null if tautological
+     * @param  string $feature The name of the required feature
+     * @param  string $packageName The name of the package where the feature is required
+     * @param  string[] $requiredBy A list of packages requiring the feature
      *
-     * @phpstan-param ReasonData $reasonData
+     * @return Rule The generated rule or null if tautological
      */
-    protected function createRequireFeatureRule(array $providers, string $feature, $reason, $reasonData): Rule
+    protected function createRequireFeatureRule(array $providers, string $feature, string $packageName, array $requiredBy): Rule
     {
         $literals = [];
+        $isFeatureFound = false;
+
         foreach ($providers as $provider) {
             $providerFeatures = array_keys($provider->getFeatures());
 
@@ -64,11 +66,16 @@ class RuleSetGenerator
                 $literals[] = -$provider->id;
             } else {
                 $literals[] = $provider->id;
+                $isFeatureFound = true;
             }
-
         }
 
-        return new GenericRule($literals, $reason, $reasonData);
+        return new GenericRule($literals, Rule::RULE_REQUIRE_FEATURE, [
+            'feature' => $feature,
+            'packageName' => $packageName,
+            'requiredBy' => $requiredBy,
+            'found' => $isFeatureFound,
+        ]);
     }
 
     /**
@@ -372,11 +379,12 @@ class RuleSetGenerator
                     }
                 }
 
-                $rule = $this->createRequireFeatureRule($this->pool->whatProvides($packageName), $feature, Rule::RULE_REQUIRE_FEATURE, [
-                    'feature' => $feature,
-                    'packageName' => $packageName,
-                    'requiredBy' => $requiredByPackages,
-                ]);
+                $rule = $this->createRequireFeatureRule(
+                    $this->pool->whatProvides($packageName),
+                    $feature,
+                    $packageName,
+                    $requiredByPackages
+                );
 
                 $this->addRule(RuleSet::TYPE_PACKAGE, $rule);
             }
