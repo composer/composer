@@ -73,17 +73,14 @@ class AliasPackage extends BasePackage
         $this->dev = $this->stability === 'dev';
 
         foreach (Link::$TYPES as $type) {
-            if ($type === Link::TYPE_FEATURE) {
-                $aliasFeatures = $aliasOf->getFeatures();
+            $links = $aliasOf->{'get' . ucfirst($type)}();
+            $this->{$type} = $this->replaceSelfVersionDependencies($links, $type);
+        }
 
-                foreach ($this->features as $name => $feature) {
-                    $links = $aliasFeatures[$name]['require'] ?? [];
-                    $this->features[$name]['require'] = $this->replaceSelfVersionDependencies($links, Link::TYPE_FEATURE);
-                }
-            } else {
-                $links = $aliasOf->{'get' . ucfirst($type)}();
-                $this->{$type} = $this->replaceSelfVersionDependencies($links, $type);
-            }
+        $aliasFeatures = $aliasOf->getFeatures();
+
+        foreach ($aliasFeatures as $name => $feature) {
+            $this->features[$name]['require'] = $this->replaceSelfVersionDependencies($aliasFeatures[$name]['require'], Link::TYPE_REQUIRE);
         }
     }
 

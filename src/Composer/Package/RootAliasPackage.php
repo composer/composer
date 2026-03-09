@@ -238,7 +238,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
             $links = $feature['require'] ?? [];
 
             $this->features[$name] = $feature;
-            $this->features[$name]['require'] = $this->replaceSelfVersionDependencies($links, Link::TYPE_FEATURE);
+            $this->features[$name]['require'] = $this->replaceSelfVersionDependencies($links, Link::TYPE_REQUIRE);
         }
 
         $this->aliasOf->setFeatures($features);

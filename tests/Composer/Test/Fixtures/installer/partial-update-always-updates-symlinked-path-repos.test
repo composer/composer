@@ -39,7 +39,6 @@ Partial updates always update path repos which are symlinked, but not those whic
     ],
     "packages-dev": [],
     "packages-feature": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {

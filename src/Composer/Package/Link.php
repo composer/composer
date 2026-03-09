@@ -26,7 +26,6 @@ class Link
     public const TYPE_PROVIDE = 'provides';
     public const TYPE_CONFLICT = 'conflicts';
     public const TYPE_REPLACE = 'replaces';
-    public const TYPE_FEATURE = 'features';
 
     /**
      * Special type
@@ -41,7 +40,7 @@ class Link
      *
      * @internal
      * @var string[]
-     * @phpstan-var array<self::TYPE_REQUIRE|self::TYPE_DEV_REQUIRE|self::TYPE_PROVIDE|self::TYPE_CONFLICT|self::TYPE_REPLACE|self::TYPE_FEATURE>
+     * @phpstan-var array<self::TYPE_REQUIRE|self::TYPE_DEV_REQUIRE|self::TYPE_PROVIDE|self::TYPE_CONFLICT|self::TYPE_REPLACE>
      */
     public static $TYPES = [
         self::TYPE_REQUIRE,
@@ -49,7 +48,6 @@ class Link
         self::TYPE_PROVIDE,
         self::TYPE_CONFLICT,
         self::TYPE_REPLACE,
-        self::TYPE_FEATURE,
     ];
 
     /**

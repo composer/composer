@@ -84,7 +84,7 @@ class ArrayLoader implements LoaderInterface
                 $links = $this->parseLinks(
                     $package->getName(),
                     $package->getPrettyVersion(),
-                    Link::TYPE_FEATURE,
+                    Link::TYPE_REQUIRE,
                     $features[$name][$linkType]
                 );
 
