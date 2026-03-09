@@ -25,12 +25,12 @@ Removing a package has no effect if another package would require an update in o
         { "name": "dep/c", "version": "1.0.0" }
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
-    "prefer-lowest": false
+    "prefer-lowest": false,
+    "self-features": []
 }
 --RUN--
 update remove/b

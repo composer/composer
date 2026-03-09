@@ -24,6 +24,6 @@ Installing a package without a feature should not install the features dependenc
     }
 }
 --RUN--
-install --no-features
+install
 --EXPECT--
 Installing a/a (1.0.0)

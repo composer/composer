@@ -36,7 +36,6 @@ Partial update from lock file should update everything to the state of the lock,
         { "name": "f/dependency", "version": "1.0.0" }
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
@@ -45,7 +44,8 @@ Partial update from lock file should update everything to the state of the lock,
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --INSTALLED--
 [
@@ -66,14 +66,14 @@ update b/unstable
         { "name": "f/dependency", "version": "1.0.0", "type": "library" }
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Upgrading a/old (0.9.0 => 1.0.0)

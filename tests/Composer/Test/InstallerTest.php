@@ -363,16 +363,13 @@ class InstallerTest extends TestCase
         $install->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY);
         $install->addOption('no-dev', null, InputOption::VALUE_NONE);
         $install->addOption('dry-run', null, InputOption::VALUE_NONE);
-        $install->addOption('no-features', null, InputOption::VALUE_NONE);
-        $install->addOption('feature', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, '', []);
+        $install->addOption('self-feature', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, '', []);
         $install->setCode(static function (InputInterface $input, OutputInterface $output) use ($installer, $composer): int {
             $ignorePlatformReqs = true === $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
-            $restrictedFeatures = null;
+            $restrictedFeatures = [];
 
-            if (true === $input->getOption('no-features')) {
-                $restrictedFeatures = [];
-            } elseif (count($input->getOption('feature')) > 0) {
-                $restrictedFeatures = $input->getOption('feature');
+            if (count($input->getOption('self-feature')) > 0) {
+                $restrictedFeatures = $input->getOption('self-feature');
             }
 
             $installer
@@ -380,7 +377,7 @@ class InstallerTest extends TestCase
                 ->setDryRun($input->getOption('dry-run'))
                 ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
                 ->setAuditConfig(AuditConfig::fromConfig($composer->getConfig(), false))
-                ->setRestrictedRootFeatures($restrictedFeatures);
+                ->setRootFeatures($restrictedFeatures);
 
             return $installer->run();
         });
@@ -400,8 +397,7 @@ class InstallerTest extends TestCase
         $update->addOption('minimal-changes', null, InputOption::VALUE_NONE);
         $update->addOption('prefer-stable', null, InputOption::VALUE_NONE);
         $update->addOption('prefer-lowest', null, InputOption::VALUE_NONE);
-        $update->addOption('no-features', null, InputOption::VALUE_NONE);
-        $update->addOption('feature', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, '', []);
+        $update->addOption('self-feature', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, '', []);
         $update->addArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL);
         $update->setCode(static function (InputInterface $input, OutputInterface $output) use ($installer, $composer): int {
             $packages = $input->getArgument('packages');
@@ -419,12 +415,10 @@ class InstallerTest extends TestCase
             }
 
             $ignorePlatformReqs = true === $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
-            $restrictedFeatures = null;
+            $restrictedFeatures = [];
 
-            if (true === $input->getOption('no-features')) {
-                $restrictedFeatures = [];
-            } elseif (count($input->getOption('feature')) > 0) {
-                $restrictedFeatures = $input->getOption('feature');
+            if (count($input->getOption('self-feature')) > 0) {
+                $restrictedFeatures = $input->getOption('self-feature');
             }
 
             $installer
@@ -440,7 +434,7 @@ class InstallerTest extends TestCase
                 ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
                 ->setAuditConfig(AuditConfig::fromConfig($composer->getConfig(), false))
                 ->setMinimalUpdate($input->getOption('minimal-changes'))
-                ->setRestrictedRootFeatures($restrictedFeatures);
+                ->setRootFeatures($restrictedFeatures);
 
             return $installer->run();
         });

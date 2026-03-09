@@ -27,14 +27,14 @@ Update package which is in lock file but not in remote repo in the correct versi
         }
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update main/dep --with-all-dependencies

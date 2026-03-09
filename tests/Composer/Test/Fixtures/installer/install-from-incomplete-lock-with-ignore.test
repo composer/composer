@@ -26,12 +26,12 @@ is issued when allow-missing-requirements if enabled
         { "name": "required/pkg", "version": "1.0.0" }
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
-    "prefer-lowest": false
+    "prefer-lowest": false,
+    "self-features": []
 }
 --RUN--
 install

@@ -43,7 +43,6 @@ install
         }
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
@@ -52,7 +51,8 @@ install
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Installing a/a (dev-master 459720f)

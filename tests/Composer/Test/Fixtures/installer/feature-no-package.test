@@ -23,7 +23,7 @@ A feature requiring a package that is not available should fail
     }
 }
 --RUN--
-update
+update --self-feature b
 
 --EXPECT-EXIT-CODE--
 2

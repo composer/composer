@@ -1,5 +1,5 @@
 --TEST--
-Installing a package with a specific feature should not install other features dependencies
+Feature requiring the same package should have the locked version duplicated in each feature
 --COMPOSER--
 {
     "repositories": [
@@ -25,13 +25,36 @@ Installing a package with a specific feature should not install other features d
         "c": {
             "description": "Feature C",
             "require": {
+                "b/b": "1.0.0",
                 "c/c": "1.0.0"
             }
         }
     }
 }
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "1.0.0",
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "1.0.0",
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {},
+    "self-features": ["b"]
+}
 --RUN--
-install --feature c
+install
 --EXPECT--
 Installing a/a (1.0.0)
-Installing c/c (1.0.0)
+Installing b/b (1.0.0)

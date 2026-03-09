@@ -31,14 +31,14 @@ Ensure that a partial update of a dependency does not conflict if the only way t
         {"name": "root/req2", "version": "1.0.0", "require": {"dep/pkg2": "1.*", "dep/pkg1": "*"}, "type": "library"}
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update dep/pkg2 --with-dependencies
@@ -51,14 +51,14 @@ update dep/pkg2 --with-dependencies
         {"name": "root/req2", "version": "1.0.0", "require": {"dep/pkg2": "1.*", "dep/pkg1": "*"}, "type": "library"}
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Installing dep/pkg1 (1.0.0)

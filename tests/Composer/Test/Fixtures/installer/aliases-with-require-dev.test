@@ -60,7 +60,6 @@ update
             "type": "library"
         }
     ],
-    "packages-feature": [],
     "aliases": [{
         "package": "a/aliased",
         "version": "dev-next",
@@ -80,7 +79,8 @@ update
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Installing a/aliased (dev-next)

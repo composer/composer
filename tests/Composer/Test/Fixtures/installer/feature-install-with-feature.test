@@ -24,6 +24,7 @@ Installing a package with features should install all features dependencies by d
     }
 }
 --RUN--
-install
+install --self-feature b
 --EXPECT--
 Installing a/a (1.0.0)
+Installing b/b (1.0.0)

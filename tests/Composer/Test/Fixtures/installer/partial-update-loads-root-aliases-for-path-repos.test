@@ -28,7 +28,6 @@ Partial updates always load root aliases even for path repos which are symlinked
         { "name": "symfony/console", "version": "1.0.0" }
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
@@ -36,7 +35,8 @@ Partial updates always load root aliases even for path repos which are symlinked
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 
 --INSTALLED--

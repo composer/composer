@@ -69,14 +69,14 @@ Ensure that a partial update of a dependency does not conflict if the only way t
         {"name": "root/pkg10", "version": "1.0.0", "type": "library", "require": {"dep/pkg9": "*"}}
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update update/pkg1 --with-dependencies
@@ -100,14 +100,14 @@ update update/pkg1 --with-dependencies
         }
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT-OUTPUT--
 Loading composer repositories with package information

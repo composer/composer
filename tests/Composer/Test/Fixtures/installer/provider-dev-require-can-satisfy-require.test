@@ -40,14 +40,14 @@ update --no-dev
             "require": {"b/b": "1.0.0"}
         }
     ],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Installing b/b (1.0.0)

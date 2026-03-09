@@ -111,7 +111,6 @@ class LockerTest extends TestCase
                     ['name' => 'pkg2', 'version' => '0.1.10', 'type' => 'library'],
                 ],
                 'packages-dev' => [],
-                'packages-feature' => [],
                 'aliases' => [],
                 'minimum-stability' => 'dev',
                 'stability-flags' => new \stdClass,
@@ -121,6 +120,7 @@ class LockerTest extends TestCase
                 'prefer-stable' => false,
                 'prefer-lowest' => false,
                 'plugin-api-version' => PluginInterface::PLUGIN_API_VERSION,
+                'self-features' => [],
             ]);
 
         $locker->setLockData([$package1, $package2], [], [], [], [], [], 'dev', [], false, false, ['foo/bar' => '1.0']);

@@ -89,14 +89,14 @@ Test the error output minifies version lists
         {"name": "b/b", "version": "1.0.0"}
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 
 --RUN--

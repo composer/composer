@@ -29,12 +29,12 @@ Limited update takes rules from lock if available, and not from the installed re
         { "name": "toupdate/notinstalled", "version": "1.0.0" }
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
-    "prefer-lowest": false
+    "prefer-lowest": false,
+    "self-features": []
 }
 --INSTALLED--
 [

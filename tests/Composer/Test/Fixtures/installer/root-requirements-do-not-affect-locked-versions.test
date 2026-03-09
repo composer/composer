@@ -43,12 +43,12 @@ The locked version will not get overwritten by an install but fails on invalid p
         }
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
-    "prefer-lowest": false
+    "prefer-lowest": false,
+    "self-features": []
 }
 --INSTALLED--
 [

@@ -1,5 +1,5 @@
 --TEST--
-Installing a package with features should install all features dependencies by default
+Installing a package with a specific feature should not install other features dependencies
 --COMPOSER--
 {
     "repositories": [
@@ -7,7 +7,8 @@ Installing a package with features should install all features dependencies by d
             "type": "package",
             "package": [
                 { "name": "a/a", "version": "1.0.0" },
-                { "name": "b/b", "version": "1.0.0" }
+                { "name": "b/b", "version": "1.0.0" },
+                { "name": "c/c", "version": "1.0.0" }
             ]
         }
     ],
@@ -20,10 +21,17 @@ Installing a package with features should install all features dependencies by d
             "require": {
                 "b/b": "1.0.0"
             }
+        },
+        "c": {
+            "description": "Feature C",
+            "require": {
+                "c/c": "1.0.0"
+            }
         }
     }
 }
 --RUN--
-install
+update --self-feature c
 --EXPECT--
 Installing a/a (1.0.0)
+Installing c/c (1.0.0)

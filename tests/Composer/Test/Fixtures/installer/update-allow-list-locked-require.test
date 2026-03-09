@@ -38,14 +38,14 @@ Update with a package allow list only updates those packages if they are not pre
         { "name": "fixed/sub-dependency", "version": "1.0.0" }
     ],
     "packages-dev": [],
-    "packages-feature": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update allowed/pkg dependency/pkg
