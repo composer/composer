@@ -263,11 +263,11 @@ class InstalledVersions
     public static function hasFeature($packageName, $feature)
     {
         foreach (self::getInstalled() as $installed) {
-            if (!isset($installed['versions'][$packageName])) {
+            if (!isset($installed['versions'][$packageName]['features'])) {
                 continue;
             }
 
-            return in_array($feature, $installed['versions'][$packageName], true);
+            return in_array($feature, $installed['versions'][$packageName]['features'], true);
         }
 
         return false;

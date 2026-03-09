@@ -293,4 +293,11 @@ class InstalledVersionsTest extends TestCase
 
         $prop->setValue(null, []);
     }
+
+    public function testHasFeature(): void
+    {
+        self::assertTrue(InstalledVersions::hasFeature('a/provider', 'foo'));
+        self::assertFalse(InstalledVersions::hasFeature('a/provider', 'bar'));
+        self::assertFalse(InstalledVersions::hasFeature('a/provider2', 'foo'));
+    }
 }
