@@ -102,6 +102,8 @@ class Locker
             'prefer-stable',
             'repositories',
             'extra',
+            'features',
+            'require-features',
         ];
 
         $relevantContent = [];
