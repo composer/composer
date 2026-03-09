@@ -6,8 +6,8 @@ Installing a package that require a feature from another package should install 
         {
             "type": "package",
             "package": [
-                { "name": "a/a", "version": "1.0.0", "require": { "b/b": "1.0.0" }, "require-feature": { "b/b": ["c"] } },
-                { "name": "b/b", "version": "1.0.0", "feature": { "c": { "require": { "c/c": "1.0.0" } } } },
+                { "name": "a/a", "version": "1.0.0", "require": { "b/b": "1.0.0" }, "require-features": { "b/b": ["c"] } },
+                { "name": "b/b", "version": "1.0.0", "features": { "c": { "require": { "c/c": "1.0.0" } } } },
                 { "name": "c/c", "version": "1.0.0" }
             ]
         }

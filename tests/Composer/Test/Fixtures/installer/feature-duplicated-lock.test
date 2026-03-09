@@ -15,7 +15,7 @@ Feature requiring the same package should have the locked version duplicated in 
     "require": {
         "a/a": "1.0.0"
     },
-    "feature": {
+    "features": {
         "b": {
             "description": "Feature B",
             "require": {

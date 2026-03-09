@@ -107,7 +107,7 @@ class Package extends BasePackage
     protected $phpExt = null;
 
     /** @var array<string, string[]> */
-    protected $featuresRequires = [];
+    protected $featureRequires = [];
 
     /** @var array<string, FeatureConfig> */
     protected $features = [];
@@ -732,19 +732,19 @@ class Package extends BasePackage
     /**
      * @inheritDoc
      */
-    public function getFeaturesRequires(): array
+    public function getFeatureRequires(): array
     {
-        return $this->featuresRequires;
+        return $this->featureRequires;
     }
 
     /**
      * Set the required features
      *
-     * @param array<string, string[]> $featuresRequires A set of package links
+     * @param array<string, string[]> $featureRequires A set of package links
      */
-    public function setFeaturesRequires(array $featuresRequires): void
+    public function setFeatureRequires(array $featureRequires): void
     {
-        $this->featuresRequires = $featuresRequires;
+        $this->featureRequires = $featureRequires;
     }
 
     /**

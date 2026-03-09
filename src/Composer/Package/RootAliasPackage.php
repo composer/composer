@@ -224,9 +224,9 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setFeaturesRequires(array $featuresRequires): void
+    public function setFeatureRequires(array $featureRequires): void
     {
-        $this->aliasOf->setFeaturesRequires($featuresRequires);
+        $this->aliasOf->setFeatureRequires($featureRequires);
     }
 
     /**

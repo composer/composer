@@ -6,7 +6,7 @@ Installing a package that provides a feature without requiring it should not ins
         {
             "type": "package",
             "package": [
-                { "name": "a/a", "version": "1.0.0", "feature": { "b": { "require": { "b/b": "1.0.0" } } } },
+                { "name": "a/a", "version": "1.0.0", "features": { "b": { "require": { "b/b": "1.0.0" } } } },
                 { "name": "b/b", "version": "1.0.0" }
             ]
         }
@@ -22,7 +22,7 @@ install
     "packages": [
         {
             "name": "a/a", "version": "1.0.0",
-            "feature": { "b": { "require": { "b/b": "1.0.0" } } },
+            "features": { "b": { "require": { "b/b": "1.0.0" } } },
             "type": "library"
         }
     ],

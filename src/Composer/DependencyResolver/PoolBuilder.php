@@ -574,7 +574,7 @@ class PoolBuilder
         }
 
         // Here we load the required feature of the package and building our global list of features
-        foreach ($package->getFeaturesRequires() as $packageName => $features) {
+        foreach ($package->getFeatureRequires() as $packageName => $features) {
             if (!isset($this->requiredFeatures[$packageName])) {
                 $this->requiredFeatures[$packageName] = [
                     'merged' => [],

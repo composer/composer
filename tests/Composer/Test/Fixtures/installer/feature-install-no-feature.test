@@ -14,7 +14,7 @@ Installing a package without a feature should not install the features dependenc
     "require": {
         "a/a": "1.0.0"
     },
-    "feature": {
+    "features": {
         "b": {
             "description": "Feature B",
             "require": {

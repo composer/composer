@@ -51,7 +51,7 @@ class AliasPackage extends BasePackage
     /** @var Link[] */
     protected $replaces;
     /** @var array<string, string[]> */
-    protected $featuresRequires = [];
+    protected $featureRequires = [];
     /** @var array<string, FeatureConfig> */
     protected $features = [];
 
@@ -414,9 +414,9 @@ class AliasPackage extends BasePackage
     /**
      * @inheritDoc
      */
-    public function getFeaturesRequires(): array
+    public function getFeatureRequires(): array
     {
-        return $this->featuresRequires;
+        return $this->featureRequires;
     }
 
     /**

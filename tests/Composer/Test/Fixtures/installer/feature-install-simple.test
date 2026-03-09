@@ -14,7 +14,7 @@ Installing a package with features should install all features dependencies by d
     "require": {
         "a/a": "1.0.0"
     },
-    "feature": {
+    "features": {
         "b": {
             "description": "Feature B",
             "require": {

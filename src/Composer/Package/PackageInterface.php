@@ -398,7 +398,7 @@ interface PackageInterface
      *
      * @return array<string, string[]>
      */
-    public function getFeaturesRequires(): array;
+    public function getFeatureRequires(): array;
 
     /**
      * Return the list of features provided by the package

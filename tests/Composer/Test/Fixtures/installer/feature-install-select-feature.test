@@ -15,7 +15,7 @@ Installing a package with a specific feature should not install other features d
     "require": {
         "a/a": "1.0.0"
     },
-    "feature": {
+    "features": {
         "b": {
             "description": "Feature B",
             "require": {

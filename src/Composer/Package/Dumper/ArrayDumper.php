@@ -86,28 +86,28 @@ class ArrayDumper
         }
 
         if (count($package->getFeatures()) > 0) {
-            $data['feature'] = [];
+            $data['features'] = [];
 
             foreach ($package->getFeatures() as $feature => $featureData) {
-                $data['feature'][$feature] = [];
+                $data['features'][$feature] = [];
 
                 if (isset($featureData['description'])) {
-                    $data['feature'][$feature]['description'] = $featureData['description'];
+                    $data['features'][$feature]['description'] = $featureData['description'];
                 }
 
                 if (isset($featureData['require'])) {
-                    $data['feature'][$feature]['require'] = [];
+                    $data['features'][$feature]['require'] = [];
 
                     foreach ($featureData['require'] as $link) {
-                        $data['feature'][$feature]['require'][$link->getTarget()] = $link->getPrettyConstraint();
+                        $data['features'][$feature]['require'][$link->getTarget()] = $link->getPrettyConstraint();
                     }
                 }
 
             }
         }
 
-        if (count($package->getFeaturesRequires()) > 0) {
-            $data['require-feature'] = $package->getFeaturesRequires();
+        if (count($package->getFeatureRequires()) > 0) {
+            $data['require-features'] = $package->getFeatureRequires();
         }
 
         $packages = $package->getSuggests();

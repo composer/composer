@@ -71,7 +71,7 @@ class ArrayLoader implements LoaderInterface
 
         $features = [];
 
-        foreach ($config['feature'] ?? [] as $name => $feature) {
+        foreach ($config['features'] ?? [] as $name => $feature) {
             $features[$name] = $feature;
 
             foreach (['require'] as $linkType) {
@@ -279,8 +279,8 @@ class ArrayLoader implements LoaderInterface
             $package->setNotificationUrl($config['notification-url']);
         }
 
-        if (isset($config['require-feature'])) {
-            $package->setFeaturesRequires($config['require-feature']);
+        if (isset($config['require-features'])) {
+            $package->setFeatureRequires($config['require-features']);
         }
 
         if ($package instanceof CompletePackageInterface) {

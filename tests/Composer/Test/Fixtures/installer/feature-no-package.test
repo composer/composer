@@ -13,7 +13,7 @@ A feature requiring a package that is not available should fail
     "require": {
         "a/a": "1.0.0"
     },
-    "feature": {
+    "features": {
         "b": {
             "description": "Feature B",
             "require": {

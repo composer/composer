@@ -273,7 +273,7 @@ REGEX;
         $features = [];
 
         foreach ($this->getPackages() as $package) {
-            foreach ($package->getFeaturesRequires() as $packageName => $featuresList) {
+            foreach ($package->getFeatureRequires() as $packageName => $featuresList) {
                 $features[$packageName] = array_unique(array_merge($features[$packageName] ?? [], $featuresList));
             }
         }

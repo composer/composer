@@ -6,7 +6,7 @@ Installing a package with a feature and requiring it should install the feature 
         {
             "type": "package",
             "package": [
-                { "name": "a/a", "version": "1.0.0", "feature": { "b": { "require": { "b/b": "1.0.0" } } } },
+                { "name": "a/a", "version": "1.0.0", "features": { "b": { "require": { "b/b": "1.0.0" } } } },
                 { "name": "b/b", "version": "1.0.0" }
             ]
         }
@@ -14,7 +14,7 @@ Installing a package with a feature and requiring it should install the feature 
     "require": {
         "a/a": "1.0.0"
     },
-    "require-feature": {
+    "require-features": {
         "a/a": ["b"]
     }
 }
@@ -25,7 +25,7 @@ update
     "packages": [
         {
             "name": "a/a", "version": "1.0.0",
-            "feature": { "b": { "require": { "b/b": "1.0.0" } } },
+            "features": { "b": { "require": { "b/b": "1.0.0" } } },
             "type": "library"
         },
         {
