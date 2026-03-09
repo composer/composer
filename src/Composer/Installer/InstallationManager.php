@@ -236,7 +236,7 @@ class InstallationManager
         // do a last write so that we write the repository even if nothing changed
         // as that can trigger an update of some files like InstalledVersions.php if
         // running a new composer version
-        $repo->write($devMode, $this);
+        $repo->write($devMode, $this, $restrictedRootFeatures);
     }
 
     /**
