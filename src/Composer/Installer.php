@@ -503,7 +503,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter());
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->rootFeatures);
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
@@ -730,7 +730,7 @@ class Installer
 
         $lockSelfFeatures = $this->locker->getSelfFeatures();
 
-        if ($this->rootFeatures && array_diff($lockSelfFeatures, $this->rootFeatures)) {
+        if (\count($this->rootFeatures) > 0 && \count(array_diff($lockSelfFeatures, $this->rootFeatures)) > 0) {
             $this->io->writeError(sprintf('<error>Error: The lock file is not up to date with required features: %s. Please run composer update.</error>', implode(', ', $this->rootFeatures)), true, IOInterface::QUIET);
 
             return self::ERROR_LOCK_FILE_INVALID;
@@ -802,7 +802,7 @@ class Installer
 
             unset($rootRequires, $link);
 
-            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes);
+            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes, null, $this->rootFeatures);
 
             // solve dependencies
             $solver = new Solver($policy, $pool, $this->io);

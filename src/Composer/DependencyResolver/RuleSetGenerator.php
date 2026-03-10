@@ -17,6 +17,7 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
+use Composer\Package\RootPackage;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -261,7 +262,11 @@ class RuleSetGenerator
 
                     $possibleRequires = $this->pool->whatProvides($link->getTarget(), $constraint);
 
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, $possibleRequires, Rule::RULE_PACKAGE_REQUIRES, $link));
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, $possibleRequires, Rule::RULE_FEATURE_REQUIRES, [
+                        'feature' => $featureName,
+                        'link' => $link,
+                        'packageName' => $package->getName(),
+                    ]));
 
                     foreach ($possibleRequires as $require) {
                         $workQueue->enqueue($require);

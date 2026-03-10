@@ -32,5 +32,5 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - Root composer.json requires a/a ^1.0 -> satisfiable by a/a[1.0.0].
-    - a/a 1.0.0 requires b/b 1.0.0 -> found b/b[1.0.0] but it conflicts with your root composer.json require (^2.0).
+    - a/a 1.0.0 requires b/b 1.0.0 (using feature "b") -> found b/b[1.0.0] but it conflicts with your root composer.json require (^2.0).
 --EXPECT--

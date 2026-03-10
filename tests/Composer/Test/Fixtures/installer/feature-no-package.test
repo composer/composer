@@ -35,6 +35,9 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - Root composer.json requires b/b, it could not be found in any version, there may be a typo in the package name.
+  Problem 2
+    - __root__ is present at version 1.0.0+no-version-set and cannot be modified by Composer
+    - __root__ 1.0.0+no-version-set requires b/b 1.0.0 (using feature "b") -> could not be found in any version, there may be a typo in the package name.
 
 Potential causes:
  - A typo in the package name

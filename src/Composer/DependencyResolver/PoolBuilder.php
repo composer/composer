@@ -210,10 +210,17 @@ class PoolBuilder
 
     /**
      * @param RepositoryInterface[] $repositories
+     * @param string[] $selfFeatures
      */
-    public function buildPool(array $repositories, Request $request): Pool
+    public function buildPool(array $repositories, Request $request, array $selfFeatures): Pool
     {
         $this->restrictedPackagesList = $request->getRestrictedPackages() !== null ? array_flip($request->getRestrictedPackages()) : null;
+        $this->requiredFeatures["__root__"] = [
+            'merged' => $selfFeatures,
+            'byPackage' => [
+                '__root__' => $selfFeatures,
+            ],
+        ];
 
         if (\count($request->getUpdateAllowList()) > 0) {
             $this->updateAllowList = $request->getUpdateAllowList();

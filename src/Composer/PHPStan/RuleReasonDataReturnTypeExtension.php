@@ -60,6 +60,7 @@ final class RuleReasonDataReturnTypeExtension implements DynamicMethodReturnType
             Rule::RULE_LEARNED => new IntegerType(),
             Rule::RULE_PACKAGE_ALIAS => new ObjectType(BasePackage::class),
             Rule::RULE_PACKAGE_INVERSE_ALIAS => new ObjectType(BasePackage::class),
+            Rule::RULE_FEATURE_REQUIRES => new ConstantArrayType([new ConstantStringType('packageName'), new ConstantStringType('feature'), new ConstantStringType('link')], [new StringType, new StringType(), new ObjectType(Link::class)]),
         ];
 
         foreach ($types as $const => $type) {

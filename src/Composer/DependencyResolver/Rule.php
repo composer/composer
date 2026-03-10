@@ -24,7 +24,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 /**
  * @author Nils Adermann <naderman@naderman.de>
  * @author Ruben Gonzalez <rubenrua@gmail.com>
- * @phpstan-type ReasonData Link|BasePackage|string|int|array{packageName: string, constraint: ConstraintInterface}|array{packageName: string, feature: string, requiredBy: string[], found: bool}|array{package: BasePackage}
+ * @phpstan-type ReasonData Link|BasePackage|string|int|array{packageName: string, constraint: ConstraintInterface}|array{link: Link, feature: string, packageName: string}|array{packageName: string, feature: string, requiredBy: string[], found: bool}|array{package: BasePackage}
  */
 abstract class Rule
 {
@@ -38,6 +38,7 @@ abstract class Rule
     public const RULE_PACKAGE_ALIAS = 13; // BasePackage
     public const RULE_PACKAGE_INVERSE_ALIAS = 14; // BasePackage
     public const RULE_REQUIRE_FEATURE = 15; // array{packageName: string, feature: string, requiredBy: string[], found: bool}
+    public const RULE_FEATURE_REQUIRES = 16; // array{packageName: string, feature: string, link: Link}
 
     // bitfield defs
     private const BITFIELD_TYPE = 0;
@@ -109,6 +110,8 @@ abstract class Rule
                 return $this->getReasonData()['package']->getName();
             case self::RULE_PACKAGE_REQUIRES:
                 return $this->getReasonData()->getTarget();
+            case self::RULE_FEATURE_REQUIRES:
+                return $this->getReasonData()['link']->getTarget();
         }
 
         return null;
@@ -193,6 +196,31 @@ abstract class Rule
             }
         }
 
+        if ($this->getReason() === self::RULE_FEATURE_REQUIRES) {
+            $link = $this->getReasonData()['link'];
+
+            if (PlatformRepository::isPlatformPackage($link->getTarget())) {
+                return false;
+            }
+            if ($request->getLockedRepository() !== null) {
+                foreach ($request->getLockedRepository()->getPackages() as $package) {
+                    if ($package->getName() === $link->getTarget()) {
+                        if ($pool->isUnacceptableFixedOrLockedPackage($package)) {
+                            return true;
+                        }
+                        if (!$link->getConstraint()->matches(new Constraint('=', $package->getVersion()))) {
+                            return true;
+                        }
+                        // required package was locked but has been unlocked and still matches
+                        if (!$request->isLockedPackage($package)) {
+                            return true;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
         return false;
     }
 
@@ -217,6 +245,7 @@ abstract class Rule
                 return $package2;
 
             case self::RULE_PACKAGE_REQUIRES:
+            case self::RULE_FEATURE_REQUIRES:
                 $sourceLiteral = $literals[0];
                 $sourcePackage = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($sourceLiteral));
 
@@ -324,6 +353,32 @@ abstract class Rule
                     $targetName = $reasonData->getTarget();
 
                     $reason = Problem::getMissingPackageReason($repositorySet, $request, $pool, $isVerbose, $targetName, $reasonData->getConstraint());
+
+                    return $text . ' -> ' . $reason[1];
+                }
+
+                return $text;
+
+            case self::RULE_FEATURE_REQUIRES:
+                assert(\count($literals) > 0);
+                $sourceLiteral = array_shift($literals);
+                $sourcePackage = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($sourceLiteral));
+                /** @var array{link: Link, feature: string, packageName: string} $reasonData */
+                $reasonData = $this->getReasonData();
+
+                $requires = [];
+                foreach ($literals as $literal) {
+                    $requires[] = $pool->literalToPackage($literal);
+                }
+
+                $text = $reasonData['link']->getPrettyString($sourcePackage);
+                $text .= ' (using feature "'.$reasonData['feature'].'")';
+                if (\count($requires) > 0) {
+                    $text .= ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $requires, $isVerbose, $reasonData['link']->getConstraint()) . '.';
+                } else {
+                    $targetName = $reasonData['link']->getTarget();
+
+                    $reason = Problem::getMissingPackageReason($repositorySet, $request, $pool, $isVerbose, $targetName, $reasonData['link']->getConstraint());
 
                     return $text . ' -> ' . $reason[1];
                 }

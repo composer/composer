@@ -125,6 +125,7 @@ class Problem
                 return (string) $rule->getReasonData()['package'];
             case Rule::RULE_PACKAGE_CONFLICT:
             case Rule::RULE_PACKAGE_REQUIRES:
+            case Rule::RULE_FEATURE_REQUIRES:
                 return $rule->getSourcePackage($pool) . '//' . $rule->getReasonData()->getPrettyString($rule->getSourcePackage($pool));
             case Rule::RULE_PACKAGE_SAME_NAME:
             case Rule::RULE_PACKAGE_ALIAS:
@@ -147,6 +148,7 @@ class Problem
                 return 2;
             case Rule::RULE_PACKAGE_CONFLICT:
             case Rule::RULE_PACKAGE_REQUIRES:
+            case Rule::RULE_FEATURE_REQUIRES:
                 return 1;
             case Rule::RULE_PACKAGE_SAME_NAME:
             case Rule::RULE_LEARNED:
