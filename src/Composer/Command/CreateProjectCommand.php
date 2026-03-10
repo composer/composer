@@ -46,6 +46,7 @@ use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Version\VersionParser;
 use Composer\Advisory\Auditor;
+use Composer\Package\Loader\ArrayLoader;
 
 /**
  * Install a package as new project into new directory.
@@ -74,6 +75,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will default to latest'),
                 new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum-stability allowed (unless a version is specified).'),
+                new InputOption('require', null,  InputOption::VALUE_REQUIRED, 'Adds comma-separated packages to composer.json to be installed'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),
                 new InputOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).', null, $this->suggestPreferInstall()),
@@ -158,6 +160,7 @@ EOT
             $input->getArgument('directory'),
             $input->getArgument('version'),
             $input->getOption('stability'),
+            $input->getOption('require'),
             $preferSource,
             $preferDist,
             !$input->getOption('no-dev'),
@@ -177,7 +180,7 @@ EOT
      *
      * @throws \Exception
      */
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, ?string $packageName = null, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $noInstall = false, ?PlatformRequirementFilterInterface $platformRequirementFilter = null, bool $secureHttp = true, bool $addRepository = false): int
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, ?string $packageName = null, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', ?string $requiredPackagesString = '', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $noInstall = false, ?PlatformRequirementFilterInterface $platformRequirementFilter = null, bool $secureHttp = true, bool $addRepository = false): int
     {
         $oldCwd = Platform::getCwd();
 
@@ -222,6 +225,25 @@ EOT
                 }
 
                 $composer = $this->createComposerInstance($input, $io, null, $disablePlugins);
+            }
+        }
+
+        //add packages to be installed in package.json
+        if(!is_null($requiredPackagesString) && strlen($requiredPackagesString) > 0){
+
+            $requiredPackagesArrayRaw = explode(',', $requiredPackagesString);
+
+            $configSource = new JsonConfigSource(new JsonFile('composer.json'));
+
+            foreach($requiredPackagesArrayRaw as $nameColonConstraint){
+                $nameColonConstraintExploded = explode(':', $nameColonConstraint); 
+                $nameColonConstraintExploded[1] = $nameColonConstraintExploded[1] ?? '*';
+
+                $configSource->addLink(
+                    'require',
+                    $nameColonConstraintExploded[0],
+                    $nameColonConstraintExploded[1]
+                );
             }
         }
 
