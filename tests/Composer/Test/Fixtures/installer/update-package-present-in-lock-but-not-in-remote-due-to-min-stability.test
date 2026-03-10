@@ -34,7 +34,8 @@ Update package which is in lock file but not remote repo due to min-stability sh
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update main/dep --with-all-dependencies

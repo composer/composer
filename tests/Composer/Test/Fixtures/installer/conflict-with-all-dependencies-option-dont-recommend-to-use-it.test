@@ -28,7 +28,8 @@ Verify that a conflict with all dependencies option enabled don't recommend to u
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 
 --RUN--

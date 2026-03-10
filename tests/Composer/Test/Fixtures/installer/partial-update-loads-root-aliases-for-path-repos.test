@@ -35,7 +35,8 @@ Partial updates always load root aliases even for path repos which are symlinked
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 
 --INSTALLED--

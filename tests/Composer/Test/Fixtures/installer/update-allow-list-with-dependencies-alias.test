@@ -53,7 +53,8 @@ Verify that a partial update with deps correctly keeps track of all aliases.
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update new/pkg --with-all-dependencies
@@ -88,7 +89,8 @@ update new/pkg --with-all-dependencies
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Marking current/dep2 (1.0.x-dev) as uninstalled, alias of current/dep2 (dev-foo)

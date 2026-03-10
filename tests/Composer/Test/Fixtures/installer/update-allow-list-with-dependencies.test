@@ -47,7 +47,8 @@ Update with a package allow list only updates those packages and their dependenc
     "minimum-stability": "dev",
     "stability-flags": {"a/a":20},
     "prefer-stable": false,
-    "prefer-lowest": false
+    "prefer-lowest": false,
+    "self-features": []
 }
 --RUN--
 update allowed/pkg --with-dependencies
