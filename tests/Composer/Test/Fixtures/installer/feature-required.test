@@ -43,6 +43,11 @@ update
     "platform-dev": {},
     "self-features": []
 }
+--EXPECT-INSTALLED--
+[
+    { "name": "a/a", "version": "1.0.0", "features": { "b": { "require": { "b/b": "1.0.0" } }}, "type": "library" },
+    { "name": "b/b", "version": "1.0.0", "type": "library" }
+]
 --EXPECT--
 Installing a/a (1.0.0)
 Installing b/b (1.0.0)

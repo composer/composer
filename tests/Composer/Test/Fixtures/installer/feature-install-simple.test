@@ -25,5 +25,9 @@ Installing a package with features should install all features dependencies by d
 }
 --RUN--
 install
+--EXPECT-INSTALLED--
+[
+    { "name": "a/a", "version": "1.0.0", "type": "library" }
+]
 --EXPECT--
 Installing a/a (1.0.0)
