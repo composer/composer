@@ -466,4 +466,33 @@ class JsonFileTest extends TestCase
 
         $filesystem->unlink(__DIR__.'/Fixtures/tabs3.json');
     }
+
+    /**
+     * @covers \Composer\Json\JsonFile::write
+     */
+    public function testThrowsWhenWriteConflict(): void
+    {
+        @mkdir(__DIR__.'/Fixtures/subdirfile/');
+        copy(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/subdirfile/tabs.json');
+
+        $jsonFile = new JsonFile(__DIR__.'/Fixtures/subdirfile/tabs.json');
+        $jsonFile->read();
+
+        $filesystem = new Filesystem();
+        $filesystem->unlink(__DIR__.'/Fixtures/subdirfile/tabs.json');
+        $filesystem->removeDirectory(__DIR__.'/Fixtures/subdirfile');
+
+        copy(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/subdirfile');
+
+        $exceptionMessage = '';
+        try {
+            $jsonFile->write(['foo' => 'bar']);
+        } catch (\UnexpectedValueException $e) {
+            $exceptionMessage = $e->getMessage();
+        }
+
+        self::assertStringEndsWith(__DIR__ . '/Fixtures/subdirfile exists and is not a directory.', $exceptionMessage);
+
+        $filesystem->unlink(__DIR__.'/Fixtures/subdirfile');
+    }
 }
