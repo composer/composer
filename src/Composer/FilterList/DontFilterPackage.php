@@ -12,6 +12,11 @@
 
 namespace Composer\FilterList;
 
+use Composer\Package\Version\VersionParser;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\MatchAllConstraint;
+
 /**
  * @readonly
  * @internal
@@ -21,7 +26,7 @@ class DontFilterPackage
 {
     /** @var string */
     public $packageName;
-    /** @var string */
+    /** @var ConstraintInterface */
     public $constraint;
     /** @var string|null */
     public $reason;
@@ -31,9 +36,9 @@ class DontFilterPackage
     /**
      * @param 'all'|'block'|'audit' $apply
      */
-    public function __construct(
+    private function __construct(
         string $packageName,
-        string $constraint = '*',
+        ConstraintInterface $constraint,
         ?string $reason = null,
         string $apply = 'all'
     ) {
@@ -46,20 +51,20 @@ class DontFilterPackage
     /**
      * @param array<mixed>|string|DontFilterPackage $config
      */
-    public static function fromConfig($config): self
+    public static function fromConfig($config, VersionParser $parser): self
     {
         if ($config instanceof self) {
             return $config;
         }
 
         if (\is_string($config)) {
-            return new self($config);
+            return new self($config, new MatchAllConstraint());
         }
 
         if (\is_array($config) && \count($config) === 1 && !isset($config['package'])) {
-            return new self(\key($config), (string) \array_pop($config));
+            return new self(\key($config), $parser->parseConstraints((string) \array_pop($config)));
         }
 
-        return new self($config['package'] ?? '', $config['constraint'] ?? '*', $config['reason'] ?? null, $config['apply'] ?? 'all');
+        return new self($config['package'] ?? '', $parser->parseConstraints($config['constraint'] ?? '*'), $config['reason'] ?? null, $config['apply'] ?? 'all');
     }
 }

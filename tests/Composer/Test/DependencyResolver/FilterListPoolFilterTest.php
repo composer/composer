@@ -1,0 +1,114 @@
+<?php declare(strict_types=1);
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Composer\Test\DependencyResolver;
+
+use Composer\Advisory\AuditConfig;
+use Composer\Advisory\Auditor;
+use Composer\DependencyResolver\FilterListPoolFilter;
+use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
+use Composer\FilterList\FilterListConfig;
+use Composer\Package\CompletePackage;
+use Composer\Package\Package;
+use Composer\Package\Version\VersionParser;
+use Composer\Repository\PackageRepository;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Test\TestCase;
+
+class FilterListPoolFilterTest extends TestCase
+{
+    public function testFilterPackages(): void
+    {
+        $filterListConfig = new FilterListConfig(new VersionParser(), true);
+        $filter = new FilterListPoolFilter($filterListConfig);
+
+        $repository = $this->generatePackageRepository('1.0');
+        $pool = new Pool([
+            new Package('acme/package', '1.0.0.0', '1.0'),
+            $expectedPackage1 = new Package('acme/package', '2.0.0.0', '2.0'),
+            $expectedPackage2 = new Package('acme/other', '1.0.0.0', '1.0'),
+        ]);
+        $filteredPool = $filter->filter($pool, [$repository], new Request());
+
+        $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
+        $this->assertTrue($filteredPool->isFilterListRemovedPackageVersion('acme/package', new Constraint('==', '1.0.0.0')));
+        $this->assertCount(1, $filteredPool->getAllFilterListRemovedPackageVersions());
+    }
+
+    /**
+     * @dataProvider dontFilterProvider
+     * @param bool|array<string, mixed> $config
+     */
+    public function testDontFilterPackagesConfig($config): void
+    {
+        $filterListConfig = new FilterListConfig(new VersionParser(), $config);
+        $filter = new FilterListPoolFilter($filterListConfig);
+
+        $repository = $this->generatePackageRepository('*');
+        $pool = new Pool([
+            $expectedPackage1 = new Package('acme/package', '1.0.0.0', '1.0'),
+            $expectedPackage2 = new Package('acme/package', '1.1.0.0', '1.1'),
+        ]);
+        $filteredPool = $filter->filter($pool, [$repository], new Request());
+
+        $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
+        $this->assertCount(0, $filteredPool->getAllFilterListRemovedPackageVersions());
+    }
+
+    public static function dontFilterProvider(): array
+    {
+        return [
+            'dont-filter-packages' => [['dont-filter-packages' => ['acme/package']]],
+            'categories' => [['categories' => ['other']]],
+            'exclude-categories' => [['exclude-categories' => ['malware']]],
+            'lists' => [['lists' => ['other']]],
+            'exclude-lists' => [['exclude-lists' => ['test-list']]],
+            'feature-off' => [false],
+        ];
+    }
+    public function testDontFilterPackagesConfigIntersection(): void
+    {
+        $filterListConfig = new FilterListConfig(new VersionParser(), [
+            'dont-filter-packages' => [['package' => 'acme/package', 'constraint' => '<=1.0']],
+        ]);
+        $filter = new FilterListPoolFilter($filterListConfig);
+
+        $repository = $this->generatePackageRepository('>=1.0');
+        $pool = new Pool([
+            $expectedPackage = new Package('acme/package', '1.0.0.0', '1.0'),
+            new Package('acme/package', '1.1.0.0', '1.1'),
+        ]);
+        $filteredPool = $filter->filter($pool, [$repository], new Request());
+
+        $this->assertSame([$expectedPackage], $filteredPool->getPackages());
+        $this->assertCount(1, $filteredPool->getAllFilterListRemovedPackageVersions());
+    }
+
+    private function generatePackageRepository(string $constraint): PackageRepository
+    {
+        return new PackageRepository([
+            'package' => [],
+            'filter' => [
+                'test-list' => [
+                    [
+                        'package' => 'acme/package',
+                        'constraint' => $constraint,
+                        'category' => 'malware',
+                        'url' => 'https://example.org/malware/acme/package',
+                    ],
+                ],
+            ],
+        ]);
+    }
+}

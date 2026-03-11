@@ -12,6 +12,8 @@
 
 namespace Composer\FilterList;
 
+use Composer\Package\Version\VersionParser;
+
 /**
  * @readonly
  * @internal
@@ -35,16 +37,21 @@ class ListConfig
      */
     public $dontFilterPackages;
 
+    /** @var VersionParser */
+    private $versionParser;
+
     /**
      * @param array<string, DontFilterPackage> $dontFilterPackages
      * @param list<string> $categories
      * @param list<string> $excludeCategories
      */
     public function __construct(
+        VersionParser $versionParser,
         array $categories = [],
         array $excludeCategories = [],
         array $dontFilterPackages = []
     ) {
+        $this->versionParser = $versionParser;
         $this->categories = $categories;
         $this->excludeCategories = $excludeCategories;
         $this->dontFilterPackages = $dontFilterPackages;
@@ -61,11 +68,11 @@ class ListConfig
         }
 
         $allIgnorePackages = array_map(function ($config) {
-            return DontFilterPackage::fromConfig($config);
+            return DontFilterPackage::fromConfig($config, $this->versionParser);
         }, $config['dont-filter-packages'] ?? $this->dontFilterPackages);
-        $dontFilterPackages = array_values(array_filter($allIgnorePackages, function (DontFilterPackage $entry) use ($operation): bool{
+        $dontFilterPackages = array_filter($allIgnorePackages, function (DontFilterPackage $entry) use ($operation): bool{
             return \in_array($entry->apply, ['all', $operation], true);
-        }));
+        });
 
         $dontFilterPackagesMap = [];
         foreach ($dontFilterPackages as $entry) {
@@ -73,9 +80,23 @@ class ListConfig
         }
 
         return new self(
+            $this->versionParser,
             $config['categories'] ?? $this->categories,
             $config['exclude-categories'] ?? $this->excludeCategories,
                 $dontFilterPackagesMap
         );
+    }
+
+    public function useCategory(string $category): bool
+    {
+        if (\in_array($category, $this->excludeCategories, true)) {
+            return false;
+        }
+
+        if (\in_array($category, $this->categories, true)) {
+            return true;
+        }
+
+        return $this->categories === [];
     }
 }

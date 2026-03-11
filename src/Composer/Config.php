@@ -39,6 +39,7 @@ class Config
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
         'audit' => ['ignore' => [], 'abandoned' => Auditor::ABANDONED_FAIL],
+        'filter' => false,
         'notify-on-install' => true,
         'github-protocols' => ['https', 'ssh', 'git'],
         'gitlab-protocol' => null,
@@ -483,7 +484,22 @@ class Config
                 }
 
                 return $result;
+            case 'filter':
+                $filterConfig = $this->config[$key];
+                $filterEnv = $this->getComposerEnv('COMPOSER_FILTER');
+                if (false !== $filterEnv) {
+                    if (!in_array($filterEnv, ['0', '1'], true)) {
+                        throw new \RuntimeException(
+                            "Invalid value for COMPOSER_FILTER: {$filterEnv}. Expected 0 or 1."
+                        );
+                    }
 
+                    if ((bool) (int) $filterEnv !== (bool) $filterConfig) {
+                        $filterConfig = (bool) (int) $filterEnv;
+                    }
+                }
+
+                return $filterConfig;
             default:
                 if (!isset($this->config[$key])) {
                     return null;

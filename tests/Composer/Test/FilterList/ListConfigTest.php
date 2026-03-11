@@ -13,13 +13,26 @@
 namespace Composer\Test\FilterList;
 
 use Composer\FilterList\ListConfig;
+use Composer\Package\Version\VersionParser;
 use Composer\Test\TestCase;
 
 class ListConfigTest extends TestCase
 {
+    /**
+     * @var VersionParser
+     */
+    private $versionParser;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->versionParser = new VersionParser();
+    }
+
     public function testApply(): void
     {
-        $config = (new ListConfig())->apply([
+        $config = (new ListConfig($this->versionParser))->apply([
             'ignore-unreachable' => true,
             'categories' => ['malware'],
             'exclude-categories' => ['other'],
@@ -36,6 +49,6 @@ class ListConfigTest extends TestCase
 
     public function testDoesntApply(): void
     {
-        $this->assertNull((new ListConfig())->apply(['apply' => 'block'], 'audit'));
+        $this->assertNull((new ListConfig($this->versionParser))->apply(['apply' => 'block'], 'audit'));
     }
 }

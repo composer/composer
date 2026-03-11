@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListEntry;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
@@ -23,9 +24,20 @@ use Composer\Semver\Constraint\MatchAllConstraint;
 
 /**
  * @internal
+ * @final
+ * @readonly
  */
 class FilterListPoolFilter
 {
+    /** @var FilterListConfig */
+    private $filterListConfig;
+
+    public function __construct(
+        FilterListConfig $filterListConfig
+    ) {
+        $this->filterListConfig = $filterListConfig;
+    }
+
     /**
      * @param array<RepositoryInterface> $repositories
      */
@@ -57,7 +69,7 @@ class FilterListPoolFilter
 
     /**
      * @param array<RepositoryInterface> $repositories
-     * @return array<string, list<FilterListEntry>>
+     * @return array<string, array<string, list<FilterListEntry>>>
      */
     private function collectFilterLists(Pool $pool, array $repositories, Request $request): array
     {
@@ -85,9 +97,16 @@ class FilterListPoolFilter
                 continue;
             }
 
-            foreach ($repo->getFilters($packageConstraintMap) as $entries) {
+            foreach ($repo->getFilters($packageConstraintMap, $this->filterListConfig->getConfiguredListNames()) as $listName => $entries) {
+                $listConfig = $this->filterListConfig->getListConfig($listName, 'block');
+                if ($listConfig === null) {
+                    continue;
+                }
+
                 foreach ($entries as $entry) {
-                    $filterListMap[$entry->packageName][] = $entry;
+                    if ($listConfig->useCategory($entry->category)) {
+                        $filterListMap[$entry->packageName][$entry->listName][] = $entry;
+                    }
                 }
             }
         }
@@ -96,7 +115,7 @@ class FilterListPoolFilter
     }
 
     /**
-     * @param array<string, list<FilterListEntry>> $filterListMap
+     * @param array<string, array<string, list<FilterListEntry>>> $filterListMap
      * @return list<FilterListEntry>
      */
     private function getMatchingEntries(PackageInterface $package, array $filterListMap): array
@@ -112,9 +131,20 @@ class FilterListPoolFilter
             }
 
             $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
-            foreach ($filterListMap[$packageName] as $entry) {
-                if ($entry->constraint->matches($packageConstraint)) {
-                    $matchingEntries[] = $entry;
+            foreach ($filterListMap[$packageName] as $listName => $entries) {
+                $filterListConfig = $this->filterListConfig->getListConfig($listName, 'block');
+                if ($filterListConfig === null) {
+                    continue;
+                }
+
+                if (isset($filterListConfig->dontFilterPackages[$packageName]) && $filterListConfig->dontFilterPackages[$packageName]->constraint->matches($packageConstraint)) {
+                    continue;
+                }
+
+                foreach ($entries as $entry) {
+                    if ($entry->constraint->matches($packageConstraint)) {
+                        $matchingEntries[] = $entry;
+                    }
                 }
             }
         }

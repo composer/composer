@@ -744,7 +744,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * @inheritDoc
      */
-    public function getFilters(array $packageConstraintMap): array
+    public function getFilters(array $packageConstraintMap, array $lists): array
     {
         $this->loadRootServerFile(600);
 

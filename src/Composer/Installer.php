@@ -35,6 +35,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
+use Composer\FilterList\FilterListConfig;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\SuggestedPackagesReporter;
@@ -503,7 +504,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), new FilterListPoolFilter());
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter());
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
@@ -1125,6 +1126,17 @@ class Installer
 
         if ($auditConfig->blockInsecure && !$this->updateMirrors) {
             return new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
+        }
+
+        return null;
+    }
+
+    private function createFilterListPoolFilter(): ?FilterListPoolFilter
+    {
+        $filterListConfig = FilterListConfig::fromConfig($this->config, new VersionParser());
+
+        if ($filterListConfig !== null && !$this->updateMirrors) {
+            return new FilterListPoolFilter($filterListConfig);
         }
 
         return null;

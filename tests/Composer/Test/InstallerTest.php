@@ -96,6 +96,8 @@ class InstallerTest extends TestCase
                     case 'platform':
                     case 'audit':
                         return [];
+                    case 'filter':
+                        return false;
                 }
 
                 throw new \UnexpectedValueException('Unknown key '.$key);

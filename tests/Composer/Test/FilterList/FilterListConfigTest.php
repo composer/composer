@@ -13,13 +13,26 @@
 namespace Composer\Test\FilterList;
 
 use Composer\FilterList\FilterListConfig;
+use Composer\Package\Version\VersionParser;
 use Composer\Test\TestCase;
 
 class FilterListConfigTest extends TestCase
 {
+    /**
+     * @var VersionParser
+     */
+    private $versionParser;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->versionParser = new VersionParser();
+    }
+
     public function testListUsesConfigValues(): void
     {
-        $config = new FilterListConfig([
+        $config = new FilterListConfig($this->versionParser, [
             'lists' => ['test-list'],
             'ignore-unreachable' => true,
             'categories' => ['malware'],
@@ -37,7 +50,7 @@ class FilterListConfigTest extends TestCase
 
     public function testListUsesListConfigValues(): void
     {
-        $config = new FilterListConfig([
+        $config = new FilterListConfig($this->versionParser, [
             'ignore-unreachable' => false,
             'categories' => ['other'],
             'exclude-categories' => ['malware'],
@@ -60,7 +73,7 @@ class FilterListConfigTest extends TestCase
 
     public function testListDoesntApply(): void
     {
-        $config = new FilterListConfig([
+        $config = new FilterListConfig($this->versionParser, [
             'ignore-unreachable' => false,
             'categories' => ['other'],
             'exclude-categories' => ['malware'],
@@ -81,7 +94,7 @@ class FilterListConfigTest extends TestCase
 
     public function testListIgnored(): void
     {
-        $config = new FilterListConfig([
+        $config = new FilterListConfig($this->versionParser, [
             'exclude-lists' => ['test-list'],
             'ignore-unreachable' => true,
             'categories' => ['malware'],

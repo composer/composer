@@ -114,7 +114,7 @@ class PackageRepository extends ArrayRepository implements AdvisoryProviderInter
         return count($this->filter) > 0;
     }
 
-    public function getFilters(array $packageConstraintMap): array
+    public function getFilters(array $packageConstraintMap, array $lists): array
     {
         $parser = new VersionParser();
 
