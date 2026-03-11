@@ -420,6 +420,43 @@ class ConfigTest extends TestCase
         self::assertSame(false, $result['block-abandoned']);
     }
 
+    public function testFilter(): void
+    {
+        $config = new Config(true);
+        $result = $config->get('filter');
+
+        $this->assertFalse($result);
+
+        Platform::putEnv('COMPOSER_FILTER', '1');
+        $result = $config->get('filter');
+        $this->assertTrue($result);
+        Platform::clearEnv('COMPOSER_FILTER');
+
+        $config->merge(['config' => ['filter' => [
+            'lists' => ['acme-list'],
+            'exclude-lists' => ['exclude-list'],
+            'categories' => ['category'],
+            'exclude-categories' => ['exclude-category'],
+            'dont-filter-packages' => ['acme/package'],
+            'sources' => [['type' => 'url', 'url' => 'https://example.com/acme/package']],
+        ]]]);
+        $config->merge(['config' => ['filter' => [
+            'lists' => ['other-list'],
+            'exclude-lists' => ['more-list'],
+            'categories' => ['other-category'],
+            'exclude-categories' => ['other-exclude-category'],
+            'dont-filter-packages' => ['acme/other'],
+            'sources' => [['type' => 'url', 'url' => 'https://example.com/acme/other']],
+        ]]]);
+        $result = $config->get('filter');
+        self::assertSame(['acme-list', 'other-list'], $result['lists'] ?? []);
+        self::assertSame(['exclude-list', 'more-list'], $result['exclude-lists'] ?? []);
+        self::assertSame(['category', 'other-category'], $result['categories'] ?? []);
+        self::assertSame(['exclude-category', 'other-exclude-category'], $result['exclude-categories'] ?? []);
+        self::assertSame(['acme/package', 'acme/other'], $result['dont-filter-packages'] ?? []);
+        self::assertSame([['type' => 'url', 'url' => 'https://example.com/acme/package'], ['type' => 'url', 'url' => 'https://example.com/acme/other']], $result['sources'] ?? []);
+    }
+
     public function testGetDefaultsToAnEmptyArray(): void
     {
         $config = new Config;
