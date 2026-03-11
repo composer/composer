@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Json;
 
+use Composer\Util\Filesystem;
 use Seld\JsonLint\ParsingException;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
@@ -410,5 +411,59 @@ class JsonFileTest extends TestCase
         } else {
             self::assertEquals($json, $file->encode($data, $options));
         }
+    }
+
+    /**
+     * @covers \Composer\Json\JsonFile::read
+     */
+    public function testPrintsMessageWhenReading(): void
+    {
+        $io = $this->getIOMock();
+        $io->expects([['text' => 'Reading ' . __DIR__ . '/Fixtures/tabs.json']], true);
+
+        $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs.json', null, $io);
+        $jsonFile->read();
+    }
+
+    /**
+     * @covers \Composer\Json\JsonFile::read
+     */
+    public function testPrintsMessageWhenReadingSymlink(): void
+    {
+        $io = $this->getIOMock();
+        $io->expects([['text' => 'Reading ' . __DIR__ . '/Fixtures/tabs2.json (' . __DIR__ . '/Fixtures/tabs.json)']], true);
+
+        $filesystem = new Filesystem();
+        $filesystem->relativeSymlink(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/tabs2.json');
+
+        $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs2.json', null, $io);
+        $jsonFile->read();
+
+        $filesystem->unlink(__DIR__.'/Fixtures/tabs2.json');
+    }
+
+    /**
+     * @covers \Composer\Json\JsonFile::read
+     */
+    public function testThrowsWhenReadingBrokenSymlink(): void
+    {
+        copy(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/tabs2.json');
+
+        $filesystem = new Filesystem();
+        $filesystem->relativeSymlink(__DIR__.'/Fixtures/tabs2.json', __DIR__.'/Fixtures/tabs3.json');
+
+        $filesystem->unlink(__DIR__.'/Fixtures/tabs2.json');
+
+        $exceptionMessage = '';
+        try {
+            $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs3.json');
+            $jsonFile->read();
+        } catch (\RuntimeException $e) {
+            $exceptionMessage = $e->getMessage();
+        }
+
+        self::assertStringEndsWith('The file "' . __DIR__ . '/Fixtures/tabs3.json" is not readable.', $exceptionMessage);
+
+        $filesystem->unlink(__DIR__.'/Fixtures/tabs3.json');
     }
 }
