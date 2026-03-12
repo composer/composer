@@ -197,6 +197,51 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'audit.ignore-abandoned', '--unset' => true],
             ['config' => ['audit' => []]],
         ];
+        yield 'merge filter.lists' => [
+            ['config' => ['filter' => ['lists' => ['list']]]],
+            ['setting-key' => 'filter.lists', 'setting-value' => ['other'], '--merge' => true],
+            ['config' => ['filter' => ['lists' => ['list', 'other']]]],
+        ];
+        yield 'merge filter.exclude-lists' => [
+            ['config' => ['filter' => ['exclude-lists' => ['list']]]],
+            ['setting-key' => 'filter.exclude-lists', 'setting-value' => ['other'], '--merge' => true],
+            ['config' => ['filter' => ['exclude-lists' => ['list', 'other']]]],
+        ];
+        yield 'merge filter.categories' => [
+            ['config' => ['filter' => ['categories' => ['category']]]],
+            ['setting-key' => 'filter.categories', 'setting-value' => ['other'], '--merge' => true],
+            ['config' => ['filter' => ['categories' => ['category', 'other']]]],
+        ];
+        yield 'merge filter.exclude-categories' => [
+            ['config' => ['filter' => ['exclude-categories' => ['category']]]],
+            ['setting-key' => 'filter.exclude-categories', 'setting-value' => ['other'], '--merge' => true],
+            ['config' => ['filter' => ['exclude-categories' => ['category', 'other']]]],
+        ];
+        yield 'merge filter.dont-filter-packages' => [
+            ['config' => ['filter' => ['dont-filter-packages' => ['acme/package']]]],
+            ['setting-key' => 'filter.dont-filter-packages', 'setting-value' => ['acme/other'], '--merge' => true],
+            ['config' => ['filter' => ['dont-filter-packages' => ['acme/package', 'acme/other']]]],
+        ];
+        yield 'merge filter.source' => [
+            ['config' => ['filter' => ['sources' => ['old' =>['type' => 'url', 'url' => 'https://example.org']]]]],
+            ['setting-key' => 'filter.sources.new', 'setting-value' => ['url', 'https://example.com'], '--merge' => true],
+            ['config' => ['filter' => ['sources' => ['new' => ['type' => 'url', 'url' => 'https://example.com'], 'old' => ['type' => 'url', 'url' => 'https://example.org']]]]],
+        ];
+        yield 'merge filter.ignore-unreachable' => [
+            [],
+            ['setting-key' => 'filter.ignore-unreachable', 'setting-value' => ['true']],
+            ['config' => ['filter' => ['ignore-unreachable' => true]]],
+        ];
+        yield 'unset filter' => [
+            ['config' => ['filter' => ['lists' => ['aikido']]]],
+            ['setting-key' => 'filter', '--unset' => true],
+            ['config' => []],
+        ];
+        yield 'unset filter.lists' => [
+            ['config' => ['filter' => ['lists' => ['aikido']]]],
+            ['setting-key' => 'filter.lists', '--unset' => true],
+            ['config' => ['filter' => []]],
+        ];
     }
 
     /**

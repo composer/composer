@@ -449,6 +449,7 @@ class ConfigTest extends TestCase
             'sources' => [['type' => 'url', 'url' => 'https://example.com/acme/other']],
         ]]]);
         $result = $config->get('filter');
+        self::assertIsArray($result);
         self::assertSame(['acme-list', 'other-list'], $result['lists'] ?? []);
         self::assertSame(['exclude-list', 'more-list'], $result['exclude-lists'] ?? []);
         self::assertSame(['category', 'other-category'], $result['categories'] ?? []);
