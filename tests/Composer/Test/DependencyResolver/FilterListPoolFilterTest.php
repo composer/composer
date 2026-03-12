@@ -12,26 +12,33 @@
 
 namespace Composer\Test\DependencyResolver;
 
-use Composer\Advisory\AuditConfig;
-use Composer\Advisory\Auditor;
 use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
-use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\FilterList\FilterListConfig;
-use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\PackageRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Test\Mock\HttpDownloaderMock;
 use Composer\Test\TestCase;
 
 class FilterListPoolFilterTest extends TestCase
 {
+    /** @var HttpDownloaderMock */
+    private $httpDownloaderMock;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->httpDownloaderMock = $this->getHttpDownloaderMock();
+    }
+
     public function testFilterPackages(): void
     {
         $filterListConfig = new FilterListConfig(new VersionParser(), true);
-        $filter = new FilterListPoolFilter($filterListConfig);
+        $filter = new FilterListPoolFilter($filterListConfig, $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('1.0');
         $pool = new Pool([
@@ -53,7 +60,7 @@ class FilterListPoolFilterTest extends TestCase
     public function testDontFilterPackagesConfig($config): void
     {
         $filterListConfig = new FilterListConfig(new VersionParser(), $config);
-        $filter = new FilterListPoolFilter($filterListConfig);
+        $filter = new FilterListPoolFilter($filterListConfig, $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('*');
         $pool = new Pool([
@@ -82,7 +89,7 @@ class FilterListPoolFilterTest extends TestCase
         $filterListConfig = new FilterListConfig(new VersionParser(), [
             'dont-filter-packages' => [['package' => 'acme/package', 'constraint' => '<=1.0']],
         ]);
-        $filter = new FilterListPoolFilter($filterListConfig);
+        $filter = new FilterListPoolFilter($filterListConfig, $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('>=1.0');
         $pool = new Pool([
@@ -92,6 +99,37 @@ class FilterListPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, [$repository], new Request());
 
         $this->assertSame([$expectedPackage], $filteredPool->getPackages());
+        $this->assertCount(1, $filteredPool->getAllFilterListRemovedPackageVersions());
+    }
+
+    public function testFilterWithAdditionalSources(): void
+    {
+        $this->httpDownloaderMock->expects([[
+            'url' => 'https://example.org/malware/acme/package',
+            'body' => (string) json_encode(['filter' => [[
+                'package' => 'acme/package',
+                'constraint' => '3.0.0.0',
+                'category' => 'malware',
+            ]]])
+        ]]);
+        $filterListConfig = new FilterListConfig(new VersionParser(), [
+            'sources' => ['source-list' => [
+                'type' => 'url',
+                'url' => 'https://example.org/malware/acme/package',
+            ]]
+        ]);
+        $filter = new FilterListPoolFilter($filterListConfig, $this->httpDownloaderMock);
+
+        $repository = $this->generatePackageRepository('0.0.1');
+        $pool = new Pool([
+            new Package('acme/package', '3.0.0.0', '3.0'),
+            $expectedPackage1 = new Package('acme/package', '2.0.0.0', '2.0'),
+            $expectedPackage2 = new Package('acme/other', '1.0.0.0', '1.0'),
+        ]);
+        $filteredPool = $filter->filter($pool, [$repository], new Request());
+
+        $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
+        $this->assertTrue($filteredPool->isFilterListRemovedPackageVersion('acme/package', new Constraint('==', '3.0.0.0')));
         $this->assertCount(1, $filteredPool->getAllFilterListRemovedPackageVersions());
     }
 

@@ -744,7 +744,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * @inheritDoc
      */
-    public function getFilters(array $packageConstraintMap, array $lists): array
+    public function getFilter(array $packageConstraintMap, array $lists): array
     {
         $this->loadRootServerFile(600);
 
@@ -769,28 +769,19 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $promises[] = $this->startCachedAsyncDownload($name, $name)
-                ->then(static function (array $spec) use (&$filter, $name, $constraint, $parser): void {
+                ->then(static function (array $spec) use (&$filter, $name, $parser): void {
                     [$response] = $spec;
-
-                    if (!isset($response['filter']) || !is_array($response['filter'])) {
-                        return;
-                    }
 
                     foreach ($response['filter'] as $listName => $data) {
                         $data['package'] = $name;
-                        $entry = FilterListEntry::create($listName, $data, $parser);
-                        if (!$entry->constraint->matches($constraint)) {
-                            continue;
-                        }
-
-                        $filter[$entry->packageName][] = $entry;
+                        $filter[$listName][] = FilterListEntry::create($listName, $data, $parser);
                     }
                 });
         }
 
         $this->loop->wait($promises);
 
-        return $filter;
+        return ['filter' => $filter];
     }
 
     public function getProviders(string $packageName)

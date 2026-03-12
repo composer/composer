@@ -14,13 +14,15 @@ namespace Composer\DependencyResolver;
 
 use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\FitlerListProvider\FilterListProviderSet;
+use Composer\FilterList\FitlerListProvider\UrlSourceFilterListProvider;
+use Composer\FilterList\Source\UrlSource;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
-use Composer\Repository\FilterListProviderInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\Constraint\MatchAllConstraint;
+use Composer\Util\HttpDownloader;
 
 /**
  * @internal
@@ -31,11 +33,15 @@ class FilterListPoolFilter
 {
     /** @var FilterListConfig */
     private $filterListConfig;
+    /** @var HttpDownloader */
+    private $httpDownloader;
 
     public function __construct(
-        FilterListConfig $filterListConfig
+        FilterListConfig $filterListConfig,
+        HttpDownloader $httpDownloader
     ) {
         $this->filterListConfig = $filterListConfig;
+        $this->httpDownloader = $httpDownloader;
     }
 
     /**
@@ -43,7 +49,14 @@ class FilterListPoolFilter
      */
     public function filter(Pool $pool, array $repositories, Request $request): Pool
     {
-        $filterListMap = $this->collectFilterLists($pool, $repositories, $request);
+        $providerSet = new FilterListProviderSet(
+            array_values($repositories),
+            array_map(function (UrlSource $source) {
+                return new UrlSourceFilterListProvider($this->httpDownloader, $source);
+            }, $this->filterListConfig->getSources())
+        );
+
+        $filterListMap = $this->collectFilterLists($pool, $providerSet, $request);
 
         if (count($filterListMap) === 0) {
             return $pool;
@@ -68,48 +81,35 @@ class FilterListPoolFilter
     }
 
     /**
-     * @param array<RepositoryInterface> $repositories
      * @return array<string, array<string, list<FilterListEntry>>>
      */
-    private function collectFilterLists(Pool $pool, array $repositories, Request $request): array
+    private function collectFilterLists(Pool $pool, FilterListProviderSet $providerSet, Request $request): array
     {
-        $packageNames = [];
+        $operation = 'block';
+        $packagesForFilter = [];
         foreach ($pool->getPackages() as $package) {
             if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
-                foreach ($package->getNames(false) as $packageName) {
-                    $packageNames[$packageName] = true;
-                }
+                $packagesForFilter[] = $package;
             }
         }
 
-        if (count($packageNames) === 0) {
-            return [];
-        }
-
-        $packageConstraintMap = [];
-        foreach (array_keys($packageNames) as $name) {
-            $packageConstraintMap[$name] = new MatchAllConstraint();
-        }
+        $filters = $providerSet->getMatchingFilterLists($packagesForFilter, $this->filterListConfig->getConfiguredListNames($operation), $this->filterListConfig->ignoreUnreachable())['filter'];
 
         $filterListMap = [];
-        foreach ($repositories as $repo) {
-            if (!$repo instanceof FilterListProviderInterface || !$repo->hasFilter()) {
+        foreach ($filters as $listName => $entries) {
+            $listConfig = $this->filterListConfig->getListConfig($listName, $operation);
+            if ($listConfig === null) {
                 continue;
             }
 
-            foreach ($repo->getFilters($packageConstraintMap, $this->filterListConfig->getConfiguredListNames()) as $listName => $entries) {
-                $listConfig = $this->filterListConfig->getListConfig($listName, 'block');
-                if ($listConfig === null) {
-                    continue;
-                }
-
-                foreach ($entries as $entry) {
-                    if ($listConfig->useCategory($entry->category)) {
-                        $filterListMap[$entry->packageName][$entry->listName][] = $entry;
-                    }
+            foreach ($entries as $entry) {
+                if ($listConfig->useCategory($entry->category)) {
+                    $filterListMap[$entry->packageName][$entry->listName][] = $entry;
                 }
             }
         }
+
+        ksort($filterListMap);
 
         return $filterListMap;
     }

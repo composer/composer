@@ -13,6 +13,7 @@
 namespace Composer\FilterList;
 
 use Composer\Config;
+use Composer\FilterList\Source\UrlSource;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -94,18 +95,40 @@ class FilterListConfig
     }
 
     /**
+     * @param 'audit'|'block' $operation
      * @return list<string>
      */
-    public function getConfiguredListNames(): array
+    public function getConfiguredListNames(string $operation): array
     {
-        return array_values(array_filter(array_map(function ($list) {
-            if (is_array($list)) {
-                return (string) ($list['name'] ?? '');
+        $listNames = [];
+        foreach ($this->config['lists'] ?? [] as $listConfig) {
+            $name = (string) (is_array($listConfig) ? $listConfig['name'] ?? '' : $listConfig);
+            $list = $this->getListConfig($name, $operation);
+            if ($list !== null) {
+                $listNames[] = $name;
             }
+        }
 
-            return (string) $list;
-        }, $this->config['lists'] ?? []), function ($name) {
-            return $name !== '';
-        }));
+        return $listNames;
+    }
+
+    /**
+     * @return list<UrlSource>
+     */
+    public function getSources(): array
+    {
+        $sources = [];
+        foreach ($this->config['sources'] ?? [] as $sourceName => $source) {
+            if (is_array($source) && isset($source['type']) && $source['type'] === 'url') {
+                $sources[] = new UrlSource($sourceName, $source['url']);
+            }
+        }
+
+        return $sources;
+    }
+
+    public function ignoreUnreachable(): bool
+    {
+        return (bool) ($this->config['ignore-unreachable'] ?? false);
     }
 }

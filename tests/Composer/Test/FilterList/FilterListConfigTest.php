@@ -104,4 +104,27 @@ class FilterListConfigTest extends TestCase
 
         $this->assertNull($config->getListConfig('test-list', 'block'));
     }
+
+    public function testGetListNames(): void
+    {
+        $config = new FilterListConfig($this->versionParser, [
+            'lists' => [
+                'test-list',
+                [
+                    'name' => 'audit-list',
+                    'apply' => 'audit',
+                ],
+                [
+                    'name' => 'block-list',
+                    'apply' => 'block',
+                ],
+                [
+                    'name' => 'all-list',
+                ],
+            ],
+        ]);
+
+        $this->assertSame(['test-list', 'block-list', 'all-list'], $config->getConfiguredListNames('block'));
+        $this->assertSame(['test-list', 'audit-list', 'all-list'], $config->getConfiguredListNames('audit'));
+    }
 }

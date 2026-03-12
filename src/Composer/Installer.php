@@ -1136,7 +1136,7 @@ class Installer
         $filterListConfig = FilterListConfig::fromConfig($this->config, new VersionParser());
 
         if ($filterListConfig !== null && !$this->updateMirrors) {
-            return new FilterListPoolFilter($filterListConfig);
+            return new FilterListPoolFilter($filterListConfig, Factory::createHttpDownloader($this->io, $this->config));
         }
 
         return null;
