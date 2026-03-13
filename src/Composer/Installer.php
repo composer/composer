@@ -35,7 +35,9 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
+use Composer\FilterList\FilterListAuditor;
 use Composer\FilterList\FilterListConfig;
+use Composer\FilterList\FitlerListProvider\FilterListProviderSet;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\SuggestedPackagesReporter;
@@ -438,8 +440,10 @@ class Installer
                     foreach ($this->repositoryManager->getRepositories() as $repo) {
                         $repoSet->addRepository($repo);
                     }
+                    $filterListConfig = FilterListConfig::fromConfig($this->config, new VersionParser());
+                    $filterListProviderSet = $filterListConfig !== null ? FilterListProviderSet::create($filterListConfig, $this->repositoryManager->getRepositories(), Factory::createHttpDownloader($this->io, $this->config)) : null;
 
-                    return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->auditAbandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedForAudit) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
+                    return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->auditAbandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedForAudit, $auditConfig->auditFiltered, $filterListProviderSet, $filterListConfig) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {
@@ -1136,7 +1140,7 @@ class Installer
         $filterListConfig = FilterListConfig::fromConfig($this->config, new VersionParser());
 
         if ($filterListConfig !== null && !$this->updateMirrors) {
-            return new FilterListPoolFilter($filterListConfig, Factory::createHttpDownloader($this->io, $this->config));
+            return new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), Factory::createHttpDownloader($this->io, $this->config));
         }
 
         return null;

@@ -36,6 +36,11 @@ class AuditConfig
     public $auditAbandoned;
 
     /**
+     * @var Auditor::FILTERED_*
+     */
+    public $auditFiltered;
+
+    /**
      * @var bool Should insecure versions be blocked during a composer update/required command
      */
     public $blockInsecure;
@@ -83,6 +88,7 @@ class AuditConfig
     /**
      * @param Auditor::FORMAT_* $auditFormat
      * @param Auditor::ABANDONED_* $auditAbandoned
+     * @param Auditor::FILTERED_* $auditFiltered
      * @param array<string, string|null> $ignoreListForAudit
      * @param array<string, string|null> $ignoreListForBlocking
      * @param array<string, string|null> $ignoreSeverityForAudit
@@ -90,11 +96,12 @@ class AuditConfig
      * @param array<string, string|null> $ignoreAbandonedForAudit
      * @param array<string, string|null> $ignoreAbandonedForBlocking
      */
-    public function __construct(bool $audit, string $auditFormat, string $auditAbandoned, bool $blockInsecure, bool $blockAbandoned, bool $ignoreUnreachable, array $ignoreListForAudit, array $ignoreListForBlocking, array $ignoreSeverityForAudit, array $ignoreSeverityForBlocking, array $ignoreAbandonedForAudit, array $ignoreAbandonedForBlocking)
+    public function __construct(bool $audit, string $auditFormat, string $auditAbandoned, string $auditFiltered, bool $blockInsecure, bool $blockAbandoned, bool $ignoreUnreachable, array $ignoreListForAudit, array $ignoreListForBlocking, array $ignoreSeverityForAudit, array $ignoreSeverityForBlocking, array $ignoreAbandonedForAudit, array $ignoreAbandonedForBlocking)
     {
         $this->audit = $audit;
         $this->auditFormat = $auditFormat;
         $this->auditAbandoned = $auditAbandoned;
+        $this->auditFiltered = $auditFiltered;
         $this->blockInsecure = $blockInsecure;
         $this->blockAbandoned = $blockAbandoned;
         $this->ignoreUnreachable = $ignoreUnreachable;
@@ -187,6 +194,7 @@ class AuditConfig
             $audit,
             $auditFormat,
             $auditConfig['abandoned'] ?? Auditor::ABANDONED_FAIL,
+            $auditConfig['filtered'] ?? Auditor::FILTERED_FAIL,
             (bool) ($auditConfig['block-insecure'] ?? true),
             (bool) ($auditConfig['block-abandoned'] ?? false),
             (bool) ($auditConfig['ignore-unreachable'] ?? false),

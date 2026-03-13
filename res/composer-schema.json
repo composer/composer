@@ -490,6 +490,10 @@
                             "enum": ["ignore", "report", "fail"],
                             "description": "Whether abandoned packages should be ignored, reported as problems or cause an audit failure. Applies only to audit reports, not to version blocking."
                         },
+                        "filtered": {
+                            "enum": ["ignore", "report", "fail"],
+                            "description": "Whether filtered packages should be ignored, reported as problems or cause an audit failure. Applies only to audit reports, not to version blocking."
+                        },
                         "ignore-severity": {
                             "anyOf": [
                                 {

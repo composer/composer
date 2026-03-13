@@ -15,6 +15,7 @@ namespace Composer\Test\DependencyResolver;
 use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
+use Composer\FilterList\FilterListAuditor;
 use Composer\FilterList\FilterListConfig;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
@@ -38,7 +39,7 @@ class FilterListPoolFilterTest extends TestCase
     public function testFilterPackages(): void
     {
         $filterListConfig = new FilterListConfig(new VersionParser(), true);
-        $filter = new FilterListPoolFilter($filterListConfig, $this->httpDownloaderMock);
+        $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('1.0');
         $pool = new Pool([
@@ -60,7 +61,7 @@ class FilterListPoolFilterTest extends TestCase
     public function testDontFilterPackagesConfig($config): void
     {
         $filterListConfig = new FilterListConfig(new VersionParser(), $config);
-        $filter = new FilterListPoolFilter($filterListConfig, $this->httpDownloaderMock);
+        $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('*');
         $pool = new Pool([
@@ -89,7 +90,7 @@ class FilterListPoolFilterTest extends TestCase
         $filterListConfig = new FilterListConfig(new VersionParser(), [
             'dont-filter-packages' => [['package' => 'acme/package', 'constraint' => '<=1.0']],
         ]);
-        $filter = new FilterListPoolFilter($filterListConfig, $this->httpDownloaderMock);
+        $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('>=1.0');
         $pool = new Pool([
@@ -118,7 +119,7 @@ class FilterListPoolFilterTest extends TestCase
                 'url' => 'https://example.org/malware/acme/package',
             ]]
         ]);
-        $filter = new FilterListPoolFilter($filterListConfig, $this->httpDownloaderMock);
+        $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('0.0.1');
         $pool = new Pool([

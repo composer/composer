@@ -12,7 +12,9 @@
 
 namespace Composer\FilterList\FitlerListProvider;
 
+use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\Source\UrlSource;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\FilterListProviderInterface;
@@ -20,6 +22,7 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MultiConstraint;
+use Composer\Util\HttpDownloader;
 
 /**
  * @internal
@@ -45,6 +48,22 @@ class FilterListProviderSet
         }
 
         $this->providers = $providers;
+    }
+
+    /**
+     * @param array<RepositoryInterface> $repositories
+     */
+    public static function create(FilterListConfig $config, array $repositories, HttpDownloader $httpDownloader): self
+    {
+        return new FilterListProviderSet(
+            array_values($repositories),
+            array_map(
+                function (UrlSource $source) use ($httpDownloader) {
+                    return new UrlSourceFilterListProvider($httpDownloader, $source);
+                },
+                $config->getSources()
+            )
+        );
     }
 
     /**
