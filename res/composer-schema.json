@@ -586,6 +586,111 @@
                         }
                     }
                 },
+                "filter": {
+                    "type": ["boolean", "object"],
+                    "description": "Filter list configuration options. Set to true to enable with defaults, to false to fully disable, or configure with an object.",
+                    "properties": {
+                        "ignore-unreachable": {
+                            "type": "boolean",
+                            "description": "Whether filter list sources that are unreachable or return a non-200 status code should be ignored.",
+                            "default": false
+                        },
+                        "categories": {
+                            "type": "array",
+                            "description": "List of filter categories to include. If empty, all categories are included.",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "exclude-categories": {
+                            "type": "array",
+                            "description": "List of filter categories to exclude.",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "dont-filter-packages": {
+                            "$ref": "#/definitions/dont-filter-packages"
+                        },
+                        "lists": {
+                            "type": "array",
+                            "description": "Filter lists to use. Each item can be a list name string or a detailed object with per-list configuration.",
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "description": "Name of a filter list to use with default settings"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "description": "Per-list configuration",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Filter list name"
+                                            },
+                                            "apply": {
+                                                "type": "string",
+                                                "enum": ["audit", "block", "all"],
+                                                "description": "Which operation to apply this list to",
+                                                "default": "all"
+                                            },
+                                            "categories": {
+                                                "type": "array",
+                                                "description": "Override global categories for this list",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "exclude-categories": {
+                                                "type": "array",
+                                                "description": "Override global exclude-categories for this list",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "dont-filter-packages": {
+                                                "$ref": "#/definitions/dont-filter-packages"
+                                            }
+                                        },
+                                        "required": ["name"]
+                                    }
+                                ]
+                            }
+                        },
+                        "exclude-lists": {
+                            "type": "array",
+                            "description": "Filter list names to skip entirely.",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "sources": {
+                            "type": "object",
+                            "description": "Additional sources to fetch filter list data from.",
+                            "additionalProperties": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "url"
+                                        ],
+                                        "description": "Source type, currently only 'url' is supported"
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "description": "URL to fetch filter list data from"
+                                    }
+                                },
+                                "required": [
+                                    "type",
+                                    "url"
+                                ]
+                            }
+                        }
+                    }
+                },
                 "notify-on-install": {
                     "type": "boolean",
                     "description": "Composer allows repositories to define a notification URL, so that they get notified whenever a package from that repository is installed. This option allows you to disable that behaviour, defaults to true."
@@ -1416,6 +1521,50 @@
                 "mirrors": {
                     "type": "array"
                 }
+            }
+        },
+        "dont-filter-packages": {
+            "type": "array",
+            "description": "Packages to exempt from filtering. Each item can be a package name string, a {\"vendor/package\": \"constraint\"} object, or a detailed object with package, constraint, reason, and apply fields.",
+            "items": {
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "description": "Package name to exempt from all filtering"
+                    },
+                    {
+                        "type": "object",
+                        "description": "Package name => version constraint map",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "type": "object",
+                        "description": "Detailed configuration for exempting a package",
+                        "properties": {
+                            "package": {
+                                "type": "string",
+                                "description": "Package name"
+                            },
+                            "constraint": {
+                                "type": "string",
+                                "description": "Version constraint"
+                            },
+                            "reason": {
+                                "type": "string",
+                                "description": "Explanation for exempting this package"
+                            },
+                            "apply": {
+                                "type": "string",
+                                "enum": ["audit", "block", "all"],
+                                "description": "Which operation to exempt from: 'audit', 'block', or 'all'",
+                                "default": "all"
+                            }
+                        },
+                        "required": ["package", "constraint"]
+                    }
+                ]
             }
         }
     }
