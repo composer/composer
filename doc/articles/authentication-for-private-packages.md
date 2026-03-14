@@ -404,10 +404,10 @@ php composer.phar config [--global] --editor --auth
 
 ## bitbucket-oauth
 
-The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs, and you will need to
+The Bitbucket driver uses OAuth to access your private repositories via the Bitbucket REST APIs, and you will need to
 create an OAuth consumer to use the driver, please refer
 to [Atlassian's Documentation](https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/). You
-will need to fill the callback URL with something to satisfy BitBucket, but the address does not need to go anywhere and
+will need to fill the callback URL with something to satisfy Bitbucket, but the address does not need to go anywhere and
 is not used by Composer.
 
 ### Command line bitbucket-oauth
@@ -434,6 +434,35 @@ php composer.phar config [--global] --editor --auth
         "bitbucket.org": {
             "consumer-key": "key",
             "consumer-secret": "secret"
+        }
+    }
+}
+```
+
+### Bitbucket API tokens
+
+As an alternative to OAuth consumers, you can use Atlassian API tokens. Create a token with
+the `read:repository:bitbucket` scope in [your Atlassian account](https://id.atlassian.com/manage-profile/security/api-tokens).
+
+Once you have a token, configure it using HTTP Basic authentication with your Atlassian account
+email as the username and the token as the password:
+
+```shell
+php composer.phar config [--global] http-basic.bitbucket.org your@email.com api-token
+```
+
+Or manually in `auth.json`:
+
+```shell
+php composer.phar config [--global] --editor --auth
+```
+
+```json
+{
+    "http-basic": {
+        "bitbucket.org": {
+            "username": "your@email.com",
+            "password": "api-token"
         }
     }
 }
