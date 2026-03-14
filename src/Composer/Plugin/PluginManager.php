@@ -718,13 +718,11 @@ class PluginManager
         // an allow-plugins config being present cannot be made.
         if ($rules === null) {
             if (!$this->io->isInteractive()) {
-                $this->io->writeError('<warning>For additional security you should declare the allow-plugins config with a list of packages names that are allowed to run code. See https://getcomposer.org/allow-plugins</warning>');
-                $this->io->writeError('<warning>This warning will become an exception once you run composer update!</warning>');
-
-                $rules = ['{}' => true];
-
-                // if no config is defined we allow all plugins for BC
-                return true;
+                throw new \RuntimeException(
+                    'Your composer.lock was generated before the allow-plugins security feature was introduced and your composer.json does not define allow-plugins. '
+                    . 'Run "composer update --lock" locally and commit the updated composer.lock, then add an explicit allow-plugins section to composer.json. '
+                    . 'See https://getcomposer.org/allow-plugins'
+                );
             }
 
             // keep going and prompt the user
