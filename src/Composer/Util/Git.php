@@ -383,14 +383,17 @@ class Git
         // update the repo if it is a valid git repository
         if (is_dir($dir) && 0 === $this->process->execute(['git', 'rev-parse', '--git-dir'], $output, $dir) && trim($output) === '.') {
             try {
-                $commands = [
-                    ['git', 'remote', 'set-url', 'origin', '--', '%url%'],
-                    ['git', 'remote', 'update', '--prune', 'origin'],
-                    ['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%'],
-                    ['git', 'gc', '--auto'],
-                ];
+                try {
+                    $commands = [
+                        ['git', 'remote', 'set-url', 'origin', '--', '%url%'],
+                        ['git', 'remote', 'update', '--prune', 'origin'],
+                        ['git', 'gc', '--auto'],
+                    ];
 
-                $this->runCommands($commands, $url, $dir);
+                    $this->runCommands($commands, $url, $dir);
+                } finally {
+                    $this->runCommands([['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%']], $url, $dir);
+                }
             } catch (\Exception $e) {
                 $this->io->writeError('<error>Sync mirror failed: ' . $e->getMessage() . '</error>', true, IOInterface::DEBUG);
 
@@ -405,6 +408,8 @@ class Git
         $this->filesystem->removeDirectory($dir);
 
         $this->runCommands([['git', 'clone', '--mirror', '--', '%url%', $dir]], $url, $dir, true);
+
+        $this->runCommands([['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%']], $url, $dir);
 
         return true;
     }
