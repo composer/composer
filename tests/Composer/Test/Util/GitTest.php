@@ -296,6 +296,46 @@ class GitTest extends TestCase
         ];
     }
 
+    public function testSyncMirrorSanitizesUrlAfterInitialClone(): void
+    {
+        $nonExistentDir = sys_get_temp_dir() . '/composer-test-nonexistent-' . bin2hex(random_bytes(8));
+
+        $this->mockSyncMirrorConfig();
+
+        $this->process->expects([
+            ['cmd' => ['git', 'clone', '--mirror', '--', 'https://user:secret@example.com/repo.git', $nonExistentDir], 'return' => 0],
+            ['cmd' => ['git', 'remote', '-v'], 'return' => 0],
+            ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/repo.git'], 'return' => 0],
+        ], true);
+
+        $this->fs->method('removeDirectory')->willReturn(true);
+
+        $result = $this->git->syncMirror('https://user:secret@example.com/repo.git', $nonExistentDir);
+
+        self::assertTrue($result);
+    }
+
+    public function testSyncMirrorSanitizesUrlEvenAfterFailedUpdate(): void
+    {
+        $dir = sys_get_temp_dir();
+
+        $this->mockSyncMirrorConfig();
+
+        $this->process->expects([
+            ['cmd' => ['git', 'rev-parse', '--git-dir'], 'stdout' => ".\n", 'return' => 0],
+            ['cmd' => ['git', 'remote', '-v'], 'return' => 0],
+            ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', 'https://user:secret@example.com/repo.git'], 'return' => 0],
+            ['cmd' => ['git', 'remote', 'update', '--prune', 'origin'], 'return' => 1],
+            ['cmd' => ['git', '--version'], 'return' => 0],
+            ['cmd' => ['git', 'remote', '-v'], 'return' => 0],
+            ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/repo.git'], 'return' => 0],
+        ], true);
+
+        $result = $this->git->syncMirror('https://user:secret@example.com/repo.git', $dir);
+
+        self::assertFalse($result);
+    }
+
     private function mockConfig(string $protocol): void
     {
         $this->config
@@ -303,6 +343,17 @@ class GitTest extends TestCase
             ->willReturnMap([
                 ['github-domains', 0, ['github.com']],
                 ['github-protocols', 0, [$protocol]],
+            ]);
+    }
+
+    private function mockSyncMirrorConfig(): void
+    {
+        $this->config
+            ->method('get')
+            ->willReturnMap([
+                ['github-domains', 0, ['github.com']],
+                ['gitlab-domains', 0, ['gitlab.com']],
+                ['github-protocols', 0, ['https']],
             ]);
     }
 }
