@@ -249,7 +249,7 @@ class RemoteFilesystemTest extends TestCase
         $res = $this->callGetOptionsForUrl($io, ['example.org', ['ssl' => ['cafile' => '/some/path/file.crt']]], [], 'http://www.example.org');
 
         self::assertTrue(isset($res['ssl']['ciphers']));
-        self::assertMatchesRegularExpression('|!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA|', $res['ssl']['ciphers']);
+        self::assertMatchesRegularExpression('|!aNULL:!eNULL:!EXPORT:!DES:!3DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA|', $res['ssl']['ciphers']);
         self::assertTrue($res['ssl']['verify_peer']);
         self::assertTrue($res['ssl']['SNI_enabled']);
         self::assertEquals(7, $res['ssl']['verify_depth']);
