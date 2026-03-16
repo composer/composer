@@ -169,6 +169,8 @@ class GitDownloaderTest extends TestCase
                     @mkdir($cachePath, 0777, true);
                 },
             ],
+            ['git', 'remote', '-v'],
+            ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/composer/composer'],
             ['cmd' => ['git', 'rev-parse', '--git-dir'], 'stdout' => '.'],
             ['git', 'rev-parse', '--quiet', '--verify', '1234567890123456789012345678901234567890^{commit}'],
             ['git', 'clone', '--no-checkout', $cachePath, $expectedPath, '--dissociate', '--reference', $cachePath],
