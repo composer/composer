@@ -20,6 +20,10 @@ use Composer\Util\Http\Response;
 use Composer\Downloader\TransportException;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\AssertionFailedError;
+use React\Promise\Deferred;
+use React\Promise\Internal\FulfilledPromise;
+use React\Promise\Internal\RejectedPromise;
+use React\Promise\PromiseInterface;
 
 class HttpDownloaderMock extends HttpDownloader
 {
@@ -118,6 +122,19 @@ class HttpDownloaderMock extends HttpDownloader
                 : 'Expected no more calls at this point.').PHP_EOL.
             'Received calls:'.PHP_EOL.implode(PHP_EOL, array_slice($this->log, 0, -1))
         );
+    }
+
+    public function add(string $url, array $options = []): PromiseInterface
+    {
+        $promise = new Deferred();
+
+        try {
+            $promise->resolve($this->get($url, $options));
+        } catch (AssertionFailedError $e) {
+            $promise->reject($e);
+        }
+
+        return $promise->promise();
     }
 
     /**

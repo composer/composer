@@ -112,6 +112,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $displayedWarningAboutNonMatchingPackageIndex = false;
     /** @var array{metadata: bool, api-url: string|null}|null */
     private $securityAdvisoryConfig = null;
+    /** @var array{metadata: bool, lists: list<string>}|null */
+    private $filterConfig = null;
 
     /**
      * @var array list of package names which are fresh and can be loaded from the cache directly in case loadPackage is called several times
@@ -738,7 +740,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         $this->loadRootServerFile(600);
 
-        return $this->hasAvailablePackageList;
+        return $this->filterConfig !== null && isset($this->filterConfig['metadata']);
     }
 
     /**
@@ -747,6 +749,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     public function getFilter(array $packageConstraintMap, array $lists): array
     {
         $this->loadRootServerFile(600);
+
+        if ($lists !== [] && ($this->filterConfig['lists'] ?? []) !== [] && count(array_intersect($lists, $this->filterConfig['lists'])) === 0) {
+            return ['filter' => []];
+        }
 
         // respect available-package-patterns / available-packages directives from the repo
         if ($this->hasAvailablePackageList) {
@@ -772,9 +778,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 ->then(static function (array $spec) use (&$filter, $name, $parser): void {
                     [$response] = $spec;
 
-                    foreach ($response['filter'] as $listName => $data) {
-                        $data['package'] = $name;
-                        $filter[$listName][] = FilterListEntry::create($listName, $data, $parser);
+                    if (isset($response['filter']) && is_array($response['filter'])) {
+                        foreach ($response['filter'] as $listName => $data) {
+                            $data['package'] = $name;
+                            $filter[$listName][] = FilterListEntry::create($listName, $data, $parser);
+                        }
                     }
                 });
         }
@@ -1168,7 +1176,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $response = $contents;
                 }
 
-                if (!isset($response['packages'][$packageName]) && !isset($response['security-advisories'])) {
+                if (!isset($response['packages'][$packageName]) && !isset($response['security-advisories']) && !isset($response['filter'])) {
                     return [null, $packagesSource];
                 }
 
@@ -1320,6 +1328,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if ($this->securityAdvisoryConfig['api-url'] === null && !$this->hasAvailablePackageList) {
                     throw new \UnexpectedValueException('Invalid security advisory configuration on '.$this->getRepoName().': If the repository does not provide a security-advisories.api-url then available-packages or available-package-patterns are required to be provided for performance reason.');
                 }
+            }
+
+            if (isset($data['filter']) && is_array($data['filter'])) {
+                $this->filterConfig = [
+                    'metadata' => $data['filter']['metadata'] ?? false,
+                    'lists' => isset($data['filter']['lists']) && is_array($data['filter']['lists']) ? array_values($data['filter']['lists']) : [],
+                ];
             }
         }
 
