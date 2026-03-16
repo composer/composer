@@ -262,7 +262,13 @@ class Installer
 
         // Force update if there is no lock file present
         if (!$this->update && !$this->locker->isLocked()) {
-            $this->io->writeError('<warning>No composer.lock file present. Updating dependencies to latest instead of installing from lock file. See https://getcomposer.org/install for more information.</warning>');
+            $updateFallbackMessage = 'Updating dependencies to latest instead of installing from lock file. See https://getcomposer.org/install for more information.';
+            if ($this->writeLock === false) {
+                // Print more specific warning message when creating the lock file is disabled in config, but still notify the user that the update command is used
+                $this->io->writeError(sprintf('<warning>Lockfile creation is disabled in config. %s</warning>', $updateFallbackMessage));
+            } else {
+                $this->io->writeError(sprintf('<warning>No composer.lock file present. %s</warning>', $updateFallbackMessage));
+            }
             $this->update = true;
         }
 
