@@ -31,7 +31,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           coverage: none
 
-      - uses: ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520 # 3.1.1
+      - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
         with:
           dependency-versions: highest
 
