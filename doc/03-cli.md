@@ -1125,13 +1125,17 @@ vulnerability advisories using the [Packagist.org api](https://packagist.org/api
 or other repositories if specified in the `repositories` section of `composer.json`.
 The command also detects abandoned packages.
 
-The audit command determines if there are vulnerable or abandoned packages and returns the following exit codes based on
+The audit command determines if there are vulnerable, abandoned, or filtered packages and returns the following exit codes based on
 the findings:
 
 * `0` No issues;
 * `1` Vulnerable packages;
 * `2` Abandoned packages;
 * `3` Vulnerable and abandoned packages.
+* `4` Filtered packages.
+* `5` Vulnerable and filtered packages.
+* `6` Abandoned and filtered packages.
+* `7` Vulneable, abandoned, and filtered packages.
 
 ```shell
 php composer.phar audit
@@ -1147,6 +1151,9 @@ php composer.phar audit
   flag will override the config value and the environment variable.
 * **--ignore-severity:** Ignore advisories of a certain severity level. Can be passed one or more
   time to ignore multiple severities.
+* **--filtered:** Behavior on filtered packages. Must be "ignore", "report",
+  or "fail".  See also [config.audit.filtered](06-config.md#filtered).  Passing this
+  flag will override the config value.
 
 ## help
 
@@ -1361,6 +1368,10 @@ If set to `1`, it is the equivalent of passing the `--no-audit` option to a `req
 
 Set to `ignore`, `report` or `fail` to override the [audit.abandoned](06-config.md#abandoned)
 config option.
+
+### COMPOSER_FILTER
+
+Set to `0` to disable filter lists, or `1` to enable them.
 
 ### COMPOSER_NO_SECURITY_BLOCKING
 

@@ -330,6 +330,28 @@ in other places than the `compoder audit` command.
 }
 ```
 
+### filtered
+
+Defaults to `fail`. Defines whether and how audit reports should report filtered packages. There are three possible values:
+
+- `ignore` means audit reports do not consider filtered packages at all.
+- `report` means filtered packages are reported but do not cause the composer audit command return a non-zero exit code.
+- `fail` means filtered packages will cause the audit command to fail with a non-zero exit code.
+
+Note that this only applies to audit reports, not to version blocking.
+
+```json
+{
+    "config": {
+        "audit": {
+            "filtered": "report"
+        }
+    }
+}
+```
+
+Can be overridden via the [`--filtered`](03-cli.md#audit) command line option.
+
 ### block-insecure
 
 Defaults to `true`. If `true`, any package versions affected by security advisories will be blocked and cannot be used
@@ -357,6 +379,170 @@ version blocking is not disabled by setting [`block-insecure`](#block-insecure) 
     "config": {
         "audit": {
             "block-abandoned": true
+        }
+    }
+}
+```
+
+## filter
+
+Filter list configuration options. Controls how filter lists are used for audit reports and version blocking.
+Can be set to `true` to enable with defaults, `false` to fully disable, or configured with an object.
+
+### ignore-unreachable
+
+Defaults to `false`. Whether filter list sources that are unreachable or return a non-200 status code
+should be ignored.
+
+### categories
+
+A list of filter categories to include. If empty, all categories are included.
+
+```json
+{
+    "config": {
+        "filter": {
+            "categories": ["malware"]
+        }
+    }
+}
+```
+
+### exclude-categories
+
+A list of filter categories to exclude.
+
+```json
+{
+    "config": {
+        "filter": {
+            "exclude-categories": ["malware"]
+        }
+    }
+}
+```
+
+### dont-filter-packages
+
+A list of packages to exempt from filtering. Supports three formats:
+
+#### Simple format (exempt entirely):
+
+```json
+{
+    "config": {
+        "filter": {
+            "dont-filter-packages": ["vendor/package", "acme/*"]
+        }
+    }
+}
+```
+
+#### Package name => constraint map:
+
+```json
+{
+    "config": {
+        "filter": {
+            "dont-filter-packages": [{"vendor/package": "^2.0"}]
+        }
+    }
+}
+```
+
+#### Detailed format with apply scope:
+
+The `apply` field accepts:
+- `audit` - Only exempt from audit reports
+- `block` - Only exempt from version blocking
+- `all` - Exempt from both (default)
+
+```json
+{
+    "config": {
+        "filter": {
+            "dont-filter-packages": [
+                {
+                    "package": "vendor/package",
+                    "constraint": "^2.0",
+                    "reason": "Assessed and accepted risk",
+                    "apply": "audit"
+                }
+            ]
+        }
+    }
+}
+```
+
+### lists
+
+Filter lists to use. Each item can be a list name string or a detailed object with per-list configuration.
+By default, this is set to `[]` which means all lists are used.
+
+#### Simple format:
+
+```json
+{
+    "config": {
+        "filter": {
+            "lists": ["list-name"]
+        }
+    }
+}
+```
+
+#### Detailed format with per-list config:
+
+```json
+{
+    "config": {
+        "filter": {
+            "lists": [
+                {
+                    "name": "list-name",
+                    "apply": "audit",
+                    "categories": ["security"],
+                    "exclude-categories": ["informational"],
+                    "dont-filter-packages": ["vendor/package"]
+                }
+            ]
+        }
+    }
+}
+```
+
+The `apply` field controls which operation the list applies to (`audit`, `block`, or `all`).
+Per-list `categories`, `exclude-categories`, and `dont-filter-packages` override the global settings for that list.
+
+### exclude-lists
+
+Filter list names to skip entirely.
+
+```json
+{
+    "config": {
+        "filter": {
+            "exclude-lists": ["list-name-to-skip"]
+        }
+    }
+}
+```
+
+### sources
+
+Additional sources to fetch filter list data from. Keys are source names, values are objects with `type` and `url`.
+Currently only `type: "url"` is supported.
+
+```json
+{
+    "config": {
+        "filter": {
+            "sources": {
+                "my-source": {
+                    "type": "url",
+                    "url": "https://example.org/filter-list.json"
+                }
+            }
         }
     }
 }
