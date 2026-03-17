@@ -82,6 +82,7 @@ class Installer
     // used/declared in SolverProblemsException, carried over here for completeness
     public const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
     public const ERROR_AUDIT_FAILED = 5;
+    public const ERROR_PSR_AUTOLOAD_VIOLATION = 6;
     // technically exceptions are thrown with various status codes >400, but the process exit code is normalized to 100
     public const ERROR_TRANSPORT_EXCEPTION = 100;
 
@@ -377,7 +378,7 @@ class Installer
                 );
 
             if ($this->strictPsrAutoloader && count($classMap->getPsrViolations()) > 0) {
-                return 1;
+                return self::ERROR_PSR_AUTOLOAD_VIOLATION;
             }
         }
 
