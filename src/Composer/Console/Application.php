@@ -391,7 +391,7 @@ class Application extends BaseApplication
                                     $rootPackage = $composer->getPackage();
                                     $generator = $composer->getAutoloadGenerator();
 
-                                    $packageMap = $generator->buildPackageMap($composer->getInstallationManager(), $rootPackage, [$rootPackage]);
+                                    $packageMap = $generator->buildPackageMap($composer->getInstallationManager(), $rootPackage, []);
                                     $map = $generator->parseAutoloads($packageMap, $rootPackage);
 
                                     $loader = $generator->createLoader($map, $composer->getConfig()->get('vendor-dir'));
