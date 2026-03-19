@@ -40,7 +40,8 @@ Partial update from lock file with root aliases should work
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --INSTALLED--
 [
@@ -71,7 +72,8 @@ update --lock
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Marking c/aliased (2.0.0) as installed, alias of c/aliased (1.0.0)

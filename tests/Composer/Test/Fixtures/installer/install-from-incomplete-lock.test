@@ -26,7 +26,8 @@ Requirements from the composer file are not installed if the lock file is presen
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
-    "prefer-lowest": false
+    "prefer-lowest": false,
+    "self-features": []
 }
 --RUN--
 install
