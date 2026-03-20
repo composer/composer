@@ -468,4 +468,37 @@ class ConfigTest extends TestCase
         $config->merge(['config' => ['allow-plugins' => true]]);
         self::assertEquals(true, $config->get('allow-plugins'));
     }
+
+    public function testSourceFallbackDefaultsToTrue(): void
+    {
+        $config = new Config(false);
+        self::assertTrue($config->get('source-fallback'));
+    }
+
+    public function testSourceFallbackCanBeDisabled(): void
+    {
+        $config = new Config(false);
+        $config->merge(['config' => ['source-fallback' => false]]);
+        self::assertFalse($config->get('source-fallback'));
+    }
+
+    public function testSourceFallbackCanBeSetFromString(): void
+    {
+        $config = new Config(false);
+        $config->merge(['config' => ['source-fallback' => 'false']]);
+        self::assertFalse($config->get('source-fallback'));
+
+        $config->merge(['config' => ['source-fallback' => 'true']]);
+        self::assertTrue($config->get('source-fallback'));
+    }
+
+    public function testSourceFallbackEnvOverride(): void
+    {
+        Platform::putEnv('COMPOSER_SOURCE_FALLBACK', '0');
+        $config = new Config(true);
+        $result = $config->get('source-fallback');
+        Platform::clearEnv('COMPOSER_SOURCE_FALLBACK');
+
+        self::assertFalse($result);
+    }
 }

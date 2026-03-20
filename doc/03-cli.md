@@ -104,6 +104,9 @@ resolution.
   To get the legacy behavior where Composer use `source` automatically for dev
   versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
   Passing this flag will override the config value.
+* **--source-fallback / --no-source-fallback:** Override the [config.source-fallback](06-config.md#source-fallback)
+  setting. When disabled, Composer will not fall back to an alternative download source
+  (e.g., from dist to source or vice versa) if the preferred one fails. Also see [COMPOSER_SOURCE_FALLBACK](#composer-source-fallback).
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
@@ -198,6 +201,9 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
   To get the legacy behavior where Composer use `source` automatically for dev
   versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
   Passing this flag will override the config value.
+* **--source-fallback / --no-source-fallback:** Override the [config.source-fallback](06-config.md#source-fallback)
+  setting. When disabled, Composer will not fall back to an alternative download source
+  (e.g., from dist to source or vice versa) if the preferred one fails. Also see [COMPOSER_SOURCE_FALLBACK](#composer-source-fallback).
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules. Also see [COMPOSER_NO_DEV](#composer-no-dev).
@@ -293,6 +299,9 @@ If you do not want to install the new dependencies immediately you can call it w
   To get the legacy behavior where Composer use `source` automatically for dev
   versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
   Passing this flag will override the config value.
+* **--source-fallback / --no-source-fallback:** Override the [config.source-fallback](06-config.md#source-fallback)
+  setting. When disabled, Composer will not fall back to an alternative download source
+  (e.g., from dist to source or vice versa) if the preferred one fails. Also see [COMPOSER_SOURCE_FALLBACK](#composer-source-fallback).
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
@@ -421,6 +430,9 @@ php composer.phar reinstall "acme/*"
   To get the legacy behavior where Composer use `source` automatically for dev
   versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
   Passing this flag will override the config value.
+* **--source-fallback / --no-source-fallback:** Override the [config.source-fallback](06-config.md#source-fallback)
+  setting. When disabled, Composer will not fall back to an alternative download source
+  (e.g., from dist to source or vice versa) if the preferred one fails. Also see [COMPOSER_SOURCE_FALLBACK](#composer-source-fallback).
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
@@ -983,6 +995,9 @@ By default the command checks for the packages on packagist.org.
   To get the legacy behavior where Composer use `source` automatically for dev
   versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
   Passing this flag will override the config value.
+* **--source-fallback / --no-source-fallback:** Override the [config.source-fallback](06-config.md#source-fallback)
+  setting. When disabled, Composer will not fall back to an alternative download source
+  (e.g., from dist to source or vice versa) if the preferred one fails. Also see [COMPOSER_SOURCE_FALLBACK](#composer-source-fallback).
 * **--repository:** Provide a custom repository to search for the package,
   which will be used instead of packagist. Can be either an HTTP URL pointing
   to a `composer` repository, a path to a local `packages.json` file, or a
@@ -1397,6 +1412,12 @@ If set to `1`, when resolving dependencies with both `--prefer-stable` and
 alpha/beta/RC versions in cases where no stable release exists. This is useful
 to test lowest versions while still preferring branches that may contain
 critical fixes over prerelease versions.
+
+### COMPOSER_SOURCE_FALLBACK
+
+If set to `0`, Composer will not fall back to an alternative download source when the
+preferred one fails. Equivalent to passing `--no-source-fallback`. See also
+[config.source-fallback](06-config.md#source-fallback).
 
 ### COMPOSER_MINIMAL_CHANGES
 

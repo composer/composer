@@ -425,6 +425,7 @@ EOT
             'update-with-minimal-changes' => [$booleanValidator, $booleanNormalizer],
             'disable-tls' => [$booleanValidator, $booleanNormalizer],
             'secure-http' => [$booleanValidator, $booleanNormalizer],
+            'source-fallback' => [$booleanValidator, $booleanNormalizer],
             'bump-after-update' => [
                 static function ($val): bool {
                     return in_array($val, ['dev', 'no-dev', 'true', 'false', '1', '0'], true);
