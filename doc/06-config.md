@@ -549,6 +549,12 @@ part of any `composer audit` and the full list of considered packages for a `com
 }
 ```
 
+You can also configure sources using the command line.
+
+```shell
+php composer.phar config [--global] filter.source.my-source url https://example.org/filter-list.json
+```
+
 ## use-parent-dir
 
 When running Composer in a directory where there is no composer.json, if there
