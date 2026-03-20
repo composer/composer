@@ -532,12 +532,12 @@ class ComposerRepositoryTest extends TestCase
                     'url' => 'https://example.org/p2/acme/package.json',
                     'body' => JsonFile::encode([
                         'filter' => [
-                            'test' => [
+                            'test' => [[
                                 'constraint' => '*',
                                 'category' => 'malware',
                                 'url' => 'https://example.org/acme/package/filters.json',
                                 'reason' => 'Malicious code detected',
-                            ],
+                            ]],
                         ],
                     ]),
                     'options' => ['http' => ['verify_peer' => false]],

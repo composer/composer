@@ -779,9 +779,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     [$response] = $spec;
 
                     if (isset($response['filter']) && is_array($response['filter'])) {
-                        foreach ($response['filter'] as $listName => $data) {
-                            $data['package'] = $name;
-                            $filter[$listName][] = FilterListEntry::create($listName, $data, $parser);
+                        foreach ($response['filter'] as $listName => $listEntries) {
+                            foreach ($listEntries as $data) {
+                                $data['package'] = $name;
+                                $filter[$listName][] = FilterListEntry::create($listName, $data, $parser);
+
+                            }
                         }
                     }
                 });

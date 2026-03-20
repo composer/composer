@@ -84,6 +84,7 @@ class Auditor
      * @param self::ABANDONED_* $abandoned
      * @param array<string, string|null> $ignoredSeverities List of ignored severity levels
      * @param array<string, string|null> $ignoreAbandoned List of abandoned package name that reported but not listed as vulnerabilities.
+     * @param self::FILTERED_* $filtered
      *
      * @return int-mask<self::STATUS_*> A bitmask of STATUS_* constants or 0 on success
      * @throws InvalidArgumentException If no packages are passed in

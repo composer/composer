@@ -716,6 +716,7 @@ vendor/other is on filter list "test-list" (category: internal).',
      * @dataProvider filteredProvider
      * @param array<Package> $packages
      * @param array<string, list<FilterListEntry>> $filterEntriesByList
+     * @param Auditor::FILTERED_* $filtered
      * @param 'json'|'plain'|'summary'|'table' $format
      */
     public function testAuditWithFilter(array $packages, array $filterEntriesByList, string $filtered, string $format, int $expected, string $output): void
