@@ -133,7 +133,7 @@ class CompositeRepository implements RepositoryInterface
             /* @var $repository RepositoryInterface */
             $results = $repository->search($query, $mode, $type);
             if ($io !== null) {
-                $io->writeError('Searched '.$repository->getRepoName().', found <info>'.count($results).'</info> result(s)');
+                $io->writeError('Searched '.$repository->getRepoName().', found <info>'.count($results).'</info> result(s)', true, IOInterface::VERY_VERBOSE);
             }
             $matches[] = $results;
         }
