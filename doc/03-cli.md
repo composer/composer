@@ -285,6 +285,16 @@ on the available package versions.
 php composer.phar require vendor/package vendor/package2
 ```
 
+You can also pass a local path instead of a package name. Composer will read the
+`composer.json` from the given directory, automatically add a [path repository](05-repositories.md#path)
+for it, and require the package by its name. The path must start with `./`, `../`,
+or be an absolute path.
+
+```shell
+php composer.phar require ./packages/my-local-lib
+php composer.phar require /absolute/path/to/my-lib:^2.0
+```
+
 If you do not want to install the new dependencies immediately you can call it with --no-update
 
 ### Options
