@@ -121,7 +121,7 @@ resolution.
   a bit of time to run so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
-* **--strict-psr-autoloader:** Return a failed exit code (1) if PSR-4 or PSR-0 mapping errors
+* **--strict-psr-autoloader:** Return a failed exit code (6) if PSR-4 or PSR-0 mapping errors
   are present in the current project (dependencies excluded). Requires `--optimize-autoloader` to work.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
@@ -215,7 +215,7 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
   a bit of time to run, so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
-* **--strict-psr-autoloader:** Return a failed exit code (1) if PSR-4 or PSR-0 mapping errors
+* **--strict-psr-autoloader:** Return a failed exit code (6) if PSR-4 or PSR-0 mapping errors
   are present in the current project (dependencies excluded). Requires `--optimize-autoloader` to work.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
