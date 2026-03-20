@@ -441,7 +441,7 @@ class Installer
                         $repoSet->addRepository($repo);
                     }
                     $filterListConfig = FilterListConfig::fromConfig($this->config, new VersionParser());
-                    $filterListProviderSet = $filterListConfig !== null ? FilterListProviderSet::create($filterListConfig, $this->repositoryManager->getRepositories(), Factory::createHttpDownloader($this->io, $this->config)) : null;
+                    $filterListProviderSet = $filterListConfig !== null ? FilterListProviderSet::create($filterListConfig, $this->repositoryManager->getRepositories(), $this->repositoryManager->getHttpDownloader()) : null;
 
                     return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->auditAbandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedForAudit, $auditConfig->auditFiltered, $filterListProviderSet, $filterListConfig) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
@@ -1140,7 +1140,7 @@ class Installer
         $filterListConfig = FilterListConfig::fromConfig($this->config, new VersionParser());
 
         if ($filterListConfig !== null && !$this->updateMirrors) {
-            return new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), Factory::createHttpDownloader($this->io, $this->config));
+            return new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader());
         }
 
         return null;

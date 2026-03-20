@@ -93,7 +93,7 @@ EOT
         $ignoreUnreachable = $input->getOption('ignore-unreachable') || $auditConfig->ignoreUnreachable;
 
         $filterListConfig = FilterListConfig::fromConfig($composer->getConfig(), new VersionParser());
-        $filterListProviderSet = $filterListConfig !== null ? FilterListProviderSet::create($filterListConfig, $composer->getRepositoryManager()->getRepositories(), Factory::createHttpDownloader($this->getIO(), $composer->getConfig())) : null;
+        $filterListProviderSet = $filterListConfig !== null ? FilterListProviderSet::create($filterListConfig, $composer->getRepositoryManager()->getRepositories(), $composer->getLoop()->getHttpDownloader()) : null;
 
         return min(255, $auditor->audit(
             $this->getIO(),
