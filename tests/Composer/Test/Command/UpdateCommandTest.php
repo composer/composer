@@ -598,4 +598,126 @@ OUTPUT;
 
         self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
     }
+
+    public function testUpdateWithTemporaryConstraintUsingWildcard(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/a', 'version' => '1.0.0'],
+                        ['name' => 'root/a', 'version' => '2.0.0'],
+                        ['name' => 'root/ab', 'version' => '1.0.0'],
+                        ['name' => 'root/ab', 'version' => '2.0.0'],
+                        ['name' => 'root/abc', 'version' => '1.0.0'],
+                        ['name' => 'root/abc', 'version' => '2.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/a' => '^1 || ^2',
+                'root/ab' => '^1 || ^2',
+                'root/abc' => '^1 || ^2',
+            ],
+        ]);
+
+        $package = self::getPackage('root/a', '2.0.0');
+        $package2 = self::getPackage('root/ab', '2.0.0');
+        $package3 = self::getPackage('root/abc', '2.0.0');
+        $this->createComposerLock([$package, $package2, $package3]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--with' => ['root/*:^1']]));
+
+        $expected = <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 3 updates, 0 removals
+  - Downgrading root/a (2.0.0 => 1.0.0)
+  - Downgrading root/ab (2.0.0 => 1.0.0)
+  - Downgrading root/abc (2.0.0 => 1.0.0)
+OUTPUT;
+
+        self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--with' => ['root/ab*:^1']]));
+
+        $expected = <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 2 updates, 0 removals
+  - Downgrading root/ab (2.0.0 => 1.0.0)
+  - Downgrading root/abc (2.0.0 => 1.0.0)
+OUTPUT;
+
+        self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+    }
+
+    public function testUpdateWithTemporaryConstraintWildcardFailsIntersection(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/a', 'version' => '1.0.0'],
+                        ['name' => 'root/a', 'version' => '2.0.0'],
+                        ['name' => 'root/ab', 'version' => '1.0.0'],
+                        ['name' => 'root/ab', 'version' => '2.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/a' => '^1',
+                'root/ab' => '^1',
+            ],
+        ]);
+
+        $package = self::getPackage('root/a', '1.0.0');
+        $package2 = self::getPackage('root/ab', '1.0.0');
+        $this->createComposerLock([$package, $package2]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--with' => ['root/*:^2']]));
+
+        $expected = <<<OUTPUT
+The temporary constraint "^2" for "root/*" matching "root/a" must be a subset of the constraint in your composer.json (^1)
+OUTPUT;
+
+        self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+    }
+
+    public function testUpdateWithTemporaryConstraintWildcardMatchingNothing(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/a', 'version' => '1.0.0'],
+                        ['name' => 'root/a', 'version' => '2.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/a' => '^1 || ^2',
+            ],
+        ]);
+
+        $package = self::getPackage('root/a', '2.0.0');
+        $this->createComposerLock([$package]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--with' => ['other/*:^1']]));
+
+        $expected = <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Nothing to modify in lock file
+OUTPUT;
+
+        self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+    }
 }
