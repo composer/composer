@@ -530,7 +530,8 @@ Filter list names to skip entirely.
 
 ### sources
 
-Additional sources to fetch filter list data from. Keys are source names, values are objects with `type` and `url`.
+By default, list data is fetched from the configured Composer repositories that provide filter list data. You can configure
+additional sources to fetch filter list data from. Keys are source names, values are objects with `type` and `url`.
 Currently only `type: "url"` is supported. The configured URL will receive your full list of installed dependencies as
 part of any `composer audit` and the full list of considered packages for a `composer update`.
 
