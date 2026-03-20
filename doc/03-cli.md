@@ -1029,6 +1029,11 @@ By default the command checks for the packages on packagist.org.
 * **--ignore-platform-req:** ignore a specific platform requirement(`php`,
   `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
   does not fulfill it. Multiple requirements can be ignored via wildcard.
+* **--require:** Require additional package(s) to be added to composer.json after
+  installing the project. If a lock file is present it will be deleted and an
+  update will be run instead of install. Can be specified multiple times for
+  multiple packages. Should be in format `foo/bar:1.0.0` format if you want to
+  specify a constraint.
 * **--ask:** Ask the user to provide a target directory for the new project.
 
 ## dump-autoload / dumpautoload
