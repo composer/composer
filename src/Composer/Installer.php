@@ -219,6 +219,9 @@ class Installer
     /** @var array<string, ConstraintInterface> */
     protected $temporaryConstraints = [];
 
+    /** @var LockTransaction|null */
+    protected $lockTransaction = null;
+
     /**
      * Constructor
      *
@@ -522,7 +525,7 @@ class Installer
         // solve dependencies
         $solver = new Solver($policy, $pool, $this->io);
         try {
-            $lockTransaction = $solver->solve($request, $this->platformRequirementFilter);
+            $this->lockTransaction = $solver->solve($request, $this->platformRequirementFilter);
             $ruleSetSize = $solver->getRuleSetSize();
             $solver = null;
         } catch (SolverProblemsException $e) {
@@ -546,7 +549,7 @@ class Installer
 
         $pool = null;
 
-        if (!$lockTransaction->getOperations()) {
+        if (!$this->lockTransaction->getOperations()) {
             $this->io->writeError('Nothing to modify in lock file');
 
             if ($this->minimalUpdate && $this->updateAllowList === null && $this->locker->isFresh()) {
@@ -554,7 +557,7 @@ class Installer
             }
         }
 
-        $exitCode = $this->extractDevPackages($lockTransaction, $platformRepo, $aliases, $policy, $lockedRepository);
+        $exitCode = $this->extractDevPackages($this->lockTransaction, $platformRepo, $aliases, $policy, $lockedRepository);
         if ($exitCode !== 0) {
             return $exitCode;
         }
@@ -566,9 +569,9 @@ class Installer
         $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
 
         $installsUpdates = $uninstalls = [];
-        if ($lockTransaction->getOperations()) {
+        if ($this->lockTransaction->getOperations()) {
             $installNames = $updateNames = $uninstallNames = [];
-            foreach ($lockTransaction->getOperations() as $operation) {
+            foreach ($this->lockTransaction->getOperations() as $operation) {
                 if ($operation instanceof InstallOperation) {
                     $installsUpdates[] = $operation;
                     $installNames[] = $operation->getPackage()->getPrettyName().':'.$operation->getPackage()->getFullPrettyVersion();
@@ -649,11 +652,11 @@ class Installer
         }
 
         $updatedLock = $this->locker->setLockData(
-            $lockTransaction->getNewLockPackages(false, $this->updateMirrors),
-            $lockTransaction->getNewLockPackages(true, $this->updateMirrors),
+            $this->lockTransaction->getNewLockPackages(false, $this->updateMirrors),
+            $this->lockTransaction->getNewLockPackages(true, $this->updateMirrors),
             $platformReqs,
             $platformDevReqs,
-            $lockTransaction->getAliases($aliases),
+            $this->lockTransaction->getAliases($aliases),
             $this->package->getMinimumStability(),
             $this->package->getStabilityFlags(),
             $this->preferStable || $this->package->getPreferStable(),
@@ -1584,5 +1587,10 @@ class Installer
         $this->suggestedPackagesReporter = $suggestedPackagesReporter;
 
         return $this;
+    }
+
+    public function getLockTransaction(): ?LockTransaction
+    {
+        return $this->lockTransaction;
     }
 }
