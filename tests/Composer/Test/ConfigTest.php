@@ -456,6 +456,10 @@ class ConfigTest extends TestCase
         self::assertSame(['exclude-category', 'other-exclude-category'], $result['exclude-categories'] ?? []);
         self::assertSame(['acme/package', 'acme/other'], $result['dont-filter-packages'] ?? []);
         self::assertSame([['type' => 'url', 'url' => 'https://example.com/acme/package'], ['type' => 'url', 'url' => 'https://example.com/acme/other']], $result['sources'] ?? []);
+
+        Platform::putEnv('COMPOSER_FILTER', '1');
+        self::assertNotTrue($config->get('filter'));
+        Platform::clearEnv('COMPOSER_FILTER');
     }
 
     public function testGetDefaultsToAnEmptyArray(): void
