@@ -39,6 +39,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 use Composer\IO\IOInterface;
 use Composer\Advisory\Auditor;
 use Composer\Util\Silencer;
@@ -206,10 +207,12 @@ EOT
         }
 
         try {
+            $resolvedPaths = $this->resolveLocalPaths($input, $input->getArgument('packages'), (bool) $input->getOption('dry-run'));
+            $newPathRepos = $resolvedPaths['repos'];
             $requirements = $this->determineRequirements(
                 $input,
                 $output,
-                $input->getArgument('packages'),
+                $resolvedPaths['requirements'],
                 $platformRepo,
                 $preferredStability,
                 $input->getOption('no-update'), // if there is no update, we need to use the best possible version constraint directly as we cannot rely on the solver to guess the best constraint
@@ -333,7 +336,7 @@ EOT
         $composer->getPluginManager()->deactivateInstalledPlugins();
 
         try {
-            $result = $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
+            $result = $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey, $newPathRepos);
             if ($result === 0 && count($requirementsToGuess) > 0) {
                 $result = $this->updateRequirementsAfterResolution($requirementsToGuess, $requireKey, $removeKey, $sortPackages, $input->getOption('dry-run'), $input->getOption('fixed'));
             }
@@ -400,9 +403,10 @@ EOT
      * @param array<string, string> $requirements
      * @param 'require'|'require-dev' $requireKey
      * @param 'require'|'require-dev' $removeKey
+     * @param list<RepositoryInterface> $dryRunRepos
      * @throws \Exception
      */
-    private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, string $requireKey, string $removeKey): int
+    private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, string $requireKey, string $removeKey, array $dryRunRepos = []): int
     {
         // Update packages
         $this->resetComposer();
@@ -414,6 +418,13 @@ EOT
         }, 10000);
 
         if ($input->getOption('dry-run')) {
+            // Re-add local path repositories that were added in-memory by resolveLocalPaths
+            // This is needed because resetComposer() clears the in-memory state, and in
+            // dry-run mode the repos were not written to composer.json
+            foreach ($dryRunRepos as $repo) {
+                $composer->getRepositoryManager()->addRepository($repo);
+            }
+
             $rootPackage = $composer->getPackage();
             $links = [
                 'require' => $rootPackage->getRequires(),

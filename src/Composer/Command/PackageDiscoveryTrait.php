@@ -29,6 +29,7 @@ use Composer\Repository\ConfigurableRepositoryInterface;
 use Composer\Repository\PathRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
+use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Util\Filesystem;
@@ -93,6 +94,102 @@ trait PackageDiscoveryTrait
     }
 
     /**
+     * Resolves local path arguments to package names, adding path repositories as needed.
+     *
+     * Takes raw requirement strings (e.g. ['./local-pkg', 'vendor/pkg:^1.0']) and replaces
+     * any local paths with the actual package name from the local composer.json, adding a
+     * path repository entry to the project's composer.json if not already present.
+     *
+     * @param array<string> $requires
+     *
+     * @return array{requirements: array<string>, repos: array<RepositoryInterface>}
+     * @throws \Exception
+     */
+    final protected function resolveLocalPaths(InputInterface $input, array $requires, bool $dryRun = false): array
+    {
+        if (count($requires) === 0) {
+            return ['requirements' => $requires, 'repos' => []];
+        }
+
+        $normalized = $this->normalizeRequirements($requires);
+        $io = $this->getIO();
+        $composer = $this->tryComposer();
+        $fs = new Filesystem();
+
+        $repos = [];
+        if (null !== $composer) {
+            $repos = $composer->getRepositoryManager()->getRepositories();
+        }
+
+        $repoURLs = [];
+        foreach ($repos as $repo) {
+            if (!$repo instanceof ConfigurableRepositoryInterface) {
+                continue;
+            }
+            $repoConfig = $repo->getRepoConfig();
+            $repoURLs[] = str_replace('\\', '/', $repoConfig['url']);
+        }
+
+        $result = [];
+        $newRepos = [];
+        foreach ($normalized as $i => $requirement) {
+            $isLocalPackage = $fs->isAbsolutePath($requirement['name']) || $requirement['name'][0] === '.';
+
+            if (!$isLocalPackage) {
+                $result[] = $requires[$i];
+                continue;
+            }
+
+            $treatedPath = str_replace('\\', '/', $requirement['name']);
+
+            $jsonFile = new JsonFile($treatedPath.'/composer.json');
+            if (!$jsonFile->exists()) {
+                throw new \Exception('No composer.json found in '.$treatedPath);
+            }
+
+            $jsonConfig = $jsonFile->read();
+            if (!isset($jsonConfig['name'])) {
+                throw new \Exception('Package name is not set in composer.json at '.$treatedPath);
+            }
+
+            $packageName = $jsonConfig['name'];
+
+            if (!in_array($treatedPath, $repoURLs, true)) {
+                $repoConfig = [
+                    'type' => 'path',
+                    'url' => $treatedPath,
+                ];
+
+                if (!$dryRun) {
+                    $configSource = new JsonConfigSource(new JsonFile(Factory::getComposerFile()));
+                    $configSource->addRepository($packageName, $repoConfig, true);
+                }
+
+                if (null !== $composer) {
+                    $repository = new PathRepository($repoConfig, $io, $composer->getConfig());
+                    $composer->getRepositoryManager()->addRepository($repository);
+                    $this->repositorySets = [];
+                    if ($this->repos instanceof CompositeRepository) {
+                        $this->repos->addRepository($repository);
+                    }
+                    $newRepos[] = $repository;
+                }
+
+                $repoURLs[] = $treatedPath;
+            }
+
+            // Replace the path with the real package name, preserving any version constraint
+            $replacement = $packageName;
+            if (isset($requirement['version'])) {
+                $replacement .= ' '.$requirement['version'];
+            }
+            $result[] = $replacement;
+        }
+
+        return ['requirements' => $result, 'repos' => $newRepos];
+    }
+
+    /**
      * @param array<string> $requires
      *
      * @return array<string>
@@ -100,7 +197,6 @@ trait PackageDiscoveryTrait
      */
     final protected function determineRequirements(InputInterface $input, OutputInterface $output, array $requires = [], ?PlatformRepository $platformRepo = null, string $preferredStability = 'stable', bool $useBestVersionConstraint = true, bool $fixed = false): array
     {
-        $composer = $this->tryComposer();
         if (count($requires) > 0) {
             $requires = $this->normalizeRequirements($requires);
             $result = [];
@@ -109,66 +205,6 @@ trait PackageDiscoveryTrait
             foreach ($requires as $requirement) {
                 if (isset($requirement['version']) && Preg::isMatch('{^\d+(\.\d+)?$}', $requirement['version'])) {
                     $io->writeError('<warning>The "'.$requirement['version'].'" constraint for "'.$requirement['name'].'" appears too strict and will likely not match what you want. See https://getcomposer.org/constraints</warning>');
-                }
-
-                //automatically add package repository if local
-                $repos = [];
-                $config = null;
-                if(null !== $composer){
-                    $repos = $composer->getRepositoryManager()->getRepositories();
-                    $config = $composer->getConfig();
-                }
-
-                $repoURLs = [];
-
-                foreach($repos as $repo){
-                    if (!$repo instanceof ConfigurableRepositoryInterface) {
-                        continue;
-                    }
-                    $repoConfig = $repo->getRepoConfig();
-                    $repoURLs[] = str_replace("\\", '/', $repoConfig['url']);
-                }
-
-                $fs = new Filesystem();
-                $isLocalPackage = $fs->isAbsolutePath($requirement['name'])
-                || $requirement['name'][0] === '.';
-
-                if($isLocalPackage){
-
-                    $treatedPath = str_replace("\\", '/', $requirement['name']);
-
-                    $jsonFileInstance = new JsonFile($treatedPath . '/composer.json');
-
-                    if (!$jsonFileInstance->exists()) {
-                        throw new \Exception($treatedPath . " was not found");
-                    }
-
-                    $jsonConfigFromPackage = $jsonFileInstance->read();
-                    if (!isset($jsonConfigFromPackage['name'])) {
-                        throw new \Exception("Package name inside composer.json at " . $treatedPath . " is not set");
-                    }
-
-                    $requirement['name'] = $jsonConfigFromPackage['name'];
-                    if (isset($jsonConfigFromPackage['version'])) {
-                        $requirement['version'] = $jsonConfigFromPackage['version'];
-                    }
-
-                    if(!in_array($treatedPath, $repoURLs, true)){
-                        $configSource = new JsonConfigSource(new JsonFile('composer.json'));
-
-                        $repoConfig = [
-                            'type' => 'path',
-                            'url' => $treatedPath
-                        ];
-
-                        $configSource->addRepository($requirement['name'], $repoConfig, true);
-
-                        if(null !== $config){
-                            $repository = new PathRepository($repoConfig, $io, $config);
-                            $repoSet = $this->getRepositorySet($input);
-                            $repoSet->addRepository($repository);
-                        }
-                    }
                 }
 
                 if (!isset($requirement['version'])) {
@@ -199,6 +235,7 @@ trait PackageDiscoveryTrait
         $versionParser = new VersionParser();
 
         // Collect existing packages
+        $composer = $this->tryComposer();
         $installedRepo = null;
         if (null !== $composer) {
             $installedRepo = $composer->getRepositoryManager()->getLocalRepository();
