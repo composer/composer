@@ -12,7 +12,7 @@
 
 namespace Composer\FilterList;
 
-use Composer\FilterList\FitlerListProvider\FilterListProviderSet;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Semver\Constraint\Constraint;

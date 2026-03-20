@@ -15,7 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\FilterList\FilterListAuditor;
 use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListEntry;
-use Composer\FilterList\FitlerListProvider\FilterListProviderSet;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;

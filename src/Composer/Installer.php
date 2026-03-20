@@ -37,7 +37,7 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\FilterList\FilterListAuditor;
 use Composer\FilterList\FilterListConfig;
-use Composer\FilterList\FitlerListProvider\FilterListProviderSet;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\SuggestedPackagesReporter;

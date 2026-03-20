@@ -16,7 +16,7 @@ use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListEntry;
-use Composer\FilterList\FitlerListProvider\FilterListProviderSet;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\IO\BufferIO;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;

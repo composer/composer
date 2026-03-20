@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\FilterList\FitlerListProvider;
+namespace Composer\FilterList\FilterListProvider;
 
 use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\Source\UrlSource;

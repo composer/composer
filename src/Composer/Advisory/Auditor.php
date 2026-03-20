@@ -15,7 +15,7 @@ namespace Composer\Advisory;
 use Composer\FilterList\FilterListAuditor;
 use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListEntry;
-use Composer\FilterList\FitlerListProvider\FilterListProviderSet;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
