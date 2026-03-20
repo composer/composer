@@ -82,6 +82,7 @@ class Installer
     // used/declared in SolverProblemsException, carried over here for completeness
     public const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
     public const ERROR_AUDIT_FAILED = 5;
+    public const ERROR_PSR_AUTOLOAD_VIOLATION = 6;
     // technically exceptions are thrown with various status codes >400, but the process exit code is normalized to 100
     public const ERROR_TRANSPORT_EXCEPTION = 100;
 
@@ -144,6 +145,8 @@ class Installer
     protected $optimizeAutoloader = false;
     /** @var bool */
     protected $classMapAuthoritative = false;
+    /** @var bool */
+    protected $strictPsrAutoloader = false;
     /** @var bool */
     protected $apcuAutoloader = false;
     /** @var string|null */
@@ -367,7 +370,7 @@ class Installer
             $this->autoloadGenerator->setApcu($this->apcuAutoloader, $this->apcuAutoloaderPrefix);
             $this->autoloadGenerator->setRunScripts($this->runScripts);
             $this->autoloadGenerator->setPlatformRequirementFilter($this->platformRequirementFilter);
-            $this
+            $classMap = $this
                 ->autoloadGenerator
                 ->dump(
                     $this->config,
@@ -379,6 +382,10 @@ class Installer
                     null,
                     $this->locker
                 );
+
+            if ($this->strictPsrAutoloader && count($classMap->getPsrViolations()) > 0) {
+                return self::ERROR_PSR_AUTOLOAD_VIOLATION;
+            }
         }
 
         if ($this->install && $this->executeOperations) {
@@ -1284,6 +1291,16 @@ class Installer
     {
         $this->apcuAutoloader = $apcuAutoloader;
         $this->apcuAutoloaderPrefix = $apcuAutoloaderPrefix;
+
+        return $this;
+    }
+
+    /**
+     * Whether or not to be strict about PSR violations.
+     */
+    public function setStrictPsrAutoloader(bool $strictPsr): self
+    {
+        $this->strictPsrAutoloader = $strictPsr;
 
         return $this;
     }
