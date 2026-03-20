@@ -217,7 +217,7 @@ class DownloadManager
                                 ' from ' . $source . ': '.
                                 $e->getMessage().'</warning>'
                             );
-                            $io->writeError('    <warning>Source fallback is disabled via config. Not trying alternative sources.</warning>');
+                            $io->writeError('    <warning>Source fallback is disabled. Not trying alternative sources.</warning>');
                         }
                         throw $e;
                     }
