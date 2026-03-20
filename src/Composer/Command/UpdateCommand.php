@@ -163,15 +163,13 @@ EOT
         $temporaryConstraints = [];
         $rootRequirements = array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires());
         foreach ($reqs as $package => $constraint) {
-
+            $package = strtolower($package);
             $parsedConstraint = $parser->parseConstraints($constraint);
 
             // handling wildcard packages will only work for root requirements, not for transient dependencies
             if (str_contains($package, '*')) {
-
-                $packageFilterRegex = '{^'.str_replace('\\*', '.*?', preg_quote($package)).'$}i';
-                foreach($rootRequirements as $rootRequirementPackageName => $rootRequirement) {
-
+                $packageFilterRegex = BasePackage::packageNameToRegexp($package);
+                foreach ($rootRequirements as $rootRequirementPackageName => $rootRequirement) {
                     if (!Preg::isMatch($packageFilterRegex, $rootRequirementPackageName)) {
                         continue;
                     }
@@ -184,7 +182,6 @@ EOT
                     }
                 }
             } else {
-                $package = strtolower($package);
                 $parsedConstraint = $parser->parseConstraints($constraint);
                 $temporaryConstraints[$package] = $parsedConstraint;
                 if (isset($rootRequirements[$package]) && !Intervals::haveIntersections($parsedConstraint, $rootRequirements[$package]->getConstraint())) {
