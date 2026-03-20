@@ -177,6 +177,7 @@ EOT
 
     /**
      * @param string|array<string>|null $repositories
+     * @param array<string> $requiredPackages
      *
      * @throws \Exception
      */
