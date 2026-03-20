@@ -176,13 +176,12 @@ EOT
 
                     $temporaryConstraints[$rootRequirementPackageName] = $parsedConstraint;
                     if (!Intervals::haveIntersections($parsedConstraint, $rootRequirement->getConstraint())) {
-                        $io->writeError('<error>The temporary constraint "'.$constraint.'" for "'.$package.'" matching "'. $rootRequirementPackageName .'" must be a subset of the constraint in your composer.json ('.$rootRequirement->getPrettyConstraint().')</error>');
+                        $io->writeError('<error>The temporary constraint "'.$constraint.'" for "'.$package.'" matching "'.$rootRequirementPackageName.'" must be a subset of the constraint in your composer.json ('.$rootRequirement->getPrettyConstraint().')</error>');
 
                         return self::FAILURE;
                     }
                 }
             } else {
-                $parsedConstraint = $parser->parseConstraints($constraint);
                 $temporaryConstraints[$package] = $parsedConstraint;
                 if (isset($rootRequirements[$package]) && !Intervals::haveIntersections($parsedConstraint, $rootRequirements[$package]->getConstraint())) {
                     $io->writeError('<error>The temporary constraint "'.$constraint.'" for "'.$package.'" must be a subset of the constraint in your composer.json ('.$rootRequirements[$package]->getPrettyConstraint().')</error>');
