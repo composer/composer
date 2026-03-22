@@ -72,22 +72,22 @@ MD;
         foreach ($transaction->getOperations() as $operation) {
             if ($operation instanceof InstallOperation) {
                 $line = $this->renderLine($operation->getPackage());
-                if ($line){
+                if ('' !== $line){
                     $this->insertLineAfterNumber($startIndexString, $line);
                 }
             } elseif ($operation instanceof UpdateOperation) {
                 $package = $operation->getTargetPackage();
                 $newDeclaration = $this->renderLine($package);
-                if ($this->getLineNumberByContains($newDeclaration)) {
+                if (null !== $this->getLineNumberByContains($newDeclaration)) {
                     continue;
                 }
 
                 $oldNumber = $this->getLineNumberByContains($package->getName());
-                if ($oldNumber && $newDeclaration) {
-                    $this->updateLineByNumber($oldNumber, $newDeclaration);
-                } elseif ($newDeclaration && !$oldNumber) {
-                    $this->insertLineAfterNumber($startIndexString, $newDeclaration);
-                } elseif ($oldNumber && !$newDeclaration) {
+                if (null !== $newDeclaration) {
+                    null === $oldNumber ?
+                        $this->insertLineAfterNumber($startIndexString, $newDeclaration) :
+                        $this->updateLineByNumber($oldNumber, $newDeclaration);
+                } elseif (null !== $oldNumber) {
                     $this->deleteLineByNumber($oldNumber);
                 }
             } elseif ($operation instanceof UninstallOperation) {
@@ -108,9 +108,14 @@ MD;
             return '';
         }
 
+        $installPath = $this->installationManager->getInstallPath($package);
+        if (null === $installPath) {
+            return '';
+        }
+
         return sprintf(
             '    %s%s%s: %s%s',
-            $this->fs->findShortestPath(Platform::getCwd(), $this->installationManager->getInstallPath($package)),
+            $this->fs->findShortestPath(Platform::getCwd(), $installPath),
             DIRECTORY_SEPARATOR,
             $data['path'],
             $data['load_for'],
