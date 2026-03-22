@@ -83,7 +83,7 @@ MD;
                 }
 
                 $oldNumber = $this->getLineNumberByContains($package->getName());
-                if (null !== $newDeclaration) {
+                if ('' !== $newDeclaration) {
                     null === $oldNumber ?
                         $this->insertLineAfterNumber($startIndexString, $newDeclaration) :
                         $this->updateLineByNumber($oldNumber, $newDeclaration);
