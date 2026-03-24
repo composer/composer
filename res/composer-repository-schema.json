@@ -49,6 +49,31 @@
                 }
             }
         },
+        "filter": {
+            "type": "object",
+            "description": "Filter list configuration advertised by the repository.",
+            "required": ["metadata", "lists"],
+            "properties": {
+                "metadata": {
+                    "type": "boolean",
+                    "description": "Whether metadata files contain filter list data."
+                },
+                "lists": {
+                    "type": "array",
+                    "description": "Names of all filter lists provided by this repository.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "default-lists": {
+                    "type": "array",
+                    "description": "Names of filter lists that are enabled by default from this repository.",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "metadata-changes-url": {
             "type": "string",
             "description": "Endpoint to retrieve package metadata updates from. This should receive a timestamp since last call to be able to return new changes. e.g. '/metadata/changes.json'."

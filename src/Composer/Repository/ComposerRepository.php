@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\ComposerRepositoryFilterInformation;
 use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
@@ -112,7 +113,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $displayedWarningAboutNonMatchingPackageIndex = false;
     /** @var array{metadata: bool, api-url: string|null}|null */
     private $securityAdvisoryConfig = null;
-    /** @var array{metadata: bool, lists: list<string>}|null */
+    /** @var ComposerRepositoryFilterInformation|null */
     private $filterConfig = null;
 
     /**
@@ -740,7 +741,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         $this->loadRootServerFile(600);
 
-        return $this->filterConfig !== null && isset($this->filterConfig['metadata']);
+        return $this->filterConfig !== null && $this->filterConfig->metadata;
     }
 
     /**
@@ -1330,10 +1331,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             if (isset($data['filter']) && is_array($data['filter'])) {
-                $this->filterConfig = [
-                    'metadata' => $data['filter']['metadata'] ?? false,
-                    'lists' => isset($data['filter']['lists']) && is_array($data['filter']['lists']) ? array_values($data['filter']['lists']) : [],
-                ];
+                $this->filterConfig = ComposerRepositoryFilterInformation::fromData($data['filter']);
             }
         }
 
