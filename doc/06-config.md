@@ -394,34 +394,6 @@ Can be set to `true` to enable with defaults, `false` to fully disable, or confi
 Defaults to `false`. Whether filter list sources that are unreachable or return a non-200 status code
 should be ignored.
 
-### categories
-
-A list of filter categories to include. If empty, all categories are included.
-
-```json
-{
-    "config": {
-        "filter": {
-            "categories": ["malware"]
-        }
-    }
-}
-```
-
-### exclude-categories
-
-A list of filter categories to exclude.
-
-```json
-{
-    "config": {
-        "filter": {
-            "exclude-categories": ["malware"]
-        }
-    }
-}
-```
-
 ### dont-filter-packages
 
 A list of packages to exempt from filtering. Supports three formats:
@@ -501,8 +473,6 @@ By default, this is set to `[]` which means all lists are used.
                 {
                     "name": "list-name",
                     "apply": "audit",
-                    "categories": ["security"],
-                    "exclude-categories": ["informational"],
                     "dont-filter-packages": ["vendor/package"]
                 }
             ]
@@ -512,7 +482,7 @@ By default, this is set to `[]` which means all lists are used.
 ```
 
 The `apply` field controls which operation the list applies to (`audit`, `block`, or `all`).
-Per-list `categories`, `exclude-categories`, and `dont-filter-packages` override the global settings for that list.
+Per-list  `dont-filter-packages` override the global settings for that list.
 
 ### exclude-lists
 

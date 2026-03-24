@@ -117,7 +117,6 @@ class Auditor
 
         $filterAuditor = new FilterListAuditor();
         $filteredPackages = [];
-        $filteredCategories = [];
         $filteredCount = 0;
         if ($filterListConfig !== null && $filterListProviderSet !== null && $filtered !== self::FILTERED_IGNORE) {
             $filterResult = $filterAuditor->collectFilterLists($packages, $filterListProviderSet, $filterListConfig, 'audit', $ignoreUnreachable || $filterListConfig->ignoreUnreachable());
@@ -126,14 +125,6 @@ class Auditor
                 $matchingEntries = $filterAuditor->getMatchingEntries($package, $filterResult['filter'], $filterListConfig, 'audit');
                 if (count($matchingEntries) > 0) {
                     $filteredPackages[$package->getName()] = $matchingEntries;
-                    $packageCategories = [];
-                    foreach ($matchingEntries as $entry) {
-                        $packageCategories[$entry->category] = 1;
-                    }
-
-                    foreach (array_keys($packageCategories) as $category) {
-                        $filteredCategories[$category] = ($filteredCategories[$category] ?? 0) + 1;
-                    }
                 }
             }
 
@@ -209,12 +200,8 @@ class Auditor
         if (count($filteredPackages) > 0) {
             $plurality = count($filteredPackages) === 1 ? '' : 's';
             $punctuation = $format === self::FORMAT_SUMMARY ? '.' : ':';
-            $categoryStrings = [];
-            foreach ($filteredCategories as $category => $count) {
-                $categoryStrings[] = $category . ': ' . $count;
-            };
 
-            $io->writeError(sprintf('<error>Found %d package%s matching filters (%s)%s</error>', count($filteredPackages), $plurality, implode(', ', $categoryStrings), $punctuation));
+            $io->writeError(sprintf('<error>Found %d package%s matching filters%s</error>', count($filteredPackages), $plurality, $punctuation));
             if ($format !== self::FORMAT_SUMMARY) {
                 $this->outputFilteredPackages($io, $filteredPackages, $format);
             }
@@ -559,7 +546,7 @@ class Auditor
             foreach ($filteredPackages as $data) {
                 foreach ($data as $entry) {
                     $parts = [
-                        $entry->packageName . ' is on filter list "' . $entry->listName . '" (category: ' . $entry->category . ')',
+                        $entry->packageName . ' is on filter list "' . $entry->listName . '"',
                     ];
                     if ($entry->reason !== null) {
                         $parts[] = 'Reason: ' . $entry->reason;
@@ -579,7 +566,7 @@ class Auditor
         }
 
         $table = $io->getTable()
-            ->setHeaders(['Package', 'Versions', 'Filter List', 'Category', 'URL', 'Reason'])
+            ->setHeaders(['Package', 'Versions', 'Filter List', 'URL', 'Reason', 'ID'])
             ->setColumnMaxWidth(5, 40)
         ;
 
@@ -589,9 +576,9 @@ class Auditor
                     $entry->packageName,
                     $entry->constraint->getPrettyString(),
                     $entry->listName,
-                    $entry->category,
                     $entry->url ?? '',
                     $entry->reason ?? '',
+                    $entry->id ?? '',
                 ]));
             }
         }

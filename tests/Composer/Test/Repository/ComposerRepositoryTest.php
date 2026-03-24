@@ -534,9 +534,9 @@ class ComposerRepositoryTest extends TestCase
                         'filter' => [
                             'test' => [[
                                 'constraint' => '*',
-                                'category' => 'malware',
                                 'url' => 'https://example.org/acme/package/filters.json',
                                 'reason' => 'Malicious code detected',
+                                'id' => 'ID-test'
                             ]],
                         ],
                     ]),
@@ -559,7 +559,7 @@ class ComposerRepositoryTest extends TestCase
 
         $constraint = new MatchAllConstraint();
         $constraint->setPrettyString('*');
-        $this->assertEquals(['test' => [new FilterListEntry('acme/package', $constraint, 'test', 'malware', 'https://example.org/acme/package/filters.json', 'Malicious code detected')]], $filter);
+        $this->assertEquals(['test' => [new FilterListEntry('acme/package', $constraint, 'test', 'https://example.org/acme/package/filters.json', 'Malicious code detected', 'ID-test')]], $filter);
     }
 
     public function testGetFilterWithMatchingListsButNoFilter(): void

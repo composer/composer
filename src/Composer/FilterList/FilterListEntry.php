@@ -15,62 +15,59 @@ namespace Composer\FilterList;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\VersionParser;
 
+/**
+ * @readonly
+ */
 class FilterListEntry
 {
     /**
      * @var string
-     * @readonly
      */
     public $packageName;
 
     /**
      * @var string
-     * @readonly
      */
     public $listName;
 
     /**
      * @var ConstraintInterface
-     * @readonly
      */
     public $constraint;
 
     /**
      * @var string|null
-     * @readonly
      */
     public $url;
 
     /**
-     * @var string
-     * @readonly
+     * @var string|null
      */
-    public $category;
+    public $reason;
 
     /**
      * @var string|null
-     * @readonly
      */
-    public $reason;
+    public $id;
 
     public function __construct(
         string $packageName,
         ConstraintInterface $constraint,
         string $listName,
-        string $category,
         ?string $url = null,
-        ?string $reason = null
+        ?string $reason = null,
+        ?string $id = null
     ) {
         $this->packageName = $packageName;
         $this->listName = $listName;
         $this->constraint = $constraint;
         $this->url = $url;
-        $this->category = $category;
         $this->reason = $reason;
+        $this->id = $id;
     }
 
     /**
-     * @param array{package: string, constraint: string, url?: string, category: string, reason?: string} $data
+     * @param array{package: string, constraint: string, url?: string, reason?: string, id?: string} $data
      */
     public static function create(string $listName, array $data, VersionParser $parser): self
     {
@@ -80,9 +77,9 @@ class FilterListEntry
             $data['package'],
             $constraint,
             $listName,
-            $data['category'],
             $data['url'] ?? null,
-            $data['reason'] ?? null
+            $data['reason'] ?? null,
+            $data['id'] ?? null
         );
     }
 }

@@ -841,7 +841,7 @@ EOT
             return 0;
         }
 
-        // handle filter.lists, filter.categories, filter.dont-filter-package and filter.sources with --merge support
+        // handle filter.lists, filter.dont-filter-package and filter.sources with --merge support
         if (Preg::isMatch('/^filter\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->configSource->removeConfigSetting($settingKey);

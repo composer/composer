@@ -599,20 +599,6 @@
                             "description": "Whether filter list sources that are unreachable or return a non-200 status code should be ignored.",
                             "default": false
                         },
-                        "categories": {
-                            "type": "array",
-                            "description": "List of filter categories to include. If empty, all categories are included.",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "exclude-categories": {
-                            "type": "array",
-                            "description": "List of filter categories to exclude.",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
                         "dont-filter-packages": {
                             "$ref": "#/definitions/dont-filter-packages"
                         },
@@ -638,20 +624,6 @@
                                                 "enum": ["audit", "block", "all"],
                                                 "description": "Which operation to apply this list to",
                                                 "default": "all"
-                                            },
-                                            "categories": {
-                                                "type": "array",
-                                                "description": "Override global categories for this list",
-                                                "items": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "exclude-categories": {
-                                                "type": "array",
-                                                "description": "Override global exclude-categories for this list",
-                                                "items": {
-                                                    "type": "string"
-                                                }
                                             },
                                             "dont-filter-packages": {
                                                 "$ref": "#/definitions/dont-filter-packages"

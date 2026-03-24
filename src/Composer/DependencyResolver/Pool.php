@@ -200,9 +200,9 @@ class Pool implements \Countable
             if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
                 return array_map(static function (FilterListEntry $entry) {
                     $url = (bool) $entry->url ? ' (see ' . $entry->url . ')' : '';
-                    $verb = $entry->category === 'malware' ? 'flagged' : 'categorized';
+                    $reason = (bool) $entry->reason ? ' reason: ' . $entry->reason . '' : '';
 
-                    return $verb . ' as ' . $entry->category . ' by ' . $entry->listName . $url;
+                    return 'filtered by ' . $entry->listName . $url . $reason;
                 }, $filterListEntries);
             }
         }

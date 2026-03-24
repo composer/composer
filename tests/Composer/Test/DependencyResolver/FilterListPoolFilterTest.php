@@ -78,8 +78,6 @@ class FilterListPoolFilterTest extends TestCase
     {
         return [
             'dont-filter-packages' => [['dont-filter-packages' => ['acme/package']]],
-            'categories' => [['categories' => ['other']]],
-            'exclude-categories' => [['exclude-categories' => ['malware']]],
             'lists' => [['lists' => ['other']]],
             'exclude-lists' => [['exclude-lists' => ['test-list']]],
             'feature-off' => [false],
@@ -110,7 +108,7 @@ class FilterListPoolFilterTest extends TestCase
             'body' => (string) json_encode(['filter' => [[
                 'package' => 'acme/package',
                 'constraint' => '3.0.0.0',
-                'category' => 'malware',
+                'reason' => 'malware',
             ]]])
         ]]);
         $filterListConfig = new FilterListConfig(new VersionParser(), [
@@ -143,7 +141,7 @@ class FilterListPoolFilterTest extends TestCase
                     [
                         'package' => 'acme/package',
                         'constraint' => $constraint,
-                        'category' => 'malware',
+                        'reason' => 'malware',
                         'url' => 'https://example.org/malware/acme/package',
                     ],
                 ],

@@ -207,16 +207,6 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'filter.exclude-lists', 'setting-value' => ['other'], '--merge' => true],
             ['config' => ['filter' => ['exclude-lists' => ['list', 'other']]]],
         ];
-        yield 'merge filter.categories' => [
-            ['config' => ['filter' => ['categories' => ['category']]]],
-            ['setting-key' => 'filter.categories', 'setting-value' => ['other'], '--merge' => true],
-            ['config' => ['filter' => ['categories' => ['category', 'other']]]],
-        ];
-        yield 'merge filter.exclude-categories' => [
-            ['config' => ['filter' => ['exclude-categories' => ['category']]]],
-            ['setting-key' => 'filter.exclude-categories', 'setting-value' => ['other'], '--merge' => true],
-            ['config' => ['filter' => ['exclude-categories' => ['category', 'other']]]],
-        ];
         yield 'merge filter.dont-filter-packages' => [
             ['config' => ['filter' => ['dont-filter-packages' => ['acme/package']]]],
             ['setting-key' => 'filter.dont-filter-packages', 'setting-value' => ['acme/other'], '--merge' => true],

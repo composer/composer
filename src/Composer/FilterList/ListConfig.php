@@ -22,16 +22,6 @@ use Composer\Package\Version\VersionParser;
 class ListConfig
 {
     /**
-     * @var list<string>
-     */
-    public $categories;
-
-    /**
-     * @var list<string>
-     */
-    public $excludeCategories;
-
-    /**
      * A map of package name to dont filter config
      * @var array<string, DontFilterPackage>
      */
@@ -42,18 +32,12 @@ class ListConfig
 
     /**
      * @param array<string, DontFilterPackage> $dontFilterPackages
-     * @param list<string> $categories
-     * @param list<string> $excludeCategories
      */
     public function __construct(
         VersionParser $versionParser,
-        array $categories = [],
-        array $excludeCategories = [],
         array $dontFilterPackages = []
     ) {
         $this->versionParser = $versionParser;
-        $this->categories = $categories;
-        $this->excludeCategories = $excludeCategories;
         $this->dontFilterPackages = $dontFilterPackages;
     }
 
@@ -81,22 +65,7 @@ class ListConfig
 
         return new self(
             $this->versionParser,
-            $config['categories'] ?? $this->categories,
-            $config['exclude-categories'] ?? $this->excludeCategories,
                 $dontFilterPackagesMap
         );
-    }
-
-    public function useCategory(string $category): bool
-    {
-        if (\in_array($category, $this->excludeCategories, true)) {
-            return false;
-        }
-
-        if (\in_array($category, $this->categories, true)) {
-            return true;
-        }
-
-        return $this->categories === [];
     }
 }

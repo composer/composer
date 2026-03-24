@@ -237,8 +237,6 @@ class Config
                 } elseif ('filter' === $key) {
                     $lists = $this->config['filter']['lists'] ?? [];
                     $excludeLists = $this->config['filter']['exclude-lists'] ?? [];
-                    $categories = $this->config['filter']['categories'] ?? [];
-                    $excludeCategories = $this->config['filter']['exclude-categories'] ?? [];
                     $dontFilterPackages = $this->config['filter']['dont-filter-packages'] ?? [];
                     $sources = $this->config['filter']['sources'] ?? [];
 
@@ -248,8 +246,6 @@ class Config
                         $this->config[$key] = is_array($this->config['filter']) ? array_merge($this->config['filter'], $val) : $val;
                         $this->config['filter']['lists'] = array_merge($lists, $val['lists'] ?? []);
                         $this->config['filter']['exclude-lists'] = array_merge($excludeLists, $val['exclude-lists'] ?? []);
-                        $this->config['filter']['categories'] = array_merge($categories, $val['categories'] ?? []);
-                        $this->config['filter']['exclude-categories'] = array_merge($excludeCategories, $val['exclude-categories'] ?? []);
                         $this->config['filter']['dont-filter-packages'] = array_merge($dontFilterPackages, $val['dont-filter-packages'] ?? []);
                         $this->config['filter']['sources'] = array_merge($sources, $val['sources'] ?? []);
                     }

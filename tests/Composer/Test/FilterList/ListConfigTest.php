@@ -34,15 +34,11 @@ class ListConfigTest extends TestCase
     {
         $config = (new ListConfig($this->versionParser))->apply([
             'ignore-unreachable' => true,
-            'categories' => ['malware'],
-            'exclude-categories' => ['other'],
             'dont-filter-packages' => ['foo/bar', ['package' => 'foo/other', 'constraint' => '*', 'apply' => 'block']],
             'apply' => 'all',
         ], 'audit');
 
         $this->assertNotNull($config);
-        $this->assertSame(['malware'], $config->categories);
-        $this->assertSame(['other'], $config->excludeCategories);
         $this->assertCount(1, $config->dontFilterPackages);
         $this->assertArrayHasKey('foo/bar', $config->dontFilterPackages);
     }

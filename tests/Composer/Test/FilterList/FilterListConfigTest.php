@@ -35,16 +35,12 @@ class FilterListConfigTest extends TestCase
         $config = new FilterListConfig($this->versionParser, [
             'lists' => ['test-list'],
             'ignore-unreachable' => true,
-            'categories' => ['malware'],
-            'exclude-categories' => ['other'],
             'dont-filter-packages' => ['foo/bar'],
         ]);
 
         $listConfig = $config->getListConfig('test-list', 'block');
 
         $this->assertNotNull($listConfig);
-        $this->assertSame(['malware'], $listConfig->categories);
-        $this->assertSame(['other'], $listConfig->excludeCategories);
         $this->assertCount(1, $listConfig->dontFilterPackages);
     }
 
@@ -52,13 +48,9 @@ class FilterListConfigTest extends TestCase
     {
         $config = new FilterListConfig($this->versionParser, [
             'ignore-unreachable' => false,
-            'categories' => ['other'],
-            'exclude-categories' => ['malware'],
             'dont-filter-packages' => ['bar/foo'],
             'lists' => [[
                 'name' => 'test-list',
-                'categories' => ['malware'],
-                'exclude-categories' => ['other'],
                 'dont-filter-packages' => ['foo/bar'],
             ]],
         ]);
@@ -66,8 +58,6 @@ class FilterListConfigTest extends TestCase
         $listConfig = $config->getListConfig('test-list', 'block');
 
         $this->assertNotNull($listConfig);
-        $this->assertSame(['malware'], $listConfig->categories);
-        $this->assertSame(['other'], $listConfig->excludeCategories);
         $this->assertCount(1, $listConfig->dontFilterPackages);
     }
 
@@ -75,13 +65,9 @@ class FilterListConfigTest extends TestCase
     {
         $config = new FilterListConfig($this->versionParser, [
             'ignore-unreachable' => false,
-            'categories' => ['other'],
-            'exclude-categories' => ['malware'],
             'dont-filter-packages' => ['bar/foo'],
             'lists' => [[
                 'name' => 'test-list',
-                'categories' => ['malware'],
-                'exclude-categories' => ['other'],
                 'dont-filter-packages' => ['foo/bar'],
                 'apply' => 'audit',
             ]],
@@ -97,8 +83,6 @@ class FilterListConfigTest extends TestCase
         $config = new FilterListConfig($this->versionParser, [
             'exclude-lists' => ['test-list'],
             'ignore-unreachable' => true,
-            'categories' => ['malware'],
-            'exclude-categories' => ['other'],
             'dont-filter-packages' => ['foo/bar'],
         ]);
 

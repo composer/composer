@@ -613,21 +613,25 @@ Found 2 abandoned packages:
             'vendor/package',
             new Constraint('>=', '8.0.0.0'),
             'test-list',
-            'internal'
+            null,
+            'internal',
+            'ID-test-1'
         );
         $matchingEntryWithDetails = new FilterListEntry(
             'vendor/package',
             new Constraint('>=', '8.0.0.0'),
             'test-list',
-            'internal',
             'https://example.com/filtered',
-            'Some reason'
+            'internal',
+            'ID-test-1'
         );
         $nonMatchingEntry = new FilterListEntry(
             'vendor/package',
             new Constraint('>=', '10.0.0.0'),
             'test-list',
-            'internal'
+            null,
+            'internal',
+            'ID-test-1'
         );
 
         yield 'FILTERED_IGNORE skips filter processing' => [
@@ -655,8 +659,8 @@ Found 2 abandoned packages:
             'format' => Auditor::FORMAT_PLAIN,
             'expected' => Auditor::STATUS_FILTERED,
             'output' => 'No security vulnerability advisories found.
-Found 1 package matching filters (internal: 1):
-vendor/package is on filter list "test-list" (category: internal).',
+Found 1 package matching filters:
+vendor/package is on filter list "test-list". Reason: internal.',
         ];
 
         yield 'FILTERED_FAIL with matching entry shows url and reason (plain)' => [
@@ -666,8 +670,8 @@ vendor/package is on filter list "test-list" (category: internal).',
             'format' => Auditor::FORMAT_PLAIN,
             'expected' => Auditor::STATUS_FILTERED,
             'output' => 'No security vulnerability advisories found.
-Found 1 package matching filters (internal: 1):
-vendor/package is on filter list "test-list" (category: internal). Reason: Some reason. URL: https://example.com/filtered.',
+Found 1 package matching filters:
+vendor/package is on filter list "test-list". Reason: internal. URL: https://example.com/filtered.',
         ];
 
         yield 'FILTERED_REPORT with matching entry returns STATUS_OK' => [
@@ -677,8 +681,8 @@ vendor/package is on filter list "test-list" (category: internal). Reason: Some 
             'format' => Auditor::FORMAT_PLAIN,
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.
-Found 1 package matching filters (internal: 1):
-vendor/package is on filter list "test-list" (category: internal).',
+Found 1 package matching filters:
+vendor/package is on filter list "test-list". Reason: internal.',
         ];
 
         yield 'FILTERED_FAIL with matching entry shows summary line only (summary format)' => [
@@ -688,7 +692,7 @@ vendor/package is on filter list "test-list" (category: internal).',
             'format' => Auditor::FORMAT_SUMMARY,
             'expected' => Auditor::STATUS_FILTERED,
             'output' => 'No security vulnerability advisories found.
-Found 1 package matching filters (internal: 1).',
+Found 1 package matching filters.',
         ];
 
         yield 'FILTERED_FAIL with multiple matching packages shows plural form' => [
@@ -699,16 +703,16 @@ Found 1 package matching filters (internal: 1).',
             'filterEntriesByList' => [
                 'test-list' => [
                     $matchingEntry,
-                    new FilterListEntry('vendor/other', new Constraint('>=', '1.0.0.0'), 'test-list', 'internal'),
+                    new FilterListEntry('vendor/other', new Constraint('>=', '1.0.0.0'), 'test-list', null, 'internal', 'ID-TEST'),
                 ],
             ],
             'filtered' => Auditor::FILTERED_FAIL,
             'format' => Auditor::FORMAT_PLAIN,
             'expected' => Auditor::STATUS_FILTERED,
             'output' => 'No security vulnerability advisories found.
-Found 2 packages matching filters (internal: 2):
-vendor/package is on filter list "test-list" (category: internal).
-vendor/other is on filter list "test-list" (category: internal).',
+Found 2 packages matching filters:
+vendor/package is on filter list "test-list". Reason: internal.
+vendor/other is on filter list "test-list". Reason: internal.',
         ];
     }
 
@@ -759,9 +763,9 @@ vendor/other is on filter list "test-list" (category: internal).',
             'vendor/package',
             new Constraint('>=', '8.0.0.0'),
             'test-list',
-            'internal',
             'https://example.com/filtered',
-            'Some reason'
+            'Some reason',
+            'ID-test'
         );
 
         $providerSet = $this->getMockBuilder(FilterListProviderSet::class)
@@ -803,7 +807,6 @@ vendor/other is on filter list "test-list" (category: internal).',
         $entry = $json['filter']['vendor/package'][0];
         self::assertSame('vendor/package', $entry['packageName']);
         self::assertSame('test-list', $entry['listName']);
-        self::assertSame('internal', $entry['category']);
         self::assertSame('https://example.com/filtered', $entry['url']);
         self::assertSame('Some reason', $entry['reason']);
         self::assertIsString($entry['constraint']);
@@ -815,7 +818,9 @@ vendor/other is on filter list "test-list" (category: internal).',
             'vendor1/package2',
             new Constraint('>=', '8.0.0.0'),
             'test-list',
-            'internal'
+            null,
+            'internal',
+            'ID-test'
         );
 
         $providerSet = $this->getMockBuilder(FilterListProviderSet::class)
@@ -853,8 +858,8 @@ vendor/other is on filter list "test-list" (category: internal).',
         self::assertSame(Auditor::STATUS_VULNERABLE | Auditor::STATUS_FILTERED, $result);
         $output = trim(str_replace("\r", '', $io->getOutput()));
         self::assertStringContainsString('Found 2 security vulnerability advisories affecting 1 package:', $output);
-        self::assertStringContainsString('Found 1 package matching filters (internal: 1):', $output);
-        self::assertStringContainsString('vendor1/package2 is on filter list "test-list" (category: internal).', $output);
+        self::assertStringContainsString('Found 1 package matching filters:', $output);
+        self::assertStringContainsString('vendor1/package2 is on filter list "test-list". Reason: internal', $output);
     }
 
     private function getRepoSet(): RepositorySet

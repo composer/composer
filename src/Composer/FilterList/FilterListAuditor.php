@@ -43,9 +43,7 @@ class FilterListAuditor
             }
 
             foreach ($entries as $entry) {
-                if ($listConfig->useCategory($entry->category)) {
-                    $filterListMap[$entry->packageName][$entry->listName][] = $entry;
-                }
+                $filterListMap[$entry->packageName][$entry->listName][] = $entry;
             }
         }
 
