@@ -68,10 +68,9 @@ class FilterListProviderSet
 
     /**
      * @param PackageInterface[] $packages
-     * @param list<string> $lists
      * @return array{filter: array<string, array<FilterListEntry>>, unreachableRepos: array<string>}
      */
-    public function getMatchingFilterLists(array $packages, array $lists, bool $ignoreUnreachable = false): array
+    public function getMatchingFilterLists(array $packages, bool $ignoreUnreachable = false): array
     {
         $map = [];
         foreach ($packages as $package) {
@@ -87,28 +86,23 @@ class FilterListProviderSet
         }
 
         $unreachableRepos = [];
-        $filters = $this->getFilterListEntriesForConstraints($map, $lists, $ignoreUnreachable, $unreachableRepos);
+        $filters = $this->getFilterListEntriesForConstraints($map, $ignoreUnreachable, $unreachableRepos);
 
         return ['filter' => $filters, 'unreachableRepos' => $unreachableRepos];
     }
 
     /**
      * @param array<string, ConstraintInterface> $packageConstraintMap
-     * @param list<string> $lists
      * @param array<string> &$unreachableRepos Array to store messages about unreachable repositories
      * @return array<string, list<FilterListEntry>>
      */
-    private function getFilterListEntriesForConstraints(array $packageConstraintMap, array $lists, bool $ignoreUnreachable = false, array &$unreachableRepos = []): array
+    private function getFilterListEntriesForConstraints(array $packageConstraintMap, bool $ignoreUnreachable = false, array &$unreachableRepos = []): array
     {
         $filters = [];
         foreach ($this->providers as $provider) {
             try {
-                $repoFilter = $provider->getFilter($packageConstraintMap, $lists)['filter'];
+                $repoFilter = $provider->getFilter($packageConstraintMap)['filter'];
                 foreach ($repoFilter as $listName => $entries) {
-                    if ($lists !== [] && !in_array($listName, $lists, true)) {
-                        continue;
-                    }
-
                     foreach ($entries as $entry) {
                         if (!isset($packageConstraintMap[$entry->packageName])) {
                             continue;

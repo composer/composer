@@ -602,45 +602,6 @@
                         "dont-filter-packages": {
                             "$ref": "#/definitions/dont-filter-packages"
                         },
-                        "lists": {
-                            "type": "array",
-                            "description": "Filter lists to use. Each item can be a list name string or a detailed object with per-list configuration.",
-                            "items": {
-                                "anyOf": [
-                                    {
-                                        "type": "string",
-                                        "description": "Name of a filter list to use with default settings"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "description": "Per-list configuration",
-                                        "properties": {
-                                            "name": {
-                                                "type": "string",
-                                                "description": "Filter list name"
-                                            },
-                                            "apply": {
-                                                "type": "string",
-                                                "enum": ["audit", "block", "all"],
-                                                "description": "Which operation to apply this list to",
-                                                "default": "all"
-                                            },
-                                            "dont-filter-packages": {
-                                                "$ref": "#/definitions/dont-filter-packages"
-                                            }
-                                        },
-                                        "required": ["name"]
-                                    }
-                                ]
-                            }
-                        },
-                        "exclude-lists": {
-                            "type": "array",
-                            "description": "Filter list names to skip entirely.",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
                         "sources": {
                             "type": "object",
                             "description": "Additional sources to fetch filter list data from.",

@@ -555,86 +555,11 @@ class ComposerRepositoryTest extends TestCase
 
         [
             'filter' => $filter,
-        ] = $repository->getFilter(['acme/package' => new Constraint('=', '1.0.0.0')], ['test']);
+        ] = $repository->getFilter(['acme/package' => new Constraint('=', '1.0.0.0')]);
 
         $constraint = new MatchAllConstraint();
         $constraint->setPrettyString('*');
         $this->assertEquals(['test' => [new FilterListEntry('acme/package', $constraint, 'test', 'https://example.org/acme/package/filters.json', 'Malicious code detected', 'ID-test')]], $filter);
-    }
-
-    public function testGetFilterWithMatchingListsButNoFilter(): void
-    {
-        $httpDownloader = $this->getHttpDownloaderMock();
-        $httpDownloader->expects(
-            [
-                [
-                    'url' => 'https://example.org/packages.json',
-                    'body' => JsonFile::encode([
-                        'metadata-url' => 'https://example.org/p2/%package%.json',
-                        'filter' => [
-                            'metadata' => true,
-                            'lists' => ['test'],
-                        ],
-                    ]),
-                    'options' => ['http' => ['verify_peer' => false]],
-                ],
-                [
-                    'url' => 'https://example.org/p2/acme/package.json',
-                    'body' => JsonFile::encode([
-                        'security-advisories' => [],
-                    ]),
-                    'options' => ['http' => ['verify_peer' => false]],
-                ],
-            ],
-            true
-        );
-
-        $repository = new ComposerRepository(
-            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
-            new NullIO(),
-            FactoryMock::createConfig(),
-            $httpDownloader
-        );
-
-        [
-            'filter' => $filter,
-        ] = $repository->getFilter(['acme/package' => new Constraint('=', '1.0.0.0')], ['test']);
-
-        $this->assertSame([], $filter);
-    }
-
-    public function testGetFilterNoMatchingLists(): void
-    {
-        $httpDownloader = $this->getHttpDownloaderMock();
-        $httpDownloader->expects(
-            [
-                [
-                    'url' => 'https://example.org/packages.json',
-                    'body' => JsonFile::encode([
-                        'metadata-url' => 'https://example.org/p2/%package%.json',
-                        'filter' => [
-                            'metadata' => true,
-                            'lists' => ['other'],
-                        ],
-                    ]),
-                    'options' => ['http' => ['verify_peer' => false]],
-                ],
-            ],
-            true
-        );
-
-        $repository = new ComposerRepository(
-            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
-            new NullIO(),
-            FactoryMock::createConfig(),
-            $httpDownloader
-        );
-
-        [
-            'filter' => $filter,
-        ] = $repository->getFilter(['acme/package' => new Constraint('=', '1.0.0.0')], ['test-list']);
-
-        $this->assertSame([], $filter);
     }
 
     /**

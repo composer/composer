@@ -78,8 +78,6 @@ class FilterListPoolFilterTest extends TestCase
     {
         return [
             'dont-filter-packages' => [['dont-filter-packages' => ['acme/package']]],
-            'lists' => [['lists' => ['other']]],
-            'exclude-lists' => [['exclude-lists' => ['test-list']]],
             'feature-off' => [false],
         ];
     }

@@ -26,22 +26,16 @@ class FilterListAuditor
 {
     /**
      * @param PackageInterface[] $packages
-     * @param 'block'|'audit' $operation
      * @return array{filter: array<string, array<string, list<FilterListEntry>>>, unreachableRepos: array<string>}
      */
-    public function collectFilterLists(array $packages, FilterListProviderSet $providerSet, FilterListConfig $filterListConfig, string $operation, bool $ignoreUnreachable): array
+    public function collectFilterLists(array $packages, FilterListProviderSet $providerSet, bool $ignoreUnreachable): array
     {
-        $result = $providerSet->getMatchingFilterLists($packages, $filterListConfig->getConfiguredListNames($operation), $ignoreUnreachable);
+        $result = $providerSet->getMatchingFilterLists($packages, $ignoreUnreachable);
         $filter = $result['filter'];
         $unreachableRepos = $result['unreachableRepos'];
 
         $filterListMap = [];
-        foreach ($filter as $listName => $entries) {
-            $listConfig = $filterListConfig->getListConfig($listName, $operation);
-            if ($listConfig === null) {
-                continue;
-            }
-
+        foreach ($filter as $entries) {
             foreach ($entries as $entry) {
                 $filterListMap[$entry->packageName][$entry->listName][] = $entry;
             }
@@ -64,19 +58,15 @@ class FilterListAuditor
         }
 
         $matchingEntries = [];
+        $filterConfig = $filterListConfig->getConfig($operation);
         foreach ($package->getNames(false) as $packageName) {
             if (!isset($filterListMap[$packageName])) {
                 continue;
             }
 
             $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
-            foreach ($filterListMap[$packageName] as $listName => $entries) {
-                $listConfig = $filterListConfig->getListConfig($listName, $operation);
-                if ($listConfig === null) {
-                    continue;
-                }
-
-                if (isset($listConfig->dontFilterPackages[$packageName]) && $listConfig->dontFilterPackages[$packageName]->constraint->matches($packageConstraint)) {
+            foreach ($filterListMap[$packageName] as $entries) {
+                if (isset($filterConfig->dontFilterPackages[$packageName]) && $filterConfig->dontFilterPackages[$packageName]->constraint->matches($packageConstraint)) {
                     continue;
                 }
 

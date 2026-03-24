@@ -50,6 +50,10 @@ class FilterListPoolFilter
      */
     public function filter(Pool $pool, array $repositories, Request $request): Pool
     {
+        if ($this->filterListConfig->getConfig('block') === null) {
+            return $pool;
+        }
+
         $providerSet = FilterListProviderSet::create($this->filterListConfig, $repositories, $this->httpDownloader);
 
         $filterListMap = $this->collectFilterLists($pool, $providerSet, $request);
@@ -88,6 +92,6 @@ class FilterListPoolFilter
             }
         }
 
-        return $this->filterListAuditor->collectFilterLists($packagesForFilter, $providerSet, $this->filterListConfig, 'block', $this->filterListConfig->ignoreUnreachable())['filter'];
+        return $this->filterListAuditor->collectFilterLists($packagesForFilter, $providerSet, $this->filterListConfig->ignoreUnreachable())['filter'];
     }
 }

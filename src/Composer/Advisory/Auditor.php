@@ -119,7 +119,7 @@ class Auditor
         $filteredPackages = [];
         $filteredCount = 0;
         if ($filterListConfig !== null && $filterListProviderSet !== null && $filtered !== self::FILTERED_IGNORE) {
-            $filterResult = $filterAuditor->collectFilterLists($packages, $filterListProviderSet, $filterListConfig, 'audit', $ignoreUnreachable || $filterListConfig->ignoreUnreachable());
+            $filterResult = $filterAuditor->collectFilterLists($packages, $filterListProviderSet, $ignoreUnreachable || $filterListConfig->ignoreUnreachable());
             $unreachableRepos = array_merge($unreachableRepos, $filterResult['unreachableRepos']);
             foreach ($packages as $package) {
                 $matchingEntries = $filterAuditor->getMatchingEntries($package, $filterResult['filter'], $filterListConfig, 'audit');

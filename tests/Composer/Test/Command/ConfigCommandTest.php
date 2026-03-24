@@ -197,16 +197,6 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'audit.ignore-abandoned', '--unset' => true],
             ['config' => ['audit' => []]],
         ];
-        yield 'merge filter.lists' => [
-            ['config' => ['filter' => ['lists' => ['list']]]],
-            ['setting-key' => 'filter.lists', 'setting-value' => ['other'], '--merge' => true],
-            ['config' => ['filter' => ['lists' => ['list', 'other']]]],
-        ];
-        yield 'merge filter.exclude-lists' => [
-            ['config' => ['filter' => ['exclude-lists' => ['list']]]],
-            ['setting-key' => 'filter.exclude-lists', 'setting-value' => ['other'], '--merge' => true],
-            ['config' => ['filter' => ['exclude-lists' => ['list', 'other']]]],
-        ];
         yield 'merge filter.dont-filter-packages' => [
             ['config' => ['filter' => ['dont-filter-packages' => ['acme/package']]]],
             ['setting-key' => 'filter.dont-filter-packages', 'setting-value' => ['acme/other'], '--merge' => true],
@@ -223,14 +213,9 @@ class ConfigCommandTest extends TestCase
             ['config' => ['filter' => ['ignore-unreachable' => true]]],
         ];
         yield 'unset filter' => [
-            ['config' => ['filter' => ['lists' => ['aikido']]]],
+            ['config' => ['filter' => ['dont-filter-packages' => ['acme/package']]]],
             ['setting-key' => 'filter', '--unset' => true],
             ['config' => []],
-        ];
-        yield 'unset filter.lists' => [
-            ['config' => ['filter' => ['lists' => ['aikido']]]],
-            ['setting-key' => 'filter.lists', '--unset' => true],
-            ['config' => ['filter' => []]],
         ];
     }
 

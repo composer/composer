@@ -446,58 +446,6 @@ The `apply` field accepts:
 }
 ```
 
-### lists
-
-Filter lists to use. Each item can be a list name string or a detailed object with per-list configuration.
-By default, this is set to `[]` which means all lists are used.
-
-#### Simple format:
-
-```json
-{
-    "config": {
-        "filter": {
-            "lists": ["list-name"]
-        }
-    }
-}
-```
-
-#### Detailed format with per-list config:
-
-```json
-{
-    "config": {
-        "filter": {
-            "lists": [
-                {
-                    "name": "list-name",
-                    "apply": "audit",
-                    "dont-filter-packages": ["vendor/package"]
-                }
-            ]
-        }
-    }
-}
-```
-
-The `apply` field controls which operation the list applies to (`audit`, `block`, or `all`).
-Per-list  `dont-filter-packages` override the global settings for that list.
-
-### exclude-lists
-
-Filter list names to skip entirely.
-
-```json
-{
-    "config": {
-        "filter": {
-            "exclude-lists": ["list-name-to-skip"]
-        }
-    }
-}
-```
-
 ### sources
 
 By default, list data is fetched from the configured Composer repositories that provide filter list data. You can configure

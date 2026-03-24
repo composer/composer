@@ -55,7 +55,7 @@ class FilterListConfig
     /**
      * @param 'audit'|'block' $operation
      */
-    public function getListConfig(string $list, string $operation): ?ListConfig
+    public function getConfig(string $operation): ?ListConfig
     {
         $config = new ListConfig($this->versionParser);
         if ($this->config === true) {
@@ -67,49 +67,7 @@ class FilterListConfig
             return null;
         }
 
-        $config = $config->apply($this->config, $operation);
-        if ($config === null) {
-            return null;
-        }
-
-        if (\in_array($list, $this->config['exclude-lists'] ?? [], true)) {
-            return null;
-        }
-
-        if (!isset($this->config['lists']) || \in_array($list, $this->config['lists'], true)) {
-            return $config;
-        }
-
-        $matchingListConfig = null;
-        foreach ($this->config['lists'] as $listConfig) {
-            if (\is_array($listConfig) && ($listConfig['name'] ?? '') === $list) {
-                $matchingListConfig = $listConfig;
-            }
-        }
-
-        if (!\is_array($matchingListConfig)) {
-            return null;
-        }
-
-        return $config->apply($matchingListConfig, $operation);
-    }
-
-    /**
-     * @param 'audit'|'block' $operation
-     * @return list<string>
-     */
-    public function getConfiguredListNames(string $operation): array
-    {
-        $listNames = [];
-        foreach ($this->config['lists'] ?? [] as $listConfig) {
-            $name = (string) (is_array($listConfig) ? $listConfig['name'] ?? '' : $listConfig);
-            $list = $this->getListConfig($name, $operation);
-            if ($list !== null) {
-                $listNames[] = $name;
-            }
-        }
-
-        return $listNames;
+        return $config->apply($this->config, $operation);
     }
 
     /**

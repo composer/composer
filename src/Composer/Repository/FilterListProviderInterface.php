@@ -26,8 +26,7 @@ interface FilterListProviderInterface
 
     /**
      * @param array<string, ConstraintInterface> $packageConstraintMap
-     * @param list<string> $lists
      * @return array{filter: array<string, list<FilterListEntry>>}
      */
-    public function getFilter(array $packageConstraintMap, array $lists): array;
+    public function getFilter(array $packageConstraintMap): array;
 }

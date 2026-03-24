@@ -746,13 +746,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * @inheritDoc
      */
-    public function getFilter(array $packageConstraintMap, array $lists): array
+    public function getFilter(array $packageConstraintMap): array
     {
         $this->loadRootServerFile(600);
-
-        if ($lists !== [] && ($this->filterConfig['lists'] ?? []) !== [] && count(array_intersect($lists, $this->filterConfig['lists'])) === 0) {
-            return ['filter' => []];
-        }
 
         // respect available-package-patterns / available-packages directives from the repo
         if ($this->hasAvailablePackageList) {
