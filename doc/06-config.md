@@ -335,10 +335,10 @@ in other places than the `compoder audit` command.
 Defaults to `fail`. Defines whether and how audit reports should report filtered packages. There are three possible values:
 
 - `ignore` means audit reports do not consider filtered packages at all.
-- `report` means filtered packages are reported but do not cause the composer audit command return a non-zero exit code.
+- `report` means filtered packages are reported but do not cause the composer audit command to return a non-zero exit code.
 - `fail` means filtered packages will cause the audit command to fail with a non-zero exit code.
 
-Note that this only applies to audit reports, not to version blocking.
+Note that this only applies to audit reports, not to version blocking on updates.
 
 ```json
 {

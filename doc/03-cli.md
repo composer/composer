@@ -1371,7 +1371,7 @@ config option.
 
 ### COMPOSER_FILTER
 
-Set to `0` to disable filter lists, or `1` to enable them. Setting this to `1` will use the filter configuration in the composer.json.
+Set to `0` to disable filters on updates and audit, or `1` to enable them. Setting this to `1` will use the filter configuration in the composer.json.
 If you want to override the config value, use `composer config filter 1` instead.
 
 ### COMPOSER_NO_SECURITY_BLOCKING
