@@ -13,7 +13,7 @@
 namespace Composer\Autoload;
 
 /**
- * ClassLoader implements a PSR-0, PSR-4 and classmap class loader.
+ * ClassLoader implements a PSR-0, PSR-4, Moto, and classmap class loader.
  *
  *     $loader = new \Composer\Autoload\ClassLoader();
  *
@@ -39,6 +39,7 @@ namespace Composer\Autoload;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @see    https://www.php-fig.org/psr/psr-0/
  * @see    https://www.php-fig.org/psr/psr-4/
+ * @see    https://github.com/motophp/autoload
  */
 class ClassLoader
 {
@@ -47,6 +48,20 @@ class ClassLoader
 
     /** @var string|null */
     private $vendorDir;
+
+    // Moto
+    /**
+     * @var array<string, array<string, int>>
+     */
+    private $prefixLengthsMoto = array();
+    /**
+     * @var array<string, list<string>>
+     */
+    private $prefixDirsMoto = array();
+    /**
+     * @var list<string>
+     */
+    private $fallbackDirsMoto = array();
 
     // PSR-4
     /**
@@ -119,6 +134,22 @@ class ClassLoader
         }
 
         return array();
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    public function getPrefixesMoto()
+    {
+        return $this->prefixDirsMoto;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getFallbackDirsMoto()
+    {
+        return $this->fallbackDirsMoto;
     }
 
     /**
@@ -216,6 +247,57 @@ class ClassLoader
     }
 
     /**
+     * Registers a set of Moto directories for a given namespace, either
+     * appending or prepending to the ones previously set for this namespace.
+     *
+     * @param string              $prefix  The prefix/namespace, with trailing '\\'
+     * @param list<string>|string $paths   The Moto base directories
+     * @param bool                $prepend Whether to prepend the directories
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return void
+     */
+    public function addMoto($prefix, $paths, $prepend = false)
+    {
+        $paths = (array) $paths;
+        if (!$prefix) {
+            // Register directories for the root namespace.
+            if ($prepend) {
+                $this->fallbackDirsMoto = array_merge(
+                    $paths,
+                    $this->fallbackDirsMoto
+                );
+            } else {
+                $this->fallbackDirsMoto = array_merge(
+                    $this->fallbackDirsMoto,
+                    $paths
+                );
+            }
+        } elseif (!isset($this->prefixDirsMoto[$prefix])) {
+            // Register directories for a new namespace.
+            $length = strlen($prefix);
+            if ('\\' !== $prefix[$length - 1]) {
+                throw new \InvalidArgumentException("A non-empty Moto prefix must end with a namespace separator.");
+            }
+            $this->prefixLengthsMoto[$prefix[0]][$prefix] = $length;
+            $this->prefixDirsMoto[$prefix] = $paths;
+        } elseif ($prepend) {
+            // Prepend directories for an already registered namespace.
+            $this->prefixDirsMoto[$prefix] = array_merge(
+                $paths,
+                $this->prefixDirsMoto[$prefix]
+            );
+        } else {
+            // Append directories for an already registered namespace.
+            $this->prefixDirsMoto[$prefix] = array_merge(
+                $this->prefixDirsMoto[$prefix],
+                $paths
+            );
+        }
+    }
+
+    /**
      * Registers a set of PSR-4 directories for a given namespace, either
      * appending or prepending to the ones previously set for this namespace.
      *
@@ -281,6 +363,31 @@ class ClassLoader
             $this->fallbackDirsPsr0 = (array) $paths;
         } else {
             $this->prefixesPsr0[$prefix[0]][$prefix] = (array) $paths;
+        }
+    }
+
+    /**
+     * Registers a set of Moto directories for a given namespace,
+     * replacing any others previously set for this namespace.
+     *
+     * @param string              $prefix The prefix/namespace, with trailing '\\'
+     * @param list<string>|string $paths  The Moto base directories
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return void
+     */
+    public function setMoto($prefix, $paths)
+    {
+        if (!$prefix) {
+            $this->fallbackDirsMoto = (array) $paths;
+        } else {
+            $length = strlen($prefix);
+            if ('\\' !== $prefix[$length - 1]) {
+                throw new \InvalidArgumentException("A non-empty Moto prefix must end with a namespace separator.");
+            }
+            $this->prefixLengthsMoto[$prefix[0]][$prefix] = $length;
+            $this->prefixDirsMoto[$prefix] = (array) $paths;
         }
     }
 
@@ -491,10 +598,80 @@ class ClassLoader
      */
     private function findFileWithExtension($class, $ext)
     {
+        $first = $class[0];
+
+        // Moto lookup
+        if (isset($this->prefixLengthsMoto[$first])) {
+            $subPath = $class;
+            while (false !== $lastPos = strrpos($subPath, '\\')) {
+                $subPath = substr($subPath, 0, $lastPos);
+                $search = $subPath . '\\';
+                if (isset($this->prefixDirsMoto[$search])) {
+                    $relativeClass = substr($class, $lastPos + 1);
+                    // Convert namespace separators to directory separators
+                    $relativePath = strtr($relativeClass, '\\', DIRECTORY_SEPARATOR);
+                    // Strip everything after the first underscore in the final segment
+                    $lastSep = strrpos($relativePath, DIRECTORY_SEPARATOR);
+                    if (false !== $lastSep) {
+                        $finalSegment = substr($relativePath, $lastSep + 1);
+                        $underscorePos = strpos($finalSegment, '_');
+                        if (false !== $underscorePos) {
+                            $finalSegment = substr($finalSegment, 0, $underscorePos);
+                        }
+                        $relativePath = substr($relativePath, 0, $lastSep + 1) . $finalSegment;
+                        if ($finalSegment === '') {
+                            continue;
+                        }
+                    } else {
+                        $underscorePos = strpos($relativePath, '_');
+                        if (false !== $underscorePos) {
+                            $relativePath = substr($relativePath, 0, $underscorePos);
+                        }
+                        if ($relativePath === '') {
+                            continue;
+                        }
+                    }
+                    $pathEnd = DIRECTORY_SEPARATOR . $relativePath . $ext;
+                    foreach ($this->prefixDirsMoto[$search] as $dir) {
+                        if (file_exists($file = $dir . $pathEnd)) {
+                            return $file;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Moto fallback dirs
+        $logicalPathMoto = strtr($class, '\\', DIRECTORY_SEPARATOR);
+        $lastSep = strrpos($logicalPathMoto, DIRECTORY_SEPARATOR);
+        if (false !== $lastSep) {
+            $finalSegment = substr($logicalPathMoto, $lastSep + 1);
+            $underscorePos = strpos($finalSegment, '_');
+            if (false !== $underscorePos) {
+                $finalSegment = substr($finalSegment, 0, $underscorePos);
+            }
+            $logicalPathMoto = substr($logicalPathMoto, 0, $lastSep + 1) . $finalSegment;
+        } else {
+            $underscorePos = strpos($logicalPathMoto, '_');
+            if (false !== $underscorePos) {
+                $logicalPathMoto = substr($logicalPathMoto, 0, $underscorePos);
+            }
+            $finalSegment = $logicalPathMoto;
+        }
+
+        if ($finalSegment !== '') {
+            $logicalPathMoto .= $ext;
+
+            foreach ($this->fallbackDirsMoto as $dir) {
+                if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathMoto)) {
+                    return $file;
+                }
+            }
+        }
+
         // PSR-4 lookup
         $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . $ext;
 
-        $first = $class[0];
         if (isset($this->prefixLengthsPsr4[$first])) {
             $subPath = $class;
             while (false !== $lastPos = strrpos($subPath, '\\')) {
