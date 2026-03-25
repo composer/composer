@@ -429,6 +429,9 @@ The `apply` field accepts:
 - `block` - Only exempt from version blocking
 - `all` - Exempt from both (default)
 
+If apply is set to `audit` or `block`, then the package will only be exempt from the specified scope. All other scopes
+will still filter the package if there is a matching filter.
+
 ```json
 {
     "config": {
@@ -449,9 +452,9 @@ The `apply` field accepts:
 ### sources
 
 By default, list data is fetched from the configured Composer repositories that provide filter list data. You can configure
-additional sources to fetch filter list data from. Keys are source names, values are objects with `type` and `url`.
-Currently only `type: "url"` is supported. The configured URL will receive your full list of installed dependencies as
-part of any `composer audit` and the full list of considered packages for a `composer update`.
+additional sources to fetch filter list data from. Keys are source names, values are objects with a key `type` and type specific configuration.
+Currently only `type: "url"` is supported which requires an additional `"url"` key. The configured URL will receive your
+full list of installed package names as part of any `composer audit` and the full list of considered package names for a `composer update`.
 
 ```json
 {

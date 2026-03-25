@@ -364,18 +364,18 @@ to arrays of filter entries:
         "aikido-malware": [
             {
                 "constraint": ">=1.0.0,<1.2.0",
-                "url": "https://example.org/advisories/123",
-                "reason": "Remote code execution vulnerability",
-                "id": "GHSA-xxxx-xxxx-xxxx"
+                "url": "https://example.org/filters/123",
+                "reason": "Malware",
+                "id": "PKFE-xxxx-xxxx-xxxx"
             }
         ]
     }
 }
 ```
 
-In a composer.json file, the `filter` key controls how filter lists from a repository are used for audit reports and version
-blocking. It can be set to `false` to disable filter lists from this repository entirely, or configured
-with an object.
+In a composer.json file, the `filter` key in a repository definition controls how filter lists from the respective
+repository are used for audit reports and version blocking. It can be set to `false` to disable filter lists from this
+repository entirely, or configured with an object.
 
 ```json
 {
