@@ -22,7 +22,7 @@ use Composer\Semver\Constraint\MatchAllConstraint;
  * @internal
  * @final
  */
-class DontFilterPackage
+class UnfilteredPackage
 {
     /** @var string */
     public $packageName;
@@ -49,7 +49,7 @@ class DontFilterPackage
     }
 
     /**
-     * @param array<mixed>|string|DontFilterPackage $config
+     * @param array<mixed>|string|UnfilteredPackage $config
      */
     public static function fromConfig($config, VersionParser $parser): self
     {

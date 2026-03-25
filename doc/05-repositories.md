@@ -424,10 +424,10 @@ Each item in the array can be:
 }
 ```
 
-##### dont-filter-packages
+##### unfiltered-packages
 
 A list of packages to exempt from filtering for this repository. Accepts the same formats as the
-global [`config.filter.dont-filter-packages`](06-config.md#dont-filter-packages).
+global [`config.filter.unfiltered-packages`](06-config.md#unfiltered-packages).
 
 ```json
 {
@@ -436,7 +436,7 @@ global [`config.filter.dont-filter-packages`](06-config.md#dont-filter-packages)
             "type": "composer",
             "url": "https://example.org",
             "filter": {
-                "dont-filter-packages": [
+                "unfiltered-packages": [
                     "vendor/package",
                     {"package": "acme/other", "constraint": "^2.0", "apply": "audit"}
                 ]

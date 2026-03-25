@@ -235,14 +235,14 @@ class Config
                     $this->setSourceOfConfigValue($val, $key, $source);
                     $this->config['audit']['ignore'] = array_merge($currentIgnores, $val['ignore'] ?? []);
                 } elseif ('filter' === $key) {
-                    $dontFilterPackages = $this->config['filter']['dont-filter-packages'] ?? [];
+                    $unfilteredPackages = $this->config['filter']['unfiltered-packages'] ?? [];
                     $sources = $this->config['filter']['sources'] ?? [];
 
                     if (\is_bool($val)) {
                         $this->config[$key] = $val;
                     } else {
                         $this->config[$key] = is_array($this->config['filter']) ? array_merge($this->config['filter'], $val) : $val;
-                        $this->config['filter']['dont-filter-packages'] = array_merge($dontFilterPackages, $val['dont-filter-packages'] ?? []);
+                        $this->config['filter']['unfiltered-packages'] = array_merge($unfilteredPackages, $val['unfiltered-packages'] ?? []);
                         $this->config['filter']['sources'] = array_merge($sources, $val['sources'] ?? []);
                     }
 

@@ -433,16 +433,16 @@ class ConfigTest extends TestCase
         Platform::clearEnv('COMPOSER_FILTER');
 
         $config->merge(['config' => ['filter' => [
-            'dont-filter-packages' => ['acme/package'],
+            'unfiltered-packages' => ['acme/package'],
             'sources' => [['type' => 'url', 'url' => 'https://example.com/acme/package']],
         ]]]);
         $config->merge(['config' => ['filter' => [
-            'dont-filter-packages' => ['acme/other'],
+            'unfiltered-packages' => ['acme/other'],
             'sources' => [['type' => 'url', 'url' => 'https://example.com/acme/other']],
         ]]]);
         $result = $config->get('filter');
         self::assertIsArray($result);
-        self::assertSame(['acme/package', 'acme/other'], $result['dont-filter-packages'] ?? []);
+        self::assertSame(['acme/package', 'acme/other'], $result['unfiltered-packages'] ?? []);
         self::assertSame([['type' => 'url', 'url' => 'https://example.com/acme/package'], ['type' => 'url', 'url' => 'https://example.com/acme/other']], $result['sources'] ?? []);
 
         Platform::putEnv('COMPOSER_FILTER', '1');

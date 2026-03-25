@@ -36,18 +36,18 @@ class FilterListConfigTest extends TestCase
         $config = new Config();
         $config->merge(['config' => ['filter' => [
             'ignore-unreachable' => true,
-            'dont-filter-packages' => ['foo/bar'],
+            'unfiltered-packages' => ['foo/bar'],
             'sources' => ['name' => ['type' => 'url', 'url' => 'https://example.org']],
         ]]]);
 
         $filterConfig = FilterListConfig::fromConfig($config,$this->versionParser);
 
         $this->assertNotNull($filterConfig);
-        $this->assertCount(1, $filterConfig->dontFilterPackages);
+        $this->assertCount(1, $filterConfig->unfilteredPackages);
         $this->assertCount(1, $filterConfig->sources);
 
         $listConfig = $filterConfig->getOperationConfig('block');
-        $this->assertCount(1, $listConfig->dontFilterPackages);
+        $this->assertCount(1, $listConfig->unfilteredPackages);
         $this->assertCount(1, $listConfig->sources);
     }
 
@@ -55,16 +55,16 @@ class FilterListConfigTest extends TestCase
     {
         $config = new Config();
         $config->merge(['config' => ['filter' => [
-            'dont-filter-packages' => [['name' => 'foo/bar', 'apply' => 'audit'],
+            'unfiltered-packages' => [['name' => 'foo/bar', 'apply' => 'audit'],
         ]]]]);
 
         $filterConfig = FilterListConfig::fromConfig($config,$this->versionParser);
 
         $this->assertNotNull($filterConfig);
-        $this->assertCount(1, $filterConfig->dontFilterPackages);
+        $this->assertCount(1, $filterConfig->unfilteredPackages);
 
         $listConfig = $filterConfig->getOperationConfig('block');
 
-        $this->assertCount(0, $listConfig->dontFilterPackages);
+        $this->assertCount(0, $listConfig->unfilteredPackages);
     }
 }

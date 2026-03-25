@@ -599,8 +599,8 @@
                             "description": "Whether filter list sources that are unreachable or return a non-200 status code should be ignored.",
                             "default": false
                         },
-                        "dont-filter-packages": {
-                            "$ref": "#/definitions/dont-filter-packages"
+                        "unfiltered-packages": {
+                            "$ref": "#/definitions/unfiltered-packages"
                         },
                         "sources": {
                             "type": "object",
@@ -1198,8 +1198,8 @@
                                 ]
                             }
                         },
-                        "dont-filter-packages": {
-                            "$ref": "#/definitions/dont-filter-packages"
+                        "unfiltered-packages": {
+                            "$ref": "#/definitions/unfiltered-packages"
                         }
                     }
                 }
@@ -1502,7 +1502,7 @@
                 }
             }
         },
-        "dont-filter-packages": {
+        "unfiltered-packages": {
             "type": "array",
             "description": "Packages to exempt from filtering. Each item can be a package name string, a {\"vendor/package\": \"constraint\"} object, or a detailed object with package, constraint, reason, and apply fields.",
             "items": {

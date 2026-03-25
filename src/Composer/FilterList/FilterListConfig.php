@@ -24,9 +24,9 @@ use Composer\Package\Version\VersionParser;
 class FilterListConfig
 {
     /**
-     * @var list<DontFilterPackage>
+     * @var list<UnfilteredPackage>
      */
-    public $dontFilterPackages;
+    public $unfilteredPackages;
 
     /**
      * @var list<UrlSource>
@@ -39,12 +39,12 @@ class FilterListConfig
     public $ignoreUnreachable;
 
     /**
-     * @param list<DontFilterPackage> $dontFilterPackages
+     * @param list<UnfilteredPackage> $unfilteredPackages
      * @param list<UrlSource> $sources
      */
-    public function __construct(array $dontFilterPackages, array $sources, bool $ignoreUnreachable)
+    public function __construct(array $unfilteredPackages, array $sources, bool $ignoreUnreachable)
     {
-        $this->dontFilterPackages = $dontFilterPackages;
+        $this->unfilteredPackages = $unfilteredPackages;
         $this->sources = $sources;
         $this->ignoreUnreachable = $ignoreUnreachable;
     }
@@ -57,11 +57,11 @@ class FilterListConfig
         }
 
         $sources = [];
-        $dontFilterPackages = [];
+        $unfilteredPackages = [];
         if (\is_array($filterConfig)) {
-            $dontFilterPackages = array_map(function ($packageConfig) use ($versionParser) {
-                return DontFilterPackage::fromConfig($packageConfig, $versionParser);
-            }, array_values($filterConfig['dont-filter-packages'] ?? []));
+            $unfilteredPackages = array_map(function ($packageConfig) use ($versionParser) {
+                return UnfilteredPackage::fromConfig($packageConfig, $versionParser);
+            }, array_values($filterConfig['unfiltered-packages'] ?? []));
 
             foreach ($filterConfig['sources'] ?? [] as $sourceName => $source) {
                 if (is_array($source) && isset($source['type']) && $source['type'] === 'url') {
@@ -71,7 +71,7 @@ class FilterListConfig
         }
 
         return new self(
-            $dontFilterPackages,
+            $unfilteredPackages,
             $sources,
             (bool) ($config->get('ignore-unreachable') ?? false)
         );
@@ -82,24 +82,24 @@ class FilterListConfig
      */
     public function getOperationConfig(string $operation): self
     {
-        $dontFilterPackages = [];
-        foreach ($this->dontFilterPackages as $dontFilterPackage) {
-            if (\in_array($dontFilterPackage->apply, ['all', $operation], true)) {
-                $dontFilterPackages[] = $dontFilterPackage;
+        $unfilteredPackages = [];
+        foreach ($this->unfilteredPackages as $unfilteredPackage) {
+            if (\in_array($unfilteredPackage->apply, ['all', $operation], true)) {
+                $unfilteredPackages[] = $unfilteredPackage;
             }
         }
 
-        return new self($dontFilterPackages, $this->sources, $this->ignoreUnreachable);
+        return new self($unfilteredPackages, $this->sources, $this->ignoreUnreachable);
     }
 
     /**
-     * @return array<string, DontFilterPackage>
+     * @return array<string, UnfilteredPackage>
      */
-    public function getDontFilterPackageMap(): array
+    public function getUnfilteredPackageMap(): array
     {
         $map = [];
-        foreach ($this->dontFilterPackages as $dontFilterPackage) {
-            $map[$dontFilterPackage->packageName] = $dontFilterPackage;
+        foreach ($this->unfilteredPackages as $unfilteredPackage) {
+            $map[$unfilteredPackage->packageName] = $unfilteredPackage;
         }
 
         return $map;

@@ -60,7 +60,7 @@ class FilterListAuditor
 
         $matchingEntries = [];
         $filterConfig = $filterListConfig->getOperationConfig($operation);
-        $dontFilterPackageMap = $filterConfig->getDontFilterPackageMap();
+        $unFilteredPackageMap = $filterConfig->getUnfilteredPackageMap();
         foreach ($package->getNames(false) as $packageName) {
             if (!isset($filterListMap[$packageName])) {
                 continue;
@@ -68,7 +68,7 @@ class FilterListAuditor
 
             $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
             foreach ($filterListMap[$packageName] as $entries) {
-                if (isset($dontFilterPackageMap[$packageName]) && $dontFilterPackageMap[$packageName]->constraint->matches($packageConstraint)) {
+                if (isset($unFilteredPackageMap[$packageName]) && $unFilteredPackageMap[$packageName]->constraint->matches($packageConstraint)) {
                     continue;
                 }
 

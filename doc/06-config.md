@@ -394,7 +394,7 @@ Can be set to `true` to enable with defaults, `false` to fully disable, or confi
 Defaults to `false`. Whether filter list sources that are unreachable or return a non-200 status code
 should be ignored.
 
-### dont-filter-packages
+### unfiltered-packages
 
 A list of packages to exempt from filtering. Supports three formats:
 
@@ -404,7 +404,7 @@ A list of packages to exempt from filtering. Supports three formats:
 {
     "config": {
         "filter": {
-            "dont-filter-packages": ["vendor/package", "acme/*"]
+            "unfiltered-packages": ["vendor/package", "acme/*"]
         }
     }
 }
@@ -416,7 +416,7 @@ A list of packages to exempt from filtering. Supports three formats:
 {
     "config": {
         "filter": {
-            "dont-filter-packages": [{"vendor/package": "^2.0"}]
+            "unfiltered-packages": [{"vendor/package": "^2.0"}]
         }
     }
 }
@@ -436,7 +436,7 @@ will still filter the package if there is a matching filter.
 {
     "config": {
         "filter": {
-            "dont-filter-packages": [
+            "unfiltered-packages": [
                 {
                     "package": "vendor/package",
                     "constraint": "^2.0",

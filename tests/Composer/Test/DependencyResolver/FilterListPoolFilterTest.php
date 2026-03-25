@@ -59,10 +59,10 @@ class FilterListPoolFilterTest extends TestCase
     }
 
     /**
-     * @dataProvider dontFilterProvider
+     * @dataProvider unfilteredProvider
      * @param bool|array<string, mixed> $filterConfig
      */
-    public function testDontFilterPackagesConfig($filterConfig): void
+    public function testUnfilteredPackagesConfig($filterConfig): void
     {
         $config = new Config();
         $config->merge(['config' => ['filter' => $filterConfig]]);
@@ -83,18 +83,18 @@ class FilterListPoolFilterTest extends TestCase
         $this->assertCount(0, $filteredPool->getAllFilterListRemovedPackageVersions());
     }
 
-    public static function dontFilterProvider(): array
+    public static function unfilteredProvider(): array
     {
         return [
-            'dont-filter-packages' => [['dont-filter-packages' => ['acme/package']]],
-            'dont-filter-packages-version' => [['dont-filter-packages' => [['package' => 'acme/package', 'version' => '*']]]],
+            'unfiltered-packages' => [['unfiltered-packages' => ['acme/package']]],
+            'unfiltered-packages-version' => [['unfiltered-packages' => [['package' => 'acme/package', 'version' => '*']]]],
         ];
     }
-    public function testDontFilterPackagesConfigIntersection(): void
+    public function testUnfilteredPackagesConfigIntersection(): void
     {
         $config = new Config();
         $config->merge(['config' => ['filter' => [
-            'dont-filter-packages' => [['package' => 'acme/package', 'constraint' => '<=1.0']],
+            'unfiltered-packages' => [['package' => 'acme/package', 'constraint' => '<=1.0']],
         ]]]);
 
         $filterListConfig = FilterListConfig::fromConfig($config, new VersionParser());
