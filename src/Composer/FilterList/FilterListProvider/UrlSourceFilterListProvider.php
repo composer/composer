@@ -13,6 +13,7 @@
 namespace Composer\FilterList\FilterListProvider;
 
 use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\FilterListProviderConfig;
 use Composer\FilterList\Source\UrlSource;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\FilterListProviderInterface;
@@ -75,6 +76,6 @@ class UrlSourceFilterListProvider implements FilterListProviderInterface
             $map[$this->source->name][] = $entry;
         }
 
-        return ['filter' => $map];
+        return ['filter' => $map, 'config' => FilterListProviderConfig::fromConfig(true, [$this->source->name])];
     }
 }

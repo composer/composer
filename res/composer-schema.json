@@ -1160,7 +1160,49 @@
                     "additionalProperties": true
                 },
                 "allow_ssl_downgrade": { "type": "boolean" },
-                "force-lazy-providers": { "type": "boolean" }
+                "force-lazy-providers": { "type": "boolean" },
+                "filter": {
+                    "type": ["boolean", "object"],
+                    "description": "Filter list configuration for this repository. Set to false to disable filter lists from this repository entirely, or configure with an object.",
+                    "properties": {
+                        "lists": {
+                            "type": "array",
+                            "description": "Filter lists to use from this repository. Use 'defaults' to include all default lists advertised by the repository, prefix a name with '!' to exclude it, or provide objects for detailled configuration.",
+                            "default": ["defaults"],
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "description": "List name to include (prefix with '!' to exclude, or use 'defaults' for all default lists)"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "required": ["name"],
+                                        "description": "Per-list configuration with optional operation scope",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Filter list name"
+                                            },
+                                            "apply": {
+                                                "type": "string",
+                                                "enum": ["block", "audit", "all"],
+                                                "description": "Restrict this list to a specific operation ('block' or 'audit'). If omitted, the list applies to both operations."
+                                            },
+                                            "reason": {
+                                                "type": "string",
+                                                "description": "Optional explanation for why this list is included"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "dont-filter-packages": {
+                            "$ref": "#/definitions/dont-filter-packages"
+                        }
+                    }
+                }
             }
         },
         "vcs-repository": {

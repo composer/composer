@@ -50,7 +50,7 @@ class FilterListPoolFilter
      */
     public function filter(Pool $pool, array $repositories, Request $request): Pool
     {
-        if ($this->filterListConfig->getConfig('block') === null) {
+        if ($this->filterListConfig->getOperationConfig('block') === null) {
             return $pool;
         }
 
@@ -92,6 +92,6 @@ class FilterListPoolFilter
             }
         }
 
-        return $this->filterListAuditor->collectFilterLists($packagesForFilter, $providerSet, $this->filterListConfig->ignoreUnreachable())['filter'];
+        return $this->filterListAuditor->collectFilterLists($packagesForFilter, $providerSet, 'block', $this->filterListConfig->ignoreUnreachable)['filter'];
     }
 }

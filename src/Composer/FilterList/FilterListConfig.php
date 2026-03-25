@@ -24,22 +24,29 @@ use Composer\Package\Version\VersionParser;
 class FilterListConfig
 {
     /**
-     * @var bool|array<string, mixed>
+     * @var list<DontFilterPackage>
      */
-    private $config;
+    public $dontFilterPackages;
 
     /**
-     * @var VersionParser
+     * @var list<UrlSource>
      */
-    private $versionParser;
+    public $sources;
 
     /**
-     * @param bool|array<string, mixed> $config
+     * @var bool
      */
-    public function __construct(VersionParser $versionParser, $config)
+    public $ignoreUnreachable;
+
+    /**
+     * @param list<DontFilterPackage> $dontFilterPackages
+     * @param list<UrlSource> $sources
+     */
+    public function __construct(array $dontFilterPackages, array $sources, bool $ignoreUnreachable)
     {
-        $this->versionParser = $versionParser;
-        $this->config = $config;
+        $this->dontFilterPackages = $dontFilterPackages;
+        $this->sources = $sources;
+        $this->ignoreUnreachable = $ignoreUnreachable;
     }
 
     public static function fromConfig(Config $config, VersionParser $versionParser): ?self
@@ -49,44 +56,52 @@ class FilterListConfig
             return null;
         }
 
-        return new self($versionParser, $filterConfig);
+        $sources = [];
+        $dontFilterPackages = [];
+        if (\is_array($filterConfig)) {
+            $dontFilterPackages = array_map(function ($packageConfig) use ($versionParser) {
+                return DontFilterPackage::fromConfig($packageConfig, $versionParser);
+            }, array_values($filterConfig['dont-filter-packages'] ?? []));
+
+            foreach ($filterConfig['sources'] ?? [] as $sourceName => $source) {
+                if (is_array($source) && isset($source['type']) && $source['type'] === 'url') {
+                    $sources[] = new UrlSource($sourceName, $source['url']);
+                }
+            }
+        }
+
+        return new self(
+            $dontFilterPackages,
+            $sources,
+            (bool) ($config->get('ignore-unreachable') ?? false)
+        );
     }
 
     /**
      * @param 'audit'|'block' $operation
      */
-    public function getConfig(string $operation): ?ListConfig
+    public function getOperationConfig(string $operation): self
     {
-        $config = new ListConfig($this->versionParser);
-        if ($this->config === true) {
-            return $config;
-        }
-
-        // Config looks invalid, skip feature
-        if (!\is_array($this->config)) {
-            return null;
-        }
-
-        return $config->apply($this->config, $operation);
-    }
-
-    /**
-     * @return list<UrlSource>
-     */
-    public function getSources(): array
-    {
-        $sources = [];
-        foreach ($this->config['sources'] ?? [] as $sourceName => $source) {
-            if (is_array($source) && isset($source['type']) && $source['type'] === 'url') {
-                $sources[] = new UrlSource($sourceName, $source['url']);
+        $dontFilterPackages = [];
+        foreach ($this->dontFilterPackages as $dontFilterPackage) {
+            if (\in_array($dontFilterPackage->apply, ['all', $operation], true)) {
+                $dontFilterPackages[] = $dontFilterPackage;
             }
         }
 
-        return $sources;
+        return new self($dontFilterPackages, $this->sources, $this->ignoreUnreachable);
     }
 
-    public function ignoreUnreachable(): bool
+    /**
+     * @return array<string, DontFilterPackage>
+     */
+    public function getDontFilterPackageMap(): array
     {
-        return (bool) ($this->config['ignore-unreachable'] ?? false);
+        $map = [];
+        foreach ($this->dontFilterPackages as $dontFilterPackage) {
+            $map[$dontFilterPackage->packageName] = $dontFilterPackage;
+        }
+
+        return $map;
     }
 }

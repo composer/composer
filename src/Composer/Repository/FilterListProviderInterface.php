@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\FilterListProviderConfig;
 use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
@@ -26,7 +27,7 @@ interface FilterListProviderInterface
 
     /**
      * @param array<string, ConstraintInterface> $packageConstraintMap
-     * @return array{filter: array<string, list<FilterListEntry>>}
+     * @return array{filter: array<string, list<FilterListEntry>>, config: FilterListProviderConfig}
      */
     public function getFilter(array $packageConstraintMap): array;
 }

@@ -12,6 +12,7 @@
 
 namespace Composer\Test\FilterList;
 
+use Composer\Config;
 use Composer\FilterList\FilterListConfig;
 use Composer\Package\Version\VersionParser;
 use Composer\Test\TestCase;
@@ -32,14 +33,38 @@ class FilterListConfigTest extends TestCase
 
     public function testParseConfig(): void
     {
-        $config = new FilterListConfig($this->versionParser, [
+        $config = new Config();
+        $config->merge(['config' => ['filter' => [
             'ignore-unreachable' => true,
             'dont-filter-packages' => ['foo/bar'],
-        ]);
+            'sources' => ['name' => ['type' => 'url', 'url' => 'https://example.org']],
+        ]]]);
 
-        $listConfig = $config->getConfig('block');
+        $filterConfig = FilterListConfig::fromConfig($config,$this->versionParser);
 
-        $this->assertNotNull($listConfig);
+        $this->assertNotNull($filterConfig);
+        $this->assertCount(1, $filterConfig->dontFilterPackages);
+        $this->assertCount(1, $filterConfig->sources);
+
+        $listConfig = $filterConfig->getOperationConfig('block');
         $this->assertCount(1, $listConfig->dontFilterPackages);
+        $this->assertCount(1, $listConfig->sources);
+    }
+
+    public function testParseConfigDoesntApply(): void
+    {
+        $config = new Config();
+        $config->merge(['config' => ['filter' => [
+            'dont-filter-packages' => [['name' => 'foo/bar', 'apply' => 'audit'],
+        ]]]]);
+
+        $filterConfig = FilterListConfig::fromConfig($config,$this->versionParser);
+
+        $this->assertNotNull($filterConfig);
+        $this->assertCount(1, $filterConfig->dontFilterPackages);
+
+        $listConfig = $filterConfig->getOperationConfig('block');
+
+        $this->assertCount(0, $listConfig->dontFilterPackages);
     }
 }

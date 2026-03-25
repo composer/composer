@@ -61,16 +61,17 @@ class FilterListProviderSet
                 function (UrlSource $source) use ($httpDownloader) {
                     return new UrlSourceFilterListProvider($httpDownloader, $source);
                 },
-                $config->getSources()
+                $config->sources
             )
         );
     }
 
     /**
      * @param PackageInterface[] $packages
+     * @param 'block'|'audit' $operation
      * @return array{filter: array<string, array<FilterListEntry>>, unreachableRepos: array<string>}
      */
-    public function getMatchingFilterLists(array $packages, bool $ignoreUnreachable = false): array
+    public function getMatchingFilterLists(array $packages, string $operation, bool $ignoreUnreachable = false): array
     {
         $map = [];
         foreach ($packages as $package) {
@@ -86,23 +87,32 @@ class FilterListProviderSet
         }
 
         $unreachableRepos = [];
-        $filters = $this->getFilterListEntriesForConstraints($map, $ignoreUnreachable, $unreachableRepos);
+        $filters = $this->getFilterListEntriesForConstraints($map, $operation, $ignoreUnreachable, $unreachableRepos);
 
         return ['filter' => $filters, 'unreachableRepos' => $unreachableRepos];
     }
 
     /**
      * @param array<string, ConstraintInterface> $packageConstraintMap
+     * @param 'block'|'audit' $operation
      * @param array<string> &$unreachableRepos Array to store messages about unreachable repositories
      * @return array<string, list<FilterListEntry>>
      */
-    private function getFilterListEntriesForConstraints(array $packageConstraintMap, bool $ignoreUnreachable = false, array &$unreachableRepos = []): array
+    private function getFilterListEntriesForConstraints(array $packageConstraintMap, string $operation, bool $ignoreUnreachable = false, array &$unreachableRepos = []): array
     {
         $filters = [];
         foreach ($this->providers as $provider) {
             try {
-                $repoFilter = $provider->getFilter($packageConstraintMap)['filter'];
+                $result = $provider->getFilter($packageConstraintMap);
+                $repoFilter = $result['filter'];
+                $repoConfig = $result['config'];
+                $configuredLists = $repoConfig->getListsForOperation($operation);
+
                 foreach ($repoFilter as $listName => $entries) {
+                    if (!isset($configuredLists[$listName])) {
+                        continue;
+                    }
+
                     foreach ($entries as $entry) {
                         if (!isset($packageConstraintMap[$entry->packageName])) {
                             continue;

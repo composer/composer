@@ -12,8 +12,6 @@
 
 namespace Composer\FilterList;
 
-use Composer\Package\Version\VersionParser;
-
 /**
  * @readonly
  * @internal
@@ -21,51 +19,67 @@ use Composer\Package\Version\VersionParser;
  */
 class ListConfig
 {
-    /**
-     * A map of package name to dont filter config
-     * @var array<string, DontFilterPackage>
-     */
-    public $dontFilterPackages;
+    /** @var string */
+    public $name;
+    /** @var string */
+    public $reason;
+    /** @var 'audit'|'block'|'all' */
+    public $apply;
+    /** @var bool */
+    public $exclude;
+    /** @var bool */
+    public $default;
 
-    /** @var VersionParser */
-    private $versionParser;
-
     /**
-     * @param array<string, DontFilterPackage> $dontFilterPackages
+     * @param 'audit'|'block'|'all' $apply
      */
     public function __construct(
-        VersionParser $versionParser,
-        array $dontFilterPackages = []
+        string $name,
+        string $apply = 'all',
+        string $reason = '',
+        bool $default = false
     ) {
-        $this->versionParser = $versionParser;
-        $this->dontFilterPackages = $dontFilterPackages;
+        $this->name = ltrim($name, '!');
+        $this->apply = $apply;
+        $this->reason = $reason;
+        $this->exclude = strpos($name, '!') === 0;
+        $this->default = $default;
     }
 
     /**
-     * @param array<mixed> $config
-     * @param 'all'|'block'|'audit' $operation
+     * @param string|array{name: string, apply?: string, reason?: string} $list
+     * @param list<string> $defaultListNames
      */
-    public function apply(array $config, string $operation): ?ListConfig
+    public static function fromConfig($list, array $defaultListNames = []): self
     {
-        if (isset($config['apply']) && !\in_array($config['apply'], ['all', $operation], true)) {
-            return null;
-        }
-
-        $allIgnorePackages = array_map(function ($config) {
-            return DontFilterPackage::fromConfig($config, $this->versionParser);
-        }, $config['dont-filter-packages'] ?? $this->dontFilterPackages);
-        $dontFilterPackages = array_filter($allIgnorePackages, function (DontFilterPackage $entry) use ($operation): bool{
-            return \in_array($entry->apply, ['all', $operation], true);
-        });
-
-        $dontFilterPackagesMap = [];
-        foreach ($dontFilterPackages as $entry) {
-            $dontFilterPackagesMap[$entry->packageName] = $entry;
-        }
-
         return new self(
-            $this->versionParser,
-                $dontFilterPackagesMap
+            $name = is_array($list) ? $list['name'] : (string) $list,
+            is_array($list) && isset($list['apply']) && in_array($list['apply'], ['audit', 'block', 'all'], true) ? $list['apply'] : 'all',
+            is_array($list) && isset($list['reason'])  ? $list['reason'] : '',
+            in_array($name, $defaultListNames, true)
         );
+    }
+
+    /**
+     * @param list<string> $lists
+     * @return list<ListConfig>
+     */
+    public function expandDefaults(array $lists): array
+    {
+        if ($this->name !== 'defaults') {
+            return [$this];
+        }
+
+        $expanded = [];
+        foreach ($lists as $list) {
+            $expanded[] = new self(
+                ($this->exclude ? '!' : '') . $list,
+                $this->apply,
+                $this->reason,
+                true
+            );
+        }
+
+        return $expanded;
     }
 }

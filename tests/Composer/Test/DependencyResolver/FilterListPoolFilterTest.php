@@ -12,6 +12,7 @@
 
 namespace Composer\Test\DependencyResolver;
 
+use Composer\Config;
 use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
@@ -38,7 +39,10 @@ class FilterListPoolFilterTest extends TestCase
 
     public function testFilterPackages(): void
     {
-        $filterListConfig = new FilterListConfig(new VersionParser(), true);
+        $config = new Config();
+        $filterListConfig = FilterListConfig::fromConfig($config, new VersionParser());
+        $this->assertNotNull($filterListConfig);
+
         $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('1.0');
@@ -56,11 +60,16 @@ class FilterListPoolFilterTest extends TestCase
 
     /**
      * @dataProvider dontFilterProvider
-     * @param bool|array<string, mixed> $config
+     * @param bool|array<string, mixed> $filterConfig
      */
-    public function testDontFilterPackagesConfig($config): void
+    public function testDontFilterPackagesConfig($filterConfig): void
     {
-        $filterListConfig = new FilterListConfig(new VersionParser(), $config);
+        $config = new Config();
+        $config->merge(['config' => ['filter' => $filterConfig]]);
+
+        $filterListConfig = FilterListConfig::fromConfig($config, new VersionParser());
+        $this->assertNotNull($filterListConfig);
+
         $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('*');
@@ -78,14 +87,19 @@ class FilterListPoolFilterTest extends TestCase
     {
         return [
             'dont-filter-packages' => [['dont-filter-packages' => ['acme/package']]],
-            'feature-off' => [false],
+            'dont-filter-packages-version' => [['dont-filter-packages' => [['package' => 'acme/package', 'version' => '*']]]],
         ];
     }
     public function testDontFilterPackagesConfigIntersection(): void
     {
-        $filterListConfig = new FilterListConfig(new VersionParser(), [
+        $config = new Config();
+        $config->merge(['config' => ['filter' => [
             'dont-filter-packages' => [['package' => 'acme/package', 'constraint' => '<=1.0']],
-        ]);
+        ]]]);
+
+        $filterListConfig = FilterListConfig::fromConfig($config, new VersionParser());
+        $this->assertNotNull($filterListConfig);
+
         $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('>=1.0');
@@ -109,12 +123,18 @@ class FilterListPoolFilterTest extends TestCase
                 'reason' => 'malware',
             ]]])
         ]]);
-        $filterListConfig = new FilterListConfig(new VersionParser(), [
+
+        $config = new Config();
+        $config->merge(['config' => ['filter' => [
             'sources' => ['source-list' => [
                 'type' => 'url',
                 'url' => 'https://example.org/malware/acme/package',
             ]]
-        ]);
+        ]]]);
+
+        $filterListConfig = FilterListConfig::fromConfig($config, new VersionParser());
+        $this->assertNotNull($filterListConfig);
+
         $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('0.0.1');

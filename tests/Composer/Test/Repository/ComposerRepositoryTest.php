@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\FilterListProviderConfig;
 use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Composer\Repository\ComposerRepository;
@@ -524,6 +525,7 @@ class ComposerRepositoryTest extends TestCase
                         'filter' => [
                             'metadata' => true,
                             'lists' => ['test'],
+                            'default-lists' => ['test'],
                         ],
                     ]),
                     'options' => ['http' => ['verify_peer' => false]],
@@ -555,6 +557,7 @@ class ComposerRepositoryTest extends TestCase
 
         [
             'filter' => $filter,
+            'config' => $config,
         ] = $repository->getFilter(['acme/package' => new Constraint('=', '1.0.0.0')]);
 
         $constraint = new MatchAllConstraint();

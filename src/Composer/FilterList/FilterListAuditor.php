@@ -26,11 +26,12 @@ class FilterListAuditor
 {
     /**
      * @param PackageInterface[] $packages
+     * @param 'block'|'audit' $operation
      * @return array{filter: array<string, array<string, list<FilterListEntry>>>, unreachableRepos: array<string>}
      */
-    public function collectFilterLists(array $packages, FilterListProviderSet $providerSet, bool $ignoreUnreachable): array
+    public function collectFilterLists(array $packages, FilterListProviderSet $providerSet, string $operation, bool $ignoreUnreachable): array
     {
-        $result = $providerSet->getMatchingFilterLists($packages, $ignoreUnreachable);
+        $result = $providerSet->getMatchingFilterLists($packages, $operation, $ignoreUnreachable);
         $filter = $result['filter'];
         $unreachableRepos = $result['unreachableRepos'];
 
@@ -58,7 +59,8 @@ class FilterListAuditor
         }
 
         $matchingEntries = [];
-        $filterConfig = $filterListConfig->getConfig($operation);
+        $filterConfig = $filterListConfig->getOperationConfig($operation);
+        $dontFilterPackageMap = $filterConfig->getDontFilterPackageMap();
         foreach ($package->getNames(false) as $packageName) {
             if (!isset($filterListMap[$packageName])) {
                 continue;
@@ -66,7 +68,7 @@ class FilterListAuditor
 
             $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
             foreach ($filterListMap[$packageName] as $entries) {
-                if (isset($filterConfig->dontFilterPackages[$packageName]) && $filterConfig->dontFilterPackages[$packageName]->constraint->matches($packageConstraint)) {
+                if (isset($dontFilterPackageMap[$packageName]) && $dontFilterPackageMap[$packageName]->constraint->matches($packageConstraint)) {
                     continue;
                 }
 

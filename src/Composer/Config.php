@@ -39,7 +39,7 @@ class Config
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
         'audit' => ['ignore' => [], 'abandoned' => Auditor::ABANDONED_FAIL],
-        'filter' => false,
+        'filter' => true,
         'notify-on-install' => true,
         'github-protocols' => ['https', 'ssh', 'git'],
         'gitlab-protocol' => null,

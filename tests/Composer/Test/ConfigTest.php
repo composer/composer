@@ -425,11 +425,11 @@ class ConfigTest extends TestCase
         $config = new Config(true);
         $result = $config->get('filter');
 
-        $this->assertFalse($result);
-
-        Platform::putEnv('COMPOSER_FILTER', '1');
-        $result = $config->get('filter');
         $this->assertTrue($result);
+
+        Platform::putEnv('COMPOSER_FILTER', '0');
+        $result = $config->get('filter');
+        $this->assertFalse($result);
         Platform::clearEnv('COMPOSER_FILTER');
 
         $config->merge(['config' => ['filter' => [

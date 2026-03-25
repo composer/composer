@@ -734,7 +734,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             ->method('getMatchingFilterLists')
             ->willReturn(['filter' => $filterEntriesByList, 'unreachableRepos' => []]);
 
-        $filterListConfig = new FilterListConfig(new VersionParser(), true);
+        $filterListConfig = new FilterListConfig([], [], false);
 
         $auditor = new Auditor();
         $result = $auditor->audit(
@@ -777,7 +777,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             ->method('getMatchingFilterLists')
             ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
 
-        $filterListConfig = new FilterListConfig(new VersionParser(), true);
+        $filterListConfig = new FilterListConfig([], [], false);
 
         $auditor = new Auditor();
         $result = $auditor->audit(
@@ -832,7 +832,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             ->method('getMatchingFilterLists')
             ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
 
-        $filterListConfig = new FilterListConfig(new VersionParser(), true);
+        $filterListConfig = new FilterListConfig([], [], false);
 
         $auditor = new Auditor();
         // vendor1/package1 at 8.2.1 is vulnerable; vendor1/package2 at 9.0.0 matches the filter

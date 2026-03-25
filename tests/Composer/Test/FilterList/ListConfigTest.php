@@ -13,38 +13,38 @@
 namespace Composer\Test\FilterList;
 
 use Composer\FilterList\ListConfig;
-use Composer\Package\Version\VersionParser;
 use Composer\Test\TestCase;
 
 class ListConfigTest extends TestCase
 {
-    /**
-     * @var VersionParser
-     */
-    private $versionParser;
-
-    protected function setUp(): void
+    public function testExclude(): void
     {
-        parent::setUp();
+        $list = new ListConfig('list', 'all', 'reason');
+        $this->assertSame('list', $list->name);
+        $this->assertFalse($list->exclude);
 
-        $this->versionParser = new VersionParser();
+        $list = new ListConfig('!list', 'all', 'reason');
+        $this->assertSame('list', $list->name);
+        $this->assertTrue($list->exclude);
     }
 
-    public function testApply(): void
+    public function testExpandDefaults(): void
     {
-        $config = (new ListConfig($this->versionParser))->apply([
-            'ignore-unreachable' => true,
-            'dont-filter-packages' => ['foo/bar', ['package' => 'foo/other', 'constraint' => '*', 'apply' => 'block']],
-            'apply' => 'all',
-        ], 'audit');
+        $list = new ListConfig('list', 'all', 'reason');
+        $this->assertSame([$list], $list->expandDefaults(['default-list']));
 
-        $this->assertNotNull($config);
-        $this->assertCount(1, $config->dontFilterPackages);
-        $this->assertArrayHasKey('foo/bar', $config->dontFilterPackages);
+        $list = new ListConfig('defaults', 'all', 'reason');
+        $this->assertEquals([
+            new ListConfig('default-list-one', 'all', 'reason', true),
+            new ListConfig('default-list-two', 'all', 'reason', true),
+        ], $list->expandDefaults(['default-list-one', 'default-list-two']));
     }
 
-    public function testDoesntApply(): void
+    public function testFromConfig(): void
     {
-        $this->assertNull((new ListConfig($this->versionParser))->apply(['apply' => 'block'], 'audit'));
+        $this->assertEquals(new ListConfig('list'), ListConfig::fromConfig('list'));
+        $this->assertEquals(new ListConfig('list'), ListConfig::fromConfig(['name' => 'list']));
+        $this->assertEquals(new ListConfig('list', 'audit', 'reason'), ListConfig::fromConfig(['name' => 'list', 'apply' => 'audit', 'reason' => 'reason']));
+        $this->assertEquals(new ListConfig('list', 'audit', 'reason', true), ListConfig::fromConfig(['name' => 'list', 'apply' => 'audit', 'reason' => 'reason'], ['list']));
     }
 }
