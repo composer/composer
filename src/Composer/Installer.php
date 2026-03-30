@@ -65,6 +65,7 @@ use Composer\Repository\LockArrayRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Advisory\Auditor;
+use Composer\Util\AiDocGenerator;
 use Composer\Util\Platform;
 
 /**
@@ -882,6 +883,8 @@ class Installer
                 }
             }
         }
+
+        (new AiDocGenerator($this->installationManager))->updateIndex($localRepoTransaction);
 
         return 0;
     }
