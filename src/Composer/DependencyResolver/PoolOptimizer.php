@@ -181,7 +181,6 @@ class PoolOptimizer
     private function optimizeByIdenticalDependencies(Request $request, Pool $pool): void
     {
         $identicalDefinitionsPerPackage = [];
-        $packageIdenticalDefinitionLookup = [];
 
         foreach ($pool->getPackages() as $package) {
 
@@ -229,31 +228,24 @@ class PoolOptimizer
                     }
 
                     $groupHash = implode('', $groupHashParts);
-                    $identicalDefinitionsPerPackage[$packageName][$groupHash][$dependencyHash][] = $package;
-                    $packageIdenticalDefinitionLookup[$package->id][$packageName] = ['groupHash' => $groupHash, 'dependencyHash' => $dependencyHash];
+                    $identicalDefinitionsPerPackage[$packageName][$groupHash][$dependencyHash][] = $package->id;
                 }
             }
         }
 
-        foreach ($identicalDefinitionsPerPackage as $constraintGroups) {
+        foreach ($identicalDefinitionsPerPackage as $packageName => $constraintGroups) {
             foreach ($constraintGroups as $constraintGroup) {
-                foreach ($constraintGroup as $packages) {
+                foreach ($constraintGroup as $packageIds) {
                     // Only one package in this constraint group has the same requirements, we're not allowed to remove that package
-                    if (1 === \count($packages)) {
-                        $this->keepPackage($packages[0], $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup);
+                    if (1 === \count($packageIds)) {
+                        $this->keepPackageInGroup($pool->packageById($packageIds[0]), $pool, $packageName, $packageIds);
                         continue;
                     }
 
                     // Otherwise we find out which one is the preferred package in this constraint group which is
                     // then not allowed to be removed either
-                    $literals = [];
-
-                    foreach ($packages as $package) {
-                        $literals[] = $package->id;
-                    }
-
-                    foreach ($this->policy->selectPreferredPackages($pool, $literals) as $preferredLiteral) {
-                        $this->keepPackage($pool->literalToPackage($preferredLiteral), $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup);
+                    foreach ($this->policy->selectPreferredPackages($pool, $packageIds) as $preferredLiteral) {
+                        $this->keepPackageInGroup($pool->literalToPackage($preferredLiteral), $pool, $packageName, $packageIds);
                     }
                 }
             }
@@ -311,56 +303,62 @@ class PoolOptimizer
     }
 
     /**
-     * @param array<string, array<string, array<string, list<BasePackage>>>> $identicalDefinitionsPerPackage
-     * @param array<int, array<string, array{groupHash: string, dependencyHash: string}>> $packageIdenticalDefinitionLookup
+     * @param list<int> $packageIds
      */
-    private function keepPackage(BasePackage $package, array $identicalDefinitionsPerPackage, array $packageIdenticalDefinitionLookup): void
+    private function keepPackageInGroup(BasePackage $package, Pool $pool, string $packageName, array $packageIds): void
     {
-        // Already marked to keep
-        if (!isset($this->packagesToRemove[$package->id])) {
-            return;
+        $versions = [];
+        foreach ($packageIds as $packageId) {
+            $groupPackage = $pool->packageById($packageId);
+            if ($groupPackage instanceof AliasPackage && $groupPackage->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                $groupPackage = $groupPackage->getAliasOf();
+            }
+            $versions[$groupPackage->getVersion()] = $groupPackage->getPrettyVersion();
         }
 
-        unset($this->packagesToRemove[$package->id]);
+        $this->keepPackage($package);
+        $this->recordRemovedVersionsForPackage($package, $packageName, $versions);
 
         if ($package instanceof AliasPackage) {
-            // recursing here so aliasesPerPackage for the aliasOf can be checked
-            // and all its aliases marked to be kept as well
-            $this->keepPackage($package->getAliasOf(), $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup);
-        }
+            $this->keepPackage($package->getAliasOf());
 
-        // record all the versions of the package group so we can list them later in Problem output
-        foreach ($package->getNames(false) as $name) {
-            if (isset($packageIdenticalDefinitionLookup[$package->id][$name])) {
-                $packageGroupPointers = $packageIdenticalDefinitionLookup[$package->id][$name];
-                $packageGroup = $identicalDefinitionsPerPackage[$name][$packageGroupPointers['groupHash']][$packageGroupPointers['dependencyHash']];
-                foreach ($packageGroup as $pkg) {
-                    if ($pkg instanceof AliasPackage && $pkg->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
-                        $pkg = $pkg->getAliasOf();
-                    }
-                    $this->removedVersionsByPackage[spl_object_hash($package)][$pkg->getVersion()] = $pkg->getPrettyVersion();
+            if (isset($this->aliasesPerPackage[$package->getAliasOf()->id])) {
+                foreach ($this->aliasesPerPackage[$package->getAliasOf()->id] as $aliasPackage) {
+                    $this->keepPackage($aliasPackage);
                 }
             }
+
+            return;
         }
 
         if (isset($this->aliasesPerPackage[$package->id])) {
             foreach ($this->aliasesPerPackage[$package->id] as $aliasPackage) {
-                unset($this->packagesToRemove[$aliasPackage->id]);
-
-                // record all the versions of the package group so we can list them later in Problem output
-                foreach ($aliasPackage->getNames(false) as $name) {
-                    if (isset($packageIdenticalDefinitionLookup[$aliasPackage->id][$name])) {
-                        $packageGroupPointers = $packageIdenticalDefinitionLookup[$aliasPackage->id][$name];
-                        $packageGroup = $identicalDefinitionsPerPackage[$name][$packageGroupPointers['groupHash']][$packageGroupPointers['dependencyHash']];
-                        foreach ($packageGroup as $pkg) {
-                            if ($pkg instanceof AliasPackage && $pkg->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
-                                $pkg = $pkg->getAliasOf();
-                            }
-                            $this->removedVersionsByPackage[spl_object_hash($aliasPackage)][$pkg->getVersion()] = $pkg->getPrettyVersion();
-                        }
-                    }
-                }
+                $this->keepPackage($aliasPackage);
+                $this->recordRemovedVersionsForPackage($aliasPackage, $packageName, $versions);
             }
+        }
+    }
+
+    private function keepPackage(BasePackage $package): void
+    {
+        unset($this->packagesToRemove[$package->id]);
+    }
+
+    /**
+     * @param array<string, string> $versions
+     */
+    private function recordRemovedVersionsForPackage(BasePackage $package, string $packageName, array $versions): void
+    {
+        foreach ($package->getNames(false) as $name) {
+            if ($name !== $packageName) {
+                continue;
+            }
+
+            foreach ($versions as $version => $prettyVersion) {
+                $this->removedVersionsByPackage[spl_object_hash($package)][$version] = $prettyVersion;
+            }
+
+            break;
         }
     }
 
