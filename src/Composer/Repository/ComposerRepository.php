@@ -14,6 +14,9 @@ namespace Composer\Repository;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\ComposerRepositoryFilterInformation;
+use Composer\FilterList\FilterListProviderConfig;
 use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
@@ -46,7 +49,7 @@ use React\Promise\PromiseInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface
+class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
 {
     /**
      * @var mixed[]
@@ -111,6 +114,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $displayedWarningAboutNonMatchingPackageIndex = false;
     /** @var array{metadata: bool, api-url: string|null}|null */
     private $securityAdvisoryConfig = null;
+    /** @var ComposerRepositoryFilterInformation|null */
+    private $filterConfig = null;
 
     /**
      * @var array list of package names which are fresh and can be loaded from the cache directly in case loadPackage is called several times
@@ -733,6 +738,66 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return ['namesFound' => array_keys($namesFound), 'advisories' => array_filter($advisories, static function ($adv): bool { return \count($adv) > 0; })];
     }
 
+    public function hasFilter(): bool
+    {
+        $this->loadRootServerFile(600);
+
+        return $this->filterConfig !== null && $this->filterConfig->metadata;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFilter(array $packageConstraintMap): array
+    {
+        $this->loadRootServerFile(600);
+
+        // respect available-package-patterns / available-packages directives from the repo
+        if ($this->hasAvailablePackageList) {
+            foreach ($packageConstraintMap as $name => $constraint) {
+                if (!$this->lazyProvidersRepoContains(strtolower($name))) {
+                    unset($packageConstraintMap[$name]);
+                }
+            }
+        }
+
+        $parser = new VersionParser();
+        $filter = [];
+        $promises = [];
+        foreach ($packageConstraintMap as $name => $constraint) {
+            $name = strtolower($name);
+
+            // skip platform packages, root package and composer-plugin-api
+            if (PlatformRepository::isPlatformPackage($name) || '__root__' === $name) {
+                continue;
+            }
+
+            $promises[] = $this->startCachedAsyncDownload($name, $name)
+                ->then(static function (array $spec) use (&$filter, $name, $parser): void {
+                    [$response] = $spec;
+
+                    if (isset($response['filter']) && is_array($response['filter'])) {
+                        foreach ($response['filter'] as $listName => $listEntries) {
+                            foreach ($listEntries as $data) {
+                                $data['package'] = $name;
+                                $filter[$listName][] = FilterListEntry::create($listName, $data, $parser);
+
+                            }
+                        }
+                    }
+                });
+        }
+
+        $this->loop->wait($promises);
+
+        $defaultLists = [];
+        if ($this->filterConfig !== null) {
+            $defaultLists = $this->filterConfig->defaultLists;
+        }
+
+        return ['filter' => $filter, 'config' => FilterListProviderConfig::fromConfig($this->repoConfig['filter'] ?? true, $defaultLists)];
+    }
+
     public function getProviders(string $packageName)
     {
         $this->loadRootServerFile();
@@ -1117,7 +1182,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $response = $contents;
                 }
 
-                if (!isset($response['packages'][$packageName]) && !isset($response['security-advisories'])) {
+                if (!isset($response['packages'][$packageName]) && !isset($response['security-advisories']) && !isset($response['filter'])) {
                     return [null, $packagesSource];
                 }
 
@@ -1269,6 +1334,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if ($this->securityAdvisoryConfig['api-url'] === null && !$this->hasAvailablePackageList) {
                     throw new \UnexpectedValueException('Invalid security advisory configuration on '.$this->getRepoName().': If the repository does not provide a security-advisories.api-url then available-packages or available-package-patterns are required to be provided for performance reason.');
                 }
+            }
+
+            if (isset($data['filter']) && is_array($data['filter'])) {
+                $this->filterConfig = ComposerRepositoryFilterInformation::fromData($data['filter']);
             }
         }
 

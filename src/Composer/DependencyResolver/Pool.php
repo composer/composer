@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\FilterList\FilterListEntry;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\CompilingMatcher;
@@ -46,6 +47,8 @@ class Pool implements \Countable
     private $securityRemovedVersions = [];
     /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
     private $abandonedRemovedVersions = [];
+    /** @var array<string, array<string, list<FilterListEntry>>> Map of package name => normalized version => filter list entries */
+    private $filterListRemovedVersions = [];
 
     /**
      * @param BasePackage[] $packages
@@ -54,8 +57,9 @@ class Pool implements \Countable
      * @param array<string, array<string, string>> $removedVersionsByPackage
      * @param array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> $securityRemovedVersions
      * @param array<string, array<string, string>> $abandonedRemovedVersions
+     * @param array<string, array<string, list<FilterListEntry>>> $filterListRemovedVersions
      */
-    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [])
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [], array $filterListRemovedVersions = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
@@ -64,6 +68,7 @@ class Pool implements \Countable
         $this->removedVersionsByPackage = $removedVersionsByPackage;
         $this->securityRemovedVersions = $securityRemovedVersions;
         $this->abandonedRemovedVersions = $abandonedRemovedVersions;
+        $this->filterListRemovedVersions = $filterListRemovedVersions;
     }
 
     /**
@@ -165,6 +170,44 @@ class Pool implements \Countable
     public function getAllAbandonedRemovedPackageVersions(): array
     {
         return $this->abandonedRemovedVersions;
+    }
+
+    public function isFilterListRemovedPackageVersion(string $packageName, ?ConstraintInterface $constraint): bool
+    {
+        foreach ($this->filterListRemovedVersions[$packageName] ?? [] as $version => $entries) {
+            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return array<string, array<string, list<FilterListEntry>>>
+     */
+    public function getAllFilterListRemovedPackageVersions(): array
+    {
+        return $this->filterListRemovedVersions;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getFilterListEntryForPackageVersion(string $packageName, ?ConstraintInterface $constraint): array
+    {
+        foreach ($this->filterListRemovedVersions[$packageName] ?? [] as $version => $filterListEntries) {
+            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
+                return array_map(static function (FilterListEntry $entry) {
+                    $url = (bool) $entry->url ? ' (see ' . $entry->url . ')' : '';
+                    $reason = (bool) $entry->reason ? ' reason: ' . $entry->reason . '' : '';
+
+                    return 'filtered by ' . $entry->listName . $url . $reason;
+                }, $filterListEntries);
+            }
+        }
+
+        return [];
     }
 
     /**

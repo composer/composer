@@ -185,4 +185,13 @@ class RepositoryManager
     {
         return $this->localRepository;
     }
+
+    /**
+     * @internal
+     * @return HttpDownloader
+     */
+    public function getHttpDownloader(): HttpDownloader
+    {
+        return $this->httpDownloader;
+    }
 }

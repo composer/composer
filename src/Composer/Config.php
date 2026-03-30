@@ -39,6 +39,7 @@ class Config
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
         'audit' => ['ignore' => [], 'abandoned' => Auditor::ABANDONED_FAIL],
+        'filter' => true,
         'notify-on-install' => true,
         'github-protocols' => ['https', 'ssh', 'git'],
         'gitlab-protocol' => null,
@@ -234,6 +235,19 @@ class Config
                     $this->config[$key] = array_merge($this->config['audit'], $val);
                     $this->setSourceOfConfigValue($val, $key, $source);
                     $this->config['audit']['ignore'] = array_merge($currentIgnores, $val['ignore'] ?? []);
+                } elseif ('filter' === $key) {
+                    $unfilteredPackages = $this->config['filter']['unfiltered-packages'] ?? [];
+                    $sources = $this->config['filter']['sources'] ?? [];
+
+                    if (\is_bool($val)) {
+                        $this->config[$key] = $val;
+                    } else {
+                        $this->config[$key] = is_array($this->config['filter']) ? array_merge($this->config['filter'], $val) : $val;
+                        $this->config['filter']['unfiltered-packages'] = array_merge($unfilteredPackages, $val['unfiltered-packages'] ?? []);
+                        $this->config['filter']['sources'] = array_merge($sources, $val['sources'] ?? []);
+                    }
+
+                    $this->setSourceOfConfigValue($val, $key, $source);
                 } else {
                     $this->config[$key] = $val;
                     $this->setSourceOfConfigValue($val, $key, $source);
@@ -485,7 +499,22 @@ class Config
                 }
 
                 return $result;
+            case 'filter':
+                $filterConfig = $this->config[$key];
+                $filterEnv = $this->getComposerEnv('COMPOSER_FILTER');
+                if (false !== $filterEnv) {
+                    if (!in_array($filterEnv, ['0', '1'], true)) {
+                        throw new \RuntimeException(
+                            "Invalid value for COMPOSER_FILTER: {$filterEnv}. Expected 0 or 1."
+                        );
+                    }
 
+                    if ((bool) (int) $filterEnv !== (bool) $filterConfig) {
+                        $filterConfig = (bool) (int) $filterEnv;
+                    }
+                }
+
+                return $filterConfig;
             default:
                 if (!isset($this->config[$key])) {
                     return null;

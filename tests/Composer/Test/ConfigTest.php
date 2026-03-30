@@ -420,6 +420,36 @@ class ConfigTest extends TestCase
         self::assertSame(false, $result['block-abandoned']);
     }
 
+    public function testFilter(): void
+    {
+        $config = new Config(true);
+        $result = $config->get('filter');
+
+        $this->assertTrue($result);
+
+        Platform::putEnv('COMPOSER_FILTER', '0');
+        $result = $config->get('filter');
+        $this->assertFalse($result);
+        Platform::clearEnv('COMPOSER_FILTER');
+
+        $config->merge(['config' => ['filter' => [
+            'unfiltered-packages' => ['acme/package'],
+            'sources' => [['type' => 'url', 'url' => 'https://example.com/acme/package']],
+        ]]]);
+        $config->merge(['config' => ['filter' => [
+            'unfiltered-packages' => ['acme/other'],
+            'sources' => [['type' => 'url', 'url' => 'https://example.com/acme/other']],
+        ]]]);
+        $result = $config->get('filter');
+        self::assertIsArray($result);
+        self::assertSame(['acme/package', 'acme/other'], $result['unfiltered-packages'] ?? []);
+        self::assertSame([['type' => 'url', 'url' => 'https://example.com/acme/package'], ['type' => 'url', 'url' => 'https://example.com/acme/other']], $result['sources'] ?? []);
+
+        Platform::putEnv('COMPOSER_FILTER', '1');
+        self::assertNotTrue($config->get('filter'));
+        Platform::clearEnv('COMPOSER_FILTER');
+    }
+
     public function testGetDefaultsToAnEmptyArray(): void
     {
         $config = new Config;

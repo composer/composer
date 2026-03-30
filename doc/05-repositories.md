@@ -326,6 +326,126 @@ can be configured.
 }
 ```
 
+#### filter
+
+A Composer repository can advertise filter list support to clients by including a `filter` object in
+its `packages.json` response. This tells Composer that the repository provides filter list data and
+describes what lists are available.
+
+```json
+{
+    "metadata-url": "/p2/%package%.json",
+    "filter": {
+        "metadata": true,
+        "lists": ["aikido-malware", "other-malware"],
+        "default-lists": ["aikido-malware"]
+    }
+}
+```
+
+- **`metadata`** (required, boolean) — Set to `true` to indicate that per-package metadata files
+  (served via `metadata-url`) contain filter list data. Composer will fetch the metadata for each
+  relevant package and look for a `filter` key containing list entries.
+- **`lists`** (required, array of strings) — The names of all filter lists this repository provides.
+  Clients can use this to know which lists are available.
+- **`default-lists`** (required, array of strings) — The subset of lists that should be active by
+  default. When a user configures `"lists": ["defaults"]` (the default behaviour) in their
+  `repositories` entry for this repository, Composer expands `"defaults"` to these list names.
+
+Per-package metadata files should include a `filter` key whose value is an object mapping list names
+to arrays of filter entries:
+
+```json
+{
+    "packages": {
+        "vendor/package": [{ ... }]
+    },
+    "filter": {
+        "aikido-malware": [
+            {
+                "constraint": ">=1.0.0,<1.2.0",
+                "url": "https://example.org/filters/123",
+                "reason": "Malware",
+                "id": "PKFE-xxxx-xxxx-xxxx"
+            }
+        ]
+    }
+}
+```
+
+In a composer.json file, the `filter` key in a repository definition controls how filter lists from the respective
+repository are used for audit reports and version blocking. It can be set to `false` to disable filter lists from this
+repository entirely, or configured with an object.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "filter": false
+        }
+    ]
+}
+```
+
+When set to an object, the following optional keys are available:
+
+##### lists
+
+Controls which filter lists from this repository are active. Defaults to `["defaults"]`, meaning all
+default lists advertised by the repository are used.
+
+Each item in the array can be:
+
+- A plain string — the named list is included for both audit and blocking.
+- A string prefixed with `!` — the named list is excluded for both audit and blocking.
+- The string `"defaults"` — expands to all default lists advertised by the repository in its
+  `packages.json` response.
+- An object with a `name` (required), an optional `apply` field accepting `"block"`, `"audit"` or `"all"` (default) to restrict
+  the list to a single operation, and an optional `reason` string.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "filter": {
+                "lists": [
+                    "defaults",
+                    "!untrusted-list",
+                    {"name": "audit-only-list", "apply": "audit"},
+                    {"name": "block-only-list", "apply": "block", "reason": "corporate policy"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+##### unfiltered-packages
+
+A list of packages to exempt from filtering for this repository. Accepts the same formats as the
+global [`config.filter.unfiltered-packages`](06-config.md#unfiltered-packages).
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "filter": {
+                "unfiltered-packages": [
+                    "vendor/package",
+                    {"package": "acme/other", "constraint": "^2.0", "apply": "audit"}
+                ]
+            }
+        }
+    ]
+}
+```
+
 ### VCS
 
 VCS stands for version control system. This includes versioning systems like

@@ -12,6 +12,10 @@
 
 namespace Composer\Advisory;
 
+use Composer\FilterList\FilterListAuditor;
+use Composer\FilterList\FilterListConfig;
+use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
@@ -55,10 +59,22 @@ class Auditor
         self::ABANDONED_FAIL,
     ];
 
+    public const FILTERED_IGNORE = 'ignore';
+    public const FILTERED_REPORT = 'report';
+    public const FILTERED_FAIL = 'fail';
+
+    /** @internal */
+    public const FILTERED = [
+        self::FILTERED_IGNORE,
+        self::FILTERED_REPORT,
+        self::FILTERED_FAIL,
+    ];
+
     /** Values to determine the audit result. */
     public const STATUS_OK = 0;
     public const STATUS_VULNERABLE = 1;
     public const STATUS_ABANDONED = 2;
+    public const STATUS_FILTERED = 4;
 
     /**
      * @param PackageInterface[] $packages
@@ -68,11 +84,12 @@ class Auditor
      * @param self::ABANDONED_* $abandoned
      * @param array<string, string|null> $ignoredSeverities List of ignored severity levels
      * @param array<string, string|null> $ignoreAbandoned List of abandoned package name that reported but not listed as vulnerabilities.
+     * @param self::FILTERED_* $filtered
      *
      * @return int-mask<self::STATUS_*> A bitmask of STATUS_* constants or 0 on success
      * @throws InvalidArgumentException If no packages are passed in
      */
-    public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_FAIL, array $ignoredSeverities = [], bool $ignoreUnreachable = false, array $ignoreAbandoned = []): int
+    public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_FAIL, array $ignoredSeverities = [], bool $ignoreUnreachable = false, array $ignoreAbandoned = [], string $filtered = self::FILTERED_FAIL, ?FilterListProviderSet $filterListProviderSet = null, ?FilterListConfig $filterListConfig = null): int
     {
         $result = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY, $ignoreUnreachable);
         $allAdvisories = $result['advisories'];
@@ -98,7 +115,25 @@ class Auditor
             }
         }
 
-        $auditBitmask = $this->calculateBitmask(0 < $affectedPackagesCount, 0 < $abandonedCount);
+        $filterAuditor = new FilterListAuditor();
+        $filteredPackages = [];
+        $filteredCount = 0;
+        if ($filterListConfig !== null && $filterListProviderSet !== null && $filtered !== self::FILTERED_IGNORE) {
+            $filterResult = $filterAuditor->collectFilterLists($packages, $filterListProviderSet, 'audit', $ignoreUnreachable || $filterListConfig->ignoreUnreachable);
+            $unreachableRepos = array_merge($unreachableRepos, $filterResult['unreachableRepos']);
+            foreach ($packages as $package) {
+                $matchingEntries = $filterAuditor->getMatchingEntries($package, $filterResult['filter'], $filterListConfig, 'audit');
+                if (count($matchingEntries) > 0) {
+                    $filteredPackages[$package->getName()] = $matchingEntries;
+                }
+            }
+
+            if ($filtered === self::FILTERED_FAIL) {
+                $filteredCount = count($filteredPackages);
+            }
+        }
+
+        $auditBitmask = $this->calculateBitmask(0 < $affectedPackagesCount, 0 < $abandonedCount, 0 < $filteredCount);
 
         if (self::FORMAT_JSON === $format) {
             $json = ['advisories' => $advisories];
@@ -113,6 +148,14 @@ class Auditor
 
                 return $carry;
             }, []);
+            $json['filter'] = array_map(function (array $entries) {
+                return array_map(function (FilterListEntry $entry) {
+                    $data = (array) $entry;
+                    $data['constraint'] = $entry->constraint->getPrettyString();
+
+                    return $data;
+                }, $entries);
+            },$filteredPackages);
 
             $io->write(JsonFile::encode($json));
 
@@ -152,6 +195,16 @@ class Auditor
 
         if (count($abandonedPackages) > 0 && $format !== self::FORMAT_SUMMARY) {
             $this->outputAbandonedPackages($io, $abandonedPackages, $format);
+        }
+
+        if (count($filteredPackages) > 0) {
+            $plurality = count($filteredPackages) === 1 ? '' : 's';
+            $punctuation = $format === self::FORMAT_SUMMARY ? '.' : ':';
+
+            $io->writeError(sprintf('<error>Found %d package%s matching filters%s</error>', count($filteredPackages), $plurality, $punctuation));
+            if ($format !== self::FORMAT_SUMMARY) {
+                $this->outputFilteredPackages($io, $filteredPackages, $format);
+            }
         }
 
         return $auditBitmask;
@@ -464,7 +517,7 @@ class Auditor
     /**
      * @return int-mask<self::STATUS_*>
      */
-    private function calculateBitmask(bool $hasVulnerablePackages, bool $hasAbandonedPackages): int
+    private function calculateBitmask(bool $hasVulnerablePackages, bool $hasAbandonedPackages, bool $hasFilteredPackages = false): int
     {
         $bitmask = self::STATUS_OK;
 
@@ -476,6 +529,60 @@ class Auditor
             $bitmask |= self::STATUS_ABANDONED;
         }
 
+        if ($hasFilteredPackages) {
+            $bitmask |= self::STATUS_FILTERED;
+        }
+
         return $bitmask;
+    }
+
+    /**
+     * @param array<string, list<FilterListEntry>> $filteredPackages
+     * @param self::FORMAT_PLAIN|self::FORMAT_TABLE $format
+     */
+    private function outputFilteredPackages(IOInterface $io, array $filteredPackages, string $format): void
+    {
+        if ($format === self::FORMAT_PLAIN) {
+            foreach ($filteredPackages as $data) {
+                foreach ($data as $entry) {
+                    $parts = [
+                        $entry->packageName . ' is on filter list "' . $entry->listName . '"',
+                    ];
+                    if ($entry->reason !== null) {
+                        $parts[] = 'Reason: ' . $entry->reason;
+                    }
+                    if ($entry->url !== null) {
+                        $parts[] = 'URL: ' . $entry->url;
+                    }
+                    $io->writeError(implode('. ', $parts) . '.');
+                }
+            }
+
+            return;
+        }
+
+        if (!($io instanceof ConsoleIO)) {
+            throw new InvalidArgumentException('Cannot use table format with ' . get_class($io));
+        }
+
+        $table = $io->getTable()
+            ->setHeaders(['Package', 'Versions', 'Filter List', 'URL', 'Reason', 'ID'])
+            ->setColumnMaxWidth(5, 40)
+        ;
+
+        foreach ($filteredPackages as $data) {
+            foreach ($data as $entry) {
+                $table->addRow(ConsoleIO::sanitize([
+                    $entry->packageName,
+                    $entry->constraint->getPrettyString(),
+                    $entry->listName,
+                    $entry->url ?? '',
+                    $entry->reason ?? '',
+                    $entry->id ?? '',
+                ]));
+            }
+        }
+
+        $table->render();
     }
 }
