@@ -219,6 +219,31 @@ class AutoloadGeneratorTest extends TestCase
         self::assertAutoloadFiles('classmap', $this->vendorDir.'/composer', 'classmap');
     }
 
+    public function testRootPackageMotoAutoloading(): void
+    {
+        $package = new RootPackage('root/a', '1.0', '1.0');
+        $package->setAutoload([
+            'moto' => [
+                'Moto\Fruit\\' => 'src-moto-fruit/',
+                'Moto\Cake\\' => ['src-moto-cake/', 'lib-moto-cake/'],
+            ],
+        ]);
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue([]));
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src-moto-fruit');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src-moto-cake');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/lib-moto-cake');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_1');
+
+        // Assert that autoload_moto.php was correctly generated.
+        self::assertAutoloadFiles('moto', $this->vendorDir.'/composer', 'moto');
+    }
+
     public function testRootPackageDevAutoloading(): void
     {
         $package = new RootPackage('root/a', '1.0', '1.0');

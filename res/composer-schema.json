@@ -246,6 +246,16 @@
                         }
                     }
                 },
+                "moto": {
+                    "type": "object",
+                    "description": "This is an object of namespaces (keys) and the Moto directories they can map to (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "classmap": {
                     "type": "array",
                     "description": "This is an array of paths that contain classes to be included in the class-map generation process."
@@ -1059,6 +1069,16 @@
                 "psr-4": {
                     "type": "object",
                     "description": "This is an object of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "moto": {
+                    "type": "object",
+                    "description": "This is an object of namespaces (keys) and the Moto directories they can map to (values, can be arrays of paths) by the autoloader.",
                     "additionalProperties": {
                         "type": ["string", "array"],
                         "items": {
