@@ -1167,7 +1167,7 @@
                     "properties": {
                         "lists": {
                             "type": "array",
-                            "description": "Filter lists to use from this repository. Use 'defaults' to include all default lists advertised by the repository, prefix a name with '!' to exclude it, or provide objects for detailled configuration.",
+                            "description": "Filter lists to use from this repository. Use 'defaults' to include all default lists advertised by the repository, prefix a name with '!' to exclude it, or provide objects for detailed configuration.",
                             "default": ["defaults"],
                             "items": {
                                 "anyOf": [

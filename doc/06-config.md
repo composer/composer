@@ -386,7 +386,7 @@ version blocking is not disabled by setting [`block-insecure`](#block-insecure) 
 
 ## filter
 
-Filter list configuration options. Controls how filter lists are used for audit reports and version blocking.
+Defaults to `true`. Filter list configuration options. Controls how filter lists are used for audit reports and version blocking.
 Can be set to `true` to enable with defaults, `false` to fully disable, or configured with an object.
 
 ### ignore-unreachable

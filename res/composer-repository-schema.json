@@ -52,7 +52,7 @@
         "filter": {
             "type": "object",
             "description": "Filter list configuration advertised by the repository.",
-            "required": ["metadata", "lists"],
+            "required": ["metadata", "lists", "default-lists"],
             "properties": {
                 "metadata": {
                     "type": "boolean",
