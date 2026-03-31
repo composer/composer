@@ -44,7 +44,7 @@ class ListConfigTest extends TestCase
     {
         $this->assertEquals(new ListConfig('list'), ListConfig::fromConfig('list'));
         $this->assertEquals(new ListConfig('list'), ListConfig::fromConfig(['name' => 'list']));
-        $this->assertEquals(new ListConfig('list', 'audit', 'reason'), ListConfig::fromConfig(['name' => 'list', 'apply' => 'audit', 'reason' => 'reason']));
-        $this->assertEquals(new ListConfig('list', 'audit', 'reason', true), ListConfig::fromConfig(['name' => 'list', 'apply' => 'audit', 'reason' => 'reason'], ['list']));
+        $this->assertEquals(new ListConfig('list', 'audit', 'reason'), ListConfig::fromConfig(['name' => 'list', 'only' => 'audit', 'reason' => 'reason']));
+        $this->assertEquals(new ListConfig('list', 'audit', 'reason', true), ListConfig::fromConfig(['name' => 'list', 'only' => 'audit', 'reason' => 'reason'], ['list']));
     }
 }

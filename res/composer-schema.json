@@ -1184,7 +1184,7 @@
                                                 "type": "string",
                                                 "description": "Filter list name"
                                             },
-                                            "apply": {
+                                            "only": {
                                                 "type": "string",
                                                 "enum": ["block", "audit", "all"],
                                                 "description": "Restrict this list to a specific operation ('block' or 'audit'). If omitted, the list applies to both operations."

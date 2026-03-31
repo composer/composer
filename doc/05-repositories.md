@@ -402,7 +402,7 @@ Each item in the array can be:
 - A string prefixed with `!` — the named list is excluded for both audit and blocking.
 - The string `"defaults"` — expands to all default lists advertised by the repository in its
   `packages.json` response.
-- An object with a `name` (required), an optional `apply` field accepting `"block"`, `"audit"` or `"all"` (default) to restrict
+- An object with a `name` (required), an optional `only` field accepting `"block"`, `"audit"` or `"all"` (default) to restrict
   the list to a single operation, and an optional `reason` string.
 
 ```json
@@ -415,8 +415,8 @@ Each item in the array can be:
                 "lists": [
                     "defaults",
                     "!untrusted-list",
-                    {"name": "audit-only-list", "apply": "audit"},
-                    {"name": "block-only-list", "apply": "block", "reason": "corporate policy"}
+                    {"name": "audit-only-list", "only": "audit"},
+                    {"name": "block-only-list", "only": "block", "reason": "corporate policy"}
                 ]
             }
         }
@@ -438,7 +438,7 @@ global [`config.filter.unfiltered-packages`](06-config.md#unfiltered-packages).
             "filter": {
                 "unfiltered-packages": [
                     "vendor/package",
-                    {"package": "acme/other", "constraint": "^2.0", "apply": "audit"}
+                    {"package": "acme/other", "constraint": "^2.0", "only": "audit"}
                 ]
             }
         }

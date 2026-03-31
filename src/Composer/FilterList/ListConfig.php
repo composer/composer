@@ -24,37 +24,37 @@ class ListConfig
     /** @var string */
     public $reason;
     /** @var 'audit'|'block'|'all' */
-    public $apply;
+    public $only;
     /** @var bool */
     public $exclude;
     /** @var bool */
     public $default;
 
     /**
-     * @param 'audit'|'block'|'all' $apply
+     * @param 'audit'|'block'|'all' $only
      */
     public function __construct(
         string $name,
-        string $apply = 'all',
+        string $only = 'all',
         string $reason = '',
         bool $default = false
     ) {
         $this->name = ltrim($name, '!');
-        $this->apply = $apply;
+        $this->only = $only;
         $this->reason = $reason;
         $this->exclude = strpos($name, '!') === 0;
         $this->default = $default;
     }
 
     /**
-     * @param string|array{name: string, apply?: string, reason?: string} $list
+     * @param string|array{name: string, only?: string, reason?: string} $list
      * @param list<string> $defaultListNames
      */
     public static function fromConfig($list, array $defaultListNames = []): self
     {
         return new self(
             $name = is_array($list) ? $list['name'] : (string) $list,
-            is_array($list) && isset($list['apply']) && in_array($list['apply'], ['audit', 'block', 'all'], true) ? $list['apply'] : 'all',
+            is_array($list) && isset($list['only']) && in_array($list['only'], ['audit', 'block', 'all'], true) ? $list['only'] : 'all',
             is_array($list) && isset($list['reason'])  ? $list['reason'] : '',
             in_array($name, $defaultListNames, true)
         );
@@ -74,7 +74,7 @@ class ListConfig
         foreach ($lists as $list) {
             $expanded[] = new self(
                 ($this->exclude ? '!' : '') . $list,
-                $this->apply,
+                $this->only,
                 $this->reason,
                 true
             );

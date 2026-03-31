@@ -69,7 +69,7 @@ class FilterListProviderConfig
     {
         $lists = [];
         foreach ($this->lists as $item) {
-            if (in_array($item->apply, ['all', $operation], true)) {
+            if (in_array($item->only, ['all', $operation], true)) {
                 foreach ($item->expandDefaults($this->defaultListNames) as $expanded) {
                     if ($expanded->exclude) {
                         unset($lists[$expanded->name]);
