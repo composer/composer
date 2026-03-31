@@ -1,0 +1,42 @@
+name: "API Surface Check"
+
+on:
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
+      - 'tests/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: api-surface-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: "API Surface"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # 2.37.0
+        with:
+          coverage: "none"
+          php-version: "8.5"
+
+      - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+        with:
+          dependency-versions: highest
+
+      - name: "Detect new API surface"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: bash .github/scripts/detect-api-surface.sh
