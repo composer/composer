@@ -43,7 +43,7 @@ class UnfilteredPackageTest extends TestCase
     public function testFromConfigMissingPackage(): void
     {
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Invalid unfiltered package config. "package" and "constraint" are requried.');
+        $this->expectExceptionMessage('Invalid unfiltered package config. "package" and "constraint" are required.');
 
         UnfilteredPackage::fromConfig(['constraint' => '*'], $this->versionParser);
     }
