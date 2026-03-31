@@ -27,6 +27,35 @@ use Composer\Test\TestCase;
 
 class PoolOptimizerTest extends TestCase
 {
+    public function testKeepingAnAliasRecordsRemovedVersionsForAliasOfAndSiblingAliases(): void
+    {
+        $lockedRepo = new LockArrayRepository();
+
+        $request = new Request($lockedRepo);
+        $parser = new VersionParser();
+        $request->requireName('package/a', $parser->parseConstraints('^1.1'));
+
+        $package110 = self::getPackage('package/a', '1.1.0');
+        $package110Alias = self::getAliasPackage($package110, '1.1.x-dev');
+        $package110SiblingAlias = self::getAliasPackage($package110, '1.1.x-dev');
+        $package111 = self::getPackage('package/a', '1.1.1');
+        $package111Alias = self::getAliasPackage($package111, '1.1.x-dev');
+
+        $pool = new Pool([$package110, $package110Alias, $package110SiblingAlias, $package111, $package111Alias]);
+        $poolOptimizer = new PoolOptimizer(new DefaultPolicy());
+        $optimizedPool = $poolOptimizer->optimize($request, $pool);
+
+        $expectedVersions = [
+            $package110->getVersion() => $package110->getPrettyVersion(),
+            $package110Alias->getVersion() => $package110Alias->getPrettyVersion(),
+            $package111->getVersion() => $package111->getPrettyVersion(),
+        ];
+
+        self::assertSame($expectedVersions, $optimizedPool->getRemovedVersionsByPackage(spl_object_hash($package110Alias)));
+        self::assertSame($expectedVersions, $optimizedPool->getRemovedVersionsByPackage(spl_object_hash($package110)));
+        self::assertSame($expectedVersions, $optimizedPool->getRemovedVersionsByPackage(spl_object_hash($package110SiblingAlias)));
+    }
+
     /**
      * @dataProvider provideIntegrationTests
      * @param mixed[] $requestData
