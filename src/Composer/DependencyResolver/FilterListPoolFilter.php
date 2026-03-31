@@ -50,10 +50,6 @@ class FilterListPoolFilter
      */
     public function filter(Pool $pool, array $repositories, Request $request): Pool
     {
-        if ($this->filterListConfig->getOperationConfig('block') === null) {
-            return $pool;
-        }
-
         $providerSet = FilterListProviderSet::create($this->filterListConfig, $repositories, $this->httpDownloader);
 
         $filterListMap = $this->collectFilterLists($pool, $providerSet, $request);
