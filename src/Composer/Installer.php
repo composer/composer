@@ -186,6 +186,8 @@ class Installer
     protected $auditFormat = Auditor::FORMAT_SUMMARY;
     /** @var AuditConfig|null */
     private $auditConfig = null;
+    /** @var FilterListConfig|null */
+    private $filterListConfig;
     /** @var list<string> */
     private $ignoredTypes = ['php-ext', 'php-ext-zend'];
     /** @var list<string>|null */
@@ -440,7 +442,7 @@ class Installer
                     foreach ($this->repositoryManager->getRepositories() as $repo) {
                         $repoSet->addRepository($repo);
                     }
-                    $filterListConfig = FilterListConfig::fromConfig($this->config, new VersionParser());
+                    $filterListConfig = $this->getFilterListConfig();
                     $filterListProviderSet = $filterListConfig !== null ? FilterListProviderSet::create($filterListConfig, $this->repositoryManager->getRepositories(), $this->repositoryManager->getHttpDownloader()) : null;
 
                     return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->auditAbandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedForAudit, $auditConfig->auditFiltered, $filterListProviderSet, $filterListConfig) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
@@ -1124,6 +1126,15 @@ class Installer
         return $this->auditConfig;
     }
 
+    private function getFilterListConfig(): ?FilterListConfig
+    {
+        if ($this->filterListConfig === null) {
+            $this->filterListConfig = FilterListConfig::fromConfig($this->config, new VersionParser());
+        }
+
+        return $this->filterListConfig;
+    }
+
     private function createSecurityAuditPoolFilter(): ?SecurityAdvisoryPoolFilter
     {
         $auditConfig = $this->getAuditConfig();
@@ -1137,7 +1148,7 @@ class Installer
 
     private function createFilterListPoolFilter(): ?FilterListPoolFilter
     {
-        $filterListConfig = FilterListConfig::fromConfig($this->config, new VersionParser());
+        $filterListConfig = $this->getFilterListConfig();
 
         if ($filterListConfig !== null && !$this->updateMirrors) {
             return new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader());
