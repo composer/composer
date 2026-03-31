@@ -68,4 +68,17 @@ class FilterListConfigTest extends TestCase
 
         $this->assertCount(0, $listConfig->unfilteredPackages);
     }
+
+    public function testParseConfigWithInvalidSourceDefinition(): void
+    {
+        $config = new Config();
+        $config->merge(['config' => ['filter' => [
+            'sources' => ['name' => ['type' => 'url', 'url' => 'http://example.org']],
+        ]]]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Invalid source config. "url" is required and must start with "https://".');
+
+        FilterListConfig::fromConfig($config,$this->versionParser);
+    }
 }

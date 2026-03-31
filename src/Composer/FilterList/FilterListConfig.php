@@ -66,6 +66,10 @@ class FilterListConfig
 
             foreach ($filterConfig['sources'] ?? [] as $sourceName => $source) {
                 if (is_array($source) && isset($source['type']) && $source['type'] === 'url') {
+                    if (!isset($source['url']) || strpos($source['url'], 'https://') === false) {
+                        throw new \RuntimeException('Invalid source config. "url" is required and must start with "https://".');
+                    }
+
                     $sources[] = new UrlSource($sourceName, $source['url']);
                 }
             }
