@@ -69,7 +69,7 @@ class UnfilteredPackage
         }
 
         if (!isset($config['package'], $config['constraint'])) {
-            throw new \RuntimeException('Invalid unfiltered package config. "package" and "constraint" are requried.');
+            throw new \RuntimeException('Invalid unfiltered package config. "package" and "constraint" are required.');
         }
 
         return new self($config['package'], $parser->parseConstraints($config['constraint']), $config['reason'] ?? null, $config['apply'] ?? 'all');
