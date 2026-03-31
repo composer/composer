@@ -43,6 +43,7 @@ class FilterListConfigTest extends TestCase
         $filterConfig = FilterListConfig::fromConfig($config,$this->versionParser);
 
         $this->assertNotNull($filterConfig);
+        $this->assertTrue($filterConfig->ignoreUnreachable);
         $this->assertCount(1, $filterConfig->unfilteredPackages);
         $this->assertCount(1, $filterConfig->sources);
 

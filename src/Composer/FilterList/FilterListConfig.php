@@ -58,6 +58,7 @@ class FilterListConfig
 
         $sources = [];
         $unfilteredPackages = [];
+        $ignoreUnreachable = false;
         if (\is_array($filterConfig)) {
             $unfilteredPackages = array_map(function ($packageConfig) use ($versionParser) {
                 return UnfilteredPackage::fromConfig($packageConfig, $versionParser);
@@ -68,12 +69,14 @@ class FilterListConfig
                     $sources[] = new UrlSource($sourceName, $source['url']);
                 }
             }
+
+            $ignoreUnreachable = (bool) ($filterConfig['ignore-unreachable'] ?? false);
         }
 
         return new self(
             $unfilteredPackages,
             $sources,
-            (bool) ($config->get('ignore-unreachable') ?? false)
+            $ignoreUnreachable
         );
     }
 
