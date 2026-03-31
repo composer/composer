@@ -12,9 +12,11 @@
 
 namespace Composer\Test\Advisory;
 
-use Composer\Advisory\AuditConfig;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\FilterList\FilterListConfig;
+use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\IO\BufferIO;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
@@ -232,7 +234,8 @@ Found 2 abandoned packages:
     "abandoned": {
         "vendor/abandoned": "foo/bar",
         "vendor/abandoned2": null
-    }
+    },
+    "filter": []
 }',
         ];
     }
@@ -602,6 +605,261 @@ Found 2 abandoned packages:
         $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $packages, Auditor::FORMAT_PLAIN, false, [], Auditor::ABANDONED_IGNORE, $ignoredSeverities);
         $io->expects($expectedOutput, true);
         self::assertSame($exitCode, $result);
+    }
+
+    public static function filteredProvider(): \Generator
+    {
+        $matchingEntry = new FilterListEntry(
+            'vendor/package',
+            new Constraint('>=', '8.0.0.0'),
+            'test-list',
+            null,
+            'internal',
+            'ID-test-1'
+        );
+        $matchingEntryWithDetails = new FilterListEntry(
+            'vendor/package',
+            new Constraint('>=', '8.0.0.0'),
+            'test-list',
+            'https://example.com/filtered',
+            'internal',
+            'ID-test-1'
+        );
+        $nonMatchingEntry = new FilterListEntry(
+            'vendor/package',
+            new Constraint('>=', '10.0.0.0'),
+            'test-list',
+            null,
+            'internal',
+            'ID-test-1'
+        );
+
+        yield 'FILTERED_IGNORE skips filter processing' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntry]],
+            'filtered' => Auditor::FILTERED_IGNORE,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_OK,
+            'output' => 'No security vulnerability advisories found.',
+        ];
+
+        yield 'FILTERED_FAIL with no matching entry returns STATUS_OK' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$nonMatchingEntry]],
+            'filtered' => Auditor::FILTERED_FAIL,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_OK,
+            'output' => 'No security vulnerability advisories found.',
+        ];
+
+        yield 'FILTERED_FAIL with matching entry returns STATUS_FILTERED (plain)' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntry]],
+            'filtered' => Auditor::FILTERED_FAIL,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_FILTERED,
+            'output' => 'No security vulnerability advisories found.
+Found 1 package matching filters:
+vendor/package is on filter list "test-list". Reason: internal.',
+        ];
+
+        yield 'FILTERED_FAIL with matching entry shows url and reason (plain)' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntryWithDetails]],
+            'filtered' => Auditor::FILTERED_FAIL,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_FILTERED,
+            'output' => 'No security vulnerability advisories found.
+Found 1 package matching filters:
+vendor/package is on filter list "test-list". Reason: internal. URL: https://example.com/filtered.',
+        ];
+
+        yield 'FILTERED_REPORT with matching entry returns STATUS_OK' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntry]],
+            'filtered' => Auditor::FILTERED_REPORT,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_OK,
+            'output' => 'No security vulnerability advisories found.
+Found 1 package matching filters:
+vendor/package is on filter list "test-list". Reason: internal.',
+        ];
+
+        yield 'FILTERED_FAIL with matching entry shows summary line only (summary format)' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntry]],
+            'filtered' => Auditor::FILTERED_FAIL,
+            'format' => Auditor::FORMAT_SUMMARY,
+            'expected' => Auditor::STATUS_FILTERED,
+            'output' => 'No security vulnerability advisories found.
+Found 1 package matching filters.',
+        ];
+
+        yield 'FILTERED_FAIL with multiple matching packages shows plural form' => [
+            'packages' => [
+                new Package('vendor/package', '9.0.0.0', '9.0.0'),
+                new Package('vendor/other', '1.0.0.0', '10.0.0'),
+            ],
+            'filterEntriesByList' => [
+                'test-list' => [
+                    $matchingEntry,
+                    new FilterListEntry('vendor/other', new Constraint('>=', '1.0.0.0'), 'test-list', null, 'internal', 'ID-TEST'),
+                ],
+            ],
+            'filtered' => Auditor::FILTERED_FAIL,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_FILTERED,
+            'output' => 'No security vulnerability advisories found.
+Found 2 packages matching filters:
+vendor/package is on filter list "test-list". Reason: internal.
+vendor/other is on filter list "test-list". Reason: internal.',
+        ];
+    }
+
+    /**
+     * @dataProvider filteredProvider
+     * @param array<Package> $packages
+     * @param array<string, list<FilterListEntry>> $filterEntriesByList
+     * @param Auditor::FILTERED_* $filtered
+     * @param 'json'|'plain'|'summary'|'table' $format
+     */
+    public function testAuditWithFilter(array $packages, array $filterEntriesByList, string $filtered, string $format, int $expected, string $output): void
+    {
+        $providerSet = $this->getMockBuilder(FilterListProviderSet::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getMatchingFilterLists'])
+            ->getMock();
+
+        $providerSet
+            ->method('getMatchingFilterLists')
+            ->willReturn(['filter' => $filterEntriesByList, 'unreachableRepos' => []]);
+
+        $filterListConfig = new FilterListConfig([], [], false);
+
+        $auditor = new Auditor();
+        $result = $auditor->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $packages,
+            $format,
+            true,
+            [],
+            Auditor::ABANDONED_IGNORE,
+            [],
+            false,
+            [],
+            $filtered,
+            $providerSet,
+            $filterListConfig
+        );
+
+        self::assertSame($expected, $result);
+        self::assertSame($output, trim(str_replace("\r", '', $io->getOutput())));
+    }
+
+    public function testAuditWithFilterJson(): void
+    {
+        $matchingEntry = new FilterListEntry(
+            'vendor/package',
+            new Constraint('>=', '8.0.0.0'),
+            'test-list',
+            'https://example.com/filtered',
+            'Some reason',
+            'ID-test'
+        );
+
+        $providerSet = $this->getMockBuilder(FilterListProviderSet::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getMatchingFilterLists'])
+            ->getMock();
+
+        $providerSet->expects($this->once())
+            ->method('getMatchingFilterLists')
+            ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
+
+        $filterListConfig = new FilterListConfig([], [], false);
+
+        $auditor = new Auditor();
+        $result = $auditor->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            [new Package('vendor/package', '9.0.0', '9.0.0')],
+            Auditor::FORMAT_JSON,
+            true,
+            [],
+            Auditor::ABANDONED_IGNORE,
+            [],
+            false,
+            [],
+            Auditor::FILTERED_FAIL,
+            $providerSet,
+            $filterListConfig
+        );
+
+        self::assertSame(Auditor::STATUS_FILTERED, $result);
+
+        $json = json_decode($io->getOutput(), true);
+        self::assertIsArray($json);
+        self::assertArrayHasKey('filter', $json);
+        self::assertArrayHasKey('vendor/package', $json['filter']);
+        self::assertCount(1, $json['filter']['vendor/package']);
+
+        $entry = $json['filter']['vendor/package'][0];
+        self::assertSame('vendor/package', $entry['packageName']);
+        self::assertSame('test-list', $entry['listName']);
+        self::assertSame('https://example.com/filtered', $entry['url']);
+        self::assertSame('Some reason', $entry['reason']);
+        self::assertIsString($entry['constraint']);
+    }
+
+    public function testAuditWithFilterAndVulnerabilities(): void
+    {
+        $matchingEntry = new FilterListEntry(
+            'vendor1/package2',
+            new Constraint('>=', '8.0.0.0'),
+            'test-list',
+            null,
+            'internal',
+            'ID-test'
+        );
+
+        $providerSet = $this->getMockBuilder(FilterListProviderSet::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getMatchingFilterLists'])
+            ->getMock();
+
+        $providerSet->expects($this->once())
+            ->method('getMatchingFilterLists')
+            ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
+
+        $filterListConfig = new FilterListConfig([], [], false);
+
+        $auditor = new Auditor();
+        // vendor1/package1 at 8.2.1 is vulnerable; vendor1/package2 at 9.0.0 matches the filter
+        $result = $auditor->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            [
+                new Package('vendor1/package1', '8.2.1', '8.2.1'),
+                new Package('vendor1/package2', '9.0.0', '9.0.0'),
+            ],
+            Auditor::FORMAT_PLAIN,
+            false,
+            [],
+            Auditor::ABANDONED_IGNORE,
+            [],
+            false,
+            [],
+            Auditor::FILTERED_FAIL,
+            $providerSet,
+            $filterListConfig
+        );
+
+        self::assertSame(Auditor::STATUS_VULNERABLE | Auditor::STATUS_FILTERED, $result);
+        $output = trim(str_replace("\r", '', $io->getOutput()));
+        self::assertStringContainsString('Found 2 security vulnerability advisories affecting 1 package:', $output);
+        self::assertStringContainsString('Found 1 package matching filters:', $output);
+        self::assertStringContainsString('vendor1/package2 is on filter list "test-list". Reason: internal', $output);
     }
 
     private function getRepoSet(): RepositorySet

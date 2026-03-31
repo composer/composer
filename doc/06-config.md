@@ -362,6 +362,28 @@ in other places than the `compoder audit` command.
 }
 ```
 
+### filtered
+
+Defaults to `fail`. Defines whether and how audit reports should report filtered packages. There are three possible values:
+
+- `ignore` means audit reports do not consider filtered packages at all.
+- `report` means filtered packages are reported but do not cause the composer audit command to return a non-zero exit code.
+- `fail` means filtered packages will cause the audit command to fail with a non-zero exit code.
+
+Note that this only applies to audit reports, not to version blocking on updates.
+
+```json
+{
+    "config": {
+        "audit": {
+            "filtered": "report"
+        }
+    }
+}
+```
+
+Can be overridden via the [`--filtered`](03-cli.md#audit) command line option.
+
 ### block-insecure
 
 Defaults to `true`. If `true`, any package versions affected by security advisories will be blocked and cannot be used
@@ -392,6 +414,99 @@ version blocking is not disabled by setting [`block-insecure`](#block-insecure) 
         }
     }
 }
+```
+
+## filter
+
+Defaults to `true`. Filter list configuration options. Controls how filter lists are used for audit reports and version blocking.
+Can be set to `true` to enable with defaults, `false` to fully disable, or configured with an object.
+
+### ignore-unreachable
+
+Defaults to `false`. Whether filter list sources that are unreachable or return a non-200 status code
+should be ignored.
+
+### unfiltered-packages
+
+A list of packages to exempt from filtering. Supports three formats:
+
+#### Simple format (exempt entirely):
+
+```json
+{
+    "config": {
+        "filter": {
+            "unfiltered-packages": ["vendor/package", "acme/*"]
+        }
+    }
+}
+```
+
+#### Package name => constraint map:
+
+```json
+{
+    "config": {
+        "filter": {
+            "unfiltered-packages": [{"vendor/package": "^2.0"}]
+        }
+    }
+}
+```
+
+#### Detailed format with apply scope:
+
+The `apply` field accepts:
+- `audit` - Only exempt from audit reports
+- `block` - Only exempt from version blocking
+- `all` - Exempt from both (default)
+
+If apply is set to `audit` or `block`, then the package will only be exempt from the specified scope. All other scopes
+will still filter the package if there is a matching filter.
+
+```json
+{
+    "config": {
+        "filter": {
+            "unfiltered-packages": [
+                {
+                    "package": "vendor/package",
+                    "constraint": "^2.0",
+                    "reason": "Assessed and accepted risk",
+                    "apply": "audit"
+                }
+            ]
+        }
+    }
+}
+```
+
+### sources
+
+By default, list data is fetched from the configured Composer repositories that provide filter list data. You can configure
+additional sources to fetch filter list data from. Keys are source names, values are objects with a key `type` and type specific configuration.
+Currently only `type: "url"` is supported which requires an additional `"url"` key. The configured URL will receive your
+full list of installed package names as part of any `composer audit` and the full list of considered package names for a `composer update`.
+
+```json
+{
+    "config": {
+        "filter": {
+            "sources": {
+                "my-source": {
+                    "type": "url",
+                    "url": "https://example.org/filter-list.json"
+                }
+            }
+        }
+    }
+}
+```
+
+You can also configure sources using the command line.
+
+```shell
+php composer.phar config [--global] filter.source.my-source url https://example.org/filter-list.json
 ```
 
 ## use-parent-dir

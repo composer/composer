@@ -490,6 +490,10 @@
                             "enum": ["ignore", "report", "fail"],
                             "description": "Whether abandoned packages should be ignored, reported as problems or cause an audit failure. Applies only to audit reports, not to version blocking."
                         },
+                        "filtered": {
+                            "enum": ["ignore", "report", "fail"],
+                            "description": "Whether filtered packages should be ignored, reported as problems or cause an audit failure. Applies only to audit reports, not to version blocking."
+                        },
                         "ignore-severity": {
                             "anyOf": [
                                 {
@@ -583,6 +587,44 @@
                                     }
                                 }
                             ]
+                        }
+                    }
+                },
+                "filter": {
+                    "type": ["boolean", "object"],
+                    "description": "Filter list configuration options. Set to true to enable with defaults, to false to fully disable, or configure with an object.",
+                    "properties": {
+                        "ignore-unreachable": {
+                            "type": "boolean",
+                            "description": "Whether filter list sources that are unreachable or return a non-200 status code should be ignored.",
+                            "default": false
+                        },
+                        "unfiltered-packages": {
+                            "$ref": "#/definitions/unfiltered-packages"
+                        },
+                        "sources": {
+                            "type": "object",
+                            "description": "Additional sources to fetch filter list data from.",
+                            "additionalProperties": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "url"
+                                        ],
+                                        "description": "Source type, currently only 'url' is supported"
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "description": "URL to fetch filter list data from"
+                                    }
+                                },
+                                "required": [
+                                    "type",
+                                    "url"
+                                ]
+                            }
                         }
                     }
                 },
@@ -1122,7 +1164,49 @@
                     "additionalProperties": true
                 },
                 "allow_ssl_downgrade": { "type": "boolean" },
-                "force-lazy-providers": { "type": "boolean" }
+                "force-lazy-providers": { "type": "boolean" },
+                "filter": {
+                    "type": ["boolean", "object"],
+                    "description": "Filter list configuration for this repository. Set to false to disable filter lists from this repository entirely, or configure with an object.",
+                    "properties": {
+                        "lists": {
+                            "type": "array",
+                            "description": "Filter lists to use from this repository. Use 'defaults' to include all default lists advertised by the repository, prefix a name with '!' to exclude it, or provide objects for detailed configuration.",
+                            "default": ["defaults"],
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "description": "List name to include (prefix with '!' to exclude, or use 'defaults' for all default lists)"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "required": ["name"],
+                                        "description": "Per-list configuration with optional operation scope",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Filter list name"
+                                            },
+                                            "only": {
+                                                "type": "string",
+                                                "enum": ["block", "audit", "all"],
+                                                "description": "Restrict this list to a specific operation ('block' or 'audit'). If omitted, the list applies to both operations."
+                                            },
+                                            "reason": {
+                                                "type": "string",
+                                                "description": "Optional explanation for why this list is included"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "unfiltered-packages": {
+                            "$ref": "#/definitions/unfiltered-packages"
+                        }
+                    }
+                }
             }
         },
         "vcs-repository": {
@@ -1420,6 +1504,50 @@
                 "mirrors": {
                     "type": "array"
                 }
+            }
+        },
+        "unfiltered-packages": {
+            "type": "array",
+            "description": "Packages to exempt from filtering. Each item can be a package name string, a {\"vendor/package\": \"constraint\"} object, or a detailed object with package, constraint, reason, and apply fields.",
+            "items": {
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "description": "Package name to exempt from all filtering"
+                    },
+                    {
+                        "type": "object",
+                        "description": "Package name => version constraint map",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "type": "object",
+                        "description": "Detailed configuration for exempting a package",
+                        "properties": {
+                            "package": {
+                                "type": "string",
+                                "description": "Package name"
+                            },
+                            "constraint": {
+                                "type": "string",
+                                "description": "Version constraint"
+                            },
+                            "reason": {
+                                "type": "string",
+                                "description": "Explanation for exempting this package"
+                            },
+                            "apply": {
+                                "type": "string",
+                                "enum": ["audit", "block", "all"],
+                                "description": "Which operation to exempt from: 'audit', 'block', or 'all'",
+                                "default": "all"
+                            }
+                        },
+                        "required": ["package", "constraint"]
+                    }
+                ]
             }
         }
     }

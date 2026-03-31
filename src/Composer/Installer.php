@@ -24,6 +24,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
@@ -34,6 +35,9 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
+use Composer\FilterList\FilterListAuditor;
+use Composer\FilterList\FilterListConfig;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\SuggestedPackagesReporter;
@@ -187,6 +191,8 @@ class Installer
     protected $auditFormat = Auditor::FORMAT_SUMMARY;
     /** @var AuditConfig|null */
     private $auditConfig = null;
+    /** @var FilterListConfig|null */
+    private $filterListConfig;
     /** @var list<string> */
     private $ignoredTypes = ['php-ext', 'php-ext-zend'];
     /** @var list<string>|null */
@@ -455,8 +461,10 @@ class Installer
                     foreach ($this->repositoryManager->getRepositories() as $repo) {
                         $repoSet->addRepository($repo);
                     }
+                    $filterListConfig = $this->getFilterListConfig();
+                    $filterListProviderSet = $filterListConfig !== null ? FilterListProviderSet::create($filterListConfig, $this->repositoryManager->getRepositories(), $this->repositoryManager->getHttpDownloader()) : null;
 
-                    return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->auditAbandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedForAudit) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
+                    return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->auditAbandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedForAudit, $auditConfig->auditFiltered, $filterListProviderSet, $filterListConfig) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {
@@ -521,7 +529,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter());
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter());
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
@@ -1137,12 +1145,32 @@ class Installer
         return $this->auditConfig;
     }
 
+    private function getFilterListConfig(): ?FilterListConfig
+    {
+        if ($this->filterListConfig === null) {
+            $this->filterListConfig = FilterListConfig::fromConfig($this->config, new VersionParser());
+        }
+
+        return $this->filterListConfig;
+    }
+
     private function createSecurityAuditPoolFilter(): ?SecurityAdvisoryPoolFilter
     {
         $auditConfig = $this->getAuditConfig();
 
         if ($auditConfig->blockInsecure && !$this->updateMirrors) {
             return new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
+        }
+
+        return null;
+    }
+
+    private function createFilterListPoolFilter(): ?FilterListPoolFilter
+    {
+        $filterListConfig = $this->getFilterListConfig();
+
+        if ($filterListConfig !== null && !$this->updateMirrors) {
+            return new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader());
         }
 
         return null;
