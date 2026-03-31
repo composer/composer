@@ -996,4 +996,59 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         self::assertStringContainsString('vendor/dev 1.0.0 <highlight>! 1.1.0</highlight>', $output);
         self::assertStringNotContainsString('vendor/prod', $output);
     }
+
+    /**
+     * If vendor/dev is listed in require-dev but is also a transitive dependency of a
+     * require package, it must NOT appear in --only-dev output because it is needed in
+     * production.
+     */
+    public function testShowOnlyDevHidesTransitiveProdDeps(): void
+    {
+        $this->initTempComposer([
+            'repositories' => ['packages' => ['type' => 'package', 'package' => [
+                ['name' => 'vendor/prod', 'version' => '1.0.0'],
+                ['name' => 'vendor/dev', 'version' => '1.0.0'],
+            ]]],
+            'require' => ['vendor/prod' => '*'],
+            'require-dev' => ['vendor/dev' => '*'],
+        ]);
+
+        $prod = self::getPackage('vendor/prod', '1.0.0');
+        $prod->setRequires(['vendor/dev' => new Link('vendor/prod', 'vendor/dev', self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, '1.0.0')]);
+        $dev = self::getPackage('vendor/dev', '1.0.0');
+
+        // vendor/dev is a dev package at the root level, but vendor/prod (a prod package)
+        // also requires it transitively — so it must be excluded from --only-dev output.
+        $this->createInstalledJson([$prod], [$dev]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--only-dev' => true]);
+        $output = trim($appTester->getDisplay(true));
+        self::assertStringNotContainsString('vendor/dev', $output);
+        self::assertStringNotContainsString('vendor/prod', $output);
+    }
+
+    /**
+     * Same transitive-prod-dep scenario but with --locked.
+     */
+    public function testShowLockedOnlyDevHidesTransitiveProdDeps(): void
+    {
+        $this->initTempComposer([
+            'require' => ['vendor/prod' => '*'],
+            'require-dev' => ['vendor/dev' => '*'],
+        ]);
+
+        $prod = self::getPackage('vendor/prod', '1.0.0');
+        $prod->setRequires(['vendor/dev' => new Link('vendor/prod', 'vendor/dev', self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, '1.0.0')]);
+        $dev = self::getPackage('vendor/dev', '1.0.0');
+
+        $this->createComposerLock([$prod], [$dev]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--locked' => true, '--only-dev' => true]);
+        $output = trim($appTester->getDisplay(true));
+        self::assertSame('', $output);
+        self::assertStringNotContainsString('vendor/dev', $output);
+        self::assertStringNotContainsString('vendor/prod', $output);
+    }
 }
