@@ -62,10 +62,9 @@ class FilterListAuditor
 
         $matchingEntries = [];
         $filterConfig = $filterListConfig->getOperationConfig($operation);
-        $unFilteredPackageMap = $filterConfig->getUnfilteredPackageMap();
         $allUnfilteredPackageNamesRegex = BasePackage::packageNamesToRegexp(array_map(function (UnfilteredPackage  $unfilteredPackage): string {
             return $unfilteredPackage->packageName;
-        }, $unFilteredPackageMap));
+        }, $filterConfig->unfilteredPackages));
 
         foreach ($package->getNames(false) as $packageName) {
             if (!isset($filterListMap[$packageName])) {
@@ -77,8 +76,8 @@ class FilterListAuditor
             if (Preg::isMatch($allUnfilteredPackageNamesRegex, $packageName)) {
                 $unfilteredEntries = [];
                 foreach ($filterListMap[$packageName] as $listName => $entries) {
-                    foreach ($unFilteredPackageMap as $packageRegex => $unfilteredPackage) {
-                        if (Preg::isMatch($packageRegex, $packageName) && $unfilteredPackage->constraint->matches($packageConstraint)) {
+                    foreach ($filterConfig->unfilteredPackages as $unfilteredPackage) {
+                        if (Preg::isMatch($unfilteredPackage->packageNameRegex, $packageName) && $unfilteredPackage->constraint->matches($packageConstraint)) {
                             continue 2;
                         }
                     }

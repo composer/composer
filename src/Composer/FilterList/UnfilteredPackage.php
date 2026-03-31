@@ -12,6 +12,7 @@
 
 namespace Composer\FilterList;
 
+use Composer\Package\BasePackage;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\VersionParser;
@@ -31,6 +32,8 @@ class UnfilteredPackage
     public $reason;
     /** @var 'all'|'block'|'audit' */
     public $apply;
+    /** @var non-empty-string */
+    public $packageNameRegex;
 
     /**
      * @param 'all'|'block'|'audit' $apply
@@ -45,6 +48,7 @@ class UnfilteredPackage
         $this->constraint = $constraint;
         $this->reason = $reason;
         $this->apply = $apply;
+        $this->packageNameRegex = BasePackage::packageNameToRegexp($packageName);
     }
 
     /**

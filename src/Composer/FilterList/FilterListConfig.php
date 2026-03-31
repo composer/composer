@@ -14,7 +14,6 @@ namespace Composer\FilterList;
 
 use Composer\Config;
 use Composer\FilterList\Source\UrlSource;
-use Composer\Package\BasePackage;
 use Composer\Semver\VersionParser;
 
 /**
@@ -98,18 +97,5 @@ class FilterListConfig
         }
 
         return new self($unfilteredPackages, $this->sources, $this->ignoreUnreachable);
-    }
-
-    /**
-     * @return array<non-empty-string, UnfilteredPackage>
-     */
-    public function getUnfilteredPackageMap(): array
-    {
-        $map = [];
-        foreach ($this->unfilteredPackages as $unfilteredPackage) {
-            $map[BasePackage::packageNameToRegexp($unfilteredPackage->packageName)] = $unfilteredPackage;
-        }
-
-        return $map;
     }
 }

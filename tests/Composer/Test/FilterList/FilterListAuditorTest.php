@@ -31,6 +31,7 @@ class FilterListAuditorTest extends TestCase
             'acme/* 1.0 unfiltered' => [[['package' => 'acme/*', 'constraint' => '1.0']], 0],
             'acme/package 1.1 unfiltered' => [[['package' => 'acme/package', 'constraint' => '1.1']], 1],
             'acme/* 1.1 unfiltered' => [[['package' => 'acme/*', 'constraint' => '1.1']], 1],
+            'multiple acme/package entries' => [[['package' => 'acme/package', 'constraint' => '*'], ['package' => 'acme/package', 'constraint' => '1.1']], 0],
         ];
     }
 
