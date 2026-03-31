@@ -13,8 +13,10 @@
 namespace Composer\FilterList;
 
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
+use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Pcre\Preg;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -54,24 +56,40 @@ class FilterListAuditor
      */
     public function getMatchingEntries(PackageInterface $package, array $filterListMap, FilterListConfig $filterListConfig, string $operation): array
     {
-        if ($package instanceof RootPackageInterface) {
+        if ($package instanceof RootPackageInterface || count($filterListMap) === 0) {
             return [];
         }
 
         $matchingEntries = [];
         $filterConfig = $filterListConfig->getOperationConfig($operation);
         $unFilteredPackageMap = $filterConfig->getUnfilteredPackageMap();
+        $allUnfilteredPackageNamesRegex = BasePackage::packageNamesToRegexp(array_map(function (UnfilteredPackage  $unfilteredPackage): string {
+            return $unfilteredPackage->packageName;
+        }, $unFilteredPackageMap));
+
         foreach ($package->getNames(false) as $packageName) {
             if (!isset($filterListMap[$packageName])) {
                 continue;
             }
 
             $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
-            foreach ($filterListMap[$packageName] as $entries) {
-                if (isset($unFilteredPackageMap[$packageName]) && $unFilteredPackageMap[$packageName]->constraint->matches($packageConstraint)) {
-                    continue;
+            $packageEntries = $filterListMap[$packageName];
+            if (Preg::isMatch($allUnfilteredPackageNamesRegex, $packageName)) {
+                $unfilteredEntries = [];
+                foreach ($filterListMap[$packageName] as $listName => $entries) {
+                    foreach ($unFilteredPackageMap as $packageRegex => $unfilteredPackage) {
+                        if (Preg::isMatch($packageRegex, $packageName) && $unfilteredPackage->constraint->matches($packageConstraint)) {
+                            continue 2;
+                        }
+                    }
+
+                    $unfilteredEntries[$listName] = $entries;
                 }
 
+                $packageEntries = $unfilteredEntries;
+            }
+
+            foreach ($packageEntries as $entries) {
                 foreach ($entries as $entry) {
                     if ($entry->constraint->matches($packageConstraint)) {
                         $matchingEntries[] = $entry;

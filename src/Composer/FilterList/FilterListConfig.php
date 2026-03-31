@@ -14,7 +14,8 @@ namespace Composer\FilterList;
 
 use Composer\Config;
 use Composer\FilterList\Source\UrlSource;
-use Composer\Package\Version\VersionParser;
+use Composer\Package\BasePackage;
+use Composer\Semver\VersionParser;
 
 /**
  * @readonly
@@ -100,13 +101,13 @@ class FilterListConfig
     }
 
     /**
-     * @return array<string, UnfilteredPackage>
+     * @return array<non-empty-string, UnfilteredPackage>
      */
     public function getUnfilteredPackageMap(): array
     {
         $map = [];
         foreach ($this->unfilteredPackages as $unfilteredPackage) {
-            $map[$unfilteredPackage->packageName] = $unfilteredPackage;
+            $map[BasePackage::packageNameToRegexp($unfilteredPackage->packageName)] = $unfilteredPackage;
         }
 
         return $map;

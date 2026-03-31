@@ -12,10 +12,9 @@
 
 namespace Composer\FilterList;
 
-use Composer\Package\Version\VersionParser;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MatchAllConstraint;
+use Composer\Semver\VersionParser;
 
 /**
  * @readonly
