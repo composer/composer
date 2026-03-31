@@ -87,7 +87,7 @@ class FilterListPoolFilterTest extends TestCase
     {
         return [
             'unfiltered-packages' => [['unfiltered-packages' => ['acme/package']]],
-            'unfiltered-packages-version' => [['unfiltered-packages' => [['package' => 'acme/package', 'version' => '*']]]],
+            'unfiltered-packages-version' => [['unfiltered-packages' => [['package' => 'acme/package', 'constraint' => '*']]]],
         ];
     }
     public function testUnfilteredPackagesConfigIntersection(): void

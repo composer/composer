@@ -9,7 +9,7 @@ Filter list entry matching direct dependency preventing a successful update.
     },
     "config": {
         "filter": {
-            "unfiltered-packages": [{"package": "acme/library", "version": "1.1.0"}]
+            "unfiltered-packages": [{"package": "acme/library", "constraint": "1.1.0"}]
         }
     },
     "repositories": [

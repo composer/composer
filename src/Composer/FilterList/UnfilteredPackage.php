@@ -61,10 +61,14 @@ class UnfilteredPackage
             return new self($config, new MatchAllConstraint());
         }
 
-        if (\is_array($config) && \count($config) === 1 && !isset($config['package'])) {
+        if (\is_array($config) && \count($config) === 1 && !isset($config['package']) && !isset($config['constraint'])) {
             return new self(\key($config), $parser->parseConstraints((string) \array_pop($config)));
         }
 
-        return new self($config['package'] ?? '', $parser->parseConstraints($config['constraint'] ?? '*'), $config['reason'] ?? null, $config['apply'] ?? 'all');
+        if (!isset($config['package'], $config['constraint'])) {
+            throw new \RuntimeException('Invalid unfiltered package config. "package" and "constraint" are requried.');
+        }
+
+        return new self($config['package'], $parser->parseConstraints($config['constraint']), $config['reason'] ?? null, $config['apply'] ?? 'all');
     }
 }

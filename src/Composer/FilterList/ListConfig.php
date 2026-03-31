@@ -52,6 +52,10 @@ class ListConfig
      */
     public static function fromConfig($list, array $defaultListNames = []): self
     {
+        if (is_array($list) && !isset($list['name'])) {
+            throw new \RuntimeException('Invalid list config. "name" is required.');
+        }
+
         return new self(
             $name = is_array($list) ? $list['name'] : (string) $list,
             is_array($list) && isset($list['only']) && in_array($list['only'], ['audit', 'block', 'all'], true) ? $list['only'] : 'all',

@@ -32,20 +32,28 @@ class UnfilteredPackageTest extends TestCase
 
     public function testFromConfigString(): void
     {
-        $ignorePackage = UnfilteredPackage::fromConfig('foo/bar', $this->versionParser);
+        $unfilteredPackage = UnfilteredPackage::fromConfig('foo/bar', $this->versionParser);
 
-        $this->assertSame('foo/bar', $ignorePackage->packageName);
-        $this->assertSame('*', $ignorePackage->constraint->getPrettyString());
-        $this->assertNull($ignorePackage->reason);
-        $this->assertSame('all', $ignorePackage->apply);
+        $this->assertSame('foo/bar', $unfilteredPackage->packageName);
+        $this->assertSame('*', $unfilteredPackage->constraint->getPrettyString());
+        $this->assertNull($unfilteredPackage->reason);
+        $this->assertSame('all', $unfilteredPackage->apply);
+    }
+
+    public function testFromConfigMissingPackage(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Invalid unfiltered package config. "package" and "constraint" are requried.');
+
+        UnfilteredPackage::fromConfig(['constraint' => '*'], $this->versionParser);
     }
 
     public function testFromConfigObject(): void
     {
         $config = UnfilteredPackage::fromConfig('foo/bar', $this->versionParser);
-        $ignorePackage = UnfilteredPackage::fromConfig($config, $this->versionParser);
+        $unfilteredPackage = UnfilteredPackage::fromConfig($config, $this->versionParser);
 
-        $this->assertSame($config, $ignorePackage);
+        $this->assertSame($config, $unfilteredPackage);
     }
 
     public function testFromConfigSimple(): void

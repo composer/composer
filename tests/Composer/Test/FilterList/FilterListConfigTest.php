@@ -55,7 +55,7 @@ class FilterListConfigTest extends TestCase
     {
         $config = new Config();
         $config->merge(['config' => ['filter' => [
-            'unfiltered-packages' => [['name' => 'foo/bar', 'apply' => 'audit'],
+            'unfiltered-packages' => [['package' => 'foo/bar', 'constraint' => '*', 'apply' => 'audit'],
         ]]]]);
 
         $filterConfig = FilterListConfig::fromConfig($config,$this->versionParser);
