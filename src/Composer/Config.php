@@ -239,7 +239,10 @@ class Config
                     $sources = $this->config['filter']['sources'] ?? [];
 
                     if (\is_bool($val)) {
-                        $this->config[$key] = $val;
+                        // Don't overwrite a detailed filter config with boolean true
+                        if ($val !== (bool) $this->config['filter']) {
+                            $this->config[$key] = $val;
+                        }
                     } else {
                         $this->config[$key] = is_array($this->config['filter']) ? array_merge($this->config['filter'], $val) : $val;
                         $this->config['filter']['unfiltered-packages'] = array_merge($unfilteredPackages, $val['unfiltered-packages'] ?? []);

@@ -448,6 +448,15 @@ class ConfigTest extends TestCase
         Platform::putEnv('COMPOSER_FILTER', '1');
         self::assertNotTrue($config->get('filter'));
         Platform::clearEnv('COMPOSER_FILTER');
+
+        $config->merge(['config' => ['filter' => true]]);
+        self::assertIsArray($config->get('filter'));
+
+        $config->merge(['config' => ['filter' => false]]);
+        self::assertFalse($config->get('filter'));
+
+        $config->merge(['config' => ['filter' => true]]);
+        self::assertTrue($config->get('filter'));
     }
 
     public function testGetDefaultsToAnEmptyArray(): void
