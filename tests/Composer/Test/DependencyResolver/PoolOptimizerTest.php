@@ -19,6 +19,7 @@ use Composer\DependencyResolver\Request;
 use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\Link;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
@@ -27,6 +28,52 @@ use Composer\Test\TestCase;
 
 class PoolOptimizerTest extends TestCase
 {
+    /**
+     * When a package replaces another name, it appears in identical-dependency groups for both
+     * its own name and the replacement name. The kept package's removedVersionsByPackage should
+     * contain versions from all name groups it participates in.
+     *
+     * Setup: package/a and package/c both replace package/b with the same constraint.
+     * This creates two groups:
+     *   - 'package/a' group: [pkg/a 1.0, pkg/a 1.1]
+     *   - 'package/b' group: [pkg/a 1.0, pkg/a 1.1, pkg/c 1.5, pkg/c 1.6]
+     * The kept pkg/a 1.1 should record versions from both groups.
+     */
+    public function testRemovedVersionsByPackageIncludesVersionsFromReplacementNameGroups(): void
+    {
+        $lockedRepo = new LockArrayRepository();
+        $request = new Request($lockedRepo);
+        $parser = new VersionParser();
+        $replaceConstraint = $parser->parseConstraints('^1.0');
+        $request->requireName('package/a', $parser->parseConstraints('^1.0'));
+        $request->requireName('package/b', $parser->parseConstraints('^1.0'));
+
+        // package/a 1.0.0 and 1.1.0 both replace package/b
+        $packageA100 = self::getPackage('package/a', '1.0.0');
+        $packageA100->setReplaces(['package/b' => new Link('package/a', 'package/b', $replaceConstraint, Link::TYPE_REPLACE)]);
+        $packageA110 = self::getPackage('package/a', '1.1.0');
+        $packageA110->setReplaces(['package/b' => new Link('package/a', 'package/b', $replaceConstraint, Link::TYPE_REPLACE)]);
+
+        // package/c 1.5.0 and 1.6.0 also replace package/b (same constraint, same deps = same group under 'package/b')
+        $packageC150 = self::getPackage('package/c', '1.5.0');
+        $packageC150->setReplaces(['package/b' => new Link('package/c', 'package/b', $replaceConstraint, Link::TYPE_REPLACE)]);
+        $packageC160 = self::getPackage('package/c', '1.6.0');
+        $packageC160->setReplaces(['package/b' => new Link('package/c', 'package/b', $replaceConstraint, Link::TYPE_REPLACE)]);
+
+        $pool = new Pool([$packageA100, $packageA110, $packageC150, $packageC160]);
+        $poolOptimizer = new PoolOptimizer(new DefaultPolicy());
+        $optimizedPool = $poolOptimizer->optimize($request, $pool);
+
+        $removedVersions = $optimizedPool->getRemovedVersionsByPackage(spl_object_hash($packageA110));
+
+        // Versions from 'package/a' name group
+        self::assertArrayHasKey($packageA100->getVersion(), $removedVersions, 'Should contain package/a 1.0.0 from package/a name group');
+        self::assertArrayHasKey($packageA110->getVersion(), $removedVersions, 'Should contain package/a 1.1.0 from package/a name group');
+        // Versions from 'package/b' name group (via replacement — includes package/c versions)
+        self::assertArrayHasKey($packageC150->getVersion(), $removedVersions, 'Should contain package/c 1.5.0 from package/b name group');
+        self::assertArrayHasKey($packageC160->getVersion(), $removedVersions, 'Should contain package/c 1.6.0 from package/b name group');
+    }
+
     public function testKeepingAnAliasRecordsRemovedVersionsForAliasOfAndSiblingAliases(): void
     {
         $lockedRepo = new LockArrayRepository();
