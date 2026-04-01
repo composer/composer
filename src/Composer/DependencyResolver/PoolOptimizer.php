@@ -307,6 +307,7 @@ class PoolOptimizer
      */
     private function keepPackageInGroup(BasePackage $package, Pool $pool, string $packageName, array $packageIds): void
     {
+        // Already marked to keep
         if (!isset($this->packagesToRemove[$package->id])) {
             return;
         }
