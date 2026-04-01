@@ -386,7 +386,7 @@ class Application extends BaseApplication
 
                                 $aliases = $composerJson['scripts-aliases'][$script] ?? [];
 
-                                $composer = $this->getComposer(false, false);
+                                $composer = $this->getComposer(false);
                                 if ($composer !== null) {
                                     $rootPackage = $composer->getPackage();
                                     $generator = $composer->getAutoloadGenerator();
