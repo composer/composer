@@ -1,0 +1,53 @@
+--TEST--
+Installing a package with features that have conflicting dependencies should fail with a clear message
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a",
+                    "version": "1.0.0",
+                    "features": {
+                        "b": {
+                            "description": "Feature B",
+                            "require": {
+                                "b/b": "1.0.0"
+                            }
+                        },
+                        "b-next": {
+                            "description": "Feature B Next",
+                            "require": {
+                                "b/b": "2.0.0"
+                            }
+                        }
+                    }
+                },
+                { "name": "b/b", "version": "1.0.0" },
+                { "name": "b/b", "version": "2.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "require-features": {
+        "a/a": ["b", "b-next"]
+    }
+}
+--RUN--
+update
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires a/a 1.0.0 -> satisfiable by a/a[1.0.0].
+    - a/a 1.0.0 requires b/b 1.0.0 (using feature "b") -> found b/b[1.0.0] but these were not loaded, likely because it conflicts with another require.
+
+--EXPECT--

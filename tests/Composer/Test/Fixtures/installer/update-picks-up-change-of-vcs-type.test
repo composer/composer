@@ -59,7 +59,8 @@ update mirrors
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Upgrading a/a (1.0.0 old-hg-ref => 1.0.0 new-git-ref)

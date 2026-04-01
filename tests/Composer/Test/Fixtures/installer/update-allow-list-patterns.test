@@ -58,7 +58,8 @@ Update with a package allow list only updates those corresponding to the pattern
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update vendor/Test* exact/test-package notexact/Test all/* no/reg.?xp

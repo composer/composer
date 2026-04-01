@@ -39,7 +39,8 @@ Update with a package allow list removes unused packages
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update --with-dependencies allowed/pkg
