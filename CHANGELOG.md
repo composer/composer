@@ -1,3 +1,22 @@
+### [2.10.0-RC1] 2026-04-01
+
+  * Security: Added filter lists to block package versions where malware was detected on `update` or report it with `audit` (#12786)
+  * Security: Fixed git credentials remaining in git mirror .git/config after clone or update failed (2bcbfc3d)
+  * Security: Fixed usage of insecure 3DES ciphers when ext-curl is missing (5e71d77e)
+  * Security: Enforce allow-plugins even in non-interactive mode for very old pre-2.2 lock files (#12764)
+  * Added support for temporary `--with` constraints with wildcards in the package name for the `update` command (#12658)
+  * Added `--strict-psr-autoloader` flag to `install` and `update` commands (#12647)
+  * Added `source-fallback` config option to disable or enable source fallback on download failure (#12698)
+  * Added `--require` parameter to `create-project` to add new packages to the project as it gets installed (#12738)
+  * Optimized plugin autoloading by avoiding regenerating classmaps for every package per plugin (#12696)
+  * Optimized PoolOptimizer memory usage (#12783)
+  * Fixed `update --bump-after-update` to only bump packages that actually were updated (#12733)
+  * Fixed GitHub API authentication errors not being visible to the user (#12737)
+  * Fixed error reporting for clarity when a constraint cannot be parsed (#12743)
+  * Fixed warning being shown when lock file is disabled (#12760)
+  * Fixed inconsistent treatment of SingleCommandApplication script commands wrt autoloading (#12758)
+  * Fixed some platform package parsing failing when Composer runs in web SAPIs (#12735)
+
 ### [2.9.5] 2026-01-29
 
   * Added support for new `pie` `download-url-methods` (#12727)
@@ -2124,6 +2143,7 @@
 
   * Initial release
 
+[2.10.0-RC1]: https://github.com/composer/composer/compare/2.9.5...2.10.0-RC1
 [2.9.5]: https://github.com/composer/composer/compare/2.9.4...2.9.5
 [2.9.4]: https://github.com/composer/composer/compare/2.9.3...2.9.4
 [2.9.3]: https://github.com/composer/composer/compare/2.9.2...2.9.3
