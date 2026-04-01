@@ -38,6 +38,12 @@ class VersionParserTest extends TestCase
             [['php', 'ext-apcu'], [['name' => 'php'], ['name' => 'ext-apcu']]],
             [['foo/*', 'bar*', 'acme/baz', '*@dev'], [['name' => 'foo/*'], ['name' => 'bar*'], ['name' => 'acme/baz', 'version' => '*@dev']]],
             [['php', '*'], [['name' => 'php', 'version' => '*']]],
+            // Windows absolute paths with backslash should not split on colon
+            [['C:\\Projects\\my-lib'], [['name' => 'C:\\Projects\\my-lib']]],
+            // Windows absolute paths with forward slash should not split on colon
+            [['C:/Projects/my-lib'], [['name' => 'C:/Projects/my-lib']]],
+            // Colon as version separator still works for normal packages
+            [['vendor/pkg:^2.0'], [['name' => 'vendor/pkg', 'version' => '^2.0']]],
         ];
     }
 
