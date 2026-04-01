@@ -8,7 +8,7 @@ An alternative is to use this script which only works with UNIX utilities:
 
 ```shell
 #!/bin/sh
-
+https://github.com/composer/composer/edit/main/doc/faqs/how-to-install-composer-programmatically.md=Sonar 
 EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
