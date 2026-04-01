@@ -359,16 +359,12 @@ class PoolOptimizer
      */
     private function recordRemovedVersionsForPackage(BasePackage $package, string $packageName, array $versions): void
     {
-        foreach ($package->getNames(false) as $name) {
-            if ($name !== $packageName) {
-                continue;
-            }
+        if (!in_array($packageName, $package->getNames(false), true)) {
+            return;
+        }
 
-            foreach ($versions as $version => $prettyVersion) {
-                $this->removedVersionsByPackage[spl_object_hash($package)][$version] = $prettyVersion;
-            }
-
-            break;
+        foreach ($versions as $version => $prettyVersion) {
+            $this->removedVersionsByPackage[spl_object_hash($package)][$version] = $prettyVersion;
         }
     }
 
