@@ -428,7 +428,7 @@ class ValidatingArrayLoaderTest extends TestCase
                     ],
                 ],
                 [
-                    'autoload : invalid value (psr0), must be one of psr-0, psr-4, classmap, files, exclude-from-classmap',
+                    'autoload : invalid value (psr0), must be one of psr-0, psr-4, moto, classmap, files, exclude-from-classmap',
                 ],
             ],
             [
