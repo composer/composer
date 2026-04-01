@@ -307,11 +307,6 @@ class PoolOptimizer
      */
     private function keepPackageInGroup(BasePackage $package, Pool $pool, string $packageName, array $packageIds): void
     {
-        // Already marked to keep
-        if (!isset($this->packagesToRemove[$package->id])) {
-            return;
-        }
-
         $versions = [];
         foreach ($packageIds as $packageId) {
             $groupPackage = $pool->packageById($packageId);
@@ -321,8 +316,16 @@ class PoolOptimizer
             $versions[$groupPackage->getVersion()] = $groupPackage->getPrettyVersion();
         }
 
-        $this->unmarkPackageForRemoval($package);
+        // Always record versions even if already kept — the package may appear in
+        // groups for multiple names (own name + replacement names)
         $this->recordRemovedVersionsForPackage($package, $packageName, $versions);
+
+        // Already marked to keep — version recording done, skip unmarking/alias handling
+        if (!isset($this->packagesToRemove[$package->id])) {
+            return;
+        }
+
+        $this->unmarkPackageForRemoval($package);
 
         if ($package instanceof AliasPackage) {
             $this->unmarkPackageForRemoval($package->getAliasOf());
