@@ -100,6 +100,7 @@ EOT
         // to ensure we do not try to load them from the new phar, see https://github.com/composer/composer/issues/10252
         class_exists('Composer\Util\Platform');
         class_exists('Composer\Downloader\FilesystemException');
+        class_exists('Composer\Console\GithubActionError');
 
         $config = Factory::createConfig();
 
