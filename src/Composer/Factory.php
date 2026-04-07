@@ -207,12 +207,14 @@ class Factory
 
         // load global auth file
         $authFileEnv = Platform::getEnv('COMPOSER_AUTH_FILE');
-        $file = self::loadComposerAuthFile(
-            $authFileEnv ?: $config->get('home').'/auth.json',
-            $config,
-            $io,
-            $authFileEnv ? 'COMPOSER_AUTH_FILE' : null,
-        );
+        $path = $config->get('home').'/auth.json';
+        $source = null;
+
+        if($authFileEnv !== false && $authFileEnv !== '') {
+            $path = $authFileEnv;
+            $source = 'COMPOSER_AUTH_FILE';
+        }
+        $file = self::loadComposerAuthFile($path, $config, $io, $source);
         $config->setAuthConfigSource(new JsonConfigSource($file, true));
 
         self::loadComposerAuthEnv($config, $io);
@@ -331,7 +333,7 @@ class Factory
             $config->setConfigSource(new JsonConfigSource(new JsonFile(realpath($composerFile), null, $io)));
 
             $localAuthFile = self::loadComposerAuthFile(dirname(realpath($composerFile)) . '/auth.json', $config, $io);
-            if($localAuthFile !== false) {
+            if($localAuthFile->exists()) {
                 $config->setLocalAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
         }
@@ -698,7 +700,7 @@ class Factory
         }
     }
 
-    private static function loadComposerAuthFile(string $path, Config $config, ?IOInterface $io = null, ?string $source = null): JsonFile|false
+    private static function loadComposerAuthFile(string $path, Config $config, ?IOInterface $io = null, ?string $source = null): JsonFile
     {
         $file = new JsonFile($path, null, $io);
         if ($file->exists()) {
@@ -707,9 +709,8 @@ class Factory
             }
             self::validateJsonSchema($io, $file, JsonFile::AUTH_SCHEMA, $source);
             $config->merge(['config' => $file->read()], $file->getPath());
-            return $file;
         }
-        return false;
+        return $file;
     }
 
     private static function useXdg(): bool
