@@ -89,7 +89,7 @@ EOT
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'diagnose', $input, $output);
             $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
             $this->process = $composer->getLoop()->getProcessExecutor() ?? new ProcessExecutor($io);
-       } else {
+        } else {
             $config = Factory::createConfig();
 
             $this->process = new ProcessExecutor($io);

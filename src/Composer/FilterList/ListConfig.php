@@ -59,7 +59,7 @@ class ListConfig
         return new self(
             $name = is_array($list) ? $list['name'] : (string) $list,
             is_array($list) && isset($list['only']) && in_array($list['only'], ['audit', 'block', 'all'], true) ? $list['only'] : 'all',
-            is_array($list) && isset($list['reason'])  ? $list['reason'] : '',
+            is_array($list) && isset($list['reason']) ? $list['reason'] : '',
             in_array($name, $defaultListNames, true)
         );
     }

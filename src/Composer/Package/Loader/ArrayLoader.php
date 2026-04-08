@@ -409,7 +409,8 @@ class ArrayLoader implements LoaderInterface
         try {
             $parsedConstraint = $this->versionParser->parseConstraints($constraint);
         } catch (\UnexpectedValueException $e) {
-            throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a valid version constraint, got "'.$constraint.'"',
+            throw new \UnexpectedValueException(
+                'Link constraint in '.$source.' '.$description.' > '.$target.' should be a valid version constraint, got "'.$constraint.'"',
                 $e->getCode(),
                 $e
             );

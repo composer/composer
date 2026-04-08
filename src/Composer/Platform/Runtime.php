@@ -128,7 +128,7 @@ class Runtime
             $count = min(\count($matches[1]), \count($matches[2]));
 
             for ($i = 0; $i < $count; $i++) {
-                $key   = trim(html_entity_decode(strip_tags($matches[1][$i])));
+                $key = trim(html_entity_decode(strip_tags($matches[1][$i])));
                 $value = trim(html_entity_decode(strip_tags($matches[2][$i])));
                 $result[] = $key . ' => ' . $value;
             }

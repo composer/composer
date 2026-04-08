@@ -153,7 +153,9 @@ class RunScriptCommandTest extends TestCase
             ],
         ]);
 
-        file_put_contents('MyCommand.php', <<<'TEST'
+        file_put_contents(
+            'MyCommand.php',
+            <<<'TEST'
 <?php
 
 namespace Test;
@@ -188,7 +190,7 @@ class MyCommand extends Command
 }
 
 TEST
-);
+        );
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'test-direct', '--outeropt' => true, 'req-arg' => 'lala']);
@@ -239,7 +241,9 @@ outeropt: set
             ],
         ]);
 
-        file_put_contents('MyCommandWithDefinitions.php', <<<TEST
+        file_put_contents(
+            'MyCommandWithDefinitions.php',
+            <<<TEST
 <?php
 
 namespace Test;
@@ -267,7 +271,7 @@ class MyCommandWithDefinitions extends Command
 }
 
 TEST
-);
+        );
 
         //makes sure the command executes with the name defined inside its `configure()`...
         $appTester = $this->getApplicationTester();

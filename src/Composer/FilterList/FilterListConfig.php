@@ -60,7 +60,7 @@ class FilterListConfig
         $unfilteredPackages = [];
         $ignoreUnreachable = false;
         if (\is_array($filterConfig)) {
-            $unfilteredPackages = array_map(function ($packageConfig) use ($versionParser) {
+            $unfilteredPackages = array_map(static function ($packageConfig) use ($versionParser) {
                 return UnfilteredPackage::fromConfig($packageConfig, $versionParser);
             }, array_values($filterConfig['unfiltered-packages'] ?? []));
 

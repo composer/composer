@@ -58,7 +58,7 @@ class FilterListProviderSet
         return new FilterListProviderSet(
             array_values($repositories),
             array_map(
-                function (UrlSource $source) use ($httpDownloader) {
+                static function (UrlSource $source) use ($httpDownloader) {
                     return new UrlSourceFilterListProvider($httpDownloader, $source);
                 },
                 $config->sources
@@ -138,5 +138,4 @@ class FilterListProviderSet
 
         return $filters;
     }
-
 }

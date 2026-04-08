@@ -158,8 +158,7 @@ class AuditConfig
                 $id = $key;
                 $apply = 'all';
                 $reason = null;
-            }
-            else {
+            } else {
                 continue;
             }
 

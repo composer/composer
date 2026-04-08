@@ -14,7 +14,6 @@ namespace Composer\Command;
 
 use Composer\Advisory\AuditConfig;
 use Composer\Composer;
-use Composer\Factory;
 use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Package\Version\VersionParser;

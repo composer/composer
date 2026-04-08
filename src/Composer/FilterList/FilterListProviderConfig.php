@@ -54,7 +54,7 @@ class FilterListProviderConfig
             $lists = $data['lists'] ?? $lists;
         }
 
-        $lists = array_map(function ($list) use ($defaultListNames) {
+        $lists = array_map(static function ($list) use ($defaultListNames) {
             return ListConfig::fromConfig($list, $defaultListNames);
         }, array_values($lists));
 

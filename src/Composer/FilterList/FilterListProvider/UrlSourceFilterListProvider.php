@@ -49,7 +49,7 @@ class UrlSourceFilterListProvider implements FilterListProviderInterface
      */
     public function getFilter(array $packageConstraintMap): array
     {
-        $purls = array_map(function (string $packageName) {
+        $purls = array_map(static function (string $packageName) {
             return 'pkg://composer/' . $packageName;
         }, array_keys($packageConstraintMap));
 

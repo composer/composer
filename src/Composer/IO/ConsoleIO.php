@@ -371,6 +371,7 @@ class ConsoleIO extends BaseIO
         $pattern = $allowNewlines ? "{{$escapePattern}|[\x01-\x09\x0B\x0C\x0E-\x1A]|\r(?!\n)}u" : "{{$escapePattern}|[\x01-\x1A]}u";
         if (is_string($messages)) {
             $messages = self::ensureValidUtf8($messages);
+
             return Preg::replace($pattern, '', $messages);
         }
 

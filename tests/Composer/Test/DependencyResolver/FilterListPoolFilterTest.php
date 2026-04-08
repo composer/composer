@@ -90,6 +90,7 @@ class FilterListPoolFilterTest extends TestCase
             'unfiltered-packages-version' => [['unfiltered-packages' => [['package' => 'acme/package', 'constraint' => '*']]]],
         ];
     }
+
     public function testUnfilteredPackagesConfigIntersection(): void
     {
         $config = new Config();
@@ -121,7 +122,7 @@ class FilterListPoolFilterTest extends TestCase
                 'package' => 'acme/package',
                 'constraint' => '3.0.0.0',
                 'reason' => 'malware',
-            ]]])
+            ]]]),
         ]]);
 
         $config = new Config();
@@ -129,7 +130,7 @@ class FilterListPoolFilterTest extends TestCase
             'sources' => ['source-list' => [
                 'type' => 'url',
                 'url' => 'https://example.org/malware/acme/package',
-            ]]
+            ]],
         ]]]);
 
         $filterListConfig = FilterListConfig::fromConfig($config, new VersionParser());

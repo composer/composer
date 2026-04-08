@@ -37,8 +37,8 @@ class RuntimeTest extends TestCase
                 'pdo_sqlite
 
 PDO Driver for SQLite 3.x => enabled
-SQLite Library => 3.40.1'
-            ]
+SQLite Library => 3.40.1',
+            ],
         ];
     }
 }

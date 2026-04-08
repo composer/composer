@@ -203,7 +203,7 @@ class ConfigCommandTest extends TestCase
             ['config' => ['filter' => ['unfiltered-packages' => ['acme/package', 'acme/other']]]],
         ];
         yield 'merge filter.source' => [
-            ['config' => ['filter' => ['sources' => ['old' =>['type' => 'url', 'url' => 'https://example.org']]]]],
+            ['config' => ['filter' => ['sources' => ['old' => ['type' => 'url', 'url' => 'https://example.org']]]]],
             ['setting-key' => 'filter.sources.new', 'setting-value' => ['url', 'https://example.com'], '--merge' => true],
             ['config' => ['filter' => ['sources' => ['new' => ['type' => 'url', 'url' => 'https://example.com'], 'old' => ['type' => 'url', 'url' => 'https://example.org']]]]],
         ];
