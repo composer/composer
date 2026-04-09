@@ -112,4 +112,14 @@ HG_BOOKMARKS;
 
         $driver->getFileContent('file.txt', '-h');
     }
+
+    public function testGetChangeDateInvalidIdentifier(): void
+    {
+        $this->setExpectedException('\RuntimeException');
+
+        $process = new ProcessExecutorMock;
+        $driver = new HgDriver(array('url' => 'https://example.org/acme.git'), $this->io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
+
+        $driver->getChangeDate('-r foo');
+    }
 }

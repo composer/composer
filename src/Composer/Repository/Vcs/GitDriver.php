@@ -157,6 +157,10 @@ class GitDriver extends VcsDriver
      */
     public function getChangeDate($identifier)
     {
+        if (isset($identifier[0]) && $identifier[0] === '-') {
+            throw new \RuntimeException('Invalid git identifier detected. Identifier must not start with a -, given: ' . $identifier);
+        }
+
         $this->process->execute(sprintf(
             'git -c log.showSignature=false log -1 --format=%%at %s',
             ProcessExecutor::escape($identifier)
