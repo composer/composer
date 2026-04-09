@@ -12,7 +12,6 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;

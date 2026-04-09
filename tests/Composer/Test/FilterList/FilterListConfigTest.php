@@ -40,7 +40,7 @@ class FilterListConfigTest extends TestCase
             'sources' => ['name' => ['type' => 'url', 'url' => 'https://example.org']],
         ]]]);
 
-        $filterConfig = FilterListConfig::fromConfig($config,$this->versionParser);
+        $filterConfig = FilterListConfig::fromConfig($config, $this->versionParser);
 
         $this->assertNotNull($filterConfig);
         $this->assertTrue($filterConfig->ignoreUnreachable);
@@ -59,7 +59,7 @@ class FilterListConfigTest extends TestCase
             'unfiltered-packages' => [['package' => 'foo/bar', 'constraint' => '*', 'apply' => 'audit'],
         ]]]]);
 
-        $filterConfig = FilterListConfig::fromConfig($config,$this->versionParser);
+        $filterConfig = FilterListConfig::fromConfig($config, $this->versionParser);
 
         $this->assertNotNull($filterConfig);
         $this->assertCount(1, $filterConfig->unfilteredPackages);
@@ -79,6 +79,6 @@ class FilterListConfigTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Invalid source config. "url" is required and must start with "https://".');
 
-        FilterListConfig::fromConfig($config,$this->versionParser);
+        FilterListConfig::fromConfig($config, $this->versionParser);
     }
 }

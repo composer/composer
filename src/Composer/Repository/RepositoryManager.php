@@ -188,7 +188,6 @@ class RepositoryManager
 
     /**
      * @internal
-     * @return HttpDownloader
      */
     public function getHttpDownloader(): HttpDownloader
     {

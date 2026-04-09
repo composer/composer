@@ -13,7 +13,6 @@
 namespace Composer\Test\Repository;
 
 use Composer\FilterList\FilterListEntry;
-use Composer\FilterList\FilterListProviderConfig;
 use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Composer\Repository\ComposerRepository;
@@ -538,7 +537,7 @@ class ComposerRepositoryTest extends TestCase
                                 'constraint' => '*',
                                 'url' => 'https://example.org/acme/package/filters.json',
                                 'reason' => 'Malicious code detected',
-                                'id' => 'ID-test'
+                                'id' => 'ID-test',
                             ]],
                         ],
                     ]),

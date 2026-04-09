@@ -13,7 +13,6 @@
 namespace Composer\Test\Advisory;
 
 use Composer\Advisory\AuditConfig;
-use Composer\Advisory\Auditor;
 use Composer\Config;
 use Composer\Test\TestCase;
 

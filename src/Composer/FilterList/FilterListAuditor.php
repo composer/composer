@@ -62,7 +62,7 @@ class FilterListAuditor
 
         $matchingEntries = [];
         $filterConfig = $filterListConfig->getOperationConfig($operation);
-        $allUnfilteredPackageNamesRegex = BasePackage::packageNamesToRegexp(array_map(function (UnfilteredPackage  $unfilteredPackage): string {
+        $allUnfilteredPackageNamesRegex = BasePackage::packageNamesToRegexp(array_map(static function (UnfilteredPackage  $unfilteredPackage): string {
             return $unfilteredPackage->packageName;
         }, $filterConfig->unfilteredPackages));
 

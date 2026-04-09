@@ -148,14 +148,14 @@ class Auditor
 
                 return $carry;
             }, []);
-            $json['filter'] = array_map(function (array $entries) {
-                return array_map(function (FilterListEntry $entry) {
+            $json['filter'] = array_map(static function (array $entries) {
+                return array_map(static function (FilterListEntry $entry) {
                     $data = (array) $entry;
                     $data['constraint'] = $entry->constraint->getPrettyString();
 
                     return $data;
                 }, $entries);
-            },$filteredPackages);
+            }, $filteredPackages);
 
             $io->write(JsonFile::encode($json));
 
@@ -213,7 +213,6 @@ class Auditor
     /**
      * @param array<string, array<SecurityAdvisory|PartialSecurityAdvisory>> $advisories
      * @param array<string, string|null> $ignoreList
-     * @return bool
      */
     public function needsCompleteAdvisoryLoad(array $advisories, array $ignoreList): bool
     {

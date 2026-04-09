@@ -516,10 +516,10 @@ Found 2 abandoned packages:
                             new SecurityAdvisory(
                                 'vendor1/package1',
                                 'CVE-2023-12345',
-                                new \Composer\Semver\Constraint\Constraint('=', '3.0.0.0'),
+                                new Constraint('=', '3.0.0.0'),
                                 'First repo advisory',
                                 [['name' => 'test', 'remoteId' => '1']],
-                                new \DateTimeImmutable('2023-01-01', new \DateTimeZone('UTC')),
+                                new DateTimeImmutable('2023-01-01', new \DateTimeZone('UTC')),
                                 'CVE-2023-12345',
                                 'https://example.com/advisory/1',
                                 'medium'
@@ -527,10 +527,10 @@ Found 2 abandoned packages:
                             new SecurityAdvisory(
                                 'vendor1/package1',
                                 'CVE-2023-67890',
-                                new \Composer\Semver\Constraint\Constraint('=', '3.0.0.0'),
+                                new Constraint('=', '3.0.0.0'),
                                 'Third repo advisory',
                                 [['name' => 'test', 'remoteId' => '3']],
-                                new \DateTimeImmutable('2023-01-01', new \DateTimeZone('UTC')),
+                                new DateTimeImmutable('2023-01-01', new \DateTimeZone('UTC')),
                                 'CVE-2023-67890',
                                 'https://example.com/advisory/3',
                                 'high'
@@ -1119,7 +1119,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
                     new PartialSecurityAdvisory('foo/bar', '1234', new Constraint('=', '1.0.0.0')),
                 ]],
                 ['PKSA-foo-bar' => 'this is fine 🔥'],
-                false
+                false,
             ],
             'no advisories no need to load any further' => [[], ['CVE-2025-1234' => null], false],
             'no advisories no need to load any further/2' => [['vendor1/package1' => []], ['CVE-2025-1234' => null], false],
@@ -1138,7 +1138,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
                     ],
                     'vendor1/package2' => [
                         new SecurityAdvisory('foo/bar', '1234', new Constraint('=', '1.0.0.0'), 'test', [['name' => 'foo', 'remoteId' => 'remoteID']], new DateTimeImmutable()),
-                    ]
+                    ],
                 ],
                 ['CVE-2025-1234' => null],
                 false,

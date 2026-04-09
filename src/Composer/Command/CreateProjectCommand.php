@@ -46,7 +46,6 @@ use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Version\VersionParser;
 use Composer\Advisory\Auditor;
-use Composer\Package\Loader\ArrayLoader;
 
 /**
  * Install a package as new project into new directory.
@@ -81,7 +80,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories to look the package up, either by URL or using JSON arrays'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'DEPRECATED: Use --repository instead.'),
                 new InputOption('add-repository', null, InputOption::VALUE_NONE, 'Add the custom repository in the composer.json. If a lock file is present it will be deleted and an update will be run instead of install.'),
-                new InputOption('require', null,  InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Require additional package(s) to composer.json after installing the project. If a lock file is present it will be deleted and an update will be run instead of install.'),
+                new InputOption('require', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Require additional package(s) to composer.json after installing the project. If a lock file is present it will be deleted and an update will be run instead of install.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),

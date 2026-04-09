@@ -1071,11 +1071,6 @@ parameters:
 			path: ../src/Composer/Downloader/DownloadManager.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, array\\<string\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/DownloadManager.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\Downloader\\\\DownloaderInterface\\|null given\\.$#"
 			count: 4
 			path: ../src/Composer/Downloader/DownloadManager.php
@@ -2152,11 +2147,6 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 1
-			path: ../src/Composer/Platform/Runtime.php
-
-		-
-			message: "#^Method Composer\\\\Platform\\\\Runtime\\:\\:getExtensionInfo\\(\\) should return string but returns string\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Platform/Runtime.php
 

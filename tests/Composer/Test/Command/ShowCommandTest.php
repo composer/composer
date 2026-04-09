@@ -486,7 +486,8 @@ zerozero/major 0.0.1 ~ 0.0.2', trim($appTester->getDisplay(true)));
         $output = trim($appTester->getDisplay(true));
         $output = Preg::replace('{platform:(\n  .*)+}', 'platform: wiped', $output);
 
-        self::assertSame('platform: wiped
+        self::assertSame(
+            'platform: wiped
 
 locked:
   vendor/locked 3.0.0 description of locked package

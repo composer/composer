@@ -21,8 +21,6 @@ use Composer\Downloader\TransportException;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\AssertionFailedError;
 use React\Promise\Deferred;
-use React\Promise\Internal\FulfilledPromise;
-use React\Promise\Internal\RejectedPromise;
 use React\Promise\PromiseInterface;
 
 class HttpDownloaderMock extends HttpDownloader
