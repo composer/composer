@@ -127,7 +127,7 @@ class FossilDownloaderTest extends TestCase
         $process = new ProcessExecutorMock;
         $process->expects(array(
             $this->getCmd("fossil changes"),
-            $this->getCmd("fossil pull && fossil up 'trunk'"),
+            $this->getCmd("fossil pull && fossil up -- 'trunk'"),
         ), true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
