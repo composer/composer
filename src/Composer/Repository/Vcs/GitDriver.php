@@ -164,6 +164,10 @@ class GitDriver extends VcsDriver
      */
     public function getChangeDate(string $identifier): ?\DateTimeImmutable
     {
+        if (isset($identifier[0]) && $identifier[0] === '-') {
+            throw new \RuntimeException('Invalid git identifier detected. Identifier must not start with a -, given: ' . $identifier);
+        }
+
         $command = GitUtil::buildRevListCommand($this->process, ['-n1', '--format=%at', $identifier]);
         $this->process->execute($command, $output, $this->repoDir);
 
