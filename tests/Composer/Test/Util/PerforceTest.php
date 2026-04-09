@@ -134,7 +134,7 @@ class PerforceTest extends TestCase
 
     public function testQueryP4UserWithUserAlreadySet(): void
     {
-        $this->perforce->queryP4user();
+        $this->perforce->queryP4User();
         self::assertEquals(self::TEST_P4USER, $this->perforce->getUser());
     }
 
@@ -147,7 +147,7 @@ class PerforceTest extends TestCase
             true
         );
 
-        $this->perforce->queryP4user();
+        $this->perforce->queryP4User();
         self::assertEquals('TEST_P4VARIABLE_USER', $this->perforce->getUser());
     }
 
@@ -161,7 +161,7 @@ class PerforceTest extends TestCase
             true
         );
 
-        $this->perforce->queryP4user();
+        $this->perforce->queryP4User();
         self::assertEquals('TEST_P4VARIABLE_USER', $this->perforce->getUser());
     }
 
@@ -172,7 +172,7 @@ class PerforceTest extends TestCase
         $this->io->method('ask')
                  ->with($this->equalTo($expectedQuestion))
                  ->willReturn('TEST_QUERY_USER');
-        $this->perforce->queryP4user();
+        $this->perforce->queryP4User();
         self::assertEquals('TEST_QUERY_USER', $this->perforce->getUser());
     }
 
@@ -195,7 +195,7 @@ class PerforceTest extends TestCase
             true
         );
 
-        $this->perforce->queryP4user();
+        $this->perforce->queryP4User();
     }
 
     public function testQueryP4UserStoresResponseToQueryForUserWithoutWindows(): void
@@ -215,7 +215,37 @@ class PerforceTest extends TestCase
             ],
             true
         );
-        $this->perforce->queryP4user();
+        $this->perforce->queryP4User();
+    }
+
+    public function testQueryP4UserEscapesInjectionOnWindows(): void
+    {
+        $this->createNewPerforceWithWindowsFlag(true);
+        $this->perforce->setUser(null);
+        $this->io->method('ask')->willReturn('foo && calc.exe');
+        $this->processExecutor->expects(
+            [
+                'p4 set',
+                'p4 set P4USER=' . ProcessExecutor::escape('foo && calc.exe'),
+            ],
+            true
+        );
+        $this->perforce->queryP4User();
+    }
+
+    public function testQueryP4UserEscapesInjectionOnUnix(): void
+    {
+        $this->createNewPerforceWithWindowsFlag(false);
+        $this->perforce->setUser(null);
+        $this->io->method('ask')->willReturn('foo; id');
+        $this->processExecutor->expects(
+            [
+                'echo $P4USER',
+                'export P4USER=' . ProcessExecutor::escape('foo; id'),
+            ],
+            true
+        );
+        $this->perforce->queryP4User();
     }
 
     public function testQueryP4PasswordWithPasswordAlreadySet(): void
