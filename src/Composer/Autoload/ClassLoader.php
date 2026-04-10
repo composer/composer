@@ -600,6 +600,32 @@ class ClassLoader
     {
         $first = $class[0];
 
+        // PSR-4 lookup
+        $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . $ext;
+
+        if (isset($this->prefixLengthsPsr4[$first])) {
+            $subPath = $class;
+            while (false !== $lastPos = strrpos($subPath, '\\')) {
+                $subPath = substr($subPath, 0, $lastPos);
+                $search = $subPath . '\\';
+                if (isset($this->prefixDirsPsr4[$search])) {
+                    $pathEnd = DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $lastPos + 1);
+                    foreach ($this->prefixDirsPsr4[$search] as $dir) {
+                        if (file_exists($file = $dir . $pathEnd)) {
+                            return $file;
+                        }
+                    }
+                }
+            }
+        }
+
+        // PSR-4 fallback dirs
+        foreach ($this->fallbackDirsPsr4 as $dir) {
+            if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr4)) {
+                return $file;
+            }
+        }
+
         // Moto lookup
         if (isset($this->prefixLengthsMoto[$first])) {
             $subPath = $class;
@@ -666,32 +692,6 @@ class ClassLoader
                 if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathMoto)) {
                     return $file;
                 }
-            }
-        }
-
-        // PSR-4 lookup
-        $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . $ext;
-
-        if (isset($this->prefixLengthsPsr4[$first])) {
-            $subPath = $class;
-            while (false !== $lastPos = strrpos($subPath, '\\')) {
-                $subPath = substr($subPath, 0, $lastPos);
-                $search = $subPath . '\\';
-                if (isset($this->prefixDirsPsr4[$search])) {
-                    $pathEnd = DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $lastPos + 1);
-                    foreach ($this->prefixDirsPsr4[$search] as $dir) {
-                        if (file_exists($file = $dir . $pathEnd)) {
-                            return $file;
-                        }
-                    }
-                }
-            }
-        }
-
-        // PSR-4 fallback dirs
-        foreach ($this->fallbackDirsPsr4 as $dir) {
-            if (file_exists($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr4)) {
-                return $file;
             }
         }
 
