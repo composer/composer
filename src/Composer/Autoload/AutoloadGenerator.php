@@ -380,7 +380,7 @@ EOF;
                             $exclusionRegex = $this->buildExclusionRegex($dir, $excluded);
                         }
 
-                        $classMapGenerator->scanPaths($dir, $exclusionRegex, $group['type'] === 'moto' ? 'psr-4' : $group['type'], $namespace);
+                        $classMapGenerator->scanPaths($dir, $exclusionRegex, $group['type'] === 'moto' ? 'classmap' : $group['type'], $namespace);
                     }
                 }
             }
