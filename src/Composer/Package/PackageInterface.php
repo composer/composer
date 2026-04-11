@@ -289,7 +289,7 @@ interface PackageInterface
      *
      * {"<type>": {"<namespace": "<directory>"}}
      *
-     * Type is either "psr-4", "psr-0", "classmap" or "files". Namespaces are mapped to
+     * Type is either "psr-4", "psr-0", "moto", "classmap" or "files". Namespaces are mapped to
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
@@ -302,7 +302,7 @@ interface PackageInterface
      *
      * {"<type>": {"<namespace": "<directory>"}}
      *
-     * Type is either "psr-4", "psr-0", "classmap" or "files". Namespaces are mapped to
+     * Type is either "psr-4", "psr-0", "moto", "classmap" or "files". Namespaces are mapped to
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of dev autoloading rules
