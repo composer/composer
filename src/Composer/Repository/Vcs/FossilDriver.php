@@ -159,6 +159,10 @@ class FossilDriver extends VcsDriver
      */
     public function getFileContent($file, $identifier)
     {
+        if (isset($identifier[0]) && $identifier[0] === '-') {
+            throw new \RuntimeException('Invalid fossil identifier detected. Identifier must not start with a -, given: ' . $identifier);
+        }
+
         $command = sprintf('fossil cat -r %s -- %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
         $this->process->execute($command, $content, $this->checkoutDir);
 
