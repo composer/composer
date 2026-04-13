@@ -201,6 +201,7 @@ class Compiler
             'vendor/symfony/polyfill-php73/Resources/stubs/JsonException.php',
             'vendor/symfony/service-contracts/Attribute/SubscribedService.php',
             'vendor/symfony/polyfill-php84/Resources/stubs/Deprecated.php',
+            'vendor/symfony/polyfill-php84/Resources/Deprecated.php',
             'vendor/symfony/polyfill-php84/bootstrap82.php',
         ]);
     }
