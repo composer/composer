@@ -113,7 +113,7 @@ HG_BOOKMARKS;
         $driver->getFileContent('file.txt', '-h');
     }
 
-    public function testGetChangeDateInvalidIdentifier(): void
+    public function testGetChangeDateInvalidIdentifier()
     {
         $this->setExpectedException('\RuntimeException');
 
