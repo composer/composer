@@ -321,9 +321,9 @@ class Perforce
         }
         $this->p4User = $this->io->ask('Enter P4 User:');
         if ($this->windowsFlag) {
-            $command = 'p4 set P4USER=' . $this->p4User;
+            $command = 'p4 set P4USER=' . ProcessExecutor::escape($this->p4User);
         } else {
-            $command = 'export P4USER=' . $this->p4User;
+            $command = 'export P4USER=' . ProcessExecutor::escape($this->p4User);
         }
         $this->executeCommand($command);
     }
