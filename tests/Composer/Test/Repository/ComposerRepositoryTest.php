@@ -554,10 +554,7 @@ class ComposerRepositoryTest extends TestCase
             $httpDownloader
         );
 
-        [
-            'filter' => $filter,
-            'config' => $config,
-        ] = $repository->getFilter(['acme/package' => new Constraint('=', '1.0.0.0')]);
+        ['filter' => $filter] = $repository->getFilter(['acme/package' => new Constraint('=', '1.0.0.0')]);
 
         $constraint = new MatchAllConstraint();
         $constraint->setPrettyString('*');

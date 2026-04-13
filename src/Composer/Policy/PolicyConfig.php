@@ -289,8 +289,8 @@ class PolicyConfig
         $ignoreUnreachable = IgnoreUnreachable::default();
         if (isset($policyConfig['ignore-unreachable'])) {
             $ignoreUnreachable = IgnoreUnreachable::fromRawPolicyConfig($policyConfig);
-        } elseif (isset($auditConfig['ignore-unreachable']) && $auditConfig['ignore-unreachable']) {
-            $ignoreUnreachable = IgnoreUnreachable::all();
+        } elseif (isset($auditConfig['ignore-unreachable'])) {
+            $ignoreUnreachable = IgnoreUnreachable::fromRawAuditConfig($auditConfig);
         }
 
         // BC: env var overrides (these are handled here because Config::get('policy')
@@ -331,13 +331,45 @@ class PolicyConfig
     }
 
     /**
+     * @param 'audit'|'block' $operation
+     * @return array<string, ListPolicyConfig>
+     */
+    public function getActiveFilterLists(string $operation): array
+    {
+        $allLists = $this->getAllLists();
+        unset($allLists['abandoned'], $allLists['advisories']);
+
+        $lists = [];
+        foreach ($allLists as $name => $list) {
+            if ($operation === 'audit' && $list->audit !== ListPolicyConfig::AUDIT_IGNORE) {
+                $lists[$name] = $list;
+            }
+
+            if ($operation === 'block' && $list->block) {
+                $lists[$name] = $list;
+            }
+        }
+
+        return $lists;
+    }
+
+    /**
+     * @param 'audit'|'block' $operation
+     * @return list<string>
+     */
+    public function getActiveFilterListNames(string $operation): array
+    {
+        return array_keys($this->getActiveFilterLists($operation));
+    }
+
+    /**
      * Get all custom list configs that have URL sources.
      *
-     * @return array<string, ListPolicyConfig>
+     * @return array<string, CustomListPolicyConfig>
      */
     public function getCustomListsWithSources(): array
     {
-        return array_filter($this->customLists, static function (ListPolicyConfig $list): bool {
+        return array_filter($this->customLists, static function (CustomListPolicyConfig $list): bool {
             return count($list->sources) > 0;
         });
     }

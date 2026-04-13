@@ -14,13 +14,14 @@ namespace Composer\Test\Advisory;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
-use Composer\FilterList\FilterListConfig;
+use Composer\Config;
 use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\IO\BufferIO;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
@@ -734,7 +735,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             ->method('getMatchingFilterLists')
             ->willReturn(['filter' => $filterEntriesByList, 'unreachableRepos' => []]);
 
-        $filterListConfig = new FilterListConfig([], [], false);
+        $policyConfig = PolicyConfig::fromConfig(new Config());
 
         $auditor = new Auditor();
         $result = $auditor->audit(
@@ -750,7 +751,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             [],
             $filtered,
             $providerSet,
-            $filterListConfig
+            $policyConfig
         );
 
         self::assertSame($expected, $result);
@@ -777,7 +778,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             ->method('getMatchingFilterLists')
             ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
 
-        $filterListConfig = new FilterListConfig([], [], false);
+        $policyConfig = PolicyConfig::fromConfig(new Config());
 
         $auditor = new Auditor();
         $result = $auditor->audit(
@@ -793,7 +794,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             [],
             Auditor::FILTERED_FAIL,
             $providerSet,
-            $filterListConfig
+            $policyConfig
         );
 
         self::assertSame(Auditor::STATUS_FILTERED, $result);
@@ -832,7 +833,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             ->method('getMatchingFilterLists')
             ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
 
-        $filterListConfig = new FilterListConfig([], [], false);
+        $policyConfig = PolicyConfig::fromConfig(new Config());
 
         $auditor = new Auditor();
         // vendor1/package1 at 8.2.1 is vulnerable; vendor1/package2 at 9.0.0 matches the filter
@@ -852,7 +853,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             [],
             Auditor::FILTERED_FAIL,
             $providerSet,
-            $filterListConfig
+            $policyConfig
         );
 
         self::assertSame(Auditor::STATUS_VULNERABLE | Auditor::STATUS_FILTERED, $result);

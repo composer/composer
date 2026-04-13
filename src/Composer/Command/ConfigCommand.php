@@ -558,8 +558,8 @@ EOT
             ],
         ];
 
-        // allow unsetting audit/filter config entirely
-        if ($input->getOption('unset') && in_array($settingKey, ['audit', 'filter'], true)) {
+        // allow unsetting audit/filter/policy config entirely
+        if ($input->getOption('unset') && in_array($settingKey, ['audit', 'filter', 'policy'], true)) {
             $this->configSource->removeConfigSetting($settingKey);
 
             return 0;

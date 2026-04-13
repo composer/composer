@@ -8,7 +8,9 @@ Filter list entry matching direct dependency preventing a successful update.
         "acme/library": "1.0.0"
     },
     "config": {
-        "filter": true
+        "policy": {
+          "test-list": true
+        }
     },
     "repositories": [
         {

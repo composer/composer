@@ -20,7 +20,7 @@ namespace Composer\FilterList\Source;
 class UrlSource
 {
     /** @var string */
-    public $name;
+    public $listName;
     /** @var string */
     public $url;
 
@@ -28,7 +28,7 @@ class UrlSource
         string $name,
         string $url
     ) {
-        $this->name = $name;
+        $this->listName = $name;
         $this->url = $url;
     }
 }
