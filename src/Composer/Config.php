@@ -40,6 +40,7 @@ class Config
         'preferred-install' => 'dist',
         'audit' => ['ignore' => [], 'abandoned' => Auditor::ABANDONED_FAIL],
         'filter' => true,
+        'policy' => [],
         'notify-on-install' => true,
         'github-protocols' => ['https', 'ssh', 'git'],
         'gitlab-protocol' => null,
@@ -250,6 +251,31 @@ class Config
                         $this->config['filter']['sources'] = array_merge($sources, $val['sources'] ?? []);
                     }
 
+                    $this->setSourceOfConfigValue($val, $key, $source);
+                } elseif ('policy' === $key) {
+                    if (\is_bool($val)) {
+                        // policy: false is a master kill switch
+                        $this->config[$key] = $val;
+                    } elseif (\is_array($val)) {
+                        $current = \is_array($this->config['policy']) ? $this->config['policy'] : [];
+                        foreach ($val as $listName => $listConfig) {
+                            if ($listName === 'ignore-unreachable') {
+                                $current[$listName] = $listConfig;
+                                continue;
+                            }
+                            if (!isset($current[$listName]) || !\is_array($current[$listName]) || !\is_array($listConfig)) {
+                                $current[$listName] = $listConfig;
+                            } else {
+                                // Deep merge: combine ignore lists
+                                $currentIgnore = $current[$listName]['ignore'] ?? [];
+                                $current[$listName] = array_merge($current[$listName], $listConfig);
+                                if (isset($listConfig['ignore'])) {
+                                    $current[$listName]['ignore'] = array_merge($currentIgnore, $listConfig['ignore']);
+                                }
+                            }
+                        }
+                        $this->config[$key] = $current;
+                    }
                     $this->setSourceOfConfigValue($val, $key, $source);
                 } else {
                     $this->config[$key] = $val;
@@ -518,6 +544,25 @@ class Config
                 }
 
                 return $filterConfig;
+            case 'policy':
+                $policyConfig = $this->config[$key];
+                $policyEnv = $this->getComposerEnv('COMPOSER_POLICY');
+                // BC: also check old COMPOSER_FILTER env var
+                if (false === $policyEnv) {
+                    $policyEnv = $this->getComposerEnv('COMPOSER_FILTER');
+                }
+                if (false !== $policyEnv) {
+                    if (!in_array($policyEnv, ['0', '1'], true)) {
+                        throw new \RuntimeException(
+                            "Invalid value for COMPOSER_POLICY: {$policyEnv}. Expected 0 or 1."
+                        );
+                    }
+                    if ((int) $policyEnv === 0) {
+                        $policyConfig = false;
+                    }
+                }
+
+                return $policyConfig;
             default:
                 if (!isset($this->config[$key])) {
                     return null;

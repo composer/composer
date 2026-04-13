@@ -17,6 +17,7 @@ use Composer\DependencyResolver\Request;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Installer;
 use Composer\Pcre\Preg;
+use Composer\Policy\PolicyConfig;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -97,6 +98,8 @@ class InstallerTest extends TestCase
                     case 'audit':
                         return [];
                     case 'filter':
+                        return false;
+                    case 'policy':
                         return false;
                 }
 

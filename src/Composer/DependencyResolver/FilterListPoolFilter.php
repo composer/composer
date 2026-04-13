@@ -13,10 +13,10 @@
 namespace Composer\DependencyResolver;
 
 use Composer\FilterList\FilterListAuditor;
-use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Package\RootPackageInterface;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Util\HttpDownloader;
@@ -28,19 +28,19 @@ use Composer\Util\HttpDownloader;
  */
 class FilterListPoolFilter
 {
-    /** @var FilterListConfig */
-    private $filterListConfig;
+    /** @var PolicyConfig */
+    private $policyConfig;
     /** @var FilterListAuditor */
     private $filterListAuditor;
     /** @var HttpDownloader */
     private $httpDownloader;
 
     public function __construct(
-        FilterListConfig $filterListConfig,
+        PolicyConfig $policyConfig,
         FilterListAuditor $filterListAuditor,
         HttpDownloader $httpDownloader
     ) {
-        $this->filterListConfig = $filterListConfig;
+        $this->policyConfig = $policyConfig;
         $this->filterListAuditor = $filterListAuditor;
         $this->httpDownloader = $httpDownloader;
     }
@@ -50,7 +50,7 @@ class FilterListPoolFilter
      */
     public function filter(Pool $pool, array $repositories, Request $request): Pool
     {
-        $providerSet = FilterListProviderSet::create($this->filterListConfig, $repositories, $this->httpDownloader);
+        $providerSet = FilterListProviderSet::create($this->policyConfig, $repositories, $this->httpDownloader);
 
         $filterListMap = $this->collectFilterLists($pool, $providerSet, $request);
 
@@ -61,7 +61,7 @@ class FilterListPoolFilter
         $packages = [];
         $filterListRemovedVersions = [];
         foreach ($pool->getPackages() as $package) {
-            $matchingEntries = $this->filterListAuditor->getMatchingEntries($package, $filterListMap, $this->filterListConfig, 'block');
+            $matchingEntries = $this->filterListAuditor->getMatchingEntries($package, $filterListMap, $this->policyConfig, 'block');
             if (count($matchingEntries) > 0) {
                 foreach ($package->getNames(false) as $packageName) {
                     $filterListRemovedVersions[$packageName][$package->getVersion()] = $matchingEntries;
@@ -88,6 +88,6 @@ class FilterListPoolFilter
             }
         }
 
-        return $this->filterListAuditor->collectFilterLists($packagesForFilter, $providerSet, 'block', $this->filterListConfig->ignoreUnreachable)['filter'];
+        return $this->filterListAuditor->collectFilterLists($packagesForFilter, $providerSet, $this->policyConfig->getActiveFilterListNames('block'), $this->policyConfig->ignoreUnreachable->update)['filter'];
     }
 }
