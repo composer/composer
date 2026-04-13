@@ -69,4 +69,16 @@ class IgnoreUnreachable
 
         return $config['ignore-unreachable'] ? self::all() : self::none();
     }
+
+    /**
+     * @param array{ignore-unreachable?: ?bool} $auditConfig
+     */
+    public static function fromRawAuditConfig(array $auditConfig): self
+    {
+        if (isset($auditConfig['ignore-unreachable']) && $auditConfig['ignore-unreachable']) {
+            return self::all();
+        }
+
+        return self::default();
+    }
 }

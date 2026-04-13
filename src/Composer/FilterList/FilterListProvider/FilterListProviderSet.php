@@ -12,11 +12,11 @@
 
 namespace Composer\FilterList\FilterListProvider;
 
-use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\Source\UrlSource;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\FilterListProviderInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Semver\Constraint\Constraint;
@@ -53,25 +53,30 @@ class FilterListProviderSet
     /**
      * @param array<RepositoryInterface> $repositories
      */
-    public static function create(FilterListConfig $config, array $repositories, HttpDownloader $httpDownloader): self
+    public static function create(PolicyConfig $config, array $repositories, HttpDownloader $httpDownloader): self
     {
+        $sources = [];
+        foreach ($config->getCustomListsWithSources() as $listConfig) {
+            $sources = array_merge($sources, $listConfig->sources);
+        }
+
         return new FilterListProviderSet(
             array_values($repositories),
             array_map(
                 static function (UrlSource $source) use ($httpDownloader) {
                     return new UrlSourceFilterListProvider($httpDownloader, $source);
                 },
-                $config->sources
+                $sources
             )
         );
     }
 
     /**
      * @param PackageInterface[] $packages
-     * @param 'block'|'audit' $operation
+     * @param list<string> $lists
      * @return array{filter: array<string, array<FilterListEntry>>, unreachableRepos: array<string>}
      */
-    public function getMatchingFilterLists(array $packages, string $operation, bool $ignoreUnreachable = false): array
+    public function getMatchingFilterLists(array $packages, array $lists, bool $ignoreUnreachable = false): array
     {
         $map = [];
         foreach ($packages as $package) {
@@ -87,29 +92,32 @@ class FilterListProviderSet
         }
 
         $unreachableRepos = [];
-        $filters = $this->getFilterListEntriesForConstraints($map, $operation, $ignoreUnreachable, $unreachableRepos);
+        $filters = $this->getFilterListEntriesForConstraints($map, $lists, $ignoreUnreachable, $unreachableRepos);
 
         return ['filter' => $filters, 'unreachableRepos' => $unreachableRepos];
     }
 
     /**
      * @param array<string, ConstraintInterface> $packageConstraintMap
-     * @param 'block'|'audit' $operation
+     * @param array<string> $lists
      * @param array<string> &$unreachableRepos Array to store messages about unreachable repositories
      * @return array<string, list<FilterListEntry>>
      */
-    private function getFilterListEntriesForConstraints(array $packageConstraintMap, string $operation, bool $ignoreUnreachable = false, array &$unreachableRepos = []): array
+    private function getFilterListEntriesForConstraints(array $packageConstraintMap, array $lists, bool $ignoreUnreachable = false, array &$unreachableRepos = []): array
     {
         $filters = [];
         foreach ($this->providers as $provider) {
+            $providerLists = $provider->getFilterLists();
+            if ([] === array_intersect($lists, $providerLists)) {
+                continue;
+            }
+
             try {
                 $result = $provider->getFilter($packageConstraintMap);
                 $repoFilter = $result['filter'];
-                $repoConfig = $result['config'];
-                $configuredLists = $repoConfig->getListsForOperation($operation);
 
                 foreach ($repoFilter as $listName => $entries) {
-                    if (!isset($configuredLists[$listName])) {
+                    if (!in_array($listName, $providerLists, true)) {
                         continue;
                     }
 

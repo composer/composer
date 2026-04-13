@@ -151,10 +151,10 @@ class IgnorePackageRule
     public static function filterByOperation(array $rules, string $operation): array
     {
         $filtered = [];
-        foreach ($rules as $name => $ruleList) {
+        foreach ($rules as $packageName => $ruleList) {
             foreach ($ruleList as $rule) {
                 if (($operation === 'block' && $rule->onBlock) || ($operation === 'audit' && $rule->onAudit)) {
-                    $filtered[$name][] = $rule;
+                    $filtered[$packageName][] = $rule;
                 }
             }
         }

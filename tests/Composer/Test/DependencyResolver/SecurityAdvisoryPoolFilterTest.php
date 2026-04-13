@@ -19,6 +19,7 @@ use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
+use Composer\Policy\IgnoreUnreachable;
 use Composer\Repository\PackageRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Test\TestCase;
@@ -27,7 +28,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 {
     public function testFilterPackagesByAdvisories(): void
     {
-        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, true, true, false, [], [], [], [], [], []);
+        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, true, true, IgnoreUnreachable::default(), [], [], [], [], [], []);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -58,7 +59,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesByIgnoredAdvisories(): void
     {
-        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, true, true, false, ['CVE-2024-1234' => null], ['CVE-2024-1234' => null], [], [], [], []);
+        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, true, true, IgnoreUnreachable::default(), ['CVE-2024-1234' => null], ['CVE-2024-1234' => null], [], [], [], []);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -80,7 +81,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesWithBlockInsecureDisabled(): void
     {
-        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, false, true, false, [], [], [], [], [], []);
+        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, false, true, IgnoreUnreachable::default(), [], [], [], [], [], []);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $repository = new PackageRepository([
@@ -103,7 +104,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
     public function testDontFilterPackagesWithAbandonedPackage(): void
     {
         $packageNameIgnoreAbandoned = 'acme/ignore-abandoned';
-        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, true, true, false, [], [], [], [], [$packageNameIgnoreAbandoned => null], [$packageNameIgnoreAbandoned => null]);
+        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, true, true, IgnoreUnreachable::default(), [], [], [], [], [$packageNameIgnoreAbandoned => null], [$packageNameIgnoreAbandoned => null]);
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
 
         $abandonedPackage = new CompletePackage('acme/package', '1.0.0.0', '1.0');

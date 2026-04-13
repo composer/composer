@@ -14,9 +14,8 @@ namespace Composer\Command;
 
 use Composer\Advisory\AuditConfig;
 use Composer\Composer;
-use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
-use Composer\Package\Version\VersionParser;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\RepositoryUtils;
 use Symfony\Component\Console\Input\InputInterface;
@@ -73,7 +72,8 @@ EOT
             $repoSet->addRepository($repo);
         }
 
-        $auditConfig = AuditConfig::fromConfig($composer->getConfig());
+        $policyConfig = PolicyConfig::fromConfig($composer->getConfig());
+        $auditConfig = AuditConfig::fromPolicyConfig($policyConfig);
 
         $abandoned = $input->getOption('abandoned');
         if ($abandoned !== null && !in_array($abandoned, Auditor::ABANDONEDS, true)) {
@@ -89,10 +89,10 @@ EOT
         $filtered = $filtered ?? $auditConfig->auditFiltered;
 
         $ignoreSeverities = array_merge(array_fill_keys($input->getOption('ignore-severity'), null), $auditConfig->ignoreSeverityForAudit);
-        $ignoreUnreachable = $input->getOption('ignore-unreachable') || $auditConfig->ignoreUnreachable;
+        $ignoreUnreachable = $input->getOption('ignore-unreachable') || $auditConfig->ignoreUnreachable->audit;
 
-        $filterListConfig = FilterListConfig::fromConfig($composer->getConfig(), new VersionParser());
-        $filterListProviderSet = $filterListConfig !== null ? FilterListProviderSet::create($filterListConfig, $composer->getRepositoryManager()->getRepositories(), $composer->getLoop()->getHttpDownloader()) : null;
+        $policyConfig = PolicyConfig::fromConfig($composer->getConfig());
+        $filterListProviderSet = $policyConfig->enabled ? FilterListProviderSet::create($policyConfig, $composer->getRepositoryManager()->getRepositories(), $composer->getLoop()->getHttpDownloader()) : null;
 
         return min(255, $auditor->audit(
             $this->getIO(),
@@ -107,7 +107,7 @@ EOT
             $auditConfig->ignoreAbandonedForAudit,
             $filtered,
             $filterListProviderSet,
-            $filterListConfig
+            $policyConfig
         ));
 
     }
