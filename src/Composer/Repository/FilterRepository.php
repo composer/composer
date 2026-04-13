@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\FilterList\FilterListProviderConfig;
 use Composer\Package\PackageInterface;
 use Composer\Package\BasePackage;
 use Composer\Pcre\Preg;
@@ -21,7 +22,7 @@ use Composer\Pcre\Preg;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
+class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
 {
     /** @var ?string */
     private $only = null;
@@ -213,6 +214,36 @@ class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
         }
 
         return $this->repo->getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasFilter(): bool
+    {
+        if (!$this->repo instanceof FilterListProviderInterface) {
+            return false;
+        }
+
+        return $this->repo->hasFilter();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFilter(array $packageConstraintMap): array
+    {
+        if (!$this->repo instanceof FilterListProviderInterface) {
+            return ['filter' => [], 'config' => FilterListProviderConfig::fromConfig(false, [])];
+        }
+
+        foreach ($packageConstraintMap as $name => $constraint) {
+            if (!$this->isAllowed($name)) {
+                unset($packageConstraintMap[$name]);
+            }
+        }
+
+        return $this->repo->getFilter($packageConstraintMap);
     }
 
     private function isAllowed(string $name): bool
