@@ -181,7 +181,7 @@ class PerforceTest extends TestCase
         $this->createNewPerforceWithWindowsFlag(true);
         $this->perforce->setUser(null);
         $expectedQuestion = 'Enter P4 User:';
-        $expectedCommand = 'p4 set P4USER=TEST_QUERY_USER';
+        $expectedCommand = 'p4 set P4USER='.ProcessExecutor::escape('TEST_QUERY_USER');
         $this->io->expects($this->once())
                  ->method('ask')
                  ->with($this->equalTo($expectedQuestion))
@@ -203,7 +203,7 @@ class PerforceTest extends TestCase
         $this->createNewPerforceWithWindowsFlag(false);
         $this->perforce->setUser(null);
         $expectedQuestion = 'Enter P4 User:';
-        $expectedCommand = 'export P4USER=TEST_QUERY_USER';
+        $expectedCommand = 'export P4USER='.ProcessExecutor::escape('TEST_QUERY_USER');
         $this->io->expects($this->once())
                  ->method('ask')
                  ->with($this->equalTo($expectedQuestion))
