@@ -17,6 +17,10 @@
   * Fixed inconsistent treatment of SingleCommandApplication script commands wrt autoloading (#12758)
   * Fixed some platform package parsing failing when Composer runs in web SAPIs (#12735)
 
+### [2.9.7] 2026-04-14
+
+  * Fixes regression calling custom script command aliases that are called a substring of a composer command (#12802)
+
 ### [2.9.6] 2026-04-14
 
   * Security: Fixed command injection via malicious Perforce reference (GHSA-gqw4-4w2p-838q / CVE-2026-40261)
@@ -2157,6 +2161,7 @@
   * Initial release
 
 [2.10.0-RC1]: https://github.com/composer/composer/compare/2.9.5...2.10.0-RC1
+[2.9.7]: https://github.com/composer/composer/compare/2.9.6...2.9.7
 [2.9.6]: https://github.com/composer/composer/compare/2.9.5...2.9.6
 [2.9.5]: https://github.com/composer/composer/compare/2.9.4...2.9.5
 [2.9.4]: https://github.com/composer/composer/compare/2.9.3...2.9.4
