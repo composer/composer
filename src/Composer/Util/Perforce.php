@@ -308,11 +308,11 @@ class Perforce
     public function generateP4Command(string $command, bool $useClient = true): string
     {
         $p4Command = $this->getP4Executable().' ';
-        $p4Command .= '-u ' . $this->getUser() . ' ';
+        $p4Command .= '-u ' . ProcessExecutor::escape($this->getUser()) . ' ';
         if ($useClient) {
-            $p4Command .= '-c ' . $this->getClient() . ' ';
+            $p4Command .= '-c ' . ProcessExecutor::escape($this->getClient()) . ' ';
         }
-        $p4Command .= '-p ' . $this->getPort() . ' ' . $command;
+        $p4Command .= '-p ' . ProcessExecutor::escape($this->getPort()) . ' ' . $command;
 
         return $p4Command;
     }
