@@ -176,9 +176,9 @@ class Application extends BaseApplication
 
         // determine command name to be executed without including plugin commands
         $commandName = '';
-        if ($name = $this->getCommandNameBeforeBinding($input)) {
+        if ($rawCommandName = $this->getCommandNameBeforeBinding($input)) {
             try {
-                $commandName = $this->find($name)->getName();
+                $commandName = $this->find($rawCommandName)->getName();
             } catch (CommandNotFoundException $e) {
                 // we'll check command validity again later after plugins are loaded
                 $commandName = false;
@@ -261,7 +261,7 @@ class Application extends BaseApplication
                 || ($commandName === '_complete' && !$isNonAllowedRoot)
             );
 
-        $mayNeedScriptCommand = $mayNeedPluginCommand || $commandName === 'run-script';
+        $mayNeedScriptCommand = $mayNeedPluginCommand || $commandName === 'run-script' || $rawCommandName !== $commandName;
 
         if ($mayNeedPluginCommand && !$this->disablePluginsByDefault && !$this->hasPluginCommands) {
             // at this point plugins are needed, so if we are running as root and it is not allowed we need to prompt

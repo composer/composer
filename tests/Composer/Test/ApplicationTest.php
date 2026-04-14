@@ -123,4 +123,31 @@ class ApplicationTest extends TestCase
         self::assertTrue($composer->getPluginManager()->arePluginsDisabled('local'), 'Plugins should be disabled when --no-plugins is used');
         self::assertTrue($composer->getPluginManager()->arePluginsDisabled('global'), 'Global plugins should be disabled when --no-plugins is used');
     }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @see https://github.com/composer/composer/issues/12802
+     */
+    public function testScriptCommandTakesPriorityOverAbbreviatedBuiltinCommand(): void
+    {
+        $this->initTempComposer([
+            'scripts' => [
+                'check' => 'echo hello',
+            ],
+        ]);
+
+        $application = new Application();
+        $application->setAutoExit(false);
+        $application->setCatchExceptions(false);
+        if (method_exists($application, 'setCatchErrors')) {
+            $application->setCatchErrors(false);
+        }
+
+        $appOutput = new BufferedOutput();
+        $exitCode = $application->doRun(new ArrayInput(['command' => 'check']), $appOutput);
+
+        self::assertSame(0, $exitCode, 'Script command should have run successfully');
+        self::assertStringContainsString('hello', $appOutput->fetch(), 'The "check" script should have been executed instead of the check-platform-reqs command');
+    }
 }
