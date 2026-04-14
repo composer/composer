@@ -3545,7 +3545,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, int given\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Util/Perforce.php
 
 		-
@@ -4378,11 +4378,6 @@ parameters:
 			message: "#^Implicit array creation is not allowed \\- variable \\$packages does not exist\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Util/PackageSorterTest.php
-
-		-
-			message: "#^Call to method Composer\\\\Util\\\\Perforce\\:\\:queryP4User\\(\\) with incorrect case\\: queryP4user$#"
-			count: 6
-			path: ../tests/Composer/Test/Util/PerforceTest.php
 
 		-
 			message: "#^Dynamic call to static method Composer\\\\Util\\\\Perforce\\:\\:checkServerExists\\(\\)\\.$#"

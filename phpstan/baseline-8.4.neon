@@ -232,7 +232,7 @@ parameters:
 
 		-
 			message: "#^Call to function method_exists\\(\\) with Composer\\\\Console\\\\Application and 'setCatchErrors' will always evaluate to true\\.$#"
-			count: 1
+			count: 2
 			path: ../tests/Composer/Test/ApplicationTest.php
 
 		-
