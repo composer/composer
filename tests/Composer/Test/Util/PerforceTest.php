@@ -650,7 +650,7 @@ class PerforceTest extends TestCase
 
     public function testSyncCodeBaseWithoutStream()
     {
-        $expectedCommand = 'p4 -u ' . ProcessExecutor::escape('user') . ' -c ' . ProcessExecutor::escape('composer_perforce_TEST_depot') . ' -p ' . ProcessExecutor::escape('port') . ' sync -f \'@label\'';
+        $expectedCommand = 'p4 -u ' . ProcessExecutor::escape('user') . ' -c ' . ProcessExecutor::escape('composer_perforce_TEST_depot') . ' -p ' . ProcessExecutor::escape('port') . ' sync -f ' . ProcessExecutor::escape('@label');
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))
@@ -662,7 +662,7 @@ class PerforceTest extends TestCase
     public function testSyncCodeBaseWithStream()
     {
         $this->setPerforceToStream();
-        $expectedCommand = 'p4 -u ' . ProcessExecutor::escape('user') . ' -c ' . ProcessExecutor::escape('composer_perforce_TEST_depot_branch') . ' -p ' . ProcessExecutor::escape('port') . ' sync -f \'@label\'';
+        $expectedCommand = 'p4 -u ' . ProcessExecutor::escape('user') . ' -c ' . ProcessExecutor::escape('composer_perforce_TEST_depot_branch') . ' -p ' . ProcessExecutor::escape('port') . ' sync -f ' . ProcessExecutor::escape('@label');
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
