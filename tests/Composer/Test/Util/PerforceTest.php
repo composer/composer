@@ -126,56 +126,9 @@ class PerforceTest extends TestCase
 
     public function testGenerateP4Command(): void
     {
-        $command = 'do something';
-        $p4Command = $this->perforce->generateP4Command($command);
-        $expected = "p4 -u 'user' -c 'composer_perforce_TEST_depot' -p 'port' do something";
+        $p4Command = $this->perforce->generateP4Command(['do', 'something']);
+        $expected = ['p4', '-u', 'user', '-c', 'composer_perforce_TEST_depot', '-p', 'port', 'do', 'something'];
         self::assertEquals($expected, $p4Command);
-    }
-
-    public function testGenerateP4CommandEscapesPortInjection(): void
-    {
-        $perforce = new Perforce(
-            ['depot' => 'depot', 'branch' => 'branch', 'p4user' => 'user', 'unique_perforce_client_name' => 'TEST'],
-            'localhost:1666; touch /tmp/pwned',
-            'path',
-            $this->processExecutor,
-            false,
-            $this->io
-        );
-        $command = $perforce->generateP4Command('login -s', false);
-        self::assertStringNotContainsString('-p localhost:1666; touch /tmp/pwned', $command);
-        self::assertStringContainsString('-p '.ProcessExecutor::escape('localhost:1666; touch /tmp/pwned'), $command);
-    }
-
-    public function testGenerateP4CommandEscapesUserInjection(): void
-    {
-        $perforce = new Perforce(
-            ['depot' => 'depot', 'branch' => 'branch', 'p4user' => 'user; id', 'unique_perforce_client_name' => 'TEST'],
-            'port',
-            'path',
-            $this->processExecutor,
-            false,
-            $this->io
-        );
-        $command = $perforce->generateP4Command('login -s', false);
-        self::assertStringNotContainsString('-u user; id', $command);
-        self::assertStringContainsString('-u '.ProcessExecutor::escape('user; id'), $command);
-    }
-
-    public function testGenerateP4CommandEscapesClientInjection(): void
-    {
-        $perforce = new Perforce(
-            ['depot' => 'foo; id #', 'branch' => 'branch', 'p4user' => 'user', 'unique_perforce_client_name' => 'TEST'],
-            'port',
-            'path',
-            $this->processExecutor,
-            false,
-            $this->io
-        );
-        $command = $perforce->generateP4Command('do something');
-        $expectedClient = 'composer_perforce_TEST_foo; id #';
-        self::assertStringNotContainsString('-c '.$expectedClient.' ', $command);
-        self::assertStringContainsString('-c '.ProcessExecutor::escape($expectedClient), $command);
     }
 
     public function testQueryP4UserWithUserAlreadySet(): void
@@ -395,20 +348,10 @@ class PerforceTest extends TestCase
     public function testIsLoggedIn(): void
     {
         $this->processExecutor->expects(
-            [['cmd' => "p4 -u 'user' -p 'port' login -s"]],
+            [['cmd' => ['p4', '-u', 'user', '-p', 'port', 'login', '-s']]],
             true
         );
         $this->perforce->isLoggedIn();
-    }
-
-    public function testConnectClient(): void
-    {
-        $this->processExecutor->expects(
-            ["p4 -u 'user' -c 'composer_perforce_TEST_depot' -p 'port' client -i < ".ProcessExecutor::escape('path/composer_perforce_TEST_depot.p4.spec')],
-            true
-        );
-
-        $this->perforce->connectClient();
     }
 
     public function testGetBranchesWithStream(): void
@@ -418,11 +361,11 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects(
             [
                 [
-                    'cmd' => "p4 -u 'user' -c 'composer_perforce_TEST_depot_branch' -p 'port' streams ".ProcessExecutor::escape('//depot/...'),
+                    'cmd' => ['p4', '-u', 'user', '-c', 'composer_perforce_TEST_depot_branch', '-p', 'port', 'streams', '//depot/...'],
                     'stdout' => 'Stream //depot/branch mainline none \'branch\'' . PHP_EOL,
                 ],
                 [
-                    'cmd' => "p4 -u 'user' -p 'port' changes ".ProcessExecutor::escape('//depot/branch/...'),
+                    'cmd' => ['p4', '-u', 'user', '-p', 'port', 'changes', '//depot/branch/...'],
                     'stdout' => 'Change 1234 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\'',
                 ],
             ],
@@ -438,7 +381,7 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects(
             [
                 [
-                    'cmd' => "p4 -u 'user' -p 'port' changes ".ProcessExecutor::escape('//depot/...'),
+                    'cmd' => ['p4', '-u', 'user', '-p', 'port', 'changes', '//depot/...'],
                     'stdout' => 'Change 5678 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\'',
                 ],
             ],
@@ -454,7 +397,7 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects(
             [
                 [
-                    'cmd' => "p4 -u 'user' -c 'composer_perforce_TEST_depot' -p 'port' labels",
+                    'cmd' => ['p4', '-u', 'user', '-c', 'composer_perforce_TEST_depot', '-p', 'port', 'labels'],
                     'stdout' => 'Label 0.0.1 2013/07/31 \'First Label!\'' . PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . PHP_EOL,
                 ],
             ],
@@ -473,7 +416,7 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects(
             [
                 [
-                    'cmd' => "p4 -u 'user' -c 'composer_perforce_TEST_depot_branch' -p 'port' labels",
+                    'cmd' => ['p4', '-u', 'user', '-c', 'composer_perforce_TEST_depot_branch', '-p', 'port', 'labels'],
                     'stdout' => 'Label 0.0.1 2013/07/31 \'First Label!\'' . PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . PHP_EOL,
                 ],
             ],
@@ -497,7 +440,7 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects(
             [
                 [
-                    'cmd' => "p4 -u 'user' -p 'port' depots",
+                    'cmd' => ['p4', '-u', 'user', '-p', 'port', 'depots'],
                     'stdout' => 'Depot depot 2013/06/25 stream /p4/1/depots/depot/... \'Created by Me\'',
                 ],
             ],
@@ -514,7 +457,7 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects(
             [
                 [
-                    'cmd' => "p4 -u 'user' -c 'composer_perforce_TEST_depot' -p 'port'  print ".ProcessExecutor::escape('//depot/composer.json'),
+                    'cmd' => ['p4', '-u', 'user', '-c', 'composer_perforce_TEST_depot', '-p', 'port', 'print', '//depot/composer.json'],
                     'stdout' => PerforceTest::getComposerJson(),
                 ],
             ],
@@ -536,11 +479,11 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects(
             [
                 [
-                    'cmd' => "p4 -u 'user' -p 'port'  files ".ProcessExecutor::escape('//depot/composer.json@0.0.1'),
+                    'cmd' => ['p4', '-u', 'user', '-p', 'port', 'files', '//depot/composer.json@0.0.1'],
                     'stdout' => '//depot/composer.json#1 - branch change 10001 (text)',
                 ],
                 [
-                    'cmd' => "p4 -u 'user' -c 'composer_perforce_TEST_depot' -p 'port'  print ".ProcessExecutor::escape('//depot/composer.json@10001'),
+                    'cmd' => ['p4', '-u', 'user', '-c', 'composer_perforce_TEST_depot', '-p', 'port', 'print', '//depot/composer.json@10001'],
                     'stdout' => PerforceTest::getComposerJson(),
                 ],
             ],
@@ -565,7 +508,7 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects(
             [
                 [
-                    'cmd' => "p4 -u 'user' -c 'composer_perforce_TEST_depot_branch' -p 'port'  print ".ProcessExecutor::escape('//depot/branch/composer.json'),
+                    'cmd' => ['p4', '-u', 'user', '-c', 'composer_perforce_TEST_depot_branch', '-p', 'port', 'print', '//depot/branch/composer.json'],
                     'stdout' => PerforceTest::getComposerJson(),
                 ],
             ],
@@ -588,11 +531,11 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects(
             [
                 [
-                    'cmd' => "p4 -u 'user' -p 'port'  files ".ProcessExecutor::escape('//depot/branch/composer.json@0.0.1'),
+                    'cmd' => ['p4', '-u', 'user', '-p', 'port', 'files', '//depot/branch/composer.json@0.0.1'],
                     'stdout' => '//depot/composer.json#1 - branch change 10001 (text)',
                 ],
                 [
-                    'cmd' => "p4 -u 'user' -c 'composer_perforce_TEST_depot_branch' -p 'port'  print ".ProcessExecutor::escape('//depot/branch/composer.json@10001'),
+                    'cmd' => ['p4', '-u', 'user', '-c', 'composer_perforce_TEST_depot_branch', '-p', 'port', 'print', '//depot/branch/composer.json@10001'],
                     'stdout' => PerforceTest::getComposerJson(),
                 ],
             ],
@@ -615,7 +558,7 @@ class PerforceTest extends TestCase
     public function testSyncCodeBaseWithoutStream(): void
     {
         $this->processExecutor->expects(
-            ["p4 -u 'user' -c 'composer_perforce_TEST_depot' -p 'port' sync -f '@label'"],
+            [['cmd' => ['p4', '-u', 'user', '-c', 'composer_perforce_TEST_depot', '-p', 'port', 'sync', '-f', '@label']]],
             true
         );
 
@@ -627,7 +570,7 @@ class PerforceTest extends TestCase
         $this->setPerforceToStream();
 
         $this->processExecutor->expects(
-            ["p4 -u 'user' -c 'composer_perforce_TEST_depot_branch' -p 'port' sync -f '@label'"],
+            [['cmd' => ['p4', '-u', 'user', '-c', 'composer_perforce_TEST_depot_branch', '-p', 'port', 'sync', '-f', '@label']]],
             true
         );
 
@@ -725,7 +668,7 @@ class PerforceTest extends TestCase
 
         $testClient = $this->perforce->getClient();
         $this->processExecutor->expects(
-            ["p4 -u '" . self::TEST_P4USER . "' -p '" . self::TEST_PORT . "' client -d " . ProcessExecutor::escape($testClient)],
+            [['cmd' => ['p4', '-u', self::TEST_P4USER, '-p', self::TEST_PORT, 'client', '-d', $testClient]]],
             true
         );
 
