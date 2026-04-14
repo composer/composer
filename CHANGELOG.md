@@ -1,3 +1,12 @@
+### [2.2.27] 2026-04-14
+
+  * Security: Fixed command injection via malicious Perforce reference (GHSA-gqw4-4w2p-838q / CVE-2026-40261)
+  * Security: Fixed command injection via malicious Perforce repository definition (GHSA-wg36-wvj6-r67p / CVE-2026-40176)
+  * Security: Hardened git/hg/perforce/fossil identifier validation to ensure branch names starting with `-` do not cause issues (246f807b, 246f807b, 246f807b)
+  * Security: Fixed Perforce unescaped user input in queryP4User shell command (246f807b)
+  * Security: Fixed usage of insecure 3DES ciphers when ext-curl is missing (21ffece62)
+  * Fixed issue handling paths with `=` in them on Windows (#11568)
+
 ### [2.2.26] 2025-12-30
 
   * Security: Fixed ANSI sequence injection (GHSA-59pp-r3rg-353g / CVE-2025-67746)
@@ -1528,6 +1537,7 @@
 
   * Initial release
 
+[2.2.27]: https://github.com/composer/composer/compare/2.2.26...2.2.27
 [2.2.26]: https://github.com/composer/composer/compare/2.2.25...2.2.26
 [2.2.25]: https://github.com/composer/composer/compare/2.2.24...2.2.25
 [2.2.24]: https://github.com/composer/composer/compare/2.2.23...2.2.24
