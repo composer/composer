@@ -569,7 +569,7 @@ class PerforceTest extends TestCase
     public function testSyncCodeBaseWithoutStream(): void
     {
         $this->processExecutor->expects(
-            ['p4 -u user -c composer_perforce_TEST_depot -p port sync -f @label'],
+            ['p4 -u user -c composer_perforce_TEST_depot -p port sync -f \'@label\''],
             true
         );
 
@@ -581,7 +581,7 @@ class PerforceTest extends TestCase
         $this->setPerforceToStream();
 
         $this->processExecutor->expects(
-            ['p4 -u user -c composer_perforce_TEST_depot_branch -p port sync -f @label'],
+            ['p4 -u user -c composer_perforce_TEST_depot_branch -p port sync -f \'@label\''],
             true
         );
 

@@ -351,7 +351,7 @@ class Perforce
         chdir($this->path);
         $p4SyncCommand = $this->generateP4Command('sync -f ');
         if (null !== $sourceReference) {
-            $p4SyncCommand .= '@' . $sourceReference;
+            $p4SyncCommand .= ProcessExecutor::escape('@' . $sourceReference);
         }
         $this->executeCommand($p4SyncCommand);
         chdir($prevDir);
