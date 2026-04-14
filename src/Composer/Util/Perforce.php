@@ -304,14 +304,16 @@ class Perforce
 
     /**
      * @internal
-     * @param list<string> $arguments Additional arguments for git rev-list
+     * @param non-empty-list<string> $arguments Additional arguments for git rev-list
      * @return non-empty-list<string>
      */
     public function generateP4Command(array $arguments, bool $useClient = true): array
     {
         $p4Command = [$this->getP4Executable()];
-        $p4Command[] = '-u';
-        $p4Command[] = $this->getUser();
+        if ($this->getUser() !== null) {
+            $p4Command[] = '-u';
+            $p4Command[] = $this->getUser();
+        }
         if ($useClient) {
             $p4Command[] = '-c';
             $p4Command[] = $this->getClient();
@@ -462,6 +464,9 @@ class Perforce
     public function getFileContent(string $file, string $identifier): ?string
     {
         $path = $this->getFilePath($file, $identifier);
+        if ($path === null) {
+            return null;
+        }
 
         $command = $this->generateP4Command(['print', $path]);
         $this->executeCommand($command);
