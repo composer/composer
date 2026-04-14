@@ -604,7 +604,7 @@ class PerforceTest extends TestCase
 
     public function testSyncCodeBaseWithoutStream()
     {
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port sync -f @label';
+        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port sync -f \'@label\'';
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))
@@ -616,7 +616,7 @@ class PerforceTest extends TestCase
     public function testSyncCodeBaseWithStream()
     {
         $this->setPerforceToStream();
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port sync -f @label';
+        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port sync -f \'@label\'';
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
