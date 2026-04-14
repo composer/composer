@@ -146,6 +146,10 @@ class HgDriver extends VcsDriver
      */
     public function getChangeDate(string $identifier): ?\DateTimeImmutable
     {
+        if (isset($identifier[0]) && $identifier[0] === '-') {
+            throw new \RuntimeException('Invalid hg identifier detected. Identifier must not start with a -, given: ' . $identifier);
+        }
+
         $this->process->execute(
             ['hg', 'log', '--template', '{date|rfc3339date}', '-r', $identifier],
             $output,

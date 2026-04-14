@@ -66,7 +66,7 @@ class FossilDownloader extends VcsDownloader
 
         $realPath = Platform::realpath($path);
         $this->execute(['fossil', 'pull'], $realPath);
-        $this->execute(['fossil', 'up', (string) $target->getSourceReference()], $realPath);
+        $this->execute(['fossil', 'up', '--', (string) $target->getSourceReference()], $realPath);
 
         return \React\Promise\resolve(null);
     }

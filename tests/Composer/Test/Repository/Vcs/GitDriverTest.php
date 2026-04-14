@@ -184,6 +184,17 @@ GIT;
         $driver->getFileContent('file.txt', '-h');
     }
 
+    public function testGetChangeDateInvalidIdentifier(): void
+    {
+        self::expectException('\RuntimeException');
+
+        $process = $this->getProcessExecutorMock();
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $driver = new GitDriver(['url' => 'https://example.org/acme.git'], $io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
+
+        $driver->getChangeDate('-n1 --format=%at HEAD');
+    }
+
     private function setRepoDir(GitDriver $driver, string $path): void
     {
         $reflectionClass = new \ReflectionClass($driver);

@@ -17,6 +17,19 @@
   * Fixed inconsistent treatment of SingleCommandApplication script commands wrt autoloading (#12758)
   * Fixed some platform package parsing failing when Composer runs in web SAPIs (#12735)
 
+### [2.9.6] 2026-04-14
+
+  * Security: Fixed command injection via malicious Perforce reference (GHSA-gqw4-4w2p-838q / CVE-2026-40261)
+  * Security: Fixed command injection via malicious Perforce repository definition (GHSA-wg36-wvj6-r67p / CVE-2026-40176)
+  * Security: Fixed git credentials remaining in git mirror .git/config after clone or update failed (2bcbfc3d)
+  * Security: Fixed usage of insecure 3DES ciphers when ext-curl is missing (5e71d77e)
+  * Security: Fixed Perforce unescaped user input in queryP4User shell command (ef3fc088)
+  * Security: Hardened git/hg/perforce/fossil identifier validation to ensure branch names starting with `-` do not cause issues (6621d45, d836b90, 5e08c764)
+  * Fixed inconsistent treatment of SingleCommandApplication script commands wrt autoloading (#12758)
+  * Fixed GitHub API authentication errors not being visible to the user (#12737)
+  * Fixed some platform package parsing failing when Composer runs in web SAPIs (#12735)
+  * Fixed error reporting for clarity when a constraint cannot be parsed (#12743)
+
 ### [2.9.5] 2026-01-29
 
   * Added support for new `pie` `download-url-methods` (#12727)
@@ -2144,6 +2157,7 @@
   * Initial release
 
 [2.10.0-RC1]: https://github.com/composer/composer/compare/2.9.5...2.10.0-RC1
+[2.9.6]: https://github.com/composer/composer/compare/2.9.5...2.9.6
 [2.9.5]: https://github.com/composer/composer/compare/2.9.4...2.9.5
 [2.9.4]: https://github.com/composer/composer/compare/2.9.3...2.9.4
 [2.9.3]: https://github.com/composer/composer/compare/2.9.2...2.9.3
