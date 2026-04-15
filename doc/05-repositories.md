@@ -424,28 +424,6 @@ Each item in the array can be:
 }
 ```
 
-##### unfiltered-packages
-
-A list of packages to exempt from filtering for this repository. Accepts the same formats as the
-global [`config.filter.unfiltered-packages`](06-config.md#unfiltered-packages).
-
-```json
-{
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://example.org",
-            "filter": {
-                "unfiltered-packages": [
-                    "vendor/package",
-                    {"package": "acme/other", "constraint": "^2.0", "only": "audit"}
-                ]
-            }
-        }
-    ]
-}
-```
-
 ### VCS
 
 VCS stands for version control system. This includes versioning systems like
