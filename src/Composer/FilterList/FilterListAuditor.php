@@ -31,12 +31,12 @@ class FilterListAuditor
 {
     /**
      * @param PackageInterface[] $packages
-     * @param list<string> $lists
+     * @param list<string> $configuredLists
      * @return array{filter: array<string, array<string, list<FilterListEntry>>>, unreachableRepos: array<string>}
      */
-    public function collectFilterLists(array $packages, FilterListProviderSet $providerSet, array $lists, bool $ignoreUnreachable): array
+    public function collectFilterLists(array $packages, FilterListProviderSet $providerSet, array $configuredLists, bool $ignoreUnreachable): array
     {
-        $result = $providerSet->getMatchingFilterLists($packages, $lists, $ignoreUnreachable);
+        $result = $providerSet->getMatchingFilterLists($packages, $configuredLists, $ignoreUnreachable);
         $filter = $result['filter'];
         $unreachableRepos = $result['unreachableRepos'];
 

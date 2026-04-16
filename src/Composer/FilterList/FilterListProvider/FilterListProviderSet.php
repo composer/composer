@@ -73,10 +73,10 @@ class FilterListProviderSet
 
     /**
      * @param PackageInterface[] $packages
-     * @param list<string> $lists
+     * @param list<string> $configuredLists
      * @return array{filter: array<string, array<FilterListEntry>>, unreachableRepos: array<string>}
      */
-    public function getMatchingFilterLists(array $packages, array $lists, bool $ignoreUnreachable = false): array
+    public function getMatchingFilterLists(array $packages, array $configuredLists, bool $ignoreUnreachable = false): array
     {
         $map = [];
         foreach ($packages as $package) {
@@ -92,23 +92,23 @@ class FilterListProviderSet
         }
 
         $unreachableRepos = [];
-        $filters = $this->getFilterListEntriesForConstraints($map, $lists, $ignoreUnreachable, $unreachableRepos);
+        $filters = $this->getFilterListEntriesForConstraints($map, $configuredLists, $ignoreUnreachable, $unreachableRepos);
 
         return ['filter' => $filters, 'unreachableRepos' => $unreachableRepos];
     }
 
     /**
      * @param array<string, ConstraintInterface> $packageConstraintMap
-     * @param array<string> $lists
+     * @param array<string> $configuredLists
      * @param array<string> &$unreachableRepos Array to store messages about unreachable repositories
      * @return array<string, list<FilterListEntry>>
      */
-    private function getFilterListEntriesForConstraints(array $packageConstraintMap, array $lists, bool $ignoreUnreachable = false, array &$unreachableRepos = []): array
+    private function getFilterListEntriesForConstraints(array $packageConstraintMap, array $configuredLists, bool $ignoreUnreachable = false, array &$unreachableRepos = []): array
     {
         $filters = [];
         foreach ($this->providers as $provider) {
             $providerLists = $provider->getFilterLists();
-            if ([] === array_intersect($lists, $providerLists)) {
+            if ([] === array_intersect($configuredLists, $providerLists)) {
                 continue;
             }
 

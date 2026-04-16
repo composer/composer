@@ -14,6 +14,8 @@ namespace Composer\Advisory;
 
 use Composer\Config;
 use Composer\Policy\IgnoreUnreachable;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\PolicyConfig;
 
 /**
  * @readonly
@@ -211,9 +213,11 @@ class AuditConfig
      * Create an AuditConfig from a PolicyConfig (BC bridge).
      *
      * This allows existing code that consumes AuditConfig to work unchanged
-     * while the config source migrates from audit.* to policy.*.
+     * while the config source migrates from config.audit.* to config.policy.*.
+     *
+     * @param Auditor::FORMAT_* $auditFormat
      */
-    public static function fromPolicyConfig(\Composer\Policy\PolicyConfig $policyConfig): self
+    public static function fromPolicyConfig(PolicyConfig $policyConfig, bool $audit = true, string $auditFormat = Auditor::FORMAT_SUMMARY): self
     {
         $adv = $policyConfig->advisories;
         $aba = $policyConfig->abandoned;
@@ -271,26 +275,17 @@ class AuditConfig
 
         // Map abandoned audit mode to old enum
         $abandonedMode = Auditor::ABANDONED_FAIL;
-        if ($aba->audit === \Composer\Policy\ListPolicyConfig::AUDIT_IGNORE) {
+        if ($aba->audit === ListPolicyConfig::AUDIT_IGNORE) {
             $abandonedMode = Auditor::ABANDONED_IGNORE;
-        } elseif ($aba->audit === \Composer\Policy\ListPolicyConfig::AUDIT_REPORT) {
+        } elseif ($aba->audit === ListPolicyConfig::AUDIT_REPORT) {
             $abandonedMode = Auditor::ABANDONED_REPORT;
         }
 
-        // Map filtered audit mode — uses malware config as primary
-        $filteredMode = Auditor::FILTERED_FAIL;
-        $malware = $policyConfig->malware;
-        if ($malware->audit === \Composer\Policy\ListPolicyConfig::AUDIT_IGNORE) {
-            $filteredMode = Auditor::FILTERED_IGNORE;
-        } elseif ($malware->audit === \Composer\Policy\ListPolicyConfig::AUDIT_REPORT) {
-            $filteredMode = Auditor::FILTERED_REPORT;
-        }
-
         return new self(
-            $policyConfig->audit,
-            $policyConfig->auditFormat,
+            $audit,
+            $auditFormat,
             $abandonedMode,
-            $filteredMode,
+            $policyConfig->malware->audit,
             $adv->block,
             $aba->block,
             $policyConfig->ignoreUnreachable,

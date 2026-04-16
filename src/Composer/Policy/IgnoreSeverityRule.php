@@ -56,7 +56,6 @@ class IgnoreSeverityRule
     public static function parseIgnoreSeverityMap(array $config): array
     {
         $rules = [];
-
         foreach ($config as $key => $value) {
             if (is_int($key) && is_string($value)) {
                 $rules[$value] = new self($value);

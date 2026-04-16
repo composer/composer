@@ -49,9 +49,9 @@ class FilterListAuditorTest extends TestCase
 
     /**
      * @dataProvider provideUnfilteredPackages
-     * @param list<array{package: string, constraint: string}>|list<string> $ignorePackageCOnfig
+     * @param list<array{package: string, constraint: string}>|list<string> $ignorePackageConfig
      */
-    public function testGetMatchingEntriesUnfilteredPackages(array $ignorePackageCOnfig, int $expectedCount): void
+    public function testGetMatchingEntriesUnfilteredPackages(array $ignorePackageConfig, int $expectedCount): void
     {
         $package = new CompletePackage('acme/package', '1.0.0.0', '1.0');
         $filterListMap = [
@@ -66,7 +66,7 @@ class FilterListAuditorTest extends TestCase
         $config = new Config();
         $config->merge(['config' => ['policy' => [
             'list' => [
-                'ignore' => $ignorePackageCOnfig,
+                'ignore' => $ignorePackageConfig,
             ]
         ]]]);
         $policyConfig = PolicyConfig::fromConfig($config);

@@ -1139,7 +1139,7 @@ class Installer
     private function getPolicyConfig(): PolicyConfig
     {
         if (null === $this->policyConfig) {
-            $this->policyConfig = PolicyConfig::fromConfig($this->config, $this->audit, $this->auditFormat);
+            $this->policyConfig = PolicyConfig::fromConfig($this->config);
         }
 
         return $this->policyConfig;
@@ -1148,7 +1148,7 @@ class Installer
     private function getAuditConfig(): AuditConfig
     {
         if (null === $this->auditConfig) {
-            $this->auditConfig = AuditConfig::fromPolicyConfig($this->getPolicyConfig());
+            $this->auditConfig = AuditConfig::fromPolicyConfig($this->getPolicyConfig(), $this->audit, $this->auditFormat);
         }
 
         return $this->auditConfig;
