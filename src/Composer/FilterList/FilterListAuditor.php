@@ -18,6 +18,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\MalwarePolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
@@ -53,7 +54,56 @@ class FilterListAuditor
     }
 
     /**
+     * Apply the malware list's `ignore-source` filter to a filter-list map.
+     *
+     * This drops entries whose `source` matches the user's `ignore-source`
+     * config so that callers can run it once over the full map rather than
+     * recomputing the same filter inside the per-package matching loop. The
+     * result is always a fresh array — the input is not mutated.
+     *
      * @param array<string, array<string, list<FilterListEntry>>> $filterListMap
+     * @param 'block'|'audit' $operation
+     * @return array<string, array<string, list<FilterListEntry>>>
+     */
+    public function applyIgnoreSourceFilter(array $filterListMap, PolicyConfig $policyConfig, string $operation): array
+    {
+        $activeListConfigs = $policyConfig->getActiveFilterLists($operation);
+        if (!isset($activeListConfigs[MalwarePolicyConfig::NAME]) || !$activeListConfigs[MalwarePolicyConfig::NAME] instanceof MalwarePolicyConfig) {
+            return $filterListMap;
+        }
+
+        $ignoreSource = $activeListConfigs[MalwarePolicyConfig::NAME]->ignoreSource;
+        if (count($ignoreSource) === 0) {
+            return $filterListMap;
+        }
+
+        foreach ($filterListMap as $packageName => $entries) {
+            if (!isset($entries[MalwarePolicyConfig::NAME])) {
+                continue;
+            }
+
+            $packageEntries = [];
+            foreach ($entries[MalwarePolicyConfig::NAME] as $malwareEntry) {
+                if (!in_array($malwareEntry->source, $ignoreSource, true)) {
+                    $packageEntries[] = $malwareEntry;
+                }
+            }
+
+            if (count($packageEntries) > 0) {
+                $filterListMap[$packageName][MalwarePolicyConfig::NAME] = $packageEntries;
+            } else {
+                unset($filterListMap[$packageName][MalwarePolicyConfig::NAME]);
+            }
+        }
+
+        return $filterListMap;
+    }
+
+    /**
+     * @param array<string, array<string, list<FilterListEntry>>> $filterListMap
+     *      Should already have had {@see applyIgnoreSourceFilter()} run on it
+     *      by the caller — this method does not re-apply the source filter
+     *      because callers loop over many packages and the result is invariant.
      * @param 'block'|'audit' $operation
      * @return list<FilterListEntry>
      */
@@ -63,8 +113,9 @@ class FilterListAuditor
             return [];
         }
 
-        $matchingEntries = [];
         $activeListConfigs = $policyConfig->getActiveFilterLists($operation);
+
+        $matchingEntries = [];
         $allPackageNames = [];
         foreach ($activeListConfigs as $activeListConfig) {
             $allPackageNames = array_merge($allPackageNames, array_keys($activeListConfig->getIgnoreForOperation($operation)));

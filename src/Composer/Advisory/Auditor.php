@@ -121,8 +121,11 @@ class Auditor
         if ($policyConfig !== null && $filterListProviderSet !== null && $filtered !== self::FILTERED_IGNORE) {
             $filterResult = $filterAuditor->collectFilterLists($packages, $filterListProviderSet, $policyConfig->getActiveFilterListNames('audit'), $ignoreUnreachable || $policyConfig->ignoreUnreachable->audit);
             $unreachableRepos = array_merge($unreachableRepos, $filterResult['unreachableRepos']);
+            // Apply ignore-source filtering once on the full map so it is not
+            // recomputed inside the per-package matching loop below.
+            $filterMap = $filterAuditor->applyIgnoreSourceFilter($filterResult['filter'], $policyConfig, 'audit');
             foreach ($packages as $package) {
-                $matchingEntries = $filterAuditor->getMatchingEntries($package, $filterResult['filter'], $policyConfig, 'audit');
+                $matchingEntries = $filterAuditor->getMatchingEntries($package, $filterMap, $policyConfig, 'audit');
                 if (count($matchingEntries) > 0) {
                     $filteredPackages[$package->getName()] = $matchingEntries;
                 }

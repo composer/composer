@@ -58,6 +58,10 @@ class FilterListPoolFilter
             return $pool;
         }
 
+        // Apply ignore-source filtering once on the full map so it is not
+        // recomputed inside the per-package matching loop below.
+        $filterListMap = $this->filterListAuditor->applyIgnoreSourceFilter($filterListMap, $this->policyConfig, 'block');
+
         $packages = [];
         $filterListRemovedVersions = [];
         foreach ($pool->getPackages() as $package) {
