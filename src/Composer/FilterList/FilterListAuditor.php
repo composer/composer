@@ -18,6 +18,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\MalwarePolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
@@ -63,8 +64,12 @@ class FilterListAuditor
             return [];
         }
 
-        $matchingEntries = [];
         $activeListConfigs = $policyConfig->getActiveFilterLists($operation);
+        if (isset($activeListConfigs[MalwarePolicyConfig::NAME]) && $activeListConfigs[MalwarePolicyConfig::NAME] instanceof MalwarePolicyConfig) {
+            $filterListMap = $this->applyMalwareIgnoreSource($filterListMap, $activeListConfigs[MalwarePolicyConfig::NAME], $operation);
+        }
+
+        $matchingEntries = [];
         $allPackageNames = [];
         foreach ($activeListConfigs as $activeListConfig) {
             $allPackageNames = array_merge($allPackageNames, array_keys($activeListConfig->getIgnoreForOperation($operation)));
@@ -121,5 +126,41 @@ class FilterListAuditor
         }
 
         return false;
+    }
+
+    /**
+     * Drop malware-list entries whose `source` is listed in `policy.malware.ignore-source`.
+     *
+     * @param array<string, array<string, list<FilterListEntry>>> $filterListMap
+     * @param 'block'|'audit' $operation
+     * @return array<string, array<string, list<FilterListEntry>>>
+     */
+    private function applyMalwareIgnoreSource(array $filterListMap, MalwarePolicyConfig $malwarePolicyConfig, string $operation): array
+    {
+        $ignoreSource = $malwarePolicyConfig->ignoreSource;
+        if (count($ignoreSource) === 0) {
+            return $filterListMap;
+        }
+
+        foreach ($filterListMap as $packageName => $entries) {
+            if (!isset($entries[MalwarePolicyConfig::NAME])) {
+                continue;
+            }
+
+            $packageEntries = [];
+            foreach ($entries[MalwarePolicyConfig::NAME] as $malwareEntry) {
+                if (!in_array($malwareEntry->source, $ignoreSource, true)) {
+                    $packageEntries[] = $malwareEntry;
+                }
+            }
+
+            if (count($packageEntries) > 0) {
+                $filterListMap[$packageName][MalwarePolicyConfig::NAME] = $packageEntries;
+            } else {
+                unset($filterListMap[$packageName][MalwarePolicyConfig::NAME]);
+            }
+        }
+
+        return $filterListMap;
     }
 }
