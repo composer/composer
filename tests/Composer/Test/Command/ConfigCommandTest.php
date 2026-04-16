@@ -197,24 +197,9 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'audit.ignore-abandoned', '--unset' => true],
             ['config' => ['audit' => []]],
         ];
-        yield 'merge filter.unfiltered-packages' => [
-            ['config' => ['filter' => ['unfiltered-packages' => ['acme/package']]]],
-            ['setting-key' => 'filter.unfiltered-packages', 'setting-value' => ['acme/other'], '--merge' => true],
-            ['config' => ['filter' => ['unfiltered-packages' => ['acme/package', 'acme/other']]]],
-        ];
-        yield 'merge filter.source' => [
-            ['config' => ['filter' => ['sources' => ['old' => ['type' => 'url', 'url' => 'https://example.org']]]]],
-            ['setting-key' => 'filter.sources.new', 'setting-value' => ['url', 'https://example.com'], '--merge' => true],
-            ['config' => ['filter' => ['sources' => ['new' => ['type' => 'url', 'url' => 'https://example.com'], 'old' => ['type' => 'url', 'url' => 'https://example.org']]]]],
-        ];
-        yield 'merge filter.ignore-unreachable' => [
-            [],
-            ['setting-key' => 'filter.ignore-unreachable', 'setting-value' => ['true']],
-            ['config' => ['filter' => ['ignore-unreachable' => true]]],
-        ];
-        yield 'unset filter' => [
-            ['config' => ['filter' => ['unfiltered-packages' => ['acme/package']]]],
-            ['setting-key' => 'filter', '--unset' => true],
+        yield 'unset policy' => [
+            ['config' => ['policy' => ['advisories' => false]]],
+            ['setting-key' => 'policy', '--unset' => true],
             ['config' => []],
         ];
     }
