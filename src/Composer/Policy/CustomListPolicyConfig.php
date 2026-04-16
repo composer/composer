@@ -13,6 +13,7 @@
 namespace Composer\Policy;
 
 use Composer\FilterList\Source\UrlSource;
+use Composer\Semver\VersionParser;
 
 /**
  * @internal
@@ -43,8 +44,7 @@ class CustomListPolicyConfig extends ListPolicyConfig
             $name,
             $block,
             $audit,
-            $ignore,
-            false
+            $ignore
         );
 
         $this->sources = $sources;
@@ -58,6 +58,53 @@ class CustomListPolicyConfig extends ListPolicyConfig
             $this->audit,
             $this->ignore,
             $this->sources
+        );
+    }
+
+    /**
+     * @param array<string, mixed>|bool $listConfig
+     */
+    public static function fromRawConfig(string $listName, $listConfig, VersionParser $parser): self
+    {
+        if ($listConfig === false) {
+            return self::disabled($listName);
+        }
+
+        if ($listConfig === true) {
+            $listConfig = [];
+        }
+
+        if (!is_array($listConfig)) {
+            return self::disabled($listName);
+        }
+
+        $sources = [];
+        foreach ($listConfig['sources'] ?? [] as $sourceConfig) {
+            if (is_array($sourceConfig) && isset($sourceConfig['type']) && $sourceConfig['type'] === 'url') {
+                if (!isset($sourceConfig['url']) || strpos($sourceConfig['url'], 'https://') === false) {
+                    throw new \RuntimeException('Invalid source config for list "'.$listName.'". "url" is required and must start with "https://".');
+                }
+                $sources[] = new UrlSource($listName, $sourceConfig['url']);
+            }
+        }
+
+        return new self(
+            $listName,
+            (bool) ($listConfig['block'] ?? true),
+            $listConfig['audit'] ?? self::AUDIT_FAIL,
+            IgnorePackageRule::parseIgnoreMap($listConfig['ignore'] ?? [], $parser),
+            $sources
+        );
+    }
+
+    public static function disabled(string $listName): self
+    {
+        return new static(
+            $listName,
+            false,
+            self::AUDIT_IGNORE,
+            [],
+            []
         );
     }
 }
