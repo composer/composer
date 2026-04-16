@@ -18,6 +18,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\MalwarePolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
@@ -63,8 +64,27 @@ class FilterListAuditor
             return [];
         }
 
-        $matchingEntries = [];
         $activeListConfigs = $policyConfig->getActiveFilterLists($operation);
+        if (isset($activeListConfigs[MalwarePolicyConfig::NAME]) && $activeListConfigs[MalwarePolicyConfig::NAME] instanceof MalwarePolicyConfig) {
+            foreach ($filterListMap as $packageName => $entries) {
+                if (isset($entries[MalwarePolicyConfig::NAME])) {
+                    $packageEntries = [];
+                    foreach ($entries[MalwarePolicyConfig::NAME] as $malwareEntry) {
+                        if (!in_array($malwareEntry->source, $activeListConfigs[MalwarePolicyConfig::NAME]->ignoreSource, true)) {
+                            $packageEntries[] = $malwareEntry;
+                        }
+                    }
+
+                    if (count($packageEntries) > 0) {
+                        $filterListMap[$packageName][MalwarePolicyConfig::NAME] = $packageEntries;
+                    } else {
+                        unset($filterListMap[$packageName][MalwarePolicyConfig::NAME]);
+                    }
+                }
+            }
+        }
+
+        $matchingEntries = [];
         $allPackageNames = [];
         foreach ($activeListConfigs as $activeListConfig) {
             $allPackageNames = array_merge($allPackageNames, array_keys($activeListConfig->getIgnoreForOperation($operation)));

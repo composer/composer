@@ -74,4 +74,39 @@ class FilterListAuditorTest extends TestCase
         $entries = $this->filterListAuditor->getMatchingEntries($package, $filterListMap, $policyConfig, 'block');
         $this->assertCount($expectedCount, $entries);
     }
+
+    public function provideIgnoreSource(): array
+    {
+        return [
+            'ignore matching source' => ['untrusted', ['untrusted'], 0],
+            'do not ignore non-matching source' => ['trusted', ['untrusted'], 1],
+            'do not ignore null source' => [null, ['untrusted'], 1],
+            'no ignore-source configured' => ['untrusted', [], 1],
+        ];
+    }
+
+    /**
+     * @dataProvider provideIgnoreSource
+     * @param list<string> $ignoreSource
+     */
+    public function testGetMatchingEntriesIgnoreSource(?string $entrySource, array $ignoreSource, int $expectedCount): void
+    {
+        $package = new CompletePackage('acme/package', '1.0.0.0', '1.0');
+        $filterListMap = [
+            'acme/package' => [
+                'malware' => [FilterListEntry::create('malware', ['package' => 'acme/package', 'constraint' => '*', 'source' => $entrySource], self::getVersionParser())],
+            ],
+        ];
+
+        $config = new Config();
+        $config->merge(['config' => ['policy' => [
+            'malware' => [
+                'ignore-source' => $ignoreSource,
+            ],
+        ]]]);
+        $policyConfig = PolicyConfig::fromConfig($config);
+
+        $entries = $this->filterListAuditor->getMatchingEntries($package, $filterListMap, $policyConfig, 'block');
+        $this->assertCount($expectedCount, $entries);
+    }
 }
