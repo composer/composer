@@ -12,12 +12,14 @@
 
 namespace Composer\Policy;
 
+use Composer\Semver\VersionParser;
+
 /**
  * @internal
  * @final
  * @readonly
  */
-class AdvisoryPolicyConfig extends ListPolicyConfig
+class AdvisoriesPolicyConfig extends ListPolicyConfig
 {
     public const NAME = 'advisories';
 
@@ -48,8 +50,7 @@ class AdvisoryPolicyConfig extends ListPolicyConfig
             self::NAME,
             $block,
             $audit,
-             $ignore,
-            true
+             $ignore
         );
         $this->ignoreId = $ignoreId;
         $this->ignoreSeverity = $ignoreSeverity;
@@ -100,5 +101,68 @@ class AdvisoryPolicyConfig extends ListPolicyConfig
             $this->ignoreId,
             $this->ignoreSeverity
         );
+    }
+
+    /**
+     * @param array<string, mixed> $policyConfig
+     * @param array<string, mixed> $auditConfig
+     */
+    public static function fromRawConfig(array $policyConfig, array $auditConfig, VersionParser $parser): self
+    {
+        if (!isset($policyConfig['advisories']) && $auditConfig !== []) {
+            $legacyIgnore = parent::parseLegacyAuditIgnore($auditConfig['ignore'] ?? [], $parser);
+
+            return new self(
+                $auditConfig['block-insecure'] ?? true,
+                    self::AUDIT_FAIL,
+                $legacyIgnore['packages'] ?? [],
+                $legacyIgnore['ids'] ?? [],
+                self::parseLegacySeverityWithApply($auditConfig['ignore-severity'] ?? [])
+            );
+        }
+
+        $advisoryConfig = $policyConfig['advisories'] ?? [];
+        if ($advisoryConfig === false) {
+            return self::disabled();
+        }
+
+        if (!is_array($advisoryConfig)) {
+            $advisoryConfig = [];
+        }
+
+        return new self(
+            (bool) ($advisoryConfig['block'] ?? true),
+            $advisoryConfig['audit'] ?? self::AUDIT_FAIL,
+            IgnorePackageRule::parseIgnoreMap($advisoryConfig['ignore'] ?? [], $parser),
+            IgnoreIdRule::parseIgnoreIdMap($advisoryConfig['ignore-id'] ?? []),
+            IgnoreSeverityRule::parseIgnoreSeverityMap($advisoryConfig['ignore-severity'] ?? [])
+        );
+    }
+
+    public static function disabled(): self
+    {
+        return new self(
+            false,
+            self::AUDIT_IGNORE,
+            [],
+            [],
+            []
+        );
+    }
+
+    /**
+     * @param array<mixed> $config
+     * @return array<string, IgnoreSeverityRule>
+     */
+    private static function parseLegacySeverityWithApply(array $config): array
+    {
+        $result = [];
+        foreach ($config as $key => $value) {
+            $severity = is_int($key) ? (string) $value : $key;
+            $parsed = self::parseLegacySingleIgnore($key, $value);
+            $result[$severity] = new IgnoreSeverityRule($severity, $parsed['reason'], $parsed['onBlock'], $parsed['onAudit']);
+        }
+
+        return $result;
     }
 }

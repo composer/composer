@@ -484,7 +484,7 @@ abstract class BaseCommand extends Command
         }
         $auditFormat = $input->hasOption('audit-format') ? $this->getAuditFormat($input) : Auditor::FORMAT_SUMMARY;
 
-        $policyConfig = PolicyConfig::fromConfig($config, $audit, $auditFormat);
+        $policyConfig = PolicyConfig::fromConfig($config);
 
         // --no-blocking / --no-security-blocking: disable ALL blocking (advisories + malware + abandoned + custom)
         $noBlocking = (bool) Platform::getEnv('COMPOSER_NO_SECURITY_BLOCKING')
@@ -495,6 +495,6 @@ abstract class BaseCommand extends Command
             $policyConfig = $policyConfig->withBlockingDisabled();
         }
 
-        return AuditConfig::fromPolicyConfig($policyConfig);
+        return AuditConfig::fromPolicyConfig($policyConfig, $audit, $auditFormat);
     }
 }
