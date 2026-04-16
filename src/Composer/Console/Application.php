@@ -581,7 +581,7 @@ class Application extends BaseApplication
     /**
      * @throws JsonValidationException
      * @throws \InvalidArgumentException
-     * @return ?Composer If $required is true then the return value is guaranteed
+     * @return ($required is true ? Composer : Composer|null) If $required is true then the return value is guaranteed
      */
     public function getComposer(bool $required = true, ?bool $disablePlugins = null, ?bool $disableScripts = null): ?Composer
     {
