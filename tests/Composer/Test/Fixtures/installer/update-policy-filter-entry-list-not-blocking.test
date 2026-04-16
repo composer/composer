@@ -1,5 +1,5 @@
 --TEST--
-Filter list entry matching direct dependency preventing a successful update.
+Filter list entry matching direct dependency not preventing a successful update because block is set to false.
 --COMPOSER--
 {
     "name": "acme/project",

@@ -1,5 +1,5 @@
 --TEST--
-Security advisory matching indirect dependency preventing a successful update.
+Security advisory policy matching indirect dependency preventing a successful update.
 --COMPOSER--
 {
     "name": "acme/project",

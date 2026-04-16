@@ -419,7 +419,7 @@ class Problem
             if ($pool->isFilterListRemovedPackageVersion($packageName, $constraint)) {
                 $filters = $pool->getFilterListEntryForPackageVersion($packageName, $constraint);
 
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the "filter.unfiltered-packages" config. To turn the feature off entirely, you can set "filter" to false.'];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the "policy.' . implode('|', array_keys($filters)). '.ignore" config. To turn the feature off entirely, you can set "policy" to false.'];
             }
 
             return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'];
