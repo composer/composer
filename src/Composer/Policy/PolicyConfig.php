@@ -54,7 +54,7 @@ class PolicyConfig
         AbandonedPolicyConfig::NAME,
     ];
 
-    public const BUILT_IN_NAMES = [
+    public const BUILTIN_LIST_NAMES = [
         AdvisoriesPolicyConfig::NAME,
         AbandonedPolicyConfig::NAME,
         MalwarePolicyConfig::NAME,
@@ -77,7 +77,7 @@ class PolicyConfig
     /**
      * Keys that are not list names at the top level of the policy config.
      */
-    private const NON_LIST_KEYS = [
+    public const NON_LIST_KEYS = [
         'ignore-unreachable',
     ];
 
@@ -167,7 +167,7 @@ class PolicyConfig
 
         $customLists = [];
         foreach ($policyConfig as $listName => $listConfig) {
-            if (in_array($listName, self::BUILT_IN_NAMES, true) || in_array($listName, self::NON_LIST_KEYS, true)) {
+            if (in_array($listName, self::BUILTIN_LIST_NAMES, true) || in_array($listName, self::NON_LIST_KEYS, true)) {
                 continue;
             }
 

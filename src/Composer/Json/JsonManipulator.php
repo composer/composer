@@ -386,6 +386,8 @@ class JsonManipulator
 
     public function removeConfigSetting(string $name): bool
     {
+        // route all policy.* removes through the whole-file fallback so the
+        // cascade-cleanup of empty ancestors can run
         if (strpos($name, 'policy.') === 0) {
             return false;
         }
