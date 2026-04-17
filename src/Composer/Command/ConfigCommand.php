@@ -658,6 +658,25 @@ EOT
             return 0;
         }
 
+        // handle policy.<list> = true|false (enable/disable an entire list) for built-in and custom lists;
+        // policy.ignore-unreachable is excluded because it already has its own scalar/array handling via $uniqueConfigValues
+        if (Preg::isMatch('/^policy\.([^.]+)$/', $settingKey, $matches)
+            && $matches[1] !== 'ignore-unreachable'
+        ) {
+            if ($input->getOption('unset')) {
+                $this->configSource->removeConfigSetting($settingKey);
+
+                return 0;
+            }
+
+            if (!$booleanValidator($values[0])) {
+                throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, expected a boolean', $values[0], $settingKey));
+            }
+            $this->configSource->addConfigSetting($settingKey, $booleanNormalizer($values[0]));
+
+            return 0;
+        }
+
         // handle custom policy lists: policy.<name>.block / policy.<name>.audit
         if (Preg::isMatch('/^policy\.([^.]+)\.(block|audit)$/', $settingKey, $matches)
             && !in_array($matches[1], ['advisories', 'malware', 'abandoned', 'ignore-unreachable'], true)
