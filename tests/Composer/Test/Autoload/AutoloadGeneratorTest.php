@@ -1139,6 +1139,74 @@ EOF;
         self::assertTrue(function_exists('testFilesAutoloadOrderByDependencyRoot'));
     }
 
+    public function testFilesAutoloadOrderByDependenciesPrepended(): void
+    {
+        $package = new RootPackage('root/a', '1.0', '1.0');
+        $package->setAutoload(['files' => ['root3.php']]);
+        $package->setRequires([
+            'z/foo' => new Link('a', 'z/foo', new MatchAllConstraint()),
+            'b/bar' => new Link('a', 'b/bar', new MatchAllConstraint()),
+            'd/d' => new Link('a', 'd/d', new MatchAllConstraint()),
+            'e/e' => new Link('a', 'e/e', new MatchAllConstraint()),
+        ]);
+
+        $packages = [];
+        $packages[] = $z = new Package('z/foo', '1.0', '1.0');
+        $packages[] = $b = new Package('b/bar', '1.0', '1.0');
+        $packages[] = $d = new Package('d/d', '1.0', '1.0');
+        $packages[] = $c = new Package('c/lorem', '1.0', '1.0');
+        $packages[] = $e = new Package('e/e', '1.0', '1.0');
+
+        $z->setAutoload(['files' => ['testAp.php']]);
+        $z->setRequires(['c/lorem' => new Link('z/foo', 'c/lorem', new MatchAllConstraint())]);
+
+        $b->setAutoload(['files' => ['testBp.php']]);
+        $b->setRequires(['c/lorem' => new Link('b/bar', 'c/lorem', new MatchAllConstraint()), 'd/d' => new Link('b/bar', 'd/d', new MatchAllConstraint())]);
+
+        $c->setAutoload(['files' => ['testCp.php']]);
+
+        $d->setAutoload(['files' => ['testDp.php']]);
+        $d->setRequires(['c/lorem' => new Link('d/d', 'c/lorem', new MatchAllConstraint())]);
+
+        $e->setAutoload(['files' => ['testEp.php']]);
+        $e->setRequires(['c/lorem' => new Link('e/e', 'c/lorem', new MatchAllConstraint())]);
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($packages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/z/foo');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/b/bar');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/c/lorem');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/d/d');
+        $this->fs->ensureDirectoryExists($this->vendorDir . '/e/e');
+        file_put_contents($this->vendorDir . '/z/foo/testAp.php', '<?php function testFilesAutoloadOrderByDependencyPrepended1() {}');
+        file_put_contents($this->vendorDir . '/b/bar/testBp.php', '<?php function testFilesAutoloadOrderByDependencyPrepended2() {}');
+        file_put_contents($this->vendorDir . '/c/lorem/testCp.php', '<?php function testFilesAutoloadOrderByDependencyPrepended3() {}');
+        file_put_contents($this->vendorDir . '/d/d/testDp.php', '<?php function testFilesAutoloadOrderByDependencyPrepended4() {}');
+        file_put_contents($this->vendorDir . '/e/e/testEp.php', '<?php function testFilesAutoloadOrderByDependencyPrepended5() {}');
+        file_put_contents($this->workingDir . '/root3.php', '<?php function testFilesAutoloadOrderByDependencyPrependedRoot() {}');
+
+        $this->configValueMap['prepend-autoloader-files'] = static function (): bool {
+            return true;
+        };
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'FilesAutoloadOrderPrepended');
+        self::assertFileContentEquals(__DIR__ . '/Fixtures/autoload_functions_by_dependency_prepended.php', $this->vendorDir . '/autoload.php');
+        self::assertFileContentEquals(__DIR__ . '/Fixtures/autoload_real_files_by_dependency_prepended.php', $this->vendorDir . '/composer/autoload_real.php');
+        self::assertFileContentEquals(__DIR__ . '/Fixtures/autoload_static_files_by_dependency_prepended.php', $this->vendorDir . '/composer/autoload_static.php');
+
+        $loader = require $this->vendorDir . '/autoload.php';
+        $loader->unregister();
+
+        self::assertTrue(function_exists('testFilesAutoloadOrderByDependencyPrepended1'));
+        self::assertTrue(function_exists('testFilesAutoloadOrderByDependencyPrepended2'));
+        self::assertTrue(function_exists('testFilesAutoloadOrderByDependencyPrepended3'));
+        self::assertTrue(function_exists('testFilesAutoloadOrderByDependencyPrepended4'));
+        self::assertTrue(function_exists('testFilesAutoloadOrderByDependencyPrepended5'));
+        self::assertTrue(function_exists('testFilesAutoloadOrderByDependencyPrependedRoot'));
+    }
+
     /**
      * Test that PSR-0 and PSR-4 mappings are processed in the correct order for
      * autoloading and for classmap generation:
