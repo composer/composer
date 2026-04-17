@@ -956,6 +956,33 @@ php composer.phar repo disable packagist.org
 php composer.phar repo enable packagist.org
 ```
 
+## policy
+
+The `policy` command lets you manage custom policy lists and their sources in your `composer.json` under `config.policy`. A source points Composer at a remote URL which provides the list of packages the policy applies to. Adding a source to a list that does not yet exist will create the list entry automatically.
+
+Built-in lists (`advisories`, `malware`, `abandoned`) do not accept sources and are rejected. To change their settings, use `composer config policy.<list>.<field>` instead — see the [policy](06-config.md#policy) config documentation.
+
+### Usage
+
+```shell
+policy [options] add-source [list-name] [source-type] [url]
+policy [options] add-source [list-name] [json-source-definition]
+```
+
+Currently only `url` is supported as `source-type`, and URLs must start with `https://`.
+
+### Options
+
+- **--global (-g):** to modify the global `$COMPOSER_HOME/config.json`.
+- **--file (-f):** to modify a specific file instead of composer.json.
+
+### Examples
+
+```shell
+php composer.phar policy add-source my-list url https://example.org/list.json
+php composer.phar policy add-source my-list '{"type":"url","url":"https://example.org/list.json"}'
+```
+
 ## create-project
 
 You can use Composer to create new projects from an existing package. This is

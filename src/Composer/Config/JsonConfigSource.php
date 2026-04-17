@@ -286,6 +286,24 @@ class JsonConfigSource implements ConfigSourceInterface
                 }
                 unset($arr[$last]);
                 unset($arr);
+
+                // cascade: drop now-empty ancestors within the policy subtree (stops before config itself)
+                while (count($bits) > 0) {
+                    $leafKey = array_pop($bits);
+                    $parent = &$config['config'];
+                    foreach ($bits as $bit) {
+                        if (!isset($parent[$bit])) {
+                            break 2;
+                        }
+                        $parent = &$parent[$bit];
+                    }
+                    if (isset($parent[$leafKey]) && $parent[$leafKey] === []) {
+                        unset($parent[$leafKey]);
+                    } else {
+                        break;
+                    }
+                    unset($parent);
+                }
             } else {
                 unset($config['config'][$key]);
             }
@@ -408,9 +426,20 @@ class JsonConfigSource implements ConfigSourceInterface
             $this->arrayUnshiftRef($args, $config);
             $fallback(...$args);
             // avoid ending up with arrays for keys that should be objects
-            foreach (['require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'scripts-aliases', 'support'] as $prop) {
-                if (isset($config[$prop]) && $config[$prop] === []) {
-                    $config[$prop] = new \stdClass;
+            // (apply bottom-up so parent coercion to stdClass doesn't hide deeper sub-keys)
+            if (isset($config['config']['policy']) && is_array($config['config']['policy'])) {
+                foreach ($config['config']['policy'] as $listName => $listValue) {
+                    if ($listValue === []) {
+                        $config['config']['policy'][$listName] = new \stdClass;
+                    }
+                }
+                if ($config['config']['policy'] === []) {
+                    $config['config']['policy'] = new \stdClass;
+                }
+            }
+            foreach (['platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'custom-headers', 'forgejo-token', 'preferred-install'] as $prop) {
+                if (isset($config['config'][$prop]) && $config['config'][$prop] === []) {
+                    $config['config'][$prop] = new \stdClass;
                 }
             }
             foreach (['psr-0', 'psr-4'] as $prop) {
@@ -421,19 +450,9 @@ class JsonConfigSource implements ConfigSourceInterface
                     $config['autoload-dev'][$prop] = new \stdClass;
                 }
             }
-            foreach (['platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'custom-headers', 'forgejo-token', 'preferred-install'] as $prop) {
-                if (isset($config['config'][$prop]) && $config['config'][$prop] === []) {
-                    $config['config'][$prop] = new \stdClass;
-                }
-            }
-            if (isset($config['config']['policy']) && is_array($config['config']['policy'])) {
-                foreach ($config['config']['policy'] as $listName => $listValue) {
-                    if ($listValue === []) {
-                        $config['config']['policy'][$listName] = new \stdClass;
-                    }
-                }
-                if ($config['config']['policy'] === []) {
-                    $config['config']['policy'] = new \stdClass;
+            foreach (['require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'scripts-aliases', 'support'] as $prop) {
+                if (isset($config[$prop]) && $config[$prop] === []) {
+                    $config[$prop] = new \stdClass;
                 }
             }
             $this->file->write($config);

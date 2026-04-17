@@ -676,6 +676,7 @@ class Application extends BaseApplication
             new Command\ReinstallCommand(),
             new Command\BumpCommand(),
             new Command\RepositoryCommand(),
+            new Command\PolicyCommand(),
             new Command\SelfUpdateCommand(),
         ]);
     }

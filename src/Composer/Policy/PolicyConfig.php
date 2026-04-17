@@ -54,6 +54,12 @@ class PolicyConfig
         AbandonedPolicyConfig::NAME,
     ];
 
+    public const BUILTIN_LIST_NAMES = [
+        AdvisoriesPolicyConfig::NAME,
+        AbandonedPolicyConfig::NAME,
+        MalwarePolicyConfig::NAME,
+    ];
+
     /**
      * Names reserved for future use.
      */
@@ -71,7 +77,7 @@ class PolicyConfig
     /**
      * Keys that are not list names at the top level of the policy config.
      */
-    private const NON_LIST_KEYS = [
+    public const NON_LIST_KEYS = [
         'ignore-unreachable',
     ];
 
@@ -122,7 +128,7 @@ class PolicyConfig
         $abandoned = AbandonedPolicyConfig::fromRawConfig($policyConfig, $auditConfig, $parser);
 
         $customLists = [];
-        $builtInKeys = ['advisories', 'malware', 'abandoned'];
+        $builtInKeys = self::BUILTIN_LIST_NAMES;
         foreach ($policyConfig as $listName => $listConfig) {
             if (in_array($listName, $builtInKeys, true) || in_array($listName, self::NON_LIST_KEYS, true)) {
                 continue;
