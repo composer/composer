@@ -2,11 +2,9 @@ name: 'API Surface Comment'
 on:
   workflow_run:
     workflows: ['API Surface Check']
-    types: [completed]
+    types: [completed] # zizmor: ignore[dangerous-triggers]
 
-permissions:
-  contents: read
-  pull-requests: write
+permissions: {}
 
 # Cancel an in-progress comment run when a force-push or workflow_run re-run
 # fires for the same PR. head_sha alone wouldn't catch force-pushes (each push
@@ -18,9 +16,16 @@ concurrency:
 
 jobs:
   comment:
+
+    name: "API surface comment"
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write # required to create the comment on the pull request
+
     steps:
-      - uses: composer/api-surface-check@main
+      - uses: composer/api-surface-check@main # zizmor: ignore[unpinned-uses]
         with:
           install-dependencies: true
           # paths: src/**/*.php

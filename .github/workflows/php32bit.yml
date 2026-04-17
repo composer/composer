@@ -7,6 +7,10 @@ on:
     paths-ignore:
       - 'doc/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
   COMPOSER_UPDATE_FLAGS: ""
@@ -23,6 +27,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # 2.37.0
         with:
@@ -33,10 +39,10 @@ jobs:
           tools: composer
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer install $COMPOSER_FLAGS'
 
       - name: "Run install again using composer binary from source"
-        run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'bin/composer install $COMPOSER_FLAGS'
 
       - name: "Make source binary the one used by default"
         run: |
