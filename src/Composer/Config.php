@@ -523,6 +523,21 @@ class Config
                     }
                 }
 
+                $malwareBlock = $this->getComposerEnv('COMPOSER_POLICY_MALWARE_BLOCK');
+                if (false !== $malwareBlock) {
+                    if (!in_array($malwareBlock, ['0', '1'], true)) {
+                        throw new \RuntimeException(
+                            "Invalid value for COMPOSER_POLICY_MALWARE_BLOCK: {$malwareBlock}. Expected 0 or 1."
+                        );
+                    }
+
+                    if (!is_array($policyConfig)) {
+                        $policyConfig = ['malware' => []];
+                    }
+
+                    $policyConfig['malware']['block'] = (bool) (int) $malwareBlock;
+                }
+
                 return $policyConfig;
             default:
                 if (!isset($this->config[$key])) {

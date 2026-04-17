@@ -140,6 +140,17 @@ class PolicyConfig
 
         // BC: env var overrides (these are handled here because Config::get('policy')
         // only returns the raw config array; specific overrides need to be applied after parsing)
+        $advisoriesBlockEnv = Platform::getEnv('COMPOSER_POLICY_ADVISORIES_BLOCK');
+        if (false !== $advisoriesBlockEnv) {
+            $advisories = new AdvisoriesPolicyConfig(
+                (bool) (int) $advisoriesBlockEnv,
+                $advisories->audit,
+                $advisories->ignore,
+                $advisories->ignoreId,
+                $advisories->ignoreSeverity
+            );
+        }
+
         $blockAbandonedEnv = Platform::getEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
         if (false !== $blockAbandonedEnv) {
             $abandoned = new AbandonedPolicyConfig(

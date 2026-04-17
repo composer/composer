@@ -468,6 +468,12 @@ class ConfigTest extends TestCase
 
         $config->merge(['config' => ['policy' => true]]);
         self::assertTrue($config->get('policy'));
+
+        Platform::putEnv('COMPOSER_POLICY_MALWARE_BLOCK', '1');
+        self::assertSame(['malware' => ['block' => true]], $config->get('policy'));
+        Platform::putEnv('COMPOSER_POLICY_MALWARE_BLOCK', '0');
+        self::assertSame(['malware' => ['block' => false]], $config->get('policy'));
+        Platform::clearEnv('COMPOSER_POLICY_MALWARE_BLOCK');
     }
 
     public function testGetDefaultsToAnEmptyArray(): void
