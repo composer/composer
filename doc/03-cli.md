@@ -1406,14 +1406,21 @@ If you want to override the config value, use `composer config policy 1` instead
 
 If set to `1`, it is the equivalent of passing the `--no-blocking` option to a `require`, `update`, `remove`, `install`, or `create-project` command. This disables all policy blocking during this command. It overrides the block config option for each configured policy e.g. [policy.advisories.block](06-config.md#block).
 
-
 ### COMPOSER_NO_SECURITY_BLOCKING
 
-If set to `1`, it is the equivalent of passing the `--no-security-blocking` option to a `require`, `update`, `remove`, `install`, or `create-project` command. This allows installing packages with security advisories or that are abandoned. It overrides the config option [audit.block-insecure](06-config.md#block-insecure).
+If set to `1`, it is the equivalent of passing the `--no-security-blocking` option to a `require`, `update`, `remove`, `install`, or `create-project` command. This allows installing packages with security advisories or that are abandoned. It overrides the config option [policy.advisories.block](06-config.md#block).
+
+### COMPOSER_POLICY_ADVISORIES_BLOCK
+
+If set to `1`, enables blocking of packages with security advisories during dependency resolution (equivalent to setting `policy.advisories.block` config to `true`). If set to `0`, disables blocking of packages with security advisories. Note that this setting does not have any effect if security blocking is generally disabled. It overrides the config option [policy.advisories.block](06-config.md#block).
 
 ### COMPOSER_SECURITY_BLOCKING_ABANDONED
 
-If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `audit.block-abandoned` config to `true`). If set to `0`, disables blocking of abandoned packages. Note that this setting does not have any effect if security blocking is generally disabled. It overrides the config option [audit.block-abandoned](06-config.md#block-abandoned).
+If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `policy.abandoned.block` config to `true`). If set to `0`, disables blocking of abandoned packages. Note that this setting does not have any effect if security blocking is generally disabled. It overrides the config option [policy.abandoned.block](06-config.md#block-1).
+
+### COMPOSER_POLICY_MALWARE_BLOCK
+
+If set to `1`, enables blocking of packages flagged as malware during dependency resolution (equivalent to setting `policy.malware.block` config to `true`). If set to `0`, disables blocking of packages flagged as malware. Note that this setting does not have any effect if security blocking is generally disabled. It overrides the config option [policy.malware.block](06-config.md#block-2).
 
 ### COMPOSER_NO_DEV
 

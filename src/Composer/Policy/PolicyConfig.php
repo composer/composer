@@ -185,22 +185,45 @@ class PolicyConfig
 
         // BC: env var overrides (these are handled here because Config::get('policy')
         // only returns the raw config array; specific overrides need to be applied after parsing)
+        $advisoriesBlockEnv = Platform::getEnv('COMPOSER_POLICY_ADVISORIES_BLOCK');
+        if (false !== $advisoriesBlockEnv) {
+            $advisories = new AdvisoriesPolicyConfig(
+                Platform::getBoolEnv('COMPOSER_POLICY_ADVISORIES_BLOCK'),
+                $advisories->audit,
+                $advisories->ignore,
+                $advisories->ignoreId,
+                $advisories->ignoreSeverity
+            );
+        }
+
+        $malwareBlockEnv = Platform::getEnv('COMPOSER_POLICY_MALWARE_BLOCK');
+        if (false !== $malwareBlockEnv) {
+            $malware = new MalwarePolicyConfig(
+                Platform::getBoolEnv('COMPOSER_POLICY_MALWARE_BLOCK'),
+                $malware->audit,
+                $malware->blockScope,
+                $malware->ignore,
+                $malware->ignoreSource
+            );
+        }
+
         $blockAbandonedEnv = Platform::getEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
         if (false !== $blockAbandonedEnv) {
-            if (!in_array($blockAbandonedEnv, ['0', '1'], true)) {
-                throw new \RuntimeException(
-                    "Invalid value for COMPOSER_SECURITY_BLOCKING_ABANDONED: {$blockAbandonedEnv}. Expected 0 or 1."
-                );
-            }
             $abandoned = new AbandonedPolicyConfig(
-                (bool) (int) $blockAbandonedEnv,
+                Platform::getBoolEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED'),
                 $abandoned->audit,
                 $abandoned->ignore
             );
         }
 
         $auditAbandonedEnv = Platform::getEnv('COMPOSER_AUDIT_ABANDONED');
-        if (false !== $auditAbandonedEnv && in_array($auditAbandonedEnv, [ListPolicyConfig::AUDIT_IGNORE, ListPolicyConfig::AUDIT_REPORT, ListPolicyConfig::AUDIT_FAIL], true)) {
+        if (false !== $auditAbandonedEnv) {
+            $allowed = [ListPolicyConfig::AUDIT_IGNORE, ListPolicyConfig::AUDIT_REPORT, ListPolicyConfig::AUDIT_FAIL];
+            if (!in_array($auditAbandonedEnv, $allowed, true)) {
+                throw new \RuntimeException(
+                    "Invalid value for COMPOSER_AUDIT_ABANDONED: {$auditAbandonedEnv}. Expected one of ".implode(', ', $allowed)."."
+                );
+            }
             $abandoned = new AbandonedPolicyConfig(
                 $abandoned->block,
                 $auditAbandonedEnv,

@@ -513,25 +513,22 @@ class Config
 
                 $blockAbandonedEnv = $this->getComposerEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
                 if (false !== $blockAbandonedEnv) {
-                    if (!in_array($blockAbandonedEnv, ['0', '1'], true)) {
-                        throw new \RuntimeException(
-                            "Invalid value for COMPOSER_SECURITY_BLOCKING_ABANDONED: {$blockAbandonedEnv}. Expected 0 or 1."
-                        );
-                    }
-                    $result['block-abandoned'] = (bool) (int) $blockAbandonedEnv;
+                    $result['block-abandoned'] = Platform::getBoolEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
                 }
 
                 return $result;
             case 'policy':
                 $policyConfig = $this->config[$key];
+                // Only the main switch (COMPOSER_POLICY) lives here, since it
+                // can flip the whole config to `false`. Per-list block toggles
+                // (COMPOSER_POLICY_MALWARE_BLOCK, COMPOSER_POLICY_ADVISORIES_BLOCK,
+                // COMPOSER_SECURITY_BLOCKING_ABANDONED, COMPOSER_AUDIT_ABANDONED)
+                // are applied in PolicyConfig::fromConfig against the parsed
+                // objects so the override layer is consistent and we never have
+                // to rewrite the raw array shape.
                 $policyEnv = $this->getComposerEnv('COMPOSER_POLICY');
                 if (false !== $policyEnv) {
-                    if (!in_array($policyEnv, ['0', '1'], true)) {
-                        throw new \RuntimeException(
-                            "Invalid value for COMPOSER_POLICY: {$policyEnv}. Expected 0 or 1."
-                        );
-                    }
-                    if ((int) $policyEnv === 0) {
+                    if (false === Platform::getBoolEnv('COMPOSER_POLICY')) {
                         $policyConfig = false;
                     }
                 }
