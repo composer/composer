@@ -12,6 +12,7 @@
 
 namespace Composer\Policy;
 
+use Composer\FilterList\Source\SourceValidator;
 use Composer\FilterList\Source\UrlSource;
 use Composer\Semver\VersionParser;
 
@@ -79,12 +80,10 @@ class CustomListPolicyConfig extends ListPolicyConfig
         }
 
         $sources = [];
+        $sourceValidator = new SourceValidator();
         foreach ($listConfig['sources'] ?? [] as $sourceConfig) {
-            if (is_array($sourceConfig) && isset($sourceConfig['type']) && $sourceConfig['type'] === 'url') {
-                if (!isset($sourceConfig['url']) || str_starts_with($sourceConfig['url'], 'https://') === false) {
-                    throw new \RuntimeException('Invalid source config for list "'.$listName.'". "url" is required and must start with "https://".');
-                }
-                $sources[] = new UrlSource($listName, $sourceConfig['url']);
+            if (is_array($sourceConfig)) {
+                $sources[] = $sourceValidator->validate($listName, $sourceConfig);
             }
         }
 

@@ -282,6 +282,21 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.ignore-unreachable', '--unset' => true],
             ['config' => ['policy' => ['advisories' => ['block' => true]]]],
         ];
+        yield 'unset last sub-key cascades removal up through empty ancestors' => [
+            ['config' => ['policy' => ['advisories' => ['block' => false]]]],
+            ['setting-key' => 'policy.advisories.block', '--unset' => true],
+            ['config' => []],
+        ];
+        yield 'unset last sub-key of list keeps sibling lists' => [
+            ['config' => ['policy' => ['advisories' => ['block' => false], 'malware' => ['block' => true]]]],
+            ['setting-key' => 'policy.advisories.block', '--unset' => true],
+            ['config' => ['policy' => ['malware' => ['block' => true]]]],
+        ];
+        yield 'unset only policy.ignore-unreachable cascades through policy' => [
+            ['config' => ['policy' => ['ignore-unreachable' => true]]],
+            ['setting-key' => 'policy.ignore-unreachable', '--unset' => true],
+            ['config' => []],
+        ];
         yield 'set policy.advisories.ignore as array' => [
             [],
             ['setting-key' => 'policy.advisories.ignore', 'setting-value' => ['["CVE-2024-1234"]'], '--json' => true],
