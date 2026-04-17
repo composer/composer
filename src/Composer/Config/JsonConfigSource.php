@@ -236,6 +236,21 @@ class JsonConfigSource implements ConfigSourceInterface
                 } else {
                     $config['config'][$key][$host] = $val;
                 }
+            } elseif (strpos($key, 'policy.') === 0) {
+                if (!isset($config['config']) || !is_array($config['config'])) {
+                    $config['config'] = [];
+                }
+
+                $bits = explode('.', $key);
+                $last = array_pop($bits);
+                $arr = &$config['config'];
+                foreach ($bits as $bit) {
+                    if (!isset($arr[$bit]) || !is_array($arr[$bit])) {
+                        $arr[$bit] = [];
+                    }
+                    $arr = &$arr[$bit];
+                }
+                $arr[$last] = $val;
             } else {
                 $config['config'][$key] = $val;
             }
@@ -256,6 +271,21 @@ class JsonConfigSource implements ConfigSourceInterface
                 } else {
                     unset($config['config'][$key][$host]);
                 }
+            } elseif (strpos($key, 'policy.') === 0) {
+                if (!isset($config['config']) || !is_array($config['config'])) {
+                    return;
+                }
+                $bits = explode('.', $key);
+                $last = array_pop($bits);
+                $arr = &$config['config'];
+                foreach ($bits as $bit) {
+                    if (!isset($arr[$bit]) || !is_array($arr[$bit])) {
+                        return;
+                    }
+                    $arr = &$arr[$bit];
+                }
+                unset($arr[$last]);
+                unset($arr);
             } else {
                 unset($config['config'][$key]);
             }
@@ -394,6 +424,16 @@ class JsonConfigSource implements ConfigSourceInterface
             foreach (['platform', 'http-basic', 'bearer', 'gitlab-token', 'gitlab-oauth', 'github-oauth', 'custom-headers', 'forgejo-token', 'preferred-install'] as $prop) {
                 if (isset($config['config'][$prop]) && $config['config'][$prop] === []) {
                     $config['config'][$prop] = new \stdClass;
+                }
+            }
+            if (isset($config['config']['policy']) && is_array($config['config']['policy'])) {
+                foreach ($config['config']['policy'] as $listName => $listValue) {
+                    if ($listValue === []) {
+                        $config['config']['policy'][$listName] = new \stdClass;
+                    }
+                }
+                if ($config['config']['policy'] === []) {
+                    $config['config']['policy'] = new \stdClass;
                 }
             }
             $this->file->write($config);
