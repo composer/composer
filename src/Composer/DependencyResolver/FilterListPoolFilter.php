@@ -16,6 +16,7 @@ use Composer\FilterList\FilterListAuditor;
 use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Package\RootPackageInterface;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
@@ -34,23 +35,32 @@ class FilterListPoolFilter
     private $filterListAuditor;
     /** @var HttpDownloader */
     private $httpDownloader;
+    /** @var ListPolicyConfig::BLOCK_SCOPE_* */
+    private $blockScope;
+    /** @var array<RepositoryInterface> */
+    private $repositories;
 
+    /**
+     * @param ListPolicyConfig::BLOCK_SCOPE_* $blockScope
+     * @param array<RepositoryInterface> $repositories Repositories consulted for filter list discovery
+     */
     public function __construct(
         PolicyConfig $policyConfig,
         FilterListAuditor $filterListAuditor,
-        HttpDownloader $httpDownloader
+        HttpDownloader $httpDownloader,
+        string $blockScope,
+        array $repositories
     ) {
         $this->policyConfig = $policyConfig;
         $this->filterListAuditor = $filterListAuditor;
         $this->httpDownloader = $httpDownloader;
+        $this->blockScope = $blockScope;
+        $this->repositories = $repositories;
     }
 
-    /**
-     * @param array<RepositoryInterface> $repositories
-     */
-    public function filter(Pool $pool, array $repositories, Request $request): Pool
+    public function filter(Pool $pool, Request $request): Pool
     {
-        $providerSet = FilterListProviderSet::create($this->policyConfig, $repositories, $this->httpDownloader);
+        $providerSet = FilterListProviderSet::create($this->policyConfig, $this->repositories, $this->httpDownloader);
 
         $filterListMap = $this->collectFilterLists($pool, $providerSet, $request);
 
@@ -61,7 +71,7 @@ class FilterListPoolFilter
         $packages = [];
         $filterListRemovedVersions = [];
         foreach ($pool->getPackages() as $package) {
-            $matchingEntries = $this->filterListAuditor->getMatchingEntries($package, $filterListMap, $this->policyConfig, 'block');
+            $matchingEntries = $this->filterListAuditor->getMatchingEntries($package, $filterListMap, $this->policyConfig, 'block', $this->blockScope);
             if (count($matchingEntries) > 0) {
                 foreach ($package->getNames(false) as $packageName) {
                     $filterListRemovedVersions[$packageName][$package->getVersion()] = $matchingEntries;
@@ -83,11 +93,22 @@ class FilterListPoolFilter
     {
         $packagesForFilter = [];
         foreach ($pool->getPackages() as $package) {
-            if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
-                $packagesForFilter[] = $package;
+            if ($package instanceof RootPackageInterface || PlatformRepository::isPlatformPackage($package->getName())) {
+                continue;
             }
+            // Locked packages can't change during an update (partial updates keep them fixed),
+            // but install-scope blocking deliberately checks them so malware in the lock file is caught.
+            if ($this->blockScope === ListPolicyConfig::BLOCK_SCOPE_UPDATE && $request->isLockedPackage($package)) {
+                continue;
+            }
+            $packagesForFilter[] = $package;
         }
 
-        return $this->filterListAuditor->collectFilterLists($packagesForFilter, $providerSet, $this->policyConfig->getActiveFilterListNames('block'), $this->policyConfig->ignoreUnreachable->update)['filter'];
+        return $this->filterListAuditor->collectFilterLists(
+            $packagesForFilter,
+            $providerSet,
+            $this->policyConfig->getActiveFilterListNames('block', $this->blockScope),
+            $this->policyConfig->ignoreUnreachable->forBlockScope($this->blockScope)
+        )['filter'];
     }
 }

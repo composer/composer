@@ -56,15 +56,16 @@ class FilterListAuditor
     /**
      * @param array<string, array<string, list<FilterListEntry>>> $filterListMap
      * @param 'block'|'audit' $operation
+     * @param ListPolicyConfig::BLOCK_SCOPE_*|null $blockScope
      * @return list<FilterListEntry>
      */
-    public function getMatchingEntries(PackageInterface $package, array $filterListMap, PolicyConfig $policyConfig, string $operation): array
+    public function getMatchingEntries(PackageInterface $package, array $filterListMap, PolicyConfig $policyConfig, string $operation, ?string $blockScope): array
     {
         if ($package instanceof RootPackageInterface || count($filterListMap) === 0) {
             return [];
         }
 
-        $activeListConfigs = $policyConfig->getActiveFilterLists($operation);
+        $activeListConfigs = $policyConfig->getActiveFilterLists($operation, $blockScope);
         if (isset($activeListConfigs[MalwarePolicyConfig::NAME]) && $activeListConfigs[MalwarePolicyConfig::NAME] instanceof MalwarePolicyConfig) {
             $filterListMap = $this->applyMalwareIgnoreSource($filterListMap, $activeListConfigs[MalwarePolicyConfig::NAME], $operation);
         }

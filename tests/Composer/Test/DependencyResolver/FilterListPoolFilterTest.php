@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\FilterList\FilterListAuditor;
 use Composer\Package\Package;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Repository\PackageRepository;
 use Composer\Semver\Constraint\Constraint;
@@ -42,15 +43,15 @@ class FilterListPoolFilterTest extends TestCase
         $config->merge(['config' => ['policy' => ['test-list' => true]]]);
         $policyConfig = PolicyConfig::fromConfig($config);
 
-        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock);
-
         $repository = $this->generatePackageRepository('1.0');
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+
         $pool = new Pool([
             new Package('acme/package', '1.0.0.0', '1.0'),
             $expectedPackage1 = new Package('acme/package', '2.0.0.0', '2.0'),
             $expectedPackage2 = new Package('acme/other', '1.0.0.0', '1.0'),
         ]);
-        $filteredPool = $filter->filter($pool, [$repository], new Request());
+        $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
         $this->assertTrue($filteredPool->isFilterListRemovedPackageVersion('acme/package', new Constraint('==', '1.0.0.0')));
@@ -67,14 +68,14 @@ class FilterListPoolFilterTest extends TestCase
         $config->merge(['config' => ['policy' => ['test-list' => $filterConfig]]]);
 
         $policyConfig = PolicyConfig::fromConfig($config);
-        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock);
-
         $repository = $this->generatePackageRepository('*');
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+
         $pool = new Pool([
             $expectedPackage1 = new Package('acme/package', '1.0.0.0', '1.0'),
             $expectedPackage2 = new Package('acme/package', '1.1.0.0', '1.1'),
         ]);
-        $filteredPool = $filter->filter($pool, [$repository], new Request());
+        $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
         $this->assertCount(0, $filteredPool->getAllFilterListRemovedPackageVersions());
@@ -102,14 +103,14 @@ class FilterListPoolFilterTest extends TestCase
         ]);
 
         $policyConfig = PolicyConfig::fromConfig($config);
-        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock);
-
         $repository = $this->generatePackageRepository('>=1.0');
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+
         $pool = new Pool([
             $expectedPackage = new Package('acme/package', '1.0.0.0', '1.0'),
             new Package('acme/package', '1.1.0.0', '1.1'),
         ]);
-        $filteredPool = $filter->filter($pool, [$repository], new Request());
+        $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([$expectedPackage], $filteredPool->getPackages());
         $this->assertCount(1, $filteredPool->getAllFilterListRemovedPackageVersions());
@@ -137,19 +138,56 @@ class FilterListPoolFilterTest extends TestCase
         ]]]);
 
         $policyConfig = PolicyConfig::fromConfig($config);
-        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock);
-
         $repository = $this->generatePackageRepository('0.0.1');
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+
         $pool = new Pool([
             new Package('acme/package', '3.0.0.0', '3.0'),
             $expectedPackage1 = new Package('acme/package', '2.0.0.0', '2.0'),
             $expectedPackage2 = new Package('acme/other', '1.0.0.0', '1.0'),
         ]);
-        $filteredPool = $filter->filter($pool, [$repository], new Request());
+        $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
         $this->assertTrue($filteredPool->isFilterListRemovedPackageVersion('acme/package', new Constraint('==', '3.0.0.0')));
         $this->assertCount(1, $filteredPool->getAllFilterListRemovedPackageVersions());
+    }
+
+    public function testInstallScopeFiltersLockedPackagesAgainstMalwareList(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'filter' => [
+                'malware' => [
+                    [
+                        'package' => 'acme/locked',
+                        'constraint' => '*',
+                        'reason' => 'malware',
+                        'url' => 'https://example.org/malware/acme/locked',
+                    ],
+                ],
+            ],
+        ]);
+
+        $config = new Config();
+        $config->merge(['config' => ['policy' => ['malware' => true]]]);
+        $policyConfig = PolicyConfig::fromConfig($config);
+
+        $package = new Package('acme/locked', '1.0.0.0', '1.0');
+        $request = new Request();
+        $request->fixLockedPackage($package);
+
+        // Install scope: locked package IS checked, gets filter-list-removed.
+        $installFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_INSTALL, [$repository]);
+        $installPool = $installFilter->filter(new Pool([$package]), $request);
+        self::assertSame([], $installPool->getPackages(), 'install-scope filter must include locked packages');
+        self::assertTrue($installPool->isFilterListRemovedPackageVersion('acme/locked', new Constraint('==', '1.0.0.0')));
+
+        // Update scope: locked package is early-skipped, never reaches the filter.
+        $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+        $updatePool = $updateFilter->filter(new Pool([$package]), $request);
+        self::assertSame([$package], $updatePool->getPackages(), 'update-scope filter must skip locked packages');
+        self::assertCount(0, $updatePool->getAllFilterListRemovedPackageVersions());
     }
 
     private function generatePackageRepository(string $constraint): PackageRepository

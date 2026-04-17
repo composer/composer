@@ -17,6 +17,7 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -172,6 +173,29 @@ class Solver
         }
     }
 
+    protected function checkForFilterListRemovedFixedPackages(Request $request): void
+    {
+        foreach ($request->getFixedPackages() as $package) {
+            $constraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
+            if (!$this->pool->isFilterListRemovedPackageVersion($package->getName(), $constraint)) {
+                continue;
+            }
+
+            // RULE_FIXED_FILTER_LIST_REMOVED is dedicated to this case: a fixed
+            // package (root require, transitive locked dep, or explicitly pinned)
+            // dropped from the pool by a policy filter list. We can't tell those
+            // apart from inside Solver, so emit a Problem keyed on the package
+            // itself and let Problem::getMissingFixedPackageReason render neutral
+            // wording. A dedicated rule type keeps RULE_FIXED's existing
+            // semantics ("present at version X, cannot be modified") untouched.
+            $problem = new Problem();
+            $problem->addRule(new GenericRule([], Rule::RULE_FIXED_FILTER_LIST_REMOVED, [
+                'package' => $package,
+            ]));
+            $this->problems[] = $problem;
+        }
+    }
+
     public function solve(Request $request, ?PlatformRequirementFilterInterface $platformRequirementFilter = null): LockTransaction
     {
         $platformRequirementFilter = $platformRequirementFilter ?? PlatformRequirementFilterFactory::ignoreNothing();
@@ -183,6 +207,7 @@ class Solver
         $this->rules = $ruleSetGenerator->getRulesFor($request, $platformRequirementFilter);
         unset($ruleSetGenerator);
         $this->checkForRootRequireProblems($request, $platformRequirementFilter);
+        $this->checkForFilterListRemovedFixedPackages($request);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
 

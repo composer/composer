@@ -80,6 +80,22 @@ class AdvisoriesPolicyConfigTest extends TestCase
         );
     }
 
+    public function testShouldBlockNeverAppliesToInstallScope(): void
+    {
+        $advisories = new AdvisoriesPolicyConfig(true, ListPolicyConfig::AUDIT_FAIL, [], [], []);
+
+        self::assertTrue($advisories->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
+        self::assertFalse($advisories->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_INSTALL));
+    }
+
+    public function testShouldBlockReturnsFalseWhenBlockIsOff(): void
+    {
+        $advisories = new AdvisoriesPolicyConfig(false, ListPolicyConfig::AUDIT_FAIL, [], [], []);
+
+        self::assertFalse($advisories->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
+        self::assertFalse($advisories->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_INSTALL));
+    }
+
     public function testFromAuditConfig(): void
     {
         $auditConfig = [

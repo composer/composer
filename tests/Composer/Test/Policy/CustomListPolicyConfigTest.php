@@ -43,6 +43,14 @@ class CustomListPolicyConfigTest extends TestCase
         );
     }
 
+    public function testShouldBlockNeverAppliesToInstallScope(): void
+    {
+        $custom = new CustomListPolicyConfig('company-policy', true, ListPolicyConfig::AUDIT_FAIL, [], []);
+
+        self::assertTrue($custom->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
+        self::assertFalse($custom->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_INSTALL));
+    }
+
     public function testFromRawConfig(): void
     {
         $rawListConfig = [

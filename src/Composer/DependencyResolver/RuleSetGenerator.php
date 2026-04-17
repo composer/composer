@@ -17,6 +17,7 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -250,6 +251,14 @@ class RuleSetGenerator
     protected function addRulesForRequest(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         foreach ($request->getFixedPackages() as $package) {
+            // fixed package was removed from the pool by a policy filter list (e.g. malware);
+            // Solver::checkForFilterListRemovedFixedPackages surfaces a SolverProblemsException for it.
+            // Note: $package->id can still be a stale positive value from an earlier pool; check the
+            // filter-list-removed map directly instead of relying on id === -1.
+            if ($this->pool->isFilterListRemovedPackageVersion($package->getName(), new Constraint('==', $package->getVersion()))) {
+                continue;
+            }
+
             if ($package->id === -1) {
                 // fixed package was not added to the pool as it did not pass the stability requirements, this is fine
                 if ($this->pool->isUnacceptableFixedOrLockedPackage($package)) {

@@ -243,9 +243,10 @@ class PolicyConfig
 
     /**
      * @param 'audit'|'block' $operation
+     * @param ListPolicyConfig::BLOCK_SCOPE_*|null $blockScope
      * @return array<string, ListPolicyConfig>
      */
-    public function getActiveFilterLists(string $operation): array
+    public function getActiveFilterLists(string $operation, ?string $blockScope): array
     {
         $allLists = $this->getAllLists();
         unset($allLists['abandoned'], $allLists['advisories']);
@@ -256,7 +257,7 @@ class PolicyConfig
                 $lists[$name] = $list;
             }
 
-            if ($operation === 'block' && $list->block) {
+            if ($operation === 'block' && $blockScope !== null && $list->shouldBlock($blockScope)) {
                 $lists[$name] = $list;
             }
         }
@@ -266,11 +267,12 @@ class PolicyConfig
 
     /**
      * @param 'audit'|'block' $operation
+     * @param ListPolicyConfig::BLOCK_SCOPE_*|null $blockScope
      * @return list<string>
      */
-    public function getActiveFilterListNames(string $operation): array
+    public function getActiveFilterListNames(string $operation, ?string $blockScope): array
     {
-        return array_keys($this->getActiveFilterLists($operation));
+        return array_keys($this->getActiveFilterLists($operation, $blockScope));
     }
 
     /**

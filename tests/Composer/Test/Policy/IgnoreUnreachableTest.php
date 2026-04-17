@@ -13,6 +13,7 @@
 namespace Composer\Test\Policy;
 
 use Composer\Policy\IgnoreUnreachable;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Test\TestCase;
 
 class IgnoreUnreachableTest extends TestCase
@@ -26,5 +27,18 @@ class IgnoreUnreachableTest extends TestCase
         self::assertTrue($ignoreUnreachable->audit);
         self::assertFalse($ignoreUnreachable->install);
         self::assertFalse($ignoreUnreachable->update);
+    }
+
+    public function testForBlockScope(): void
+    {
+        $ignoreUnreachable = new IgnoreUnreachable(false, true, false);
+
+        self::assertTrue($ignoreUnreachable->forBlockScope(ListPolicyConfig::BLOCK_SCOPE_INSTALL));
+        self::assertFalse($ignoreUnreachable->forBlockScope(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
+
+        $ignoreUnreachable = new IgnoreUnreachable(false, false, true);
+
+        self::assertFalse($ignoreUnreachable->forBlockScope(ListPolicyConfig::BLOCK_SCOPE_INSTALL));
+        self::assertTrue($ignoreUnreachable->forBlockScope(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
     }
 }

@@ -1036,7 +1036,7 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Problem.php
 
 		-
-			message: "#^Method Composer\\\\DependencyResolver\\\\Rule\\:\\:getReason\\(\\) should return 2\\|3\\|6\\|7\\|10\\|12\\|13\\|14 but returns int\\<0, 255\\>\\.$#"
+			message: "#^Method Composer\\\\DependencyResolver\\\\Rule\\:\\:getReason\\(\\) should return 2\\|3\\|6\\|7\\|10\\|12\\|13\\|14\\|15 but returns int\\<0, 255\\>\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Rule.php
 
@@ -3960,7 +3960,7 @@ parameters:
 
 		-
 			message: "#^Cannot call method solve\\(\\) on Composer\\\\DependencyResolver\\\\Solver\\|null\\.$#"
-			count: 8
+			count: 9
 			path: ../tests/Composer/Test/DependencyResolver/SolverTest.php
 
 		-

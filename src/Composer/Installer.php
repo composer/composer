@@ -38,6 +38,7 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface
 use Composer\FilterList\FilterListAuditor;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Installer\InstallationManager;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\SuggestedPackagesReporter;
@@ -529,7 +530,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter());
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
@@ -803,7 +804,7 @@ class Installer
             }
             unset($rootRequires, $link);
 
-            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes, null);
+            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes, null, $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_INSTALL));
 
             // solve dependencies
             $solver = new Solver($policy, $pool, $this->io);
@@ -1166,7 +1167,10 @@ class Installer
         return null;
     }
 
-    private function createFilterListPoolFilter(): ?FilterListPoolFilter
+    /**
+     * @param ListPolicyConfig::BLOCK_SCOPE_UPDATE|ListPolicyConfig::BLOCK_SCOPE_INSTALL $blockScope
+     */
+    private function createFilterListPoolFilter(string $blockScope): ?FilterListPoolFilter
     {
         $policyConfig = $this->getPolicyConfig();
 
@@ -1174,7 +1178,11 @@ class Installer
             return null;
         }
 
-        return new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader());
+        if ($blockScope === ListPolicyConfig::BLOCK_SCOPE_INSTALL && !$policyConfig->malware->shouldBlock($blockScope)) {
+            return null;
+        }
+
+        return new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader(), $blockScope, $this->repositoryManager->getRepositories());
     }
 
     /**

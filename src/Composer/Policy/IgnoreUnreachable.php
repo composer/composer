@@ -37,6 +37,16 @@ class IgnoreUnreachable
         $this->update = $update;
     }
 
+    /**
+     * @param ListPolicyConfig::BLOCK_SCOPE_* $blockScope
+     */
+    public function forBlockScope(string $blockScope): bool
+    {
+        return $blockScope === ListPolicyConfig::BLOCK_SCOPE_INSTALL
+            ? $this->install
+            : $this->update;
+    }
+
     public static function default(): self
     {
         return new self(false, true, true);
