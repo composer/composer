@@ -1419,26 +1419,41 @@ If set to `1`, it is the equivalent of passing the `--no-audit` option to a `req
 
 ### COMPOSER_AUDIT_ABANDONED
 
-Set to `ignore`, `report` or `fail` to override the [audit.abandoned](06-config.md#abandoned)
-config option.
+Set to `ignore`, `report` or `fail` to override the [policy.abandoned.audit](06-config.md#audit) config option. Has no effect when `policy.abandoned` is set to `false` in composer.json.
 
 ### COMPOSER_POLICY
 
-Set to `0` to disable policies on updates and audit, or `1` to enable them. Setting this to `1` will use the policy configuration in the composer.json.
-If you want to override the config value, use `composer config policy 1` instead.
+Main policy switch. Set to `0` to disable all policy enforcement on updates and audit, or `1` to enable it. Setting this to `1` will use the policy configuration in the composer.json. If you want to override the config value, use `composer config policy 1` instead.
+
+When set to `0`, all per-list overrides below are ignored — the whole policy config is short-circuited to disabled.
 
 ### COMPOSER_NO_BLOCKING
 
-If set to `1`, it is the equivalent of passing the `--no-blocking` option to a `require`, `update`, `remove`, `install`, or `create-project` command. This disables all policy blocking during this command. It overrides the block config option for each configured policy e.g. [policy.advisories.block](06-config.md#block).
-
+If set to `1`, it is the equivalent of passing the `--no-blocking` option to a `require`, `update`, `remove`, `install`, or `create-project` command. This disables all policy blocking during this command. It overrides the `block` config option for each configured policy e.g. [policy.advisories.block](06-config.md#block).
 
 ### COMPOSER_NO_SECURITY_BLOCKING
 
 DEPRECATED, use [COMPOSER_NO_BLOCKING](#composer-no-blocking) instead.
 
-If set to `1`, it is the equivalent of passing the `--no-security-blocking` option to a `require`, `update`, `remove`, `install`, or `create-project` command. This allows installing packages with security advisories or that are abandoned. It overrides the config option [audit.block-insecure](06-config.md#block-insecure).
+If set to `1`, it is the equivalent of passing the `--no-security-blocking` option to a `require`, `update`, `remove`, `install`, or `create-project` command. This allows installing packages with security advisories or that are abandoned. It overrides the config option [policy.advisories.block](06-config.md#block).
+
+### COMPOSER_POLICY_ADVISORIES_BLOCK
+
+If set to `1`, enables blocking of packages with security advisories during dependency resolution (equivalent to setting `policy.advisories.block` to `true`). If set to `0`, disables blocking. Has no effect when `policy.advisories` is set to `false` in composer.json — the env var only flips an active list, it does not re-enable a list the user explicitly disabled.
+
+### COMPOSER_POLICY_MALWARE_BLOCK
+
+If set to `1`, enables blocking of packages flagged as malware during dependency resolution (equivalent to setting `policy.malware.block` to `true`). If set to `0`, disables blocking. Has no effect when `policy.malware` is set to `false` in composer.json.
+
+### COMPOSER_POLICY_ABANDONED_BLOCK
+
+If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `policy.abandoned.block` to `true`). If set to `0`, disables blocking. Has no effect when `policy.abandoned` is set to `false` in composer.json.
+
+Takes precedence over the legacy [COMPOSER_SECURITY_BLOCKING_ABANDONED](#composer-security-blocking-abandoned) when both are set.
 
 ### COMPOSER_SECURITY_BLOCKING_ABANDONED
+
+DEPRECATED, use [COMPOSER_POLICY_ABANDONED_BLOCK](#composer-policy-abandoned-block) instead.
 
 If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `audit.block-abandoned` config to `true`). If set to `0`, disables blocking of abandoned packages. Note that this setting does not have any effect if security blocking is generally disabled. It overrides the config option [audit.block-abandoned](06-config.md#block-abandoned).
 

@@ -87,6 +87,30 @@ class Platform
     }
 
     /**
+     * Read a boolean-style env var. Accepts only the literal strings '0' or '1'.
+     *
+     * Returns true for '1', false for '0', and $default when the variable is unset.
+     * Throws \RuntimeException for any other value (including the empty string).
+     *
+     * @param non-empty-string $name
+     */
+    public static function getBoolEnv(string $name, bool $default = false): bool
+    {
+        $value = self::getEnv($name);
+        if (false === $value) {
+            return $default;
+        }
+
+        if (!in_array($value, ['0', '1'], true)) {
+            throw new \RuntimeException(
+                "Invalid value for {$name}: {$value}. Expected 0 or 1."
+            );
+        }
+
+        return $value === '1';
+    }
+
+    /**
      * putenv() equivalent but updates the runtime global variables too
      */
     public static function putEnv(string $name, string $value): void

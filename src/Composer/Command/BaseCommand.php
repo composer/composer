@@ -480,8 +480,8 @@ abstract class BaseCommand extends Command
         $policyConfig = PolicyConfig::fromConfig($config);
 
         // --no-blocking / --no-security-blocking: disable ALL blocking (advisories + malware + abandoned + custom)
-        $noBlocking = (bool) Platform::getEnv('COMPOSER_NO_BLOCKING')
-            || (bool) Platform::getEnv('COMPOSER_NO_SECURITY_BLOCKING')
+        $noBlocking = Platform::getBoolEnv('COMPOSER_NO_BLOCKING')
+            || Platform::getBoolEnv('COMPOSER_NO_SECURITY_BLOCKING')
             || ($input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking'))
             || ($input->hasOption('no-blocking') && $input->getOption('no-blocking'));
 

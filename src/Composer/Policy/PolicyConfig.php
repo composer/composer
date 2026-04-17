@@ -192,24 +192,57 @@ class PolicyConfig
             $ignoreUnreachable = IgnoreUnreachable::fromRawAuditConfig($auditConfig);
         }
 
-        // BC: env var overrides (these are handled here because Config::get('policy')
-        // only returns the raw config array; specific overrides need to be applied after parsing)
-        $blockAbandonedEnv = Platform::getEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
-        if (false !== $blockAbandonedEnv) {
-            if (!in_array($blockAbandonedEnv, ['0', '1'], true)) {
-                throw new \RuntimeException(
-                    "Invalid value for COMPOSER_SECURITY_BLOCKING_ABANDONED: {$blockAbandonedEnv}. Expected 0 or 1."
-                );
-            }
+        // Env-var overrides applied after the raw config is parsed (Config::get('policy')
+        // only exposes the raw array, so per-list overrides have to live here). A list
+        // that the user explicitly disabled via `policy.<name>: false` is left alone —
+        // env-flipping its `block` would create an inconsistent half-active config.
+        $advisoriesExplicitlyDisabled = ($policyConfig['advisories'] ?? null) === false;
+        $malwareExplicitlyDisabled = ($policyConfig['malware'] ?? null) === false;
+        $abandonedExplicitlyDisabled = ($policyConfig['abandoned'] ?? null) === false;
+
+        $advisoriesBlockOverride = Platform::getEnv('COMPOSER_POLICY_ADVISORIES_BLOCK');
+        if (false !== $advisoriesBlockOverride && !$advisoriesExplicitlyDisabled) {
+            $advisories = new AdvisoriesPolicyConfig(
+                Platform::getBoolEnv('COMPOSER_POLICY_ADVISORIES_BLOCK'),
+                $advisories->audit,
+                $advisories->ignore,
+                $advisories->ignoreId,
+                $advisories->ignoreSeverity
+            );
+        }
+
+        $malwareBlockEnv = Platform::getEnv('COMPOSER_POLICY_MALWARE_BLOCK');
+        if (false !== $malwareBlockEnv && !$malwareExplicitlyDisabled) {
+            $malware = new MalwarePolicyConfig(
+                Platform::getBoolEnv('COMPOSER_POLICY_MALWARE_BLOCK'),
+                $malware->audit,
+                $malware->blockScope,
+                $malware->ignore,
+                $malware->ignoreSource
+            );
+        }
+
+        // COMPOSER_POLICY_ABANDONED_BLOCK is the canonical name following the
+        // COMPOSER_POLICY_<LIST>_BLOCK pattern; COMPOSER_SECURITY_BLOCKING_ABANDONED
+        // is the legacy alias and only applies when the canonical var is unset.
+        $canonicalAbandonedSet = false !== Platform::getEnv('COMPOSER_POLICY_ABANDONED_BLOCK');
+        $legacyAbandonedSet = false !== Platform::getEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
+        if (($canonicalAbandonedSet || $legacyAbandonedSet) && !$abandonedExplicitlyDisabled) {
             $abandoned = new AbandonedPolicyConfig(
-                (bool) (int) $blockAbandonedEnv,
+                Platform::getBoolEnv($canonicalAbandonedSet ? 'COMPOSER_POLICY_ABANDONED_BLOCK' : 'COMPOSER_SECURITY_BLOCKING_ABANDONED'),
                 $abandoned->audit,
                 $abandoned->ignore
             );
         }
 
         $auditAbandonedEnv = Platform::getEnv('COMPOSER_AUDIT_ABANDONED');
-        if (false !== $auditAbandonedEnv && in_array($auditAbandonedEnv, [ListPolicyConfig::AUDIT_IGNORE, ListPolicyConfig::AUDIT_REPORT, ListPolicyConfig::AUDIT_FAIL], true)) {
+        if (false !== $auditAbandonedEnv && !$abandonedExplicitlyDisabled) {
+            $allowed = [ListPolicyConfig::AUDIT_IGNORE, ListPolicyConfig::AUDIT_REPORT, ListPolicyConfig::AUDIT_FAIL];
+            if (!in_array($auditAbandonedEnv, $allowed, true)) {
+                throw new \RuntimeException(
+                    "Invalid value for COMPOSER_AUDIT_ABANDONED: {$auditAbandonedEnv}. Expected one of ".implode(', ', $allowed)."."
+                );
+            }
             $abandoned = new AbandonedPolicyConfig(
                 $abandoned->block,
                 $auditAbandonedEnv,

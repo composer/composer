@@ -22,6 +22,12 @@ use Composer\Test\TestCase;
  */
 class PlatformTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        Platform::clearEnv('COMPOSER_TEST_BOOL_ENV');
+        parent::tearDown();
+    }
+
     public function testExpandPath(): void
     {
         putenv('TESTENV=/home/test');
@@ -35,5 +41,61 @@ class PlatformTest extends TestCase
         // Compare 2 common tests for Windows to the built-in Windows test
         self::assertEquals(('\\' === DIRECTORY_SEPARATOR), Platform::isWindows());
         self::assertEquals(defined('PHP_WINDOWS_VERSION_MAJOR'), Platform::isWindows());
+    }
+
+    /**
+     * @return iterable<array{0: bool}>
+     */
+    public function defaultProvider(): iterable
+    {
+        yield [false];
+        yield [true];
+    }
+
+    /**
+     * @dataProvider defaultProvider
+     */
+    public function testGetBoolEnvReturnsDefaultWhenUnset(bool $default): void
+    {
+        self::assertSame($default, Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV', $default));
+    }
+
+    public function testGetBoolEnvReturnsTrueForOne(): void
+    {
+        Platform::putEnv('COMPOSER_TEST_BOOL_ENV', '1');
+        self::assertTrue(Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV'));
+    }
+
+    public function testGetBoolEnvReturnsFalseForZero(): void
+    {
+        Platform::putEnv('COMPOSER_TEST_BOOL_ENV', '0');
+        self::assertFalse(Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV'));
+    }
+
+    /**
+     * @return iterable<string, array{0: string}>
+     */
+    public static function provideInvalidBoolEnvValues(): iterable
+    {
+        yield 'empty string' => [''];
+        yield 'truthy word' => ['true'];
+        yield 'falsy word' => ['false'];
+        yield 'integer above 1' => ['2'];
+        yield 'integer below 0' => ['-1'];
+        yield 'arbitrary string' => ['abc'];
+        yield 'whitespace' => [' 1 '];
+    }
+
+    /**
+     * @dataProvider provideInvalidBoolEnvValues
+     */
+    public function testGetBoolEnvThrowsForInvalidValue(string $value): void
+    {
+        Platform::putEnv('COMPOSER_TEST_BOOL_ENV', $value);
+
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('Invalid value for COMPOSER_TEST_BOOL_ENV');
+
+        Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV');
     }
 }
