@@ -81,7 +81,7 @@ class CustomListPolicyConfig extends ListPolicyConfig
         $sources = [];
         foreach ($listConfig['sources'] ?? [] as $sourceConfig) {
             if (is_array($sourceConfig) && isset($sourceConfig['type']) && $sourceConfig['type'] === 'url') {
-                if (!isset($sourceConfig['url']) || strpos($sourceConfig['url'], 'https://') === false) {
+                if (!isset($sourceConfig['url']) || str_starts_with($sourceConfig['url'], 'https://') === false) {
                     throw new \RuntimeException('Invalid source config for list "'.$listName.'". "url" is required and must start with "https://".');
                 }
                 $sources[] = new UrlSource($listName, $sourceConfig['url']);
