@@ -1,6 +1,6 @@
 name: "Continuous Integration"
 
-on:
+on: # zizmor: ignore[concurrency-limits]
   push:
     paths-ignore:
       - 'doc/**'
@@ -68,6 +68,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # 2.37.0
         with:
@@ -97,14 +99,14 @@ jobs:
 
       - name: "Update dependencies from composer.json using composer binary provided by system"
         if: "contains(matrix.dependencies, 'highest') || contains(matrix.dependencies, 'lowest')"
-        run: "composer update ${{ env.COMPOSER_UPDATE_FLAGS }} ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer update $COMPOSER_UPDATE_FLAGS $COMPOSER_FLAGS'
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'locked'"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer install $COMPOSER_FLAGS'
 
       - name: "Run install again using composer binary from source"
-        run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'bin/composer install $COMPOSER_FLAGS'
 
       - name: "Make source binary the one used by default (Linux / macOS)"
         if: "!contains(matrix.os, 'windows')"
@@ -139,6 +141,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # 2.37.0
         with:
@@ -149,7 +153,7 @@ jobs:
           tools: composer
 
       - name: "Install dependencies"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer install $COMPOSER_FLAGS'
 
       - name: "Validate composer.json"
         run: "bin/composer validate --strict"

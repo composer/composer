@@ -1,6 +1,6 @@
 name: "PHPStan"
 
-on:
+on: # zizmor: ignore[concurrency-limits]
   push:
     paths-ignore:
       - 'doc/**'
@@ -33,6 +33,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # 2.37.0
         with:
@@ -54,11 +56,11 @@ jobs:
 
       - name: "Install highest dependencies"
         if: "matrix.experimental == true"
-        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer config platform --unset && composer update $COMPOSER_FLAGS'
 
       - name: "Install locked dependencies"
         if: "matrix.experimental == false"
-        run: "composer config platform --unset && composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer config platform --unset && composer install $COMPOSER_FLAGS'
 
       - name: "Initialize PHPUnit sources"
         run: "vendor/bin/simple-phpunit --filter NO_TEST_JUST_AUTOLOAD_THANKS"

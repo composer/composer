@@ -1,6 +1,6 @@
 name: "PHP Lint"
 
-on:
+on: # zizmor: ignore[concurrency-limits]
   push:
     paths-ignore:
       - 'doc/**'
@@ -25,6 +25,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # 2.37.0
         with:
