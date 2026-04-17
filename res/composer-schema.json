@@ -1699,7 +1699,7 @@
         },
         "policy-ignore-severity": {
             "description": "Advisory severity levels (low, medium, high, critical) with optional reason and per-rule scoping (on-block/on-audit).",
-            "oneOf": [
+            "anyOf": [
                 {
                     "anyOf": [
                         {

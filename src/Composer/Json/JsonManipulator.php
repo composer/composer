@@ -376,11 +376,20 @@ class JsonManipulator
      */
     public function addConfigSetting(string $name, $value): bool
     {
+        // policy config has one more nesting level than the rest of the config e.g. policy.list-name.key
+        if (strpos($name, 'policy.') === 0 && substr_count($name, '.') >= 2) {
+            return false;
+        }
+
         return $this->addSubNode('config', $name, $value);
     }
 
     public function removeConfigSetting(string $name): bool
     {
+        if (strpos($name, 'policy.') === 0) {
+            return false;
+        }
+
         return $this->removeSubNode('config', $name);
     }
 

@@ -202,6 +202,141 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy', '--unset' => true],
             ['config' => []],
         ];
+        yield 'set policy.advisories.block false via 0' => [
+            [],
+            ['setting-key' => 'policy.advisories.block', 'setting-value' => ['0']],
+            ['config' => ['policy' => ['advisories' => ['block' => false]]]],
+        ];
+        yield 'set policy.advisories.block true via 1' => [
+            [],
+            ['setting-key' => 'policy.advisories.block', 'setting-value' => ['1']],
+            ['config' => ['policy' => ['advisories' => ['block' => true]]]],
+        ];
+        yield 'set policy.advisories.audit' => [
+            [],
+            ['setting-key' => 'policy.advisories.audit', 'setting-value' => ['report']],
+            ['config' => ['policy' => ['advisories' => ['audit' => 'report']]]],
+        ];
+        yield 'set policy.malware.block false' => [
+            [],
+            ['setting-key' => 'policy.malware.block', 'setting-value' => ['false']],
+            ['config' => ['policy' => ['malware' => ['block' => false]]]],
+        ];
+        yield 'set policy.malware.block-scope' => [
+            [],
+            ['setting-key' => 'policy.malware.block-scope', 'setting-value' => ['install']],
+            ['config' => ['policy' => ['malware' => ['block-scope' => 'install']]]],
+        ];
+        yield 'set policy.malware.audit' => [
+            [],
+            ['setting-key' => 'policy.malware.audit', 'setting-value' => ['ignore']],
+            ['config' => ['policy' => ['malware' => ['audit' => 'ignore']]]],
+        ];
+        yield 'set policy.abandoned.block true' => [
+            [],
+            ['setting-key' => 'policy.abandoned.block', 'setting-value' => ['true']],
+            ['config' => ['policy' => ['abandoned' => ['block' => true]]]],
+        ];
+        yield 'set policy.abandoned.audit' => [
+            [],
+            ['setting-key' => 'policy.abandoned.audit', 'setting-value' => ['fail']],
+            ['config' => ['policy' => ['abandoned' => ['audit' => 'fail']]]],
+        ];
+        yield 'set policy.ignore-unreachable bool true' => [
+            [],
+            ['setting-key' => 'policy.ignore-unreachable', 'setting-value' => ['true']],
+            ['config' => ['policy' => ['ignore-unreachable' => true]]],
+        ];
+        yield 'set policy.ignore-unreachable bool false' => [
+            [],
+            ['setting-key' => 'policy.ignore-unreachable', 'setting-value' => ['false']],
+            ['config' => ['policy' => ['ignore-unreachable' => false]]],
+        ];
+        yield 'set policy.advisories.block alongside existing audit setting' => [
+            ['config' => ['policy' => ['advisories' => ['audit' => 'report']]]],
+            ['setting-key' => 'policy.advisories.block', 'setting-value' => ['false']],
+            ['config' => ['policy' => ['advisories' => ['audit' => 'report', 'block' => false]]]],
+        ];
+        yield 'set policy.malware.block alongside existing advisories' => [
+            ['config' => ['policy' => ['advisories' => ['block' => false]]]],
+            ['setting-key' => 'policy.malware.block', 'setting-value' => ['true']],
+            ['config' => ['policy' => ['advisories' => ['block' => false], 'malware' => ['block' => true]]]],
+        ];
+        yield 'set custom policy list block' => [
+            [],
+            ['setting-key' => 'policy.my-list.block', 'setting-value' => ['true']],
+            ['config' => ['policy' => ['my-list' => ['block' => true]]]],
+        ];
+        yield 'set custom policy list audit' => [
+            [],
+            ['setting-key' => 'policy.my-list.audit', 'setting-value' => ['report']],
+            ['config' => ['policy' => ['my-list' => ['audit' => 'report']]]],
+        ];
+        yield 'unset policy.advisories.block leaves siblings' => [
+            ['config' => ['policy' => ['advisories' => ['block' => false, 'audit' => 'fail']]]],
+            ['setting-key' => 'policy.advisories.block', '--unset' => true],
+            ['config' => ['policy' => ['advisories' => ['audit' => 'fail']]]],
+        ];
+        yield 'unset policy.ignore-unreachable leaves siblings' => [
+            ['config' => ['policy' => ['ignore-unreachable' => true, 'advisories' => ['block' => true]]]],
+            ['setting-key' => 'policy.ignore-unreachable', '--unset' => true],
+            ['config' => ['policy' => ['advisories' => ['block' => true]]]],
+        ];
+        yield 'set policy.advisories.ignore as array' => [
+            [],
+            ['setting-key' => 'policy.advisories.ignore', 'setting-value' => ['["CVE-2024-1234"]'], '--json' => true],
+            ['config' => ['policy' => ['advisories' => ['ignore' => ['CVE-2024-1234']]]]],
+        ];
+        yield 'set policy.advisories.ignore as object' => [
+            [],
+            ['setting-key' => 'policy.advisories.ignore', 'setting-value' => ['{"CVE-2024-1234":"False positive"}'], '--json' => true],
+            ['config' => ['policy' => ['advisories' => ['ignore' => ['CVE-2024-1234' => 'False positive']]]]],
+        ];
+        yield 'merge policy.advisories.ignore array' => [
+            ['config' => ['policy' => ['advisories' => ['ignore' => ['CVE-2024-1234']]]]],
+            ['setting-key' => 'policy.advisories.ignore', 'setting-value' => ['["CVE-2024-5678"]'], '--json' => true, '--merge' => true],
+            ['config' => ['policy' => ['advisories' => ['ignore' => ['CVE-2024-1234', 'CVE-2024-5678']]]]],
+        ];
+        yield 'merge policy.advisories.ignore object' => [
+            ['config' => ['policy' => ['advisories' => ['ignore' => ['CVE-2024-1234' => 'Old reason']]]]],
+            ['setting-key' => 'policy.advisories.ignore', 'setting-value' => ['{"CVE-2024-5678":"New advisory"}'], '--json' => true, '--merge' => true],
+            ['config' => ['policy' => ['advisories' => ['ignore' => ['CVE-2024-5678' => 'New advisory', 'CVE-2024-1234' => 'Old reason']]]]],
+        ];
+        yield 'set policy.advisories.ignore-severity' => [
+            [],
+            ['setting-key' => 'policy.advisories.ignore-severity', 'setting-value' => ['low', 'medium']],
+            ['config' => ['policy' => ['advisories' => ['ignore-severity' => ['low', 'medium']]]]],
+        ];
+        yield 'set policy.advisories.ignore-id as array' => [
+            [],
+            ['setting-key' => 'policy.advisories.ignore-id', 'setting-value' => ['["CVE-2024-1234","GHSA-xxxx-yyyy"]'], '--json' => true],
+            ['config' => ['policy' => ['advisories' => ['ignore-id' => ['CVE-2024-1234', 'GHSA-xxxx-yyyy']]]]],
+        ];
+        yield 'set policy.malware.ignore as array' => [
+            [],
+            ['setting-key' => 'policy.malware.ignore', 'setting-value' => ['["vendor/pkg"]'], '--json' => true],
+            ['config' => ['policy' => ['malware' => ['ignore' => ['vendor/pkg']]]]],
+        ];
+        yield 'set policy.malware.ignore-source' => [
+            [],
+            ['setting-key' => 'policy.malware.ignore-source', 'setting-value' => ['source-a', 'source-b']],
+            ['config' => ['policy' => ['malware' => ['ignore-source' => ['source-a', 'source-b']]]]],
+        ];
+        yield 'set policy.abandoned.ignore as array' => [
+            [],
+            ['setting-key' => 'policy.abandoned.ignore', 'setting-value' => ['["vendor/pkg"]'], '--json' => true],
+            ['config' => ['policy' => ['abandoned' => ['ignore' => ['vendor/pkg']]]]],
+        ];
+        yield 'set policy.ignore-unreachable as array via json' => [
+            [],
+            ['setting-key' => 'policy.ignore-unreachable', 'setting-value' => ['["install","update"]'], '--json' => true],
+            ['config' => ['policy' => ['ignore-unreachable' => ['install', 'update']]]],
+        ];
+        yield 'set custom policy list ignore' => [
+            [],
+            ['setting-key' => 'policy.my-list.ignore', 'setting-value' => ['["vendor/pkg"]'], '--json' => true],
+            ['config' => ['policy' => ['my-list' => ['ignore' => ['vendor/pkg']]]]],
+        ];
     }
 
     /**
@@ -290,5 +425,46 @@ class ConfigCommandTest extends TestCase
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'config', 'setting-key' => 'audit.ignore', 'setting-value' => ['{"CVE-2024-5678":"reason"}'], '--json' => true, '--merge' => true]);
+    }
+
+    public function testConfigThrowsForInvalidPolicyAuditMode(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'policy.advisories.audit', 'setting-value' => ['bogus']]);
+    }
+
+    public function testConfigThrowsForInvalidPolicyBlockScope(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'policy.malware.block-scope', 'setting-value' => ['bogus']]);
+    }
+
+    public function testConfigThrowsForInvalidPolicyIgnoreSeverity(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('valid severities include: low, medium, high, critical');
+
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'policy.advisories.ignore-severity', 'setting-value' => ['low', 'bogus']]);
+    }
+
+    public function testConfigThrowsForInvalidPolicyIgnoreUnreachableValue(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'policy.ignore-unreachable', 'setting-value' => ['["bogus"]'], '--json' => true]);
     }
 }
