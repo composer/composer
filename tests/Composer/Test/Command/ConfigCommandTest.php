@@ -352,6 +352,41 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.my-list.ignore', 'setting-value' => ['["vendor/pkg"]'], '--json' => true],
             ['config' => ['policy' => ['my-list' => ['ignore' => ['vendor/pkg']]]]],
         ];
+        yield 'set policy.malware false disables whole list' => [
+            [],
+            ['setting-key' => 'policy.malware', 'setting-value' => ['false']],
+            ['config' => ['policy' => ['malware' => false]]],
+        ];
+        yield 'set policy.advisories true via 1 enables whole list' => [
+            [],
+            ['setting-key' => 'policy.advisories', 'setting-value' => ['1']],
+            ['config' => ['policy' => ['advisories' => true]]],
+        ];
+        yield 'set policy.abandoned false' => [
+            [],
+            ['setting-key' => 'policy.abandoned', 'setting-value' => ['false']],
+            ['config' => ['policy' => ['abandoned' => false]]],
+        ];
+        yield 'set policy.<list> false overwrites existing object' => [
+            ['config' => ['policy' => ['malware' => ['block' => true, 'audit' => 'fail']]]],
+            ['setting-key' => 'policy.malware', 'setting-value' => ['false']],
+            ['config' => ['policy' => ['malware' => false]]],
+        ];
+        yield 'set custom policy list false' => [
+            [],
+            ['setting-key' => 'policy.my-custom', 'setting-value' => ['false']],
+            ['config' => ['policy' => ['my-custom' => false]]],
+        ];
+        yield 'unset policy.<list> removes the list entry' => [
+            ['config' => ['policy' => ['malware' => false, 'advisories' => ['block' => true]]]],
+            ['setting-key' => 'policy.malware', '--unset' => true],
+            ['config' => ['policy' => ['advisories' => ['block' => true]]]],
+        ];
+        yield 'unset only policy.<list> cascades through policy' => [
+            ['config' => ['policy' => ['malware' => false]]],
+            ['setting-key' => 'policy.malware', '--unset' => true],
+            ['config' => []],
+        ];
     }
 
     /**
@@ -481,5 +516,16 @@ class ConfigCommandTest extends TestCase
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'config', 'setting-key' => 'policy.ignore-unreachable', 'setting-value' => ['["bogus"]'], '--json' => true]);
+    }
+
+    public function testConfigThrowsForInvalidPolicyListBoolValue(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('expected a boolean');
+
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'policy.malware', 'setting-value' => ['bogus']]);
     }
 }
