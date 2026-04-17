@@ -380,6 +380,11 @@ Defaults to `true`. If `false`, the Composer autoloader will not be prepended to
 existing autoloaders. This is sometimes required to fix interoperability issues
 with other autoloaders.
 
+## prepend-autoloader-files
+
+Defaults to `false`. If `true`, the root package's `autoload.files` will be
+loaded before dependency autoload files.
+
 ## autoloader-suffix
 
 Defaults to `null`. When set to a non-empty string, this value will be used as a
