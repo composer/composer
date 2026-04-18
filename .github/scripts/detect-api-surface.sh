@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Detects new public/protected methods, classes, and constants added in a PR
-# and posts/updates a PR comment highlighting them.
+# and writes the result to api-surface-result/ for a separate workflow to post
+# as a PR comment.
 # Uses a companion PHP script (check-api-surface.php) with ReflectionClass
 # for reliable docblock association.
 set -euo pipefail
@@ -8,12 +9,17 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_REF="origin/${GITHUB_BASE_REF}"
 COMMENT_MARKER="<!-- api-surface-bot -->"
+OUTPUT_DIR="api-surface-result"
+
+mkdir -p "$OUTPUT_DIR"
+echo "$PR_NUMBER" > "${OUTPUT_DIR}/pr-number.txt"
 
 # Get changed/added PHP files in src/Composer/
 changed_files=$(git diff "${BASE_REF}...HEAD" --diff-filter=AM --name-only -- 'src/Composer/*.php' 'src/Composer/**/*.php') || true
 
 if [[ -z "$changed_files" ]]; then
     echo "No PHP source files changed."
+    echo "" > "${OUTPUT_DIR}/comment-body.txt"
     exit 0
 fi
 
@@ -63,53 +69,36 @@ done
 # Build the comment body
 total=$(( ${#CLASSES[@]} + ${#METHODS[@]} + ${#CONSTANTS[@]} ))
 
-manage_comment() {
-    # Find existing comment
-    local existing_comment_id
-    existing_comment_id=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" --paginate -q ".[] | select(.body | contains(\"${COMMENT_MARKER}\")) | .id" | head -1) || true
+if (( total == 0 )); then
+    echo "No new API surface detected."
+    echo "" > "${OUTPUT_DIR}/comment-body.txt"
+    exit 0
+fi
 
-    if (( total == 0 )); then
-        # Delete existing comment if any
-        if [[ -n "$existing_comment_id" ]]; then
-            gh api -X DELETE "repos/${GITHUB_REPOSITORY}/issues/comments/${existing_comment_id}" || true
-            echo "Deleted stale API surface comment."
-        fi
-        echo "No new API surface detected."
-        return
-    fi
+body="${COMMENT_MARKER}"$'\n'
+body+="## New API Surface"$'\n\n'
+body+="The following public API additions were detected in this PR. If this was not intentional, add \`@internal\` to the docblock."$'\n'
 
-    local body="${COMMENT_MARKER}"$'\n'
-    body+="## New API Surface"$'\n\n'
-    body+="The following public API additions were detected in this PR. If this was not intentional, add \`@internal\` to the docblock."$'\n'
+if (( ${#CLASSES[@]} > 0 )); then
+    body+=$'\n'"### New Classes"$'\n'
+    for item in "${CLASSES[@]}"; do
+        body+="${item}"$'\n'
+    done
+fi
 
-    if (( ${#CLASSES[@]} > 0 )); then
-        body+=$'\n'"### New Classes"$'\n'
-        for item in "${CLASSES[@]}"; do
-            body+="${item}"$'\n'
-        done
-    fi
+if (( ${#METHODS[@]} > 0 )); then
+    body+=$'\n'"### New Methods"$'\n'
+    for item in "${METHODS[@]}"; do
+        body+="${item}"$'\n'
+    done
+fi
 
-    if (( ${#METHODS[@]} > 0 )); then
-        body+=$'\n'"### New Methods"$'\n'
-        for item in "${METHODS[@]}"; do
-            body+="${item}"$'\n'
-        done
-    fi
+if (( ${#CONSTANTS[@]} > 0 )); then
+    body+=$'\n'"### New Constants"$'\n'
+    for item in "${CONSTANTS[@]}"; do
+        body+="${item}"$'\n'
+    done
+fi
 
-    if (( ${#CONSTANTS[@]} > 0 )); then
-        body+=$'\n'"### New Constants"$'\n'
-        for item in "${CONSTANTS[@]}"; do
-            body+="${item}"$'\n'
-        done
-    fi
-
-    if [[ -n "$existing_comment_id" ]]; then
-        gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${existing_comment_id}" -f body="$body" > /dev/null
-        echo "Updated API surface comment."
-    else
-        gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -f body="$body" > /dev/null
-        echo "Posted API surface comment."
-    fi
-}
-
-manage_comment
+echo "$body" > "${OUTPUT_DIR}/comment-body.txt"
+echo "Detected ${total} new API surface items. Result saved to artifact."

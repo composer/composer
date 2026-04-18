@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 concurrency:
   group: api-surface-${{ github.event.pull_request.number }}
@@ -36,7 +35,13 @@ jobs:
 
       - name: "Detect new API surface"
         env:
-          GH_TOKEN: ${{ github.token }}
           GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: bash .github/scripts/detect-api-surface.sh
+
+      - name: "Upload result"
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: api-surface-result
+          path: api-surface-result/
+          retention-days: 1

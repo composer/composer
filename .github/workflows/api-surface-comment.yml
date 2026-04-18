@@ -1,0 +1,34 @@
+name: "API Surface Comment"
+
+on:
+  workflow_run:
+    workflows: ["API Surface Check"]
+    types:
+      - completed
+
+permissions:
+  pull-requests: write
+
+jobs:
+  comment:
+    name: "Post Comment"
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: "Download artifact"
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: api-surface-result
+          path: api-surface-result/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: "Post or update comment"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/post-api-surface-comment.sh
