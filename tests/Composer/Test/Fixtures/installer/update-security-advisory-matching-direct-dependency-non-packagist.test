@@ -1,0 +1,64 @@
+--TEST--
+Security advisory matching direct dependency with a non-Packagist advisory source should not mention Packagist.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "roots/wordpress-no-content": "6.9.4"
+    },
+    "config": {
+        "audit": {
+            "block-insecure": true
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "roots/wordpress-no-content",
+                    "version": "6.9.4",
+                    "source": { "reference": "some.branch", "type": "git", "url": "" }
+                }
+            ],
+            "security-advisories": {
+                "roots/wordpress-no-content": [
+                    {
+                        "advisoryId": "WPSECADV/WF/112ed4f2-fe91-4d83-a3f7-eaf889870af4/wordpress",
+                        "packageName": "roots/wordpress-no-content",
+                        "remoteId": "wordfence",
+                        "title": "Wordfence Advisory",
+                        "link": "https://www.wordfence.com/threat-intel/vulnerabilities/id/112ed4f2-fe91-4d83-a3f7-eaf889870af4?source=api-prod",
+                        "cve": null,
+                        "affectedVersions": ">=6.9.4,<6.9.5",
+                        "source": "Wordfence",
+                        "reportedAt": "2026-03-20 22:53:01",
+                        "composerRepository": "Package Repository",
+                        "severity": "high",
+                        "sources": [
+                            {
+                                "name": "Wordfence Advisory",
+                                "remoteId": "wordfence"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
+--RUN--
+update -v
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires roots/wordpress-no-content 6.9.4 (exact version match: 6.9.4 or 6.9.4.0), found roots/wordpress-no-content[6.9.4] but these were not loaded, because they are affected by security advisories ("<href=https://www.wordfence.com/threat-intel/vulnerabilities/id/112ed4f2-fe91-4d83-a3f7-eaf889870af4?source=api-prod>WPSECADV/WF/112ed4f2-fe91-4d83-a3f7-eaf889870af4/wordpress</>"). Review the advisory details above for more information. To ignore the advisories, add them to the audit "ignore" config. To turn the feature off entirely, you can set "block-insecure" to false in your "audit" config.
+--EXPECT--
