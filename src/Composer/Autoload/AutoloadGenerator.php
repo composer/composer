@@ -82,6 +82,11 @@ class AutoloadGenerator
     private $runScripts = false;
 
     /**
+     * @var bool
+     */
+    private $prependAutoloaderFiles = false;
+
+    /**
      * @var PlatformRequirementFilterInterface
      */
     private $platformRequirementFilter;
@@ -131,6 +136,16 @@ class AutoloadGenerator
     public function setRunScripts(bool $runScripts = true)
     {
         $this->runScripts = $runScripts;
+    }
+
+    /**
+     * Whether to load root package files before dependency files.
+     *
+     * @return void
+     */
+    public function setPrependAutoloaderFiles(bool $prependAutoloaderFiles = true)
+    {
+        $this->prependAutoloaderFiles = $prependAutoloaderFiles;
     }
 
     /**
@@ -217,6 +232,9 @@ class AutoloadGenerator
         $vendorPath = $filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))));
         $useGlobalIncludePath = $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
+        if ($config->get('prepend-autoloader-files')) {
+            $this->setPrependAutoloaderFiles(true);
+        }
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
 
@@ -576,10 +594,17 @@ EOF;
         $sortedPackageMap[] = $rootPackageMap;
         array_unshift($packageMap, $rootPackageMap);
 
+        if ($this->prependAutoloaderFiles) {
+            $filesPackageMap = $sortedPackageMap;
+            array_unshift($filesPackageMap, array_pop($filesPackageMap));
+        } else {
+            $filesPackageMap = $sortedPackageMap;
+        }
+
         $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $rootPackage);
         $psr4 = $this->parseAutoloadsType($packageMap, 'psr-4', $rootPackage);
         $classmap = $this->parseAutoloadsType(array_reverse($sortedPackageMap), 'classmap', $rootPackage);
-        $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $rootPackage);
+        $files = $this->parseAutoloadsType($filesPackageMap, 'files', $rootPackage);
         $exclude = $this->parseAutoloadsType($sortedPackageMap, 'exclude-from-classmap', $rootPackage);
 
         krsort($psr0);
