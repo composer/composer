@@ -234,7 +234,7 @@ class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
     public function getFilter(array $packageConstraintMap): array
     {
         if (!$this->repo instanceof FilterListProviderInterface) {
-            return ['filter' => [], 'config' => FilterListProviderConfig::fromConfig(false, [])];
+            return ['filter' => []];
         }
 
         foreach ($packageConstraintMap as $name => $constraint) {
@@ -244,6 +244,15 @@ class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
         }
 
         return $this->repo->getFilter($packageConstraintMap);
+    }
+
+    public function getFilterLists(): array
+    {
+        if (!$this->repo instanceof FilterListProviderInterface) {
+            return [];
+        }
+
+        return $this->repo->getFilterLists();
     }
 
     private function isAllowed(string $name): bool
