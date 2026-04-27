@@ -581,7 +581,8 @@ class Application extends BaseApplication
     /**
      * @throws JsonValidationException
      * @throws \InvalidArgumentException
-     * @return ($required is true ? Composer : Composer|null) If $required is true then the return value is guaranteed
+     * @return ?Composer If $required is true then the return value is guaranteed
+     * @phpstan-return ($required is true ? Composer : Composer|null)
      */
     public function getComposer(bool $required = true, ?bool $disablePlugins = null, ?bool $disableScripts = null): ?Composer
     {
