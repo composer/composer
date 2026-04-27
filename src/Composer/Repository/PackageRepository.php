@@ -124,7 +124,10 @@ class PackageRepository extends ArrayRepository implements AdvisoryProviderInter
         foreach ($this->filter as $listName => $listEntries) {
             $lists[] = $listName;
             foreach ($listEntries as $data) {
-                $filter[$listName][] = FilterListEntry::create($listName, $data, $parser);
+                $filterEntry = FilterListEntry::create($listName, $data, $parser);
+                if (isset($packageConstraintMap[$filterEntry->packageName])) {
+                    $filter[$listName][] = $filterEntry;
+                }
             }
         }
 
