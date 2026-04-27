@@ -96,7 +96,7 @@ class InstallerTest extends TestCase
                     case 'platform':
                     case 'audit':
                         return [];
-                    case 'filter':
+                    case 'policy':
                         return false;
                 }
 
