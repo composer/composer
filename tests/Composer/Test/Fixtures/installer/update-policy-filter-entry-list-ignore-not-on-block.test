@@ -1,0 +1,64 @@
+--TEST--
+Filter list entry matching direct dependency with ignore on-block=false preventing a successful update.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "^1.0.0"
+    },
+    "config": {
+        "policy": {
+            "test-list": {
+              "ignore": {
+                "acme/library": {"constraint": "1.1.0", "on-block": false}
+              }
+            }
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0.0",
+                    "type": "metapackage"
+                },
+                {
+                    "name": "acme/library",
+                    "version": "1.1.0",
+                    "type": "metapackage"
+                }
+            ],
+            "filter": {
+                "test-list": [
+                    {
+                        "package": "acme/library",
+                        "constraint": "*",
+                        "url": "https://example.org/malware/acme/library",
+                        "reason": "malware",
+                        "id": "ID-test"
+                    }
+                ]
+            }
+        }
+    ]
+}
+--RUN--
+update -v
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires acme/library ^1.0.0, found acme/library[1.0.0, 1.1.0] but these were not loaded, because they were filtered by test-list (see https://example.org/malware/acme/library) reason: malware,  (see https://example.org/malware/acme/library) reason: malware. To ignore filters for this package, add the package to the "policy.test-list.ignore" config. To turn the feature off entirely, you can set "policy" to false.
+
+
+--EXPECT--
+

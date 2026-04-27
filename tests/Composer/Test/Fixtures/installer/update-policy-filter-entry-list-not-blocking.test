@@ -1,14 +1,18 @@
 --TEST--
-Filter list entry matching direct dependency preventing a successful update.
+Filter list entry matching direct dependency not preventing a successful update because block is set to false.
 --COMPOSER--
 {
     "name": "acme/project",
     "version": "1.0.0",
     "require": {
-        "acme/library": "1.0.0"
+        "acme/library": "^1.0.0"
     },
     "config": {
-        "filter": true
+        "policy": {
+            "test-list": {
+              "block": false
+            }
+        }
     },
     "repositories": [
         {
@@ -17,7 +21,12 @@ Filter list entry matching direct dependency preventing a successful update.
                 {
                     "name": "acme/library",
                     "version": "1.0.0",
-                    "source": { "reference": "some.branch", "type": "git", "url": "" }
+                    "type": "metapackage"
+                },
+                {
+                    "name": "acme/library",
+                    "version": "1.1.0",
+                    "type": "metapackage"
                 }
             ],
             "filter": {
@@ -38,14 +47,16 @@ Filter list entry matching direct dependency preventing a successful update.
 update -v
 
 --EXPECT-EXIT-CODE--
-2
+0
 
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
 Updating dependencies
-Your requirements could not be resolved to an installable set of packages.
-
-  Problem 1
-    - Root composer.json requires acme/library 1.0.0 (exact version match: 1.0.0 or 1.0.0.0), found acme/library[1.0.0] but these were not loaded, because they were filtered by test-list (see https://example.org/malware/acme/library) reason: malware. To ignore filters for this package, add the package to the "filter.unfiltered-packages" config. To turn the feature off entirely, you can set "filter" to false.
-
+Lock file operations: 1 install, 0 updates, 0 removals
+  - Locking acme/library (1.1.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 1 install, 0 updates, 0 removals
+Generating autoload files
 --EXPECT--
+Installing acme/library (1.1.0)

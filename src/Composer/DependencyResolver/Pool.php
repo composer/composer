@@ -196,18 +196,26 @@ class Pool implements \Countable
      */
     public function getFilterListEntryForPackageVersion(string $packageName, ?ConstraintInterface $constraint): array
     {
+        $lists = [];
         foreach ($this->filterListRemovedVersions[$packageName] ?? [] as $version => $filterListEntries) {
             if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
-                return array_map(static function (FilterListEntry $entry) {
+                foreach ($filterListEntries as $entry) {
                     $url = (bool) $entry->url ? ' (see ' . $entry->url . ')' : '';
-                    $reason = (bool) $entry->reason ? ' reason: ' . $entry->reason . '' : '';
+                    $reason = (bool) $entry->reason ? ' reason: ' . $entry->reason : '';
 
-                    return 'filtered by ' . $entry->listName . $url . $reason;
-                }, $filterListEntries);
+                    $lists[$entry->listName][] =  $url . $reason;
+                }
+
             }
         }
 
-        return [];
+        $result = [];
+        foreach ($lists as $listName => $listEntries) {
+            $action = $listName === 'malware' ? 'flagged as ' : 'filtered by ';
+            $result[$listName] = $action . $listName . implode(', ', $listEntries);
+        }
+
+        return $result;
     }
 
     /**

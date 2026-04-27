@@ -13,7 +13,6 @@
 namespace Composer\FilterList\FilterListProvider;
 
 use Composer\FilterList\FilterListEntry;
-use Composer\FilterList\FilterListProviderConfig;
 use Composer\FilterList\Source\UrlSource;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\FilterListProviderInterface;
@@ -64,7 +63,7 @@ class UrlSourceFilterListProvider implements FilterListProviderInterface
         $map = [];
         $parser = new VersionParser();
         foreach ($response->decodeJson()['filter'] as $data) {
-            $entry = FilterListEntry::create($this->source->name, $data, $parser);
+            $entry = FilterListEntry::create($this->source->listName, $data, $parser);
             if (!isset($packageConstraintMap[$entry->packageName])) {
                 continue;
             }
@@ -73,9 +72,14 @@ class UrlSourceFilterListProvider implements FilterListProviderInterface
                 continue;
             }
 
-            $map[$this->source->name][] = $entry;
+            $map[$this->source->listName][] = $entry;
         }
 
-        return ['filter' => $map, 'config' => FilterListProviderConfig::fromConfig(true, [$this->source->name])];
+        return ['filter' => $map];
+    }
+
+    public function getFilterLists(): array
+    {
+        return [$this->source->listName];
     }
 }

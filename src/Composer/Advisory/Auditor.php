@@ -13,7 +13,6 @@
 namespace Composer\Advisory;
 
 use Composer\FilterList\FilterListAuditor;
-use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\IO\ConsoleIO;
@@ -23,6 +22,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\RepositorySet;
 use Composer\Util\PackageInfo;
 use InvalidArgumentException;
@@ -89,7 +89,7 @@ class Auditor
      * @return int-mask<self::STATUS_*> A bitmask of STATUS_* constants or 0 on success
      * @throws InvalidArgumentException If no packages are passed in
      */
-    public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_FAIL, array $ignoredSeverities = [], bool $ignoreUnreachable = false, array $ignoreAbandoned = [], string $filtered = self::FILTERED_FAIL, ?FilterListProviderSet $filterListProviderSet = null, ?FilterListConfig $filterListConfig = null): int
+    public function audit(IOInterface $io, RepositorySet $repoSet, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], string $abandoned = self::ABANDONED_FAIL, array $ignoredSeverities = [], bool $ignoreUnreachable = false, array $ignoreAbandoned = [], string $filtered = self::FILTERED_FAIL, ?FilterListProviderSet $filterListProviderSet = null, ?PolicyConfig $policyConfig = null): int
     {
         $result = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY, $ignoreUnreachable);
         $allAdvisories = $result['advisories'];
@@ -118,11 +118,11 @@ class Auditor
         $filterAuditor = new FilterListAuditor();
         $filteredPackages = [];
         $filteredCount = 0;
-        if ($filterListConfig !== null && $filterListProviderSet !== null && $filtered !== self::FILTERED_IGNORE) {
-            $filterResult = $filterAuditor->collectFilterLists($packages, $filterListProviderSet, 'audit', $ignoreUnreachable || $filterListConfig->ignoreUnreachable);
+        if ($policyConfig !== null && $filterListProviderSet !== null && $filtered !== self::FILTERED_IGNORE) {
+            $filterResult = $filterAuditor->collectFilterLists($packages, $filterListProviderSet, $policyConfig->getActiveFilterListNames('audit'), $ignoreUnreachable || $policyConfig->ignoreUnreachable->audit);
             $unreachableRepos = array_merge($unreachableRepos, $filterResult['unreachableRepos']);
             foreach ($packages as $package) {
-                $matchingEntries = $filterAuditor->getMatchingEntries($package, $filterResult['filter'], $filterListConfig, 'audit');
+                $matchingEntries = $filterAuditor->getMatchingEntries($package, $filterResult['filter'], $policyConfig, 'audit');
                 if (count($matchingEntries) > 0) {
                     $filteredPackages[$package->getName()] = $matchingEntries;
                 }
