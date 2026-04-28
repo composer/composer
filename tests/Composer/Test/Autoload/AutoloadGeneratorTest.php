@@ -219,6 +219,57 @@ class AutoloadGeneratorTest extends TestCase
         self::assertAutoloadFiles('classmap', $this->vendorDir.'/composer', 'classmap');
     }
 
+    public function testRootPackageMotoAutoloading(): void
+    {
+        $package = new RootPackage('root/a', '1.0', '1.0');
+        $package->setAutoload([
+            'moto' => [
+                'Moto\Fruit\\' => 'src-moto-fruit/',
+                'Moto\Cake\\' => ['src-moto-cake/', 'lib-moto-cake/'],
+            ],
+        ]);
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue([]));
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src-moto-fruit');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src-moto-cake');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/lib-moto-cake');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, 'Moto');
+
+        // Assert that autoload_moto.php was correctly generated.
+        self::assertAutoloadFiles('moto', $this->vendorDir.'/composer', 'moto');
+        self::assertAutoloadFiles('moto_static', $this->vendorDir.'/composer', 'static');
+    }
+
+    public function testMotoClassMapOptimization(): void
+    {
+        $package = new RootPackage('root/a', '1.0', '1.0');
+        $package->setAutoload([
+            'moto' => [
+                'Moto\Fruit\\' => 'src-moto-fruit/',
+            ],
+        ]);
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue([]));
+
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src-moto-fruit');
+        file_put_contents($this->workingDir.'/src-moto-fruit/Apple.php', '<?php namespace Moto\Fruit; class Apple {} class Apple_Pie {} class Apple_Sauce {}');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
+        self::assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated.");
+
+        $classmap = include $this->vendorDir.'/composer/autoload_classmap.php';
+        self::assertArrayHasKey('Moto\\Fruit\\Apple', $classmap);
+        self::assertArrayHasKey('Moto\\Fruit\\Apple_Pie', $classmap);
+        self::assertArrayHasKey('Moto\\Fruit\\Apple_Sauce', $classmap);
+    }
+
     public function testRootPackageDevAutoloading(): void
     {
         $package = new RootPackage('root/a', '1.0', '1.0');

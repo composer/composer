@@ -383,7 +383,7 @@ class JsonConfigSource implements ConfigSourceInterface
                     $config[$prop] = new \stdClass;
                 }
             }
-            foreach (['psr-0', 'psr-4'] as $prop) {
+            foreach (['psr-0', 'psr-4', 'moto'] as $prop) {
                 if (isset($config['autoload'][$prop]) && $config['autoload'][$prop] === []) {
                     $config['autoload'][$prop] = new \stdClass;
                 }
