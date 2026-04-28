@@ -1,5 +1,10 @@
 name: "API Surface Check"
 
+# Trigger workflow. Does not run the analysis itself — only writes a single
+# true/false verdict signalling whether the api-surface-comment workflow needs
+# to run. All real work happens there from trusted code via the published
+# composer/api-surface-check action.
+
 on:
   pull_request:
     paths-ignore:
@@ -14,8 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
-    name: "API Surface"
+  preflight:
+    name: "Preflight"
     runs-on: ubuntu-latest
 
     steps:
@@ -24,24 +29,14 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # 2.37.0
+      - name: "Preflight scan"
+        uses: composer/api-surface-check/preflight@5c0453ffc6042d3f0ac544c21893beeb649f39b7 # 0.1.0
         with:
-          coverage: "none"
-          php-version: "8.5"
+          base-ref: origin/${{ github.event.pull_request.base.ref }}
 
-      - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+      - name: "Upload preflight verdict"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          dependency-versions: highest
-
-      - name: "Detect new API surface"
-        env:
-          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: bash .github/scripts/detect-api-surface.sh
-
-      - name: "Upload result"
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: api-surface-result
-          path: api-surface-result/
+          name: api-surface-preflight
+          path: api-surface-preflight/
           retention-days: 1

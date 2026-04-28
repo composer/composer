@@ -7,28 +7,78 @@ on:
       - completed
 
 permissions:
+  contents: read
   pull-requests: write
+
+concurrency:
+  group: api-surface-comment-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: true
 
 jobs:
   comment:
-    name: "Post Comment"
+    name: "Analyze and comment"
     runs-on: ubuntu-latest
     if: github.event.workflow_run.event == 'pull_request'
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: "Download preflight verdict"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          persist-credentials: false
-
-      - name: "Download artifact"
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: api-surface-result
-          path: api-surface-result/
+          name: api-surface-preflight
+          path: api-surface-preflight/
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
 
-      - name: "Post or update comment"
+      - name: "Read preflight verdict"
+        id: preflight
+        run: |
+          if [[ "$(cat api-surface-preflight/preflight.txt 2>/dev/null)" == "true" ]]; then
+              echo "should-run=true" >> "$GITHUB_OUTPUT"
+          else
+              echo "should-run=false" >> "$GITHUB_OUTPUT"
+              echo "Preflight says no API-relevant changes; skipping."
+          fi
+
+      - name: "Resolve PR via API"
+        id: pr
+        if: steps.preflight.outputs.should-run == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: bash .github/scripts/post-api-surface-comment.sh
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          response=$(gh api "repos/${REPO}/commits/${HEAD_SHA}/pulls")
+          number=$(echo "$response" | jq -r '.[0].number // empty')
+          base_ref=$(echo "$response" | jq -r '.[0].base.ref // empty')
+          if [[ -z "$number" || -z "$base_ref" ]]; then
+              echo "Could not resolve PR for ${HEAD_SHA}; skipping."
+              exit 0
+          fi
+          echo "number=${number}" >> "$GITHUB_OUTPUT"
+          echo "base-ref=${base_ref}" >> "$GITHUB_OUTPUT"
+
+      - name: "Checkout PR head (data only)"
+        if: steps.pr.outputs.number
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: refs/pull/${{ steps.pr.outputs.number }}/head
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: "Fetch base ref"
+        if: steps.pr.outputs.number
+        run: git fetch --no-tags origin "${{ steps.pr.outputs.base-ref }}:refs/remotes/origin/${{ steps.pr.outputs.base-ref }}"
+
+      - name: "Run analysis"
+        if: steps.pr.outputs.number
+        uses: composer/api-surface-check@5c0453ffc6042d3f0ac544c21893beeb649f39b7 # 0.1.0
+        with:
+          base-ref: origin/${{ steps.pr.outputs.base-ref }}
+          pr-number: ${{ steps.pr.outputs.number }}
+          install-dependencies: true
+
+      - name: "Post or update comment"
+        if: steps.pr.outputs.number
+        env:
+          GH_TOKEN: ${{ github.token }}
+        uses: composer/api-surface-check/post-comment@5c0453ffc6042d3f0ac544c21893beeb649f39b7 # 0.1.0
