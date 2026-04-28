@@ -7,9 +7,6 @@ name: "API Surface Check"
 
 on:
   pull_request:
-    paths-ignore:
-      - 'doc/**'
-      - 'tests/**'
 
 permissions:
   contents: read
@@ -29,13 +26,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: "Preflight scan"
-        uses: composer/api-surface-check/preflight@5c0453ffc6042d3f0ac544c21893beeb649f39b7 # 0.1.0
+      - uses: composer/api-surface-check/preflight@1857f9bbc68072c4c6354f743bffcdb216b8964c # 0.1.1
         with:
           base-ref: origin/${{ github.event.pull_request.base.ref }}
 
-      - name: "Upload preflight verdict"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: api-surface-preflight
           path: api-surface-preflight/
