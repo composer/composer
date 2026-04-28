@@ -420,43 +420,54 @@ class ConfigTest extends TestCase
         self::assertSame(false, $result['block-abandoned']);
     }
 
-    public function testFilter(): void
+    public function testPolicy(): void
     {
         $config = new Config(true);
-        $result = $config->get('filter');
+        $result = $config->get('policy');
 
         $this->assertTrue($result);
 
-        Platform::putEnv('COMPOSER_FILTER', '0');
-        $result = $config->get('filter');
+        Platform::putEnv('COMPOSER_POLICY', '0');
+        $result = $config->get('policy');
         $this->assertFalse($result);
-        Platform::clearEnv('COMPOSER_FILTER');
+        Platform::clearEnv('COMPOSER_POLICY');
 
-        $config->merge(['config' => ['filter' => [
-            'unfiltered-packages' => ['acme/package'],
-            'sources' => [['type' => 'url', 'url' => 'https://example.com/acme/package']],
-        ]]]);
-        $config->merge(['config' => ['filter' => [
-            'unfiltered-packages' => ['acme/other'],
-            'sources' => [['type' => 'url', 'url' => 'https://example.com/acme/other']],
-        ]]]);
-        $result = $config->get('filter');
+        $config->merge([
+            'config' => [
+                'policy' => [
+                    'advisories' => [
+                        'ignore' => [
+                            'acme/package',
+                        ]
+                    ],
+                ],
+            ]
+        ]);
+        $config->merge([
+            'config' => [
+                'policy' => [
+                    'advisories' => [
+                        'ignore-severities' => ['low']
+                    ],
+                ],
+            ],
+        ]);
+        $result = $config->get('policy');
         self::assertIsArray($result);
-        self::assertSame(['acme/package', 'acme/other'], $result['unfiltered-packages'] ?? []);
-        self::assertSame([['type' => 'url', 'url' => 'https://example.com/acme/package'], ['type' => 'url', 'url' => 'https://example.com/acme/other']], $result['sources'] ?? []);
+        self::assertSame(['ignore' => ['acme/package'], 'ignore-severities' => ['low'], ], $result['advisories'] ?? []);
 
-        Platform::putEnv('COMPOSER_FILTER', '1');
-        self::assertNotTrue($config->get('filter'));
-        Platform::clearEnv('COMPOSER_FILTER');
+        Platform::putEnv('COMPOSER_POLICY', '1');
+        self::assertNotTrue($config->get('policy'));
+        Platform::clearEnv('COMPOSER_POLICY');
 
-        $config->merge(['config' => ['filter' => true]]);
-        self::assertIsArray($config->get('filter'));
+        $config->merge(['config' => ['policy' => true]]);
+        self::assertIsArray($config->get('policy'));
 
-        $config->merge(['config' => ['filter' => false]]);
-        self::assertFalse($config->get('filter'));
+        $config->merge(['config' => ['policy' => false]]);
+        self::assertFalse($config->get('policy'));
 
-        $config->merge(['config' => ['filter' => true]]);
-        self::assertTrue($config->get('filter'));
+        $config->merge(['config' => ['policy' => true]]);
+        self::assertTrue($config->get('policy'));
     }
 
     public function testGetDefaultsToAnEmptyArray(): void

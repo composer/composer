@@ -1,16 +1,15 @@
 --TEST--
-Filter list entry matching not matching only/exclude preventing a successful update.
+Filter list entry matching direct dependency preventing a successful update.
 --COMPOSER--
 {
     "name": "acme/project",
     "version": "1.0.0",
     "require": {
-        "acme/library": "1.0.0",
-        "acme/other": "1.0.0"
+        "acme/library": "1.0.0"
     },
     "config": {
         "policy": {
-            "test-list": true
+          "test-list": true
         }
     },
     "repositories": [
@@ -20,38 +19,20 @@ Filter list entry matching not matching only/exclude preventing a successful upd
                 {
                     "name": "acme/library",
                     "version": "1.0.0",
-                    "type": "metapackage"
+                    "source": { "reference": "some.branch", "type": "git", "url": "" }
                 }
             ],
-            "only": ["acme/library"],
             "filter": {
                 "test-list": [
-                    {
-                        "package": "acme/other",
-                        "constraint": "*",
-                        "url": "https://example.org/malware/acme/other",
-                        "reason": "malware",
-                        "id": "ID-other"
-                    },
                     {
                         "package": "acme/library",
                         "constraint": "*",
                         "url": "https://example.org/malware/acme/library",
                         "reason": "malware",
-                        "id": "ID-library"
+                        "id": "ID-test"
                     }
                 ]
             }
-        },
-        {
-            "type": "package",
-            "package": [
-                {
-                    "name": "acme/other",
-                    "version": "1.0.0",
-                    "source": { "reference": "some.branch", "type": "git", "url": "" }
-                }
-            ]
         }
     ]
 }

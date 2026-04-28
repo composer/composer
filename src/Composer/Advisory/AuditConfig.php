@@ -13,6 +13,9 @@
 namespace Composer\Advisory;
 
 use Composer\Config;
+use Composer\Policy\IgnoreUnreachable;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\PolicyConfig;
 
 /**
  * @readonly
@@ -51,7 +54,7 @@ class AuditConfig
     public $blockAbandoned;
 
     /**
-     * @var bool Should repositories that are unreachable or return a non-200 status code be ignored.
+     * @var IgnoreUnreachable Should repositories that are unreachable or return a non-200 status code be ignored.
      */
     public $ignoreUnreachable;
 
@@ -96,7 +99,7 @@ class AuditConfig
      * @param array<string, string|null> $ignoreAbandonedForAudit
      * @param array<string, string|null> $ignoreAbandonedForBlocking
      */
-    public function __construct(bool $audit, string $auditFormat, string $auditAbandoned, string $auditFiltered, bool $blockInsecure, bool $blockAbandoned, bool $ignoreUnreachable, array $ignoreListForAudit, array $ignoreListForBlocking, array $ignoreSeverityForAudit, array $ignoreSeverityForBlocking, array $ignoreAbandonedForAudit, array $ignoreAbandonedForBlocking)
+    public function __construct(bool $audit, string $auditFormat, string $auditAbandoned, string $auditFiltered, bool $blockInsecure, bool $blockAbandoned, IgnoreUnreachable $ignoreUnreachable, array $ignoreListForAudit, array $ignoreListForBlocking, array $ignoreSeverityForAudit, array $ignoreSeverityForBlocking, array $ignoreAbandonedForAudit, array $ignoreAbandonedForBlocking)
     {
         $this->audit = $audit;
         $this->auditFormat = $auditFormat;
@@ -196,13 +199,102 @@ class AuditConfig
             $auditConfig['filtered'] ?? Auditor::FILTERED_FAIL,
             (bool) ($auditConfig['block-insecure'] ?? true),
             (bool) ($auditConfig['block-abandoned'] ?? false),
-            (bool) ($auditConfig['ignore-unreachable'] ?? false),
+            IgnoreUnreachable::fromRawAuditConfig($auditConfig),
             $ignoreListParsed['audit'],
             $ignoreListParsed['block'],
             $ignoreSeverityParsed['audit'],
             $ignoreSeverityParsed['block'],
             $ignoreAbandonedParsed['audit'],
             $ignoreAbandonedParsed['block']
+        );
+    }
+
+    /**
+     * Create an AuditConfig from a PolicyConfig (BC bridge).
+     *
+     * This allows existing code that consumes AuditConfig to work unchanged
+     * while the config source migrates from config.audit.* to config.policy.*.
+     *
+     * @param Auditor::FORMAT_* $auditFormat
+     */
+    public static function fromPolicyConfig(PolicyConfig $policyConfig, bool $audit = true, string $auditFormat = Auditor::FORMAT_SUMMARY): self
+    {
+        $adv = $policyConfig->advisories;
+        $aba = $policyConfig->abandoned;
+
+        // Map advisory ignore-id rules to the old flat ignoreList format
+        $ignoreListForAudit = [];
+        $ignoreListForBlock = [];
+
+        foreach ($adv->ignoreId as $id => $rule) {
+            if ($rule->onAudit) {
+                $ignoreListForAudit[$id] = $rule->reason;
+            }
+            if ($rule->onBlock) {
+                $ignoreListForBlock[$id] = $rule->reason;
+            }
+        }
+
+        // Also add package-name based ignores from the universal ignore format
+        foreach ($adv->ignore as $pkgName => $rules) {
+            foreach ($rules as $rule) {
+                if ($rule->onAudit) {
+                    $ignoreListForAudit[$pkgName] = $rule->reason;
+                }
+                if ($rule->onBlock) {
+                    $ignoreListForBlock[$pkgName] = $rule->reason;
+                }
+            }
+        }
+
+        // Map severity ignores
+        $ignoreSeverityForAudit = [];
+        $ignoreSeverityForBlock = [];
+        foreach ($adv->ignoreSeverity as $severity => $rule) {
+            if ($rule->onAudit) {
+                $ignoreSeverityForAudit[$severity] = $rule->reason;
+            }
+            if ($rule->onBlock) {
+                $ignoreSeverityForBlock[$severity] = $rule->reason;
+            }
+        }
+
+        // Map abandoned ignores
+        $ignoreAbandonedForAudit = [];
+        $ignoreAbandonedForBlock = [];
+        foreach ($aba->ignore as $pkgName => $rules) {
+            foreach ($rules as $rule) {
+                if ($rule->onAudit) {
+                    $ignoreAbandonedForAudit[$pkgName] = $rule->reason;
+                }
+                if ($rule->onBlock) {
+                    $ignoreAbandonedForBlock[$pkgName] = $rule->reason;
+                }
+            }
+        }
+
+        // Map abandoned audit mode to old enum
+        $abandonedMode = Auditor::ABANDONED_FAIL;
+        if ($aba->audit === ListPolicyConfig::AUDIT_IGNORE) {
+            $abandonedMode = Auditor::ABANDONED_IGNORE;
+        } elseif ($aba->audit === ListPolicyConfig::AUDIT_REPORT) {
+            $abandonedMode = Auditor::ABANDONED_REPORT;
+        }
+
+        return new self(
+            $audit,
+            $auditFormat,
+            $abandonedMode,
+            $policyConfig->malware->audit,
+            $adv->block,
+            $aba->block,
+            $policyConfig->ignoreUnreachable,
+            $ignoreListForAudit,
+            $ignoreListForBlock,
+            $ignoreSeverityForAudit,
+            $ignoreSeverityForBlock,
+            $ignoreAbandonedForAudit,
+            $ignoreAbandonedForBlock
         );
     }
 }
