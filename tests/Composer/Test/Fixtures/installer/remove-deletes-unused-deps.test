@@ -36,7 +36,8 @@ Removing a package deletes unused dependencies and does not update other depende
     "minimum-stability": "stable",
     "stability-flags": {},
     "prefer-stable": false,
-    "prefer-lowest": false
+    "prefer-lowest": false,
+    "self-features": []
 }
 --RUN--
 update remove/b

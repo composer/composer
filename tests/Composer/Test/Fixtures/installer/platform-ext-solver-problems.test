@@ -31,7 +31,8 @@ Test the error output of solver problems with ext/platform packages which have p
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 
 --RUN--
