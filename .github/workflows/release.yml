@@ -1,12 +1,11 @@
 name: "Release"
 
-on:
+on: # zizmor: ignore[concurrency-limits]
   push:
     tags:
       - "*"
 
-permissions:
-  contents: read
+permissions: {}
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
@@ -21,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # 2.37.0
         with:
@@ -30,10 +31,10 @@ jobs:
           php-version: "8.4"
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer install $COMPOSER_FLAGS'
 
       - name: "Run install again using composer binary from source"
-        run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'bin/composer install $COMPOSER_FLAGS'
 
       - name: "Validate composer.json"
         run: "bin/composer validate"
@@ -60,24 +61,30 @@ jobs:
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" --title "${{ github.ref_name }}" --notes TODO --draft --verify-tag
+          REF_NAME: ${{ github.ref_name }}
+        run: gh release create "$REF_NAME" --title "$REF_NAME" --notes TODO --draft --verify-tag
 
       - name: Upload release assets
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.ref_name }}" composer.phar composer.phar.asc --clobber
+          REF_NAME: ${{ github.ref_name }}
+        run: gh release upload "$REF_NAME" composer.phar composer.phar.asc --clobber
 
       # This step requires a secret token with `pull` access to composer/docker. The default
       # secrets.GITHUB_TOKEN is scoped to this repository only which is not sufficient.
       - name: "Open issue @ Docker repository"
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPOSITORY: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
         with:
           github-token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           script: |
             // create new issue on Docker repository
             github.rest.issues.create({
-              owner: "${{ github.repository_owner }}",
+              owner: process.env.REPO_OWNER,
               repo: "docker",
-              title: `New Composer tag: ${{ github.ref_name }}`,
-              body: `https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}`,
+              title: `New Composer tag: ${process.env.REF_NAME}`,
+              body: `https://github.com/${process.env.REPOSITORY}/releases/tag/${process.env.REF_NAME}`,
             });

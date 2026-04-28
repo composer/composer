@@ -1,16 +1,19 @@
 name: Mark and close stale support issues
 
-on:
+on: # zizmor: ignore[concurrency-limits]
   schedule:
   - cron: '32 1 * * *'
 
+permissions: {}
+
 jobs:
   stale:
+    name: "Mark and close stale support issues"
 
     runs-on: ubuntu-latest
     permissions:
-      issues: write
-      pull-requests: write
+      issues: write # for actions/stale to label/close stale issues
+      pull-requests: write # for actions/stale to label/close stale pull requests
 
     steps:
     - uses: actions/stale@b5d41d4e1d5dceea10e7104786b73624c18a190f # v10.2.0
