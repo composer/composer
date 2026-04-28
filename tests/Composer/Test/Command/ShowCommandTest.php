@@ -588,6 +588,9 @@ OUTPUT;
 
         $appTester->run(['command' => 'show', '--format' => 'test']);
         self::assertSame(1, $appTester->getStatusCode());
+
+        $appTester->run(['command' => 'show', '--no-dev' => true, '--only-dev' => true]);
+        self::assertSame(1, $appTester->getStatusCode());
     }
 
     public function testIgnoredOptionCombinations(): void
@@ -921,5 +924,132 @@ vendor/somepackage', trim($appTester->getDisplay(true))); // trim() is fine here
 ~ major release available - update possible
 vendor/apackage
 vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine here, but see CAUTION above
+    }
+
+    public function testShowOnlyDev(): void
+    {
+        $this->initTempComposer([
+            'repositories' => ['packages' => ['type' => 'package', 'package' => [
+                ['name' => 'vendor/prod', 'version' => '1.0.0'],
+                ['name' => 'vendor/shared', 'version' => '1.0.0'],
+                ['name' => 'vendor/dev', 'version' => '1.0.0'],
+            ]]],
+            'require' => ['vendor/prod' => '*', 'vendor/shared' => '*'],
+            'require-dev' => ['vendor/dev' => '*', 'vendor/shared' => '*'],
+        ]);
+
+        $prod = self::getPackage('vendor/prod', '1.0.0');
+        $shared = self::getPackage('vendor/shared', '1.0.0');
+        $dev = self::getPackage('vendor/dev', '1.0.0');
+
+        $this->createInstalledJson([$prod, $shared], [$dev]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--only-dev' => true]);
+        $output = trim($appTester->getDisplay(true));
+        self::assertSame('vendor/dev 1.0.0', $output);
+        self::assertStringNotContainsString('vendor/prod', $output);
+        self::assertStringNotContainsString('vendor/shared', $output);
+    }
+
+    public function testShowLockedOnlyDev(): void
+    {
+        $this->initTempComposer([
+            'require' => ['vendor/prod' => '*', 'vendor/shared' => '*'],
+            'require-dev' => ['vendor/dev' => '*', 'vendor/shared' => '*'],
+        ]);
+
+        $prod = self::getPackage('vendor/prod', '1.0.0');
+        $shared = self::getPackage('vendor/shared', '1.0.0');
+        $dev = self::getPackage('vendor/dev', '1.0.0');
+
+        $this->createComposerLock([$prod, $shared], [$dev]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--locked' => true, '--only-dev' => true]);
+        $output = trim($appTester->getDisplay(true));
+        self::assertSame('vendor/dev 1.0.0', $output);
+        self::assertStringNotContainsString('vendor/prod', $output);
+        self::assertStringNotContainsString('vendor/shared', $output);
+    }
+
+    public function testOutdatedOnlyDev(): void
+    {
+        $this->initTempComposer([
+            'repositories' => ['packages' => ['type' => 'package', 'package' => [
+                ['name' => 'vendor/prod', 'version' => '1.0.0'],
+                ['name' => 'vendor/prod', 'version' => '1.1.0'],
+                ['name' => 'vendor/dev', 'version' => '1.0.0'],
+                ['name' => 'vendor/dev', 'version' => '1.1.0'],
+            ]]],
+            'require' => ['vendor/prod' => '*'],
+            'require-dev' => ['vendor/dev' => '*'],
+        ]);
+
+        $this->createInstalledJson(
+            [self::getPackage('vendor/prod', '1.0.0')],
+            [self::getPackage('vendor/dev', '1.0.0')]
+        );
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated', '--only-dev' => true]);
+        $output = trim($appTester->getDisplay(true));
+        self::assertStringContainsString('vendor/dev 1.0.0 <highlight>! 1.1.0</highlight>', $output);
+        self::assertStringNotContainsString('vendor/prod', $output);
+    }
+
+    /**
+     * If vendor/dev is listed in require-dev but is also a transitive dependency of a
+     * require package, it must NOT appear in --only-dev output because it is needed in
+     * production.
+     */
+    public function testShowOnlyDevHidesTransitiveProdDeps(): void
+    {
+        $this->initTempComposer([
+            'repositories' => ['packages' => ['type' => 'package', 'package' => [
+                ['name' => 'vendor/prod', 'version' => '1.0.0'],
+                ['name' => 'vendor/dev', 'version' => '1.0.0'],
+            ]]],
+            'require' => ['vendor/prod' => '*'],
+            'require-dev' => ['vendor/dev' => '*'],
+        ]);
+
+        $prod = self::getPackage('vendor/prod', '1.0.0');
+        $prod->setRequires(['vendor/dev' => new Link('vendor/prod', 'vendor/dev', self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, '1.0.0')]);
+        $dev = self::getPackage('vendor/dev', '1.0.0');
+
+        // vendor/dev is a dev package at the root level, but vendor/prod (a prod package)
+        // also requires it transitively — so it must be excluded from --only-dev output.
+        $this->createInstalledJson([$prod], [$dev]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--only-dev' => true]);
+        $output = trim($appTester->getDisplay(true));
+        self::assertStringNotContainsString('vendor/dev', $output);
+        self::assertStringNotContainsString('vendor/prod', $output);
+    }
+
+    /**
+     * Same transitive-prod-dep scenario but with --locked.
+     */
+    public function testShowLockedOnlyDevHidesTransitiveProdDeps(): void
+    {
+        $this->initTempComposer([
+            'require' => ['vendor/prod' => '*'],
+            'require-dev' => ['vendor/dev' => '*'],
+        ]);
+
+        $prod = self::getPackage('vendor/prod', '1.0.0');
+        $prod->setRequires(['vendor/dev' => new Link('vendor/prod', 'vendor/dev', self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, '1.0.0')]);
+        $dev = self::getPackage('vendor/dev', '1.0.0');
+
+        $this->createComposerLock([$prod], [$dev]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--locked' => true, '--only-dev' => true]);
+        $output = trim($appTester->getDisplay(true));
+        self::assertSame('', $output);
+        self::assertStringNotContainsString('vendor/dev', $output);
+        self::assertStringNotContainsString('vendor/prod', $output);
     }
 }
