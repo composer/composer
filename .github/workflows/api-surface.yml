@@ -1,37 +1,24 @@
 name: "API Surface Check"
 
-# Trigger workflow. Does not run the analysis itself — only writes a single
-# true/false verdict signalling whether the api-surface-comment workflow needs
-# to run. All real work happens there from trusted code via the published
-# composer/api-surface-check action.
+# Minimal pull_request workflow whose only job is to fire workflow_run for the
+# api-surface-comment workflow (which has pull-requests:write even on fork PRs
+# and runs the actual analysis from trusted action code).
 
 on:
   pull_request:
+    paths-ignore:
+      - 'doc/**'
+      - 'tests/**'
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: api-surface-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  preflight:
-    name: "Preflight"
+  signal:
+    name: "Signal API Surface workflow"
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - uses: composer/api-surface-check/preflight@1857f9bbc68072c4c6354f743bffcdb216b8964c # 0.1.1
-        with:
-          base-ref: origin/${{ github.event.pull_request.base.ref }}
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: api-surface-preflight
-          path: api-surface-preflight/
-          retention-days: 1
+      - run: 'true'
