@@ -67,7 +67,7 @@ class Composer extends PartialComposer
      */
     public const RUNTIME_API_VERSION = '2.2.2';
 
-    public static function getVersion(): string
+    public static function getVersion(): ?string
     {
         // no replacement done, this must be a source checkout
         if (self::VERSION === '@package_version'.'@') {
@@ -107,6 +107,10 @@ class Composer extends PartialComposer
      */
     private $archiveManager;
 
+    public function test() : bool {
+        return true;
+    }
+
     public function setLocker(Locker $locker): void
     {
         $this->locker = $locker;
@@ -140,6 +144,10 @@ class Composer extends PartialComposer
     public function setPluginManager(PluginManager $manager): void
     {
         $this->pluginManager = $manager;
+    }
+
+    private function test_private(): bool {
+        return false;
     }
 
     public function getPluginManager(): PluginManager

@@ -51,6 +51,10 @@ use React\Promise\PromiseInterface;
  */
 class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
 {
+    const FOO = 'foo';
+
+    private const FOO2 = 'foo';
+
     /**
      * @var mixed[]
      * @phpstan-var array{url: string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool}
