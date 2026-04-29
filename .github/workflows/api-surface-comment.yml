@@ -20,7 +20,7 @@ jobs:
   comment:
     runs-on: ubuntu-latest
     steps:
-      - uses: composer/api-surface-check@96671ff633c86488154826b1e9f55ed66035ce55 # 0.2.0
+      - uses: composer/api-surface-check@main
         with:
           install-dependencies: true
           # paths: src/**/*.php
