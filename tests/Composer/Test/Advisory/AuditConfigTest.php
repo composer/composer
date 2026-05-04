@@ -13,7 +13,9 @@
 namespace Composer\Test\Advisory;
 
 use Composer\Advisory\AuditConfig;
+use Composer\Advisory\Auditor;
 use Composer\Config;
+use Composer\Policy\PolicyConfig;
 use Composer\Test\TestCase;
 
 class AuditConfigTest extends TestCase
@@ -197,6 +199,56 @@ class AuditConfigTest extends TestCase
 
         $this->assertSame(['vendor/package1' => 'Report but do not block'], $auditConfig->ignoreAbandonedForAudit);
         $this->assertSame(['vendor/package2' => 'Block but do not report'], $auditConfig->ignoreAbandonedForBlocking);
+    }
+
+    public function testAuditFilteredWorstOfAcrossActiveLists(): void
+    {
+        $config = new Config();
+        $config->merge([
+            'config' => [
+                'policy' => [
+                    'malware' => ['audit' => 'ignore'],
+                    'company-policy' => ['audit' => 'fail'],
+                ],
+            ],
+        ]);
+
+        $auditConfig = AuditConfig::fromPolicyConfig(PolicyConfig::fromConfig($config));
+
+        $this->assertSame(Auditor::FILTERED_FAIL, $auditConfig->auditFiltered);
+    }
+
+    public function testAuditFilteredFallsBackToReportWhenNoFailingList(): void
+    {
+        $config = new Config();
+        $config->merge([
+            'config' => [
+                'policy' => [
+                    'malware' => ['audit' => 'ignore'],
+                    'company-policy' => ['audit' => 'report'],
+                ],
+            ],
+        ]);
+
+        $auditConfig = AuditConfig::fromPolicyConfig(PolicyConfig::fromConfig($config));
+
+        $this->assertSame(Auditor::FILTERED_REPORT, $auditConfig->auditFiltered);
+    }
+
+    public function testAuditFilteredIgnoreWhenAllListsIgnore(): void
+    {
+        $config = new Config();
+        $config->merge([
+            'config' => [
+                'policy' => [
+                    'malware' => ['audit' => 'ignore'],
+                ],
+            ],
+        ]);
+
+        $auditConfig = AuditConfig::fromPolicyConfig(PolicyConfig::fromConfig($config));
+
+        $this->assertSame(Auditor::FILTERED_IGNORE, $auditConfig->auditFiltered);
     }
 
     public function testInvalidApplyValue(): void

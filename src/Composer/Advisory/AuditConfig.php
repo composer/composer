@@ -281,11 +281,25 @@ class AuditConfig
             $abandonedMode = Auditor::ABANDONED_REPORT;
         }
 
+        // Filter list audit collapses to a "worst-of" across every list active for audit.
+        // Using only $policyConfig->malware->audit would mask other lists (e.g. company-policy)
+        // and skip them inside Auditor::audit when malware is set to "ignore".
+        // @todo handle this more accurate once we drop the audit config
+        $filteredMode = Auditor::FILTERED_IGNORE;
+        foreach ($policyConfig->getActiveFilterLists('audit') as $listConfig) {
+            if ($listConfig->audit === ListPolicyConfig::AUDIT_FAIL) {
+                $filteredMode = Auditor::FILTERED_FAIL;
+                break;
+            }
+
+            $filteredMode = Auditor::FILTERED_REPORT;
+        }
+
         return new self(
             $audit,
             $auditFormat,
             $abandonedMode,
-            $policyConfig->malware->audit,
+            $filteredMode,
             $adv->block,
             $aba->block,
             $policyConfig->ignoreUnreachable,
