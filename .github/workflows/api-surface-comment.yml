@@ -25,7 +25,7 @@ jobs:
       pull-requests: write # required to create the comment on the pull request
 
     steps:
-      - uses: composer/api-surface-check@main # zizmor: ignore[unpinned-uses]
+      - uses: composer/api-surface-check@f44cc54b3178fa161a0a7b4d4e76824f18eeb788 # 0.3.0
         with:
           install-dependencies: true
           # paths: src/**/*.php
