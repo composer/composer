@@ -81,6 +81,10 @@ class FilterListAuditor
             if (Preg::isMatch($allIgnoredPackageNamesRegex, $packageName)) {
                 $unfilteredEntries = [];
                 foreach ($filterListMap[$packageName] as $listName => $entries) {
+                    if (!isset($activeListConfigs[$listName])) {
+                        continue;
+                    }
+
                     if ($this->isPackageIgnored($packageName, $packageConstraint, $activeListConfigs[$listName], $operation)) {
                         continue;
                     }
