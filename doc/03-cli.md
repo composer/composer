@@ -1382,7 +1382,7 @@ useful for plugin authors to identify what is firing when exactly.
 
 ### COMPOSER_SKIP_SCRIPTS
 
-Accepts a comma-seperated list of event names, e.g. `post-install-cmd` for which scripts execution should be skipped.
+Accepts a comma-separated list of event names, e.g. `post-install-cmd` for which scripts execution should be skipped.
 
 ### COMPOSER_NO_AUDIT
 
