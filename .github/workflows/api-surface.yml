@@ -18,7 +18,6 @@ concurrency:
 
 jobs:
   signal:
-    name: "Signal API Surface workflow"
     runs-on: ubuntu-latest
     steps:
       - run: 'true'
