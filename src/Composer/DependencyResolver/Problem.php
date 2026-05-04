@@ -418,8 +418,11 @@ class Problem
 
             if ($pool->isFilterListRemovedPackageVersion($packageName, $constraint)) {
                 $filters = $pool->getFilterListEntryForPackageVersion($packageName, $constraint);
+                $ignorePaths = implode(' and ', array_map(static function (string $listName): string {
+                    return '"policy.' . $listName . '.ignore"';
+                }, array_keys($filters)));
 
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the "policy.' . implode('|', array_keys($filters)). '.ignore" config. To turn the feature off entirely, you can set "policy" to false.'];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the ' . $ignorePaths . ' config. To turn the feature off entirely, you can set "policy" to false.'];
             }
 
             return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'];
