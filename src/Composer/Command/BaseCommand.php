@@ -470,6 +470,27 @@ abstract class BaseCommand extends Command
     }
 
     /**
+     * Creates a PolicyConfig from the Config object, applying --no-blocking / --no-security-blocking overrides.
+     *
+     * @internal
+     */
+    protected function createPolicyConfig(Config $config, InputInterface $input): PolicyConfig
+    {
+        $policyConfig = PolicyConfig::fromConfig($config);
+
+        // --no-blocking / --no-security-blocking: disable ALL blocking (advisories + malware + abandoned + custom)
+        $noBlocking = (bool) Platform::getEnv('COMPOSER_NO_SECURITY_BLOCKING')
+            || ($input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking'))
+            || ($input->hasOption('no-blocking') && $input->getOption('no-blocking'));
+
+        if ($noBlocking) {
+            $policyConfig = $policyConfig->withBlockingDisabled();
+        }
+
+        return $policyConfig;
+    }
+
+    /**
      * Creates an AuditConfig from the Config object, optionally overriding security blocking based on input options
      *
      * @internal
@@ -484,17 +505,6 @@ abstract class BaseCommand extends Command
         }
         $auditFormat = $input->hasOption('audit-format') ? $this->getAuditFormat($input) : Auditor::FORMAT_SUMMARY;
 
-        $policyConfig = PolicyConfig::fromConfig($config);
-
-        // --no-blocking / --no-security-blocking: disable ALL blocking (advisories + malware + abandoned + custom)
-        $noBlocking = (bool) Platform::getEnv('COMPOSER_NO_SECURITY_BLOCKING')
-            || ($input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking'))
-            || ($input->hasOption('no-blocking') && $input->getOption('no-blocking'));
-
-        if ($noBlocking) {
-            $policyConfig = $policyConfig->withBlockingDisabled();
-        }
-
-        return AuditConfig::fromPolicyConfig($policyConfig, $audit, $auditFormat);
+        return AuditConfig::fromPolicyConfig($this->createPolicyConfig($config, $input), $audit, $auditFormat);
     }
 }

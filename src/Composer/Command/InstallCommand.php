@@ -142,6 +142,7 @@ EOT
             ->setStrictPsrAutoloader($input->getOption('strict-psr-autoloader'))
             ->setApcuAutoloader($apcu, $apcuPrefix)
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
+            ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
             ->setAuditConfig($this->createAuditConfig($composer->getConfig(), $input))
             ->setErrorOnAudit($input->getOption('audit'))
         ;

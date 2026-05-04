@@ -1617,6 +1617,21 @@ class Installer
     }
 
     /**
+     * Sets a custom PolicyConfig to override the default configuration from Config.
+     *
+     * Used by commands that need to alter policy at runtime (e.g. --no-blocking
+     * disabling blocking for malware/custom lists in addition to advisories).
+     *
+     * @internal 
+     */
+    public function setPolicyConfig(PolicyConfig $policyConfig): self
+    {
+        $this->policyConfig = $policyConfig;
+
+        return $this;
+    }
+
+    /**
      * Disables plugins.
      *
      * Call this if you want to ensure that third-party code never gets
