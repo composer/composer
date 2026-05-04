@@ -117,7 +117,7 @@ class FilterListProviderSet
                 $repoFilter = $result['filter'];
 
                 foreach ($repoFilter as $listName => $entries) {
-                    if (!in_array($listName, $providerLists, true)) {
+                    if (!in_array($listName, $configuredLists, true) || !in_array($listName, $providerLists, true)) {
                         continue;
                     }
 
