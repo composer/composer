@@ -272,7 +272,7 @@ class PolicyConfig
     }
 
     /**
-     * Create a copy with all blocking disabled (for --no-blocking / COMPOSER_NO_SECURITY_BLOCKING).
+     * Create a copy with all blocking disabled (for --no-blocking / --no-security-blocking / COMPOSER_NO_SECURITY_BLOCKING / COMPOSER_NO_BLOCKING).
      */
     public function withBlockingDisabled(): self
     {

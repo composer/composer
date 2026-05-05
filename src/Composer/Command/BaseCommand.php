@@ -260,7 +260,8 @@ abstract class BaseCommand extends Command
             'COMPOSER_MINIMAL_CHANGES' => ['minimal-changes'],
             'COMPOSER_WITH_DEPENDENCIES' => ['with-dependencies'],
             'COMPOSER_WITH_ALL_DEPENDENCIES' => ['with-all-dependencies'],
-            'COMPOSER_NO_SECURITY_BLOCKING' => ['no-blocking', 'no-security-blocking'],
+            'COMPOSER_NO_SECURITY_BLOCKING' => ['no-security-blocking'],
+            'COMPOSER_NO_BLOCKING' => ['no-blocking'],
         ];
         foreach ($envOptions as $envName => $optionNames) {
             foreach ($optionNames as $optionName) {
@@ -479,7 +480,8 @@ abstract class BaseCommand extends Command
         $policyConfig = PolicyConfig::fromConfig($config);
 
         // --no-blocking / --no-security-blocking: disable ALL blocking (advisories + malware + abandoned + custom)
-        $noBlocking = (bool) Platform::getEnv('COMPOSER_NO_SECURITY_BLOCKING')
+        $noBlocking = (bool) Platform::getEnv('COMPOSER_NO_BLOCKING')
+            || (bool) Platform::getEnv('COMPOSER_NO_SECURITY_BLOCKING')
             || ($input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking'))
             || ($input->hasOption('no-blocking') && $input->getOption('no-blocking'));
 
