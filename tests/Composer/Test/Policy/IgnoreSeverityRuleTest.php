@@ -72,4 +72,29 @@ class IgnoreSeverityRuleTest extends TestCase
         self::assertTrue($rules['critical']->onBlock);
         self::assertFalse($rules['critical']->onAudit);
     }
+
+    /**
+     * @return array<string, array{0: array<mixed>}>
+     */
+    public function provideUnsupportedIgnoreSeverityMapShapes(): array
+    {
+        return [
+            'integer key with null value' => [[null]],
+            'integer key with array value' => [[['severity' => 'low']]],
+            'integer key with bool value' => [[true]],
+            'integer key with integer value' => [[42]],
+            'string key with bool value' => [['low' => true]],
+            'string key with integer value' => [['low' => 42]],
+        ];
+    }
+
+    /**
+     * @dataProvider provideUnsupportedIgnoreSeverityMapShapes
+     * @param array<mixed> $config
+     */
+    public function testParseIgnoreSeverityMapRejectsUnsupportedShapes(array $config): void
+    {
+        self::expectException(\UnexpectedValueException::class);
+        IgnoreSeverityRule::parseIgnoreSeverityMap($config);
+    }
 }

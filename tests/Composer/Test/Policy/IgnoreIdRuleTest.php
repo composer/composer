@@ -72,4 +72,29 @@ class IgnoreIdRuleTest extends TestCase
         self::assertTrue($rules['CVE-012']->onBlock);
         self::assertFalse($rules['CVE-012']->onAudit);
     }
+
+    /**
+     * @return array<string, array{0: array<mixed>}>
+     */
+    public function provideUnsupportedIgnoreIdMapShapes(): array
+    {
+        return [
+            'integer key with null value' => [[null]],
+            'integer key with array value' => [[['id' => 'CVE-1']]],
+            'integer key with bool value' => [[true]],
+            'integer key with integer value' => [[42]],
+            'string key with bool value' => [['CVE-1' => true]],
+            'string key with integer value' => [['CVE-1' => 42]],
+        ];
+    }
+
+    /**
+     * @dataProvider provideUnsupportedIgnoreIdMapShapes
+     * @param array<mixed> $config
+     */
+    public function testParseIgnoreIdMapRejectsUnsupportedShapes(array $config): void
+    {
+        self::expectException(\UnexpectedValueException::class);
+        IgnoreIdRule::parseIgnoreIdMap($config);
+    }
 }
