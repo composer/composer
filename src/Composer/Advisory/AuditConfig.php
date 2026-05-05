@@ -117,6 +117,44 @@ class AuditConfig
     }
 
     /**
+     * Merge a new reason for a key into an existing flat reason map.
+     *
+     * The bridge to AuditConfig flattens multi-rule package ignores
+     * (`'vendor/pkg' => [{reason: a}, {reason: b}]`) into a single map
+     * entry. Without merging, the last rule's reason silently overwrites
+     * earlier ones; this helper preserves all non-null reasons by joining
+     * unique values with "; ".
+     *
+     * @param array<string, string|null> $map
+     */
+    private static function mergeReason(array $map, string $key, ?string $newReason): ?string
+    {
+        if (!array_key_exists($key, $map)) {
+            return $newReason;
+        }
+
+        $existing = $map[$key];
+
+        if ($newReason === null) {
+            return $existing;
+        }
+        if ($existing === null) {
+            return $newReason;
+        }
+        if ($existing === $newReason) {
+            return $existing;
+        }
+
+        // Avoid re-appending if newReason is already part of a previously merged value
+        $parts = array_map('trim', explode(';', $existing));
+        if (in_array($newReason, $parts, true)) {
+            return $existing;
+        }
+
+        return $existing.'; '.$newReason;
+    }
+
+    /**
      * Parse ignore configuration supporting both simple and detailed formats with apply scopes
      *
      * Simple format: ['CVE-123', 'CVE-456'] or ['CVE-123' => 'reason']
@@ -235,14 +273,17 @@ class AuditConfig
             }
         }
 
-        // Also add package-name based ignores from the universal ignore format
+        // Also add package-name based ignores from the universal ignore format.
+        // The bridge collapses to a flat <key, reason> map, so when multiple rules
+        // apply to the same package we merge their reasons rather than letting the
+        // last rule silently overwrite the others.
         foreach ($adv->ignore as $pkgName => $rules) {
             foreach ($rules as $rule) {
                 if ($rule->onAudit) {
-                    $ignoreListForAudit[$pkgName] = $rule->reason;
+                    $ignoreListForAudit[$pkgName] = self::mergeReason($ignoreListForAudit, $pkgName, $rule->reason);
                 }
                 if ($rule->onBlock) {
-                    $ignoreListForBlock[$pkgName] = $rule->reason;
+                    $ignoreListForBlock[$pkgName] = self::mergeReason($ignoreListForBlock, $pkgName, $rule->reason);
                 }
             }
         }
@@ -265,10 +306,10 @@ class AuditConfig
         foreach ($aba->ignore as $pkgName => $rules) {
             foreach ($rules as $rule) {
                 if ($rule->onAudit) {
-                    $ignoreAbandonedForAudit[$pkgName] = $rule->reason;
+                    $ignoreAbandonedForAudit[$pkgName] = self::mergeReason($ignoreAbandonedForAudit, $pkgName, $rule->reason);
                 }
                 if ($rule->onBlock) {
-                    $ignoreAbandonedForBlock[$pkgName] = $rule->reason;
+                    $ignoreAbandonedForBlock[$pkgName] = self::mergeReason($ignoreAbandonedForBlock, $pkgName, $rule->reason);
                 }
             }
         }
