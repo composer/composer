@@ -1393,10 +1393,10 @@ If set to `1`, it is the equivalent of passing the `--no-audit` option to a `req
 Set to `ignore`, `report` or `fail` to override the [audit.abandoned](06-config.md#abandoned)
 config option.
 
-### COMPOSER_FILTER
+### COMPOSER_POLICY
 
-Set to `0` to disable filters on updates and audit, or `1` to enable them. Setting this to `1` will use the filter configuration in the composer.json.
-If you want to override the config value, use `composer config filter 1` instead.
+Set to `0` to disable policies on updates and audit, or `1` to enable them. Setting this to `1` will use the policy configuration in the composer.json.
+If you want to override the config value, use `composer config policy 1` instead.
 
 ### COMPOSER_NO_SECURITY_BLOCKING
 

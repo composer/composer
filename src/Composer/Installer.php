@@ -1622,7 +1622,7 @@ class Installer
      * Used by commands that need to alter policy at runtime (e.g. --no-blocking
      * disabling blocking for malware/custom lists in addition to advisories).
      *
-     * @internal 
+     * @internal
      */
     public function setPolicyConfig(PolicyConfig $policyConfig): self
     {
