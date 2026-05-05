@@ -19,6 +19,8 @@ namespace Composer\Policy;
  */
 class IgnoreUnreachable
 {
+    public const SCOPES = ['audit', 'install', 'update'];
+
     /** @var bool */
     public $audit;
 

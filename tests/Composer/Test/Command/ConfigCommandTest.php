@@ -252,6 +252,21 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.ignore-unreachable', 'setting-value' => ['false']],
             ['config' => ['policy' => ['ignore-unreachable' => false]]],
         ];
+        yield 'set policy.ignore-unreachable positional single enum value' => [
+            [],
+            ['setting-key' => 'policy.ignore-unreachable', 'setting-value' => ['update']],
+            ['config' => ['policy' => ['ignore-unreachable' => ['update']]]],
+        ];
+        yield 'set policy.ignore-unreachable positional multi enum values' => [
+            [],
+            ['setting-key' => 'policy.ignore-unreachable', 'setting-value' => ['update', 'install']],
+            ['config' => ['policy' => ['ignore-unreachable' => ['update', 'install']]]],
+        ];
+        yield 'set policy.ignore-unreachable via --json array form' => [
+            [],
+            ['setting-key' => 'policy.ignore-unreachable', 'setting-value' => ['["update","install"]'], '--json' => true],
+            ['config' => ['policy' => ['ignore-unreachable' => ['update', 'install']]]],
+        ];
         yield 'set policy.advisories.block alongside existing audit setting' => [
             ['config' => ['policy' => ['advisories' => ['audit' => 'report']]]],
             ['setting-key' => 'policy.advisories.block', 'setting-value' => ['false']],
