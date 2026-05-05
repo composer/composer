@@ -522,7 +522,7 @@ and per-rule scoping. All formats may be mixed in the same map.
 
 ##### With scoping:
 
-`on-block: false` ignores only for audit (the package is not blocked during updates).
+`on-block: false` ignores only for audit (the package is still blocked during updates as on-block ignoring is disabled).
 `on-audit: false` ignores only for blocking (the package is still reported in audit).
 
 ```json
@@ -531,7 +531,7 @@ and per-rule scoping. All formats may be mixed in the same map.
         "policy": {
             "<list>": {
                 "ignore": {
-                    "vendor/package": {"on-block": false, "reason": "Workaround applied; keep reporting."}
+                    "vendor/package": {"on-audit": false, "reason": "Workaround applied; keep reporting."}
                 }
             }
         }
