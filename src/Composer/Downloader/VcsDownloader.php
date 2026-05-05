@@ -351,7 +351,13 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     $url = rawurldecode($url);
                 }
 
-                $urls[$index] = Platform::realpath($url);
+                try {
+                    $urls[$index] = Platform::realpath($url);
+                } catch( \RuntimeException $e ) {
+                    unset($urls[$index]);
+                    continue;
+                }
+
 
                 if ($isFileProtocol) {
                     $urls[$index] = $fileProtocol . $urls[$index];
