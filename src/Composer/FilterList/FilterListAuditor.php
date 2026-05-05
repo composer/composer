@@ -19,6 +19,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\MalwarePolicyConfig;
+use Composer\Policy\MalwarePolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
@@ -55,17 +56,35 @@ class FilterListAuditor
 
     /**
      * @param array<string, array<string, list<FilterListEntry>>> $filterListMap
-     * @param 'block'|'audit' $operation
-     * @param ListPolicyConfig::BLOCK_SCOPE_*|null $blockScope
      * @return list<FilterListEntry>
      */
-    public function getMatchingEntries(PackageInterface $package, array $filterListMap, PolicyConfig $policyConfig, string $operation, ?string $blockScope): array
+    public function getMatchingAuditEntries(PackageInterface $package, array $filterListMap, PolicyConfig $policyConfig): array
+    {
+        return $this->matchingEntries($package, $filterListMap, $policyConfig->getActiveAuditFilterLists(), 'audit');
+    }
+
+    /**
+     * @param array<string, array<string, list<FilterListEntry>>> $filterListMap
+     * @param ListPolicyConfig::BLOCK_SCOPE_* $blockScope
+     * @return list<FilterListEntry>
+     */
+    public function getMatchingBlockEntries(PackageInterface $package, array $filterListMap, PolicyConfig $policyConfig, string $blockScope): array
+    {
+        return $this->matchingEntries($package, $filterListMap, $policyConfig->getActiveBlockFilterLists($blockScope), 'block');
+    }
+
+    /**
+     * @param array<string, array<string, list<FilterListEntry>>> $filterListMap
+     * @param array<string, ListPolicyConfig> $activeListConfigs
+     * @param 'block'|'audit' $operation
+     * @return list<FilterListEntry>
+     */
+    private function matchingEntries(PackageInterface $package, array $filterListMap, array $activeListConfigs, string $operation): array
     {
         if ($package instanceof RootPackageInterface || count($filterListMap) === 0) {
             return [];
         }
 
-        $activeListConfigs = $policyConfig->getActiveFilterLists($operation, $blockScope);
         if (isset($activeListConfigs[MalwarePolicyConfig::NAME]) && $activeListConfigs[MalwarePolicyConfig::NAME] instanceof MalwarePolicyConfig) {
             $filterListMap = $this->applyMalwareIgnoreSource($filterListMap, $activeListConfigs[MalwarePolicyConfig::NAME], $operation);
         }

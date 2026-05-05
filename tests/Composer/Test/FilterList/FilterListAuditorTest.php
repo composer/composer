@@ -74,7 +74,7 @@ class FilterListAuditorTest extends TestCase
         ]]]);
         $policyConfig = PolicyConfig::fromConfig($config);
 
-        $entries = $this->filterListAuditor->getMatchingEntries($package, $filterListMap, $policyConfig, 'block', ListPolicyConfig::BLOCK_SCOPE_UPDATE);
+        $entries = $this->filterListAuditor->getMatchingBlockEntries($package, $filterListMap, $policyConfig, ListPolicyConfig::BLOCK_SCOPE_UPDATE);
         $this->assertCount($expectedCount, $entries);
     }
 
@@ -160,7 +160,7 @@ class FilterListAuditorTest extends TestCase
         ]]]);
         $policyConfig = PolicyConfig::fromConfig($config);
 
-        $entries = $this->filterListAuditor->getMatchingEntries($package, $filterListMap, $policyConfig, 'block',  ListPolicyConfig::BLOCK_SCOPE_UPDATE);
+        $entries = $this->filterListAuditor->getMatchingBlockEntries($package, $filterListMap, $policyConfig, ListPolicyConfig::BLOCK_SCOPE_UPDATE);
         $this->assertSame([], $entries);
     }
 }

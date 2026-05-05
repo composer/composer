@@ -71,7 +71,7 @@ class FilterListPoolFilter
         $packages = [];
         $filterListRemovedVersions = [];
         foreach ($pool->getPackages() as $package) {
-            $matchingEntries = $this->filterListAuditor->getMatchingEntries($package, $filterListMap, $this->policyConfig, 'block', $this->blockScope);
+            $matchingEntries = $this->filterListAuditor->getMatchingBlockEntries($package, $filterListMap, $this->policyConfig, $this->blockScope);
             if (count($matchingEntries) > 0) {
                 foreach ($package->getNames(false) as $packageName) {
                     $filterListRemovedVersions[$packageName][$package->getVersion()] = $matchingEntries;
@@ -107,7 +107,7 @@ class FilterListPoolFilter
         return $this->filterListAuditor->collectFilterLists(
             $packagesForFilter,
             $providerSet,
-            $this->policyConfig->getActiveFilterListNames('block', $this->blockScope),
+            $this->policyConfig->getActiveBlockFilterListNames($this->blockScope),
             $this->policyConfig->ignoreUnreachable->forBlockScope($this->blockScope)
         )['filter'];
     }

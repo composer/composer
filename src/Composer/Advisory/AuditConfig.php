@@ -327,7 +327,7 @@ class AuditConfig
         // and skip them inside Auditor::audit when malware is set to "ignore".
         // @todo handle this more accurate once we drop the audit config
         $filteredMode = Auditor::FILTERED_IGNORE;
-        foreach ($policyConfig->getActiveFilterLists('audit', null) as $listConfig) {
+        foreach ($policyConfig->getActiveAuditFilterLists() as $listConfig) {
             if ($listConfig->audit === ListPolicyConfig::AUDIT_FAIL) {
                 $filteredMode = Auditor::FILTERED_FAIL;
                 break;
