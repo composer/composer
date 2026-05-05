@@ -467,7 +467,53 @@ class ConfigTest extends TestCase
         self::assertFalse($config->get('policy'));
 
         $config->merge(['config' => ['policy' => true]]);
-        self::assertTrue($config->get('policy'));
+        self::assertSame([], $config->get('policy'));
+    }
+
+    public function testPolicyListBoolTrueAndEmptyObjectAreEquivalentInLayering(): void
+    {
+        $configBoolTrue = new Config(false);
+        $configBoolTrue->merge(['config' => ['policy' => ['advisories' => true]]]);
+        $configBoolTrue->merge(['config' => ['policy' => ['advisories' => ['audit' => 'report']]]]);
+
+        $configEmptyObj = new Config(false);
+        $configEmptyObj->merge(['config' => ['policy' => ['advisories' => []]]]);
+        $configEmptyObj->merge(['config' => ['policy' => ['advisories' => ['audit' => 'report']]]]);
+
+        self::assertSame($configBoolTrue->get('policy'), $configEmptyObj->get('policy'));
+    }
+
+    public function testPolicyListFalseOverridesPriorTrueOrEmptyEquallyAcrossLayers(): void
+    {
+        // Layering `false` on top of either `true` or `{}` must disable the
+        // list — users should not see different outcomes depending on which
+        // "default-equivalent" shorthand the previous layer happened to use.
+        $configFromTrue = new Config(false);
+        $configFromTrue->merge(['config' => ['policy' => ['advisories' => true]]]);
+        $configFromTrue->merge(['config' => ['policy' => ['advisories' => false]]]);
+
+        $configFromEmpty = new Config(false);
+        $configFromEmpty->merge(['config' => ['policy' => ['advisories' => []]]]);
+        $configFromEmpty->merge(['config' => ['policy' => ['advisories' => false]]]);
+
+        self::assertSame($configFromTrue->get('policy'), $configFromEmpty->get('policy'));
+        self::assertFalse($configFromTrue->get('policy')['advisories']);
+    }
+
+    public function testPolicyMasterTrueAfterDetailedConfigDoesNotEraseDetail(): void
+    {
+        // A later layer that does `policy: true` (i.e. "default enabled") must
+        // not erase a previously-stored detailed policy config — that was the
+        // original intent of the special-case in Config::merge and the
+        // canonicalisation must preserve it.
+        $config = new Config(false);
+        $config->merge(['config' => ['policy' => ['advisories' => ['block' => false]]]]);
+        $config->merge(['config' => ['policy' => true]]);
+
+        $result = $config->get('policy');
+        self::assertIsArray($result);
+        self::assertArrayHasKey('advisories', $result);
+        self::assertSame(['block' => false], $result['advisories']);
     }
 
     public function testPolicyDeepMergesIgnoreAcrossSources(): void
