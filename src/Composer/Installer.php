@@ -1170,17 +1170,11 @@ class Installer
     {
         $policyConfig = $this->getPolicyConfig();
 
-        if (!$policyConfig->enabled) {
+        if (!$policyConfig->enabled || $this->updateMirrors) {
             return null;
         }
 
-        $policyConfig = $this->getPolicyConfig();
-
-        if ($policyConfig->enabled && !$this->updateMirrors) {
-            return new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader());
-        }
-
-        return null;
+        return new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader());
     }
 
     /**
