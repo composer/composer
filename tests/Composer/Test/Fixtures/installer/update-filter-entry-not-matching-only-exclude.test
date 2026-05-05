@@ -67,6 +67,6 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - Root composer.json requires acme/library 1.0.0 (exact version match: 1.0.0 or 1.0.0.0), found acme/library[1.0.0] but these were not loaded, because they were filtered by test-list (see https://example.org/malware/acme/library) reason: malware. To ignore filters for this package, add the package to the "policy.test-list.ignore" config. To turn the feature off entirely, you can set "policy" to false.
+    - Root composer.json requires acme/library 1.0.0 (exact version match: 1.0.0 or 1.0.0.0), found acme/library[1.0.0] but these were not loaded, because they were filtered by test-list (see https://example.org/malware/acme/library) reason: malware. To ignore filters for this package, add the package to the "policy.test-list.ignore" config. To turn the feature off entirely, you can set "policy.test-list.block" to false.
 
 --EXPECT--

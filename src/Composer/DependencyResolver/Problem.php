@@ -386,7 +386,7 @@ class Problem
             }
 
             if ($pool->isAbandonedRemovedPackageVersion($packageName, $constraint)) {
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are abandoned and you configured "block-abandoned" to true in your "audit" config.'];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are abandoned and you configured "policy.abandoned.block" to true.'];
             }
 
             if ($pool->isSecurityRemovedPackageVersion($packageName, $constraint)) {
@@ -413,7 +413,7 @@ class Problem
                     }, $pool->getSecurityAdvisoryIdentifiersForPackageVersion($packageName, $constraint));
                 }
 
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are affected by security advisories ("' . implode('", "', $advisoriesList). '"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add them to the audit "ignore" config. To turn the feature off entirely, you can set "block-insecure" to false in your "audit" config.'];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are affected by security advisories ("' . implode('", "', $advisoriesList). '"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To turn the feature off entirely, you can set "policy.advisories.block" to false.'];
             }
 
             if ($pool->isFilterListRemovedPackageVersion($packageName, $constraint)) {
@@ -422,7 +422,11 @@ class Problem
                     return '"policy.' . $listName . '.ignore"';
                 }, array_keys($filters)));
 
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the ' . $ignorePaths . ' config. To turn the feature off entirely, you can set "policy" to false.'];
+                $offPaths = implode(' and ', array_map(static function (string $listName): string {
+                    return '"policy.' . $listName . '.block"';
+                }, array_keys($filters)));
+
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the ' . $ignorePaths . ' config. To turn the feature off entirely, you can set ' . $offPaths . ' to false.'];
             }
 
             return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'];
