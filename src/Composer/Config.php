@@ -236,28 +236,41 @@ class Config
                     $this->setSourceOfConfigValue($val, $key, $source);
                     $this->config['audit']['ignore'] = array_merge($currentIgnores, $val['ignore'] ?? []);
                 } elseif ('policy' === $key) {
-                    if (\is_bool($val)) {
-                        // Don't overwrite a detailed policy config with boolean true
-                        if ($val !== (bool) $this->config['policy']) {
-                            $this->config[$key] = $val;
-                        }
+                    // The schema accepts `true`, `{}` as equivalent.
+                    // Canonicalise `true` to `[]` here so both shapes share a single merge code path and layer identically across config sources.
+                    if ($val === true) {
+                        $val = [];
+                    }
+
+                    if ($val === false) {
+                        $this->config[$key] = false;
                     } elseif (\is_array($val)) {
                         $current = \is_array($this->config['policy']) ? $this->config['policy'] : [];
                         // Inner array keys that must be deep-merged so user ignore rules from
                         // global + project sources both apply
                         $deepMergeKeys = ['ignore', 'ignore-id', 'ignore-severity', 'ignore-source'];
                         foreach ($val as $listName => $listConfig) {
-                            if (!isset($current[$listName])) {
+                            // Per-list canonicalisation: `true` ≡ `[]` ≡ "use defaults".
+                            if ($listConfig === true) {
+                                $listConfig = [];
+                            }
+
+                            $existing = $current[$listName] ?? null;
+                            if ($existing === true) {
+                                $existing = [];
+                            }
+
+                            if ($listConfig === false) {
+                                // Explicit disable always overrides any prior shape.
+                                $current[$listName] = false;
+                            } elseif ($existing === null || $existing === false) {
+                                // No prior layer (or it was disabled and is being re-enabled);
+                                // store the new value as-is.
                                 $current[$listName] = $listConfig;
-                            } elseif (\is_bool($listConfig)) {
-                                // Don't overwrite a detailed policy config with boolean true
-                                if ($listConfig !== (bool) $current[$listName]) {
-                                    $current[$listName] = $listConfig;
-                                }
-                            } elseif (\is_array($current[$listName]) && \is_array($listConfig)) {
-                                $merged = array_merge($current[$listName], $listConfig);
+                            } elseif (\is_array($existing) && \is_array($listConfig)) {
+                                $merged = array_merge($existing, $listConfig);
                                 foreach ($deepMergeKeys as $innerKey) {
-                                    $existingInner = $current[$listName][$innerKey] ?? null;
+                                    $existingInner = $existing[$innerKey] ?? null;
                                     $incomingInner = $listConfig[$innerKey] ?? null;
                                     if (\is_array($existingInner) && \is_array($incomingInner)) {
                                         $merged[$innerKey] = array_merge($existingInner, $incomingInner);
@@ -265,6 +278,8 @@ class Config
                                 }
                                 $current[$listName] = $merged;
                             } else {
+                                // Should not be reachable after the canonicalisations above,
+                                // but keep a deterministic fallback: incoming wins.
                                 $current[$listName] = $listConfig;
                             }
                         }
