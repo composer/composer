@@ -1230,6 +1230,14 @@ github-oauth, bitbucket-oauth, ... objects as needed](articles/authentication-fo
 and following the
 [spec from the config](06-config.md).
 
+### COMPOSER_AUTH_FILE
+
+The `COMPOSER_AUTH_FILE` var allows you to set up authentication under an alternative file path.
+The contents of the variable should be an absolute path to a JSON formatted file containing
+[http-basic, github-oauth, bitbucket-oauth, ... objects as needed](articles/authentication-for-private-packages.md),
+and following the
+[spec from the config](06-config.md).
+
 ### COMPOSER_BIN_COMPAT
 
 Override the [`bin-compat`](06-config.md#bin-compat) config setting.
