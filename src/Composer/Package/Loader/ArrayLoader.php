@@ -69,6 +69,31 @@ class ArrayLoader implements LoaderInterface
             );
         }
 
+        $features = [];
+
+        foreach ($config['features'] ?? [] as $name => $feature) {
+            $features[$name] = $feature;
+
+            foreach (['require'] as $linkType) {
+                if (!isset($features[$name][$linkType]) || !is_array($features[$name][$linkType])) {
+                    $features[$name][$linkType] = [];
+
+                    continue;
+                }
+
+                $links = $this->parseLinks(
+                    $package->getName(),
+                    $package->getPrettyVersion(),
+                    Link::TYPE_REQUIRE,
+                    $features[$name][$linkType]
+                );
+
+                $features[$name][$linkType] = $links;
+            }
+        }
+
+        $package->setFeatures($features);
+
         $package = $this->configureObject($package, $config);
 
         return $package;
@@ -252,6 +277,10 @@ class ArrayLoader implements LoaderInterface
 
         if (!empty($config['notification-url'])) {
             $package->setNotificationUrl($config['notification-url']);
+        }
+
+        if (isset($config['require-features'])) {
+            $package->setFeatureRequires($config['require-features']);
         }
 
         if ($package instanceof CompletePackageInterface) {

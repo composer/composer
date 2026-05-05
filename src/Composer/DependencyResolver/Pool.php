@@ -49,6 +49,8 @@ class Pool implements \Countable
     private $abandonedRemovedVersions = [];
     /** @var array<string, array<string, list<FilterListEntry>>> Map of package name => normalized version => filter list entries */
     private $filterListRemovedVersions = [];
+    /** @var array<string, array{merged: string[], byPackage: array<string, string[]>}> */
+    protected $requiredFeatures = [];
 
     /**
      * @param BasePackage[] $packages
@@ -58,8 +60,9 @@ class Pool implements \Countable
      * @param array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> $securityRemovedVersions
      * @param array<string, array<string, string>> $abandonedRemovedVersions
      * @param array<string, array<string, list<FilterListEntry>>> $filterListRemovedVersions
+     * @param array<string, array{merged: string[], byPackage: array<string, string[]>}> $requiredFeatures
      */
-    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [], array $filterListRemovedVersions = [])
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [], array $filterListRemovedVersions = [], array $requiredFeatures = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
@@ -69,6 +72,7 @@ class Pool implements \Countable
         $this->securityRemovedVersions = $securityRemovedVersions;
         $this->abandonedRemovedVersions = $abandonedRemovedVersions;
         $this->filterListRemovedVersions = $filterListRemovedVersions;
+        $this->requiredFeatures = $requiredFeatures;
     }
 
     /**
@@ -384,5 +388,13 @@ class Pool implements \Countable
         }
 
         return $str;
+    }
+
+    /**
+     * @return array<string, array{merged: string[], byPackage: array<string, string[]>}>
+     */
+    public function getRequiredFeatures(): array
+    {
+        return $this->requiredFeatures;
     }
 }

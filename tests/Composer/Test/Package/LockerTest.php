@@ -120,9 +120,10 @@ class LockerTest extends TestCase
                 'prefer-stable' => false,
                 'prefer-lowest' => false,
                 'plugin-api-version' => PluginInterface::PLUGIN_API_VERSION,
+                'self-features' => [],
             ]);
 
-        $locker->setLockData([$package1, $package2], [], [], [], [], 'dev', [], false, false, ['foo/bar' => '1.0']);
+        $locker->setLockData([$package1, $package2], [], [], [], [], [], 'dev', [], false, false, ['foo/bar' => '1.0']);
     }
 
     public function testLockBadPackages(): void
@@ -140,7 +141,7 @@ class LockerTest extends TestCase
 
         self::expectException('LogicException');
 
-        $locker->setLockData([$package1], [], [], [], [], 'dev', [], false, false, []);
+        $locker->setLockData([$package1], [], [], [], [], [], 'dev', [], false, false, []);
     }
 
     public function testIsFresh(): void

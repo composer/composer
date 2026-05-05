@@ -28,7 +28,8 @@ Newly defined root alias does not get loaded if package is loaded from lock file
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --INSTALLED--
 [
