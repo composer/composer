@@ -1,5 +1,5 @@
 --TEST--
-Filter list entry matching direct dependency preventing a successful update.
+Filter list entry matching direct dependency with ignore on-block=false preventing a successful update.
 --COMPOSER--
 {
     "name": "acme/project",
@@ -8,8 +8,12 @@ Filter list entry matching direct dependency preventing a successful update.
         "acme/library": "^1.0.0"
     },
     "config": {
-        "filter": {
-            "unfiltered-packages": [{"package": "acme/library", "constraint": "1.1.0"}]
+        "policy": {
+            "test-list": {
+              "ignore": {
+                "acme/library": {"constraint": "1.1.0", "on-block": false}
+              }
+            }
         }
     },
     "repositories": [
@@ -45,16 +49,16 @@ Filter list entry matching direct dependency preventing a successful update.
 update -v
 
 --EXPECT-EXIT-CODE--
-0
+2
 
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
 Updating dependencies
-Lock file operations: 1 install, 0 updates, 0 removals
-  - Locking acme/library (1.1.0)
-Writing lock file
-Installing dependencies from lock file (including require-dev)
-Package operations: 1 install, 0 updates, 0 removals
-Generating autoload files
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires acme/library ^1.0.0, found acme/library[1.0.0, 1.1.0] but these were not loaded, because they were filtered by test-list (see https://example.org/malware/acme/library) reason: malware,  (see https://example.org/malware/acme/library) reason: malware. To ignore filters for this package, add the package to the "policy.test-list.ignore" config. To turn the feature off entirely, you can set "policy.test-list.block" to false.
+
+
 --EXPECT--
-Installing acme/library (1.1.0)
+

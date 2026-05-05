@@ -52,7 +52,7 @@
         "filter": {
             "type": "object",
             "description": "Filter list configuration advertised by the repository.",
-            "required": ["metadata", "lists", "default-lists"],
+            "required": ["metadata", "lists"],
             "properties": {
                 "metadata": {
                     "type": "boolean",
@@ -61,13 +61,6 @@
                 "lists": {
                     "type": "array",
                     "description": "Names of all filter lists provided by this repository.",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "default-lists": {
-                    "type": "array",
-                    "description": "Names of filter lists that are enabled by default from this repository.",
                     "items": {
                         "type": "string"
                     }

@@ -216,6 +216,42 @@ class ComposerSchemaTest extends TestCase
     }
 
     /**
+     * @return iterable<string, array{0: string}>
+     */
+    public function reservedPolicyListNameProvider(): iterable
+    {
+        yield 'ignore- prefix' => ['ignore-foo'];
+        yield 'ignore prefix without dash' => ['ignoremalware'];
+        yield 'package' => ['package'];
+        yield 'license' => ['license'];
+        yield 'security' => ['security'];
+        yield 'minimum-release-age' => ['minimum-release-age'];
+    }
+
+    /**
+     * @dataProvider reservedPolicyListNameProvider
+     */
+    public function testReservedPolicyCustomListNamesAreRejected(string $listName): void
+    {
+        $json = '{"name": "vendor/package", "description": "description", "config": {"policy": {"' . $listName . '": {"block": true}}}}';
+        $result = $this->check($json);
+        self::assertNotTrue($result, sprintf('Expected schema validation to reject reserved policy list name "%s"', $listName));
+        self::assertStringContainsString($listName, (string) json_encode($result, JSON_UNESCAPED_SLASHES));
+    }
+
+    public function testRegularPolicyCustomListNameIsAccepted(): void
+    {
+        $json = '{"name": "vendor/package", "description": "description", "config": {"policy": {"company-policy": {"block": true}}}}';
+        self::assertTrue($this->check($json));
+    }
+
+    public function testIgnoreUnreachablePolicyKeyIsAccepted(): void
+    {
+        $json = '{"name": "vendor/package", "description": "description", "config": {"policy": {"ignore-unreachable": true}}}';
+        self::assertTrue($this->check($json));
+    }
+
+    /**
      * @return mixed
      */
     private function check(string $json)

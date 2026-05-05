@@ -493,7 +493,6 @@ EOT
             'audit.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
             'audit.block-insecure' => [$booleanValidator, $booleanNormalizer],
             'audit.block-abandoned' => [$booleanValidator, $booleanNormalizer],
-            'filter.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
         ];
         $multiConfigValues = [
             'github-protocols' => [
@@ -558,8 +557,8 @@ EOT
             ],
         ];
 
-        // allow unsetting audit/filter config entirely
-        if ($input->getOption('unset') && in_array($settingKey, ['audit', 'filter'], true)) {
+        // allow unsetting audit/policy config entirely
+        if ($input->getOption('unset') && in_array($settingKey, ['audit', 'policy'], true)) {
             $this->configSource->removeConfigSetting($settingKey);
 
             return 0;
@@ -823,50 +822,6 @@ EOT
             if ($input->getOption('merge')) {
                 $currentConfig = $this->configFile->read();
                 $currentValue = $currentConfig['config']['audit'][str_replace('audit.', '', $settingKey)] ?? null;
-
-                if ($currentValue !== null && is_array($currentValue) && is_array($value)) {
-                    if (array_is_list($currentValue) && array_is_list($value)) {
-                        // Both are lists, merge them
-                        $value = array_merge($currentValue, $value);
-                    } elseif (!array_is_list($currentValue) && !array_is_list($value)) {
-                        // Both are associative arrays (objects), merge them
-                        $value = $value + $currentValue;
-                    } else {
-                        throw new \RuntimeException('Cannot merge array and object for '.$settingKey);
-                    }
-                }
-            }
-
-            $this->configSource->addConfigSetting($settingKey, $value);
-
-            return 0;
-        }
-
-        // handle filter.lists, filter.dont-filter-package and filter.sources with --merge support
-        if (Preg::isMatch('/^filter\.(.+)/', $settingKey, $matches)) {
-            if ($input->getOption('unset')) {
-                $this->configSource->removeConfigSetting($settingKey);
-
-                return 0;
-            }
-
-            $value = $values;
-            if ($input->getOption('json')) {
-                $value = JsonFile::parseJson($values[0]);
-                if (!is_array($value)) {
-                    throw new \RuntimeException('Expected an array or object for '.$settingKey);
-                }
-            }
-
-            // Allow composer config filter.sources.name url https://example.org
-            if (Preg::isMatch('/^filter\.sources\.(.+)/', $settingKey, $matches) && count($values) === 2) {
-                $value = [$matches[1] => ['type' => $values[0], 'url' => $values[1]]];
-                $settingKey = 'filter.sources';
-            }
-
-            if ($input->getOption('merge')) {
-                $currentConfig = $this->configFile->read();
-                $currentValue = $currentConfig['config']['filter'][str_replace('filter.', '', $settingKey)] ?? null;
 
                 if ($currentValue !== null && is_array($currentValue) && is_array($value)) {
                     if (array_is_list($currentValue) && array_is_list($value)) {

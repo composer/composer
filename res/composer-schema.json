@@ -490,10 +490,6 @@
                             "enum": ["ignore", "report", "fail"],
                             "description": "Whether abandoned packages should be ignored, reported as problems or cause an audit failure. Applies only to audit reports, not to version blocking."
                         },
-                        "filtered": {
-                            "enum": ["ignore", "report", "fail"],
-                            "description": "Whether filtered packages should be ignored, reported as problems or cause an audit failure. Applies only to audit reports, not to version blocking."
-                        },
                         "ignore-severity": {
                             "anyOf": [
                                 {
@@ -590,42 +586,168 @@
                         }
                     }
                 },
-                "filter": {
+                "policy": {
                     "type": ["boolean", "object"],
-                    "description": "Filter list configuration options. Set to true to enable with defaults, to false to fully disable, or configure with an object.",
+                    "description": "Unified security and package policy configuration. Set to false to disable all policy enforcement.",
                     "properties": {
+                        "advisories": {
+                            "oneOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "object",
+                                    "description": "Configuration for packages affected by security advisories.",
+                                    "properties": {
+                                        "block": {
+                                            "type": "boolean",
+                                            "description": "When true (default), package versions with active security advisories are blocked during update/require/remove.",
+                                            "default": true
+                                        },
+                                        "audit": {
+                                            "enum": ["ignore", "report", "fail"],
+                                            "description": "How composer audit treats packages with security advisories. Defaults to fail.",
+                                            "default": "fail"
+                                        },
+                                        "ignore-id": { "$ref": "#/definitions/policy-ignore-id" },
+                                        "ignore": { "$ref": "#/definitions/policy-ignore" },
+                                        "ignore-severity": { "$ref": "#/definitions/policy-ignore-severity" }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
+                        "malware": {
+                            "oneOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "object",
+                                    "description": "Configuration for packages flagged as containing malware.",
+                                    "properties": {
+                                        "block": {
+                                            "type": "boolean",
+                                            "description": "When true (default), packages flagged as malware are blocked.",
+                                            "default": true
+                                        },
+                                        "block-scope": {
+                                            "enum": ["all", "update", "install"],
+                                            "description": "Controls which commands trigger blocking: all (default), update (only update/require/remove), or install (only install).",
+                                            "default": "all"
+                                        },
+                                        "audit": {
+                                            "enum": ["ignore", "report", "fail"],
+                                            "description": "How composer audit treats packages flagged as malware. Defaults to fail.",
+                                            "default": "fail"
+                                        },
+                                        "ignore": { "$ref": "#/definitions/policy-ignore" },
+                                        "ignore-source": {
+                                            "type": "array",
+                                            "description": "A list of source names to exclude from malware checks.",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
+                        "abandoned": {
+                            "oneOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "object",
+                                    "description": "Configuration for abandoned packages.",
+                                    "properties": {
+                                        "block": {
+                                            "type": "boolean",
+                                            "description": "When true, abandoned packages cannot be installed during update/require/remove. Defaults to false.",
+                                            "default": false
+                                        },
+                                        "audit": {
+                                            "enum": ["ignore", "report", "fail"],
+                                            "description": "How composer audit treats abandoned packages. Defaults to fail.",
+                                            "default": "fail"
+                                        },
+                                        "ignore": { "$ref": "#/definitions/policy-ignore" }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
                         "ignore-unreachable": {
-                            "type": "boolean",
-                            "description": "Whether filter list sources that are unreachable or return a non-200 status code should be ignored.",
-                            "default": false
+                            "description": "Controls for which operations unreachable repositories and policy sources are silently ignored. Defaults to [\"update\", \"install\"]. Set to true to ignore for all operations, false for none.",
+                            "oneOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": ["audit", "install", "update"]
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "patternProperties": {
+                        "^ignore(?!-unreachable$)": {
+                            "not": {},
+                            "description": "Custom policy list names must not start with \"ignore\" — that prefix is reserved for future use."
                         },
-                        "unfiltered-packages": {
-                            "$ref": "#/definitions/unfiltered-packages"
-                        },
-                        "sources": {
-                            "type": "object",
-                            "description": "Additional sources to fetch filter list data from.",
-                            "additionalProperties": {
+                        "^(package|packages|license|licence|licenses|licences|support|maintenance|security|minimum-release-age)$": {
+                            "not": {},
+                            "description": "This name is reserved for future use and cannot be used as a custom policy list name."
+                        }
+                    },
+                    "additionalProperties": {
+                        "description": "Custom policy list configuration.",
+                        "oneOf": [
+                            {
+                                "type": "boolean"
+                            },
+                            {
                                 "type": "object",
                                 "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "enum": [
-                                            "url"
-                                        ],
-                                        "description": "Source type, currently only 'url' is supported"
+                                    "block": {
+                                        "type": "boolean",
+                                        "description": "When true (default), matched packages are blocked during update/require/remove.",
+                                        "default": true
                                     },
-                                    "url": {
-                                        "type": "string",
-                                        "description": "URL to fetch filter list data from"
-                                    }
-                                },
-                                "required": [
-                                    "type",
-                                    "url"
-                                ]
+                                    "audit": {
+                                        "enum": ["ignore", "report", "fail"],
+                                        "description": "How composer audit treats packages matched by this list. Defaults to fail.",
+                                        "default": "fail"
+                                    },
+                                    "sources": {
+                                        "type": "array",
+                                        "description": "URL sources to fetch this policy list data from.",
+                                        "items": {
+                                            "type": "object",
+                                            "required": ["type", "url"],
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "enum": ["url"],
+                                                    "description": "Source type, currently only 'url' is supported."
+                                                },
+                                                "url": {
+                                                    "type": "string",
+                                                    "description": "URL to fetch the policy list data from."
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "ignore": { "$ref": "#/definitions/policy-ignore" }
+                                }
                             }
-                        }
+                        ]
                     }
                 },
                 "notify-on-install": {
@@ -1201,9 +1323,6 @@
                                     }
                                 ]
                             }
-                        },
-                        "unfiltered-packages": {
-                            "$ref": "#/definitions/unfiltered-packages"
                         }
                     }
                 }
@@ -1506,49 +1625,123 @@
                 }
             }
         },
-        "unfiltered-packages": {
-            "type": "array",
-            "description": "Packages to exempt from filtering. Each item can be a package name string, a {\"vendor/package\": \"constraint\"} object, or a detailed object with package, constraint, reason, and apply fields.",
-            "items": {
-                "anyOf": [
-                    {
-                        "type": "string",
-                        "description": "Package name to exempt from all filtering"
-                    },
-                    {
-                        "type": "object",
-                        "description": "Package name => version constraint map",
-                        "additionalProperties": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "type": "object",
-                        "description": "Detailed configuration for exempting a package",
-                        "properties": {
-                            "package": {
-                                "type": "string",
-                                "description": "Package name"
+        "policy-ignore": {
+            "description": "Package name patterns with optional version constraints and per-rule scoping (on-block/on-audit).",
+            "anyOf": [
+                {
+                    "type": "array",
+                    "description": "Simple list of package names or patterns to ignore.",
+                    "items": { "type": "string" }
+                },
+                {
+                    "type": "object",
+                    "description": "Map of package names/patterns to reason strings or detailed rule objects.",
+                    "additionalProperties": {
+                        "anyOf": [
+                            { "type": "string", "description": "Reason for ignoring this package." },
+                            { "type": "null", "description": "Ignore without explanation." },
+                            {
+                                "type": "object",
+                                "description": "Detailed ignore rule with optional constraint and scoping.",
+                                "properties": {
+                                    "constraint": { "type": "string", "description": "Version constraint to limit the ignore to specific versions." },
+                                    "reason": { "type": "string", "description": "Explanation for ignoring this package." },
+                                    "on-block": { "type": "boolean", "description": "If false, does not ignore during version blocking (only during audit)." },
+                                    "on-audit": { "type": "boolean", "description": "If false, does not ignore during audit reporting (only during blocking)." }
+                                }
                             },
-                            "constraint": {
-                                "type": "string",
-                                "description": "Version constraint"
-                            },
-                            "reason": {
-                                "type": "string",
-                                "description": "Explanation for exempting this package"
-                            },
-                            "apply": {
-                                "type": "string",
-                                "enum": ["audit", "block", "all"],
-                                "description": "Which operation to exempt from: 'audit', 'block', or 'all'",
-                                "default": "all"
+                            {
+                                "type": "array",
+                                "description": "Multiple ignore rules for the same package.",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "constraint": { "type": "string" },
+                                        "reason": { "type": "string" },
+                                        "on-block": { "type": "boolean" },
+                                        "on-audit": { "type": "boolean" }
+                                    }
+                                }
                             }
-                        },
-                        "required": ["package", "constraint"]
+                        ]
                     }
-                ]
-            }
+                }
+            ]
+        },
+        "policy-ignore-id": {
+            "description": "Advisory IDs (CVE, GHSA, PKSA, ...) with optional reason and per-rule scoping (on-block/on-audit).",
+            "anyOf": [
+                {
+                    "type": "array",
+                    "description": "Simple list of advisory IDs to ignore.",
+                    "items": { "type": "string" }
+                },
+                {
+                    "type": "object",
+                    "description": "Map of advisory IDs to reason strings or detailed rule objects.",
+                    "additionalProperties": {
+                        "anyOf": [
+                            { "type": "string", "description": "Reason for ignoring this advisory ID." },
+                            { "type": "null", "description": "Ignore without explanation." },
+                            {
+                                "type": "object",
+                                "description": "Detailed ignore rule with optional scoping.",
+                                "properties": {
+                                    "reason": { "type": "string", "description": "Explanation for ignoring this advisory ID." },
+                                    "on-block": { "type": "boolean", "description": "If false, does not ignore during version blocking (only during audit)." },
+                                    "on-audit": { "type": "boolean", "description": "If false, does not ignore during audit reporting (only during blocking)." }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "policy-ignore-severity": {
+            "description": "Advisory severity levels (low, medium, high, critical) with optional reason and per-rule scoping (on-block/on-audit).",
+            "oneOf": [
+                {
+                    "anyOf": [
+                        {
+                            "type": "array",
+                            "description": "Simple list of severity levels to ignore.",
+                            "items": { "type": "string", "enum": ["low", "medium", "high", "critical"] }
+                        },
+                        {
+                            "type": "object",
+                            "description": "Map of severity levels to reason strings or detailed rule objects.",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "description": "Reason for ignoring this severity level."
+                                    },
+                                    {
+                                        "type": "null",
+                                        "description": "Ignore without explanation."
+                                    },
+                                    {
+                                        "type": "object",
+                                        "description": "Detailed ignore rule with optional scoping.",
+                                        "properties": {
+                                            "reason": { "type": "string", "description": "Explanation for ignoring this severity level." },
+                                            "on-block": { "type": "boolean", "description": "If false, does not ignore during version blocking (only during audit)." },
+                                            "on-audit": { "type": "boolean", "description": "If false, does not ignore during audit reporting (only during blocking)." }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "array",
+                    "description": "A list of severities for which advisories with matching severity will be ignored, e.g. critical, high, medium, low, or none. Applies to audit reports and version blocking.",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ]
         }
     }
 }

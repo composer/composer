@@ -15,7 +15,6 @@ namespace Composer\Repository;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\FilterListEntry;
-use Composer\FilterList\FilterListProviderConfig;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Version\VersionParser;
@@ -120,9 +119,7 @@ class PackageRepository extends ArrayRepository implements AdvisoryProviderInter
         $parser = new VersionParser();
 
         $filter = [];
-        $lists = [];
         foreach ($this->filter as $listName => $listEntries) {
-            $lists[] = $listName;
             foreach ($listEntries as $data) {
                 $filterEntry = FilterListEntry::create($listName, $data, $parser);
                 if (isset($packageConstraintMap[$filterEntry->packageName])) {
@@ -131,6 +128,11 @@ class PackageRepository extends ArrayRepository implements AdvisoryProviderInter
             }
         }
 
-        return ['filter' => $filter, 'config' => FilterListProviderConfig::fromConfig(true, $lists)];
+        return ['filter' => $filter];
+    }
+
+    public function getFilterLists(): array
+    {
+        return array_keys($this->filter);
     }
 }

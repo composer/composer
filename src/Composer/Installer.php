@@ -36,9 +36,9 @@ use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilte
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\FilterList\FilterListAuditor;
-use Composer\FilterList\FilterListConfig;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Installer\InstallationManager;
+use Composer\Policy\PolicyConfig;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
@@ -191,8 +191,8 @@ class Installer
     protected $auditFormat = Auditor::FORMAT_SUMMARY;
     /** @var AuditConfig|null */
     private $auditConfig = null;
-    /** @var FilterListConfig|null */
-    private $filterListConfig;
+    /** @var PolicyConfig|null */
+    private $policyConfig = null;
     /** @var list<string> */
     private $ignoredTypes = ['php-ext', 'php-ext-zend'];
     /** @var list<string>|null */
@@ -461,10 +461,10 @@ class Installer
                     foreach ($this->repositoryManager->getRepositories() as $repo) {
                         $repoSet->addRepository($repo);
                     }
-                    $filterListConfig = $this->getFilterListConfig();
-                    $filterListProviderSet = $filterListConfig !== null ? FilterListProviderSet::create($filterListConfig, $this->repositoryManager->getRepositories(), $this->repositoryManager->getHttpDownloader()) : null;
+                    $policyConfig = $this->getPolicyConfig();
+                    $filterListProviderSet = $policyConfig->enabled ? FilterListProviderSet::create($policyConfig, $this->repositoryManager->getRepositories(), $this->repositoryManager->getHttpDownloader()) : null;
 
-                    return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->auditAbandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedForAudit, $auditConfig->auditFiltered, $filterListProviderSet, $filterListConfig) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
+                    return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->auditAbandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable->audit, $auditConfig->ignoreAbandonedForAudit, $auditConfig->auditFiltered, $filterListProviderSet, $policyConfig) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {
@@ -1136,30 +1136,31 @@ class Installer
         return new PoolOptimizer($policy);
     }
 
+    private function getPolicyConfig(): PolicyConfig
+    {
+        if (null === $this->policyConfig) {
+            $this->policyConfig = PolicyConfig::fromConfig($this->config);
+        }
+
+        return $this->policyConfig;
+    }
+
     private function getAuditConfig(): AuditConfig
     {
         if (null === $this->auditConfig) {
-            $this->auditConfig = AuditConfig::fromConfig($this->config, $this->audit, $this->auditFormat);
+            $this->auditConfig = AuditConfig::fromPolicyConfig($this->getPolicyConfig(), $this->audit, $this->auditFormat);
         }
 
         return $this->auditConfig;
     }
 
-    private function getFilterListConfig(): ?FilterListConfig
-    {
-        if ($this->filterListConfig === null) {
-            $this->filterListConfig = FilterListConfig::fromConfig($this->config, new VersionParser());
-        }
-
-        return $this->filterListConfig;
-    }
-
     private function createSecurityAuditPoolFilter(): ?SecurityAdvisoryPoolFilter
     {
-        $auditConfig = $this->getAuditConfig();
+        $policyConfig = $this->getPolicyConfig();
 
-        if ($auditConfig->blockInsecure && !$this->updateMirrors) {
-            return new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
+        if ($policyConfig->enabled && $policyConfig->advisories->shouldBlock('update') && !$this->updateMirrors) {
+            // BC bridge: SecurityAdvisoryPoolFilter still uses AuditConfig internally
+            return new SecurityAdvisoryPoolFilter(new Auditor(), $this->getAuditConfig());
         }
 
         return null;
@@ -1167,13 +1168,13 @@ class Installer
 
     private function createFilterListPoolFilter(): ?FilterListPoolFilter
     {
-        $filterListConfig = $this->getFilterListConfig();
+        $policyConfig = $this->getPolicyConfig();
 
-        if ($filterListConfig !== null && !$this->updateMirrors) {
-            return new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader());
+        if (!$policyConfig->enabled || $this->updateMirrors) {
+            return null;
         }
 
-        return null;
+        return new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader());
     }
 
     /**
@@ -1605,6 +1606,21 @@ class Installer
     public function setAuditConfig(AuditConfig $auditConfig): self
     {
         $this->auditConfig = $auditConfig;
+
+        return $this;
+    }
+
+    /**
+     * Sets a custom PolicyConfig to override the default configuration from Config.
+     *
+     * Used by commands that need to alter policy at runtime (e.g. --no-blocking
+     * disabling blocking for malware/custom lists in addition to advisories).
+     *
+     * @internal
+     */
+    public function setPolicyConfig(PolicyConfig $policyConfig): self
+    {
+        $this->policyConfig = $policyConfig;
 
         return $this;
     }
