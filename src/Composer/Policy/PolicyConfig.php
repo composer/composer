@@ -54,6 +54,12 @@ class PolicyConfig
         AbandonedPolicyConfig::NAME,
     ];
 
+    public const BUILT_IN_NAMES = [
+        AdvisoriesPolicyConfig::NAME,
+        AbandonedPolicyConfig::NAME,
+        MalwarePolicyConfig::NAME,
+    ];
+
     /**
      * Names reserved for future use.
      */
@@ -160,9 +166,8 @@ class PolicyConfig
         $abandoned = AbandonedPolicyConfig::fromRawConfig($policyConfig, $auditConfig, $parser);
 
         $customLists = [];
-        $builtInKeys = ['advisories', 'malware', 'abandoned'];
         foreach ($policyConfig as $listName => $listConfig) {
-            if (in_array($listName, $builtInKeys, true) || in_array($listName, self::NON_LIST_KEYS, true)) {
+            if (in_array($listName, self::BUILT_IN_NAMES, true) || in_array($listName, self::NON_LIST_KEYS, true)) {
                 continue;
             }
 

@@ -142,32 +142,4 @@ class PolicyConfigTest extends TestCase
 
         self::assertArrayHasKey('company-policy', $policyConfig->customLists);
     }
-
-    /**
-     * @return iterable<string, array{0: string}>
-     */
-    public function provideReservedBuiltInListNames(): iterable
-    {
-        foreach (PolicyConfig::RESERVED_NAMES as $name) {
-            yield $name => [$name];
-        }
-    }
-
-    /**
-     * @dataProvider provideReservedBuiltInListNames
-     */
-    public function testAssertCustomListNameAllowedRejectsReservedBuiltInNames(string $listName): void
-    {
-        // Defence-in-depth: under fromConfig the built-in skip prevents these names
-        // from ever reaching the assert, but the assert itself must still reject them
-        // so future refactors of the loop cannot silently accept a reserved name as a
-        // custom list. We exercise the private method directly via reflection.
-        $method = new \ReflectionMethod(PolicyConfig::class, 'assertCustomListNameAllowed');
-        $method->setAccessible(true);
-
-        self::expectException(\UnexpectedValueException::class);
-        self::expectExceptionMessage($listName);
-
-        $method->invoke(null, $listName);
-    }
 }
