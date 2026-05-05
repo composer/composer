@@ -87,7 +87,7 @@ class IgnorePackageRule
         foreach ($config as $key => $value) {
             // "vendor/pkg": null
             if ($value === null) {
-                $rules[$key][] = new self($key, new MatchAllConstraint());
+                $rules[$key][] = new self((string) $key, new MatchAllConstraint());
                 continue;
             }
 
@@ -106,9 +106,14 @@ class IgnorePackageRule
             // Array of rule objects: "vendor/pkg": [{...}, {...}]
             if (is_array($value) && !is_int($key) && isset($value[0])) {
                 foreach ($value as $ruleConfig) {
-                    if (is_array($ruleConfig)) {
-                        $rules[$key][] = self::fromRuleObject($key, $ruleConfig, $parser);
+                    if (!is_array($ruleConfig)) {
+                        throw new \UnexpectedValueException(sprintf(
+                            'Invalid ignore rule for "%s": expected an object, got %s.',
+                            $key,
+                            get_debug_type($ruleConfig)
+                        ));
                     }
+                    $rules[$key][] = self::fromRuleObject($key, $ruleConfig, $parser);
                 }
                 continue;
             }
@@ -118,6 +123,13 @@ class IgnorePackageRule
                 $rules[$key][] = self::fromRuleObject($key, $value, $parser);
                 continue;
             }
+
+            throw new \UnexpectedValueException(sprintf(
+                'Invalid ignore entry at key "%s": value of type %s is not a supported shape.'
+                . ' Expected null, a reason string, a rule object, or a list of rule objects.',
+                $key,
+                get_debug_type($value)
+            ));
         }
 
         return $rules;

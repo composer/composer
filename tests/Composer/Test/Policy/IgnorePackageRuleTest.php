@@ -106,4 +106,29 @@ class IgnorePackageRuleTest extends TestCase
         self::assertFalse($rules['vendor/foo'][1]->onBlock);
         self::assertTrue($rules['vendor/foo'][1]->onAudit);
     }
+
+    /**
+     * @return array<string, array{0: array<mixed>}>
+     */
+    public function provideUnsupportedIgnoreMapShapes(): array
+    {
+        return [
+            'integer key with array value' => [[
+                ['package' => 'vendor/foo', 'constraint' => '^1.0'],
+            ]],
+            'integer key with bool value' => [[true]],
+            'string key with bool value' => [['vendor/foo' => true]],
+            'integer key with integer value' => [[42]],
+        ];
+    }
+
+    /**
+     * @dataProvider provideUnsupportedIgnoreMapShapes
+     * @param array<mixed> $config
+     */
+    public function testParseIgnoreMapRejectsUnsupportedShapes(array $config): void
+    {
+        self::expectException(\UnexpectedValueException::class);
+        IgnorePackageRule::parseIgnoreMap($config);
+    }
 }

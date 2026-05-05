@@ -31,7 +31,7 @@ class FilterListAuditorTest extends TestCase
         $this->filterListAuditor = new FilterListAuditor();
     }
 
-    public function provideUnfilteredPackages(): array
+    public function provideIgnoredPackages(): array
     {
         return [
             'acme/other fully ignore' => [['acme/other'], 1],
@@ -43,12 +43,14 @@ class FilterListAuditorTest extends TestCase
             'acme/* 1.0 ignore' => [['acme/*' => ['constraint' => '1.0']], 0],
             'acme/package 1.1 ignore' => [['acme/package' => ['constraint' => '1.1']], 1],
             'acme/* 1.1 ignore' => [['acme/*' => ['constraint' => '1.1']], 1],
-            'multiple acme/package entries' => [['acme/package' => ['constraint' => '*'], ['package' => 'acme/package', 'constraint' => '1.1']], 0],
+            'multiple acme/package entries, first rule matches' => [['acme/package' => [['constraint' => '1.0'], ['constraint' => '1.1']]], 0],
+            'multiple acme/package entries, second rule matches' => [['acme/package' => [['constraint' => '1.1'], ['constraint' => '1.0']]], 0],
+            'multiple acme/package entries, no rule matches' => [['acme/package' => [['constraint' => '1.1'], ['constraint' => '1.2']]], 1],
         ];
     }
 
     /**
-     * @dataProvider provideUnfilteredPackages
+     * @dataProvider provideIgnoredPackages
      * @param list<array{package: string, constraint: string}>|list<string> $ignorePackageConfig
      */
     public function testGetMatchingEntriesUnfilteredPackages(array $ignorePackageConfig, int $expectedCount): void
