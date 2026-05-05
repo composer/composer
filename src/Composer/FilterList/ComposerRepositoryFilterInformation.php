@@ -12,6 +12,8 @@
 
 namespace Composer\FilterList;
 
+use Composer\Policy\PolicyConfig;
+
 /**
  * @readonly
  * @internal
@@ -30,19 +32,12 @@ class ComposerRepositoryFilterInformation
     public $lists;
 
     /**
-     * @var list<string>
-     */
-    public $defaultLists;
-
-    /**
      * @param list<string> $lists
-     * @param list<string> $defaultLists
      */
-    private function __construct(bool $metadata, array $lists, array $defaultLists)
+    private function __construct(bool $metadata, array $lists)
     {
         $this->metadata = $metadata;
         $this->lists = $lists;
-        $this->defaultLists = $defaultLists;
     }
 
     /**
@@ -50,10 +45,29 @@ class ComposerRepositoryFilterInformation
      */
     public static function fromData(array $data): self
     {
+        $lists = isset($data['lists']) && is_array($data['lists']) ? array_values($data['lists']) : [];
+        $defaultLists = isset($data['default-lists']) && is_array($data['default-lists']) ? array_values($data['default-lists']) : [];
+
+        // Repos must not advertise built-in list names or names that collide with
+        // future-reserved identifiers; drop them silently so they cannot shadow
+        // Composer's own advisory/abandoned handling or claim a future reserved slot.
+        $lists = array_values(array_filter($lists, static function ($name): bool {
+            if (in_array($name, PolicyConfig::RESERVED_NAMES, true) || in_array($name, PolicyConfig::FUTURE_RESERVED_NAMES, true)) {
+                return false;
+            }
+
+            foreach (PolicyConfig::FUTURE_RESERVED_PREFIXES as $prefix) {
+                if (is_string($name) && str_starts_with($name, $prefix)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }));
+
         return new self(
             (bool) ($data['metadata'] ?? false),
-            isset($data['lists']) && is_array($data['lists']) ? array_values($data['lists']) : [],
-            isset($data['default-lists']) && is_array($data['default-lists']) ? array_values($data['default-lists']) : []
+            $lists
         );
     }
 }

@@ -95,6 +95,44 @@ class PolicyConfig
     }
 
     /**
+     * Reject custom-list names that collide with reserved built-in or
+     * future-reserved identifiers (RESERVED_NAMES, FUTURE_RESERVED_NAMES, or
+     * any FUTURE_RESERVED_PREFIXES entry).
+     *
+     * In the normal fromConfig flow, built-in list keys (`advisories`, `malware`,
+     * `abandoned`) and known non-list sibling keys (`ignore-unreachable`) are
+     * filtered out before this check. The RESERVED_NAMES check is therefore
+     * defence-in-depth: it keeps the function complete and resilient if the
+     * loop's built-in skip ever changes.
+     */
+    private static function assertCustomListNameAllowed(string $listName): void
+    {
+        if (in_array($listName, self::RESERVED_NAMES, true)) {
+            throw new \UnexpectedValueException(sprintf(
+                'Invalid custom policy list name "%s": this name is reserved for a built-in list.',
+                $listName
+            ));
+        }
+
+        foreach (self::FUTURE_RESERVED_PREFIXES as $prefix) {
+            if (str_starts_with($listName, $prefix)) {
+                throw new \UnexpectedValueException(sprintf(
+                    'Invalid custom policy list name "%s": names starting with "%s" are reserved for future use.',
+                    $listName,
+                    $prefix
+                ));
+            }
+        }
+
+        if (in_array($listName, self::FUTURE_RESERVED_NAMES, true)) {
+            throw new \UnexpectedValueException(sprintf(
+                'Invalid custom policy list name "%s": this name is reserved for future use.',
+                $listName
+            ));
+        }
+    }
+
+    /**
      * Reads config.policy with BC fallback to config.audit.
      */
     public static function fromConfig(Config $config): self
@@ -127,6 +165,8 @@ class PolicyConfig
             if (in_array($listName, $builtInKeys, true) || in_array($listName, self::NON_LIST_KEYS, true)) {
                 continue;
             }
+
+            self::assertCustomListNameAllowed((string) $listName);
 
             $customLists[$listName] = CustomListPolicyConfig::fromRawConfig($listName, $listConfig, $parser);
         }

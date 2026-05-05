@@ -461,7 +461,13 @@ package repositories or set explicitly here).
 ```
 
 Custom list names must not conflict with the reserved names `advisories`, `malware`, or
-`abandoned`, and must not start with `ignore`.
+`abandoned`, and must not start with `ignore` (the only `ignore`-prefixed key allowed at this
+level is the documented `ignore-unreachable` setting).
+
+The following names are reserved for future built-in lists and cannot be used as custom list
+names: `package`, `packages`, `license`, `licence`, `licenses`, `licences`, `support`,
+`maintenance`, `security`, `minimum-release-age`. Composer rejects any colliding key both at
+schema validation time (`composer validate`) and at config load time.
 
 ### ignore format
 

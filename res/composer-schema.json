@@ -695,6 +695,16 @@
                             ]
                         }
                     },
+                    "patternProperties": {
+                        "^ignore(?!-unreachable$)": {
+                            "not": {},
+                            "description": "Custom policy list names must not start with \"ignore\" — that prefix is reserved for future use."
+                        },
+                        "^(package|packages|license|licence|licenses|licences|support|maintenance|security|minimum-release-age)$": {
+                            "not": {},
+                            "description": "This name is reserved for future use and cannot be used as a custom policy list name."
+                        }
+                    },
                     "additionalProperties": {
                         "description": "Custom policy list configuration.",
                         "oneOf": [
