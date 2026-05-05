@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Advisory\Auditor;
 use Composer\Pcre\Preg;
+use Composer\Policy\IgnoreUnreachable;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
@@ -641,21 +642,41 @@ EOT
             return 0;
         }
 
-        // handle policy.ignore-unreachable array form via --json (bool form falls through to $uniqueConfigValues)
-        if ($settingKey === 'policy.ignore-unreachable' && $input->getOption('json')) {
-            $value = JsonFile::parseJson($values[0]);
-            if (!is_array($value)) {
-                throw new \RuntimeException('Expected a boolean or array for '.$settingKey);
-            }
-            foreach ($value as $v) {
-                if (!in_array($v, ['audit', 'install', 'update'], true)) {
-                    throw new \RuntimeException('valid values for '.$settingKey.' include: audit, install, update');
+        // handle policy.ignore-unreachable array form. Accepts:
+        //   --json '["update","install"]'           (canonical JSON)
+        //   policy.ignore-unreachable update install (positional enum values)
+        // The boolean form (true/false) falls through to $uniqueConfigValues.
+        if ($settingKey === 'policy.ignore-unreachable') {
+            if ($input->getOption('json')) {
+                $value = JsonFile::parseJson($values[0]);
+                if (!is_array($value)) {
+                    throw new \RuntimeException('Expected a boolean or array for '.$settingKey);
                 }
+                foreach ($value as $v) {
+                    if (!in_array($v, IgnoreUnreachable::SCOPES, true)) {
+                        throw new \RuntimeException('valid values for '.$settingKey.' include: '.implode(', ', IgnoreUnreachable::SCOPES));
+                    }
+                }
+
+                $this->configSource->addConfigSetting($settingKey, $value);
+
+                return 0;
             }
 
-            $this->configSource->addConfigSetting($settingKey, $value);
+            // Positional enum values: accept e.g. `composer config policy.ignore-unreachable update install`.
+            // Triggers only when the first value is one of the allowed scope strings, so `true`/`false` still
+            // fall through to the boolean validator below.
+            if (count($values) > 0 && in_array($values[0], IgnoreUnreachable::SCOPES, true)) {
+                foreach ($values as $v) {
+                    if (!in_array($v, IgnoreUnreachable::SCOPES, true)) {
+                        throw new \RuntimeException('valid values for '.$settingKey.' include: '.implode(', ', $allowedScopes));
+                    }
+                }
 
-            return 0;
+                $this->configSource->addConfigSetting($settingKey, array_values($values));
+
+                return 0;
+            }
         }
 
         // handle policy.<list> = true|false (enable/disable an entire list) for built-in and custom lists;
