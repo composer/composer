@@ -173,6 +173,16 @@ class Solver
         }
     }
 
+    /**
+     * Surface a SolverProblemsException for fixed packages the pool dropped
+     * via a policy filter list (typically the malware list at install time).
+     *
+     * Each emitted Problem carries a single GenericRule of type
+     * RULE_FIXED_FILTER_LIST_REMOVED; Problem::getMissingFixedPackageReason
+     * renders neutral wording ("Package X 1.0 (in the lock file) was not
+     * loaded, because it was flagged as malware ..."). RuleSetGeneratorTest
+     * and ProblemTest lock the wiring in.
+     */
     protected function checkForFilterListRemovedFixedPackages(Request $request): void
     {
         foreach ($request->getFixedPackages() as $package) {
@@ -181,13 +191,6 @@ class Solver
                 continue;
             }
 
-            // RULE_FIXED_FILTER_LIST_REMOVED is dedicated to this case: a fixed
-            // package (root require, transitive locked dep, or explicitly pinned)
-            // dropped from the pool by a policy filter list. We can't tell those
-            // apart from inside Solver, so emit a Problem keyed on the package
-            // itself and let Problem::getMissingFixedPackageReason render neutral
-            // wording. A dedicated rule type keeps RULE_FIXED's existing
-            // semantics ("present at version X, cannot be modified") untouched.
             $problem = new Problem();
             $problem->addRule(new GenericRule([], Rule::RULE_FIXED_FILTER_LIST_REMOVED, [
                 'package' => $package,
