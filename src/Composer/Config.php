@@ -39,7 +39,7 @@ class Config
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
         'audit' => ['ignore' => [], 'abandoned' => Auditor::ABANDONED_FAIL],
-        'filter' => true,
+        'policy' => true,
         'notify-on-install' => true,
         'github-protocols' => ['https', 'ssh', 'git'],
         'gitlab-protocol' => null,
@@ -235,21 +235,56 @@ class Config
                     $this->config[$key] = array_merge($this->config['audit'], $val);
                     $this->setSourceOfConfigValue($val, $key, $source);
                     $this->config['audit']['ignore'] = array_merge($currentIgnores, $val['ignore'] ?? []);
-                } elseif ('filter' === $key) {
-                    $unfilteredPackages = $this->config['filter']['unfiltered-packages'] ?? [];
-                    $sources = $this->config['filter']['sources'] ?? [];
-
-                    if (\is_bool($val)) {
-                        // Don't overwrite a detailed filter config with boolean true
-                        if ($val !== (bool) $this->config['filter']) {
-                            $this->config[$key] = $val;
-                        }
-                    } else {
-                        $this->config[$key] = is_array($this->config['filter']) ? array_merge($this->config['filter'], $val) : $val;
-                        $this->config['filter']['unfiltered-packages'] = array_merge($unfilteredPackages, $val['unfiltered-packages'] ?? []);
-                        $this->config['filter']['sources'] = array_merge($sources, $val['sources'] ?? []);
+                } elseif ('policy' === $key) {
+                    // The schema accepts `true`, `{}` as equivalent.
+                    // Canonicalise `true` to `[]` here so both shapes share a single merge code path and layer identically across config sources.
+                    if ($val === true) {
+                        $val = [];
                     }
 
+                    if ($val === false) {
+                        $this->config[$key] = false;
+                    } elseif (\is_array($val)) {
+                        $current = \is_array($this->config['policy']) ? $this->config['policy'] : [];
+                        // Inner array keys that must be deep-merged so user ignore rules from
+                        // global + project sources both apply
+                        $deepMergeKeys = ['ignore', 'ignore-id', 'ignore-severity', 'ignore-source'];
+                        foreach ($val as $listName => $listConfig) {
+                            // Per-list canonicalisation: `true` ≡ `[]` ≡ "use defaults".
+                            if ($listConfig === true) {
+                                $listConfig = [];
+                            }
+
+                            $existing = $current[$listName] ?? null;
+                            if ($existing === true) {
+                                $existing = [];
+                            }
+
+                            if ($listConfig === false) {
+                                // Explicit disable always overrides any prior shape.
+                                $current[$listName] = false;
+                            } elseif ($existing === null || $existing === false) {
+                                // No prior layer (or it was disabled and is being re-enabled);
+                                // store the new value as-is.
+                                $current[$listName] = $listConfig;
+                            } elseif (\is_array($existing) && \is_array($listConfig)) {
+                                $merged = array_merge($existing, $listConfig);
+                                foreach ($deepMergeKeys as $innerKey) {
+                                    $existingInner = $existing[$innerKey] ?? null;
+                                    $incomingInner = $listConfig[$innerKey] ?? null;
+                                    if (\is_array($existingInner) && \is_array($incomingInner)) {
+                                        $merged[$innerKey] = array_merge($existingInner, $incomingInner);
+                                    }
+                                }
+                                $current[$listName] = $merged;
+                            } else {
+                                // Should not be reachable after the canonicalisations above,
+                                // but keep a deterministic fallback: incoming wins.
+                                $current[$listName] = $listConfig;
+                            }
+                        }
+                        $this->config[$key] = $current;
+                    }
                     $this->setSourceOfConfigValue($val, $key, $source);
                 } else {
                     $this->config[$key] = $val;
@@ -502,22 +537,21 @@ class Config
                 }
 
                 return $result;
-            case 'filter':
-                $filterConfig = $this->config[$key];
-                $filterEnv = $this->getComposerEnv('COMPOSER_FILTER');
-                if (false !== $filterEnv) {
-                    if (!in_array($filterEnv, ['0', '1'], true)) {
+            case 'policy':
+                $policyConfig = $this->config[$key];
+                $policyEnv = $this->getComposerEnv('COMPOSER_POLICY');
+                if (false !== $policyEnv) {
+                    if (!in_array($policyEnv, ['0', '1'], true)) {
                         throw new \RuntimeException(
-                            "Invalid value for COMPOSER_FILTER: {$filterEnv}. Expected 0 or 1."
+                            "Invalid value for COMPOSER_POLICY: {$policyEnv}. Expected 0 or 1."
                         );
                     }
-
-                    if ((bool) (int) $filterEnv !== (bool) $filterConfig) {
-                        $filterConfig = (bool) (int) $filterEnv;
+                    if ((int) $policyEnv === 0) {
+                        $policyConfig = false;
                     }
                 }
 
-                return $filterConfig;
+                return $policyConfig;
             default:
                 if (!isset($this->config[$key])) {
                     return null;

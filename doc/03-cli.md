@@ -210,7 +210,8 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--no-security-blocking:** Allows installing packages with security advisories or that are abandoned. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
+* **--no-security-blocking:** Allows installing packages with security advisories or that are abandoned. Alias for --no-blocking. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
+* **--no-blocking:** Disables all policy blocking during this command. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
 * **--lock:** Overwrites the lock file hash to suppress warning about the lock file being out of
   date without updating package versions. Package metadata like mirrors and URLs are updated if
   they changed.
@@ -308,7 +309,8 @@ If you do not want to install the new dependencies immediately you can call it w
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--no-security-blocking:** Allows installing packages with security advisories or that are abandoned. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
+* **--no-security-blocking:** Allows installing packages with security advisories or that are abandoned. Alias for --no-blocking. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
+* **--no-blocking:** Disables all policy blocking during this command. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option. Also see [COMPOSER_NO_DEV](#composer-no-dev).
 * **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements. Can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var.
 * **--update-with-all-dependencies (-W):** Also update dependencies of the newly required packages, including those that are root requirements. Can also be set via the COMPOSER_WITH_ALL_DEPENDENCIES=1 env var.
@@ -359,7 +361,8 @@ uninstalled.
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--no-security-blocking:** Allows installing packages with security advisories or that are abandoned. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
+* **--no-security-blocking:** Allows installing packages with security advisories or that are abandoned. Alias for --no-blocking. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
+* **--no-blocking:** Disables all policy blocking during this command. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
 * **--update-no-dev:** Run the dependency update with the --no-dev option. Also see [COMPOSER_NO_DEV](#composer-no-dev).
 * **--update-with-dependencies (-w):** Also update dependencies of the removed packages. Can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var.
   (Deprecated, is now default behavior)
@@ -956,6 +959,33 @@ php composer.phar repo disable packagist.org
 php composer.phar repo enable packagist.org
 ```
 
+## policy
+
+The `policy` command lets you manage custom policy lists and their sources in your `composer.json` under `config.policy`. A source points Composer at a remote URL which provides the list of packages the policy applies to. Adding a source to a list that does not yet exist will create the list entry automatically.
+
+Built-in lists (`advisories`, `malware`, `abandoned`) do not accept sources and are rejected. To change their settings, use `composer config policy.<list>.<field>` instead — see the [policy](06-config.md#policy) config documentation.
+
+### Usage
+
+```shell
+policy [options] add-source [list-name] [source-type] [url]
+policy [options] add-source [list-name] [json-source-definition]
+```
+
+Currently only `url` is supported as `source-type`, and URLs must start with `https://`.
+
+### Options
+
+- **--global (-g):** to modify the global `$COMPOSER_HOME/config.json`.
+- **--file (-f):** to modify a specific file instead of composer.json.
+
+### Examples
+
+```shell
+php composer.phar policy add-source my-list url https://example.org/list.json
+php composer.phar policy add-source my-list '{"type":"url","url":"https://example.org/list.json"}'
+```
+
 ## create-project
 
 You can use Composer to create new projects from an existing package. This is
@@ -1021,7 +1051,8 @@ By default the command checks for the packages on packagist.org.
 * **--no-install:** Disables installation of the vendors.
 * **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--no-security-blocking:** Allows installing packages with security advisories or that are abandoned. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
+* **--no-security-blocking:** Allows installing packages with security advisories or that are abandoned. Alias for --no-blocking. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
+* **--no-blocking:** Disables all policy blocking during this command. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
@@ -1393,10 +1424,15 @@ If set to `1`, it is the equivalent of passing the `--no-audit` option to a `req
 Set to `ignore`, `report` or `fail` to override the [audit.abandoned](06-config.md#abandoned)
 config option.
 
-### COMPOSER_FILTER
+### COMPOSER_POLICY
 
-Set to `0` to disable filters on updates and audit, or `1` to enable them. Setting this to `1` will use the filter configuration in the composer.json.
-If you want to override the config value, use `composer config filter 1` instead.
+Set to `0` to disable policies on updates and audit, or `1` to enable them. Setting this to `1` will use the policy configuration in the composer.json.
+If you want to override the config value, use `composer config policy 1` instead.
+
+### COMPOSER_NO_BLOCKING
+
+If set to `1`, it is the equivalent of passing the `--no-blocking` option to a `require`, `update`, `remove`, `install`, or `create-project` command. This disables all policy blocking during this command. It overrides the block config option for each configured policy e.g. [policy.advisories.block](06-config.md#block).
+
 
 ### COMPOSER_NO_SECURITY_BLOCKING
 

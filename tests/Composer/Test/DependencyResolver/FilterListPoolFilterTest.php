@@ -17,9 +17,8 @@ use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\FilterList\FilterListAuditor;
-use Composer\FilterList\FilterListConfig;
 use Composer\Package\Package;
-use Composer\Package\Version\VersionParser;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\PackageRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Test\Mock\HttpDownloaderMock;
@@ -40,10 +39,10 @@ class FilterListPoolFilterTest extends TestCase
     public function testFilterPackages(): void
     {
         $config = new Config();
-        $filterListConfig = FilterListConfig::fromConfig($config, new VersionParser());
-        $this->assertNotNull($filterListConfig);
+        $config->merge(['config' => ['policy' => ['test-list' => true]]]);
+        $policyConfig = PolicyConfig::fromConfig($config);
 
-        $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('1.0');
         $pool = new Pool([
@@ -65,12 +64,10 @@ class FilterListPoolFilterTest extends TestCase
     public function testUnfilteredPackagesConfig($filterConfig): void
     {
         $config = new Config();
-        $config->merge(['config' => ['filter' => $filterConfig]]);
+        $config->merge(['config' => ['policy' => ['test-list' => $filterConfig]]]);
 
-        $filterListConfig = FilterListConfig::fromConfig($config, new VersionParser());
-        $this->assertNotNull($filterListConfig);
-
-        $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
+        $policyConfig = PolicyConfig::fromConfig($config);
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('*');
         $pool = new Pool([
@@ -86,22 +83,26 @@ class FilterListPoolFilterTest extends TestCase
     public static function unfilteredProvider(): array
     {
         return [
-            'unfiltered-packages' => [['unfiltered-packages' => ['acme/package']]],
-            'unfiltered-packages-version' => [['unfiltered-packages' => [['package' => 'acme/package', 'constraint' => '*']]]],
+            'ignore-packages' => [['ignore' => ['acme/package']]],
+            'ignore-packages-version' => [['ignore' => ['acme/package' => ['constraint' => '*']]]],
         ];
     }
 
     public function testUnfilteredPackagesConfigIntersection(): void
     {
         $config = new Config();
-        $config->merge(['config' => ['filter' => [
-            'unfiltered-packages' => [['package' => 'acme/package', 'constraint' => '<=1.0']],
-        ]]]);
+        $config->merge([
+            'config' => [
+                'policy' => [
+                    'test-list' => [
+                        'ignore' => ['acme/package' => ['constraint' => '<=1.0']],
+                    ],
+                ],
+            ],
+        ]);
 
-        $filterListConfig = FilterListConfig::fromConfig($config, new VersionParser());
-        $this->assertNotNull($filterListConfig);
-
-        $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
+        $policyConfig = PolicyConfig::fromConfig($config);
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('>=1.0');
         $pool = new Pool([
@@ -126,17 +127,17 @@ class FilterListPoolFilterTest extends TestCase
         ]]);
 
         $config = new Config();
-        $config->merge(['config' => ['filter' => [
-            'sources' => ['source-list' => [
-                'type' => 'url',
-                'url' => 'https://example.org/malware/acme/package',
-            ]],
+        $config->merge(['config' => ['policy' => [
+            'test-list' => [
+                'sources' => ['source-list' => [
+                    'type' => 'url',
+                    'url' => 'https://example.org/malware/acme/package',
+                ]],
+            ]
         ]]]);
 
-        $filterListConfig = FilterListConfig::fromConfig($config, new VersionParser());
-        $this->assertNotNull($filterListConfig);
-
-        $filter = new FilterListPoolFilter($filterListConfig, new FilterListAuditor(), $this->httpDownloaderMock);
+        $policyConfig = PolicyConfig::fromConfig($config);
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock);
 
         $repository = $this->generatePackageRepository('0.0.1');
         $pool = new Pool([

@@ -14,6 +14,8 @@ namespace Composer\Command;
 
 use Composer\Advisory\Auditor;
 use Composer\Pcre\Preg;
+use Composer\Policy\IgnoreUnreachable;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
@@ -322,6 +324,12 @@ EOT
         $booleanNormalizer = static function ($val): bool {
             return $val !== 'false' && (bool) $val;
         };
+        $auditValidator = static function ($val): bool {
+            return in_array($val, [ListPolicyConfig::AUDIT_IGNORE, ListPolicyConfig::AUDIT_REPORT, ListPolicyConfig::AUDIT_FAIL], true);
+        };
+        $keepAsIsNormalizer = static function ($val) {
+            return $val;
+        };
 
         // handle config values
         $uniqueConfigValues = [
@@ -482,18 +490,23 @@ EOT
                     return $val !== 'false' && (bool) $val;
                 },
             ],
-            'audit.abandoned' => [
-                static function ($val): bool {
-                    return in_array($val, [Auditor::ABANDONED_IGNORE, Auditor::ABANDONED_REPORT, Auditor::ABANDONED_FAIL], true);
-                },
-                static function ($val) {
-                    return $val;
-                },
-            ],
+            'audit.abandoned' => [$auditValidator,  $keepAsIsNormalizer],
             'audit.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
             'audit.block-insecure' => [$booleanValidator, $booleanNormalizer],
             'audit.block-abandoned' => [$booleanValidator, $booleanNormalizer],
-            'filter.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
+            'policy.advisories.block' => [$booleanValidator, $booleanNormalizer],
+            'policy.advisories.audit' => [$auditValidator,  $keepAsIsNormalizer],
+            'policy.malware.block' => [$booleanValidator, $booleanNormalizer],
+            'policy.malware.block-scope' => [
+                static function ($val): bool {
+                    return in_array($val, ['all', 'update', 'install'], true);
+                },
+                $keepAsIsNormalizer,
+            ],
+            'policy.malware.audit' => [$auditValidator, $keepAsIsNormalizer],
+            'policy.abandoned.block' => [$booleanValidator, $booleanNormalizer],
+            'policy.abandoned.audit' => [$auditValidator, $keepAsIsNormalizer],
+            'policy.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
         ];
         $multiConfigValues = [
             'github-protocols' => [
@@ -538,7 +551,7 @@ EOT
                     return $vals;
                 },
             ],
-            'audit.ignore-severity' => [
+            'audit.ignore-severity' => $ignoreSeverityValidatorAndNormalizer = [
                 static function ($vals) {
                     if (!is_array($vals)) {
                         return 'array expected';
@@ -556,11 +569,156 @@ EOT
                     return $vals;
                 },
             ],
+            'policy.advisories.ignore-severity' => $ignoreSeverityValidatorAndNormalizer,
+            'policy.malware.ignore-source' => [
+                static function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
+
+                    foreach ($vals as $val) {
+                        if (!is_string($val)) {
+                            return 'string values expected';
+                        }
+                    }
+
+                    return true;
+                },
+                static function ($vals) {
+                    return $vals;
+                },
+            ],
         ];
 
-        // allow unsetting audit/filter config entirely
-        if ($input->getOption('unset') && in_array($settingKey, ['audit', 'filter'], true)) {
+        // allow unsetting audit/policy config entirely
+        if ($input->getOption('unset') && in_array($settingKey, ['audit', 'policy'], true)) {
             $this->configSource->removeConfigSetting($settingKey);
+
+            return 0;
+        }
+
+        // handle policy.*.ignore / policy.advisories.ignore-id with --json + --merge support (mirrors audit.ignore)
+        $policyJsonMergeKeys = ['policy.advisories.ignore', 'policy.advisories.ignore-id', 'policy.malware.ignore', 'policy.abandoned.ignore'];
+        $isCustomPolicyIgnore = Preg::isMatch('/^policy\.(?!advisories$|malware$|abandoned$|ignore-unreachable$)[^.]+\.ignore$/', $settingKey);
+        if (in_array($settingKey, $policyJsonMergeKeys, true) || $isCustomPolicyIgnore) {
+            if ($input->getOption('unset')) {
+                $this->configSource->removeConfigSetting($settingKey);
+
+                return 0;
+            }
+
+            $value = $values;
+            if ($input->getOption('json')) {
+                $value = JsonFile::parseJson($values[0]);
+                if (!is_array($value)) {
+                    throw new \RuntimeException('Expected an array or object for '.$settingKey);
+                }
+            }
+
+            if ($input->getOption('merge')) {
+                $currentConfig = $this->configFile->read();
+                $currentValue = $currentConfig['config'] ?? null;
+                foreach (explode('.', $settingKey) as $bit) {
+                    if (!is_array($currentValue) || !isset($currentValue[$bit])) {
+                        $currentValue = null;
+                        break;
+                    }
+                    $currentValue = $currentValue[$bit];
+                }
+
+                if ($currentValue !== null && is_array($currentValue) && is_array($value)) {
+                    if (array_is_list($currentValue) && array_is_list($value)) {
+                        $value = array_merge($currentValue, $value);
+                    } elseif (!array_is_list($currentValue) && !array_is_list($value)) {
+                        $value = $value + $currentValue;
+                    } else {
+                        throw new \RuntimeException('Cannot merge array and object for '.$settingKey);
+                    }
+                }
+            }
+
+            $this->configSource->addConfigSetting($settingKey, $value);
+
+            return 0;
+        }
+
+        // handle policy.ignore-unreachable array form. Accepts:
+        //   --json '["update","install"]'           (canonical JSON)
+        //   policy.ignore-unreachable update install (positional enum values)
+        // The boolean form (true/false) falls through to $uniqueConfigValues.
+        if ($settingKey === 'policy.ignore-unreachable') {
+            if ($input->getOption('json')) {
+                $value = JsonFile::parseJson($values[0]);
+                if (!is_array($value)) {
+                    throw new \RuntimeException('Expected a boolean or array for '.$settingKey);
+                }
+                foreach ($value as $v) {
+                    if (!in_array($v, IgnoreUnreachable::SCOPES, true)) {
+                        throw new \RuntimeException('valid values for '.$settingKey.' include: '.implode(', ', IgnoreUnreachable::SCOPES));
+                    }
+                }
+
+                $this->configSource->addConfigSetting($settingKey, $value);
+
+                return 0;
+            }
+
+            // Positional enum values: accept e.g. `composer config policy.ignore-unreachable update install`.
+            // Triggers only when the first value is one of the allowed scope strings, so `true`/`false` still
+            // fall through to the boolean validator below.
+            if (count($values) > 0 && in_array($values[0], IgnoreUnreachable::SCOPES, true)) {
+                foreach ($values as $v) {
+                    if (!in_array($v, IgnoreUnreachable::SCOPES, true)) {
+                        throw new \RuntimeException('valid values for '.$settingKey.' include: '.implode(', ', $allowedScopes));
+                    }
+                }
+
+                $this->configSource->addConfigSetting($settingKey, array_values($values));
+
+                return 0;
+            }
+        }
+
+        // handle policy.<list> = true|false (enable/disable an entire list) for built-in and custom lists;
+        // policy.ignore-unreachable is excluded because it already has its own scalar/array handling via $uniqueConfigValues
+        if (Preg::isMatch('/^policy\.([^.]+)$/', $settingKey, $matches)
+            && $matches[1] !== 'ignore-unreachable'
+        ) {
+            if ($input->getOption('unset')) {
+                $this->configSource->removeConfigSetting($settingKey);
+
+                return 0;
+            }
+
+            if (!$booleanValidator($values[0])) {
+                throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, expected a boolean', $values[0], $settingKey));
+            }
+            $this->configSource->addConfigSetting($settingKey, $booleanNormalizer($values[0]));
+
+            return 0;
+        }
+
+        // handle custom policy lists: policy.<name>.block / policy.<name>.audit
+        if (Preg::isMatch('/^policy\.([^.]+)\.(block|audit)$/', $settingKey, $matches)
+            && !in_array($matches[1], ['advisories', 'malware', 'abandoned', 'ignore-unreachable'], true)
+        ) {
+            if ($input->getOption('unset')) {
+                $this->configSource->removeConfigSetting($settingKey);
+
+                return 0;
+            }
+
+            if ($matches[2] === 'block') {
+                if (!$booleanValidator($values[0])) {
+                    throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, expected a boolean', $values[0], $settingKey));
+                }
+                $this->configSource->addConfigSetting($settingKey, $booleanNormalizer($values[0]));
+            } else {
+                if (!in_array($values[0], [ListPolicyConfig::AUDIT_IGNORE, ListPolicyConfig::AUDIT_REPORT, ListPolicyConfig::AUDIT_FAIL], true)) {
+                    throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, must be one of: ignore, report, fail', $values[0], $settingKey));
+                }
+                $this->configSource->addConfigSetting($settingKey, $values[0]);
+            }
 
             return 0;
         }
@@ -823,50 +981,6 @@ EOT
             if ($input->getOption('merge')) {
                 $currentConfig = $this->configFile->read();
                 $currentValue = $currentConfig['config']['audit'][str_replace('audit.', '', $settingKey)] ?? null;
-
-                if ($currentValue !== null && is_array($currentValue) && is_array($value)) {
-                    if (array_is_list($currentValue) && array_is_list($value)) {
-                        // Both are lists, merge them
-                        $value = array_merge($currentValue, $value);
-                    } elseif (!array_is_list($currentValue) && !array_is_list($value)) {
-                        // Both are associative arrays (objects), merge them
-                        $value = $value + $currentValue;
-                    } else {
-                        throw new \RuntimeException('Cannot merge array and object for '.$settingKey);
-                    }
-                }
-            }
-
-            $this->configSource->addConfigSetting($settingKey, $value);
-
-            return 0;
-        }
-
-        // handle filter.lists, filter.dont-filter-package and filter.sources with --merge support
-        if (Preg::isMatch('/^filter\.(.+)/', $settingKey, $matches)) {
-            if ($input->getOption('unset')) {
-                $this->configSource->removeConfigSetting($settingKey);
-
-                return 0;
-            }
-
-            $value = $values;
-            if ($input->getOption('json')) {
-                $value = JsonFile::parseJson($values[0]);
-                if (!is_array($value)) {
-                    throw new \RuntimeException('Expected an array or object for '.$settingKey);
-                }
-            }
-
-            // Allow composer config filter.sources.name url https://example.org
-            if (Preg::isMatch('/^filter\.sources\.(.+)/', $settingKey, $matches) && count($values) === 2) {
-                $value = [$matches[1] => ['type' => $values[0], 'url' => $values[1]]];
-                $settingKey = 'filter.sources';
-            }
-
-            if ($input->getOption('merge')) {
-                $currentConfig = $this->configFile->read();
-                $currentValue = $currentConfig['config']['filter'][str_replace('filter.', '', $settingKey)] ?? null;
 
                 if ($currentValue !== null && is_array($currentValue) && is_array($value)) {
                     if (array_is_list($currentValue) && array_is_list($value)) {
