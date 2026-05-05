@@ -44,6 +44,7 @@ class OutdatedCommand extends BaseCommand
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
                 new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Can contain wildcards (*). Use it if you don\'t want to be informed about new versions of some packages.', null, $this->suggestInstalledPackage(false)),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
+                new InputOption('only-dev', null, InputOption::VALUE_NONE, 'Restricts the list of packages to your require-dev packages.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages). Use with the --outdated option'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages). Use with the --outdated option'),
             ])
@@ -109,6 +110,9 @@ EOT
         }
         if ($input->getOption('no-dev')) {
             $args['--no-dev'] = true;
+        }
+        if ($input->getOption('only-dev')) {
+            $args['--only-dev'] = true;
         }
         if ($input->getOption('sort-by-age')) {
             $args['--sort-by-age'] = true;
