@@ -470,6 +470,93 @@ class ConfigTest extends TestCase
         self::assertTrue($config->get('policy'));
     }
 
+    public function testPolicyDeepMergesIgnoreAcrossSources(): void
+    {
+        $config = new Config(true);
+
+        $config->merge(['config' => ['policy' => [
+            'advisories' => [
+                'ignore' => ['vendor/global-1', 'vendor/global-2'],
+                'ignore-id' => ['CVE-1111'],
+                'ignore-severity' => ['low'],
+                'block' => true,
+            ],
+        ]]]);
+        $config->merge(['config' => ['policy' => [
+            'advisories' => [
+                'ignore' => ['vendor/project-1'],
+                'ignore-id' => ['CVE-2222'],
+                'ignore-severity' => ['medium'],
+                'audit' => 'report',
+            ],
+        ]]]);
+
+        $result = $config->get('policy');
+        self::assertIsArray($result);
+        self::assertArrayHasKey('advisories', $result);
+
+        // Deep-merged inner arrays (mirrors audit.ignore behaviour)
+        self::assertSame(
+            ['vendor/global-1', 'vendor/global-2', 'vendor/project-1'],
+            $result['advisories']['ignore']
+        );
+        self::assertSame(['CVE-1111', 'CVE-2222'], $result['advisories']['ignore-id']);
+        self::assertSame(['low', 'medium'], $result['advisories']['ignore-severity']);
+
+        // Sibling scalar keys still merge top-level (later wins, but both retained)
+        self::assertTrue($result['advisories']['block']);
+        self::assertSame('report', $result['advisories']['audit']);
+    }
+
+    public function testPolicyDeepMergesIgnoreForMalwareAndAbandonedAndCustomList(): void
+    {
+        $config = new Config(true);
+
+        $config->merge(['config' => ['policy' => [
+            'malware' => [
+                'ignore' => ['vendor/global-malware'],
+                'ignore-source' => ['source-global'],
+            ],
+            'abandoned' => [
+                'ignore' => ['vendor/global-abandoned'],
+            ],
+            'custom-list' => [
+                'ignore' => ['vendor/global-custom'],
+            ],
+        ]]]);
+        $config->merge(['config' => ['policy' => [
+            'malware' => [
+                'ignore' => ['vendor/project-malware'],
+                'ignore-source' => ['source-project'],
+            ],
+            'abandoned' => [
+                'ignore' => ['vendor/project-abandoned'],
+            ],
+            'custom-list' => [
+                'ignore' => ['vendor/project-custom'],
+            ],
+        ]]]);
+
+        $result = $config->get('policy');
+        self::assertIsArray($result);
+        self::assertSame(
+            ['vendor/global-malware', 'vendor/project-malware'],
+            $result['malware']['ignore']
+        );
+        self::assertSame(
+            ['source-global', 'source-project'],
+            $result['malware']['ignore-source']
+        );
+        self::assertSame(
+            ['vendor/global-abandoned', 'vendor/project-abandoned'],
+            $result['abandoned']['ignore']
+        );
+        self::assertSame(
+            ['vendor/global-custom', 'vendor/project-custom'],
+            $result['custom-list']['ignore']
+        );
+    }
+
     public function testGetDefaultsToAnEmptyArray(): void
     {
         $config = new Config;

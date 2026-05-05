@@ -243,6 +243,9 @@ class Config
                         }
                     } elseif (\is_array($val)) {
                         $current = \is_array($this->config['policy']) ? $this->config['policy'] : [];
+                        // Inner array keys that must be deep-merged so user ignore rules from
+                        // global + project sources both apply
+                        $deepMergeKeys = ['ignore', 'ignore-id', 'ignore-severity', 'ignore-source'];
                         foreach ($val as $listName => $listConfig) {
                             if (!isset($current[$listName])) {
                                 $current[$listName] = $listConfig;
@@ -251,8 +254,18 @@ class Config
                                 if ($listConfig !== (bool) $current[$listName]) {
                                     $current[$listName] = $listConfig;
                                 }
+                            } elseif (\is_array($current[$listName]) && \is_array($listConfig)) {
+                                $merged = array_merge($current[$listName], $listConfig);
+                                foreach ($deepMergeKeys as $innerKey) {
+                                    $existingInner = $current[$listName][$innerKey] ?? null;
+                                    $incomingInner = $listConfig[$innerKey] ?? null;
+                                    if (\is_array($existingInner) && \is_array($incomingInner)) {
+                                        $merged[$innerKey] = array_merge($existingInner, $incomingInner);
+                                    }
+                                }
+                                $current[$listName] = $merged;
                             } else {
-                                $current[$listName] = array_merge($current[$listName] ?? [], $listConfig);
+                                $current[$listName] = $listConfig;
                             }
                         }
                         $this->config[$key] = $current;
