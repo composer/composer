@@ -76,7 +76,7 @@ class IgnoreUnreachable
     public static function fromRawAuditConfig(array $auditConfig): self
     {
         if (isset($auditConfig['ignore-unreachable']) && $auditConfig['ignore-unreachable']) {
-            return self::all();
+            return new self(true, false, false);
         }
 
         return self::default();
