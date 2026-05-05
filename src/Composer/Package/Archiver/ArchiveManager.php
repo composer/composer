@@ -168,7 +168,7 @@ class ArchiveManager
         $filesystem = new Filesystem();
 
         if ($package instanceof RootPackageInterface) {
-            $sourcePath = realpath('.');
+            $sourcePath = Platform::realpath('.');
         } else {
             // Directory used to download the sources
             $sourcePath = sys_get_temp_dir().'/composer_archive'.bin2hex(random_bytes(5));

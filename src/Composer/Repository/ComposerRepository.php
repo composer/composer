@@ -34,6 +34,7 @@ use Composer\Plugin\PostFileDownloadEvent;
 use Composer\Semver\CompilingMatcher;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Loop;
+use Composer\Util\Platform;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
@@ -162,11 +163,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         parent::__construct();
         if (!Preg::isMatch('{^[\w.]+\??://}', $repoConfig['url'])) {
-            if (($localFilePath = realpath($repoConfig['url'])) !== false) {
-                // it is a local path, add file scheme
-                $repoConfig['url'] = 'file://'.$localFilePath;
-            } else {
-                // otherwise, assume http as the default protocol
+            try {
+                $repoConfig['url'] = 'file://'.Platform::realpath($repoConfig['url']);
+            } catch (\RuntimeException $e) {
+                // not a local path, assume http as the default protocol
                 $repoConfig['url'] = 'http://'.$repoConfig['url'];
             }
         }
