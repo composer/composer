@@ -17,7 +17,10 @@ use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\PolicyConfig;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * @internal
@@ -28,12 +31,12 @@ class FilterListAuditor
 {
     /**
      * @param PackageInterface[] $packages
-     * @param 'block'|'audit' $operation
+     * @param list<string> $configuredLists
      * @return array{filter: array<string, array<string, list<FilterListEntry>>>, unreachableRepos: array<string>}
      */
-    public function collectFilterLists(array $packages, FilterListProviderSet $providerSet, string $operation, bool $ignoreUnreachable): array
+    public function collectFilterLists(array $packages, FilterListProviderSet $providerSet, array $configuredLists, bool $ignoreUnreachable): array
     {
-        $result = $providerSet->getMatchingFilterLists($packages, $operation, $ignoreUnreachable);
+        $result = $providerSet->getMatchingFilterLists($packages, $configuredLists, $ignoreUnreachable);
         $filter = $result['filter'];
         $unreachableRepos = $result['unreachableRepos'];
 
@@ -54,17 +57,19 @@ class FilterListAuditor
      * @param 'block'|'audit' $operation
      * @return list<FilterListEntry>
      */
-    public function getMatchingEntries(PackageInterface $package, array $filterListMap, FilterListConfig $filterListConfig, string $operation): array
+    public function getMatchingEntries(PackageInterface $package, array $filterListMap, PolicyConfig $policyConfig, string $operation): array
     {
         if ($package instanceof RootPackageInterface || count($filterListMap) === 0) {
             return [];
         }
 
         $matchingEntries = [];
-        $filterConfig = $filterListConfig->getOperationConfig($operation);
-        $allUnfilteredPackageNamesRegex = BasePackage::packageNamesToRegexp(array_map(static function (UnfilteredPackage  $unfilteredPackage): string {
-            return $unfilteredPackage->packageName;
-        }, $filterConfig->unfilteredPackages));
+        $activeListConfigs = $policyConfig->getActiveFilterLists($operation);
+        $allPackageNames = [];
+        foreach ($activeListConfigs as $activeListConfig) {
+            $allPackageNames = array_merge($allPackageNames, array_keys($activeListConfig->getIgnoreForOperation($operation)));
+        }
+        $allIgnoredPackageNamesRegex = BasePackage::packageNamesToRegexp($allPackageNames);
 
         foreach ($package->getNames(false) as $packageName) {
             if (!isset($filterListMap[$packageName])) {
@@ -73,13 +78,15 @@ class FilterListAuditor
 
             $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
             $packageEntries = $filterListMap[$packageName];
-            if (Preg::isMatch($allUnfilteredPackageNamesRegex, $packageName)) {
+            if (Preg::isMatch($allIgnoredPackageNamesRegex, $packageName)) {
                 $unfilteredEntries = [];
                 foreach ($filterListMap[$packageName] as $listName => $entries) {
-                    foreach ($filterConfig->unfilteredPackages as $unfilteredPackage) {
-                        if (Preg::isMatch($unfilteredPackage->packageNameRegex, $packageName) && $unfilteredPackage->constraint->matches($packageConstraint)) {
-                            continue 2;
-                        }
+                    if (!isset($activeListConfigs[$listName])) {
+                        continue;
+                    }
+
+                    if ($this->isPackageIgnored($packageName, $packageConstraint, $activeListConfigs[$listName], $operation)) {
+                        continue;
                     }
 
                     $unfilteredEntries[$listName] = $entries;
@@ -98,5 +105,21 @@ class FilterListAuditor
         }
 
         return $matchingEntries;
+    }
+
+    /**
+     * @param 'block'|'audit' $operation
+     */
+    private function isPackageIgnored(string $packageName, ConstraintInterface $packageConstraint, ListPolicyConfig $listConfig, string $operation): bool
+    {
+        foreach ($listConfig->getIgnoreForOperation($operation) as $ignorePackageRules) {
+            foreach ($ignorePackageRules as $ignorePackageRule) {
+                if (Preg::isMatch($ignorePackageRule->packageNameRegex, $packageName) && $ignorePackageRule->constraint->matches($packageConstraint)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

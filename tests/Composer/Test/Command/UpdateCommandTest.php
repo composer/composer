@@ -563,6 +563,49 @@ OUTPUT
         self::assertStringNotContainsString('Locking vulnerable/pkg (1.0.0)', $display);
     }
 
+    public function testNoBlockingAllowsMalwareFlaggedPackages(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'malicious/pkg', 'version' => '1.0.0'],
+                        ['name' => 'malicious/pkg', 'version' => '1.1.0'],
+                    ],
+                    'filter' => [
+                        'malware' => [
+                            [
+                                'package' => 'malicious/pkg',
+                                'constraint' => '>=1.1.0',
+                                'reason' => 'malware',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'require' => [
+                'malicious/pkg' => '^1.0',
+            ],
+        ]);
+
+        // Without --no-blocking, the malware-flagged 1.1.0 must be filtered out.
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringContainsString('Locking malicious/pkg (1.0.0)', $display);
+        self::assertStringNotContainsString('Locking malicious/pkg (1.1.0)', $display);
+
+        // With --no-blocking, the malware-flagged 1.1.0 must come through.
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--no-blocking' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringContainsString('Locking malicious/pkg (1.1.0)', $display);
+        self::assertStringNotContainsString('Locking malicious/pkg (1.0.0)', $display);
+    }
+
     public function testBumpAfterUpdateWithoutLockfile(): void
     {
         $this->initTempComposer([

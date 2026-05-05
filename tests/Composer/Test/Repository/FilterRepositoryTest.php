@@ -89,7 +89,8 @@ class FilterRepositoryTest extends TestCase
         $repo = new FilterRepository($this->arrayRepo, ['only' => ['foo/*']]);
 
         self::assertFalse($repo->hasFilter());
-        self::assertEquals(['filter' => [], 'config' => FilterListProviderConfig::fromConfig(false, [])], $repo->getFilter(['foo/aaa' => new MatchAllConstraint()]));
+        self::assertSame(['filter' => []], $repo->getFilter(['foo/aaa' => new MatchAllConstraint()]));
+        self::assertSame([], $repo->getFilterLists());
     }
 
     public function testCanonicalDefaultTrue(): void

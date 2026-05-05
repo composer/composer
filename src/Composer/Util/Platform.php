@@ -87,6 +87,29 @@ class Platform
     }
 
     /**
+     * self::getEnv() wrapper only accepting '1'|'0' returning for '0' and when not set
+     *
+     * @param non-empty-string $name
+     *
+     * @return bool
+     */
+    public static function getBoolEnv(string $name): bool
+    {
+        $value = self::getEnv($name);
+        if (false === $value) {
+            return false;
+        }
+
+        if (!in_array($value, ['0', '1'], true)) {
+            throw new \RuntimeException(
+                "Invalid value for {$name}: {$value}. Expected 0 or 1."
+            );
+        }
+
+        return $value === '1';
+    }
+
+    /**
      * putenv() equivalent but updates the runtime global variables too
      */
     public static function putEnv(string $name, string $value): void
