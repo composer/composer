@@ -142,6 +142,11 @@ class PolicyConfig
         // only returns the raw config array; specific overrides need to be applied after parsing)
         $blockAbandonedEnv = Platform::getEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
         if (false !== $blockAbandonedEnv) {
+            if (!in_array($blockAbandonedEnv, ['0', '1'], true)) {
+                throw new \RuntimeException(
+                    "Invalid value for COMPOSER_SECURITY_BLOCKING_ABANDONED: {$blockAbandonedEnv}. Expected 0 or 1."
+                );
+            }
             $abandoned = new AbandonedPolicyConfig(
                 (bool) (int) $blockAbandonedEnv,
                 $abandoned->audit,
