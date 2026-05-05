@@ -16,7 +16,6 @@ use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\ComposerRepositoryFilterInformation;
-use Composer\FilterList\FilterListProviderConfig;
 use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
@@ -790,12 +789,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $this->loop->wait($promises);
 
-        $defaultLists = [];
-        if ($this->filterConfig !== null) {
-            $defaultLists = $this->filterConfig->defaultLists;
-        }
+        return ['filter' => $filter];
+    }
 
-        return ['filter' => $filter, 'config' => FilterListProviderConfig::fromConfig($this->repoConfig['filter'] ?? true, $defaultLists)];
+    public function getFilterLists(): array
+    {
+        $this->loadRootServerFile(600);
+
+        return isset($this->filterConfig) ? $this->filterConfig->lists : [];
     }
 
     public function getProviders(string $packageName)

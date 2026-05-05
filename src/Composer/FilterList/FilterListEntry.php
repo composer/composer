@@ -17,6 +17,7 @@ use Composer\Semver\VersionParser;
 
 /**
  * @readonly
+ * @internal
  */
 class FilterListEntry
 {
@@ -50,13 +51,19 @@ class FilterListEntry
      */
     public $id;
 
+    /**
+     * @var string|null
+     */
+    public $source;
+
     public function __construct(
         string $packageName,
         ConstraintInterface $constraint,
         string $listName,
         ?string $url = null,
         ?string $reason = null,
-        ?string $id = null
+        ?string $id = null,
+        ?string $source = null
     ) {
         $this->packageName = $packageName;
         $this->listName = $listName;
@@ -64,10 +71,11 @@ class FilterListEntry
         $this->url = $url;
         $this->reason = $reason;
         $this->id = $id;
+        $this->source = $source;
     }
 
     /**
-     * @param array{package: string, constraint: string, url?: string, reason?: string, id?: string} $data
+     * @param array{package: string, constraint: string, url?: string, reason?: string, id?: string, source?: ?string} $data
      */
     public static function create(string $listName, array $data, VersionParser $parser): self
     {
@@ -79,7 +87,8 @@ class FilterListEntry
             $listName,
             $data['url'] ?? null,
             $data['reason'] ?? null,
-            $data['id'] ?? null
+            $data['id'] ?? null,
+            $data['source'] ?? null
         );
     }
 }

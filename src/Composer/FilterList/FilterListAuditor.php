@@ -17,7 +17,11 @@ use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\MalwarePolicyConfig;
+use Composer\Policy\PolicyConfig;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * @internal
@@ -28,12 +32,12 @@ class FilterListAuditor
 {
     /**
      * @param PackageInterface[] $packages
-     * @param 'block'|'audit' $operation
+     * @param list<string> $configuredLists
      * @return array{filter: array<string, array<string, list<FilterListEntry>>>, unreachableRepos: array<string>}
      */
-    public function collectFilterLists(array $packages, FilterListProviderSet $providerSet, string $operation, bool $ignoreUnreachable): array
+    public function collectFilterLists(array $packages, FilterListProviderSet $providerSet, array $configuredLists, bool $ignoreUnreachable): array
     {
-        $result = $providerSet->getMatchingFilterLists($packages, $operation, $ignoreUnreachable);
+        $result = $providerSet->getMatchingFilterLists($packages, $configuredLists, $ignoreUnreachable);
         $filter = $result['filter'];
         $unreachableRepos = $result['unreachableRepos'];
 
@@ -50,21 +54,73 @@ class FilterListAuditor
     }
 
     /**
+     * Apply the malware list's `ignore-source` filter to a filter-list map.
+     *
+     * This drops entries whose `source` matches the user's `ignore-source`
+     * config so that callers can run it once over the full map rather than
+     * recomputing the same filter inside the per-package matching loop. The
+     * result is always a fresh array — the input is not mutated.
+     *
      * @param array<string, array<string, list<FilterListEntry>>> $filterListMap
+     * @param 'block'|'audit' $operation
+     * @return array<string, array<string, list<FilterListEntry>>>
+     */
+    public function applyIgnoreSourceFilter(array $filterListMap, PolicyConfig $policyConfig, string $operation): array
+    {
+        $activeListConfigs = $policyConfig->getActiveFilterLists($operation);
+        if (!isset($activeListConfigs[MalwarePolicyConfig::NAME]) || !$activeListConfigs[MalwarePolicyConfig::NAME] instanceof MalwarePolicyConfig) {
+            return $filterListMap;
+        }
+
+        $ignoreSource = $activeListConfigs[MalwarePolicyConfig::NAME]->ignoreSource;
+        if (count($ignoreSource) === 0) {
+            return $filterListMap;
+        }
+
+        foreach ($filterListMap as $packageName => $entries) {
+            if (!isset($entries[MalwarePolicyConfig::NAME])) {
+                continue;
+            }
+
+            $packageEntries = [];
+            foreach ($entries[MalwarePolicyConfig::NAME] as $malwareEntry) {
+                if (!in_array($malwareEntry->source, $ignoreSource, true)) {
+                    $packageEntries[] = $malwareEntry;
+                }
+            }
+
+            if (count($packageEntries) > 0) {
+                $filterListMap[$packageName][MalwarePolicyConfig::NAME] = $packageEntries;
+            } else {
+                unset($filterListMap[$packageName][MalwarePolicyConfig::NAME]);
+            }
+        }
+
+        return $filterListMap;
+    }
+
+    /**
+     * @param array<string, array<string, list<FilterListEntry>>> $filterListMap
+     *      Should already have had {@see applyIgnoreSourceFilter()} run on it
+     *      by the caller — this method does not re-apply the source filter
+     *      because callers loop over many packages and the result is invariant.
      * @param 'block'|'audit' $operation
      * @return list<FilterListEntry>
      */
-    public function getMatchingEntries(PackageInterface $package, array $filterListMap, FilterListConfig $filterListConfig, string $operation): array
+    public function getMatchingEntries(PackageInterface $package, array $filterListMap, PolicyConfig $policyConfig, string $operation): array
     {
         if ($package instanceof RootPackageInterface || count($filterListMap) === 0) {
             return [];
         }
 
+        $activeListConfigs = $policyConfig->getActiveFilterLists($operation);
+
         $matchingEntries = [];
-        $filterConfig = $filterListConfig->getOperationConfig($operation);
-        $allUnfilteredPackageNamesRegex = BasePackage::packageNamesToRegexp(array_map(static function (UnfilteredPackage  $unfilteredPackage): string {
-            return $unfilteredPackage->packageName;
-        }, $filterConfig->unfilteredPackages));
+        $allPackageNames = [];
+        foreach ($activeListConfigs as $activeListConfig) {
+            $allPackageNames = array_merge($allPackageNames, array_keys($activeListConfig->getIgnoreForOperation($operation)));
+        }
+        $allIgnoredPackageNamesRegex = BasePackage::packageNamesToRegexp($allPackageNames);
 
         foreach ($package->getNames(false) as $packageName) {
             if (!isset($filterListMap[$packageName])) {
@@ -73,13 +129,15 @@ class FilterListAuditor
 
             $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
             $packageEntries = $filterListMap[$packageName];
-            if (Preg::isMatch($allUnfilteredPackageNamesRegex, $packageName)) {
+            if (Preg::isMatch($allIgnoredPackageNamesRegex, $packageName)) {
                 $unfilteredEntries = [];
                 foreach ($filterListMap[$packageName] as $listName => $entries) {
-                    foreach ($filterConfig->unfilteredPackages as $unfilteredPackage) {
-                        if (Preg::isMatch($unfilteredPackage->packageNameRegex, $packageName) && $unfilteredPackage->constraint->matches($packageConstraint)) {
-                            continue 2;
-                        }
+                    if (!isset($activeListConfigs[$listName])) {
+                        continue;
+                    }
+
+                    if ($this->isPackageIgnored($packageName, $packageConstraint, $activeListConfigs[$listName], $operation)) {
+                        continue;
                     }
 
                     $unfilteredEntries[$listName] = $entries;
@@ -98,5 +156,21 @@ class FilterListAuditor
         }
 
         return $matchingEntries;
+    }
+
+    /**
+     * @param 'block'|'audit' $operation
+     */
+    private function isPackageIgnored(string $packageName, ConstraintInterface $packageConstraint, ListPolicyConfig $listConfig, string $operation): bool
+    {
+        foreach ($listConfig->getIgnoreForOperation($operation) as $ignorePackageRules) {
+            foreach ($ignorePackageRules as $ignorePackageRule) {
+                if (Preg::isMatch($ignorePackageRule->packageNameRegex, $packageName) && $ignorePackageRule->constraint->matches($packageConstraint)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
