@@ -176,7 +176,7 @@ EOT
             try {
                 $ignoreFile = Platform::realpath('.gitignore');
             } catch (\RuntimeException $exception) {
-                $ignoreFile = Platform::getCwd() . '/.gitignore';
+                $ignoreFile = Platform::realpath('.') . '/.gitignore';
             }
 
             if (!$this->hasVendorIgnore($ignoreFile)) {
