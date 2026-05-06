@@ -387,6 +387,27 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.malware', 'setting-value' => ['false']],
             ['config' => ['policy' => ['malware' => false]]],
         ];
+        yield 'set policy.<builtin> false preserves sibling lists' => [
+            [
+                'config' => [
+                    'policy' => [
+                        'advisories' => ['block' => true, 'audit' => 'fail'],
+                        'malware' => ['block' => true],
+                        'ignore-unreachable' => true,
+                    ]
+                ],
+            ],
+            ['setting-key' => 'policy.advisories', 'setting-value' => ['false']],
+            [
+                'config' => [
+                    'policy' => [
+                        'advisories' => false,
+                        'malware' => ['block' => true],
+                        'ignore-unreachable' => true,
+                    ]
+                ],
+            ],
+        ];
         yield 'set custom policy list false' => [
             [],
             ['setting-key' => 'policy.my-custom', 'setting-value' => ['false']],
@@ -490,6 +511,17 @@ class ConfigCommandTest extends TestCase
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'config', 'setting-key' => 'audit.ignore', 'setting-value' => ['{"CVE-2024-5678":"reason"}'], '--json' => true, '--merge' => true]);
+    }
+
+    public function testConfigThrowsWhenMergingPolicyArrayWithObject(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Cannot merge array and object');
+
+        $this->initTempComposer(['config' => ['policy' => ['advisories' => ['ignore' => ['CVE-2024-1234']]]]]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'policy.advisories.ignore', 'setting-value' => ['{"CVE-2024-5678":"reason"}'], '--json' => true, '--merge' => true]);
     }
 
     public function testConfigThrowsForInvalidPolicyAuditMode(): void

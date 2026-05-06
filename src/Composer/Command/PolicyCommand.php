@@ -103,7 +103,10 @@ EOT
                 }
 
                 foreach ($currentSources as $existing) {
-                    if (is_array($existing) && ($existing['url'] ?? null) === $sourceConfig['url']) {
+                    if (is_array($existing)
+                        && ($existing['type'] ?? null) === $sourceConfig['type']
+                        && ($existing['url'] ?? null) === ($sourceConfig['url'] ?? null)
+                    ) {
                         $this->getIO()->write('<info>Source '.$sourceConfig['url'].' already present in list '.$listName.'</info>');
 
                         return 0;

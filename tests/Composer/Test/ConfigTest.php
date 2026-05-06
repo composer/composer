@@ -497,7 +497,7 @@ class ConfigTest extends TestCase
         $configFromEmpty->merge(['config' => ['policy' => ['advisories' => false]]]);
 
         self::assertSame($configFromTrue->get('policy'), $configFromEmpty->get('policy'));
-        self::assertFalse($configFromTrue->get('policy')['advisories']);
+        self::assertFalse($configFromTrue->get('policy')['advisories'] ?? null);
     }
 
     public function testPolicyMasterTrueAfterDetailedConfigDoesNotEraseDetail(): void

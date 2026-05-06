@@ -111,7 +111,7 @@ class PolicyConfig
      * defence-in-depth for `advisories` and `abandoned` if that loop skip ever
      * changes; `malware` is intentionally absent from RESERVED_NAMES because
      * repositories are allowed to advertise a `malware` list, so it relies
-     * solely on the loop's BUILT_IN_NAMES skip.
+     * solely on the loop's BUILTIN_LIST_NAMES skip.
      */
     private static function assertCustomListNameAllowed(string $listName): void
     {

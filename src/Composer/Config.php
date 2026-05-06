@@ -17,6 +17,7 @@ use Composer\Config\ConfigSourceInterface;
 use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
+use Composer\Policy\PolicyConfig;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 
@@ -250,6 +251,11 @@ class Config
                         // global + project sources both apply
                         $deepMergeKeys = ['ignore', 'ignore-id', 'ignore-severity', 'ignore-source'];
                         foreach ($val as $listName => $listConfig) {
+                            if (in_array($listName, PolicyConfig::NON_LIST_KEYS, true)) {
+                                $current[$listName] = $listConfig;
+                                continue;
+                            }
+
                             // Per-list canonicalisation: `true` ≡ `[]` ≡ "use defaults".
                             if ($listConfig === true) {
                                 $listConfig = [];

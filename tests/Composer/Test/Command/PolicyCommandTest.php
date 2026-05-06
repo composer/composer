@@ -13,6 +13,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 use RuntimeException;
 
 class PolicyCommandTest extends TestCase
@@ -142,6 +143,75 @@ class PolicyCommandTest extends TestCase
         ], $json);
     }
 
+    public function testAddSourceWithGlobalFlagWritesToHomeConfigJson(): void
+    {
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run([
+            'command' => 'policy',
+            'action' => 'add-source',
+            'name' => 'my-list',
+            'arg1' => 'url',
+            'arg2' => 'https://example.org/list.json',
+            '--global' => true,
+        ]);
+
+        $appTester->assertCommandIsSuccessful($appTester->getDisplay());
+
+        $globalConfigPath = Platform::getEnv('COMPOSER_HOME') . '/config.json';
+        self::assertFileExists($globalConfigPath);
+        $globalJson = json_decode((string) file_get_contents($globalConfigPath), true);
+        self::assertSame([
+            'config' => [
+                'policy' => [
+                    'my-list' => [
+                        'sources' => [
+                            ['type' => 'url', 'url' => 'https://example.org/list.json'],
+                        ],
+                    ],
+                ],
+            ],
+        ], $globalJson);
+
+        // local composer.json should be untouched
+        self::assertSame([], json_decode((string) file_get_contents('composer.json'), true));
+    }
+
+    public function testAddSourceWithFileFlagWritesToCustomFile(): void
+    {
+        $this->initTempComposer([]);
+        file_put_contents('alt.composer.json', "{\n}\n");
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run([
+            'command' => 'policy',
+            'action' => 'add-source',
+            'name' => 'my-list',
+            'arg1' => 'url',
+            'arg2' => 'https://example.org/list.json',
+            '--file' => 'alt.composer.json',
+        ]);
+
+        $appTester->assertCommandIsSuccessful($appTester->getDisplay());
+
+        $altJson = json_decode((string) file_get_contents('alt.composer.json'), true);
+        self::assertSame([
+            'config' => [
+                'policy' => [
+                    'my-list' => [
+                        'sources' => [
+                            ['type' => 'url', 'url' => 'https://example.org/list.json'],
+                        ],
+                    ],
+                ],
+            ],
+        ], $altJson);
+
+        // primary composer.json should be untouched
+        self::assertSame([], json_decode((string) file_get_contents('composer.json'), true));
+    }
+
     public function testAddSourceRejectsBuiltInListName(): void
     {
         $this->expectException(RuntimeException::class);
@@ -206,6 +276,23 @@ class PolicyCommandTest extends TestCase
             'action' => 'add-source',
             'name' => 'my-list',
             'arg1' => 'file',
+            'arg2' => 'https://example.org/list.json',
+        ]);
+    }
+
+    public function testAddSourceRejectsNameContainingDot(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Invalid list name "bad.name"');
+
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run([
+            'command' => 'policy',
+            'action' => 'add-source',
+            'name' => 'bad.name',
+            'arg1' => 'url',
             'arg2' => 'https://example.org/list.json',
         ]);
     }

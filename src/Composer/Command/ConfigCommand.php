@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Advisory\Auditor;
 use Composer\Pcre\Preg;
 use Composer\Policy\IgnoreUnreachable;
 use Composer\Policy\ListPolicyConfig;
@@ -490,12 +489,12 @@ EOT
                     return $val !== 'false' && (bool) $val;
                 },
             ],
-            'audit.abandoned' => [$auditValidator,  $keepAsIsNormalizer],
+            'audit.abandoned' => [$auditValidator, $keepAsIsNormalizer],
             'audit.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
             'audit.block-insecure' => [$booleanValidator, $booleanNormalizer],
             'audit.block-abandoned' => [$booleanValidator, $booleanNormalizer],
             'policy.advisories.block' => [$booleanValidator, $booleanNormalizer],
-            'policy.advisories.audit' => [$auditValidator,  $keepAsIsNormalizer],
+            'policy.advisories.audit' => [$auditValidator, $keepAsIsNormalizer],
             'policy.malware.block' => [$booleanValidator, $booleanNormalizer],
             'policy.malware.block-scope' => [
                 static function ($val): bool {
@@ -584,14 +583,14 @@ EOT
 
                     return true;
                 },
-                static function ($vals) {
-                    return $vals;
-                },
+                $keepAsIsNormalizer,
             ],
         ];
 
-        // allow unsetting audit/policy config entirely
-        if ($input->getOption('unset') && in_array($settingKey, ['audit', 'policy'], true)) {
+        // unsetting any audit/policy.* key resolves to the same removeConfigSetting call
+        // (JsonConfigSource handles the cascade-cleanup of empty ancestors for policy.*),
+        // so handle them all in one place rather than repeating the check in each branch below.
+        if ($input->getOption('unset') && ($settingKey === 'audit' || $settingKey === 'policy' || strpos($settingKey, 'policy.') === 0)) {
             $this->configSource->removeConfigSetting($settingKey);
 
             return 0;
@@ -601,12 +600,6 @@ EOT
         $policyJsonMergeKeys = ['policy.advisories.ignore', 'policy.advisories.ignore-id', 'policy.malware.ignore', 'policy.abandoned.ignore'];
         $isCustomPolicyIgnore = Preg::isMatch('/^policy\.(?!advisories$|malware$|abandoned$|ignore-unreachable$)[^.]+\.ignore$/', $settingKey);
         if (in_array($settingKey, $policyJsonMergeKeys, true) || $isCustomPolicyIgnore) {
-            if ($input->getOption('unset')) {
-                $this->configSource->removeConfigSetting($settingKey);
-
-                return 0;
-            }
-
             $value = $values;
             if ($input->getOption('json')) {
                 $value = JsonFile::parseJson($values[0]);
@@ -669,7 +662,7 @@ EOT
             if (count($values) > 0 && in_array($values[0], IgnoreUnreachable::SCOPES, true)) {
                 foreach ($values as $v) {
                     if (!in_array($v, IgnoreUnreachable::SCOPES, true)) {
-                        throw new \RuntimeException('valid values for '.$settingKey.' include: '.implode(', ', $allowedScopes));
+                        throw new \RuntimeException('valid values for '.$settingKey.' include: '.implode(', ', IgnoreUnreachable::SCOPES));
                     }
                 }
 
@@ -684,12 +677,6 @@ EOT
         if (Preg::isMatch('/^policy\.([^.]+)$/', $settingKey, $matches)
             && $matches[1] !== 'ignore-unreachable'
         ) {
-            if ($input->getOption('unset')) {
-                $this->configSource->removeConfigSetting($settingKey);
-
-                return 0;
-            }
-
             if (!$booleanValidator($values[0])) {
                 throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, expected a boolean', $values[0], $settingKey));
             }
@@ -702,12 +689,6 @@ EOT
         if (Preg::isMatch('/^policy\.([^.]+)\.(block|audit)$/', $settingKey, $matches)
             && !in_array($matches[1], ['advisories', 'malware', 'abandoned', 'ignore-unreachable'], true)
         ) {
-            if ($input->getOption('unset')) {
-                $this->configSource->removeConfigSetting($settingKey);
-
-                return 0;
-            }
-
             if ($matches[2] === 'block') {
                 if (!$booleanValidator($values[0])) {
                     throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, expected a boolean', $values[0], $settingKey));
