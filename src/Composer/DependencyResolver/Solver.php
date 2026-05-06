@@ -210,6 +210,9 @@ class Solver
         $this->rules = $ruleSetGenerator->getRulesFor($request, $platformRequirementFilter);
         unset($ruleSetGenerator);
         $this->checkForRootRequireProblems($request, $platformRequirementFilter);
+        // Must run after RuleSetGenerator: the generator silently skips fixed
+        // packages whose pool entry was filter-list-removed, so this check is
+        // what actually surfaces the resulting SolverProblem to the user.
         $this->checkForFilterListRemovedFixedPackages($request);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;

@@ -496,10 +496,11 @@ class Problem
     /**
      * Build the user-facing explanation for a fixed package the pool dropped.
      *
-     * Used for problems emitted by Solver::checkForFilterListRemovedFixedPackages,
-     * where the package may have been a root require, a transitive locked dep,
-     * or an explicitly pinned package — we don't try to distinguish, so the
-     * wording stays neutral ("Package X 1.0 in the lock file ...").
+     * Used for problems emitted by Solver::checkForFilterListRemovedFixedPackages.
+     * Root and platform packages are filtered out before they can land in the
+     * filter-list-removed map, so any package that reaches this method came
+     * from the locked repository (composer install, or partial composer update
+     * with kept locked deps) — hence the "(in the lock file)" hint in the prefix.
      *
      * @return array{0: string, 1: string} [prefix, suffix] tuple matching getMissingPackageReason()
      */
@@ -521,7 +522,7 @@ class Problem
             return [$prefix, 'was not loaded, because it was ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the ' . $ignorePaths . ' config. To turn the feature off entirely, you can set ' . $offPaths . ' to false.'];
         }
 
-        throw new \RuntimeException("Filter list removed fixed package must have version removed from pool.");
+        throw new \LogicException("Filter list removed fixed package must have version removed from pool.");
     }
 
     /**

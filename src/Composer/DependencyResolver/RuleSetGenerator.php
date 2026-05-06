@@ -261,7 +261,7 @@ class RuleSetGenerator
             // stale positive id from any prior Pool it was part of (Pool only
             // re-assigns ids for packages it actually contains, so removed
             // entries keep their previous id).
-            if ($this->pool->isFilterListRemovedPackageVersion($package->getName(), new Constraint('==', $package->getVersion()))) {
+            if ($this->pool->isFilterListRemovedPackageVersion($package->getName(), new Constraint(Constraint::STR_OP_EQ, $package->getVersion()))) {
                 continue;
             }
 
