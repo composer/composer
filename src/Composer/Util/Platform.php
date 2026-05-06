@@ -74,7 +74,7 @@ class Platform
         if ($realPath === false) {
             throw new \RuntimeException('Path does not exist: ' . $path);
         }
-        if ($realPath !== $path) {
+        if ($realPath !== $path && Platform::isWindows()) {
             return Platform::realpath($realPath);
         }
 
