@@ -101,15 +101,17 @@ class PolicyConfig
     }
 
     /**
-     * Reject custom-list names that collide with reserved built-in or
-     * future-reserved identifiers (RESERVED_NAMES, FUTURE_RESERVED_NAMES, or
-     * any FUTURE_RESERVED_PREFIXES entry).
+     * Reject custom-list names that collide with reserved or future-reserved
+     * identifiers (RESERVED_NAMES, FUTURE_RESERVED_NAMES, or any
+     * FUTURE_RESERVED_PREFIXES entry).
      *
      * In the normal fromConfig flow, built-in list keys (`advisories`, `malware`,
      * `abandoned`) and known non-list sibling keys (`ignore-unreachable`) are
      * filtered out before this check. The RESERVED_NAMES check is therefore
-     * defence-in-depth: it keeps the function complete and resilient if the
-     * loop's built-in skip ever changes.
+     * defence-in-depth for `advisories` and `abandoned` if that loop skip ever
+     * changes; `malware` is intentionally absent from RESERVED_NAMES because
+     * repositories are allowed to advertise a `malware` list, so it relies
+     * solely on the loop's BUILT_IN_NAMES skip.
      */
     private static function assertCustomListNameAllowed(string $listName): void
     {
