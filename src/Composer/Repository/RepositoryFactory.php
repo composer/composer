@@ -17,7 +17,9 @@ use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Pcre\Preg;
+use Composer\Util\Filesystem;
 use Composer\Util\HttpDownloader;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Json\JsonFile;
 
@@ -37,7 +39,14 @@ class RepositoryFactory
             $json = new JsonFile($repository, Factory::createHttpDownloader($io, $config));
             $data = $json->read();
             if (!empty($data['packages']) || !empty($data['includes']) || !empty($data['provider-includes'])) {
-                $repoConfig = ['type' => 'composer', 'url' => 'file://' . strtr(realpath($repository), '\\', '/')];
+                $repository = Platform::realpath((new Filesystem())->normalizePath($repository));
+                if (!Filesystem::isStreamWrapperPath($repository) && !str_starts_with($repository, 'file://')) {
+                    $repository = 'file://' . $repository;
+                }
+                $repoConfig = [
+                    'type' => 'composer',
+                    'url' => $repository,
+                ];
             } elseif ($allowFilesystem) {
                 $repoConfig = ['type' => 'filesystem', 'json' => $json];
             } else {

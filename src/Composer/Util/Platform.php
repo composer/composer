@@ -56,12 +56,26 @@ class Platform
 
     /**
      * Infallible realpath version that falls back on the given $path if realpath is not working
+     *
+     * NB: Do not remove recursive `realpath()` calls. Fixes failing Windows `realpath()` implementation.
+     * @see https://bugs.php.net/bug.php?id=72738
+     *
+     * @throws \RuntimeException If the path does not exist. Distinct from `\realpath()` returning `false` in that case.
      */
     public static function realpath(string $path): string
     {
+        $path = Preg::replace('{^file://}i', '', $path);
+
+        if (Filesystem::isStreamWrapperPath($path)) {
+            return $path;
+        }
+
         $realPath = realpath($path);
         if ($realPath === false) {
-            return $path;
+            throw new \RuntimeException('Path does not exist: ' . $path);
+        }
+        if ($realPath !== $path && Platform::isWindows()) {
+            return Platform::realpath($realPath);
         }
 
         return $realPath;

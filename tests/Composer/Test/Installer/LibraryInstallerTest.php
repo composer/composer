@@ -135,6 +135,16 @@ class LibraryInstallerTest extends TestCase
         self::ensureDirectoryExistsAndClear($this->vendorDir.'/'.$package->getPrettyName());
         self::assertTrue($library->isInstalled($repository, $package));
 
+        // package in symlinked directory is also seen as installed
+        $this->fs->removeDirectory($this->vendorDir.'/'.$package->getPrettyName());
+        self::ensureDirectoryExistsAndClear($this->vendorDir.'/test/pkg-link-target');
+        symlink($this->vendorDir.'/test/pkg-link-target', $this->vendorDir.'/'.$package->getPrettyName());
+        self::assertTrue($library->isInstalled($repository, $package));
+
+        // package in broken symlinked directory is not installed
+        $this->fs->rmdir($this->vendorDir.'/test/pkg-link-target');
+        self::assertFalse($library->isInstalled($repository, $package));
+
         $repository->removePackage($package);
         self::assertFalse($library->isInstalled($repository, $package));
     }

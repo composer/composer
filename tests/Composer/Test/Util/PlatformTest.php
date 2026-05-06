@@ -14,6 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Util\Platform;
 use Composer\Test\TestCase;
+use RuntimeException;
 
 /**
  * PlatformTest
@@ -35,5 +36,19 @@ class PlatformTest extends TestCase
         // Compare 2 common tests for Windows to the built-in Windows test
         self::assertEquals(('\\' === DIRECTORY_SEPARATOR), Platform::isWindows());
         self::assertEquals(defined('PHP_WINDOWS_VERSION_MAJOR'), Platform::isWindows());
+    }
+
+    public function testRealPathFileStreamStripsScheme(): void
+    {
+        $file = __FILE__;
+        $streamPath = 'file://' . $file;
+        self::assertEquals($file, Platform::realpath($streamPath));
+    }
+
+    public function testRealPathException(): void
+    {
+        // Test that `::realpath()` throws an exception on a non-existing path
+        $this->expectException(RuntimeException::class);
+        Platform::realpath('/path/does/not/exist');
     }
 }

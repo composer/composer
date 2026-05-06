@@ -58,4 +58,26 @@ class ClearCacheCommandTest extends TestCase
 
         self::assertStringContainsString('Cache is not enabled', $output);
     }
+
+    /**
+     * @covers \Composer\Command\ClearCacheCommand::execute
+     */
+    public function testClearCacheCommandDirectoryDoesNotExist(): void
+    {
+        $testTempDirPath = $this->initTempComposer();
+
+        // Create the expected cache directories, except the `/vcs` directory.
+        mkdir($testTempDirPath . '/composer-home/cache', 0777, true);
+        mkdir($testTempDirPath . '/composer-home/cache/repo');
+        mkdir($testTempDirPath . '/composer-home/cache/files');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'clear-cache']);
+
+        $appTester->assertCommandIsSuccessful();
+
+        $output = $appTester->getDisplay(true);
+
+        self::assertStringContainsString('Cache directory does not exist', $output);
+    }
 }

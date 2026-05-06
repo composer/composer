@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Cache;
 use Composer\Factory;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -67,8 +68,9 @@ EOT
                 continue;
             }
 
-            $cachePath = realpath($cachePath);
-            if (!$cachePath) {
+            try {
+                $cachePath = Platform::realpath($cachePath);
+            } catch (\RuntimeException $e) {
                 $io->writeError("<info>Cache directory does not exist ($key): $cachePath</info>");
 
                 continue;

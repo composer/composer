@@ -14,6 +14,7 @@ namespace Composer\Package\Archiver;
 
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use FilesystemIterator;
 use FilterIterator;
 use Iterator;
@@ -47,10 +48,7 @@ class ArchivableFilesFinder extends FilterIterator
     {
         $fs = new Filesystem();
 
-        $sourcesRealPath = realpath($sources);
-        if ($sourcesRealPath === false) {
-            throw new \RuntimeException('Could not realpath() the source directory "'.$sources.'"');
-        }
+        $sourcesRealPath = Platform::realpath($sources);
         $sources = $fs->normalizePath($sourcesRealPath);
 
         if ($ignoreFilters) {

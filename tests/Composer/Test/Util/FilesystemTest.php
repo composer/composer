@@ -399,4 +399,93 @@ class FilesystemTest extends TestCase
         self::assertDirectoryDoesNotExist($this->workingDir . '/foo/bar', 'Still a directory: ' . $this->workingDir . '/foo/bar');
         self::assertDirectoryDoesNotExist($this->workingDir . '/foo', 'Still a directory: ' . $this->workingDir . '/foo');
     }
+
+    /**
+     * A Unix path is absolute if it starts with a forward-slash.
+     * A Windows path is absolute if it starts with a drive letter followed by a colon and a back-slash.
+     * A network path is always absolute and starts with two backslashes.
+     * A stream path is always absolute and starts with a scheme followed by "://".
+     */
+    public static function isAbsolutePathDataProvider(): array
+    {
+        return [
+            'unixPath' => ['/foo/bar', true],
+            'smbPath' => ['\\\\smb\\folder\\file.txt', true],
+            'windowsPath' => ['C:\\foo\\bar', true],
+            'streamPath' => ['composertestsstreamwrapper://path/to/whatever', true],
+            'fileStreamAbsolutePath' => ['file:///path/to/whatever', true],
+            'fileStreamRelativePath' => ['file://path/to/whatever', false],
+            'relativeSubPath' => ['foo/bar', false],
+            'relativeSubPath2' => ['./foo/bar', false],
+            'relativeParentPath' => ['../foo/bar', false],
+        ];
+    }
+
+    /**
+     * @covers \Composer\Util\Filesystem::isAbsolutePath
+     * @dataProvider isAbsolutePathDataProvider
+     */
+    public function testIsAbsolutePath(string $path, bool $expected): void
+    {
+        self::assertEquals($expected, (new Filesystem())->isAbsolutePath($path));
+    }
+
+    /**
+     * Same dataset as {@see FilesystemTest::isAbsolutePathDataProvider} but with different expected results.
+     */
+    public static function isStreamWrapperPathProvider(): array
+    {
+        return [
+            'unixPath' => ['/foo/bar', false],
+            'smbPath' => ['\\\\smb\\folder\\file.txt', false],
+            'windowsPath' => ['C:\\foo\\bar', false],
+            'streamPath' => ['composertestsstreamwrapper://path/to/whatever', true],
+            'fileStreamAbsolutePath' => ['file:///path/to/whatever', false],
+            'fileStreamRelativePath' => ['file://path/to/whatever', false],
+            'relativeSubPath' => ['foo/bar', false],
+            'relativeSubPath2' => ['./foo/bar', false],
+            'relativeParentPath' => ['../foo/bar', false],
+        ];
+    }
+
+    /**
+     * @covers \Composer\Util\Filesystem::isStreamWrapperPath
+     * @dataProvider isStreamWrapperPathProvider
+     */
+    public function testIsStreamWrapperPath(string $path, bool $expected): void
+    {
+        self::assertEquals($expected, Filesystem::isStreamWrapperPath($path));
+    }
+
+    /**
+     * Similar dataset as {@see FilesystemTest::isAbsolutePathDataProvider} but with different expected results.
+     */
+    public static function isLocalPathProvider(): array
+    {
+        return [
+            'unixPath' => ['/foo/bar', true],
+            'smbPath' => ['\\\\smb\\folder\\file.txt', false],
+            'windowsPath' => ['C:\\foo\\bar', true],
+            'streamPath' => ['composertestsstreamwrapper://path/to/whatever', false],
+            'fileStreamAbsolutePath' => ['file:///path/to/whatever', true],
+            'fileStreamRelativePath' => ['file://path/to/whatever', true],
+            'relativeSubPath' => ['foo/bar', true],
+            'relativeSubPath2' => ['./foo/bar', true],
+            'relativeParentPath' => ['../foo/bar', true],
+        ];
+    }
+
+    /**
+     * The purpose of this method is generally to determine if a cache should be used. With stream wrappers, we can't
+     * tell if the path is local or not. Currently, we return false, meaning that a cache typically will be used. While
+     * it could be argued that caching is the business of whoever is implementing the stream wrapper, some such as
+     * http:// and git:// are clearly remote paths, so we should return false for `::isLocalPath()` on stream wrappers.
+     *
+     * @covers \Composer\Util\Filesystem::isLocalPath
+     * @dataProvider isLocalPathProvider
+     */
+    public function testIsLocalPath(string $path, bool $expected): void
+    {
+        self::assertEquals($expected, Filesystem::isLocalPath($path));
+    }
 }

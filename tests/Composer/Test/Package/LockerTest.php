@@ -13,10 +13,12 @@
 namespace Composer\Test\Package;
 
 use Composer\Json\JsonFile;
+use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Locker;
 use Composer\Plugin\PluginInterface;
 use Composer\IO\NullIO;
 use Composer\Test\TestCase;
+use Composer\Util\Git;
 
 class LockerTest extends TestCase
 {
@@ -221,6 +223,125 @@ class LockerTest extends TestCase
             ->will($this->returnValue(['hash' => $differentHash, 'content-hash' => $differentHash]));
 
         self::assertFalse($locker->isFresh());
+    }
+
+    public static function provideGetPackageTimePath(): array
+    {
+        return [
+            'valid_path' => ['path' => __DIR__, 'isValidPath' => true],
+            'invalid_path' => ['path' => '/not/a/real/path', 'isValidPath' => false],
+        ];
+    }
+
+    /**
+     * Test to assert the behaviour of `Locker::getPackageTime()` does not change when replacing `realpath()` with
+     * `Platform::realpath()`.
+     *
+     * @dataProvider provideGetPackageTimePath
+     *
+     * @see Platform::realpath()
+     *
+     * @covers Locker::getPackageTime
+     */
+    public function testGetPackageTime(string $path, bool $isValidPath): void
+    {
+        $jsonLockFile = $this->createJsonFileMock();
+        $installationManager = $this->createInstallationManagerMock();
+
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+
+        $locker = new Locker(new NullIO, $jsonLockFile, $installationManager, $this->getJsonContent(), $processExecutor);
+
+        $package = $this->createPackageMock();
+
+        $package->expects($this->atLeastOnce())
+                ->method('getPrettyName')
+                ->willReturn('package/name');
+
+        $package->expects($this->atLeastOnce())
+                ->method('getPrettyVersion')
+                ->willReturn('1.0.0');
+
+        $package->expects($this->once())
+            ->method('isDev')
+            ->willReturn(true);
+
+        $package->expects($this->atLeastOnce())
+            ->method('getInstallationSource')
+            ->willReturn('source');
+
+        $packages = [$package];
+
+        $installationManager->expects($this->once())
+            ->method('getInstallPath')
+            ->with($package)
+            ->willReturn($path);
+
+        $package->expects($this->atLeastOnce())
+                ->method('getSourceType')
+                ->willReturn('git');
+
+        /**
+         * @see ArrayDumper::dump()
+         */
+        $package->expects($this->atLeastOnce())
+                ->method('getSourceReference')
+                ->willReturn('git');
+
+        if ($isValidPath) {
+            $processExecutor->expects($this->atLeast(1))
+                ->method('execute')
+                ->willReturnCallback(
+                    /**
+                     * {@see Locker::getPackageTime()} builds its command by first calling
+                     * {@see Git::getVersion()} via {@see Git::getNoShowSignatureFlags()}. On the first call
+                     * we want to return the "Git version", then we want the `ProcessExecutor` to return the
+                     * time of the package's last Git commit.
+                     *
+                     * But... {@see Git::getVersion()} stores its result in static {@see Git::$version} so depending on
+                     * the tests' order, using `::willReturnOnConsecutiveCalls()` in tests is not accurate.
+                     */
+                    static function ($command, &$output, ?string $path) {
+                        switch (true) {
+                            case ($command === [ 'git', '--version' ]):
+                                $output = '2.49.0';
+                                break;
+                            case ($command === ['git', 'log', '-n1', '--pretty=%ct', 'git']):
+                                $output = (string) time();
+                                break;
+                            default:
+                                throw new \Exception('Unexpected command to ProcessExecutor in test LockerTest::testGetPackageTime()');
+                        }
+
+                        return 0;
+                    }
+                );
+        } else {
+            $processExecutor->expects($this->never())
+                             ->method('execute');
+        }
+
+        $locker->setLockData(
+            $packages,
+            /** devPackages: */
+            null,
+            /** platformReqs: */
+            [],
+            /** platformDevReqs: */
+            [],
+            /** aliases: */
+            [],
+            /** minimumStability: */
+            'dev',
+            /** stabilityFlags: */
+            [],
+            /** preferStable: */
+            false,
+            /** preferLowest: */
+            false,
+            /** platformOverrides: */
+            []
+        );
     }
 
     /**
