@@ -201,7 +201,11 @@ class Application extends BaseApplication
             && $input->hasParameterOption('-h', true) === false
         ) {
             $dir = dirname(Platform::getCwd(true));
-            $home = Platform::realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
+            try{
+                $home = Platform::realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
+            }catch(\Throwable $e){
+                $home = Platform::realpath('/');
+            }
 
             // abort when we reach the home dir or top of the filesystem
             while (dirname($dir) !== $dir && $dir !== $home) {
