@@ -217,10 +217,9 @@ class AutoloadGenerator
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
-        $targetDir = Platform::realpath($targetDir);
 
-        $vendorPathCode = $filesystem->findShortestPathCode($targetDir, $vendorPath, true);
-        $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, $targetDir, true);
+        $vendorPathCode = $filesystem->findShortestPathCode(Platform::realpath($targetDir), $vendorPath, true);
+        $vendorPathToTargetDirCode = $filesystem->findShortestPathCode($vendorPath, Platform::realpath($targetDir), true);
 
         $appBaseDirCode = $filesystem->findShortestPathCode($vendorPath, $basePath, true);
         $appBaseDirCode = str_replace('__DIR__', '$vendorDir', $appBaseDirCode);
