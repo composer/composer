@@ -143,7 +143,7 @@ EOT
             ->setApcuAutoloader($apcu, $apcuPrefix)
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
-            ->setAuditConfig($this->createAuditConfig($composer->getConfig(), $input))
+            ->setAuditConfig($this->createAuditConfig($input))
             ->setErrorOnAudit($input->getOption('audit'))
         ;
 

@@ -62,6 +62,17 @@ class CustomListPolicyConfig extends ListPolicyConfig
         );
     }
 
+    public function withAudit(string $audit)
+    {
+        return new static(
+            $this->name,
+            $this->block,
+            $audit,
+            $this->ignore,
+            $this->sources
+        );
+    }
+
     /**
      * @param array<string, mixed>|bool $listConfig
      */

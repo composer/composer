@@ -12,24 +12,50 @@
 
 namespace Composer\Test\DependencyResolver;
 
-use Composer\Advisory\AuditConfig;
 use Composer\Advisory\Auditor;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
+use Composer\Policy\AbandonedPolicyConfig;
+use Composer\Policy\AdvisoriesPolicyConfig;
+use Composer\Policy\IgnoreIdRule;
+use Composer\Policy\IgnorePackageRule;
 use Composer\Policy\IgnoreUnreachable;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\MalwarePolicyConfig;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\PackageRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 
 class SecurityAdvisoryPoolFilterTest extends TestCase
 {
+    /**
+     * @param array<string, list<IgnorePackageRule>> $advisoriesIgnore
+     * @param array<string, list<IgnorePackageRule>> $abandonedIgnore
+     */
+    private static function policyConfig(
+        bool $advisoriesBlock = true,
+        bool $abandonedBlock = true,
+        array $advisoriesIgnore = [],
+        array $abandonedIgnore = []
+    ): PolicyConfig {
+        return new PolicyConfig(
+            true,
+            new AdvisoriesPolicyConfig($advisoriesBlock, ListPolicyConfig::AUDIT_FAIL, $advisoriesIgnore, [], []),
+            MalwarePolicyConfig::disabled(),
+            new AbandonedPolicyConfig($abandonedBlock, ListPolicyConfig::AUDIT_FAIL, $abandonedIgnore),
+            [],
+            IgnoreUnreachable::default()
+        );
+    }
+
     public function testFilterPackagesByAdvisories(): void
     {
-        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, true, true, IgnoreUnreachable::default(), [], [], [], [], [], []);
-        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig());
 
         $repository = new PackageRepository([
             'package' => [],
@@ -59,8 +85,21 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesByIgnoredAdvisories(): void
     {
-        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, true, true, IgnoreUnreachable::default(), ['CVE-2024-1234' => null], ['CVE-2024-1234' => null], [], [], [], []);
-        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
+        $policyConfig = new PolicyConfig(
+            true,
+            new AdvisoriesPolicyConfig(
+                true,
+                ListPolicyConfig::AUDIT_FAIL,
+                [],
+                ['CVE-2024-1234' => new IgnoreIdRule('CVE-2024-1234')],
+                []
+            ),
+            MalwarePolicyConfig::disabled(),
+            new AbandonedPolicyConfig(true, ListPolicyConfig::AUDIT_FAIL, []),
+            [],
+            IgnoreUnreachable::default()
+        );
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig);
 
         $repository = new PackageRepository([
             'package' => [],
@@ -81,8 +120,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesWithBlockInsecureDisabled(): void
     {
-        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, false, true, IgnoreUnreachable::default(), [], [], [], [], [], []);
-        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(false));
 
         $repository = new PackageRepository([
             'package' => [],
@@ -104,8 +142,13 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
     public function testDontFilterPackagesWithAbandonedPackage(): void
     {
         $packageNameIgnoreAbandoned = 'acme/ignore-abandoned';
-        $auditConfig = new AuditConfig(true, Auditor::FORMAT_SUMMARY, Auditor::ABANDONED_FAIL, Auditor::FILTERED_FAIL, true, true, IgnoreUnreachable::default(), [], [], [], [], [$packageNameIgnoreAbandoned => null], [$packageNameIgnoreAbandoned => null]);
-        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
+        $policyConfig = self::policyConfig(
+            true,
+            true,
+            [],
+            [$packageNameIgnoreAbandoned => [new IgnorePackageRule($packageNameIgnoreAbandoned, new MatchAllConstraint())]]
+        );
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig);
 
         $abandonedPackage = new CompletePackage('acme/package', '1.0.0.0', '1.0');
         $abandonedPackage->setAbandoned(true);

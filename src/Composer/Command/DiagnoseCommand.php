@@ -589,10 +589,12 @@ EOT
             $packages[] = $rootPkg;
         }
         $repoSet->addRepository(new ComposerRepository(['type' => 'composer', 'url' => 'https://packagist.org'], new NullIO(), $config, $this->httpDownloader));
+        $policyConfig = $this->createPolicyConfig($config, null);
+        $policyConfig = $policyConfig->withAudit(null, Auditor::ABANDONED_IGNORE, null);
 
         try {
             $io = new BufferIO();
-            $result = $auditor->audit($io, $repoSet, $packages, Auditor::FORMAT_TABLE, true, [], Auditor::ABANDONED_IGNORE);
+            $result = $auditor->audit($io, $repoSet, $policyConfig, $packages, Auditor::FORMAT_TABLE);
         } catch (\Throwable $e) {
             return '<highlight>Failed performing audit: '.$e->getMessage().'</>';
         }

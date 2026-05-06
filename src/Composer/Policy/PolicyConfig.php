@@ -12,6 +12,7 @@
 
 namespace Composer\Policy;
 
+use Composer\Advisory\Auditor;
 use Composer\Config;
 use Composer\Semver\VersionParser;
 use Composer\Util\Platform;
@@ -265,6 +266,24 @@ class PolicyConfig
         ], $this->customLists);
     }
 
+    public function getListConfig(string $list): ListPolicyConfig
+    {
+        switch ($list) {
+            case AdvisoriesPolicyConfig::NAME:
+                return $this->advisories;
+            case AbandonedPolicyConfig::NAME:
+                return $this->abandoned;
+            case MalwarePolicyConfig::NAME:
+                return $this->malware;
+            default:
+                if (!isset($this->customLists[$list])) {
+                    throw new \InvalidArgumentException("Unknown list: $list");
+                }
+
+                return $this->customLists[$list];
+        }
+    }
+
     /**
      * Filter lists active for `composer audit` reporting.
      *
@@ -358,6 +377,41 @@ class PolicyConfig
             $this->advisories->withBlockingDisabled(),
             $this->malware->withBlockingDisabled(),
             $this->abandoned->withBlockingDisabled(),
+            $customLists,
+            $this->ignoreUnreachable
+        );
+    }
+
+    public function withIgnoreUnreachable(): self
+    {
+        return new self(
+            $this->enabled,
+            $this->advisories,
+            $this->malware,
+            $this->abandoned,
+            $this->customLists,
+            IgnoreUnreachable::all()
+        );
+    }
+
+    /**
+     * @param null|ListPolicyConfig::AUDIT_* $advisories
+     * @param null|ListPolicyConfig::AUDIT_* $abandoned
+     * @param null|ListPolicyConfig::AUDIT_* $filtered
+     * @return static
+     */
+    public function withAudit(?string $advisories, ?string $abandoned, ?string $filtered)
+    {
+        $customLists = [];
+        foreach ($this->customLists as $name => $list) {
+            $customLists[$name] = $list->withAudit($filtered !== null ? $filtered : $list->audit);
+        }
+
+        return new self(
+            $this->enabled,
+            $this->advisories->withAudit($advisories !== null ? $advisories : $this->advisories->audit),
+            $this->malware->withAudit($filtered !== null ? $filtered : $this->malware->audit),
+            $this->abandoned->withAudit($abandoned !== null ? $abandoned : $this->abandoned->audit),
             $customLists,
             $this->ignoreUnreachable
         );

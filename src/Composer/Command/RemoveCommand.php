@@ -286,7 +286,7 @@ EOT
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setDryRun($dryRun)
             ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
-            ->setAuditConfig($this->createAuditConfig($composer->getConfig(), $input))
+            ->setAuditConfig($this->createAuditConfig($input))
             ->setMinimalUpdate($minimalChanges)
         ;
 

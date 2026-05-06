@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Advisory\Auditor;
 use Composer\Test\TestCase;
 use UnexpectedValueException;
 
@@ -72,5 +73,122 @@ class AuditCommandTest extends TestCase
             'No packages - skipping audit.',
             trim($appTester->getDisplay(true))
         );
+    }
+
+    public function testAuditWithMalwareAndCustomListBothFail(): void
+    {
+        $packages = [
+            ['name' => 'safe/pkg', 'version' => '1.0.0'],
+            ['name' => 'malicious/pkg', 'version' => '1.0.0'],
+            ['name' => 'banned/pkg', 'version' => '1.0.0'],
+        ];
+        $this->initTempComposerWithFilterLists($packages);
+        $this->createComposerLockWithPackages($packages);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'audit', '--locked' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringContainsString('Found 2 packages matching filters', $display);
+        self::assertStringContainsString('malicious/pkg', $display);
+        self::assertStringContainsString('banned/pkg', $display);
+
+        self::assertSame(Auditor::STATUS_FILTERED, $exitCode);
+    }
+
+    public function testAuditWithFilteredIgnoreFlagSkipsFilterChecks(): void
+    {
+        $packages = [
+            ['name' => 'safe/pkg', 'version' => '1.0.0'],
+            ['name' => 'malicious/pkg', 'version' => '1.0.0'],
+            ['name' => 'banned/pkg', 'version' => '1.0.0'],
+        ];
+
+        $this->initTempComposerWithFilterLists($packages);
+        $this->createComposerLockWithPackages($packages);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'audit', '--locked' => true, '--filtered' => Auditor::FILTERED_IGNORE]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringNotContainsString('matching filters', $display);
+        self::assertStringContainsString('No security vulnerability advisories found.', $display);
+        self::assertSame(Auditor::STATUS_OK, $exitCode);
+    }
+
+    public function testAuditWithCustomListAuditReportDoesNotFail(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => $packages = [
+                        ['name' => 'safe/pkg', 'version' => '1.0.0'],
+                        ['name' => 'banned/pkg', 'version' => '1.0.0'],
+                    ],
+                    'filter' => [
+                        'company-banned' => [
+                            ['package' => 'banned/pkg', 'constraint' => '*', 'reason' => 'company policy'],
+                        ],
+                    ],
+                ],
+            ],
+            'config' => [
+                'policy' => [
+                    'company-banned' => ['audit' => Auditor::FILTERED_REPORT],
+                ],
+            ],
+        ]);
+
+        $this->createComposerLockWithPackages($packages);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'audit', '--locked' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringContainsString('Found 1 package matching filters', $display);
+        self::assertStringContainsString('banned/pkg', $display);
+        self::assertSame(Auditor::STATUS_OK, $exitCode);
+    }
+
+    /**
+     * @param list<array{name: string, version: string}> $packages
+     */
+    private function initTempComposerWithFilterLists(array $packages): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => $packages,
+                    'filter' => [
+                        'malware' => [
+                            ['package' => 'malicious/pkg', 'constraint' => '*', 'reason' => 'malware sample'],
+                        ],
+                        'company-banned' => [
+                            ['package' => 'banned/pkg', 'constraint' => '*', 'reason' => 'company policy'],
+                        ],
+                    ],
+                ],
+            ],
+            'config' => [
+                'policy' => [
+                    'company-banned' => true,
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * @param list<array{name: string, version: string}> $packages
+     */
+    private function createComposerLockWithPackages(array $packages): void
+    {
+        $packages = array_map(function (array $package) {
+            return self::getPackage($package['name'], $package['version']);
+        }, $packages);
+
+        $this->createInstalledJson($packages);
+        $this->createComposerLock($packages);
     }
 }

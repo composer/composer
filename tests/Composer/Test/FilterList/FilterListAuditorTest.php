@@ -171,4 +171,26 @@ class FilterListAuditorTest extends TestCase
         $entries = $this->filterListAuditor->getMatchingBlockEntries($package, $filterListMap, $policyConfig, ListPolicyConfig::BLOCK_SCOPE_UPDATE);
         $this->assertSame([], $entries);
     }
+
+    public function testGetMatchingEntriesDropsUnconfiguredListEntriesForNonIgnoredPackage(): void
+    {
+        $package = new CompletePackage('acme/package', '1.0.0.0', '1.0');
+        $filterListMap = [
+            'acme/package' => [
+                'configured' => [FilterListEntry::create('configured', ['package' => 'acme/package', 'constraint' => '*'], self::getVersionParser())],
+                'unconfigured' => [FilterListEntry::create('unconfigured', ['package' => 'acme/package', 'constraint' => '*'], self::getVersionParser())],
+            ],
+        ];
+
+        $config = new Config();
+        $config->merge(['config' => ['policy' => [
+            'configured' => true,
+        ]]]);
+        $policyConfig = PolicyConfig::fromConfig($config);
+
+        $entries = $this->filterListAuditor->getMatchingBlockEntries($package, $filterListMap, $policyConfig, ListPolicyConfig::BLOCK_SCOPE_UPDATE);
+
+        self::assertCount(1, $entries);
+        self::assertSame('configured', $entries[0]->listName);
+    }
 }

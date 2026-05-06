@@ -115,9 +115,73 @@ abstract class ListPolicyConfig
     }
 
     /**
+     * Flatten the package-name ignore rules into a `<packageName, mergedReason>` map for the given operation.
+     *
+     * When several rules apply to the same package, their reasons are merged with `mergeReason()`
+     * so a non-null reason is never silently dropped by a later null rule.
+     *
+     * @param 'block'|'audit' $operation
+     * @return array<string, string|null>
+     */
+    public function getFlatIgnoreForOperation(string $operation): array
+    {
+        $result = [];
+        foreach ($this->ignore as $packageName => $rules) {
+            foreach ($rules as $rule) {
+                if (($operation === 'block' && $rule->onBlock) || ($operation === 'audit' && $rule->onAudit)) {
+                    $result[$packageName] = self::mergeReason($result, $packageName, $rule->reason);
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Merge a new reason for a key into an existing flat reason map.
+     *
+     * Without merging, the last rule's reason silently overwrites earlier ones; this helper
+     * preserves all non-null reasons by joining unique values with "; ".
+     *
+     * @param array<string, string|null> $map
+     */
+    protected static function mergeReason(array $map, string $key, ?string $newReason): ?string
+    {
+        if (!array_key_exists($key, $map)) {
+            return $newReason;
+        }
+
+        $existing = $map[$key];
+
+        if ($newReason === null) {
+            return $existing;
+        }
+        if ($existing === null) {
+            return $newReason;
+        }
+        if ($existing === $newReason) {
+            return $existing;
+        }
+
+        // Avoid re-appending if newReason is already part of a previously merged value
+        $parts = array_map('trim', explode(';', $existing));
+        if (in_array($newReason, $parts, true)) {
+            return $existing;
+        }
+
+        return $existing.'; '.$newReason;
+    }
+
+    /**
      * @return static
      */
     abstract public function withBlockingDisabled();
+
+    /**
+     * @param self::AUDIT_* $audit
+     * @return static
+     */
+    abstract public function withAudit(string $audit);
 
     /**
      * Parse the legacy audit.ignore format which mixed advisory IDs and package names.
@@ -199,6 +263,13 @@ abstract class ListPolicyConfig
             // Detailed: ['CVE-123' => ['apply' => '...', 'reason' => '...']]
             $apply = $value['apply'] ?? 'all';
             $reason = $value['reason'] ?? null;
+            if (!in_array($apply, ['audit', 'block', 'all'], true)) {
+                throw new \InvalidArgumentException(sprintf(
+                    "Invalid 'apply' value for '%s': %s. Expected 'audit', 'block', or 'all'.",
+                    (string) $key,
+                    is_string($apply) ? $apply : get_debug_type($apply)
+                ));
+            }
             $onBlock = in_array($apply, ['block', 'all'], true);
             $onAudit = in_array($apply, ['audit', 'all'], true);
         }

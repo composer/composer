@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Advisory\AuditConfig;
 use Composer\Composer;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Policy\PolicyConfig;
@@ -72,9 +71,6 @@ EOT
             $repoSet->addRepository($repo);
         }
 
-        $policyConfig = PolicyConfig::fromConfig($composer->getConfig());
-        $auditConfig = AuditConfig::fromPolicyConfig($policyConfig);
-
         $abandoned = $input->getOption('abandoned');
         if ($abandoned !== null && !in_array($abandoned, Auditor::ABANDONEDS, true)) {
             throw new \InvalidArgumentException('--abandoned must be one of '.implode(', ', Auditor::ABANDONEDS).'.');
@@ -85,28 +81,33 @@ EOT
             throw new \InvalidArgumentException('--filtered must be one of '.implode(', ', Auditor::FILTERED).'.');
         }
 
-        $abandoned = $abandoned ?? $auditConfig->auditAbandoned;
-        $filtered = $filtered ?? $auditConfig->auditFiltered;
+        $policyConfig = $this->createPolicyConfig($composer->getConfig(), $input);
+        if ($filtered !== null || $abandoned !== null) {
+            $policyConfig = $policyConfig->withAudit(
+                $policyConfig->advisories->audit,
+                $abandoned,
+                $filtered
+            );
+        }
 
-        $ignoreSeverities = array_merge(array_fill_keys($input->getOption('ignore-severity'), null), $auditConfig->ignoreSeverityForAudit);
-        $ignoreUnreachable = $input->getOption('ignore-unreachable') || $auditConfig->ignoreUnreachable->audit;
+        $ignoreSeverities = array_merge(array_fill_keys($input->getOption('ignore-severity'), null), $policyConfig->advisories->getIgnoreSeverityForOperation('audit'));
+        if ($input->getOption('ignore-unreachable')) {
+            $policyConfig = $policyConfig->withIgnoreUnreachable();
+        }
 
         $filterListProviderSet = $policyConfig->enabled ? FilterListProviderSet::create($policyConfig, $composer->getRepositoryManager()->getRepositories(), $composer->getLoop()->getHttpDownloader()) : null;
 
         return min(255, $auditor->audit(
             $this->getIO(),
             $repoSet,
+            $policyConfig,
             $packages,
             $this->getAuditFormat($input, 'format'),
             false,
-            $auditConfig->ignoreListForAudit,
-            $abandoned,
+            $policyConfig->advisories->getIgnoreListForOperation('audit'),
             $ignoreSeverities,
-            $ignoreUnreachable,
-            $auditConfig->ignoreAbandonedForAudit,
-            $filtered,
-            $filterListProviderSet,
-            $policyConfig
+            $policyConfig->abandoned->getFlatIgnoreForOperation('audit'),
+            $filterListProviderSet
         ));
 
     }

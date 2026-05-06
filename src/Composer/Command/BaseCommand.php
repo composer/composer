@@ -475,15 +475,15 @@ abstract class BaseCommand extends Command
      *
      * @internal
      */
-    protected function createPolicyConfig(Config $config, InputInterface $input): PolicyConfig
+    protected function createPolicyConfig(Config $config, ?InputInterface $input): PolicyConfig
     {
         $policyConfig = PolicyConfig::fromConfig($config);
 
         // --no-blocking / --no-security-blocking: disable ALL blocking (advisories + malware + abandoned + custom)
         $noBlocking = Platform::getBoolEnv('COMPOSER_NO_BLOCKING', false)
             || Platform::getBoolEnv('COMPOSER_NO_SECURITY_BLOCKING', false)
-            || ($input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking'))
-            || ($input->hasOption('no-blocking') && $input->getOption('no-blocking'));
+            || ($input !== null && $input->hasOption('no-security-blocking') && $input->getOption('no-security-blocking'))
+            || ($input !== null && $input->hasOption('no-blocking') && $input->getOption('no-blocking'));
 
         if ($noBlocking) {
             $policyConfig = $policyConfig->withBlockingDisabled();
@@ -493,11 +493,11 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * Creates an AuditConfig from the Config object, optionally overriding security blocking based on input options
+     * Creates an AuditConfig from the input options.
      *
      * @internal
      */
-    protected function createAuditConfig(Config $config, InputInterface $input): AuditConfig
+    protected function createAuditConfig(InputInterface $input): AuditConfig
     {
         // Handle both --audit and --no-audit flags
         if ($input->hasOption('audit')) {
@@ -507,6 +507,6 @@ abstract class BaseCommand extends Command
         }
         $auditFormat = $input->hasOption('audit-format') ? $this->getAuditFormat($input) : Auditor::FORMAT_SUMMARY;
 
-        return AuditConfig::fromPolicyConfig($this->createPolicyConfig($config, $input), $audit, $auditFormat);
+        return new AuditConfig($audit, $auditFormat);
     }
 }

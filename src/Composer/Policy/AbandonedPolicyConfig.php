@@ -45,6 +45,15 @@ class AbandonedPolicyConfig extends ListPolicyConfig
         );
     }
 
+    public function withAudit(string $audit)
+    {
+        return new static(
+            $this->block,
+            $audit,
+            $this->ignore
+        );
+    }
+
     /**
      * @param array<string, mixed> $policyConfig
      * @param array<string, mixed> $auditConfig

@@ -94,21 +94,17 @@ class FilterListAuditor
             $allPackageNames = array_merge($allPackageNames, array_keys($activeListConfig->getIgnoreForOperation($operation)));
         }
         $allIgnoredPackageNamesRegex = BasePackage::packageNamesToRegexp($allPackageNames);
+        $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
 
         foreach ($package->getNames(false) as $packageName) {
             if (!isset($filterListMap[$packageName])) {
                 continue;
             }
 
-            $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
-            $packageEntries = $filterListMap[$packageName];
+            $packageEntries = array_intersect_key($filterListMap[$packageName], $activeListConfigs);
             if (Preg::isMatch($allIgnoredPackageNamesRegex, $packageName)) {
                 $unfilteredEntries = [];
-                foreach ($filterListMap[$packageName] as $listName => $entries) {
-                    if (!isset($activeListConfigs[$listName])) {
-                        continue;
-                    }
-
+                foreach ($packageEntries as $listName => $entries) {
                     if ($this->isPackageIgnored($packageName, $packageConstraint, $activeListConfigs[$listName], $operation)) {
                         continue;
                     }

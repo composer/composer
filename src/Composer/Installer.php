@@ -463,9 +463,11 @@ class Installer
                         $repoSet->addRepository($repo);
                     }
                     $policyConfig = $this->getPolicyConfig();
+                    $advisories = $policyConfig->advisories;
+                    $abandoned = $policyConfig->abandoned;
                     $filterListProviderSet = $policyConfig->enabled ? FilterListProviderSet::create($policyConfig, $this->repositoryManager->getRepositories(), $this->repositoryManager->getHttpDownloader()) : null;
 
-                    return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->auditAbandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable->audit, $auditConfig->ignoreAbandonedForAudit, $auditConfig->auditFiltered, $filterListProviderSet, $policyConfig) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
+                    return $auditor->audit($this->io, $repoSet, $policyConfig, $packages, $auditConfig->auditFormat, true, $advisories->getIgnoreListForOperation('audit'), $advisories->getIgnoreSeverityForOperation('audit'), $abandoned->getFlatIgnoreForOperation('audit'), $filterListProviderSet) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {
@@ -1149,7 +1151,7 @@ class Installer
     private function getAuditConfig(): AuditConfig
     {
         if (null === $this->auditConfig) {
-            $this->auditConfig = AuditConfig::fromPolicyConfig($this->getPolicyConfig(), $this->audit, $this->auditFormat);
+            $this->auditConfig = new AuditConfig($this->audit, $this->auditFormat);
         }
 
         return $this->auditConfig;
@@ -1160,8 +1162,7 @@ class Installer
         $policyConfig = $this->getPolicyConfig();
 
         if ($policyConfig->enabled && $policyConfig->advisories->shouldBlock('update') && !$this->updateMirrors) {
-            // BC bridge: SecurityAdvisoryPoolFilter still uses AuditConfig internally
-            return new SecurityAdvisoryPoolFilter(new Auditor(), $this->getAuditConfig());
+            return new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig);
         }
 
         return null;
