@@ -101,6 +101,25 @@ class PolicyConfig
     }
 
     /**
+     * Returns the reason the given name collides with a future-reserved identifier
+     * (FUTURE_RESERVED_PREFIXES or FUTURE_RESERVED_NAMES), or null if it does not.
+     */
+    public static function getFutureReservedListNameError(string $listName): ?string
+    {
+        foreach (self::FUTURE_RESERVED_PREFIXES as $prefix) {
+            if (str_starts_with($listName, $prefix)) {
+                return sprintf('"%s" starts with reserved prefix "%s".', $listName, $prefix);
+            }
+        }
+
+        if (in_array($listName, self::FUTURE_RESERVED_NAMES, true)) {
+            return sprintf('"%s" is reserved for future use.', $listName);
+        }
+
+        return null;
+    }
+
+    /**
      * Reject custom-list names that collide with reserved or future-reserved
      * identifiers (RESERVED_NAMES, FUTURE_RESERVED_NAMES, or any
      * FUTURE_RESERVED_PREFIXES entry).
@@ -122,21 +141,9 @@ class PolicyConfig
             ));
         }
 
-        foreach (self::FUTURE_RESERVED_PREFIXES as $prefix) {
-            if (str_starts_with($listName, $prefix)) {
-                throw new \UnexpectedValueException(sprintf(
-                    'Invalid custom policy list name "%s": names starting with "%s" are reserved for future use.',
-                    $listName,
-                    $prefix
-                ));
-            }
-        }
-
-        if (in_array($listName, self::FUTURE_RESERVED_NAMES, true)) {
-            throw new \UnexpectedValueException(sprintf(
-                'Invalid custom policy list name "%s": this name is reserved for future use.',
-                $listName
-            ));
+        $error = self::getFutureReservedListNameError($listName);
+        if ($error !== null) {
+            throw new \UnexpectedValueException('Invalid custom policy list name: '.$error);
         }
     }
 

@@ -666,7 +666,7 @@ EOT
                     }
                 }
 
-                $this->configSource->addConfigSetting($settingKey, array_values($values));
+                $this->configSource->addConfigSetting($settingKey, $values);
 
                 return 0;
             }
@@ -695,13 +695,22 @@ EOT
                 }
                 $this->configSource->addConfigSetting($settingKey, $booleanNormalizer($values[0]));
             } else {
-                if (!in_array($values[0], [ListPolicyConfig::AUDIT_IGNORE, ListPolicyConfig::AUDIT_REPORT, ListPolicyConfig::AUDIT_FAIL], true)) {
+                if (!$auditValidator($values[0])) {
                     throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, must be one of: ignore, report, fail', $values[0], $settingKey));
                 }
                 $this->configSource->addConfigSetting($settingKey, $values[0]);
             }
 
             return 0;
+        }
+
+        // policy.<list>.sources is managed via the dedicated `composer policy` command rather than
+        // `composer config`, since sources have structured shape (type/url) and validation rules.
+        if (Preg::isMatch('/^policy\.([^.]+)\.sources$/', $settingKey, $matches)) {
+            throw new \RuntimeException(sprintf(
+                'Setting policy sources is not supported by `composer config`. Use `composer policy add-source %s url <https-url>` instead.',
+                $matches[1]
+            ));
         }
 
         if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {

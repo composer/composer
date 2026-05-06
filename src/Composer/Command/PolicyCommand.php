@@ -129,14 +129,9 @@ EOT
             throw new \RuntimeException('Built-in list "'.$name.'" does not support sources. Use `composer config policy.'.$name.'.<field>` to configure it.');
         }
 
-        foreach (PolicyConfig::FUTURE_RESERVED_PREFIXES as $prefix) {
-            if (strpos($name, $prefix) === 0) {
-                throw new \RuntimeException('"'.$name.'" starts with reserved prefix "'.$prefix.'".');
-            }
-        }
-
-        if (in_array($name, PolicyConfig::FUTURE_RESERVED_NAMES, true)) {
-            throw new \RuntimeException('"'.$name.'" is reserved for future use.');
+        $error = PolicyConfig::getFutureReservedListNameError($name);
+        if ($error !== null) {
+            throw new \RuntimeException($error);
         }
 
         if ($name === '' || strpos($name, '.') !== false) {

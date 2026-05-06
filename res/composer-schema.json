@@ -1699,6 +1699,7 @@
         },
         "policy-ignore-severity": {
             "description": "Advisory severity levels (low, medium, high, critical) with optional reason and per-rule scoping (on-block/on-audit).",
+            "$comment": "anyOf (not oneOf) because the array and object branches both contain string values that can validate against multiple sub-schemas; oneOf would reject otherwise-valid input.",
             "anyOf": [
                 {
                     "anyOf": [
