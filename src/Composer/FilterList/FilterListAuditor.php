@@ -158,6 +158,9 @@ class FilterListAuditor
                 $filterListMap[$packageName][MalwarePolicyConfig::NAME] = $packageEntries;
             } else {
                 unset($filterListMap[$packageName][MalwarePolicyConfig::NAME]);
+                if (count($filterListMap[$packageName]) === 0) {
+                    unset($filterListMap[$packageName]);
+                }
             }
         }
 
