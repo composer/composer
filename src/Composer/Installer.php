@@ -1178,7 +1178,7 @@ class Installer
             return null;
         }
 
-        if ($blockScope === ListPolicyConfig::BLOCK_SCOPE_INSTALL && !$policyConfig->malware->shouldBlock($blockScope)) {
+        if ($blockScope === ListPolicyConfig::BLOCK_SCOPE_INSTALL && \count($policyConfig->getActiveBlockFilterLists($blockScope)) === 0) {
             return null;
         }
 
