@@ -93,21 +93,22 @@ class Platform
      * Throws \RuntimeException for any other value (including the empty string).
      *
      * @param non-empty-string $name
+     * @return ($default is bool ? bool : ?bool)
      */
-    public static function getBoolEnv(string $name, bool $default = false): bool
+    public static function getBoolEnv(string $name, ?bool $default = null): ?bool
     {
         $value = self::getEnv($name);
-        if (false === $value) {
+        if (false === $value || '' === $value) {
             return $default;
         }
 
-        if (!in_array($value, ['0', '1'], true)) {
+        if (!in_array($value, ['0', '1', 'false', 'true', 'off', 'on'], true)) {
             throw new \RuntimeException(
-                "Invalid value for {$name}: {$value}. Expected 0 or 1."
+                "Invalid value for {$name}: {$value}. Expected 0, 1, false, true, off, or on."
             );
         }
 
-        return $value === '1';
+        return in_array($value, ['1', 'true', 'on', ], true);
     }
 
     /**

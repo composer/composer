@@ -37,46 +37,6 @@ class PolicyConfigTest extends TestCase
     /**
      * @return iterable<string, array{0: string}>
      */
-    public function provideInvalidBlockAbandonedValues(): iterable
-    {
-        yield 'arbitrary string' => ['abc'];
-        yield 'empty string' => [''];
-        yield 'truthy non-numeric' => ['true'];
-        yield 'integer above 1' => ['2'];
-        yield 'integer below 0' => ['-1'];
-    }
-
-    /**
-     * @dataProvider provideInvalidBlockAbandonedValues
-     */
-    public function testEnvBlockAbandonedRejectsInvalidValues(string $value): void
-    {
-        Platform::putEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED', $value);
-
-        self::expectException(\RuntimeException::class);
-        self::expectExceptionMessage('COMPOSER_SECURITY_BLOCKING_ABANDONED');
-
-        PolicyConfig::fromConfig(new Config(true));
-    }
-
-    /**
-     * @dataProvider provideInvalidBlockAbandonedValues
-     */
-    public function testEnvBlockAbandonedRejectsInvalidValuesWithoutUseEnvironment(string $value): void
-    {
-        // useEnvironment=false bypasses Config::get('audit')'s validation, so
-        // PolicyConfig::fromConfig is the only line of defence here.
-        Platform::putEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED', $value);
-
-        self::expectException(\RuntimeException::class);
-        self::expectExceptionMessage('COMPOSER_SECURITY_BLOCKING_ABANDONED');
-
-        PolicyConfig::fromConfig(new Config(false));
-    }
-
-    /**
-     * @return iterable<string, array{0: string}>
-     */
     public function provideReservedCustomListNames(): iterable
     {
         // Future-reserved prefix
@@ -305,33 +265,7 @@ class PolicyConfigTest extends TestCase
         $this->assertSame(ListPolicyConfig::AUDIT_REPORT, $policyConfig->abandoned->audit);
     }
 
-    /**
-     * @dataProvider provideInvalidBlockAbandonedValues
-     */
-    public function testEnvAdvisoriesBlockRejectsInvalidValues(string $value): void
-    {
-        Platform::putEnv('COMPOSER_POLICY_ADVISORIES_BLOCK', $value);
-
-        self::expectException(\RuntimeException::class);
-        self::expectExceptionMessage('COMPOSER_POLICY_ADVISORIES_BLOCK');
-
-        PolicyConfig::fromConfig(new Config(false));
-    }
-
-    /**
-     * @dataProvider provideInvalidBlockAbandonedValues
-     */
-    public function testEnvMalwareBlockRejectsInvalidValuesAtParsedLayer(string $value): void
-    {
-        Platform::putEnv('COMPOSER_POLICY_MALWARE_BLOCK', $value);
-
-        self::expectException(\RuntimeException::class);
-        self::expectExceptionMessage('COMPOSER_POLICY_MALWARE_BLOCK');
-
-        PolicyConfig::fromConfig(new Config(false));
-    }
-
-    public function testAdvisoriesEnvBlockOverrideIsNoopWhenListExplicitlyDisabled(): void
+    public function testAdvisoriesEnvBlockOverridesWhenListExplicitlyDisabled(): void
     {
         Platform::putEnv('COMPOSER_POLICY_ADVISORIES_BLOCK', '1');
 
@@ -339,10 +273,10 @@ class PolicyConfigTest extends TestCase
         $config->merge(['config' => ['policy' => ['advisories' => false]]]);
         $policyConfig = PolicyConfig::fromConfig($config);
 
-        $this->assertFalse($policyConfig->advisories->block);
+        $this->assertTrue($policyConfig->advisories->block);
     }
 
-    public function testMalwareEnvBlockOverrideIsNoopWhenListExplicitlyDisabled(): void
+    public function testMalwareEnvBlockOverridesWhenListExplicitlyDisabled(): void
     {
         Platform::putEnv('COMPOSER_POLICY_MALWARE_BLOCK', '1');
 
@@ -350,10 +284,10 @@ class PolicyConfigTest extends TestCase
         $config->merge(['config' => ['policy' => ['malware' => false]]]);
         $policyConfig = PolicyConfig::fromConfig($config);
 
-        $this->assertFalse($policyConfig->malware->block);
+        $this->assertTrue($policyConfig->malware->block);
     }
 
-    public function testAbandonedCanonicalEnvBlockOverrideIsNoopWhenListExplicitlyDisabled(): void
+    public function testAbandonedCanonicalEnvBlockOverridesWhenListExplicitlyDisabled(): void
     {
         Platform::putEnv('COMPOSER_POLICY_ABANDONED_BLOCK', '1');
 
@@ -361,10 +295,10 @@ class PolicyConfigTest extends TestCase
         $config->merge(['config' => ['policy' => ['abandoned' => false]]]);
         $policyConfig = PolicyConfig::fromConfig($config);
 
-        $this->assertFalse($policyConfig->abandoned->block);
+        $this->assertTrue($policyConfig->abandoned->block);
     }
 
-    public function testAbandonedLegacyEnvBlockOverrideIsNoopWhenListExplicitlyDisabled(): void
+    public function testAbandonedLegacyEnvBlockOverridesWhenListExplicitlyDisabled(): void
     {
         Platform::putEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED', '1');
 
@@ -372,10 +306,10 @@ class PolicyConfigTest extends TestCase
         $config->merge(['config' => ['policy' => ['abandoned' => false]]]);
         $policyConfig = PolicyConfig::fromConfig($config);
 
-        $this->assertFalse($policyConfig->abandoned->block);
+        $this->assertTrue($policyConfig->abandoned->block);
     }
 
-    public function testComposerAuditAbandonedIsNoopWhenAbandonedExplicitlyDisabled(): void
+    public function testComposerAuditAbandonedOverridesWhenAbandonedExplicitlyDisabled(): void
     {
         Platform::putEnv('COMPOSER_AUDIT_ABANDONED', 'fail');
 
@@ -383,6 +317,6 @@ class PolicyConfigTest extends TestCase
         $config->merge(['config' => ['policy' => ['abandoned' => false]]]);
         $policyConfig = PolicyConfig::fromConfig($config);
 
-        $this->assertSame(ListPolicyConfig::AUDIT_IGNORE, $policyConfig->abandoned->audit);
+        $this->assertSame(ListPolicyConfig::AUDIT_FAIL, $policyConfig->abandoned->audit);
     }
 }

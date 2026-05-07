@@ -1439,15 +1439,15 @@ If set to `1`, it is the equivalent of passing the `--no-security-blocking` opti
 
 ### COMPOSER_POLICY_ADVISORIES_BLOCK
 
-If set to `1`, enables blocking of packages with security advisories during dependency resolution (equivalent to setting `policy.advisories.block` to `true`). If set to `0`, disables blocking. Has no effect when `policy.advisories` is set to `false` in composer.json — the env var only flips an active list, it does not re-enable a list the user explicitly disabled.
+If set to `1`, enables blocking of packages with security advisories during dependency resolution (equivalent to setting `policy.advisories.block` to `true`). If set to `0`, disables blocking.
 
 ### COMPOSER_POLICY_MALWARE_BLOCK
 
-If set to `1`, enables blocking of packages flagged as malware during dependency resolution (equivalent to setting `policy.malware.block` to `true`). If set to `0`, disables blocking. Has no effect when `policy.malware` is set to `false` in composer.json.
+If set to `1`, enables blocking of packages flagged as malware during dependency resolution (equivalent to setting `policy.malware.block` to `true`). If set to `0`, disables blocking.
 
 ### COMPOSER_POLICY_ABANDONED_BLOCK
 
-If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `policy.abandoned.block` to `true`). If set to `0`, disables blocking. Has no effect when `policy.abandoned` is set to `false` in composer.json.
+If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `policy.abandoned.block` to `true`). If set to `0`, disables blocking.
 
 Takes precedence over the legacy [COMPOSER_SECURITY_BLOCKING_ABANDONED](#composer-security-blocking-abandoned) when both are set.
 
@@ -1455,7 +1455,7 @@ Takes precedence over the legacy [COMPOSER_SECURITY_BLOCKING_ABANDONED](#compose
 
 DEPRECATED, use [COMPOSER_POLICY_ABANDONED_BLOCK](#composer-policy-abandoned-block) instead.
 
-If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `audit.block-abandoned` config to `true`). If set to `0`, disables blocking of abandoned packages. Note that this setting does not have any effect if security blocking is generally disabled. It overrides the config option [audit.block-abandoned](06-config.md#block-abandoned).
+If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `audit.block-abandoned` config to `true`). If set to `0`, disables blocking of abandoned packages. It overrides the config option [audit.block-abandoned](06-config.md#block-abandoned).
 
 ### COMPOSER_NO_DEV
 

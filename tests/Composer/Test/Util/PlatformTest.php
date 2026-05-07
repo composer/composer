@@ -44,32 +44,43 @@ class PlatformTest extends TestCase
     }
 
     /**
-     * @return iterable<array{0: bool}>
+     * @return iterable<array{0: ?bool}>
      */
-    public function defaultProvider(): iterable
+    public static function defaultProvider(): iterable
     {
         yield [false];
         yield [true];
+        yield [null];
     }
 
     /**
      * @dataProvider defaultProvider
      */
-    public function testGetBoolEnvReturnsDefaultWhenUnset(bool $default): void
+    public function testGetBoolEnvReturnsDefaultWhenUnset(?bool $default): void
     {
         self::assertSame($default, Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV', $default));
     }
 
-    public function testGetBoolEnvReturnsTrueForOne(): void
+    /**
+     * @return iterable<string, array{string, bool}>
+     */
+    public static function provideBoolEnvValues(): iterable
     {
-        Platform::putEnv('COMPOSER_TEST_BOOL_ENV', '1');
-        self::assertTrue(Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV'));
+        yield 'true' => ['true', true];
+        yield 'false' => ['false', false];
+        yield '1' => ['1', true];
+        yield '0' => ['0', false];
+        yield 'on' => ['on', true];
+        yield 'off' => ['off', false];
     }
 
-    public function testGetBoolEnvReturnsFalseForZero(): void
+    /**
+     * @dataProvider provideBoolEnvValues
+     */
+    public function testGetBoolEnvReturnsExpectedValue(string $value, bool $expected): void
     {
-        Platform::putEnv('COMPOSER_TEST_BOOL_ENV', '0');
-        self::assertFalse(Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV'));
+        Platform::putEnv('COMPOSER_TEST_BOOL_ENV', $value);
+        self::assertSame($expected, Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV'));
     }
 
     /**
@@ -77,9 +88,6 @@ class PlatformTest extends TestCase
      */
     public static function provideInvalidBoolEnvValues(): iterable
     {
-        yield 'empty string' => [''];
-        yield 'truthy word' => ['true'];
-        yield 'falsy word' => ['false'];
         yield 'integer above 1' => ['2'];
         yield 'integer below 0' => ['-1'];
         yield 'arbitrary string' => ['abc'];
