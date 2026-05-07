@@ -206,9 +206,9 @@ class JsonConfigSourceTest extends TestCase
 
         $expected = '{
     "name": "vendor/pkg", "config": {
-        "vendor-dir": "vendor", "sort-packages": true,
+        "vendor-dir": "vendor",
+        "sort-packages": true,
         "policy": {
-            "advisories": true
         }
     }
 }
