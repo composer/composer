@@ -547,9 +547,9 @@ class Config
                 // are applied in PolicyConfig::fromConfig against the parsed
                 // objects so the override layer is consistent and we never have
                 // to rewrite the raw array shape.
-                $policyEnv = $this->getComposerEnv('COMPOSER_POLICY');
-                if (false !== $policyEnv) {
-                    if (false === Platform::getBoolEnv('COMPOSER_POLICY')) {
+                $policyEnv = Platform::getBoolEnv('COMPOSER_POLICY');
+                if (null !== $policyEnv) {
+                    if (false === $policyEnv) {
                         $policyConfig = false;
                     }
                 }

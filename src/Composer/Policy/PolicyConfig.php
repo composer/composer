@@ -217,11 +217,10 @@ class PolicyConfig
         // COMPOSER_POLICY_ABANDONED_BLOCK is the canonical name following the
         // COMPOSER_POLICY_<LIST>_BLOCK pattern; COMPOSER_SECURITY_BLOCKING_ABANDONED
         // is the legacy alias and only applies when the canonical var is unset.
-        $canonicalAbandonedBlockOverride = Platform::getBoolEnv('COMPOSER_POLICY_ABANDONED_BLOCK');
-        $legacyAbandonedBlockOverride = Platform::getBoolEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
-        if ($canonicalAbandonedBlockOverride !== null || $legacyAbandonedBlockOverride !== null) {
+        $abandonedBlockOverride = Platform::getBoolEnv('COMPOSER_POLICY_ABANDONED_BLOCK') ?? Platform::getBoolEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
+        if ($abandonedBlockOverride !== null) {
             $abandoned = new AbandonedPolicyConfig(
-                $canonicalAbandonedBlockOverride !== null ? $canonicalAbandonedBlockOverride : $legacyAbandonedBlockOverride,
+                $abandonedBlockOverride,
                 $abandoned->audit,
                 $abandoned->ignore
             );
