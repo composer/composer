@@ -19,7 +19,6 @@ use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\MalwarePolicyConfig;
-use Composer\Policy\MalwarePolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;

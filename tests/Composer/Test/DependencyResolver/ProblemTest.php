@@ -22,7 +22,7 @@ use Composer\Test\TestCase;
 
 class ProblemTest extends TestCase
 {
-    public function testGetMissingFixedPackageReasonForFilterListRemovedPackage(): void
+    public function testGetMissingLockedPackageReasonForFilterListRemovedPackage(): void
     {
         $package = self::getPackage('vendor/malware', '1.0.0');
         $entry = new FilterListEntry(
@@ -37,7 +37,7 @@ class ProblemTest extends TestCase
             'vendor/malware' => ['1.0.0.0' => [$entry]],
         ]);
 
-        [$prefix, $suffix] = Problem::getMissingFixedPackageReason($pool, $package);
+        [$prefix, $suffix] = Problem::getMissingLockedPackageReason($pool, $package);
 
         self::assertSame('- Package vendor/malware 1.0.0 (in the lock file) ', $prefix);
 

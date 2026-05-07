@@ -174,25 +174,25 @@ class Solver
     }
 
     /**
-     * Surface a SolverProblemsException for fixed packages the pool dropped
+     * Surface a SolverProblemsException for locked packages the pool dropped
      * via a policy filter list (typically the malware list at install time).
      *
      * Each emitted Problem carries a single GenericRule of type
-     * RULE_FIXED_FILTER_LIST_REMOVED; Problem::getMissingFixedPackageReason
+     * RULE_LOCKED_FILTER_LIST_REMOVED; Problem::getMissingLockedPackageReason
      * renders neutral wording ("Package X 1.0 (in the lock file) was not
      * loaded, because it was flagged as malware ..."). RuleSetGeneratorTest
      * and ProblemTest lock the wiring in.
      */
-    protected function checkForFilterListRemovedFixedPackages(Request $request): void
+    protected function checkForFilterListRemovedLockedPackages(Request $request): void
     {
-        foreach ($request->getFixedPackages() as $package) {
+        foreach ($request->getLockedPackages() as $package) {
             $constraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
             if (!$this->pool->isFilterListRemovedPackageVersion($package->getName(), $constraint)) {
                 continue;
             }
 
             $problem = new Problem();
-            $problem->addRule(new GenericRule([], Rule::RULE_FIXED_FILTER_LIST_REMOVED, [
+            $problem->addRule(new GenericRule([], Rule::RULE_LOCKED_FILTER_LIST_REMOVED, [
                 'package' => $package,
             ]));
             $this->problems[] = $problem;
@@ -210,10 +210,10 @@ class Solver
         $this->rules = $ruleSetGenerator->getRulesFor($request, $platformRequirementFilter);
         unset($ruleSetGenerator);
         $this->checkForRootRequireProblems($request, $platformRequirementFilter);
-        // Must run after RuleSetGenerator: the generator silently skips fixed
+        // Must run after RuleSetGenerator: the generator silently skips locked
         // packages whose pool entry was filter-list-removed, so this check is
         // what actually surfaces the resulting SolverProblem to the user.
-        $this->checkForFilterListRemovedFixedPackages($request);
+        $this->checkForFilterListRemovedLockedPackages($request);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
 

@@ -95,12 +95,12 @@ class Problem
                 if (\count($packages) === 0) {
                     return "\n    ".implode(self::getMissingPackageReason($repositorySet, $request, $pool, $isVerbose, $packageName, $constraint));
                 }
-            } elseif ($rule->getReason() === Rule::RULE_FIXED_FILTER_LIST_REMOVED) {
-                // Solver::checkForFilterListRemovedFixedPackages emits these
-                // for fixed packages that the policy filter list dropped from
+            } elseif ($rule->getReason() === Rule::RULE_LOCKED_FILTER_LIST_REMOVED) {
+                // Solver::checkForFilterListRemovedLockedPackages emits these
+                // for locked packages that the policy filter list dropped from
                 // the pool (typically malware blocked at install time).
                 $package = $rule->getReasonData()['package'];
-                return "\n    ".implode(self::getMissingFixedPackageReason($pool, $package));
+                return "\n    ".implode(self::getMissingLockedPackageReason($pool, $package));
             }
         }
 
@@ -123,7 +123,7 @@ class Problem
             case Rule::RULE_ROOT_REQUIRE:
                 return $rule->getReasonData()['packageName'];
             case Rule::RULE_FIXED:
-            case Rule::RULE_FIXED_FILTER_LIST_REMOVED:
+            case Rule::RULE_LOCKED_FILTER_LIST_REMOVED:
                 return (string) $rule->getReasonData()['package'];
             case Rule::RULE_PACKAGE_CONFLICT:
             case Rule::RULE_PACKAGE_REQUIRES:
@@ -144,7 +144,7 @@ class Problem
     {
         switch ($rule->getReason()) {
             case Rule::RULE_FIXED:
-            case Rule::RULE_FIXED_FILTER_LIST_REMOVED:
+            case Rule::RULE_LOCKED_FILTER_LIST_REMOVED:
                 return 3;
             case Rule::RULE_ROOT_REQUIRE:
                 return 2;
@@ -494,9 +494,9 @@ class Problem
     }
 
     /**
-     * Build the user-facing explanation for a fixed package the pool dropped.
+     * Build the user-facing explanation for a locked package the pool dropped.
      *
-     * Used for problems emitted by Solver::checkForFilterListRemovedFixedPackages.
+     * Used for problems emitted by Solver::checkForFilterListRemovedLockedPackages.
      * Root and platform packages are filtered out before they can land in the
      * filter-list-removed map, so any package that reaches this method came
      * from the locked repository (composer install, or partial composer update
@@ -504,7 +504,7 @@ class Problem
      *
      * @return array{0: string, 1: string} [prefix, suffix] tuple matching getMissingPackageReason()
      */
-    public static function getMissingFixedPackageReason(Pool $pool, BasePackage $package): array
+    public static function getMissingLockedPackageReason(Pool $pool, BasePackage $package): array
     {
         $packageName = $package->getName();
         $constraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
@@ -522,7 +522,7 @@ class Problem
             return [$prefix, 'was not loaded, because it was ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the ' . $ignorePaths . ' config. To turn the feature off entirely, you can set ' . $offPaths . ' to false.'];
         }
 
-        throw new \LogicException("Filter list removed fixed package must have version removed from pool.");
+        throw new \LogicException("Filter list removed locked package must have version removed from pool.");
     }
 
     /**

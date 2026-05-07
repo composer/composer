@@ -37,7 +37,7 @@ abstract class Rule
     public const RULE_LEARNED = 12; // int (rule id)
     public const RULE_PACKAGE_ALIAS = 13; // BasePackage
     public const RULE_PACKAGE_INVERSE_ALIAS = 14; // BasePackage
-    public const RULE_FIXED_FILTER_LIST_REMOVED = 15; // array{package: BasePackage}
+    public const RULE_LOCKED_FILTER_LIST_REMOVED = 15; // array{package: BasePackage}
 
     // bitfield defs
     private const BITFIELD_TYPE = 0;
@@ -105,7 +105,7 @@ abstract class Rule
             case self::RULE_ROOT_REQUIRE:
                 return $this->getReasonData()['packageName'];
             case self::RULE_FIXED:
-            case self::RULE_FIXED_FILTER_LIST_REMOVED:
+            case self::RULE_LOCKED_FILTER_LIST_REMOVED:
                 return $this->getReasonData()['package']->getName();
             case self::RULE_PACKAGE_REQUIRES:
                 return $this->getReasonData()->getTarget();
@@ -267,7 +267,7 @@ abstract class Rule
 
                 return $package->getPrettyName().' is present at version '.$package->getPrettyVersion() . ' and cannot be modified by Composer';
 
-            case self::RULE_FIXED_FILTER_LIST_REMOVED:
+            case self::RULE_LOCKED_FILTER_LIST_REMOVED:
                 $package = $this->deduplicateDefaultBranchAlias($this->getReasonData()['package']);
                 return $package->getPrettyName().' '.$package->getPrettyVersion().' was removed by a policy filter list (e.g. malware) and cannot be installed.';
 

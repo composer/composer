@@ -1042,7 +1042,7 @@ class SolverTest extends TestCase
         self::assertTrue($this->solver->testFlagLearnedPositiveLiteral);
     }
 
-    public function testSolveSurfacesFilterListRemovedFixedPackagesAsProblems(): void
+    public function testSolveSurfacesFilterListRemovedLockedPackagesAsProblems(): void
     {
         $package = self::getPackage('vendor/malware', '1.0.0');
         $pool = new Pool([], [], [], [], [], [], [
@@ -1072,7 +1072,7 @@ class SolverTest extends TestCase
             $firstSection = reset($reasons);
             self::assertNotEmpty($firstSection);
             $rule = reset($firstSection);
-            self::assertSame(Rule::RULE_FIXED_FILTER_LIST_REMOVED, $rule->getReason());
+            self::assertSame(Rule::RULE_LOCKED_FILTER_LIST_REMOVED, $rule->getReason());
             self::assertSame($package, $rule->getReasonData()['package']);
         }
     }
