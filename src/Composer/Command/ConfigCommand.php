@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Pcre\Preg;
 use Composer\Policy\IgnoreUnreachable;
 use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\PolicyConfig;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
@@ -597,9 +598,23 @@ EOT
         }
 
         // handle policy.*.ignore / policy.advisories.ignore-id with --json + --merge support (mirrors audit.ignore)
-        $policyJsonMergeKeys = ['policy.advisories.ignore', 'policy.advisories.ignore-id', 'policy.malware.ignore', 'policy.abandoned.ignore'];
-        $isCustomPolicyIgnore = Preg::isMatch('/^policy\.(?!advisories$|malware$|abandoned$|ignore-unreachable$)[^.]+\.ignore$/', $settingKey);
+        $policyJsonMergeKeys = ['policy.advisories.ignore-id'];
+        foreach (PolicyConfig::BUILTIN_LIST_NAMES as $listName) {
+            $policyJsonMergeKeys[] = 'policy.'.$listName.'.ignore';
+        }
+        $nonCustomPolicyKeys = array_merge(PolicyConfig::BUILTIN_LIST_NAMES, PolicyConfig::NON_LIST_KEYS);
+        $nonCustomAlternation = implode('|', array_map(static function (string $name): string {
+            return preg_quote($name, '/');
+        }, $nonCustomPolicyKeys));
+        $isCustomPolicyIgnore = Preg::isMatch('/^policy\.(?!(?:'.$nonCustomAlternation.')$)([^.]+)\.ignore$/', $settingKey, $customIgnoreMatches);
         if (in_array($settingKey, $policyJsonMergeKeys, true) || $isCustomPolicyIgnore) {
+            if ($isCustomPolicyIgnore) {
+                $reservedError = PolicyConfig::getFutureReservedListNameError($customIgnoreMatches[1]);
+                if ($reservedError !== null) {
+                    throw new \RuntimeException('Invalid policy list name: '.$reservedError);
+                }
+            }
+
             $value = $values;
             if ($input->getOption('json')) {
                 $value = JsonFile::parseJson($values[0]);
@@ -675,8 +690,12 @@ EOT
         // handle policy.<list> = true|false (enable/disable an entire list) for built-in and custom lists;
         // policy.ignore-unreachable is excluded because it already has its own scalar/array handling via $uniqueConfigValues
         if (Preg::isMatch('/^policy\.([^.]+)$/', $settingKey, $matches)
-            && $matches[1] !== 'ignore-unreachable'
+            && !in_array($matches[1], PolicyConfig::NON_LIST_KEYS, true)
         ) {
+            $reservedError = PolicyConfig::getFutureReservedListNameError($matches[1]);
+            if ($reservedError !== null) {
+                throw new \RuntimeException('Invalid policy list name: '.$reservedError);
+            }
             if (!$booleanValidator($values[0])) {
                 throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, expected a boolean', $values[0], $settingKey));
             }
@@ -687,8 +706,12 @@ EOT
 
         // handle custom policy lists: policy.<name>.block / policy.<name>.audit
         if (Preg::isMatch('/^policy\.([^.]+)\.(block|audit)$/', $settingKey, $matches)
-            && !in_array($matches[1], ['advisories', 'malware', 'abandoned', 'ignore-unreachable'], true)
+            && !in_array($matches[1], $nonCustomPolicyKeys, true)
         ) {
+            $reservedError = PolicyConfig::getFutureReservedListNameError($matches[1]);
+            if ($reservedError !== null) {
+                throw new \RuntimeException('Invalid policy list name: '.$reservedError);
+            }
             if ($matches[2] === 'block') {
                 if (!$booleanValidator($values[0])) {
                     throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, expected a boolean', $values[0], $settingKey));

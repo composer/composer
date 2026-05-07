@@ -575,4 +575,26 @@ class ConfigCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'config', 'setting-key' => 'policy.malware', 'setting-value' => ['bogus']]);
     }
+
+    public static function reservedPolicyList(): iterable
+    {
+        yield ['reserved prefix "ignore"', 'policy.ignore-foo', 'true'];
+        yield ['reserved prefix "ignore"', 'policy.ignore-foo.block', 'true'];
+        yield ['reserved for future use', 'policy.support.audit', 'fail'];
+        yield ['reserved prefix "ignore"', 'policy.ignore-foo.ignore', '["CVE-2024-1234"]'];
+    }
+
+    /**
+     * @dataProvider reservedPolicyList
+     */
+    public function testConfigThrowsPolicyListReserved(string $expectedMessage, string $settingKey, string $settingValue): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage($expectedMessage);
+
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => $settingKey, 'setting-value' => [$settingValue]]);
+    }
 }
