@@ -609,7 +609,7 @@ EOT
         $isCustomPolicyIgnore = Preg::isMatch('/^policy\.(?!(?:'.$nonCustomAlternation.')$)([^.]+)\.ignore$/', $settingKey, $customIgnoreMatches);
         if (in_array($settingKey, $policyJsonMergeKeys, true) || $isCustomPolicyIgnore) {
             if ($isCustomPolicyIgnore) {
-                $reservedError = PolicyConfig::getFutureReservedListNameError($customIgnoreMatches[1]);
+                $reservedError = PolicyConfig::getFutureReservedListNameError((string) $customIgnoreMatches[1]);
                 if ($reservedError !== null) {
                     throw new \RuntimeException('Invalid policy list name: '.$reservedError);
                 }

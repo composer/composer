@@ -297,20 +297,20 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.ignore-unreachable', '--unset' => true],
             ['config' => ['policy' => ['advisories' => ['block' => true]]]],
         ];
-        yield 'unset last sub-key cascades removal up through empty ancestors' => [
+        yield 'unset last policy list sub-key removes the list' => [
             ['config' => ['policy' => ['advisories' => ['block' => false]]]],
             ['setting-key' => 'policy.advisories.block', '--unset' => true],
-            ['config' => []],
+            ['config' => ['policy' => []]],
         ];
         yield 'unset last sub-key of list keeps sibling lists' => [
             ['config' => ['policy' => ['advisories' => ['block' => false], 'malware' => ['block' => true]]]],
             ['setting-key' => 'policy.advisories.block', '--unset' => true],
             ['config' => ['policy' => ['malware' => ['block' => true]]]],
         ];
-        yield 'unset only policy.ignore-unreachable cascades through policy' => [
+        yield 'unset only policy.ignore-unreachable' => [
             ['config' => ['policy' => ['ignore-unreachable' => true]]],
             ['setting-key' => 'policy.ignore-unreachable', '--unset' => true],
-            ['config' => []],
+            ['config' => ['policy' => []]],
         ];
         yield 'set policy.advisories.ignore as array' => [
             [],
@@ -418,10 +418,10 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.malware', '--unset' => true],
             ['config' => ['policy' => ['advisories' => ['block' => true]]]],
         ];
-        yield 'unset only policy.<list> cascades through policy' => [
+        yield 'unset only policy.<list>' => [
             ['config' => ['policy' => ['malware' => false]]],
             ['setting-key' => 'policy.malware', '--unset' => true],
-            ['config' => []],
+            ['config' => ['policy' => []]],
         ];
     }
 
@@ -576,6 +576,9 @@ class ConfigCommandTest extends TestCase
         $appTester->run(['command' => 'config', 'setting-key' => 'policy.malware', 'setting-value' => ['bogus']]);
     }
 
+    /**
+     * @return iterable<array{string, string, string}>
+     */
     public static function reservedPolicyList(): iterable
     {
         yield ['reserved prefix "ignore"', 'policy.ignore-foo', 'true'];
