@@ -415,6 +415,11 @@ class PolicyConfig
     }
 
     /**
+     * `$abandoned` overrides only the abandoned list. `$filtered` is a blunt
+     * override: it overwrites the audit setting for malware *and every custom
+     * list*, including lists explicitly configured as audit=fail in the policy
+     * config.
+     *
      * @param null|ListPolicyConfig::AUDIT_* $abandoned
      * @param null|ListPolicyConfig::AUDIT_* $filtered
      * @return static
