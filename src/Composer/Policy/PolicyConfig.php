@@ -382,7 +382,12 @@ class PolicyConfig
         );
     }
 
-    public function withIgnoreUnreachable(): self
+    /**
+     * Flip the listed scopes (audit, install, update) to true, leaving the
+     * remaining scopes at their current value. At least one scope is required —
+     * the caller must declare the scope they intend to widen.
+     */
+    public function withIgnoreUnreachable(string ...$scopes): self
     {
         return new self(
             $this->enabled,
@@ -390,7 +395,7 @@ class PolicyConfig
             $this->malware,
             $this->abandoned,
             $this->customLists,
-            IgnoreUnreachable::all()
+            $this->ignoreUnreachable->with(...$scopes)
         );
     }
 

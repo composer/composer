@@ -63,6 +63,36 @@ class IgnoreUnreachable
     }
 
     /**
+     * Return a copy with the listed scopes flipped to true; other scopes keep
+     * their current value. Requires at least one scope so the caller has to
+     * declare which scope they are widening.
+     */
+    public function with(string ...$scopes): self
+    {
+        if (count($scopes) === 0) {
+            throw new \InvalidArgumentException('At least one scope is required.');
+        }
+
+        $audit = $this->audit;
+        $install = $this->install;
+        $update = $this->update;
+        foreach ($scopes as $scope) {
+            if (!in_array($scope, self::SCOPES, true)) {
+                throw new \InvalidArgumentException(sprintf('Unknown scope "%s". Expected one of %s.', $scope, implode(', ', self::SCOPES)));
+            }
+            if ($scope === 'audit') {
+                $audit = true;
+            } elseif ($scope === 'install') {
+                $install = true;
+            } elseif ($scope === 'update') {
+                $update = true;
+            }
+        }
+
+        return new self($audit, $install, $update);
+    }
+
+    /**
      * @param array{ignore-unreachable?: list<string>|bool} $config
      */
     public static function fromRawPolicyConfig(array $config): self

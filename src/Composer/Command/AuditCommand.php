@@ -92,7 +92,7 @@ EOT
 
         $ignoreSeverities = array_merge(array_fill_keys($input->getOption('ignore-severity'), null), $policyConfig->advisories->getIgnoreSeverityForOperation('audit'));
         if ($input->getOption('ignore-unreachable')) {
-            $policyConfig = $policyConfig->withIgnoreUnreachable();
+            $policyConfig = $policyConfig->withIgnoreUnreachable('audit');
         }
 
         $filterListProviderSet = $policyConfig->enabled ? FilterListProviderSet::create($policyConfig, $composer->getRepositoryManager()->getRepositories(), $composer->getLoop()->getHttpDownloader()) : null;

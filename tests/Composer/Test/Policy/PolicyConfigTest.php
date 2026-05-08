@@ -319,4 +319,21 @@ class PolicyConfigTest extends TestCase
 
         $this->assertSame(ListPolicyConfig::AUDIT_FAIL, $policyConfig->abandoned->audit);
     }
+
+    public function testWithIgnoreUnreachableOnlyAffectsRequestedScope(): void
+    {
+        $config = new Config(false);
+        $config->merge(['config' => ['policy' => ['ignore-unreachable' => ['update']]]]);
+        $policyConfig = PolicyConfig::fromConfig($config);
+
+        $this->assertFalse($policyConfig->ignoreUnreachable->audit);
+        $this->assertFalse($policyConfig->ignoreUnreachable->install);
+        $this->assertTrue($policyConfig->ignoreUnreachable->update);
+
+        $updated = $policyConfig->withIgnoreUnreachable('audit');
+
+        $this->assertTrue($updated->ignoreUnreachable->audit);
+        $this->assertFalse($updated->ignoreUnreachable->install);
+        $this->assertTrue($updated->ignoreUnreachable->update);
+    }
 }
