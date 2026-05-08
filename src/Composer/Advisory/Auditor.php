@@ -116,15 +116,23 @@ class Auditor
         $filterAuditor = new FilterListAuditor();
         $filteredPackages = [];
         $filteredCount = 0;
-        if ($filterListProviderSet !== null && count($policyConfig->getActiveAuditFilterListNames()) > 0) {
-            $filterResult = $filterAuditor->collectFilterLists($packages, $filterListProviderSet, $policyConfig->getActiveAuditFilterListNames(), $policyConfig->ignoreUnreachable->audit);
+        $activeAuditFilterLists = $policyConfig->getActiveAuditFilterLists();
+        if ($filterListProviderSet !== null && count($activeAuditFilterLists) > 0) {
+            $failingListNames = [];
+            foreach ($activeAuditFilterLists as $name => $list) {
+                if ($list->audit === self::FILTERED_FAIL) {
+                    $failingListNames[$name] = true;
+                }
+            }
+
+            $filterResult = $filterAuditor->collectFilterLists($packages, $filterListProviderSet, array_keys($activeAuditFilterLists), $policyConfig->ignoreUnreachable->audit);
             $unreachableRepos = array_merge($unreachableRepos, $filterResult['unreachableRepos']);
             foreach ($packages as $package) {
                 $matchingEntries = $filterAuditor->getMatchingAuditEntries($package, $filterResult['filter'], $policyConfig);
                 foreach ($matchingEntries as $entry) {
                     $filteredPackages[$package->getName()][] = $entry;
 
-                    if ($policyConfig->getListConfig($entry->listName)->audit === self::FILTERED_FAIL) {
+                    if (isset($failingListNames[$entry->listName])) {
                         $filteredCount++;
                     }
                 }

@@ -266,24 +266,6 @@ class PolicyConfig
         ], $this->customLists);
     }
 
-    public function getListConfig(string $list): ListPolicyConfig
-    {
-        switch ($list) {
-            case AdvisoriesPolicyConfig::NAME:
-                return $this->advisories;
-            case AbandonedPolicyConfig::NAME:
-                return $this->abandoned;
-            case MalwarePolicyConfig::NAME:
-                return $this->malware;
-            default:
-                if (!isset($this->customLists[$list])) {
-                    throw new \InvalidArgumentException("Unknown list: $list");
-                }
-
-                return $this->customLists[$list];
-        }
-    }
-
     /**
      * Filter lists active for `composer audit` reporting.
      *
