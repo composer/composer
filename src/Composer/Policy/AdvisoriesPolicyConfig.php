@@ -90,7 +90,7 @@ class AdvisoriesPolicyConfig extends ListPolicyConfig
         $result = $this->getIgnoreIdForOperation($operation);
 
         foreach ($this->getFlatIgnoreForOperation($operation) as $packageName => $reason) {
-            $result[$packageName] = self::mergeReason($result, $packageName, $reason);
+            $result[$packageName] = static::mergeReason($result, $packageName, $reason);
         }
 
         return $result;

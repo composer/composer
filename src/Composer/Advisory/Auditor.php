@@ -77,6 +77,7 @@ class Auditor
     public const STATUS_FILTERED = 4;
 
     /**
+     * @param PolicyConfig $policyConfig Source of truth for ignore lists, severity filters, and per-list audit settings.
      * @param PackageInterface[] $packages
      * @param self::FORMAT_* $format The format that will be used to output audit results.
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
