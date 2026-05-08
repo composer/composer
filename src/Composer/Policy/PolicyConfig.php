@@ -400,12 +400,11 @@ class PolicyConfig
     }
 
     /**
-     * @param null|ListPolicyConfig::AUDIT_* $advisories
      * @param null|ListPolicyConfig::AUDIT_* $abandoned
      * @param null|ListPolicyConfig::AUDIT_* $filtered
      * @return static
      */
-    public function withAudit(?string $advisories, ?string $abandoned, ?string $filtered)
+    public function withAudit(?string $abandoned, ?string $filtered)
     {
         $customLists = [];
         foreach ($this->customLists as $name => $list) {
@@ -414,7 +413,7 @@ class PolicyConfig
 
         return new self(
             $this->enabled,
-            $this->advisories->withAudit($advisories !== null ? $advisories : $this->advisories->audit),
+            $this->advisories,
             $this->malware->withAudit($filtered !== null ? $filtered : $this->malware->audit),
             $this->abandoned->withAudit($abandoned !== null ? $abandoned : $this->abandoned->audit),
             $customLists,

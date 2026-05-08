@@ -83,11 +83,7 @@ EOT
 
         $policyConfig = $this->createPolicyConfig($composer->getConfig(), $input);
         if ($filtered !== null || $abandoned !== null) {
-            $policyConfig = $policyConfig->withAudit(
-                $policyConfig->advisories->audit,
-                $abandoned,
-                $filtered
-            );
+            $policyConfig = $policyConfig->withAudit($abandoned, $filtered);
         }
 
         $ignoreSeverities = array_merge(array_fill_keys($input->getOption('ignore-severity'), null), $policyConfig->advisories->getIgnoreSeverityForOperation('audit'));
