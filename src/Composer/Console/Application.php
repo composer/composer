@@ -373,6 +373,7 @@ class Application extends BaseApplication
             $file = Factory::getComposerFile();
             if ($mayNeedScriptCommand && is_file($file) && Filesystem::isReadable($file) && is_array($composerJson = json_decode(file_get_contents($file), true))) {
                 if (isset($composerJson['scripts']) && is_array($composerJson['scripts'])) {
+                    $projectLoaderRegistered = false;
                     foreach ($composerJson['scripts'] as $script => $dummy) {
                         if (!defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                             if ($this->has($script)) {
@@ -386,16 +387,19 @@ class Application extends BaseApplication
 
                                 $aliases = $composerJson['scripts-aliases'][$script] ?? [];
 
-                                $composer = $this->getComposer(false);
-                                if ($composer !== null) {
-                                    $rootPackage = $composer->getPackage();
-                                    $generator = $composer->getAutoloadGenerator();
+                                if (!$projectLoaderRegistered) {
+                                    $projectLoaderRegistered = true;
+                                    $composer = $this->getComposer(false);
+                                    if ($composer !== null) {
+                                        $rootPackage = $composer->getPackage();
+                                        $generator = $composer->getAutoloadGenerator();
 
-                                    $packageMap = $generator->buildPackageMap($composer->getInstallationManager(), $rootPackage, []);
-                                    $map = $generator->parseAutoloads($packageMap, $rootPackage);
+                                        $packageMap = $generator->buildPackageMap($composer->getInstallationManager(), $rootPackage, []);
+                                        $map = $generator->parseAutoloads($packageMap, $rootPackage);
 
-                                    $loader = $generator->createLoader($map, $composer->getConfig()->get('vendor-dir'));
-                                    $loader->register(false);
+                                        $loader = $generator->createLoader($map, $composer->getConfig()->get('vendor-dir'));
+                                        $loader->register(false);
+                                    }
                                 }
 
                                 // if the command is not an array of commands, and points to a valid Command subclass, import its details directly
