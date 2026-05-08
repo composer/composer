@@ -1174,11 +1174,21 @@ class Installer
     {
         $policyConfig = $this->getPolicyConfig();
 
-        if (!$policyConfig->enabled || $this->updateMirrors) {
+        if (!$policyConfig->enabled) {
             return null;
         }
 
-        if ($blockScope === ListPolicyConfig::BLOCK_SCOPE_INSTALL && \count($policyConfig->getActiveBlockFilterLists($blockScope)) === 0) {
+        $hasUpdateLists = \count($policyConfig->getActiveBlockFilterLists(ListPolicyConfig::BLOCK_SCOPE_UPDATE)) > 0;
+        $hasInstallLists = \count($policyConfig->getActiveBlockFilterLists(ListPolicyConfig::BLOCK_SCOPE_INSTALL)) > 0;
+
+        if ($blockScope === ListPolicyConfig::BLOCK_SCOPE_INSTALL && !$hasInstallLists) {
+            return null;
+        }
+
+        // For UPDATE scope we may also need install-scope lists for locked
+        // packages (so a malware-flagged dependency in the lock file is still
+        // blocked during a partial update / `update mirrors`).
+        if ($blockScope === ListPolicyConfig::BLOCK_SCOPE_UPDATE && !$hasUpdateLists && !$hasInstallLists) {
             return null;
         }
 

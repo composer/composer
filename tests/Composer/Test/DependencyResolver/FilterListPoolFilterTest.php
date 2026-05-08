@@ -20,6 +20,7 @@ use Composer\FilterList\FilterListAuditor;
 use Composer\Package\Package;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
+use Composer\Repository\LockArrayRepository;
 use Composer\Repository\PackageRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Test\Mock\HttpDownloaderMock;
@@ -183,10 +184,80 @@ class FilterListPoolFilterTest extends TestCase
         self::assertSame([], $installPool->getPackages(), 'install-scope filter must include locked packages');
         self::assertTrue($installPool->isFilterListRemovedPackageVersion('acme/locked', new Constraint('==', '1.0.0.0')));
 
-        // Update scope: locked package is early-skipped, never reaches the filter.
+        // Update scope: locked packages are checked against install-scope filter lists too,
+        // so a malware-flagged locked package is still removed from the pool.
         $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
         $updatePool = $updateFilter->filter(new Pool([$package]), $request);
-        self::assertSame([$package], $updatePool->getPackages(), 'update-scope filter must skip locked packages');
+        self::assertSame([], $updatePool->getPackages(), 'update-scope filter must apply install-scope rules to locked packages');
+        self::assertTrue($updatePool->isFilterListRemovedPackageVersion('acme/locked', new Constraint('==', '1.0.0.0')));
+    }
+
+    public function testUpdateScopeAppliesInstallScopeToPackagesInLockedRepository(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'filter' => [
+                'malware' => [
+                    [
+                        'package' => 'acme/mirrored',
+                        'constraint' => '*',
+                        'reason' => 'malware',
+                        'url' => 'https://example.org/malware/acme/mirrored',
+                    ],
+                ],
+            ],
+        ]);
+
+        // block-scope: install means the malware list is NOT in getActiveBlockFilterListNames(UPDATE)
+        $config = new Config();
+        $config->merge(['config' => ['policy' => ['malware' => ['block' => true, 'block-scope' => ListPolicyConfig::BLOCK_SCOPE_INSTALL]]]]);
+        $policyConfig = PolicyConfig::fromConfig($config);
+
+        // PoolBuilder loads fresh package instances from configured repos for `update mirrors`
+        // Use distinct instances to mirror that in this unit test — the locked
+        // package and the pool package have the same name+version but are not the same object.
+        $lockedPackage = new Package('acme/mirrored', '1.0.0.0', '1.0');
+        $poolPackage = new Package('acme/mirrored', '1.0.0.0', '1.0');
+        $lockedRepo = new LockArrayRepository();
+        $lockedRepo->addPackage($lockedPackage);
+        $request = new Request($lockedRepo);
+        $request->requireName('acme/mirrored', new Constraint('==', '1.0.0.0'));
+
+        $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+        $updatePool = $updateFilter->filter(new Pool([$poolPackage]), $request);
+        self::assertSame([], $updatePool->getPackages(), 'packages from the locked repo must be checked against install-scope filter lists');
+        self::assertTrue($updatePool->isFilterListRemovedPackageVersion('acme/mirrored', new Constraint('==', '1.0.0.0')));
+    }
+
+    public function testUpdateScopeIgnoresInstallOnlyListsForNonLockedPackages(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'filter' => [
+                'malware' => [
+                    [
+                        'package' => 'acme/free',
+                        'constraint' => '*',
+                        'reason' => 'malware',
+                        'url' => 'https://example.org/malware/acme/free',
+                    ],
+                ],
+            ],
+        ]);
+
+        // block-scope: install — only locked-equivalent packages should be
+        // filtered. A package that is not in the locked repository must pass
+        // through the UPDATE-scope filter unmodified.
+        $config = new Config();
+        $config->merge(['config' => ['policy' => ['malware' => ['block' => true, 'block-scope' => ListPolicyConfig::BLOCK_SCOPE_INSTALL]]]]);
+        $policyConfig = PolicyConfig::fromConfig($config);
+
+        $package = new Package('acme/free', '1.0.0.0', '1.0');
+        $request = new Request();
+
+        $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+        $updatePool = $updateFilter->filter(new Pool([$package]), $request);
+        self::assertSame([$package], $updatePool->getPackages(), 'install-only lists must not block non-locked packages during update scope');
         self::assertCount(0, $updatePool->getAllFilterListRemovedPackageVersions());
     }
 
