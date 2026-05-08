@@ -23,6 +23,9 @@ use Composer\Package\Version\VersionParser;
 use Composer\Policy\AbandonedPolicyConfig;
 use Composer\Policy\AdvisoriesPolicyConfig;
 use Composer\Policy\CustomListPolicyConfig;
+use Composer\Policy\IgnoreIdRule;
+use Composer\Policy\IgnorePackageRule;
+use Composer\Policy\IgnoreSeverityRule;
 use Composer\Policy\IgnoreUnreachable;
 use Composer\Policy\MalwarePolicyConfig;
 use Composer\Policy\PolicyConfig;
@@ -254,9 +257,17 @@ Found 2 abandoned packages:
         if (count($data['packages']) === 0) {
             $this->expectException(InvalidArgumentException::class);
         }
-        $policyConfig = $this->createPolicyConfig($data['abandoned'] ?? Auditor::ABANDONED_IGNORE);
+        $policyConfig = $this->createPolicyConfig(
+            $data['abandoned'] ?? Auditor::ABANDONED_IGNORE,
+            false,
+            null,
+            'test-list',
+            [],
+            [],
+            $data['ignore-abandoned'] ?? []
+        );
         $auditor = new Auditor();
-        $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $policyConfig, $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly'], [], [], $data['ignore-abandoned'] ?? []);
+        $result = $auditor->audit($io = new BufferIO(), $this->getRepoSet(), $policyConfig, $data['packages'], $data['format'] ?? Auditor::FORMAT_PLAIN, $data['warningOnly']);
         self::assertSame($expected, $result);
         self::assertSame($output, trim(str_replace("\r", '', $io->getOutput())));
     }
@@ -454,8 +465,15 @@ Found 2 abandoned packages:
      */
     public function testAuditWithIgnore($packages, $ignoredIds, $exitCode, $expectedOutput): void
     {
+        $policyConfig = $this->createPolicyConfig(
+            Auditor::ABANDONED_IGNORE,
+            false,
+            null,
+            'test-list',
+            $ignoredIds
+        );
         $auditor = new Auditor();
-        $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $this->createPolicyConfig(), $packages, Auditor::FORMAT_PLAIN, false, $ignoredIds);
+        $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $policyConfig, $packages, Auditor::FORMAT_PLAIN, false);
         $io->expects($expectedOutput, true);
         self::assertSame($exitCode, $result);
     }
@@ -607,8 +625,16 @@ Found 2 abandoned packages:
      */
     public function testAuditWithIgnoreSeverity($packages, $ignoredSeverities, $exitCode, $expectedOutput): void
     {
+        $policyConfig = $this->createPolicyConfig(
+            Auditor::ABANDONED_IGNORE,
+            false,
+            null,
+            'test-list',
+            [],
+            array_keys($ignoredSeverities)
+        );
         $auditor = new Auditor();
-        $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $this->createPolicyConfig(), $packages, Auditor::FORMAT_PLAIN, false, [], $ignoredSeverities);
+        $result = $auditor->audit($io = $this->getIOMock(), $this->getRepoSet(), $policyConfig, $packages, Auditor::FORMAT_PLAIN, false);
         $io->expects($expectedOutput, true);
         self::assertSame($exitCode, $result);
     }
@@ -750,9 +776,6 @@ vendor/other is on filter list "test-list". Reason: internal.',
             $packages,
             $format,
             true,
-            [],
-            [],
-            [],
             $providerSet
         );
 
@@ -790,9 +813,6 @@ vendor/other is on filter list "test-list". Reason: internal.',
             [new Package('vendor/package', '9.0.0', '9.0.0')],
             Auditor::FORMAT_JSON,
             true,
-            [],
-            [],
-            [],
             $providerSet
         );
 
@@ -846,9 +866,6 @@ vendor/other is on filter list "test-list". Reason: internal.',
             ],
             Auditor::FORMAT_PLAIN,
             false,
-            [],
-            [],
-            [],
             $providerSet
         );
 
@@ -862,19 +879,49 @@ vendor/other is on filter list "test-list". Reason: internal.',
     /**
      * @param Auditor::ABANDONED_* $abandoned
      * @param Auditor::FILTERED_*|null $filteredAudit
+     * @param array<string, string|null> $ignoreAdvisories Mixed flat map of advisory IDs and package names => reason.
+     * @param list<string> $ignoreSeverities
+     * @param array<string, string|null> $ignoreAbandoned Package name => reason; package name may be a wildcard pattern.
      */
-    private function createPolicyConfig(string $abandoned = Auditor::ABANDONED_IGNORE, bool $ignoreUnreachableAudit = false, ?string $filteredAudit = null, string $filteredListName = 'test-list'): PolicyConfig
-    {
+    private function createPolicyConfig(
+        string $abandoned = Auditor::ABANDONED_IGNORE,
+        bool $ignoreUnreachableAudit = false,
+        ?string $filteredAudit = null,
+        string $filteredListName = 'test-list',
+        array $ignoreAdvisories = [],
+        array $ignoreSeverities = [],
+        array $ignoreAbandoned = []
+    ): PolicyConfig {
         $customLists = [];
         if ($filteredAudit !== null) {
             $customLists[$filteredListName] = new CustomListPolicyConfig($filteredListName, false, $filteredAudit, [], []);
         }
 
+        $packageRules = [];
+        $idRules = [];
+        foreach ($ignoreAdvisories as $key => $reason) {
+            if (strpos($key, '/') !== false) {
+                $packageRules[$key][] = new IgnorePackageRule($key, new \Composer\Semver\Constraint\MatchAllConstraint(), $reason);
+            } else {
+                $idRules[$key] = new IgnoreIdRule($key, $reason);
+            }
+        }
+        $severityRules = [];
+        foreach ($ignoreSeverities as $severity) {
+            $severityRules[$severity] = new IgnoreSeverityRule($severity);
+        }
+        $advisories = new AdvisoriesPolicyConfig(false, AdvisoriesPolicyConfig::AUDIT_FAIL, $packageRules, $idRules, $severityRules);
+
+        $abandonedIgnore = [];
+        foreach ($ignoreAbandoned as $packageName => $reason) {
+            $abandonedIgnore[$packageName][] = new IgnorePackageRule($packageName, new \Composer\Semver\Constraint\MatchAllConstraint(), $reason);
+        }
+
         return new PolicyConfig(
             true,
-            AdvisoriesPolicyConfig::disabled(),
+            $advisories,
             MalwarePolicyConfig::disabled(),
-            new AbandonedPolicyConfig(false, $abandoned, []),
+            new AbandonedPolicyConfig(false, $abandoned, $abandonedIgnore),
             $customLists,
             $ignoreUnreachableAudit ? IgnoreUnreachable::all() : IgnoreUnreachable::default()
         );

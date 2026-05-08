@@ -137,6 +137,32 @@ class AdvisoriesPolicyConfig extends ListPolicyConfig
     }
 
     /**
+     * Merge an audit-scoped list of severity overrides (e.g. from a CLI
+     * --ignore-severity flag) into the existing severity rules. Existing
+     * rules win on overlap so any reason configured in policy survives.
+     *
+     * @param list<string> $severities
+     * @return static
+     */
+    public function withIgnoreSeverity(array $severities)
+    {
+        $ignoreSeverity = $this->ignoreSeverity;
+        foreach ($severities as $severity) {
+            if (!isset($ignoreSeverity[$severity])) {
+                $ignoreSeverity[$severity] = new IgnoreSeverityRule($severity, null, false, true);
+            }
+        }
+
+        return new static(
+            $this->block,
+            $this->audit,
+            $this->ignore,
+            $this->ignoreId,
+            $ignoreSeverity
+        );
+    }
+
+    /**
      * @param array<string, mixed> $policyConfig
      * @param array<string, mixed> $auditConfig
      */

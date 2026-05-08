@@ -463,11 +463,9 @@ class Installer
                         $repoSet->addRepository($repo);
                     }
                     $policyConfig = $this->getPolicyConfig();
-                    $advisories = $policyConfig->advisories;
-                    $abandoned = $policyConfig->abandoned;
                     $filterListProviderSet = $policyConfig->enabled ? FilterListProviderSet::create($policyConfig, $this->repositoryManager->getRepositories(), $this->repositoryManager->getHttpDownloader()) : null;
 
-                    return $auditor->audit($this->io, $repoSet, $policyConfig, $packages, $auditConfig->auditFormat, true, $advisories->getIgnoreListForOperation('audit'), $advisories->getIgnoreSeverityForOperation('audit'), $abandoned->getFlatIgnoreForOperation('audit'), $filterListProviderSet) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
+                    return $auditor->audit($this->io, $repoSet, $policyConfig, $packages, $auditConfig->auditFormat, true, $filterListProviderSet) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {

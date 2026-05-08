@@ -288,4 +288,33 @@ class AdvisoriesPolicyConfigTest extends TestCase
 
         self::assertSame('v2 mitigated', $advisories->getIgnoreListForOperation('audit')['vendor/mixed']);
     }
+
+    public function testWithIgnoreSeverityAddsAuditScopedRulesForNewSeverities(): void
+    {
+        $advisories = AdvisoriesPolicyConfig::disabled();
+
+        $updated = $advisories->withIgnoreSeverity(['low', 'medium']);
+
+        self::assertSame(['low' => null, 'medium' => null], $updated->getIgnoreSeverityForOperation('audit'));
+        self::assertSame([], $updated->getIgnoreSeverityForOperation('block'));
+    }
+
+    public function testWithIgnoreSeverityPreservesExistingRulesAndReasons(): void
+    {
+        $config = new Config();
+        $config->merge(['config' => ['policy' => [
+            'advisories' => [
+                'ignore-severity' => [
+                    'low' => ['reason' => 'configured low', 'on-block' => false, 'on-audit' => true],
+                ],
+            ],
+        ]]]);
+        $advisories = PolicyConfig::fromConfig($config)->advisories;
+
+        $updated = $advisories->withIgnoreSeverity(['low', 'medium']);
+
+        $auditRules = $updated->getIgnoreSeverityForOperation('audit');
+        self::assertSame('configured low', $auditRules['low']);
+        self::assertNull($auditRules['medium']);
+    }
 }

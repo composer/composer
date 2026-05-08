@@ -400,6 +400,21 @@ class PolicyConfig
     }
 
     /**
+     * @param list<string> $severities
+     */
+    public function withIgnoreSeverity(array $severities): self
+    {
+        return new self(
+            $this->enabled,
+            $this->advisories->withIgnoreSeverity($severities),
+            $this->malware,
+            $this->abandoned,
+            $this->customLists,
+            $this->ignoreUnreachable
+        );
+    }
+
+    /**
      * @param null|ListPolicyConfig::AUDIT_* $abandoned
      * @param null|ListPolicyConfig::AUDIT_* $filtered
      * @return static

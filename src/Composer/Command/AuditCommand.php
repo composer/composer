@@ -86,7 +86,10 @@ EOT
             $policyConfig = $policyConfig->withAudit($abandoned, $filtered);
         }
 
-        $ignoreSeverities = array_merge(array_fill_keys($input->getOption('ignore-severity'), null), $policyConfig->advisories->getIgnoreSeverityForOperation('audit'));
+        $ignoreSeverities = $input->getOption('ignore-severity');
+        if (count($ignoreSeverities) > 0) {
+            $policyConfig = $policyConfig->withIgnoreSeverity(array_values($ignoreSeverities));
+        }
         if ($input->getOption('ignore-unreachable')) {
             $policyConfig = $policyConfig->withIgnoreUnreachable('audit');
         }
@@ -100,9 +103,6 @@ EOT
             $packages,
             $this->getAuditFormat($input, 'format'),
             false,
-            $policyConfig->advisories->getIgnoreListForOperation('audit'),
-            $ignoreSeverities,
-            $policyConfig->abandoned->getFlatIgnoreForOperation('audit'),
             $filterListProviderSet
         ));
 

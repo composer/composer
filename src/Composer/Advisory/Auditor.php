@@ -80,15 +80,15 @@ class Auditor
      * @param PackageInterface[] $packages
      * @param self::FORMAT_* $format The format that will be used to output audit results.
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
-     * @param array<string, string|null> $ignoreList List of advisory IDs, remote IDs, CVE IDs or package names that reported but not listed as vulnerabilities.
-     * @param array<string, string|null> $ignoredSeverities List of ignored severity levels
-     * @param array<string, string|null> $ignoreAbandoned List of abandoned package name that reported but not listed as vulnerabilities.
      *
      * @return int-mask<self::STATUS_*> A bitmask of STATUS_* constants or 0 on success
      * @throws InvalidArgumentException If no packages are passed in
      */
-    public function audit(IOInterface $io, RepositorySet $repoSet, PolicyConfig $policyConfig, array $packages, string $format, bool $warningOnly = true, array $ignoreList = [], array $ignoredSeverities = [], array $ignoreAbandoned = [], ?FilterListProviderSet $filterListProviderSet = null): int
+    public function audit(IOInterface $io, RepositorySet $repoSet, PolicyConfig $policyConfig, array $packages, string $format, bool $warningOnly = true, ?FilterListProviderSet $filterListProviderSet = null): int
     {
+        $ignoreList = $policyConfig->advisories->getIgnoreListForOperation('audit');
+        $ignoredSeverities = $policyConfig->advisories->getIgnoreSeverityForOperation('audit');
+
         $result = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY, $policyConfig->ignoreUnreachable->audit);
         $allAdvisories = $result['advisories'];
         $unreachableRepos = $result['unreachableRepos'];
@@ -107,7 +107,7 @@ class Auditor
         if ($policyConfig->abandoned->audit === self::ABANDONED_IGNORE) {
             $abandonedPackages = [];
         } else {
-            $abandonedPackages = $this->filterAbandonedPackages($packages, $ignoreAbandoned);
+            $abandonedPackages = $this->filterAbandonedPackages($packages, $policyConfig->abandoned->getFlatIgnoreForOperation('audit'));
             if ($policyConfig->abandoned->audit === self::ABANDONED_FAIL) {
                 $abandonedCount = count($abandonedPackages);
             }
