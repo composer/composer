@@ -713,7 +713,7 @@ vendor/package is on filter list "test-list". Reason: internal. URL: https://exa
             'format' => Auditor::FORMAT_PLAIN,
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.
-Found 1 package matching filters:
+<warning>Found 1 package matching filters:</warning>
 vendor/package is on filter list "test-list". Reason: internal.',
         ];
 

@@ -198,8 +198,9 @@ class Auditor
         if (count($filteredPackages) > 0) {
             $plurality = count($filteredPackages) === 1 ? '' : 's';
             $punctuation = $format === self::FORMAT_SUMMARY ? '.' : ':';
+            $style = $filteredCount > 0 ? 'error' : 'warning';
 
-            $io->writeError(sprintf('<error>Found %d package%s matching filters%s</error>', count($filteredPackages), $plurality, $punctuation));
+            $io->writeError(sprintf('<%s>Found %d package%s matching filters%s</%s>', $style, count($filteredPackages), $plurality, $punctuation, $style));
             if ($format !== self::FORMAT_SUMMARY) {
                 $this->outputFilteredPackages($io, $filteredPackages, $format);
             }
