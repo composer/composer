@@ -231,7 +231,7 @@ class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
     /**
      * @inheritDoc
      */
-    public function getFilter(array $packageConstraintMap): array
+    public function getFilter(array $packageConstraintMap, array $configuredLists): array
     {
         if (!$this->repo instanceof FilterListProviderInterface) {
             return ['filter' => []];
@@ -243,7 +243,7 @@ class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
             }
         }
 
-        return $this->repo->getFilter($packageConstraintMap);
+        return $this->repo->getFilter($packageConstraintMap, $configuredLists);
     }
 
     public function getFilterLists(): array

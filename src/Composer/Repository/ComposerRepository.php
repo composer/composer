@@ -14,8 +14,8 @@ namespace Composer\Repository;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
-use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\ComposerRepositoryFilterInformation;
+use Composer\FilterList\FilterListEntry;
 use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
@@ -797,7 +797,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * @inheritDoc
      */
-    public function getFilter(array $packageConstraintMap): array
+    public function getFilter(array $packageConstraintMap, array $configuredLists): array
     {
         $this->loadRootServerFile(600);
 
@@ -808,6 +808,30 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     unset($packageConstraintMap[$name]);
                 }
             }
+        }
+
+        if ($this->filterConfig !== null && $this->filterConfig->summaryUrl !== null) {
+            $summary = $this->loadFilterSummary();
+
+            $candidates = [];
+            foreach ($configuredLists as $listName) {
+                if (!isset($summary[$listName])) {
+                    continue;
+                }
+
+                foreach ($summary[$listName] as $packageName => $summaryConstraint) {
+                    if (!isset($packageConstraintMap[$packageName])) {
+                        continue;
+                    }
+
+                    if (!$packageConstraintMap[$packageName] instanceof MatchAllConstraint && !$this->versionParser->parseConstraints($summaryConstraint)->matches($packageConstraintMap[$packageName])) {
+                        continue;
+                    }
+
+                    $candidates[$packageName] = true;
+                }
+            }
+            $packageConstraintMap = array_intersect_key($packageConstraintMap, $candidates);
         }
 
         $parser = new VersionParser();
@@ -840,6 +864,59 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->loop->wait($promises);
 
         return ['filter' => $filter];
+    }
+
+    /**
+     * @return array<string, array<string, string>> List name → package name → constraint
+     */
+    private function loadFilterSummary(): array
+    {
+        if ($this->filterConfig === null || $this->filterConfig->summaryUrl === null) {
+            return [];
+        }
+
+        $cacheKey = 'filter-summary.json';
+        $contents = null;
+        $lastModified = null;
+        $cached = $this->cache->read($cacheKey);
+        if ($cached !== false) {
+            $cached = json_decode($cached, true);
+            if (is_array($cached)) {
+                $contents = $cached;
+                $lastModified = $cached['last-modified'] ?? null;
+            }
+        }
+
+        $data = null;
+        $promise = $this->asyncFetchFile($this->filterConfig->summaryUrl, $cacheKey, $lastModified)
+            ->then(static function ($response) use (&$data, $contents): void {
+                if (true === $response) {
+                    $data = $contents;
+                } else {
+                    $data = $response;
+                }
+            });
+        $this->loop->wait([$promise]);
+
+        if (!is_array($data) || !isset($data['filter']) || !is_array($data['filter'])) {
+            throw new TransportException('Filter summary URL '.$this->filterConfig->summaryUrl.' returned 404 for '.$this->getRepoName(), 404);
+        }
+
+        $summary = [];
+        foreach ($data['filter'] as $listName => $packages) {
+            if (!is_string($listName) || !is_array($packages)) {
+                throw new \UnexpectedValueException('Invalid filter summary received from '.$this->getRepoName().': list "'.(is_string($listName) ? $listName : '').'" must map to an object of package => constraint');
+            }
+
+            foreach ($packages as $packageName => $constraintString) {
+                if (!is_string($packageName) || !is_string($constraintString)) {
+                    throw new \UnexpectedValueException('Invalid filter summary received from '.$this->getRepoName().': list "'.$listName.'" entries must be strings');
+                }
+                $summary[$listName][strtolower($packageName)] = $constraintString;
+            }
+        }
+
+        return $summary;
     }
 
     public function getFilterLists(): array
@@ -1406,7 +1483,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             if (isset($data['filter']) && is_array($data['filter'])) {
-                $this->filterConfig = ComposerRepositoryFilterInformation::fromData($data['filter']);
+                $this->filterConfig = ComposerRepositoryFilterInformation::fromData($data['filter'], \Closure::fromCallable([$this, 'canonicalizeUrl']));
             }
         }
 

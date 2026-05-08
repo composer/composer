@@ -80,4 +80,35 @@ class ComposerRepositoryFilterInformationTest extends TestCase
 
         self::assertSame(['company-policy'], $info->lists);
     }
+
+    public function testFromDataDefaultsSummaryUrlToNull(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData(['lists' => ['malware']]);
+
+        self::assertNull($info->summaryUrl);
+    }
+
+    public function testFromDataAppliesCanonicalizerToSummaryUrl(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData(
+            ['lists' => ['malware'], 'summary-url' => '/p2/filter-summary.json'],
+            static function (string $url): string {
+                return 'https://example.org' . $url;
+            }
+        );
+
+        self::assertSame('https://example.org/p2/filter-summary.json', $info->summaryUrl);
+    }
+
+    public function testFromDataIgnoresNonStringSummaryUrl(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData(
+            ['lists' => ['malware'], 'summary-url' => ['oops']],
+            static function (string $url): string {
+                return $url;
+            }
+        );
+
+        self::assertNull($info->summaryUrl);
+    }
 }
