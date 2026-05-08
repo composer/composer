@@ -564,7 +564,7 @@ class Auditor
 
         $table = $io->getTable()
             ->setHeaders(['Package', 'Versions', 'List', 'URL', 'Reason', 'ID', 'Source'])
-            ->setColumnMaxWidth(5, 40)
+            ->setColumnMaxWidth(4, 40)
         ;
 
         foreach ($filteredPackages as $data) {
