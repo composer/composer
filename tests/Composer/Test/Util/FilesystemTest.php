@@ -38,6 +38,7 @@ class FilesystemTest extends TestCase
         $this->fs = new Filesystem;
         $this->workingDir = self::getUniqueTmpDirectory();
         $this->testFile = self::getUniqueTmpDirectory() . '/composer_test_file';
+        stream_wrapper_register('composertestsstreamwrapper', \stdclass::class);
     }
 
     protected function tearDown(): void
@@ -49,6 +50,7 @@ class FilesystemTest extends TestCase
         if (is_file($this->testFile)) {
             $this->fs->removeDirectory(dirname($this->testFile));
         }
+        stream_wrapper_unregister('composertestsstreamwrapper');
     }
 
     /**
