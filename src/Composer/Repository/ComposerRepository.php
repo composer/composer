@@ -810,7 +810,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
         }
 
-        if ($this->filterConfig !== null && $this->filterConfig->summaryUrl !== null) {
+        // skip the summary fetch if we already pulled package metadata in this run; per-package
+        // calls below will short-circuit on the cache, so the summary would be wasted work.
+        if ($this->filterConfig !== null && $this->filterConfig->summaryUrl !== null && $this->freshMetadataUrls === []) {
             $summary = $this->loadFilterSummary();
 
             $candidates = [];

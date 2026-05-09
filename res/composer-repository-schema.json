@@ -71,6 +71,10 @@
                             }
                         }
                     }
+                },
+                "summary-url": {
+                    "type": "string",
+                    "description": "Endpoint returning a compact mapping of list name to package name to version constraint, used to skip per-package metadata fetches for packages that cannot match any active list."
                 }
             }
         },

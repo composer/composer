@@ -741,7 +741,7 @@ class ComposerRepositoryTest extends TestCase
                         'metadata-url' => 'https://example.org/p2/%package%.json',
                         'filter' => [
                             'metadata' => true,
-                            'lists' => ['malware', 'typosquatting'],
+                            'lists' => ['malware' => true, 'typosquatting' => true],
                             'summary-url' => '/lists/all/summary.json',
                         ],
                     ]),
@@ -786,7 +786,7 @@ class ComposerRepositoryTest extends TestCase
                         'metadata-url' => 'https://example.org/p2/%package%.json',
                         'filter' => [
                             'metadata' => true,
-                            'lists' => ['malware'],
+                            'lists' => ['malware' => true],
                             'summary-url' => '/lists/all/summary.json',
                         ],
                     ]),
@@ -821,6 +821,74 @@ class ComposerRepositoryTest extends TestCase
         $this->assertSame([], $filter);
     }
 
+    public function testGetFilterSkipsSummaryWhenMetadataAlreadyFetched(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        // Only one fetch of each URL is expected: the second getFilter() call must skip the
+        // summary entirely (freshMetadataUrls is non-empty) and short-circuit the metadata fetch.
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => ['malware' => true],
+                            'summary-url' => '/lists/all/summary.json',
+                        ],
+                    ]),
+                    'headers' => ['Last-Modified: Tue, 01 Jan 2099 00:00:00 GMT'],
+                ],
+                [
+                    'url' => 'https://example.org/lists/all/summary.json',
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'malware' => ['evil/pkg' => '*'],
+                        ],
+                    ]),
+                    'headers' => ['Last-Modified: Tue, 01 Jan 2099 00:00:00 GMT'],
+                ],
+                [
+                    'url' => 'https://example.org/p2/evil/pkg.json',
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'malware' => [[
+                                'constraint' => '*',
+                                'url' => 'https://example.org/evil/pkg/filters.json',
+                                'reason' => 'Confirmed malware',
+                                'id' => 'ID-test',
+                            ]],
+                        ],
+                    ]),
+                    'headers' => ['Last-Modified: Tue, 01 Jan 2030 00:00:00 GMT'],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        ['filter' => $firstFilter] = $repository->getFilter(
+            ['evil/pkg' => new Constraint('=', '1.0.0.0')],
+            ['malware']
+        );
+        $this->assertCount(1, $firstFilter['malware']);
+
+        // Second call on the same instance: freshMetadataUrls is populated, so no further HTTP requests should be issued.
+        ['filter' => $secondFilter] = $repository->getFilter(
+            ['evil/pkg' => new Constraint('=', '1.0.0.0')],
+            ['malware']
+        );
+        $this->assertCount(1, $secondFilter['malware']);
+        $this->assertSame('evil/pkg', $secondFilter['malware'][0]->packageName);
+    }
+
     public function testGetFilterReusesCachedSummaryOn304(): void
     {
         $config = FactoryMock::createConfig();
@@ -830,7 +898,7 @@ class ComposerRepositoryTest extends TestCase
             'metadata-url' => 'https://example.org/p2/%package%.json',
             'filter' => [
                 'metadata' => true,
-                'lists' => ['malware'],
+                'lists' => ['malware' => true],
                 'summary-url' => '/lists/all/summary.json',
             ],
         ]);
