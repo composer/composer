@@ -518,10 +518,12 @@ class JsonFileTest extends TestCase
         $filesystem = new Filesystem();
         $filesystem->relativeSymlink(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/tabs2.json');
 
-        $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs2.json', null, $io);
-        $jsonFile->read();
-
-        $filesystem->unlink(__DIR__.'/Fixtures/tabs2.json');
+        try {
+            $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs2.json', null, $io);
+            $jsonFile->read();
+        } finally {
+            $filesystem->unlink(__DIR__.'/Fixtures/tabs2.json');
+        }
     }
 
     /**
@@ -533,20 +535,21 @@ class JsonFileTest extends TestCase
 
         $filesystem = new Filesystem();
         $filesystem->relativeSymlink(__DIR__.'/Fixtures/tabs2.json', __DIR__.'/Fixtures/tabs3.json');
-
         $filesystem->unlink(__DIR__.'/Fixtures/tabs2.json');
 
-        $exceptionMessage = '';
         try {
-            $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs3.json');
-            $jsonFile->read();
-        } catch (\RuntimeException $e) {
-            $exceptionMessage = $e->getMessage();
+            $exceptionMessage = '';
+            try {
+                $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs3.json');
+                $jsonFile->read();
+            } catch (\RuntimeException $e) {
+                $exceptionMessage = $e->getMessage();
+            }
+
+            self::assertStringEndsWith('The file "' . __DIR__ . '/Fixtures/tabs3.json" is not readable.', $exceptionMessage);
+        } finally {
+            $filesystem->unlink(__DIR__.'/Fixtures/tabs3.json');
         }
-
-        self::assertStringEndsWith('The file "' . __DIR__ . '/Fixtures/tabs3.json" is not readable.', $exceptionMessage);
-
-        $filesystem->unlink(__DIR__.'/Fixtures/tabs3.json');
     }
 
     /**
@@ -566,15 +569,17 @@ class JsonFileTest extends TestCase
 
         copy(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/subdirfile');
 
-        $exceptionMessage = '';
         try {
-            $jsonFile->write(['foo' => 'bar']);
-        } catch (\UnexpectedValueException $e) {
-            $exceptionMessage = $e->getMessage();
+            $exceptionMessage = '';
+            try {
+                $jsonFile->write(['foo' => 'bar']);
+            } catch (\UnexpectedValueException $e) {
+                $exceptionMessage = $e->getMessage();
+            }
+
+            self::assertStringEndsWith(__DIR__ . '/Fixtures/subdirfile exists and is not a directory.', $exceptionMessage);
+        } finally {
+            $filesystem->unlink(__DIR__.'/Fixtures/subdirfile');
         }
-
-        self::assertStringEndsWith(__DIR__ . '/Fixtures/subdirfile exists and is not a directory.', $exceptionMessage);
-
-        $filesystem->unlink(__DIR__.'/Fixtures/subdirfile');
     }
 }
