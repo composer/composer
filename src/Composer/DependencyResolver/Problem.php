@@ -388,30 +388,45 @@ class Problem
             }
 
             if ($pool->isSecurityRemovedPackageVersion($packageName, $constraint)) {
+                $hasPackagistAdvisory = false;
                 $advisories = $repositorySet->getMatchingSecurityAdvisories($packages, false, true);
                 if (isset($advisories['advisories'][$packageName]) && \count($advisories['advisories'][$packageName]) > 0) {
-                    $advisoriesList = array_map(static function (SecurityAdvisory $advisory): string {
+                    $advisoriesList = [];
+                    foreach ($advisories['advisories'][$packageName] as $advisory) {
+                        if (str_starts_with($advisory->advisoryId, 'PKSA-')) {
+                            $hasPackagistAdvisory = true;
+                        }
+
                         if ($advisory->link !== null && $advisory->link !== '') {
-                            return '<href='.OutputFormatter::escape($advisory->link).'>'.$advisory->advisoryId.'</>';
+                            $advisoriesList[] = '<href='.OutputFormatter::escape($advisory->link).'>'.$advisory->advisoryId.'</>';
+
+                            continue;
                         }
 
                         if (str_starts_with($advisory->advisoryId, 'PKSA-')) {
-                            return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisory->advisoryId).'>'.$advisory->advisoryId.'</>';
+                            $advisoriesList[] = '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisory->advisoryId).'>'.$advisory->advisoryId.'</>';
+
+                            continue;
                         }
 
-                        return $advisory->advisoryId;
-                    }, $advisories['advisories'][$packageName]);
+                        $advisoriesList[] = $advisory->advisoryId;
+                    }
                 } else {
-                    $advisoriesList = array_map(static function (string $advisoryId): string {
+                    $advisoriesList = [];
+                    foreach ($pool->getSecurityAdvisoryIdentifiersForPackageVersion($packageName, $constraint) as $advisoryId) {
                         if (str_starts_with($advisoryId, 'PKSA-')) {
-                            return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisoryId).'>'.$advisoryId.'</>';
+                            $hasPackagistAdvisory = true;
+                            $advisoriesList[] = '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisoryId).'>'.$advisoryId.'</>';
+
+                            continue;
                         }
 
-                        return $advisoryId;
-                    }, $pool->getSecurityAdvisoryIdentifiersForPackageVersion($packageName, $constraint));
+                        $advisoriesList[] = $advisoryId;
+                    }
                 }
+                $packagistAdvisoryDetails = $hasPackagistAdvisory ? ' Go to https://packagist.org/security-advisories/ to find advisory details.' : '';
 
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are affected by security advisories ("' . implode('", "', $advisoriesList). '"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To turn the feature off entirely, you can set "policy.advisories.block" to false.'];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are affected by security advisories ("' . implode('", "', $advisoriesList). '").' . $packagistAdvisoryDetails . ' To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To turn the feature off entirely, you can set "policy.advisories.block" to false.'];
             }
 
             if ($pool->isFilterListRemovedPackageVersion($packageName, $constraint)) {
