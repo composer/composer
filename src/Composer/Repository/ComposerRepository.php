@@ -115,6 +115,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $securityAdvisoryConfig = null;
     /** @var ComposerRepositoryFilterInformation|null */
     private $filterConfig = null;
+    /**
+     * Per-repo user filter config from the composer.json:
+     * - `false` disables every advertised list from this repo entirely.
+     * - An array names advertised lists set to `false` to opt out of them.
+     *
+     * @var false|array<string, false>
+     */
+    private $userFilterConfig = [];
 
     /**
      * @var array list of package names which are fresh and can be loaded from the cache directly in case loadPackage is called several times
@@ -192,6 +200,44 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->eventDispatcher = $eventDispatcher;
         $this->repoConfig = $repoConfig;
         $this->loop = new Loop($this->httpDownloader);
+        $this->userFilterConfig = self::parseUserFilterConfig($repoConfig['filter'] ?? null);
+    }
+
+    /**
+     * @param mixed $rawFilter The `filter` value from the user's repo config.
+     * @return false|array<string, false>
+     */
+    private static function parseUserFilterConfig($rawFilter)
+    {
+        if ($rawFilter === false) {
+            return false;
+        }
+
+        if ($rawFilter === null || $rawFilter === true) {
+            return [];
+        }
+
+        if (!is_array($rawFilter)) {
+            throw new \UnexpectedValueException('Repository "filter" must be a boolean or an object mapping advertised list names to false.');
+        }
+
+        $parsed = [];
+        foreach ($rawFilter as $listName => $value) {
+            if (!is_string($listName) || $listName === '') {
+                throw new \UnexpectedValueException('Repository "filter" keys must be non-empty list-name strings.');
+            }
+            if ($value === true) {
+                continue;
+            }
+
+            if ($value !== false) {
+                throw new \UnexpectedValueException(sprintf('Repository "filter" entry for "%s" must be a boolean; got %s.', $listName, var_export($value, true)));
+            }
+
+            $parsed[$listName] = false;
+        }
+
+        return $parsed;
     }
 
     public function getRepoName()
@@ -739,6 +785,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     public function hasFilter(): bool
     {
+        if ($this->userFilterConfig === false) {
+            return false;
+        }
+
         $this->loadRootServerFile(600);
 
         return $this->filterConfig !== null && $this->filterConfig->metadata;
@@ -794,9 +844,27 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     public function getFilterLists(): array
     {
+        if ($this->userFilterConfig === false) {
+            return [];
+        }
+
         $this->loadRootServerFile(600);
 
-        return isset($this->filterConfig) ? $this->filterConfig->lists : [];
+        if ($this->filterConfig === null) {
+            return [];
+        }
+
+        $skipped = $this->userFilterConfig;
+        if ($skipped === []) {
+            return $this->filterConfig->lists;
+        }
+
+        return array_values(array_filter(
+            $this->filterConfig->lists,
+            static function (string $listName) use ($skipped): bool {
+                return !isset($skipped[$listName]);
+            }
+        ));
     }
 
     public function getProviders(string $packageName)

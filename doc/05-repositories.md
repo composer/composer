@@ -373,9 +373,10 @@ to arrays of filter entries:
 }
 ```
 
-In a composer.json file, the `filter` key in a repository definition controls how filter lists from the respective
-repository are used for audit reports and version blocking. It can be set to `false` to disable filter lists from this
-repository entirely, or configured with an object.
+In a `composer.json` file, the `filter` key on a repository definition controls which lists advertised by that
+repository are honoured for audit reports and version blocking.
+
+Set `filter: false` to opt out of every list this repository advertises:
 
 ```json
 {
@@ -389,21 +390,7 @@ repository entirely, or configured with an object.
 }
 ```
 
-When set to an object, the following optional keys are available:
-
-##### lists
-
-Controls which filter lists from this repository are active. Defaults to `["defaults"]`, meaning all
-default lists advertised by the repository are used.
-
-Each item in the array can be:
-
-- A plain string — the named list is included for both audit and blocking.
-- A string prefixed with `!` — the named list is excluded for both audit and blocking.
-- The string `"defaults"` — expands to all default lists advertised by the repository in its
-  `packages.json` response.
-- An object with a `name` (required), an optional `only` field accepting `"block"`, `"audit"` or `"all"` (default) to restrict
-  the list to a single operation, and an optional `reason` string.
+Set `filter` to an object listing advertised list names that should be skipped from this repository.
 
 ```json
 {
@@ -412,17 +399,15 @@ Each item in the array can be:
             "type": "composer",
             "url": "https://example.org",
             "filter": {
-                "lists": [
-                    "defaults",
-                    "!untrusted-list",
-                    {"name": "audit-only-list", "only": "audit"},
-                    {"name": "block-only-list", "only": "block", "reason": "corporate policy"}
-                ]
+                "untrusted-list": false
             }
         }
     ]
 }
 ```
+
+The repo-level `filter` only narrows what this repository contributes; it cannot enable a list that is not
+configured globally under [`config.policy`](06-config.md#policy).
 
 ### VCS
 

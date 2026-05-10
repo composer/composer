@@ -561,6 +561,104 @@ class ComposerRepositoryTest extends TestCase
         $this->assertEquals(['test' => [new FilterListEntry('acme/package', $constraint, 'test', 'https://example.org/acme/package/filters.json', 'Malicious code detected', 'ID-test')]], $filter);
     }
 
+    public function testUserFilterDisabledFalseShortCircuitsHasFilterAndGetFilterLists(): void
+    {
+        // No HTTP requests should be issued when the user has set `filter: false`,
+        // so we configure the mock with no expectations.
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects([], true);
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'filter' => false],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $this->assertFalse($repository->hasFilter());
+        $this->assertSame([], $repository->getFilterLists());
+    }
+
+    public function testUserFilterPerListOptOut(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => ['malware', 'typosquatting', 'deprecated'],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            [
+                'url' => 'https://example.org/packages.json',
+                'options' => ['http' => ['verify_peer' => false]],
+                'filter' => [
+                    'typosquatting' => false,
+                    // Opting out of a list this repo doesn't advertise is harmless.
+                    'unknown-list' => false,
+                ],
+            ],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $this->assertTrue($repository->hasFilter());
+        $this->assertSame(['malware', 'deprecated'], $repository->getFilterLists());
+    }
+
+    public function testUserFilterAcceptsTrueAsNoOp(): void
+    {
+        // `true` is undocumented but accepted silently so layered configs can
+        // round-trip a key without losing data; it has no effect because
+        // unmentioned lists are already enabled.
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => ['malware', 'typosquatting'],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            [
+                'url' => 'https://example.org/packages.json',
+                'options' => ['http' => ['verify_peer' => false]],
+                'filter' => [
+                    'malware' => true,
+                    'typosquatting' => false,
+                ],
+            ],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $this->assertTrue($repository->hasFilter());
+        $this->assertSame(['malware'], $repository->getFilterLists());
+    }
+
     /**
      * @return array<string, mixed>
      */
