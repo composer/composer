@@ -427,11 +427,6 @@ class ConfigTest extends TestCase
 
         $this->assertTrue($result);
 
-        Platform::putEnv('COMPOSER_POLICY', '0');
-        $result = $config->get('policy');
-        $this->assertFalse($result);
-        Platform::clearEnv('COMPOSER_POLICY');
-
         $config->merge([
             'config' => [
                 'policy' => [
@@ -456,15 +451,30 @@ class ConfigTest extends TestCase
         self::assertIsArray($result);
         self::assertSame(['ignore' => ['acme/package'], 'ignore-severities' => ['low'], ], $result['advisories'] ?? []);
 
+        // COMPOSER_POLICY=1 is a no-op when policy is already enabled — the existing
+        // array config is preserved, not flattened back to the `true` shorthand.
         Platform::putEnv('COMPOSER_POLICY', '1');
-        self::assertNotTrue($config->get('policy'));
+        $resultWithEnvOn = $config->get('policy');
         Platform::clearEnv('COMPOSER_POLICY');
+        self::assertIsArray($resultWithEnvOn);
+        self::assertSame(['ignore' => ['acme/package'], 'ignore-severities' => ['low']], $resultWithEnvOn['advisories'] ?? []);
 
         $config->merge(['config' => ['policy' => true]]);
         self::assertIsArray($config->get('policy'));
 
         $config->merge(['config' => ['policy' => false]]);
         self::assertFalse($config->get('policy'));
+
+        // COMPOSER_POLICY=1 re-enables policy when the config has it disabled.
+        Platform::putEnv('COMPOSER_POLICY', '1');
+        self::assertTrue($config->get('policy'));
+        Platform::clearEnv('COMPOSER_POLICY');
+
+        // The disable path still wins — env var of 0 forces policy off regardless
+        // of any prior array config.
+        Platform::putEnv('COMPOSER_POLICY', '0');
+        self::assertFalse($config->get('policy'));
+        Platform::clearEnv('COMPOSER_POLICY');
 
         $config->merge(['config' => ['policy' => true]]);
         self::assertSame([], $config->get('policy'));

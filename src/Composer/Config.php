@@ -547,8 +547,13 @@ class Config
                 // are applied in PolicyConfig::fromConfig against the parsed
                 // objects so the override layer is consistent and we never have
                 // to rewrite the raw array shape.
-                if (false === Platform::getBoolEnv('COMPOSER_POLICY')) {
+                $policyEnv = Platform::getBoolEnv('COMPOSER_POLICY');
+                if (false === $policyEnv) {
                     $policyConfig = false;
+                } elseif (true === $policyEnv && false === $policyConfig) {
+                    // Re-enable a config-disabled policy. Existing array configs
+                    // are left untouched — the env var only flips the kill switch.
+                    $policyConfig = true;
                 }
 
                 return $policyConfig;
