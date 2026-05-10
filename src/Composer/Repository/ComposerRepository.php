@@ -15,7 +15,8 @@ namespace Composer\Repository;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\ComposerRepositoryFilterInformation;
-use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\FilterListApiClient;
+use Composer\FilterList\FilterListEntryBuilder;
 use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
@@ -142,6 +143,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @var VersionParser
      */
     private $versionParser;
+
+    /**
+     * @var ?FilterListApiClient
+     */
+    private $filterApiClient = null;
+
+    /**
+     * @var ?FilterListEntryBuilder
+     */
+    private $filterEntryBuilder = null;
 
     /**
      * @param array<string, mixed> $repoConfig
@@ -810,6 +821,23 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
         }
 
+        // api-url returns the matched filter entries directly: skip the summary + per-package
+        // metadata path entirely. As with summary-url below, fall through to the cached metadata
+        // path if package metadata was already pulled in this run.
+        if ($this->filterConfig !== null && $this->filterConfig->apiUrl !== null && $this->freshMetadataUrls === []) {
+            $response = $this->getFilterApiClient()->postPurls(
+                $this->filterConfig->apiUrl,
+                $packageConstraintMap,
+                $configuredLists
+            );
+            $decoded = $response->decodeJson();
+            if (!isset($decoded['filter']) || !is_array($decoded['filter'])) {
+                throw new TransportException('Filter api-url '.$this->filterConfig->apiUrl.' returned an unexpected response for '.$this->getRepoName(), 0);
+            }
+
+            return ['filter' => $this->getFilterEntryBuilder()->build($decoded['filter'], $packageConstraintMap)];
+        }
+
         // skip the summary fetch if we already pulled package metadata in this run; per-package
         // calls below will short-circuit on the cache, so the summary would be wasted work.
         if ($this->filterConfig !== null && $this->filterConfig->summaryUrl !== null && $this->freshMetadataUrls === []) {
@@ -836,7 +864,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $packageConstraintMap = array_intersect_key($packageConstraintMap, $candidates);
         }
 
-        $parser = new VersionParser();
+        $entryBuilder = $this->getFilterEntryBuilder();
         $filter = [];
         $promises = [];
         foreach ($packageConstraintMap as $name => $constraint) {
@@ -848,16 +876,16 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $promises[] = $this->startCachedAsyncDownload($name, $name)
-                ->then(static function (array $spec) use (&$filter, $name, $parser): void {
+                ->then(static function (array $spec) use (&$filter, $name, $entryBuilder, $packageConstraintMap): void {
                     [$response] = $spec;
 
-                    if (isset($response['filter']) && is_array($response['filter'])) {
-                        foreach ($response['filter'] as $listName => $listEntries) {
-                            foreach ($listEntries as $data) {
-                                $data['package'] = $name;
-                                $filter[$listName][] = FilterListEntry::create($listName, $data, $parser);
+                    if (!isset($response['filter']) || !is_array($response['filter'])) {
+                        return;
+                    }
 
-                            }
+                    foreach ($entryBuilder->build($response['filter'], $packageConstraintMap, $name) as $listName => $entries) {
+                        foreach ($entries as $entry) {
+                            $filter[$listName][] = $entry;
                         }
                     }
                 });
@@ -866,6 +894,24 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->loop->wait($promises);
 
         return ['filter' => $filter];
+    }
+
+    private function getFilterApiClient(): FilterListApiClient
+    {
+        if ($this->filterApiClient === null) {
+            $this->filterApiClient = new FilterListApiClient($this->httpDownloader);
+        }
+
+        return $this->filterApiClient;
+    }
+
+    private function getFilterEntryBuilder(): FilterListEntryBuilder
+    {
+        if ($this->filterEntryBuilder === null) {
+            $this->filterEntryBuilder = new FilterListEntryBuilder($this->versionParser);
+        }
+
+        return $this->filterEntryBuilder;
     }
 
     /**

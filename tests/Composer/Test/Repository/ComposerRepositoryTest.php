@@ -135,7 +135,10 @@ class ComposerRepositoryTest extends TestCase
 
         foreach ($properties as $property => $value) {
             $ref = new \ReflectionProperty($repo, $property);
-            (\PHP_VERSION_ID < 80100) and $ref->setAccessible(true);
+            if (\PHP_VERSION_ID < 80100) {
+                $ref->setAccessible(true);
+            }
+
             $ref->setValue($repo, $value);
         }
 
@@ -948,6 +951,137 @@ class ComposerRepositoryTest extends TestCase
 
         $this->assertCount(1, $secondFilter['malware']);
         $this->assertSame('evil/pkg', $secondFilter['malware'][0]->packageName);
+    }
+
+    public function testGetFilterUsesApiUrlInsteadOfSummary(): void
+    {
+        $expectedApiRequestBody = json_encode([
+            'packages' => ['pkg://composer/evil/pkg', 'pkg://composer/safe/pkg'],
+            'lists' => ['malware'],
+        ]);
+
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => ['malware' => ['enabled' => true]],
+                            'api-url' => '/api/filter',
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+                [
+                    'url' => 'https://example.org/api/filter',
+                    'options' => [
+                        'http' => [
+                            'method' => 'POST',
+                            'header' => ['Content-type: application/json'],
+                            'timeout' => 10,
+                            'content' => $expectedApiRequestBody,
+                        ],
+                    ],
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'malware' => [[
+                                'package' => 'evil/pkg',
+                                'constraint' => '*',
+                                'url' => 'https://example.org/evil/pkg/filters.json',
+                                'reason' => 'Confirmed malware',
+                                'id' => 'ID-api',
+                            ]],
+                        ],
+                    ]),
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        ['filter' => $filter] = $repository->getFilter(
+            [
+                'evil/pkg' => new Constraint('=', '1.0.0.0'),
+                'safe/pkg' => new Constraint('=', '1.0.0.0'),
+            ],
+            ['malware']
+        );
+
+        $this->assertArrayHasKey('malware', $filter);
+        $this->assertCount(1, $filter['malware']);
+        $this->assertSame('evil/pkg', $filter['malware'][0]->packageName);
+        $this->assertSame('ID-api', $filter['malware'][0]->id);
+    }
+
+    public function testGetFilterSkipsApiUrlWhenMetadataAlreadyFetched(): void
+    {
+        // When per-package metadata has already been fetched in this run, api-url must be
+        // skipped: the existing per-package metadata loop will short-circuit on the cache and
+        // surface the filter entries from there. We simulate that prior fetch by seeding
+        // freshMetadataUrls via reflection.
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'https://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => 'https://example.org/p2/%package%.json',
+                        'filter' => [
+                            'metadata' => true,
+                            'lists' => ['malware' => ['enabled' => true]],
+                            'api-url' => '/api/filter',
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+                [
+                    'url' => 'https://example.org/p2/evil/pkg.json',
+                    'body' => JsonFile::encode([
+                        'filter' => [
+                            'malware' => [[
+                                'constraint' => '*',
+                                'url' => 'https://example.org/evil/pkg/filters.json',
+                                'reason' => 'From metadata',
+                                'id' => 'ID-meta',
+                            ]],
+                        ],
+                    ]),
+                    'options' => ['http' => ['verify_peer' => false]],
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        // Pretend a previous metadata fetch has already happened in this run.
+        $reflFresh = new \ReflectionProperty($repository, 'freshMetadataUrls');
+        (\PHP_VERSION_ID < 80100) and $reflFresh->setAccessible(true);
+        $reflFresh->setValue($repository, ['https://example.org/p2/some-other/pkg.json' => true]);
+
+        ['filter' => $filter] = $repository->getFilter(
+            ['evil/pkg' => new Constraint('=', '1.0.0.0')],
+            ['malware']
+        );
+
+        // api-url POST is not in the expectations list — strict mode would fail if it was hit.
+        // The filter entry comes from the per-package metadata file, not from api-url.
+        $this->assertCount(1, $filter['malware']);
+        $this->assertSame('ID-meta', $filter['malware'][0]->id);
     }
 
     /**

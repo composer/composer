@@ -111,4 +111,23 @@ class ComposerRepositoryFilterInformationTest extends TestCase
 
         self::assertNull($info->summaryUrl);
     }
+
+    public function testFromDataDefaultsApiUrlToNull(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData(['lists' => ['malware' => ['enabled' => true]]]);
+
+        self::assertNull($info->apiUrl);
+    }
+
+    public function testFromDataAppliesCanonicalizerToApiUrl(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData(
+            ['lists' => ['malware' => ['enabled' => true]], 'api-url' => '/api/filter'],
+            static function (string $url): string {
+                return 'https://example.org' . $url;
+            }
+        );
+
+        self::assertSame('https://example.org/api/filter', $info->apiUrl);
+    }
 }

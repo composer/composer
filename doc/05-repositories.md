@@ -374,6 +374,44 @@ describes what lists are available.
   Composer revalidates the cached summary via `If-Modified-Since` on every install/update/audit, using the
   same on-disk repository cache as package metadata.
 
+- **`api-url`** (optional, string) — A URL (absolute or root-relative) that accepts a POST request
+  with the relevant package PURLs and configured list names, and replies with the matching filter
+  entries directly. When set, Composer uses `api-url` instead of `summary-url` and per-package
+  metadata for filter purposes; this is useful when the summary would be too large to serve in
+  full. If both `summary-url` and `api-url` are advertised, `api-url` takes precedence and
+  `summary-url` is ignored.
+
+  The endpoint receives a JSON body of the form:
+
+  ```json
+  {
+      "packages": ["pkg://composer/vendor/package", "pkg://composer/other/package"],
+      "lists": ["malware"]
+  }
+  ```
+
+  and must return JSON of the form:
+
+  ```json
+  {
+      "filter": {
+          "malware": [
+              {
+                  "package": "vendor/package",
+                  "constraint": ">=1.0.0,<1.2.0",
+                  "url": "https://example.org/filters/123",
+                  "reason": "Malware",
+                  "id": "PKFE-xxxx-xxxx-xxxx"
+              }
+          ]
+      }
+  }
+  ```
+
+  Each entry has the same shape as a per-package metadata filter entry, with the addition of the
+  `package` field (since one response covers many packages). The `api-url` POST is not cached
+  client-side because each request body is different.
+
 Per-package metadata files should include a `filter` key whose value is an object mapping list names
 to arrays of filter entries:
 

@@ -12,9 +12,9 @@
 
 namespace Composer\FilterList\FilterListProvider;
 
-use Composer\FilterList\FilterListEntry;
+use Composer\FilterList\FilterListApiClient;
+use Composer\FilterList\FilterListEntryBuilder;
 use Composer\FilterList\Source\UrlSource;
-use Composer\Package\Version\VersionParser;
 use Composer\Repository\FilterListProviderInterface;
 use Composer\Util\HttpDownloader;
 
@@ -25,8 +25,10 @@ use Composer\Util\HttpDownloader;
  */
 class UrlSourceFilterListProvider implements FilterListProviderInterface
 {
-    /** @var HttpDownloader */
-    private $httpDownloader;
+    /** @var FilterListApiClient */
+    private $apiClient;
+    /** @var FilterListEntryBuilder */
+    private $entryBuilder;
     /** @var UrlSource */
     private $source;
 
@@ -34,7 +36,8 @@ class UrlSourceFilterListProvider implements FilterListProviderInterface
         HttpDownloader $httpDownloader,
         UrlSource $source
     ) {
-        $this->httpDownloader = $httpDownloader;
+        $this->apiClient = new FilterListApiClient($httpDownloader);
+        $this->entryBuilder = new FilterListEntryBuilder();
         $this->source = $source;
     }
 
@@ -48,34 +51,15 @@ class UrlSourceFilterListProvider implements FilterListProviderInterface
      */
     public function getFilter(array $packageConstraintMap, array $configuredLists): array
     {
-        $purls = array_map(static function (string $packageName) {
-            return 'pkg://composer/' . $packageName;
-        }, array_keys($packageConstraintMap));
+        $response = $this->apiClient->postPurls($this->source->url, $packageConstraintMap, [$this->source->listName]);
 
-        $options = [];
-        $options['http']['method'] = 'POST';
-        $options['http']['header'][] = 'Content-type: application/json';
-        $options['http']['timeout'] = 10;
-        $options['http']['content'] = json_encode(['packages' => $purls]);
+        $decoded = $response->decodeJson();
+        $entries = isset($decoded['filter']) && is_array($decoded['filter']) ? $decoded['filter'] : [];
 
-        $response = $this->httpDownloader->get($this->source->url, $options);
+        // The remote returns a flat list of entries; this provider is bound to a single list name.
+        $rawByList = [$this->source->listName => $entries];
 
-        $map = [];
-        $parser = new VersionParser();
-        foreach ($response->decodeJson()['filter'] as $data) {
-            $entry = FilterListEntry::create($this->source->listName, $data, $parser);
-            if (!isset($packageConstraintMap[$entry->packageName])) {
-                continue;
-            }
-
-            if (!$entry->constraint->matches($packageConstraintMap[$entry->packageName])) {
-                continue;
-            }
-
-            $map[$this->source->listName][] = $entry;
-        }
-
-        return ['filter' => $map];
+        return ['filter' => $this->entryBuilder->build($rawByList, $packageConstraintMap)];
     }
 
     public function getFilterLists(): array
