@@ -21,17 +21,26 @@ class ComposerRepositoryFilterInformationTest extends TestCase
     {
         $info = ComposerRepositoryFilterInformation::fromData([
             'metadata' => true,
-            'lists' => ['company-policy', 'aikido'],
+            'lists' => ['company-policy' => true, 'aikido' => true],
         ]);
 
         self::assertTrue($info->metadata);
         self::assertSame(['company-policy', 'aikido'], $info->lists);
     }
 
+    public function testFromDataSkipsListsNotEnabled(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData([
+            'lists' => ['company-policy' => true, 'aikido' => false],
+        ]);
+
+        self::assertSame(['company-policy'], $info->lists);
+    }
+
     public function testFromDataDropsReservedListNamesAdvertisedByRepository(): void
     {
         $info = ComposerRepositoryFilterInformation::fromData([
-            'lists' => ['advisories', 'company-policy', 'abandoned'],
+            'lists' => ['advisories' => true, 'company-policy' => true, 'abandoned' => true],
         ]);
 
         self::assertSame(['company-policy'], $info->lists);
@@ -40,7 +49,7 @@ class ComposerRepositoryFilterInformationTest extends TestCase
     public function testFromDataDropsListNamesWithReservedPrefixAdvertisedByRepository(): void
     {
         $info = ComposerRepositoryFilterInformation::fromData([
-            'lists' => ['ignore-foo', 'ignoremalware', 'company-policy'],
+            'lists' => ['ignore-foo' => true, 'ignoremalware' => true, 'company-policy' => true],
         ]);
 
         self::assertSame(['company-policy'], $info->lists);

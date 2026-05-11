@@ -337,8 +337,10 @@ describes what lists are available.
     "metadata-url": "/p2/%package%.json",
     "filter": {
         "metadata": true,
-        "lists": ["aikido-malware", "other-malware"],
-        "default-lists": ["aikido-malware"]
+        "lists": {
+            "malware": true,
+            "typosquatting": true
+        }
     }
 }
 ```
@@ -346,11 +348,8 @@ describes what lists are available.
 - **`metadata`** (required, boolean) — Set to `true` to indicate that per-package metadata files
   (served via `metadata-url`) contain filter list data. Composer will fetch the metadata for each
   relevant package and look for a `filter` key containing list entries.
-- **`lists`** (required, array of strings) — The names of all filter lists this repository provides.
-  Clients can use this to know which lists are available.
-- **`default-lists`** (required, array of strings) — The subset of lists that should be active by
-  default. When a user configures `"lists": ["defaults"]` (the default behaviour) in their
-  `repositories` entry for this repository, Composer expands `"defaults"` to these list names.
+- **`lists`** (required, object) — The names of all filter lists this repository provides, mapped to
+  `true` when the list is enabled. Clients can use this to know which lists are available.
 
 Per-package metadata files should include a `filter` key whose value is an object mapping list names
 to arrays of filter entries:
@@ -361,7 +360,7 @@ to arrays of filter entries:
         "vendor/package": [{ ... }]
     },
     "filter": {
-        "aikido-malware": [
+        "malware": [
             {
                 "constraint": ">=1.0.0,<1.2.0",
                 "url": "https://example.org/filters/123",

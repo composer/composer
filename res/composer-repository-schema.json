@@ -59,10 +59,10 @@
                     "description": "Whether metadata files contain filter list data."
                 },
                 "lists": {
-                    "type": "array",
-                    "description": "Names of all filter lists provided by this repository.",
-                    "items": {
-                        "type": "string"
+                    "type": "object",
+                    "description": "Names of all filter lists provided by this repository, mapped to true. The boolean value is a presence marker only; the object shape exists for forward compatibility so future per-list metadata can be added without another wire-format break.",
+                    "additionalProperties": {
+                        "type": "boolean"
                     }
                 }
             }

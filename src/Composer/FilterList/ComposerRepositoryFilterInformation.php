@@ -45,19 +45,26 @@ class ComposerRepositoryFilterInformation
      */
     public static function fromData(array $data): self
     {
-        $lists = isset($data['lists']) && is_array($data['lists']) ? array_values($data['lists']) : [];
-        $defaultLists = isset($data['default-lists']) && is_array($data['default-lists']) ? array_values($data['default-lists']) : [];
+        $lists = [];
+        if (isset($data['lists']) && is_array($data['lists'])) {
+            foreach ($data['lists'] as $name => $enabled) {
+                if (!is_string($name) || !(bool) $enabled) {
+                    continue;
+                }
+                $lists[] = $name;
+            }
+        }
 
         // Repos must not advertise built-in list names or names that collide with
         // future-reserved identifiers; drop them silently so they cannot shadow
         // Composer's own advisory/abandoned handling or claim a future reserved slot.
-        $lists = array_values(array_filter($lists, static function ($name): bool {
+        $lists = array_values(array_filter($lists, static function (string $name): bool {
             if (in_array($name, PolicyConfig::RESERVED_NAMES, true) || in_array($name, PolicyConfig::FUTURE_RESERVED_NAMES, true)) {
                 return false;
             }
 
             foreach (PolicyConfig::FUTURE_RESERVED_PREFIXES as $prefix) {
-                if (is_string($name) && str_starts_with($name, $prefix)) {
+                if (str_starts_with($name, $prefix)) {
                     return false;
                 }
             }
