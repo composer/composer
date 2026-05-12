@@ -14,6 +14,7 @@ namespace Composer\Test;
 
 use Composer\Advisory\Auditor;
 use Composer\Config;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Util\Platform;
 
 class ConfigTest extends TestCase
@@ -389,15 +390,15 @@ class ConfigTest extends TestCase
         $result = $config->get('audit');
         self::assertArrayHasKey('abandoned', $result);
         self::assertArrayHasKey('ignore', $result);
-        self::assertSame(Auditor::ABANDONED_FAIL, $result['abandoned']);
+        self::assertSame(ListPolicyConfig::AUDIT_FAIL, $result['abandoned']);
         self::assertSame([], $result['ignore']);
 
-        Platform::putEnv('COMPOSER_AUDIT_ABANDONED', Auditor::ABANDONED_IGNORE);
+        Platform::putEnv('COMPOSER_AUDIT_ABANDONED', ListPolicyConfig::AUDIT_IGNORE);
         $result = $config->get('audit');
         Platform::clearEnv('COMPOSER_AUDIT_ABANDONED');
         self::assertArrayHasKey('abandoned', $result);
         self::assertArrayHasKey('ignore', $result);
-        self::assertSame(Auditor::ABANDONED_IGNORE, $result['abandoned']);
+        self::assertSame(ListPolicyConfig::AUDIT_IGNORE, $result['abandoned']);
         self::assertSame([], $result['ignore']);
 
         $config->merge(['config' => ['audit' => ['ignore' => ['A', 'B']]]]);

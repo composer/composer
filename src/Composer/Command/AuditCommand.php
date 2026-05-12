@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\RepositoryUtils;
@@ -35,10 +36,10 @@ class AuditCommand extends BaseCommand
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables auditing of require-dev packages.'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_TABLE, Auditor::FORMATS),
                 new InputOption('locked', null, InputOption::VALUE_NONE, 'Audit based on the lock file instead of the installed packages.'),
-                new InputOption('abandoned', null, InputOption::VALUE_REQUIRED, 'Behavior on abandoned packages. Must be "ignore", "report", or "fail".', null, Auditor::ABANDONEDS),
+                new InputOption('abandoned', null, InputOption::VALUE_REQUIRED, 'Behavior on abandoned packages. Must be "ignore", "report", or "fail".', null, ListPolicyConfig::AUDITS),
                 new InputOption('ignore-severity', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Ignore advisories of a certain severity level.', [], ['low', 'medium', 'high', 'critical']),
                 new InputOption('ignore-unreachable', null, InputOption::VALUE_NONE, 'Ignore repositories that are unreachable or return a non-200 status code.'),
-                new InputOption('filtered', null, InputOption::VALUE_REQUIRED, 'Behavior on filtered packages. Must be "ignore", "report", or "fail". Overrides the per-list audit setting for malware and every custom filter list.', null, Auditor::FILTERED),
+                new InputOption('filtered', null, InputOption::VALUE_REQUIRED, 'Behavior on filtered packages. Must be "ignore", "report", or "fail". Overrides the per-list audit setting for malware and every custom filter list.', null, ListPolicyConfig::AUDITS),
             ])
             ->setHelp(
                 <<<EOT
@@ -72,13 +73,13 @@ EOT
         }
 
         $abandoned = $input->getOption('abandoned');
-        if ($abandoned !== null && !in_array($abandoned, Auditor::ABANDONEDS, true)) {
-            throw new \InvalidArgumentException('--abandoned must be one of '.implode(', ', Auditor::ABANDONEDS).'.');
+        if ($abandoned !== null && !in_array($abandoned, ListPolicyConfig::AUDITS, true)) {
+            throw new \InvalidArgumentException('--abandoned must be one of '.implode(', ', ListPolicyConfig::AUDITS).'.');
         }
 
         $filtered = $input->getOption('filtered');
-        if ($filtered !== null && !in_array($filtered, Auditor::FILTERED, true)) {
-            throw new \InvalidArgumentException('--filtered must be one of '.implode(', ', Auditor::FILTERED).'.');
+        if ($filtered !== null && !in_array($filtered, ListPolicyConfig::AUDITS, true)) {
+            throw new \InvalidArgumentException('--filtered must be one of '.implode(', ', ListPolicyConfig::AUDITS).'.');
         }
 
         $policyConfig = $this->createPolicyConfig($composer->getConfig(), $input);

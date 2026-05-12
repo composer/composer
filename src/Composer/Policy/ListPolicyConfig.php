@@ -32,6 +32,13 @@ abstract class ListPolicyConfig
     public const AUDIT_REPORT = 'report';
     public const AUDIT_FAIL = 'fail';
 
+    /** @internal */
+    public const AUDITS = [
+        self::AUDIT_IGNORE,
+        self::AUDIT_REPORT,
+        self::AUDIT_FAIL,
+    ];
+
     /**
      * "update" = block during update/require only
      * "install" = block during install only

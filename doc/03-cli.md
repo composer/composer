@@ -1204,9 +1204,10 @@ php composer.phar audit
   flag will override the config value and the environment variable.
 * **--ignore-severity:** Ignore advisories of a certain severity level. Can be passed one or more
   time to ignore multiple severities.
-* **--filtered:** Behavior on filtered packages. Must be "ignore", "report",
-  or "fail".  See also [config.audit.filtered](06-config.md#filtered).  Passing this
-  flag will override the config value.
+* **--filtered:** Behavior on packages matched by `malware` and custom filter
+  lists. Must be "ignore", "report", or "fail". Overrides the per-list `audit`
+  setting (`config.policy.malware.audit` and every custom list's `audit`) for
+  the duration of this command.
 
 ## help
 

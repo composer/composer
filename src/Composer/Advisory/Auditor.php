@@ -22,6 +22,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Repository\RepositorySet;
 use Composer\Util\PackageInfo;
@@ -48,27 +49,12 @@ class Auditor
         self::FORMAT_SUMMARY,
     ];
 
-    public const ABANDONED_IGNORE = 'ignore';
-    public const ABANDONED_REPORT = 'report';
-    public const ABANDONED_FAIL = 'fail';
-
-    /** @internal */
-    public const ABANDONEDS = [
-        self::ABANDONED_IGNORE,
-        self::ABANDONED_REPORT,
-        self::ABANDONED_FAIL,
-    ];
-
-    public const FILTERED_IGNORE = 'ignore';
-    public const FILTERED_REPORT = 'report';
-    public const FILTERED_FAIL = 'fail';
-
-    /** @internal */
-    public const FILTERED = [
-        self::FILTERED_IGNORE,
-        self::FILTERED_REPORT,
-        self::FILTERED_FAIL,
-    ];
+    /** @deprecated Use ListPolicyConfig::AUDIT_IGNORE instead */
+    public const ABANDONED_IGNORE = ListPolicyConfig::AUDIT_IGNORE;
+    /** @deprecated Use ListPolicyConfig::AUDIT_REPORT instead */
+    public const ABANDONED_REPORT = ListPolicyConfig::AUDIT_REPORT;
+    /** @deprecated Use ListPolicyConfig::AUDIT_FAIL instead */
+    public const ABANDONED_FAIL = ListPolicyConfig::AUDIT_FAIL;
 
     /** Values to determine the audit result. */
     public const STATUS_OK = 0;
@@ -105,11 +91,11 @@ class Auditor
 
         $abandonedCount = 0;
         $affectedPackagesCount = count($advisories);
-        if ($policyConfig->abandoned->audit === self::ABANDONED_IGNORE) {
+        if ($policyConfig->abandoned->audit === ListPolicyConfig::AUDIT_IGNORE) {
             $abandonedPackages = [];
         } else {
             $abandonedPackages = $this->filterAbandonedPackages($packages, $policyConfig->abandoned->getFlatIgnoreForOperation('audit'));
-            if ($policyConfig->abandoned->audit === self::ABANDONED_FAIL) {
+            if ($policyConfig->abandoned->audit === ListPolicyConfig::AUDIT_FAIL) {
                 $abandonedCount = count($abandonedPackages);
             }
         }
@@ -121,7 +107,7 @@ class Auditor
         if ($filterListProviderSet !== null && count($activeAuditFilterLists) > 0) {
             $failingListNames = [];
             foreach ($activeAuditFilterLists as $name => $list) {
-                if ($list->audit === self::FILTERED_FAIL) {
+                if ($list->audit === ListPolicyConfig::AUDIT_FAIL) {
                     $failingListNames[$name] = true;
                 }
             }

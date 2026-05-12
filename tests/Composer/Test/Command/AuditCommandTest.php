@@ -13,6 +13,7 @@
 namespace Composer\Test\Command;
 
 use Composer\Advisory\Auditor;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Test\TestCase;
 use UnexpectedValueException;
 
@@ -108,7 +109,7 @@ class AuditCommandTest extends TestCase
         $this->createComposerLockWithPackages($packages);
 
         $appTester = $this->getApplicationTester();
-        $exitCode = $appTester->run(['command' => 'audit', '--locked' => true, '--filtered' => Auditor::FILTERED_IGNORE]);
+        $exitCode = $appTester->run(['command' => 'audit', '--locked' => true, '--filtered' => ListPolicyConfig::AUDIT_IGNORE]);
 
         $display = $appTester->getDisplay(true);
         self::assertStringNotContainsString('matching filters', $display);
@@ -135,7 +136,7 @@ class AuditCommandTest extends TestCase
             ],
             'config' => [
                 'policy' => [
-                    'company-banned' => ['audit' => Auditor::FILTERED_REPORT],
+                    'company-banned' => ['audit' => ListPolicyConfig::AUDIT_REPORT],
                 ],
             ],
         ]);

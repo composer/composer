@@ -23,6 +23,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Policy\AbandonedPolicyConfig;
 use Composer\Policy\AdvisoriesPolicyConfig;
 use Composer\Policy\CustomListPolicyConfig;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\IgnoreIdRule;
 use Composer\Policy\IgnorePackageRule;
 use Composer\Policy\IgnoreSeverityRule;
@@ -96,7 +97,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_IGNORE,
+                'abandoned' => ListPolicyConfig::AUDIT_IGNORE,
             ],
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.',
@@ -109,7 +110,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'ignore-abandoned' => ['vendor/*' => null],
             ],
             'expected' => Auditor::STATUS_OK,
@@ -123,7 +124,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'ignore-abandoned' => [$abandonedWithReplacement->getName() => null, $abandonedNoReplacement->getName() => null],
             ],
             'expected' => Auditor::STATUS_OK,
@@ -137,7 +138,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'ignore-abandoned' => ['acme/test' => 'ignoring because yolo'],
             ],
             'expected' => Auditor::STATUS_ABANDONED,
@@ -154,7 +155,7 @@ vendor/abandoned2 is abandoned. No replacement was suggested.',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => true,
-                'abandoned' => Auditor::ABANDONED_REPORT,
+                'abandoned' => ListPolicyConfig::AUDIT_REPORT,
             ],
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.
@@ -170,7 +171,7 @@ vendor/abandoned2 is abandoned. No replacement was suggested.',
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'format' => Auditor::FORMAT_TABLE,
             ],
             'expected' => Auditor::STATUS_ABANDONED,
@@ -192,7 +193,7 @@ Found 2 abandoned packages:
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'format' => Auditor::FORMAT_TABLE,
             ],
             'expected' => Auditor::STATUS_VULNERABLE | Auditor::STATUS_ABANDONED,
@@ -233,7 +234,7 @@ Found 2 abandoned packages:
                     $abandonedNoReplacement,
                 ],
                 'warningOnly' => false,
-                'abandoned' => Auditor::ABANDONED_FAIL,
+                'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'format' => Auditor::FORMAT_JSON,
             ],
             'expected' => Auditor::STATUS_ABANDONED,
@@ -258,7 +259,7 @@ Found 2 abandoned packages:
             $this->expectException(InvalidArgumentException::class);
         }
         $policyConfig = $this->createPolicyConfig(
-            $data['abandoned'] ?? Auditor::ABANDONED_IGNORE,
+            $data['abandoned'] ?? ListPolicyConfig::AUDIT_IGNORE,
             false,
             null,
             'test-list',
@@ -466,7 +467,7 @@ Found 2 abandoned packages:
     public function testAuditWithIgnore($packages, $ignoredIds, $exitCode, $expectedOutput): void
     {
         $policyConfig = $this->createPolicyConfig(
-            Auditor::ABANDONED_IGNORE,
+            ListPolicyConfig::AUDIT_IGNORE,
             false,
             null,
             'test-list',
@@ -577,7 +578,7 @@ Found 2 abandoned packages:
 
         // Test with ignoreUnreachable flag
         $io = new BufferIO();
-        $result = $auditor->audit($io, $repoSet, $this->createPolicyConfig(Auditor::ABANDONED_IGNORE, true), $packages, Auditor::FORMAT_PLAIN, false);
+        $result = $auditor->audit($io, $repoSet, $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, true), $packages, Auditor::FORMAT_PLAIN, false);
 
         // Should find advisories from the reachable repositories
         self::assertSame(Auditor::STATUS_VULNERABLE, $result);
@@ -594,7 +595,7 @@ Found 2 abandoned packages:
 
         // Test with JSON format
         $io = new BufferIO();
-        $result = $auditor->audit($io, $repoSet, $this->createPolicyConfig(Auditor::ABANDONED_IGNORE, true), $packages, Auditor::FORMAT_JSON, false);
+        $result = $auditor->audit($io, $repoSet, $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, true), $packages, Auditor::FORMAT_JSON, false);
         self::assertSame(Auditor::STATUS_VULNERABLE, $result);
 
         $json = json_decode($io->getOutput(), true);
@@ -626,7 +627,7 @@ Found 2 abandoned packages:
     public function testAuditWithIgnoreSeverity($packages, $ignoredSeverities, $exitCode, $expectedOutput): void
     {
         $policyConfig = $this->createPolicyConfig(
-            Auditor::ABANDONED_IGNORE,
+            ListPolicyConfig::AUDIT_IGNORE,
             false,
             null,
             'test-list',
@@ -666,28 +667,28 @@ Found 2 abandoned packages:
             'ID-test-1'
         );
 
-        yield 'FILTERED_IGNORE skips filter processing' => [
+        yield 'AUDIT_IGNORE skips filter processing' => [
             'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
             'filterEntriesByList' => ['test-list' => [$matchingEntry]],
-            'filtered' => Auditor::FILTERED_IGNORE,
+            'filtered' => ListPolicyConfig::AUDIT_IGNORE,
             'format' => Auditor::FORMAT_PLAIN,
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.',
         ];
 
-        yield 'FILTERED_FAIL with no matching entry returns STATUS_OK' => [
+        yield 'AUDIT_FAIL with no matching entry returns STATUS_OK' => [
             'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
             'filterEntriesByList' => ['test-list' => [$nonMatchingEntry]],
-            'filtered' => Auditor::FILTERED_FAIL,
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
             'format' => Auditor::FORMAT_PLAIN,
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.',
         ];
 
-        yield 'FILTERED_FAIL with matching entry returns STATUS_FILTERED (plain)' => [
+        yield 'AUDIT_FAIL with matching entry returns STATUS_FILTERED (plain)' => [
             'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
             'filterEntriesByList' => ['test-list' => [$matchingEntry]],
-            'filtered' => Auditor::FILTERED_FAIL,
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
             'format' => Auditor::FORMAT_PLAIN,
             'expected' => Auditor::STATUS_FILTERED,
             'output' => 'No security vulnerability advisories found.
@@ -695,10 +696,10 @@ Found 1 package matching filters:
 vendor/package is on filter list "test-list". Reason: internal.',
         ];
 
-        yield 'FILTERED_FAIL with matching entry shows url and reason (plain)' => [
+        yield 'AUDIT_FAIL with matching entry shows url and reason (plain)' => [
             'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
             'filterEntriesByList' => ['test-list' => [$matchingEntryWithDetails]],
-            'filtered' => Auditor::FILTERED_FAIL,
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
             'format' => Auditor::FORMAT_PLAIN,
             'expected' => Auditor::STATUS_FILTERED,
             'output' => 'No security vulnerability advisories found.
@@ -706,10 +707,10 @@ Found 1 package matching filters:
 vendor/package is on filter list "test-list". Reason: internal. URL: https://example.com/filtered.',
         ];
 
-        yield 'FILTERED_REPORT with matching entry returns STATUS_OK' => [
+        yield 'AUDIT_REPORT with matching entry returns STATUS_OK' => [
             'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
             'filterEntriesByList' => ['test-list' => [$matchingEntry]],
-            'filtered' => Auditor::FILTERED_REPORT,
+            'filtered' => ListPolicyConfig::AUDIT_REPORT,
             'format' => Auditor::FORMAT_PLAIN,
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.
@@ -717,17 +718,17 @@ vendor/package is on filter list "test-list". Reason: internal. URL: https://exa
 vendor/package is on filter list "test-list". Reason: internal.',
         ];
 
-        yield 'FILTERED_FAIL with matching entry shows summary line only (summary format)' => [
+        yield 'AUDIT_FAIL with matching entry shows summary line only (summary format)' => [
             'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
             'filterEntriesByList' => ['test-list' => [$matchingEntry]],
-            'filtered' => Auditor::FILTERED_FAIL,
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
             'format' => Auditor::FORMAT_SUMMARY,
             'expected' => Auditor::STATUS_FILTERED,
             'output' => 'No security vulnerability advisories found.
 Found 1 package matching filters.',
         ];
 
-        yield 'FILTERED_FAIL with multiple matching packages shows plural form' => [
+        yield 'AUDIT_FAIL with multiple matching packages shows plural form' => [
             'packages' => [
                 new Package('vendor/package', '9.0.0.0', '9.0.0'),
                 new Package('vendor/other', '1.0.0.0', '10.0.0'),
@@ -738,7 +739,7 @@ Found 1 package matching filters.',
                     new FilterListEntry('vendor/other', new Constraint('>=', '1.0.0.0'), 'test-list', null, 'internal', 'ID-TEST'),
                 ],
             ],
-            'filtered' => Auditor::FILTERED_FAIL,
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
             'format' => Auditor::FORMAT_PLAIN,
             'expected' => Auditor::STATUS_FILTERED,
             'output' => 'No security vulnerability advisories found.
@@ -752,7 +753,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
      * @dataProvider filteredProvider
      * @param array<Package> $packages
      * @param array<string, list<FilterListEntry>> $filterEntriesByList
-     * @param Auditor::FILTERED_* $filtered
+     * @param ListPolicyConfig::AUDIT_* $filtered
      * @param 'json'|'plain'|'summary'|'table' $format
      */
     public function testAuditWithFilter(array $packages, array $filterEntriesByList, string $filtered, string $format, int $expected, string $output): void
@@ -766,7 +767,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             ->method('getMatchingFilterLists')
             ->willReturn(['filter' => $filterEntriesByList, 'unreachableRepos' => []]);
 
-        $policyConfig = $this->createPolicyConfig(Auditor::ABANDONED_IGNORE, false, $filtered);
+        $policyConfig = $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, false, $filtered);
 
         $auditor = new Auditor();
         $result = $auditor->audit(
@@ -803,7 +804,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             ->method('getMatchingFilterLists')
             ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
 
-        $policyConfig = $this->createPolicyConfig(Auditor::ABANDONED_IGNORE, false, Auditor::FILTERED_FAIL);
+        $policyConfig = $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, false, ListPolicyConfig::AUDIT_FAIL);
 
         $auditor = new Auditor();
         $result = $auditor->audit(
@@ -852,7 +853,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             ->method('getMatchingFilterLists')
             ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
 
-        $policyConfig = $this->createPolicyConfig(Auditor::ABANDONED_IGNORE, false, Auditor::FILTERED_FAIL);
+        $policyConfig = $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, false, ListPolicyConfig::AUDIT_FAIL);
 
         $auditor = new Auditor();
         // vendor1/package1 at 8.2.1 is vulnerable; vendor1/package2 at 9.0.0 matches the filter
@@ -878,13 +879,13 @@ vendor/other is on filter list "test-list". Reason: internal.',
 
     /**
      * @param Auditor::ABANDONED_* $abandoned
-     * @param Auditor::FILTERED_*|null $filteredAudit
+     * @param ListPolicyConfig::AUDIT_*|null $filteredAudit
      * @param array<string, string|null> $ignoreAdvisories Mixed flat map of advisory IDs and package names => reason.
      * @param list<string> $ignoreSeverities
      * @param array<string, string|null> $ignoreAbandoned Package name => reason; package name may be a wildcard pattern.
      */
     private function createPolicyConfig(
-        string $abandoned = Auditor::ABANDONED_IGNORE,
+        string $abandoned = ListPolicyConfig::AUDIT_IGNORE,
         bool $ignoreUnreachableAudit = false,
         ?string $filteredAudit = null,
         string $filteredListName = 'test-list',

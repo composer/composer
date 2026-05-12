@@ -17,6 +17,7 @@ use Composer\Config\ConfigSourceInterface;
 use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
@@ -39,7 +40,7 @@ class Config
         'allow-plugins' => [],
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
-        'audit' => ['ignore' => [], 'abandoned' => Auditor::ABANDONED_FAIL],
+        'audit' => ['ignore' => [], 'abandoned' => ListPolicyConfig::AUDIT_FAIL],
         'policy' => true,
         'notify-on-install' => true,
         'github-protocols' => ['https', 'ssh', 'git'],
@@ -524,9 +525,9 @@ class Config
                 $result = $this->config[$key];
                 $abandonedEnv = $this->getComposerEnv('COMPOSER_AUDIT_ABANDONED');
                 if (false !== $abandonedEnv) {
-                    if (!in_array($abandonedEnv, $validChoices = Auditor::ABANDONEDS, true)) {
+                    if (!in_array($abandonedEnv, ListPolicyConfig::AUDITS, true)) {
                         throw new \RuntimeException(
-                            "Invalid value for COMPOSER_AUDIT_ABANDONED: {$abandonedEnv}. Expected one of ".implode(', ', Auditor::ABANDONEDS)."."
+                            "Invalid value for COMPOSER_AUDIT_ABANDONED: {$abandonedEnv}. Expected one of ".implode(', ', ListPolicyConfig::AUDITS)."."
                         );
                     }
                     $result['abandoned'] = $abandonedEnv;

@@ -24,6 +24,7 @@ use Composer\Package\Locker;
 use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\FilesystemRepository;
 use Composer\Repository\PlatformRepository;
@@ -590,7 +591,7 @@ EOT
         }
         $repoSet->addRepository(new ComposerRepository(['type' => 'composer', 'url' => 'https://packagist.org'], new NullIO(), $config, $this->httpDownloader));
         $policyConfig = $this->createPolicyConfig($config, null);
-        $policyConfig = $policyConfig->withAudit(Auditor::ABANDONED_IGNORE, null);
+        $policyConfig = $policyConfig->withAudit(ListPolicyConfig::AUDIT_IGNORE, null);
 
         try {
             $io = new BufferIO();
