@@ -197,9 +197,17 @@ class Pool implements \Countable
     public function getFilterListEntryForPackageVersion(string $packageName, ?ConstraintInterface $constraint): array
     {
         $lists = [];
+        $seen = [];
         foreach ($this->filterListRemovedVersions[$packageName] ?? [] as $version => $filterListEntries) {
             if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
                 foreach ($filterListEntries as $entry) {
+                    $entryKey = spl_object_hash($entry);
+                    if (isset($seen[$entryKey])) {
+                        continue;
+                    }
+
+                    $seen[$entryKey] = true;
+
                     $url = (bool) $entry->url ? ' (see ' . $entry->url . ')' : '';
                     $reason = (bool) $entry->reason ? ' reason: ' . $entry->reason : '';
 
