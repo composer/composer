@@ -60,9 +60,16 @@
                 },
                 "lists": {
                     "type": "object",
-                    "description": "Names of all filter lists provided by this repository, mapped to true. The boolean value is a presence marker only; the object shape exists for forward compatibility so future per-list metadata can be added without another wire-format break.",
+                    "description": "Names of all filter lists provided by this repository, mapped to an object describing the list. The object shape allows future per-list metadata to be added without another wire-format break.",
                     "additionalProperties": {
-                        "type": "boolean"
+                        "type": "object",
+                        "required": ["enabled"],
+                        "properties": {
+                            "enabled": {
+                                "type": "boolean",
+                                "description": "Indicates if the filter list is available."
+                            }
+                        }
                     }
                 }
             }

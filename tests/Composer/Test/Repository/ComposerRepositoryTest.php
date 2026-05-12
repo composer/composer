@@ -523,7 +523,7 @@ class ComposerRepositoryTest extends TestCase
                         'metadata-url' => 'https://example.org/p2/%package%.json',
                         'filter' => [
                             'metadata' => true,
-                            'lists' => ['test' => true],
+                            'lists' => ['test' => ['enabled' => true]],
                         ],
                     ]),
                     'options' => ['http' => ['verify_peer' => false]],
@@ -589,7 +589,11 @@ class ComposerRepositoryTest extends TestCase
                         'metadata-url' => 'https://example.org/p2/%package%.json',
                         'filter' => [
                             'metadata' => true,
-                            'lists' => ['malware' => true, 'typosquatting' => true, 'deprecated' => true],
+                            'lists' => [
+                                'malware' => ['enabled' => true],
+                                'typosquatting' => ['enabled' => true],
+                                'deprecated' => ['enabled' => true],
+                            ],
                         ],
                     ]),
                     'options' => ['http' => ['verify_peer' => false]],
@@ -631,7 +635,10 @@ class ComposerRepositoryTest extends TestCase
                         'metadata-url' => 'https://example.org/p2/%package%.json',
                         'filter' => [
                             'metadata' => true,
-                            'lists' => ['malware' => true, 'typosquatting' => true],
+                            'lists' => [
+                                'malware' => ['enabled' => true],
+                                'typosquatting' => ['enabled' => true],
+                            ],
                         ],
                     ]),
                     'options' => ['http' => ['verify_peer' => false]],

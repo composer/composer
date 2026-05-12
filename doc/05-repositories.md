@@ -338,8 +338,8 @@ describes what lists are available.
     "filter": {
         "metadata": true,
         "lists": {
-            "malware": true,
-            "typosquatting": true
+            "malware": { "enabled": true },
+            "typosquatting": { "enabled": true }
         }
     }
 }
@@ -349,7 +349,9 @@ describes what lists are available.
   (served via `metadata-url`) contain filter list data. Composer will fetch the metadata for each
   relevant package and look for a `filter` key containing list entries.
 - **`lists`** (required, object) — The names of all filter lists this repository provides, mapped to
-  `true` when the list is enabled. Clients can use this to know which lists are available.
+  an object describing the list. The object currently carries an `enabled` flag (set to `true` when
+  the list is available) and is structured this way so future per-list metadata can be added without
+  breaking the wire format.
 
 Per-package metadata files should include a `filter` key whose value is an object mapping list names
 to arrays of filter entries:

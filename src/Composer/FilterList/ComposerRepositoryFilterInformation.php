@@ -47,8 +47,8 @@ class ComposerRepositoryFilterInformation
     {
         $lists = [];
         if (isset($data['lists']) && is_array($data['lists'])) {
-            foreach ($data['lists'] as $name => $enabled) {
-                if (!is_string($name) || !(bool) $enabled) {
+            foreach ($data['lists'] as $name => $config) {
+                if (!is_string($name) || !is_array($config) || !(bool) ($config['enabled'] ?? false)) {
                     continue;
                 }
                 $lists[] = $name;
