@@ -83,7 +83,7 @@ class ComposerRepositoryFilterInformationTest extends TestCase
 
     public function testFromDataDefaultsSummaryUrlToNull(): void
     {
-        $info = ComposerRepositoryFilterInformation::fromData(['lists' => ['malware' => true]]);
+        $info = ComposerRepositoryFilterInformation::fromData(['lists' => ['malware' => ['enabled' => true]]]);
 
         self::assertNull($info->summaryUrl);
     }
@@ -91,7 +91,7 @@ class ComposerRepositoryFilterInformationTest extends TestCase
     public function testFromDataAppliesCanonicalizerToSummaryUrl(): void
     {
         $info = ComposerRepositoryFilterInformation::fromData(
-            ['lists' => ['malware' => true], 'summary-url' => '/p2/filter-summary.json'],
+            ['lists' => ['malware' => ['enabled' => true]], 'summary-url' => '/p2/filter-summary.json'],
             static function (string $url): string {
                 return 'https://example.org' . $url;
             }
@@ -103,7 +103,7 @@ class ComposerRepositoryFilterInformationTest extends TestCase
     public function testFromDataIgnoresNonStringSummaryUrl(): void
     {
         $info = ComposerRepositoryFilterInformation::fromData(
-            ['lists' => ['malware' => true], 'summary-url' => ['oops']],
+            ['lists' => ['malware' => ['enabled' => true]], 'summary-url' => ['oops']],
             static function (string $url): string {
                 return $url;
             }

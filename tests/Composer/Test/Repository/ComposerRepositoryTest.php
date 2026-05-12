@@ -676,7 +676,7 @@ class ComposerRepositoryTest extends TestCase
                         'metadata-url' => 'https://example.org/p2/%package%.json',
                         'filter' => [
                             'metadata' => true,
-                            'lists' => ['malware' => true],
+                            'lists' => ['malware' => ['enabled' => true]],
                             'summary-url' => '/lists/all/summary.json',
                         ],
                     ]),
@@ -741,7 +741,10 @@ class ComposerRepositoryTest extends TestCase
                         'metadata-url' => 'https://example.org/p2/%package%.json',
                         'filter' => [
                             'metadata' => true,
-                            'lists' => ['malware' => true, 'typosquatting' => true],
+                            'lists' => [
+                                'malware' => ['enabled' => true],
+                                'typosquatting' => ['enabled' => true],
+                            ],
                             'summary-url' => '/lists/all/summary.json',
                         ],
                     ]),
@@ -786,7 +789,7 @@ class ComposerRepositoryTest extends TestCase
                         'metadata-url' => 'https://example.org/p2/%package%.json',
                         'filter' => [
                             'metadata' => true,
-                            'lists' => ['malware' => true],
+                            'lists' => ['malware' => ['enabled' => true]],
                             'summary-url' => '/lists/all/summary.json',
                         ],
                     ]),
@@ -834,7 +837,7 @@ class ComposerRepositoryTest extends TestCase
                         'metadata-url' => 'https://example.org/p2/%package%.json',
                         'filter' => [
                             'metadata' => true,
-                            'lists' => ['malware' => true],
+                            'lists' => ['malware' => ['enabled' => true]],
                             'summary-url' => '/lists/all/summary.json',
                         ],
                     ]),
@@ -898,7 +901,7 @@ class ComposerRepositoryTest extends TestCase
             'metadata-url' => 'https://example.org/p2/%package%.json',
             'filter' => [
                 'metadata' => true,
-                'lists' => ['malware' => true],
+                'lists' => ['malware' => ['enabled' => true]],
                 'summary-url' => '/lists/all/summary.json',
             ],
         ]);
