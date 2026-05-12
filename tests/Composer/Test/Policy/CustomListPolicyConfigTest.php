@@ -70,4 +70,30 @@ class CustomListPolicyConfigTest extends TestCase
             CustomListPolicyConfig::fromRawConfig('test', $rawListConfig, new VersionParser())
         );
     }
+
+    /**
+     * @return iterable<array{string}>
+     */
+    public static function nonHttpsUrlProvider(): iterable
+    {
+        yield 'http' => ['http://insecure.example.org/list.json'];
+        yield 'ftp' => ['ftp://example.org/list.json'];
+        yield 'file' => ['file:///etc/list.json'];
+        yield 'protocol-relative' => ['//example.org/list.json'];
+    }
+
+    /**
+     * @dataProvider nonHttpsUrlProvider
+     */
+    public function testFromRawConfigRejectsNonHttpsSourceUrl(string $url): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('must start with "https://"');
+
+        CustomListPolicyConfig::fromRawConfig(
+            'company-policy',
+            ['sources' => [['type' => 'url', 'url' => $url]]],
+            new VersionParser()
+        );
+    }
 }

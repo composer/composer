@@ -44,7 +44,7 @@ class SourceValidator
             throw new \RuntimeException('Source configuration is missing a string "url" field.');
         }
         if (str_starts_with($source['url'], 'https://') === false) {
-            throw new \RuntimeException('Source URL must start with "https://".');
+            throw new \RuntimeException('Source URL for policy list "'.$listName.'" must start with "https://"; got "'.$source['url'].'".');
         }
 
         return new UrlSource($listName, $source['url']);

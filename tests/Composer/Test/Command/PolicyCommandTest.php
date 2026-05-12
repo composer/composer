@@ -249,7 +249,7 @@ class PolicyCommandTest extends TestCase
     public function testAddSourceRejectsNonHttpsUrl(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Source URL must start with "https://"');
+        $this->expectExceptionMessage('must start with "https://"');
 
         $this->initTempComposer([]);
 

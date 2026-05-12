@@ -460,6 +460,9 @@ package repositories or set explicitly here).
 }
 ```
 
+Source URLs must use `https://`. `http://` and other schemes are rejected both at
+schema validation time (`composer validate`) and at config load time.
+
 Custom list names must not conflict with the reserved names `advisories`, `malware`, or
 `abandoned`, and must not start with `ignore` (the only `ignore`-prefixed key allowed at this
 level is the documented `ignore-unreachable` setting).

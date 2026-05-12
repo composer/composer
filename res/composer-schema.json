@@ -738,7 +738,8 @@
                                                 },
                                                 "url": {
                                                     "type": "string",
-                                                    "description": "URL to fetch the policy list data from."
+                                                    "pattern": "^https://",
+                                                    "description": "URL to fetch the policy list data from. Must use https://."
                                                 }
                                             },
                                             "additionalProperties": false
