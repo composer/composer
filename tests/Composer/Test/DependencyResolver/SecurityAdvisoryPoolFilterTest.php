@@ -16,6 +16,9 @@ use Composer\Advisory\Auditor;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
+use Composer\Downloader\TransportException;
+use Composer\IO\BufferIO;
+use Composer\IO\NullIO;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Policy\AbandonedPolicyConfig;
@@ -55,7 +58,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testFilterPackagesByAdvisories(): void
     {
-        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig());
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
 
         $repository = new PackageRepository([
             'package' => [],
@@ -99,7 +102,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             [],
             IgnoreUnreachable::default()
         );
-        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig);
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig, new NullIO());
 
         $repository = new PackageRepository([
             'package' => [],
@@ -120,7 +123,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
     public function testDontFilterPackagesWithBlockInsecureDisabled(): void
     {
-        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(false));
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(false), new NullIO());
 
         $repository = new PackageRepository([
             'package' => [],
@@ -148,7 +151,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             [],
             [$packageNameIgnoreAbandoned => [new IgnorePackageRule($packageNameIgnoreAbandoned, new MatchAllConstraint())]]
         );
-        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig);
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig, new NullIO());
 
         $abandonedPackage = new CompletePackage('acme/package', '1.0.0.0', '1.0');
         $abandonedPackage->setAbandoned(true);
@@ -166,6 +169,81 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $this->assertSame([$expectedPackage, $ignoreAbandonedPackage], $filteredPool->getPackages());
         $this->assertCount(1, $filteredPool->getAllAbandonedRemovedPackageVersions());
         $this->assertCount(0, $filteredPool->getAllSecurityRemovedPackageVersions());
+    }
+
+    public function testWarnsWhenUnreachableRepositoriesAreIgnored(): void
+    {
+        $unreachable = new class([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [
+                    [
+                        'advisoryId' => 'PKSA-test',
+                        'packageName' => 'acme/package',
+                        'remoteId' => 'r',
+                        'title' => 'Security Advisory',
+                        'link' => null,
+                        'cve' => 'CVE-2024-9999',
+                        'affectedVersions' => '>=1.0.0,<2.0.0',
+                        'source' => 'Tests',
+                        'reportedAt' => '2024-04-31 12:37:47',
+                        'composerRepository' => 'Unreachable Repo',
+                        'severity' => 'high',
+                        'sources' => [['name' => 'Test', 'remoteId' => 'r']],
+                    ],
+                ],
+            ],
+        ]) extends PackageRepository {
+            public function getSecurityAdvisories(array $packageConstraintMap, bool $allowPartialAdvisories = false): array
+            {
+                throw new TransportException('The "https://example.org/security.json" file could not be downloaded: HTTP/1.1 502 Bad Gateway', 502);
+            }
+
+            public function getRepoName(): string
+            {
+                return 'unreachable advisory repo';
+            }
+        };
+
+        // ignore-unreachable defaults to ["update", "install"], so the transport error is swallowed.
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), $io = new BufferIO());
+        $filter->filter(new Pool([new Package('acme/package', '1.0.0.0', '1.0')]), [$unreachable], new Request());
+
+        $output = $io->getOutput();
+        self::assertStringContainsString('Security advisory data could not be fetched from some repositories', $output);
+        self::assertStringContainsString('HTTP/1.1 502 Bad Gateway', $output);
+    }
+
+    public function testRethrowsTransportErrorWhenUnreachableIsNotIgnored(): void
+    {
+        $unreachable = new class([
+            'package' => [],
+            'security-advisories' => ['acme/package' => []],
+        ]) extends PackageRepository {
+            public function getSecurityAdvisories(array $packageConstraintMap, bool $allowPartialAdvisories = false): array
+            {
+                throw new TransportException('boom', 500);
+            }
+
+            public function getRepoName(): string
+            {
+                return 'unreachable advisory repo';
+            }
+        };
+
+        $policyConfig = new PolicyConfig(
+            true,
+            new AdvisoriesPolicyConfig(true, ListPolicyConfig::AUDIT_FAIL, [], [], []),
+            MalwarePolicyConfig::disabled(),
+            new AbandonedPolicyConfig(true, ListPolicyConfig::AUDIT_FAIL, []),
+            [],
+            IgnoreUnreachable::none()
+        );
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig, new BufferIO());
+
+        $this->expectException(TransportException::class);
+        $filter->filter(new Pool([new Package('acme/package', '1.0.0.0', '1.0')]), [$unreachable], new Request());
     }
 
     /**

@@ -1160,7 +1160,7 @@ class Installer
         $policyConfig = $this->getPolicyConfig();
 
         if ($policyConfig->enabled && $policyConfig->advisories->shouldBlock('update') && !$this->updateMirrors) {
-            return new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig);
+            return new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig, $this->io);
         }
 
         return null;
@@ -1191,7 +1191,7 @@ class Installer
             return null;
         }
 
-        return new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader(), $blockScope, $this->repositoryManager->getRepositories());
+        return new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader(), $blockScope, $this->repositoryManager->getRepositories(), $this->io);
     }
 
     /**

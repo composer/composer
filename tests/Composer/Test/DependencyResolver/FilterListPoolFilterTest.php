@@ -16,7 +16,10 @@ use Composer\Config;
 use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
+use Composer\Downloader\TransportException;
 use Composer\FilterList\FilterListAuditor;
+use Composer\IO\BufferIO;
+use Composer\IO\NullIO;
 use Composer\Package\Package;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
@@ -45,7 +48,7 @@ class FilterListPoolFilterTest extends TestCase
         $policyConfig = PolicyConfig::fromConfig($config);
 
         $repository = $this->generatePackageRepository('1.0');
-        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository], new NullIO());
 
         $pool = new Pool([
             new Package('acme/package', '1.0.0.0', '1.0'),
@@ -70,7 +73,7 @@ class FilterListPoolFilterTest extends TestCase
 
         $policyConfig = PolicyConfig::fromConfig($config);
         $repository = $this->generatePackageRepository('*');
-        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository], new NullIO());
 
         $pool = new Pool([
             $expectedPackage1 = new Package('acme/package', '1.0.0.0', '1.0'),
@@ -105,7 +108,7 @@ class FilterListPoolFilterTest extends TestCase
 
         $policyConfig = PolicyConfig::fromConfig($config);
         $repository = $this->generatePackageRepository('>=1.0');
-        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository], new NullIO());
 
         $pool = new Pool([
             $expectedPackage = new Package('acme/package', '1.0.0.0', '1.0'),
@@ -140,7 +143,7 @@ class FilterListPoolFilterTest extends TestCase
 
         $policyConfig = PolicyConfig::fromConfig($config);
         $repository = $this->generatePackageRepository('0.0.1');
-        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository], new NullIO());
 
         $pool = new Pool([
             new Package('acme/package', '3.0.0.0', '3.0'),
@@ -179,14 +182,14 @@ class FilterListPoolFilterTest extends TestCase
         $request->fixLockedPackage($package);
 
         // Install scope: locked package IS checked, gets filter-list-removed.
-        $installFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_INSTALL, [$repository]);
+        $installFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_INSTALL, [$repository], new NullIO());
         $installPool = $installFilter->filter(new Pool([$package]), $request);
         self::assertSame([], $installPool->getPackages(), 'install-scope filter must include locked packages');
         self::assertTrue($installPool->isFilterListRemovedPackageVersion('acme/locked', new Constraint('==', '1.0.0.0')));
 
         // Update scope: locked packages are checked against install-scope filter lists too,
         // so a malware-flagged locked package is still removed from the pool.
-        $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+        $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository], new NullIO());
         $updatePool = $updateFilter->filter(new Pool([$package]), $request);
         self::assertSame([], $updatePool->getPackages(), 'update-scope filter must apply install-scope rules to locked packages');
         self::assertTrue($updatePool->isFilterListRemovedPackageVersion('acme/locked', new Constraint('==', '1.0.0.0')));
@@ -223,7 +226,7 @@ class FilterListPoolFilterTest extends TestCase
         $request = new Request($lockedRepo);
         $request->requireName('acme/mirrored', new Constraint('==', '1.0.0.0'));
 
-        $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+        $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository], new NullIO());
         $updatePool = $updateFilter->filter(new Pool([$poolPackage]), $request);
         self::assertSame([], $updatePool->getPackages(), 'packages from the locked repo must be checked against install-scope filter lists');
         self::assertTrue($updatePool->isFilterListRemovedPackageVersion('acme/mirrored', new Constraint('==', '1.0.0.0')));
@@ -255,10 +258,77 @@ class FilterListPoolFilterTest extends TestCase
         $package = new Package('acme/free', '1.0.0.0', '1.0');
         $request = new Request();
 
-        $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository]);
+        $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository], new NullIO());
         $updatePool = $updateFilter->filter(new Pool([$package]), $request);
         self::assertSame([$package], $updatePool->getPackages(), 'install-only lists must not block non-locked packages during update scope');
         self::assertCount(0, $updatePool->getAllFilterListRemovedPackageVersions());
+    }
+
+    public function testWarnsWhenUnreachableSourcesAreIgnored(): void
+    {
+        $unreachable = new class([
+            'package' => [],
+            'filter' => [
+                'test-list' => [
+                    ['package' => 'acme/package', 'constraint' => '*', 'reason' => 'malware'],
+                ],
+            ],
+        ]) extends PackageRepository {
+            public function getFilter(array $packageConstraintMap): array
+            {
+                throw new TransportException('The "https://example.org/filter.json" file could not be downloaded: HTTP/1.1 500 Internal Server Error', 500);
+            }
+
+            public function getRepoName(): string
+            {
+                return 'unreachable filter list repo';
+            }
+        };
+
+        // ignore-unreachable defaults to ["update", "install"], so the transport error is swallowed.
+        $config = new Config();
+        $config->merge(['config' => ['policy' => ['test-list' => true]]]);
+        $policyConfig = PolicyConfig::fromConfig($config);
+
+        $io = new BufferIO();
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$unreachable], $io);
+        $filter->filter(new Pool([new Package('acme/package', '1.0.0.0', '1.0')]), new Request());
+
+        $output = $io->getOutput();
+        self::assertStringContainsString('Filter list data could not be fetched from some sources', $output);
+        self::assertStringContainsString('HTTP/1.1 500 Internal Server Error', $output);
+    }
+
+    public function testRethrowsTransportErrorWhenUnreachableIsNotIgnored(): void
+    {
+        $unreachable = new class([
+            'package' => [],
+            'filter' => [
+                'test-list' => [
+                    ['package' => 'acme/package', 'constraint' => '*', 'reason' => 'malware'],
+                ],
+            ],
+        ]) extends PackageRepository {
+            public function getFilter(array $packageConstraintMap): array
+            {
+                throw new TransportException('boom', 500);
+            }
+
+            public function getRepoName(): string
+            {
+                return 'unreachable filter list repo';
+            }
+        };
+
+        // ignore-unreachable: false — transport errors bubble up; no warning needed.
+        $config = new Config();
+        $config->merge(['config' => ['policy' => ['test-list' => true, 'ignore-unreachable' => false]]]);
+        $policyConfig = PolicyConfig::fromConfig($config);
+
+        $filter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$unreachable], new BufferIO());
+
+        $this->expectException(TransportException::class);
+        $filter->filter(new Pool([new Package('acme/package', '1.0.0.0', '1.0')]), new Request());
     }
 
     private function generatePackageRepository(string $constraint): PackageRepository

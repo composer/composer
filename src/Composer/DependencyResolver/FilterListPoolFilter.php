@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\FilterList\FilterListAuditor;
 use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
+use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\RootPackageInterface;
 use Composer\Policy\ListPolicyConfig;
@@ -40,6 +41,8 @@ class FilterListPoolFilter
     private $blockScope;
     /** @var array<RepositoryInterface> */
     private $repositories;
+    /** @var IOInterface */
+    private $io;
 
     /**
      * @param ListPolicyConfig::BLOCK_SCOPE_* $blockScope
@@ -50,13 +53,15 @@ class FilterListPoolFilter
         FilterListAuditor $filterListAuditor,
         HttpDownloader $httpDownloader,
         string $blockScope,
-        array $repositories
+        array $repositories,
+        IOInterface $io
     ) {
         $this->policyConfig = $policyConfig;
         $this->filterListAuditor = $filterListAuditor;
         $this->httpDownloader = $httpDownloader;
         $this->blockScope = $blockScope;
         $this->repositories = $repositories;
+        $this->io = $io;
     }
 
     public function filter(Pool $pool, Request $request): Pool
@@ -84,7 +89,12 @@ class FilterListPoolFilter
         }
 
         $providerSet = FilterListProviderSet::create($this->policyConfig, $this->repositories, $this->httpDownloader);
-        $unionMap = $this->fetchFilterListMap($pool, $providerSet, $unionListNames, $ignoreUnreachable);
+        $fetchResult = $this->fetchFilterListMap($pool, $providerSet, $unionListNames, $ignoreUnreachable);
+        $unionMap = $fetchResult['filter'];
+        if (count($fetchResult['unreachableRepos']) > 0) {
+            $this->warnUnreachable($fetchResult['unreachableRepos']);
+        }
+
         if (count($unionMap) === 0) {
             return $pool;
         }
@@ -134,7 +144,7 @@ class FilterListPoolFilter
 
     /**
      * @param list<string> $listNames
-     * @return array<string, array<string, list<FilterListEntry>>>
+     * @return array{filter: array<string, array<string, list<FilterListEntry>>>, unreachableRepos: array<string>}
      */
     private function fetchFilterListMap(Pool $pool, FilterListProviderSet $providerSet, array $listNames, bool $ignoreUnreachable): array
     {
@@ -152,7 +162,18 @@ class FilterListPoolFilter
             $providerSet,
             $listNames,
             $ignoreUnreachable
-        )['filter'];
+        );
+    }
+
+    /**
+     * @param array<string> $unreachableRepos
+     */
+    private function warnUnreachable(array $unreachableRepos): void
+    {
+        $this->io->writeError('<warning>Filter list data could not be fetched from some sources (ignored per policy.ignore-unreachable); matches may be incomplete:</warning>');
+        foreach ($unreachableRepos as $repo) {
+            $this->io->writeError('  - ' . $repo);
+        }
     }
 
     /**

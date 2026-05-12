@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\Advisory\Auditor;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Policy\PolicyConfig;
@@ -32,13 +33,17 @@ class SecurityAdvisoryPoolFilter
     private $auditor;
     /** @var PolicyConfig */
     private $policyConfig;
+    /** @var IOInterface */
+    private $io;
 
     public function __construct(
         Auditor $auditor,
-        PolicyConfig $policyConfig
+        PolicyConfig $policyConfig,
+        IOInterface $io
     ) {
         $this->auditor = $auditor;
         $this->policyConfig = $policyConfig;
+        $this->io = $io;
     }
 
     /**
@@ -71,6 +76,13 @@ class SecurityAdvisoryPoolFilter
         $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true, $ignoreUnreachableUpdate);
         if ($this->auditor->needsCompleteAdvisoryLoad($allAdvisories['advisories'], $ignoreListForBlocking)) {
             $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, false, $ignoreUnreachableUpdate);
+        }
+
+        if ($ignoreUnreachableUpdate && count($allAdvisories['unreachableRepos']) > 0) {
+            $this->io->writeError('<warning>Security advisory data could not be fetched from some repositories (ignored per policy.ignore-unreachable); matches may be incomplete:</warning>');
+            foreach ($allAdvisories['unreachableRepos'] as $repo) {
+                $this->io->writeError('  - ' . $repo);
+            }
         }
 
         $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $ignoreListForBlocking, $advisories->getIgnoreSeverityForOperation('block'))['advisories'];
