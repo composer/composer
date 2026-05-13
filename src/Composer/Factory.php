@@ -332,10 +332,11 @@ class Factory
         $config->merge($localConfig, $localConfigSource);
 
         if (isset($composerFile)) {
-            $io->writeError('Loading config file ' . $composerFile .' ('.Platform::realpath($composerFile).')', true, IOInterface::DEBUG);
-            $config->setConfigSource(new JsonConfigSource(new JsonFile(Platform::realpath($composerFile), null, $io)));
+            $composerFileRealpath = Platform::realpath($composerFile);
+            $io->writeError('Loading config file ' . $composerFile .' ('.$composerFileRealpath.')', true, IOInterface::DEBUG);
+            $config->setConfigSource(new JsonConfigSource(new JsonFile($composerFileRealpath, null, $io)));
 
-            $localAuthFile = new JsonFile(dirname(Platform::realpath($composerFile)) . '/auth.json', null, $io);
+            $localAuthFile = new JsonFile(dirname($composerFileRealpath) . '/auth.json', null, $io);
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 self::validateJsonSchema($io, $localAuthFile, JsonFile::AUTH_SCHEMA);
