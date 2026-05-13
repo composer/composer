@@ -410,6 +410,8 @@ to [Atlassian's Documentation](https://support.atlassian.com/bitbucket-cloud/doc
 will need to fill the callback URL with something to satisfy Bitbucket, but the address does not need to go anywhere and
 is not used by Composer.
 
+The created consumer needs to have at least the "Repository > Read" permissions. 
+
 ### Command line bitbucket-oauth
 
 ```shell
