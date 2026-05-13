@@ -1,3 +1,7 @@
+### [2.2.28] 2026-05-13
+
+  * Security: Fixed GitHub token validation and disclosure (GHSA-f9f8-rm49-7jv2)
+
 ### [2.2.27] 2026-04-14
 
   * Security: Fixed command injection via malicious Perforce reference (GHSA-gqw4-4w2p-838q / CVE-2026-40261)
@@ -1537,6 +1541,7 @@
 
   * Initial release
 
+[2.2.28]: https://github.com/composer/composer/compare/2.2.27...2.2.28
 [2.2.27]: https://github.com/composer/composer/compare/2.2.26...2.2.27
 [2.2.26]: https://github.com/composer/composer/compare/2.2.25...2.2.26
 [2.2.25]: https://github.com/composer/composer/compare/2.2.24...2.2.25
