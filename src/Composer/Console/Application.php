@@ -298,7 +298,12 @@ class Application extends BaseApplication
             } catch (ParsingException $e) {
                 $details = $e->getDetails();
 
-                $file = Platform::realpath(Factory::getComposerFile());
+                $composerFile = Factory::getComposerFile();
+                try{
+                    $file = Platform::realpath($composerFile);
+                } catch(RuntimeException $realpathException) {
+                    $file = $composerFile;
+                }
 
                 $line = null;
                 if ($details && isset($details['line'])) {
