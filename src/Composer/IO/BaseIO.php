@@ -140,7 +140,10 @@ abstract class BaseIO implements IOInterface
             // allowed chars for GH tokens are from https://github.blog/changelog/2021-03-04-authentication-token-format-updates/
             // plus dots which were at some point used for GH app integration tokens
             if (!Preg::isMatch('{^[.A-Za-z0-9_]+$}', $token)) {
-                throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
+                $maskedToken = strlen($token) > 13
+                    ? substr($token, 0, 10).str_repeat('*', max(0, strlen($token) - 13)).substr($token, -3)
+                    : str_repeat('*', strlen($token));
+                throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$maskedToken.'"');
             }
             $this->checkAndSetAuthentication($domain, $token, 'x-oauth-basic');
         }
