@@ -93,6 +93,8 @@ class UrlTest extends TestCase
             ['https://example.org/foo/bar?foo=bar&access_token=***', 'https://example.org/foo/bar?foo=bar&access_token=abcdef'],
             ['https://***:***@github.com/acme/repo', 'https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB:x-oauth-basic@github.com/acme/repo'],
             ['https://***:***@github.com/acme/repo', 'https://github_pat_1234567890abcdefghijkl_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW:x-oauth-basic@github.com/acme/repo'],
+            ['http://abcdefgh***:***@example.org:123/', 'http://abcdefghijkl:bar@example.org:123/'],
+            ['https://abcdefgh***:***@example.org:123/', 'https://abcdefghijklmnop:bar@example.org:123/'],
             // without scheme
             ['foo:***@example.org/', 'foo:bar@example.org/'],
             ['foo@example.org/', 'foo@example.org/'],
@@ -101,6 +103,8 @@ class UrlTest extends TestCase
             ['foo:***@example.org:123/', 'foo:bar@example.org:123/'],
             ['example.org/foo/bar?access_token=***', 'example.org/foo/bar?access_token=abcdef'],
             ['example.org/foo/bar?foo=bar&access_token=***', 'example.org/foo/bar?foo=bar&access_token=abcdef'],
+            ['abcdefgh***:***@example.org:123/', 'abcdefghijkl:bar@example.org:123/'],
+            ['abcdefgh***:***@example.org:123/', 'abcdefghijklmnop:bar@example.org:123/'],
         ];
     }
 }

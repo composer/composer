@@ -490,6 +490,9 @@ class ProcessExecutor
             if (Preg::isMatch('{^[a-f0-9]{12,}$}', $m['user'])) {
                 return '://***:***@';
             }
+            if (strlen($m['user']) >= 12) {
+                return '://'.substr($m['user'], 0, 8).'***:***@';
+            }
 
             return '://'.$m['user'].':***@';
         }, $commandString);
