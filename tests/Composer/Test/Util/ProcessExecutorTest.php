@@ -82,6 +82,8 @@ class ProcessExecutorTest extends TestCase
             array('echo https://foo:bar@example.org/', 'echo https://foo:***@example.org/'),
             array('echo http://foo@example.org', 'echo http://foo@example.org'),
             array('echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://***:***@github.com/'),
+            // ghs_<id>_<base64url>.<base64url>.<base64url> installation token — must be masked, not leaked
+            array('echo https://ghs_1234567890_eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJjb21wb3NlciJ9.aB-cDef_GHIjkl-mnoPQR0123456:x-oauth-basic@github.com/acme/repo', 'echo https://***:***@github.com/acme/repo'),
             array("svn ls --verbose --non-interactive  --username 'foo' --password 'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"),
             array("svn ls --verbose --non-interactive  --username 'foo' --password 'bar \'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"),
         );
