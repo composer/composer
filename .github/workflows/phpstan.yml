@@ -37,6 +37,7 @@ jobs:
           extensions: "intl, zip"
           ini-values: "memory_limit=-1"
           php-version: "${{ matrix.php-version }}"
+          tools: "composer:snapshot"
 
       - name: "Determine composer cache directory"
         id: "determine-composer-cache-directory"

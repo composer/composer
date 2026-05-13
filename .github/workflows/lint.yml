@@ -34,6 +34,7 @@ jobs:
           extensions: "intl"
           ini-values: "memory_limit=-1, error_reporting=E_ALL, display_errors=On"
           php-version: "${{ matrix.php-version }}"
+          tools: "composer:snapshot"
 
       - name: "Lint PHP files"
         run: "find src/ -type f -name '*.php' -print0 | xargs -0 -L1 -P4 -- php -l -f"
