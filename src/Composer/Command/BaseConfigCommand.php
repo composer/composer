@@ -60,7 +60,7 @@ abstract class BaseConfigCommand extends BaseCommand
         if (
             ($configFile === 'composer.json' || $configFile === './composer.json')
             && !file_exists($configFile)
-            && realpath(Platform::getCwd()) === realpath($this->config->get('home'))
+            && Platform::realpath(Platform::getCwd()) === Platform::realpath($this->config->get('home'))
         ) {
             file_put_contents($configFile, "{\n}\n");
         }
