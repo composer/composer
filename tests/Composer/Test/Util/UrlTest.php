@@ -88,6 +88,8 @@ class UrlTest extends TestCase
             array('https://example.org/foo/bar?foo=bar&access_token=***', 'https://example.org/foo/bar?foo=bar&access_token=abcdef'),
             array('https://***:***@github.com/acme/repo', 'https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB:x-oauth-basic@github.com/acme/repo'),
             array('https://***:***@github.com/acme/repo', 'https://github_pat_1234567890abcdefghijkl_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW:x-oauth-basic@github.com/acme/repo'),
+            array('http://abcdefgh***:***@example.org:123/', 'http://abcdefghijkl:bar@example.org:123/'),
+            array('https://abcdefgh***:***@example.org:123/', 'https://abcdefghijklmnop:bar@example.org:123/'),
             // ghs_<id>_<base64url>.<base64url>.<base64url> installation token — must be masked, not leaked
             array('https://***:***@github.com/acme/repo', 'https://ghs_1234567890_eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJjb21wb3NlciJ9.aB-cDef_GHIjkl-mnoPQR0123456:x-oauth-basic@github.com/acme/repo'),
             // without scheme
@@ -96,6 +98,8 @@ class UrlTest extends TestCase
             array('example.org/', 'example.org/'),
             array('***:***@example.org', '10a8f08e8d7b7b9:foo@example.org'),
             array('foo:***@example.org:123/', 'foo:bar@example.org:123/'),
+            array('abcdefgh***:***@example.org:123/', 'abcdefghijkl:bar@example.org:123/'),
+            array('abcdefgh***:***@example.org:123/', 'abcdefghijklmnop:bar@example.org:123/'),
             array('example.org/foo/bar?access_token=***', 'example.org/foo/bar?access_token=abcdef'),
             array('example.org/foo/bar?foo=bar&access_token=***', 'example.org/foo/bar?foo=bar&access_token=abcdef'),
         );
