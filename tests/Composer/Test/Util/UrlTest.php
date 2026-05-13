@@ -88,6 +88,8 @@ class UrlTest extends TestCase
             array('https://example.org/foo/bar?foo=bar&access_token=***', 'https://example.org/foo/bar?foo=bar&access_token=abcdef'),
             array('https://***:***@github.com/acme/repo', 'https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB:x-oauth-basic@github.com/acme/repo'),
             array('https://***:***@github.com/acme/repo', 'https://github_pat_1234567890abcdefghijkl_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW:x-oauth-basic@github.com/acme/repo'),
+            // ghs_<id>_<base64url>.<base64url>.<base64url> installation token — must be masked, not leaked
+            array('https://***:***@github.com/acme/repo', 'https://ghs_1234567890_eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJjb21wb3NlciJ9.aB-cDef_GHIjkl-mnoPQR0123456:x-oauth-basic@github.com/acme/repo'),
             // without scheme
             array('foo:***@example.org/', 'foo:bar@example.org/'),
             array('foo@example.org/', 'foo@example.org/'),
