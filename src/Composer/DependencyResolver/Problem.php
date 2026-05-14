@@ -353,14 +353,9 @@ class Problem
         if (\count($packages) > 0) {
             $rootReqs = $repositorySet->getRootRequires();
             if (isset($rootReqs[$packageName])) {
-                $hasMatching = false;
-                foreach ($packages as $p) {
-                    if ($rootReqs[$packageName]->matches(new Constraint('==', $p->getVersion()))) {
-                        $hasMatching = true;
-                        break;
-                    }
-                }
-                if (!$hasMatching) {
+                if (!array_any($packages, static function ($p) use ($rootReqs, $packageName): bool {
+                    return $rootReqs[$packageName]->matches(new Constraint('==', $p->getVersion()));
+                })) {
                     return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with your root composer.json require ('.$rootReqs[$packageName]->getPrettyString().').'];
                 }
             }
@@ -368,14 +363,9 @@ class Problem
             $tempReqs = $repositorySet->getTemporaryConstraints();
             foreach (reset($packages)->getNames() as $name) {
                 if (isset($tempReqs[$name])) {
-                    $hasMatching = false;
-                    foreach ($packages as $p) {
-                        if ($tempReqs[$name]->matches(new Constraint('==', $p->getVersion()))) {
-                            $hasMatching = true;
-                            break;
-                        }
-                    }
-                    if (!$hasMatching) {
+                    if (!array_any($packages, static function ($p) use ($tempReqs, $name): bool {
+                        return $tempReqs[$name]->matches(new Constraint('==', $p->getVersion()));
+                    })) {
                         return ["- Root composer.json requires $name".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with your temporary update constraint ('.$name.':'.$tempReqs[$name]->getPrettyString().').'];
                     }
                 }
@@ -383,14 +373,9 @@ class Problem
 
             if ($lockedPackage !== null) {
                 $fixedConstraint = new Constraint('==', $lockedPackage->getVersion());
-                $hasMatching = false;
-                foreach ($packages as $p) {
-                    if ($fixedConstraint->matches(new Constraint('==', $p->getVersion()))) {
-                        $hasMatching = true;
-                        break;
-                    }
-                }
-                if (!$hasMatching) {
+                if (!array_any($packages, static function ($p) use ($fixedConstraint): bool {
+                    return $fixedConstraint->matches(new Constraint('==', $p->getVersion()));
+                })) {
                     return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but the package is fixed to '.$lockedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.'];
                 }
             }
@@ -439,15 +424,9 @@ class Problem
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the ' . $ignorePaths . ' config. To turn the feature off entirely, you can set ' . $offPaths . ' to false.'];
             }
 
-            $hasNonLockedPackages = false;
-            foreach ($packages as $p) {
-                if (!$p->getRepository() instanceof LockArrayRepository) {
-                    $hasNonLockedPackages = true;
-                    break;
-                }
-            }
-
-            if (!$hasNonLockedPackages) {
+            if (!array_any($packages, static function ($p): bool {
+                return !$p->getRepository() instanceof LockArrayRepository;
+            })) {
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.'];
             }
 
