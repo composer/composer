@@ -273,8 +273,6 @@ class AuthHelper
         $authOrigin = self::findAuthOrigin($this->io, $origin);
         if ($authOrigin !== null) {
             $origin = $authOrigin;
-        }
-        if ($this->io->hasAuthentication($origin)) {
             $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($origin);
             if ($auth['password'] === 'bearer') {
