@@ -270,6 +270,10 @@ class AuthHelper
             $options['http']['header'] = [];
         }
         $headers = &$options['http']['header'];
+        $authOrigin = self::findAuthOrigin($this->io, $origin);
+        if ($authOrigin !== null) {
+            $origin = $authOrigin;
+        }
         if ($this->io->hasAuthentication($origin)) {
             $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($origin);
@@ -326,11 +330,23 @@ class AuthHelper
                 $this->io->writeError($authenticationDisplayMessage, true, IOInterface::DEBUG);
                 $this->displayedOriginAuthentications[$origin] = $authenticationDisplayMessage;
             }
-        } elseif (in_array($origin, ['api.bitbucket.org', 'api.github.com'], true)) {
-            return $this->addAuthenticationOptions($options, str_replace('api.', '', $origin), $url);
         }
 
         return $options;
+    }
+
+    public static function findAuthOrigin(IOInterface $io, string $origin ): ?string
+    {
+        if ($io->hasAuthentication($origin)) {
+            return $origin;
+        }
+        if (in_array($origin, ['api.bitbucket.org', 'api.github.com'], true)) {
+            $canonical = str_replace('api.', '', $origin);
+            if ($io->hasAuthentication($canonical)) {
+                return $canonical;
+            }
+        }
+        return null;
     }
 
     /**
