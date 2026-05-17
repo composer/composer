@@ -571,6 +571,26 @@ and short format versions are automatically reported at the end of update or req
 discards package versions identified as insecure or abandoned, depending on configuration, before resolving
 dependencies, ensuring they cannot be installed.
 
+### How `config.audit` interacts with `config.policy`
+
+The legacy `config.audit` keys are only read as a fallback when the corresponding
+[`config.policy`](#policy) block is **absent**. The fallback is all-or-nothing per built-in list:
+
+- If [`config.policy.advisories`](#advisories) is set (to any value, including `false`), every
+  `audit.*` key that maps to advisories — [`block-insecure`](#block-insecure),
+  [`ignore`](#ignore), [`ignore-severity`](#ignore-severity) — is **ignored entirely**.
+  Only `policy.advisories.*` is read. Mix-and-matching, e.g. setting `policy.advisories.block`
+  while expecting `audit.ignore-severity` to still apply, is not supported — migrate all
+  advisories-related settings together.
+- If [`config.policy.abandoned`](#abandoned) is set (to any value, including `false`), every
+  `audit.*` key that maps to abandoned — [`block-abandoned`](#block-abandoned),
+  [`abandoned`](#abandoned), [`ignore-abandoned`](#ignore-abandoned) — is **ignored
+  entirely**. Only `policy.abandoned.*` is read.
+- The two built-in lists are independent: configuring `policy.advisories` while leaving the
+  abandoned settings under `audit.*` is allowed and vice versa.
+- [`audit.ignore-unreachable`](#ignore-unreachable) is superseded by
+  [`policy.ignore-unreachable`](#ignore-unreachable) as soon as the latter is set.
+
 ### ignore
 
 > **Deprecated.** Use [`config.policy.advisories.ignore-id`](#ignore-id) for advisory IDs
