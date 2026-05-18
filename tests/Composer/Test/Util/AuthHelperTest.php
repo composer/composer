@@ -710,4 +710,71 @@ class AuthHelperTest extends TestCase
             ->with($origin)
             ->willReturn($auth);
     }
+
+    /**
+     * @dataProvider findAuthOriginProvider
+     */
+    public function testFindAuthOrigin(string $origin, bool $originResult, string $originToPass, bool $originToPassResult, ?string $expectedResult = null): void
+    {
+        $this->io->method('hasAuthentication')
+            ->willReturnCallback(function ($originInTheCall) use ($origin, $originResult, $originToPass, $originToPassResult) {
+               if ($origin === $originInTheCall) {
+                   return $originResult;
+               }
+               if ($originToPass === $originInTheCall) {
+                   return $originToPassResult;
+               }
+               return false;
+            });
+        $authOrigin = AuthHelper::findAuthOrigin($this->io, $originToPass);
+        self::assertSame($expectedResult, $authOrigin);
+    }
+
+    public static function findAuthOriginProvider() : array
+    {
+        return [
+            [
+                'github.com',
+                true,
+                'github.com',
+                true,
+                'github.com',
+            ],
+            [
+                'github.com',
+                true,
+                'api.github.com',
+                false,
+                'github.com'
+            ],
+            [
+                'bitbucket.org',
+                true,
+                'bitbucket.org',
+                false,
+                'bitbucket.org'
+            ],
+            [
+                'bitbucket.org',
+                true,
+                'api.bitbucket.org',
+                false,
+                'bitbucket.org',
+            ],
+            [
+                'bitbucket.org',
+                false,
+                'bitbucket.org',
+                false,
+                null,
+            ],
+            [
+                'gitlab.com',
+                true,
+                'api.gitlab.com',
+                false,
+                null,
+            ]
+        ];
+    }
 }
