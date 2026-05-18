@@ -32,18 +32,25 @@ class ComposerRepositoryFilterInformation
     public $lists;
 
     /**
+     * @var ?string
+     */
+    public $summaryUrl;
+
+    /**
      * @param list<string> $lists
      */
-    private function __construct(bool $metadata, array $lists)
+    private function __construct(bool $metadata, array $lists, ?string $summaryUrl)
     {
         $this->metadata = $metadata;
         $this->lists = $lists;
+        $this->summaryUrl = $summaryUrl;
     }
 
     /**
      * @param array<mixed> $data
+     * @param ?\Closure(string): string $canonicalizeUrl optional URL canonicalizer applied to summary-url
      */
-    public static function fromData(array $data): self
+    public static function fromData(array $data, ?\Closure $canonicalizeUrl = null): self
     {
         $lists = [];
         if (isset($data['lists']) && is_array($data['lists'])) {
@@ -72,9 +79,15 @@ class ComposerRepositoryFilterInformation
             return true;
         }));
 
+        $summaryUrl = null;
+        if (isset($data['summary-url']) && is_string($data['summary-url']) && $data['summary-url'] !== '') {
+            $summaryUrl = $canonicalizeUrl !== null ? $canonicalizeUrl($data['summary-url']) : $data['summary-url'];
+        }
+
         return new self(
             (bool) ($data['metadata'] ?? false),
-            $lists
+            $lists,
+            $summaryUrl
         );
     }
 }

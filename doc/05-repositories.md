@@ -340,7 +340,8 @@ describes what lists are available.
         "lists": {
             "malware": { "enabled": true },
             "typosquatting": { "enabled": true }
-        }
+        },
+        "summary-url": "/p2/filter-summary.json"
     }
 }
 ```
@@ -352,6 +353,26 @@ describes what lists are available.
   an object describing the list. The object currently carries an `enabled` flag (set to `true` when
   the list is available) and is structured this way so future per-list metadata can be added without
   breaking the wire format.
+- **`summary-url`** (optional, string) — A URL (absolute or root-relative) returning a compact
+  mapping of list name → package name → version constraint. When configured, Composer fetches this
+  endpoint during `composer install`, `composer update` and `composer audit` and uses it to skip per-package metadata
+  fetches for packages that cannot match any active list.
+
+  The summary endpoint must return JSON of the form:
+
+  ```json
+  {
+      "filter": {
+          "malware": {
+              "vendor/package": ">=1.0.0,<1.2.0",
+              "other/package": "*"
+          }
+      }
+  }
+  ```
+
+  Composer revalidates the cached summary via `If-Modified-Since` on every install/update/audit, using the
+  same on-disk repository cache as package metadata.
 
 Per-package metadata files should include a `filter` key whose value is an object mapping list names
 to arrays of filter entries:

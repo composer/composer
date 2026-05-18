@@ -99,7 +99,7 @@ class FilterListProviderSet
 
     /**
      * @param array<string, ConstraintInterface> $packageConstraintMap
-     * @param array<string> $configuredLists
+     * @param list<string> $configuredLists
      * @param array<string> &$unreachableRepos Array to store messages about unreachable repositories
      * @return array<string, list<FilterListEntry>>
      */
@@ -108,12 +108,13 @@ class FilterListProviderSet
         $filters = [];
         foreach ($this->providers as $provider) {
             $providerLists = $provider->getFilterLists();
-            if ([] === array_intersect($configuredLists, $providerLists)) {
+            $relevantLists = array_values(array_intersect($configuredLists, $providerLists));
+            if ([] === $relevantLists) {
                 continue;
             }
 
             try {
-                $result = $provider->getFilter($packageConstraintMap);
+                $result = $provider->getFilter($packageConstraintMap, $relevantLists);
                 $repoFilter = $result['filter'];
 
                 foreach ($repoFilter as $listName => $entries) {

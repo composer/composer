@@ -89,7 +89,7 @@ class FilterRepositoryTest extends TestCase
         $repo = new FilterRepository($this->arrayRepo, ['only' => ['foo/*']]);
 
         self::assertFalse($repo->hasFilter());
-        self::assertSame(['filter' => []], $repo->getFilter(['foo/aaa' => new MatchAllConstraint()]));
+        self::assertSame(['filter' => []], $repo->getFilter(['foo/aaa' => new MatchAllConstraint()], []));
         self::assertSame([], $repo->getFilterLists());
     }
 

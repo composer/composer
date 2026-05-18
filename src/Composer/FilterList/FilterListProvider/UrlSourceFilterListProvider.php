@@ -46,7 +46,7 @@ class UrlSourceFilterListProvider implements FilterListProviderInterface
     /**
      * @inheritDoc
      */
-    public function getFilter(array $packageConstraintMap): array
+    public function getFilter(array $packageConstraintMap, array $configuredLists): array
     {
         $purls = array_map(static function (string $packageName) {
             return 'pkg://composer/' . $packageName;

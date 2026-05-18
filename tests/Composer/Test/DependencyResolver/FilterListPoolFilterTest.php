@@ -274,7 +274,7 @@ class FilterListPoolFilterTest extends TestCase
                 ],
             ],
         ]) extends PackageRepository {
-            public function getFilter(array $packageConstraintMap): array
+            public function getFilter(array $packageConstraintMap, array $configuredLists): array
             {
                 throw new TransportException('The "https://example.org/filter.json" file could not be downloaded: HTTP/1.1 500 Internal Server Error', 500);
             }
@@ -309,7 +309,7 @@ class FilterListPoolFilterTest extends TestCase
                 ],
             ],
         ]) extends PackageRepository {
-            public function getFilter(array $packageConstraintMap): array
+            public function getFilter(array $packageConstraintMap, array $configuredLists): array
             {
                 throw new TransportException('boom', 500);
             }
