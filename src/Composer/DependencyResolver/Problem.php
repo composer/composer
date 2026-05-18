@@ -353,10 +353,9 @@ class Problem
         if (\count($packages) > 0) {
             $rootReqs = $repositorySet->getRootRequires();
             if (isset($rootReqs[$packageName])) {
-                $filtered = array_filter($packages, static function ($p) use ($rootReqs, $packageName): bool {
+                if (!array_any($packages, static function ($p) use ($rootReqs, $packageName): bool {
                     return $rootReqs[$packageName]->matches(new Constraint('==', $p->getVersion()));
-                });
-                if (0 === count($filtered)) {
+                })) {
                     return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with your root composer.json require ('.$rootReqs[$packageName]->getPrettyString().').'];
                 }
             }
@@ -364,10 +363,9 @@ class Problem
             $tempReqs = $repositorySet->getTemporaryConstraints();
             foreach (reset($packages)->getNames() as $name) {
                 if (isset($tempReqs[$name])) {
-                    $filtered = array_filter($packages, static function ($p) use ($tempReqs, $name): bool {
+                    if (!array_any($packages, static function ($p) use ($tempReqs, $name): bool {
                         return $tempReqs[$name]->matches(new Constraint('==', $p->getVersion()));
-                    });
-                    if (0 === count($filtered)) {
+                    })) {
                         return ["- Root composer.json requires $name".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with your temporary update constraint ('.$name.':'.$tempReqs[$name]->getPrettyString().').'];
                     }
                 }
@@ -375,10 +373,9 @@ class Problem
 
             if ($lockedPackage !== null) {
                 $fixedConstraint = new Constraint('==', $lockedPackage->getVersion());
-                $filtered = array_filter($packages, static function ($p) use ($fixedConstraint): bool {
+                if (!array_any($packages, static function ($p) use ($fixedConstraint): bool {
                     return $fixedConstraint->matches(new Constraint('==', $p->getVersion()));
-                });
-                if (0 === count($filtered)) {
+                })) {
                     return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but the package is fixed to '.$lockedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.'];
                 }
             }
@@ -427,11 +424,9 @@ class Problem
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the ' . $ignorePaths . ' config. To turn the feature off entirely, you can set ' . $offPaths . ' to false.'];
             }
 
-            $nonLockedPackages = array_filter($packages, static function ($p): bool {
+            if (!array_any($packages, static function ($p): bool {
                 return !$p->getRepository() instanceof LockArrayRepository;
-            });
-
-            if (0 === \count($nonLockedPackages)) {
+            })) {
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.'];
             }
 
