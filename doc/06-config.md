@@ -162,6 +162,10 @@ Set to `false` to disable all policy enforcement:
 }
 ```
 
+> **Migrating from `config.audit`?** See
+> [How `config.audit` interacts with `config.policy`](#how-configaudit-interacts-with-configpolicy)
+> for how the legacy keys are still honored as a fallback while you migrate.
+
 ### advisories
 
 Configuration for packages affected by security advisories.
