@@ -25,7 +25,7 @@ jobs:
       pull-requests: write # required to create the comment on the pull request
 
     steps:
-      - uses: composer/api-surface-check@8817bcdb1d067675d726060181f579bac4c3cd98 # 0.3.1
+      - uses: composer/api-surface-check@c6308838120342a01682bb7f4f5ba058135e1452 # 1.0.0
         with:
           install-dependencies: true
           # paths: src/**/*.php
