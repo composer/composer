@@ -379,7 +379,10 @@ describes what lists are available.
   entries directly. When set, Composer uses `api-url` instead of `summary-url` and per-package
   metadata for filter purposes; this is useful when the summary would be too large to serve in
   full. If both `summary-url` and `api-url` are advertised, `api-url` takes precedence and
-  `summary-url` is ignored.
+  `summary-url` is ignored. Implementors should be aware that large amounts (a few hundreds
+  would be normal) of package names can be submitted by Composer. You can decide to cap
+  that list and return only the first 1000 or whatever you decide but make sure to limit this
+  somehow.
 
   The endpoint receives a JSON body of the form:
 
