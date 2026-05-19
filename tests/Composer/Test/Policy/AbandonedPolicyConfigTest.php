@@ -114,6 +114,36 @@ class AbandonedPolicyConfigTest extends TestCase
         self::assertSame(['vendor/package2' => 'Block but do not report'], $abandoned->getFlatIgnoreForOperation('block'));
     }
 
+    public function testPolicyAbandonedSetIgnoresLegacyAuditAbandonedKeys(): void
+    {
+        $policyConfig = ['abandoned' => ['block' => true, 'audit' => 'report']];
+        $auditConfig = [
+            'block-abandoned' => false,
+            'abandoned' => 'ignore',
+            'ignore-abandoned' => ['acme/abandoned' => 'should be ignored'],
+        ];
+
+        $abandoned = AbandonedPolicyConfig::fromRawConfig($policyConfig, $auditConfig, new VersionParser());
+
+        self::assertTrue($abandoned->block);
+        self::assertSame(ListPolicyConfig::AUDIT_REPORT, $abandoned->audit);
+        self::assertSame([], $abandoned->ignore);
+    }
+
+    public function testPolicyAbandonedFalseIgnoresLegacyAuditAbandonedKeys(): void
+    {
+        $policyConfig = ['abandoned' => false];
+        $auditConfig = [
+            'block-abandoned' => true,
+            'abandoned' => 'fail',
+            'ignore-abandoned' => ['acme/abandoned' => 'should be ignored'],
+        ];
+
+        $abandoned = AbandonedPolicyConfig::fromRawConfig($policyConfig, $auditConfig, new VersionParser());
+
+        $this->assertEquals(AbandonedPolicyConfig::disabled(), $abandoned);
+    }
+
     public function testGetFlatIgnoreForOperationMergesMultiRuleReasons(): void
     {
         $config = new Config();

@@ -162,6 +162,10 @@ Set to `false` to disable all policy enforcement:
 }
 ```
 
+> **Migrating from `config.audit`?** See
+> [How `config.audit` interacts with `config.policy`](#how-configaudit-interacts-with-configpolicy)
+> for how the legacy keys are still honored as a fallback while you migrate.
+
 ### advisories
 
 Configuration for packages affected by security advisories.
@@ -571,6 +575,28 @@ and short format versions are automatically reported at the end of update or req
 discards package versions identified as insecure or abandoned, depending on configuration, before resolving
 dependencies, ensuring they cannot be installed.
 
+### How `config.audit` interacts with `config.policy`
+
+The legacy `config.audit` keys are only read as a fallback when the corresponding
+[`config.policy`](#policy) block is **absent**. The fallback is all-or-nothing per built-in list:
+
+- If [`config.policy.advisories`](#advisories) is set (to any value, including `false`),
+  every advisories-related `audit.*` key ([`audit.block-insecure`](#block-insecure), [`audit.ignore`](#ignore-3),
+  [`audit.ignore-severity`](#ignore-severity-1)) is **ignored entirely** — only
+  [`policy.advisories.block`](#block), [`policy.advisories.ignore`](#ignore), and
+  [`policy.advisories.ignore-severity`](#ignore-severity) are read. Mix-and-matching,
+  e.g. setting `policy.advisories.block` while expecting `audit.ignore-severity` to still
+  apply, is not supported — migrate all advisories-related settings together.
+- If [`config.policy.abandoned`](#abandoned) is set (to any value, including `false`),
+  every abandoned-related `audit.*` key ([`audit.block-abandoned`](#block-abandoned), [`audit.abandoned`](#abandoned-1),
+  [`audit.ignore-abandoned`](#ignore-abandoned)) is **ignored entirely** — only
+  [`policy.abandoned.block`](#block-1), [`policy.abandoned.audit`](#audit-1), and
+  [`policy.abandoned.ignore`](#ignore-1) are read.
+- The two built-in lists are independent: configuring `policy.advisories` while leaving the
+  abandoned settings under `audit.*` is allowed and vice versa.
+- Setting [`policy.ignore-unreachable`](#ignore-unreachable) supersedes the legacy
+  [`audit.ignore-unreachable`](#ignore-unreachable-1) key.
+
 ### ignore
 
 > **Deprecated.** Use [`config.policy.advisories.ignore-id`](#ignore-id) for advisory IDs
@@ -671,7 +697,7 @@ config value and the environment variable.
 
 ### ignore-abandoned
 
-> **Deprecated.** Use [`config.policy.abandoned.ignore`](#ignore-2) instead.
+> **Deprecated.** Use [`config.policy.abandoned.ignore`](#ignore-1) instead.
 > Note: the new format uses `on-block`/`on-audit` booleans instead of `"apply": "audit|block|all"`.
 
 A list of abandoned package names that are ignored for audit reports and/or version blocking. Allows you to select packages that you want to keep

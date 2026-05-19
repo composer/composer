@@ -299,6 +299,38 @@ class AdvisoriesPolicyConfigTest extends TestCase
         self::assertSame([], $updated->getIgnoreSeverityForOperation('block'));
     }
 
+    public function testPolicyAdvisoriesSetIgnoresLegacyAuditAdvisoriesKeys(): void
+    {
+        $policyConfig = ['advisories' => ['block' => false, 'audit' => 'report']];
+        $auditConfig = [
+            'block-insecure' => true,
+            'ignore' => ['CVE-2024-1234' => 'should be ignored'],
+            'ignore-severity' => ['low' => 'should be ignored'],
+        ];
+
+        $advisories = AdvisoriesPolicyConfig::fromRawConfig($policyConfig, $auditConfig, new VersionParser());
+
+        self::assertFalse($advisories->block);
+        self::assertSame(ListPolicyConfig::AUDIT_REPORT, $advisories->audit);
+        self::assertSame([], $advisories->ignore);
+        self::assertSame([], $advisories->ignoreId);
+        self::assertSame([], $advisories->ignoreSeverity);
+    }
+
+    public function testPolicyAdvisoriesFalseIgnoresLegacyAuditAdvisoriesKeys(): void
+    {
+        $policyConfig = ['advisories' => false];
+        $auditConfig = [
+            'block-insecure' => true,
+            'ignore' => ['CVE-2024-1234' => 'should be ignored'],
+            'ignore-severity' => ['low' => 'should be ignored'],
+        ];
+
+        $advisories = AdvisoriesPolicyConfig::fromRawConfig($policyConfig, $auditConfig, new VersionParser());
+
+        $this->assertEquals(AdvisoriesPolicyConfig::disabled(), $advisories);
+    }
+
     public function testWithIgnoreSeverityPreservesExistingRulesAndReasons(): void
     {
         $config = new Config();
