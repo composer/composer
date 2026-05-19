@@ -1,0 +1,95 @@
+--TEST--
+GitHub issue #12862: when CDCL conflict analysis fires due to a locked package's transitive constraint conflicting with a new require's branches, the transitive rules walked during analysis that are NOT in $problem->reasons must still be surfaced so users can see the full chain that justified each "Conclusion: ... (conflict analysis result)" line.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "locked/pkg", "version": "1.0.0", "require": { "locked/dep": "^1" } },
+                { "name": "locked/dep", "version": "1.0.0", "require": { "shared/lib": "^2" } },
+
+                { "name": "new/pkg",   "version": "1.0.0", "require": { "new/dep": "^1" } },
+                { "name": "new/pkg",   "version": "1.1.0", "require": { "new/dep": "^1" } },
+
+                { "name": "new/dep",   "version": "1.0.0", "require": { "shared/lib": "^1.0" } },
+                { "name": "new/dep",   "version": "1.1.0", "require": { "shared/lib": "~1.5" } },
+
+                { "name": "shared/lib", "version": "1.0.0" },
+                { "name": "shared/lib", "version": "1.0.1" },
+                { "name": "shared/lib", "version": "1.1.0" },
+                { "name": "shared/lib", "version": "1.2.0" },
+                { "name": "shared/lib", "version": "1.5.0" },
+                { "name": "shared/lib", "version": "1.5.1" },
+                { "name": "shared/lib", "version": "1.6.0" },
+                { "name": "shared/lib", "version": "2.0.0" },
+                { "name": "shared/lib", "version": "2.0.1" },
+                { "name": "shared/lib", "version": "2.1.0" }
+            ]
+        }
+    ],
+    "require": {
+        "locked/pkg": "^1",
+        "new/pkg":    "^1"
+    }
+}
+--INSTALLED--
+[
+    { "name": "locked/pkg", "version": "1.0.0", "require": { "locked/dep": "^1" } },
+    { "name": "locked/dep", "version": "1.0.0", "require": { "shared/lib": "^2" } },
+    { "name": "shared/lib", "version": "2.0.0" }
+]
+--LOCK--
+{
+    "packages": [
+        { "name": "locked/pkg", "version": "1.0.0", "require": { "locked/dep": "^1" } },
+        { "name": "locked/dep", "version": "1.0.0", "require": { "shared/lib": "^2" } },
+        { "name": "shared/lib", "version": "2.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--RUN--
+update new/pkg --with-dependencies
+--EXPECT-EXIT-CODE--
+2
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - locked/pkg is locked to version 1.0.0 and an update of this package was not requested.
+    - Root composer.json requires new/pkg ^1 -> satisfiable by new/pkg[1.0.0, 1.1.0].
+    - locked/dep 1.0.0 requires shared/lib ^2 -> satisfiable by shared/lib[2.0.0, 2.0.1, 2.1.0].
+    - locked/pkg 1.0.0 requires locked/dep ^1 -> satisfiable by locked/dep[1.0.0].
+    - new/dep 1.0.0 requires shared/lib ^1.0 -> satisfiable by shared/lib[1.0.0, ..., 1.6.0].
+    - new/dep 1.1.0 requires shared/lib ~1.5 -> satisfiable by shared/lib[1.5.0, 1.5.1, 1.6.0].
+    - new/pkg[1.0.0, ..., 1.1.0] require new/dep ^1 -> satisfiable by new/dep[1.0.0, 1.1.0].
+    - Conclusion: don't install shared/lib 2.1.0 (conflict analysis result)
+    - Conclusion: don't install shared/lib 1.6.0 (conflict analysis result)
+    - Conclusion: don't install new/dep 1.1.0 (conflict analysis result)
+    - Conclusion: don't install new/pkg 1.1.0 (conflict analysis result)
+    - Conclusion: don't install one of shared/lib[2.0.1], new/dep[1.0.0] | install shared/lib[1.6.0] (conflict analysis result)
+    - You can only install one version of a package, so only one of these can be installed: shared/lib[1.0.0, ..., 1.6.0, 2.0.0, 2.0.1, 2.1.0].
+
+Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
+--EXPECT-OUTPUT-OPTIMIZED--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires new/pkg ^1 -> satisfiable by new/pkg[1.0.0, 1.1.0].
+    - new/dep 1.0.0 requires shared/lib ^1.0 -> found shared/lib[1.0.0, ..., 1.6.0] but these were not loaded, likely because it conflicts with another require.
+    - new/dep 1.1.0 requires shared/lib ~1.5 -> found shared/lib[1.5.0, 1.5.1, 1.6.0] but these were not loaded, likely because it conflicts with another require.
+    - new/pkg[1.0.0, ..., 1.1.0] require new/dep ^1 -> satisfiable by new/dep[1.0.0, 1.1.0].
+
+Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
+--EXPECT--
