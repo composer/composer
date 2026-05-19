@@ -12,6 +12,7 @@
 
 namespace Composer\FilterList\FilterListProvider;
 
+use Composer\Downloader\TransportException;
 use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\Source\UrlSource;
 use Composer\Package\AliasPackage;
@@ -33,6 +34,8 @@ class FilterListProviderSet
 {
     /** @var list<FilterListProviderInterface> */
     private $providers;
+    /** @var list<TransportException> */
+    private $unreachableRepoExceptions;
 
     /**
      * @param list<RepositoryInterface> $repositories
@@ -41,13 +44,20 @@ class FilterListProviderSet
     public function __construct(array $repositories, array $sources)
     {
         $providers = $sources;
+        $unreachableRepoExceptions = [];
         foreach ($repositories as $repository) {
-            if ($repository instanceof FilterListProviderInterface && $repository->hasFilter()) {
-                $providers[] = $repository;
+            try {
+                if ($repository instanceof FilterListProviderInterface && $repository->hasFilter()) {
+                    $providers[] = $repository;
+                }
+            } catch (\Composer\Downloader\TransportException $e) {
+                $unreachableRepoExceptions[] = $e;
             }
+
         }
 
         $this->providers = $providers;
+        $this->unreachableRepoExceptions = $unreachableRepoExceptions;
     }
 
     /**
@@ -105,6 +115,14 @@ class FilterListProviderSet
      */
     private function getFilterListEntriesForConstraints(array $packageConstraintMap, array $configuredLists, bool $ignoreUnreachable = false, array &$unreachableRepos = []): array
     {
+        foreach ($this->unreachableRepoExceptions as $e) {
+            if (!$ignoreUnreachable) {
+                throw $e;
+            }
+
+            $unreachableRepos[] = $e->getMessage();
+        }
+
         $filters = [];
         foreach ($this->providers as $provider) {
             $providerLists = $provider->getFilterLists();
