@@ -75,6 +75,10 @@
                 "summary-url": {
                     "type": "string",
                     "description": "Endpoint returning a compact mapping of list name to package name to version constraint, used to skip per-package metadata fetches for packages that cannot match any active list."
+                },
+                "api-url": {
+                    "type": "string",
+                    "description": "Endpoint that accepts a POST body with the relevant package PURLs and configured list names and returns the matching filter entries directly. Takes precedence over summary-url when both are advertised."
                 }
             }
         },
