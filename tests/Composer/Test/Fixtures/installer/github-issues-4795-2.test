@@ -46,7 +46,8 @@ that are also a root package, when that root package is also explicitly allowed.
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update a/a b/b --with-dependencies

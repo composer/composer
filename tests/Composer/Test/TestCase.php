@@ -199,7 +199,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         $factory = new FactoryMock();
 
         $locker = new Locker($this->getIOMock(), new JsonFile('./composer.lock'), $factory->createInstallationManager(), (string) file_get_contents('./composer.json'));
-        $locker->setLockData($packages, $devPackages, [], [], [], 'dev', [], false, false, []);
+        $locker->setLockData($packages, $devPackages, [], [], [], [], 'dev', [], false, false, []);
     }
 
     public function getApplicationTester(): ApplicationTester

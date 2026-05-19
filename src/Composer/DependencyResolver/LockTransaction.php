@@ -20,6 +20,8 @@ use Composer\Pcre\Preg;
 /**
  * @author Nils Adermann <naderman@naderman.de>
  * @internal
+ *
+ * @phpstan-import-type FeatureConfig from \Composer\Package\PackageInterface
  */
 class LockTransaction extends Transaction
 {
@@ -42,7 +44,7 @@ class LockTransaction extends Transaction
     protected $unlockableMap;
 
     /**
-     * @var array{dev: BasePackage[], non-dev: BasePackage[], all: BasePackage[]}
+     * @var array{dev: BasePackage[], non-dev: BasePackage[], all: BasePackage[], features: array<string, BasePackage[]>}
      */
     protected $resultPackages;
 
@@ -63,7 +65,7 @@ class LockTransaction extends Transaction
 
     public function setResultPackages(Pool $pool, Decisions $decisions): void
     {
-        $this->resultPackages = ['all' => [], 'non-dev' => [], 'dev' => []];
+        $this->resultPackages = ['all' => [], 'non-dev' => [], 'dev' => [], 'features' => []];
         foreach ($decisions as $i => $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
 

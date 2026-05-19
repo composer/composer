@@ -44,7 +44,8 @@ Partial update from lock file should update everything to the state of the lock,
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --INSTALLED--
 [
@@ -71,7 +72,8 @@ update b/unstable
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Upgrading a/old (0.9.0 => 1.0.0)

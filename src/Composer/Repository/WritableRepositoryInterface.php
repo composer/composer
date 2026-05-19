@@ -26,9 +26,11 @@ interface WritableRepositoryInterface extends RepositoryInterface
      * Writes repository (f.e. to the disc).
      *
      * @param bool $devMode Whether dev requirements were included or not in this installation
+     * @param string[]|null $restrictedRootFeatures A list of root package features that are allowed to be installed (or null if all are allowed)
+     *
      * @return void
      */
-    public function write(bool $devMode, InstallationManager $installationManager);
+    public function write(bool $devMode, InstallationManager $installationManager, ?array $restrictedRootFeatures = null);
 
     /**
      * Adds package to the repository.

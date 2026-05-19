@@ -34,6 +34,7 @@
             'install_path' => $dir . '/vendor/a/provider',
             'aliases' => array(),
             'dev_requirement' => false,
+            'features' => ['foo']
         ),
         'a/provider2' => array(
             'pretty_version' => '1.2',

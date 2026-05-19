@@ -38,7 +38,8 @@ Update updates the outdated state of packages
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT-INSTALLED--
 [

@@ -22,7 +22,6 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\PoolOptimizer;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
@@ -198,6 +197,8 @@ class Installer
     private $ignoredTypes = ['php-ext', 'php-ext-zend'];
     /** @var list<string>|null */
     private $allowedTypes = null;
+    /** @var string[] */
+    private $rootFeatures = [];
 
     /** @var bool */
     protected $updateMirrors = false;
@@ -523,14 +524,14 @@ class Installer
         }
 
         $request = $this->createRequest($this->fixedRootPackage, $platformRepo, $lockedRepository);
-        $this->requirePackagesForUpdate($request, $lockedRepository, true);
+        $this->requirePackagesForUpdate($request, $lockedRepository, true, $this->rootFeatures);
 
         // pass the allow list into the request, so the pool builder can apply it
         if ($this->updateAllowList !== null) {
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_UPDATE), $this->rootFeatures);
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
@@ -569,7 +570,7 @@ class Installer
             }
         }
 
-        $exitCode = $this->extractDevPackages($this->lockTransaction, $platformRepo, $aliases, $policy, $lockedRepository);
+        $exitCode = $this->extractDevPackages($this->lockTransaction, $platformRepo, $aliases, $policy, $lockedRepository, $this->rootFeatures);
         if ($exitCode !== 0) {
             return $exitCode;
         }
@@ -666,6 +667,7 @@ class Installer
         $updatedLock = $this->locker->setLockData(
             $this->lockTransaction->getNewLockPackages(false, $this->updateMirrors),
             $this->lockTransaction->getNewLockPackages(true, $this->updateMirrors),
+            $this->rootFeatures,
             $platformReqs,
             $platformDevReqs,
             $this->lockTransaction->getAliases($aliases),
@@ -690,14 +692,15 @@ class Installer
 
     /**
      * Run the solver a second time on top of the existing update result with only the current result set in the pool
-     * and see what packages would get removed if we only had the non-dev packages in the solver request
+     * and see what packages would get removed if we only had the non-dev packages and no feature in the solver request
      *
      * @param array<int, array<string, string>> $aliases
+     * @param array<int, string> $rootFeatures
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      * @phpstan-return self::ERROR_*
      */
-    protected function extractDevPackages(LockTransaction $lockTransaction, PlatformRepository $platformRepo, array $aliases, PolicyInterface $policy, ?LockArrayRepository $lockedRepository = null): int
+    protected function extractDevPackages(LockTransaction $lockTransaction, PlatformRepository $platformRepo, array $aliases, PolicyInterface $policy, ?LockArrayRepository $lockedRepository = null, array $rootFeatures = []): int
     {
         if (!$this->package->getDevRequires()) {
             return 0;
@@ -714,7 +717,7 @@ class Installer
         $repositorySet->addRepository($resultRepo);
 
         $request = $this->createRequest($this->fixedRootPackage, $platformRepo);
-        $this->requirePackagesForUpdate($request, $lockedRepository, false);
+        $this->requirePackagesForUpdate($request, $lockedRepository, false, $rootFeatures);
 
         $pool = $repositorySet->createPoolWithAllPackages();
 
@@ -727,8 +730,8 @@ class Installer
             $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose(), true);
 
             $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
-            $this->io->writeError('Your requirements can be resolved successfully when require-dev packages are present.');
-            $this->io->writeError('You may need to move packages from require-dev or some of their dependencies to require.');
+            $this->io->writeError('Your requirements can be resolved successfully when require-dev packages are present or some features are required.');
+            $this->io->writeError('You may need to move packages from require-dev, from your features or some of their dependencies to require.');
             $this->io->writeError($prettyProblem);
 
             $ghe = new GithubActionError($this->io);
@@ -751,6 +754,14 @@ class Installer
     {
         if ($this->config->get('lock')) {
             $this->io->writeError('<info>Installing dependencies from lock file'.($this->devMode ? ' (including require-dev)' : '').'</info>');
+        }
+
+        $lockSelfFeatures = $this->locker->getSelfFeatures();
+
+        if (\count($this->rootFeatures) > 0 && \count(array_diff($lockSelfFeatures, $this->rootFeatures)) > 0) {
+            $this->io->writeError(sprintf('<error>Error: The lock file is not up to date with required features: %s. Please run composer update.</error>', implode(', ', $this->rootFeatures)), true, IOInterface::QUIET);
+
+            return self::ERROR_LOCK_FILE_INVALID;
         }
 
         $lockedRepository = $this->locker->getLockedRepository($this->devMode);
@@ -802,9 +813,24 @@ class Installer
                     $request->requireName($link->getTarget(), $link->getConstraint());
                 }
             }
+
+            $features = $this->package->getFeatures();
+
+            foreach ($features as $name => $featureConfig) {
+                if ($this->rootFeatures !== null && !in_array($name, $this->rootFeatures, true)) {
+                    continue;
+                }
+
+                $require = $featureConfig['require'] ?? [];
+
+                foreach ($require as $link) {
+                    $request->requireName($link->getTarget(), $link->getConstraint());
+                }
+            }
+
             unset($rootRequires, $link);
 
-            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes, null, $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_INSTALL));
+            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes, null, $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_INSTALL), $this->rootFeatures);
 
             // solve dependencies
             $solver = new Solver($policy, $pool, $this->io);
@@ -872,7 +898,7 @@ class Installer
 
         if ($this->executeOperations) {
             $localRepo->setDevPackageNames($this->locker->getDevPackageNames());
-            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts, $this->downloadOnly);
+            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts, $this->downloadOnly, $this->rootFeatures);
 
             // see https://github.com/composer/composer/issues/2764
             if (count($localRepoTransaction->getOperations()) > 0) {
@@ -1040,7 +1066,10 @@ class Installer
         return $request;
     }
 
-    private function requirePackagesForUpdate(Request $request, ?LockArrayRepository $lockedRepository = null, bool $includeDevRequires = true): void
+    /**
+     * @param string[]|null $featureRequired A list of feature required
+     */
+    private function requirePackagesForUpdate(Request $request, ?LockArrayRepository $lockedRepository = null, bool $includeDevRequires = true, ?array $featureRequired = null): void
     {
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
         if ($this->updateMirrors) {
@@ -1061,6 +1090,20 @@ class Installer
             if ($includeDevRequires) {
                 $links = array_merge($links, $this->package->getDevRequires());
             }
+
+            if ($featureRequired === null) {
+                $features = $this->package->getFeatures();
+
+                foreach ($features as $feature) {
+                    $links = array_merge($links, $feature['require'] ?? []);
+                }
+            } else {
+                foreach ($featureRequired as $feature) {
+                    $featureLinks = $this->package->getFeatures()[$feature]['require'] ?? [];
+                    $links = array_merge($links, $featureLinks);
+                }
+            }
+
             foreach ($links as $link) {
                 $request->requireName($link->getTarget(), $link->getConstraint());
             }
@@ -1666,5 +1709,17 @@ class Installer
     public function getLockTransaction(): ?LockTransaction
     {
         return $this->lockTransaction;
+    }
+
+    /**
+     * @param string[] $rootFeatures
+     *
+     * @return Installer
+     */
+    public function setRootFeatures(array $rootFeatures): self
+    {
+        $this->rootFeatures = $rootFeatures;
+
+        return $this;
     }
 }

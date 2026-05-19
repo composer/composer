@@ -63,7 +63,8 @@ Updating dev packages where no reference change happened triggers a repo url cha
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update
@@ -90,7 +91,8 @@ update
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Upgrading a/a (dev-master oldmaster => dev-master newmaster)

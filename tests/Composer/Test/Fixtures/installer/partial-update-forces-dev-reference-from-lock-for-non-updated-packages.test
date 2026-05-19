@@ -63,7 +63,8 @@ Partial update forces updates dev reference from lock file for non allowed packa
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update b/b
@@ -90,7 +91,8 @@ update b/b
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Upgrading a/a (dev-master oldmaster-a => dev-master newmaster-a)
