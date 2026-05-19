@@ -104,6 +104,24 @@ class Problem
             }
         }
 
+        // Surface previously-hidden primitives from learned (CDCL) rules so the
+        // transitive chain that justified each "Conclusion: ..." line is visible.
+        // formatDeduplicatedRules below collapses primitives already in $reasons.
+        $learnedPrimitives = [];
+        foreach ($reasons as $rule) {
+            if ($rule->getReason() === Rule::RULE_LEARNED) {
+                $reasonId = $rule->getReasonData();
+                if (is_int($reasonId) && isset($learnedPool[$reasonId])) {
+                    foreach (self::collectLearnedRulePrimitives($learnedPool, $reasonId) as $primitive) {
+                        $learnedPrimitives[] = $primitive;
+                    }
+                }
+            }
+        }
+        if ($learnedPrimitives !== []) {
+            $reasons = array_merge($reasons, $learnedPrimitives);
+        }
+
         usort($reasons, function (Rule $rule1, Rule $rule2) use ($pool) {
             $rule1Prio = $this->getRulePriority($rule1);
             $rule2Prio = $this->getRulePriority($rule2);
@@ -160,6 +178,42 @@ class Problem
 
         // @phpstan-ignore deadCode.unreachable
         throw new \LogicException('Unknown rule type: '.$rule->getReason());
+    }
+
+    /**
+     * Flattens a learned-rule's reason chain (in $learnedPool) into its non-LEARNED
+     * primitive rules. Cycle-safe via a reasonId visited-set, bounded by $maxPrimitives.
+     *
+     * @param  array<int, Rule[]> $learnedPool
+     * @return list<Rule>
+     */
+    private static function collectLearnedRulePrimitives(array $learnedPool, int $reasonId, int $maxPrimitives = 50): array
+    {
+        $visited = [];
+        $queue = [$reasonId];
+        $primitives = [];
+        while ($queue !== [] && \count($primitives) < $maxPrimitives) {
+            $id = array_shift($queue);
+            if (isset($visited[$id]) || !isset($learnedPool[$id])) {
+                continue;
+            }
+            $visited[$id] = true;
+            foreach ($learnedPool[$id] as $rule) {
+                if ($rule->getReason() === Rule::RULE_LEARNED) {
+                    $childId = $rule->getReasonData();
+                    if (is_int($childId) && !isset($visited[$childId])) {
+                        $queue[] = $childId;
+                    }
+                } else {
+                    $primitives[] = $rule;
+                    if (\count($primitives) >= $maxPrimitives) {
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        return $primitives;
     }
 
     /**
