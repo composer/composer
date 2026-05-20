@@ -1,0 +1,2099 @@
+--TEST--
+Stress test for #12862 conflict output: N=100 versions per package, constraint cycle every 5-10 versions.
+--CONDITION--
+getenv('COMPOSER_STRESS_TESTS') !== false
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "shared/lib",
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.0.1"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.0.2"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.0.3"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.0.4"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.0.5"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.0.6"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.0.7"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.0.8"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.0.9"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.1.0"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.1.1"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.1.2"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.1.3"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.1.4"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.1.5"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.1.6"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.1.7"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.1.8"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.1.9"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.2.0"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.2.1"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.2.2"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.2.3"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.2.4"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.2.5"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.2.6"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.2.7"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.2.8"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.2.9"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.3.0"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.3.1"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.3.2"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.3.3"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.3.4"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.3.5"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.3.6"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.3.7"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.3.8"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.3.9"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.4.0"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.4.1"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.4.2"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.4.3"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.4.4"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.4.5"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.4.6"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.4.7"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.4.8"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.4.9"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.5.0"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.5.1"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.5.2"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.5.3"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.5.4"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.5.5"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.5.6"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.5.7"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.5.8"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "1.5.9"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.0.0"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.0.1"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.0.2"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.0.3"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.0.4"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.0.5"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.0.6"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.0.7"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.0.8"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.0.9"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.1.0"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.1.1"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.1.2"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.1.3"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.1.4"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.1.5"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.1.6"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.1.7"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.1.8"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.1.9"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.2.0"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.2.1"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.2.2"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.2.3"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.2.4"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.2.5"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.2.6"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.2.7"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.2.8"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.2.9"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.3.0"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.3.1"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.3.2"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.3.3"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.3.4"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.3.5"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.3.6"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.3.7"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.3.8"
+                },
+                {
+                    "name": "shared/lib",
+                    "version": "2.3.9"
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.0.0",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.0.1",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.0.2",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.0.3",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.0.4",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.0.5",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.0.6",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.0.7",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.0.8",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.0.9",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.1.0",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.1.1",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.1.2",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.1.3",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.1.4",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.1.5",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.1.6",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.1.7",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.1.8",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.1.9",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.2.0",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.2.1",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.2.2",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.2.3",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.2.4",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.2.5",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.2.6",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.2.7",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.2.8",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.2.9",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.3.0",
+                    "require": {
+                        "shared/lib": ">=1.0 <2.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.3.1",
+                    "require": {
+                        "shared/lib": ">=1.0 <2.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.3.2",
+                    "require": {
+                        "shared/lib": ">=1.0 <2.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.3.3",
+                    "require": {
+                        "shared/lib": ">=1.0 <2.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.3.4",
+                    "require": {
+                        "shared/lib": ">=1.0 <2.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.3.5",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.3.6",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.3.7",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.3.8",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.3.9",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.4.0",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.4.1",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.4.2",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.4.3",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.4.4",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.4.5",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.4.6",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.4.7",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.4.8",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.4.9",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.5.0",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.5.1",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.5.2",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.5.3",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.5.4",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.5.5",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.5.6",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.5.7",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.5.8",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.5.9",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.6.0",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.6.1",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.6.2",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.6.3",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.6.4",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.6.5",
+                    "require": {
+                        "shared/lib": ">=1.0 <2.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.6.6",
+                    "require": {
+                        "shared/lib": ">=1.0 <2.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.6.7",
+                    "require": {
+                        "shared/lib": ">=1.0 <2.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.6.8",
+                    "require": {
+                        "shared/lib": ">=1.0 <2.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.6.9",
+                    "require": {
+                        "shared/lib": ">=1.0 <2.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.7.0",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.7.1",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.7.2",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.7.3",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.7.4",
+                    "require": {
+                        "shared/lib": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.7.5",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.7.6",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.7.7",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.7.8",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.7.9",
+                    "require": {
+                        "shared/lib": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.8.0",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.8.1",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.8.2",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.8.3",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.8.4",
+                    "require": {
+                        "shared/lib": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.8.5",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.8.6",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.8.7",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.8.8",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.8.9",
+                    "require": {
+                        "shared/lib": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.9.0",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.9.1",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.9.2",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.9.3",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.9.4",
+                    "require": {
+                        "shared/lib": "~1.4"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.9.5",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.9.6",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.9.7",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.9.8",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/dep",
+                    "version": "1.9.9",
+                    "require": {
+                        "shared/lib": "^1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.0.0",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.0.1",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.0.2",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.0.3",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.0.4",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.0.5",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.0.6",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.0.7",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.0.8",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.0.9",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.1.0",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.1.1",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.1.2",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.1.3",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.1.4",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.1.5",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.1.6",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.1.7",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.1.8",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.1.9",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.2.0",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.2.1",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.2.2",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.2.3",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.2.4",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.2.5",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.2.6",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.2.7",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.2.8",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.2.9",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.3.0",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.3.1",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.3.2",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.3.3",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.3.4",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.3.5",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.3.6",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.3.7",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.3.8",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.3.9",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.4.0",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.4.1",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.4.2",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.4.3",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.4.4",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.4.5",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.4.6",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.4.7",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.4.8",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.4.9",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.5.0",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.5.1",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.5.2",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.5.3",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.5.4",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.5.5",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.5.6",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.5.7",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.5.8",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.5.9",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.6.0",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.6.1",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.6.2",
+                    "require": {
+                        "new/dep": "~1.1"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.6.3",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.6.4",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.6.5",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.6.6",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.6.7",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.6.8",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.6.9",
+                    "require": {
+                        "new/dep": "^1.2"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.7.0",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.7.1",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.7.2",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.7.3",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.7.4",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.7.5",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.7.6",
+                    "require": {
+                        "new/dep": "~1.3"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.7.7",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.7.8",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.7.9",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.8.0",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.8.1",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.8.2",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.8.3",
+                    "require": {
+                        "new/dep": "^1.4"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.8.4",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.8.5",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.8.6",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.8.7",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.8.8",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.8.9",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.9.0",
+                    "require": {
+                        "new/dep": "~1.5"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.9.1",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.9.2",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.9.3",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.9.4",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.9.5",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.9.6",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.9.7",
+                    "require": {
+                        "new/dep": "^1.6"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.9.8",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "new/pkg",
+                    "version": "1.9.9",
+                    "require": {
+                        "new/dep": "^1.0"
+                    }
+                },
+                {
+                    "name": "locked/pkg",
+                    "version": "1.0.0",
+                    "require": {
+                        "locked/dep": "^1"
+                    }
+                },
+                {
+                    "name": "locked/dep",
+                    "version": "1.0.0",
+                    "require": {
+                        "shared/lib": "^2"
+                    }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "locked/pkg": "^1",
+        "new/pkg": "^1"
+    }
+}
+--INSTALLED--
+[
+    {
+        "name": "locked/pkg",
+        "version": "1.0.0",
+        "require": {
+            "locked/dep": "^1"
+        }
+    },
+    {
+        "name": "locked/dep",
+        "version": "1.0.0",
+        "require": {
+            "shared/lib": "^2"
+        }
+    },
+    {
+        "name": "shared/lib",
+        "version": "2.0.0"
+    }
+]
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "locked/pkg",
+            "version": "1.0.0",
+            "require": {
+                "locked/dep": "^1"
+            }
+        },
+        {
+            "name": "locked/dep",
+            "version": "1.0.0",
+            "require": {
+                "shared/lib": "^2"
+            }
+        },
+        {
+            "name": "shared/lib",
+            "version": "2.0.0"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--RUN--
+update new/pkg --with-dependencies
+--EXPECT-EXIT-CODE--
+2
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - locked/pkg is locked to version 1.0.0 and an update of this package was not requested.
+    - Root composer.json requires new/pkg ^1 -> satisfiable by new/pkg[1.0.0, ..., 1.9.9].
+    - locked/dep 1.0.0 requires shared/lib ^2 -> satisfiable by shared/lib[2.0.0, ..., 2.3.9].
+    - locked/pkg 1.0.0 requires locked/dep ^1 -> satisfiable by locked/dep[1.0.0].
+    - new/dep[1.0.0, ..., 1.7.4] require shared/lib ^1.0 -> satisfiable by shared/lib[1.0.0, ..., 1.5.9].
+    - new/dep[1.0.5, ..., 1.7.9] require shared/lib ~1.1 -> satisfiable by shared/lib[1.1.0, ..., 1.5.9].
+    - new/dep[1.1.0, ..., 1.8.4] require shared/lib ^1.2 -> satisfiable by shared/lib[1.2.0, ..., 1.5.9].
+    - new/dep[1.1.5, ..., 1.8.9] require shared/lib ~1.3 -> satisfiable by shared/lib[1.3.0, ..., 1.5.9].
+    - new/dep[1.2.0, ..., 1.9.4] require shared/lib ~1.4 -> satisfiable by shared/lib[1.4.0, ..., 1.5.9].
+    - new/dep[1.2.5, ..., 1.9.9] require shared/lib ^1.5 -> satisfiable by shared/lib[1.5.0, ..., 1.5.9].
+    - new/dep[1.3.0, ..., 1.6.9] require shared/lib >=1.0 <2.0 -> satisfiable by shared/lib[1.0.0, ..., 1.5.9].
+    - new/pkg[1.0.0, ..., 1.9.9] require new/dep ^1.0 -> satisfiable by new/dep[1.0.0, ..., 1.9.9].
+    - new/pkg[1.0.7, ..., 1.6.2] require new/dep ~1.1 -> satisfiable by new/dep[1.1.0, ..., 1.9.9].
+    - new/pkg[1.1.4, ..., 1.6.9] require new/dep ^1.2 -> satisfiable by new/dep[1.2.0, ..., 1.9.9].
+    - new/pkg[1.2.1, ..., 1.7.6] require new/dep ~1.3 -> satisfiable by new/dep[1.3.0, ..., 1.9.9].
+    - new/pkg[1.2.8, ..., 1.8.3] require new/dep ^1.4 -> satisfiable by new/dep[1.4.0, ..., 1.9.9].
+    - new/pkg[1.3.5, ..., 1.9.0] require new/dep ~1.5 -> satisfiable by new/dep[1.5.0, ..., 1.9.9].
+    - new/pkg[1.4.2, ..., 1.9.7] require new/dep ^1.6 -> satisfiable by new/dep[1.6.0, ..., 1.9.9].
+    - Conclusion: don't install new/pkg[1.0.1, ..., 1.9.9] (conflict analysis result)
+    - Conclusion: don't install new/dep 1.9.9 (conflict analysis result)
+    - Conclusion: don't install shared/lib 2.3.9 (conflict analysis result)
+    - Conclusion: don't install new/dep[1.0.1] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.0.2] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.0.3] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.0.4] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.0.5] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.0.6] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.0.7] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.0.8] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.0.9] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.1.0] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.1.1] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.1.2] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.1.3] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.1.4] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.1.5] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.1.6] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.1.7] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.1.8] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.1.9] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.2.0] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.2.1] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.2.2] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.2.3] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.2.4] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.2.5] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.2.6] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.2.7] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.2.8] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.2.9] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.3.0] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.3.1] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.3.2] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.3.3] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.3.4] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.3.5] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.3.6] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.3.7] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.3.8] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.3.9] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.4.0] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.4.1] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.4.2] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.4.3] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.4.4] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.4.5] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.4.6] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.4.7] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.4.8] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.4.9] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.5.0] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.5.1] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.5.2] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.5.3] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.5.4] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.5.5] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.5.6] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.5.7] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.5.8] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.5.9] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.6.0] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.6.1] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.6.2] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.6.3] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.6.4] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.6.5] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.6.6] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.6.7] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.6.8] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.6.9] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.7.0] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.7.1] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.7.2] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.7.3] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.7.4] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.7.5] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.7.6] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.7.7] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.7.8] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.7.9] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.8.0] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.8.1] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.8.2] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.8.3] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.8.4] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.8.5] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.8.6] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.8.7] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.8.8] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.8.9] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.9.0] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.9.1] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.9.2] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.9.3] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.9.4] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.9.5] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.9.6] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.9.7] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install new/dep[1.9.8] | install shared/lib[2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.0.1] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.0.2] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.0.3] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.0.4] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.0.5] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.0.6] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.0.7] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.0.8] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.0.9] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.1.0] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.1.1] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.1.2] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.1.3] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.1.4] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.1.5] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.1.6] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.1.7] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.1.8] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.1.9] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.2.0] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.2.1] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.2.2] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.2.3] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.2.4] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.2.5] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.2.6] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.2.7] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.2.8] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.2.9] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.3.0] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.3.1] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.3.2] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.3.3] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.3.4] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.3.5] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.3.6] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.3.7] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.3.8] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.3.9] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.4.0] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.4.1] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.4.2] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.4.3] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.4.4] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.4.5] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.4.6] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.4.7] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.4.8] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.4.9] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.5.0] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.5.1] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.5.2] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.5.3] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.5.4] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.5.5] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.5.6] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.5.7] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.5.8] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.5.9] | install one of shared/lib[2.3.8, 2.3.9] (conflict analysis result)
+    - Conclusion: don't install one of shared/lib[2.3.8], new/dep[1.0.0] (conflict analysis result)
+    - You can only install one version of a package, so only one of these can be installed: shared/lib[1.0.0, ..., 1.5.9, 2.0.0, ..., 2.3.9].
+
+Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
+--EXPECT-OUTPUT-OPTIMIZED--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires new/pkg ^1 -> satisfiable by new/pkg[1.0.0, ..., 1.9.9].
+    - new/dep[1.0.0, ..., 1.7.4] require shared/lib ^1.0 -> found shared/lib[1.0.0, ..., 1.5.9] but these were not loaded, likely because it conflicts with another require.
+    - new/dep[1.0.5, ..., 1.7.9] require shared/lib ~1.1 -> found shared/lib[1.1.0, ..., 1.5.9] but these were not loaded, likely because it conflicts with another require.
+    - new/dep[1.1.0, ..., 1.8.4] require shared/lib ^1.2 -> found shared/lib[1.2.0, ..., 1.5.9] but these were not loaded, likely because it conflicts with another require.
+    - new/dep[1.1.5, ..., 1.8.9] require shared/lib ~1.3 -> found shared/lib[1.3.0, ..., 1.5.9] but these were not loaded, likely because it conflicts with another require.
+    - new/dep[1.2.0, ..., 1.9.4] require shared/lib ~1.4 -> found shared/lib[1.4.0, ..., 1.5.9] but these were not loaded, likely because it conflicts with another require.
+    - new/dep[1.2.5, ..., 1.9.9] require shared/lib ^1.5 -> found shared/lib[1.5.0, ..., 1.5.9] but these were not loaded, likely because it conflicts with another require.
+    - new/pkg[1.0.7, ..., 1.6.2] require new/dep ~1.1 -> satisfiable by new/dep[1.1.0, ..., 1.9.9].
+    - new/pkg[1.1.4, ..., 1.6.9] require new/dep ^1.2 -> satisfiable by new/dep[1.2.0, ..., 1.9.9].
+    - new/pkg[1.2.1, ..., 1.7.6] require new/dep ~1.3 -> satisfiable by new/dep[1.3.0, ..., 1.9.9].
+    - new/pkg[1.2.8, ..., 1.8.3] require new/dep ^1.4 -> satisfiable by new/dep[1.4.0, ..., 1.9.9].
+    - new/pkg[1.3.5, ..., 1.9.0] require new/dep ~1.5 -> satisfiable by new/dep[1.5.0, ..., 1.9.9].
+    - new/pkg[1.4.2, ..., 1.9.7] require new/dep ^1.6 -> satisfiable by new/dep[1.6.0, ..., 1.9.9].
+    - new/pkg[1.0.0, ..., 1.9.9] require new/dep ^1.0 -> satisfiable by new/dep[1.0.0, ..., 1.9.9].
+
+Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
+--EXPECT--
