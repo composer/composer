@@ -1,3 +1,13 @@
+### [2.10.0-RC2] 2026-05-20
+
+  * Since 2.10.0-RC1, fixes in 2.9.6 - 2.9.8, many of which security relevant, are also included
+  * Since 2.10.0-RC1 a lot of the new filter list config format was modified - see #12786 for the latest state of this new feature
+  * Added a new `policy` config block to control all security related update/install/audit policies. This replaces and deprecates most of the `audit` config (#12804 for implementation, #12786 for RFC/upgrade docs)
+  * Enabled blocking of malware packages at `install` time by default
+  * Fixed --no-plugins handling regression (#12789)
+  * Fixed regression in startup performance when many scripts are defined (#12832)
+  * Improved classmap dumping performance
+
 ### [2.10.0-RC1] 2026-04-01
 
   * Security: Added filter lists to block package versions where malware was detected on `update` or report it with `audit` (#12786)
@@ -2164,6 +2174,7 @@
 
   * Initial release
 
+[2.10.0-RC2]: https://github.com/composer/composer/compare/2.10.0-RC1...2.10.0-RC2
 [2.10.0-RC1]: https://github.com/composer/composer/compare/2.9.5...2.10.0-RC1
 [2.9.8]: https://github.com/composer/composer/compare/2.9.7...2.9.8
 [2.9.7]: https://github.com/composer/composer/compare/2.9.6...2.9.7
