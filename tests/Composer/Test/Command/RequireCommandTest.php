@@ -41,6 +41,17 @@ class RequireCommandTest extends TestCase
         $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']]);
     }
 
+    public function testRequireThrowsOnUnquotedInlineAlias(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Cannot use "as" as a separate argument. Quote the inline alias as one argument, e.g. "vendor/package:dev-main as 1.2.x-dev".');
+
+        $this->initTempComposer();
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg', 'dev-main', 'as', '1.2.x-dev']]);
+    }
+
     public function testRequireWarnsIfResolvedToFeatureBranch(): void
     {
         $this->initTempComposer([
