@@ -72,8 +72,7 @@ Your requirements could not be resolved to an installable set of packages.
     - new/dep 1.0.0 requires shared/lib ^1.0 -> satisfiable by shared/lib[1.0.0, ..., 1.6.0].
     - new/dep 1.1.0 requires shared/lib ~1.5 -> satisfiable by shared/lib[1.5.0, 1.5.1, 1.6.0].
     - new/pkg[1.0.0, ..., 1.1.0] require new/dep ^1 -> satisfiable by new/dep[1.0.0, 1.1.0].
-    - Conclusion: don't install shared/lib 2.1.0 (conflict analysis result)
-    - Conclusion: don't install shared/lib 1.6.0 (conflict analysis result)
+    - Conclusion: don't install shared/lib[1.6.0, 2.1.0] (conflict analysis result)
     - Conclusion: don't install new/dep 1.1.0 (conflict analysis result)
     - Conclusion: don't install new/pkg 1.1.0 (conflict analysis result)
     - Conclusion: don't install one of shared/lib[2.0.1], new/dep[1.0.0] | install shared/lib[1.6.0] (conflict analysis result)

@@ -239,6 +239,13 @@ class Problem
                 foreach ($pool->getRemovedVersionsByPackage(spl_object_hash($sourcePackage)) as $version => $prettyVersion) {
                     $templates[$template][$m[1]][$version] = $prettyVersion;
                 }
+            } elseif ($rule->getReason() === Rule::RULE_LEARNED && Preg::isMatchStrictGroups('{^Conclusion: (?P<verb>install|don\'t install|keep|remove) (?P<package>\S+) (?P<version>\S+) \(conflict analysis result\)$}', $message, $m)) {
+                // Collapse simple single-literal learned-rule "Conclusion: ... X.Y.Z (conflict analysis result)"
+                // lines across versions of the same package. Without this collapse, CDCL learning
+                // produces one bullet per rejected literal, blowing up the problem block at scale.
+                $template = "Conclusion: {$m['verb']} %s%s (conflict analysis result)";
+                $messages[] = $template;
+                $templates[$template][$m['package']][$parser->normalize($m['version'])] = $m['version'];
             } elseif ($message !== '') {
                 $messages[] = $message;
             }
