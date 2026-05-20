@@ -387,7 +387,6 @@ class Problem
             if ($pool->isSecurityRemovedPackageVersion($packageName, $constraint)) {
                 $advisories = $repositorySet->getMatchingSecurityAdvisories($packages, false, true);
                 if (isset($advisories['advisories'][$packageName]) && \count($advisories['advisories'][$packageName]) > 0) {
-                    $hasPackagistAdvisories = true;
                     $advisoriesList = array_map(static function (SecurityAdvisory $advisory): string {
                         if ($advisory->link !== null && $advisory->link !== '') {
                             return '<href='.OutputFormatter::escape($advisory->link).'>'.$advisory->advisoryId.'</>';
@@ -399,15 +398,11 @@ class Problem
 
                         return $advisory->advisoryId;
                     }, $advisories['advisories'][$packageName]);
-                    foreach ($advisories['advisories'][$packageName] as $advisory) {
-                        if (!str_starts_with($advisory->advisoryId, 'PKSA-')) {
-                            $hasPackagistAdvisories = false;
-                            break;
-                        }
-                    }
+                    $advisoryIds = array_map(static function (SecurityAdvisory $advisory): string {
+                        return $advisory->advisoryId;
+                    }, $advisories['advisories'][$packageName]);
                 } else {
                     $advisoryIds = $pool->getSecurityAdvisoryIdentifiersForPackageVersion($packageName, $constraint);
-                    $hasPackagistAdvisories = true;
                     $advisoriesList = array_map(static function (string $advisoryId): string {
                         if (str_starts_with($advisoryId, 'PKSA-')) {
                             return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisoryId).'>'.$advisoryId.'</>';
@@ -415,11 +410,13 @@ class Problem
 
                         return $advisoryId;
                     }, $advisoryIds);
-                    foreach ($advisoryIds as $advisoryId) {
-                        if (!str_starts_with($advisoryId, 'PKSA-')) {
-                            $hasPackagistAdvisories = false;
-                            break;
-                        }
+                }
+
+                $hasPackagistAdvisories = true;
+                foreach ($advisoryIds as $advisoryId) {
+                    if (!str_starts_with($advisoryId, 'PKSA-')) {
+                        $hasPackagistAdvisories = false;
+                        break;
                     }
                 }
 
