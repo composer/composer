@@ -938,8 +938,8 @@ repo [options] disable packagist.org
 - **--global (-g):** to modify the global `$COMPOSER_HOME/config.json`.
 - **--file (-f):** to modify a specific file instead of composer.json.
 - **--append:** to add a repository with lower priority (by default repositories are prepended and have thus higher priority than existing ones).
-- **--before <name>:** to insert the new repository before an existing repository named `<name>`.
-- **--after <name>:** to insert the new repository after an existing repository named `<name>`. The `<name>` must match an existing repository name.
+- **--before [name]:** to insert the new repository before an existing repository named `[name]`.
+- **--after [name]:** to insert the new repository after an existing repository named `[name]`. The `[name]` must match an existing repository name.
 
 ### Examples
 
