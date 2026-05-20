@@ -80,7 +80,7 @@ class Application extends BaseApplication
     private $disablePluginsByDefault = false;
     /** @var bool */
     private $disableScriptsByDefault = false;
-    /** @var string|false */
+    /** @var string|false|null */
     private $commandName = '';
 
     /**
