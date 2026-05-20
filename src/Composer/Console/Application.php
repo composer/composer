@@ -80,6 +80,8 @@ class Application extends BaseApplication
     private $disablePluginsByDefault = false;
     /** @var bool */
     private $disableScriptsByDefault = false;
+    /** @var string|false|null */
+    private $commandName = '';
 
     /**
      * @var string|false Store the initial working directory at startup time
@@ -185,6 +187,7 @@ class Application extends BaseApplication
             } catch (\InvalidArgumentException $e) {
             }
         }
+        $this->commandName = $commandName;
 
         // prompt user for dir change if no composer.json is present in current dir
         if (
@@ -322,6 +325,7 @@ class Application extends BaseApplication
             try {
                 $command = $this->find($name);
                 $commandName = $command->getName();
+                $this->commandName = $commandName;
                 $isProxyCommand = ($command instanceof Command\BaseCommand && $command->isProxyCommand());
             } catch (\InvalidArgumentException $e) {
             }
@@ -579,6 +583,19 @@ class Application extends BaseApplication
             foreach ($hints as $hint) {
                 $io->writeError($hint, true, IOInterface::QUIET);
             }
+        }
+
+        if (
+            $exception instanceof TransportException
+            // self-update is online-only, so suggesting offline mode there is nonsensical
+            && $this->commandName !== 'self-update'
+            && (
+                false !== strpos($exception->getMessage(), 'curl error 28 ') // CURLE_OPERATION_TIMEDOUT
+                || false !== strpos($exception->getMessage(), 'Resolving timed out')
+                || false !== strpos($exception->getMessage(), 'Could not resolve host')
+            )
+        ) {
+            $io->writeError('<warning>If you intend to run Composer without connecting to the internet, run the command again prefixed with COMPOSER_DISABLE_NETWORK=1 to make Composer run in offline mode.</warning>', true, IOInterface::QUIET);
         }
     }
 
