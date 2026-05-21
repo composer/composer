@@ -46,7 +46,8 @@ update --no-dev
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --EXPECT--
 Installing b/b (1.0.0)

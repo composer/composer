@@ -49,7 +49,8 @@ Update with a package allow list only updates those packages listed as command a
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 update allowed/pkg

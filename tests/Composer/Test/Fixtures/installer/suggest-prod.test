@@ -26,7 +26,8 @@ Suggestions are not displayed for when not updating the lock file
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 --RUN--
 install

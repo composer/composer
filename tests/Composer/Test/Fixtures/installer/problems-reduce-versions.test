@@ -95,7 +95,8 @@ Test the error output minifies version lists
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},
-    "platform-dev": {}
+    "platform-dev": {},
+    "self-features": []
 }
 
 --RUN--
