@@ -97,6 +97,15 @@ trait PackageDiscoveryTrait
     final protected function determineRequirements(InputInterface $input, OutputInterface $output, array $requires = [], ?PlatformRepository $platformRepo = null, string $preferredStability = 'stable', bool $useBestVersionConstraint = true, bool $fixed = false): array
     {
         if (count($requires) > 0) {
+            foreach ($requires as $package) {
+                if (strtolower($package) === 'as') {
+                    throw new \InvalidArgumentException(sprintf(
+                        'Cannot use "%s" as a separate argument. Quote the inline alias as one argument, e.g. "vendor/package:dev-main as 1.2.x-dev".',
+                        $package
+                    ));
+                }
+            }
+
             $requires = $this->normalizeRequirements($requires);
             $result = [];
             $io = $this->getIO();
