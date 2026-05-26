@@ -1189,6 +1189,7 @@ the findings:
 * `5` Vulnerable and filtered packages.
 * `6` Abandoned and filtered packages.
 * `7` Vulnerable, abandoned, and filtered packages.
+* `8` Failure due to missing required packages.
 
 ```shell
 php composer.phar audit

@@ -61,6 +61,7 @@ class Auditor
     public const STATUS_VULNERABLE = 1;
     public const STATUS_ABANDONED = 2;
     public const STATUS_FILTERED = 4;
+    public const STATUS_FAILED = 8;
 
     /**
      * @param PolicyConfig $policyConfig Source of truth for ignore lists, severity filters, and per-list audit settings.
