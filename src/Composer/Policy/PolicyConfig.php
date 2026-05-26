@@ -137,14 +137,14 @@ class PolicyConfig
     {
         if (in_array($listName, self::RESERVED_NAMES, true)) {
             throw new \UnexpectedValueException(sprintf(
-                'Invalid custom policy list name "%s": this name is reserved for a built-in list.',
+                'Invalid custom dependency policy name "%s": this name is reserved for a built-in dependency policy.',
                 $listName
             ));
         }
 
         $error = self::getFutureReservedListNameError($listName);
         if ($error !== null) {
-            throw new \UnexpectedValueException('Invalid custom policy list name: '.$error);
+            throw new \UnexpectedValueException('Invalid custom dependency policy name: '.$error);
         }
     }
 

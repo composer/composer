@@ -39,7 +39,7 @@ class AuditCommand extends BaseCommand
                 new InputOption('abandoned', null, InputOption::VALUE_REQUIRED, 'Behavior on abandoned packages. Must be "ignore", "report", or "fail".', null, ListPolicyConfig::AUDITS),
                 new InputOption('ignore-severity', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Ignore advisories of a certain severity level.', [], ['low', 'medium', 'high', 'critical']),
                 new InputOption('ignore-unreachable', null, InputOption::VALUE_NONE, 'Ignore repositories that are unreachable or return a non-200 status code.'),
-                new InputOption('filtered', null, InputOption::VALUE_REQUIRED, 'Behavior on filtered packages. Must be "ignore", "report", or "fail". Overrides the per-list audit setting for malware and every custom filter list.', null, ListPolicyConfig::AUDITS),
+                new InputOption('filtered', null, InputOption::VALUE_REQUIRED, 'Behavior on filtered packages. Must be "ignore", "report", or "fail". Overrides the per-policy audit setting for malware and every custom dependency policy.', null, ListPolicyConfig::AUDITS),
             ])
             ->setHelp(
                 <<<EOT

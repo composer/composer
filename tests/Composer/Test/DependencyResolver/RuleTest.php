@@ -127,7 +127,7 @@ class RuleTest extends TestCase
         $rule = new GenericRule([], Rule::RULE_LOCKED_FILTER_LIST_REMOVED, ['package' => $package]);
 
         self::assertEquals(
-            'vendor/malware 1.0 was removed by a policy filter list (e.g. malware) and cannot be installed.',
+            'vendor/malware 1.0 was removed by a dependency policy (e.g. malware) and cannot be installed.',
             $rule->getPrettyString($repositorySetMock, $requestMock, $pool, false)
         );
     }

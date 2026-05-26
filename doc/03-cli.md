@@ -120,7 +120,7 @@ resolution.
 * **--audit:** Run an audit after installation is complete.
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories or that are abandoned. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
-* **--no-blocking:** Disables all policy blocking during this command. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
+* **--no-blocking:** Disables all policy based dependency blocking during this command. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -209,7 +209,7 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories or that are abandoned. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
-* **--no-blocking:** Disables all policy blocking during this command. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
+* **--no-blocking:** Disables all policy based dependency blocking during this command. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
 * **--lock:** Overwrites the lock file hash to suppress warning about the lock file being out of
   date without updating package versions. Package metadata like mirrors and URLs are updated if
   they changed.
@@ -360,7 +360,7 @@ uninstalled.
 * **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
 * **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories or that are abandoned. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
-* **--no-blocking:** Disables all policy blocking during this command. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
+* **--no-blocking:** Disables all policy based dependency blocking during this command. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
 * **--update-no-dev:** Run the dependency update with the --no-dev option. Also see [COMPOSER_NO_DEV](#composer-no-dev).
 * **--update-with-dependencies (-w):** Also update dependencies of the removed packages. Can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var.
   (Deprecated, is now default behavior)
@@ -959,15 +959,15 @@ php composer.phar repo enable packagist.org
 
 ## policy
 
-The `policy` command lets you manage custom policy lists and their sources in your `composer.json` under `config.policy`. A source points Composer at a remote URL which provides the list of packages the policy applies to. Adding a source to a list that does not yet exist will create the list entry automatically.
+The `policy` command lets you manage custom dependency policies and their sources in your `composer.json` under `config.policy`. A source points Composer at a remote URL which provides the set of package versions the policy applies to. Adding a source for a dependency policy that does not yet exist will create the policy automatically.
 
-Built-in lists (`advisories`, `malware`, `abandoned`) do not accept sources and are rejected. To change their settings, use `composer config policy.<list>.<field>` instead — see the [policy](06-config.md#policy) config documentation.
+Built-in dependency policies (`advisories`, `malware`, `abandoned`) do not accept sources and are rejected. To change their settings, use `composer config policy.<policy>.<field>` instead — see the [policy](06-config.md#policy) config documentation.
 
 ### Usage
 
 ```shell
-policy [options] add-source [list-name] [source-type] [url]
-policy [options] add-source [list-name] [json-source-definition]
+policy [options] add-source [policy-name] [source-type] [url]
+policy [options] add-source [policy-name] [json-source-definition]
 ```
 
 Currently only `url` is supported as `source-type`, and URLs must start with `https://`.
@@ -1174,7 +1174,7 @@ php composer.phar archive vendor/package 2.0.21 --format=zip
 ## audit
 
 This command is used to audit the packages you have installed for potential security issues. It checks for and lists security
-vulnerability advisories using the [Packagist.org api](https://packagist.org/apidoc#list-security-advisories) by default
+vulnerability advisories using the [Packagist.org API](https://packagist.org/apidoc#list-security-advisories) by default
 or other repositories if specified in the `repositories` section of `composer.json`.
 The command also detects abandoned packages.
 
@@ -1205,10 +1205,10 @@ php composer.phar audit
   flag will override the config value and the environment variable.
 * **--ignore-severity:** Ignore advisories of a certain severity level. Can be passed one or more
   time to ignore multiple severities.
-* **--filtered:** Behavior on packages matched by `malware` and custom filter
-  lists. Must be "ignore", "report", or "fail". Overrides the per-list `audit`
-  setting (`config.policy.malware.audit` and every custom list's `audit`) for
-  the duration of this command.
+* **--filtered:** Behavior on packages matched by the `malware` dependency policy and custom
+  dependency policies. Must be "ignore", "report", or "fail". Overrides the per-policy `audit`
+  setting (`config.policy.malware.audit` and every custom policy's `audit`) for the duration
+  of this command.
 
 ## help
 
@@ -1425,13 +1425,13 @@ Set to `ignore`, `report` or `fail` to override the [policy.abandoned.audit](06-
 
 ### COMPOSER_POLICY
 
-Main policy switch. Set to `0` to disable all policy enforcement on updates and audit, or `1` to enable it. Setting this to `1` will use the policy configuration in the composer.json. If you want to override the config value, use `composer config policy 1` instead.
+Main dependency policy switch. Set to `0` to disable all dependency policy enforcement on updates, installs and audits, or `1` to enable it. Setting this to `1` will use the policy configuration in the composer.json. If you want to change the config value, use `composer config policy 1` instead.
 
-When set to `0`, all per-list overrides below are ignored — the whole policy config is short-circuited to disabled.
+When set to `0`, all policy specific overrides below are ignored — the whole dependency policy config is short-circuited to disabled.
 
 ### COMPOSER_NO_BLOCKING
 
-If set to `1`, it is the equivalent of passing the `--no-blocking` option to a `require`, `update`, `remove`, `install`, or `create-project` command. This disables all policy blocking during this command. It overrides the `block` config option for each configured policy e.g. [policy.advisories.block](06-config.md#block).
+If set to `1`, it is the equivalent of passing the `--no-blocking` option to a `require`, `update`, `remove`, `install`, or `create-project` command. This disables all policy based blocking of dependencies. It overrides the `block` config option for each configured dependency policy e.g. [policy.advisories.block](06-config.md#block).
 
 ### COMPOSER_NO_SECURITY_BLOCKING
 
@@ -1451,7 +1451,7 @@ If set to `1`, enables blocking of packages flagged as malware during dependency
 
 If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `policy.abandoned.block` to `true`). If set to `0`, disables blocking.
 
-Takes precedence over the legacy [COMPOSER_SECURITY_BLOCKING_ABANDONED](#composer-security-blocking-abandoned) when both are set.
+Value takes precedence over the value of the legacy variable [COMPOSER_SECURITY_BLOCKING_ABANDONED](#composer-security-blocking-abandoned) when it's set to a different value.
 
 ### COMPOSER_SECURITY_BLOCKING_ABANDONED
 

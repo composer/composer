@@ -540,7 +540,7 @@ class Auditor
             foreach ($filteredPackages as $data) {
                 foreach ($data as $entry) {
                     $parts = [
-                        $entry->packageName . ' is on filter list "' . $entry->listName . '"',
+                        $entry->packageName . ' matched dependency policy "' . $entry->listName . '"',
                     ];
                     if ($entry->reason !== null) {
                         $parts[] = 'Reason: ' . $entry->reason;

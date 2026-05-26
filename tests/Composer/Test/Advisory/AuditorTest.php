@@ -693,7 +693,7 @@ Found 2 abandoned packages:
             'expected' => Auditor::STATUS_FILTERED,
             'output' => 'No security vulnerability advisories found.
 Found 1 package matching filters:
-vendor/package is on filter list "test-list". Reason: internal.',
+vendor/package matched dependency policy "test-list". Reason: internal.',
         ];
 
         yield 'AUDIT_FAIL with matching entry shows url and reason (plain)' => [
@@ -704,7 +704,7 @@ vendor/package is on filter list "test-list". Reason: internal.',
             'expected' => Auditor::STATUS_FILTERED,
             'output' => 'No security vulnerability advisories found.
 Found 1 package matching filters:
-vendor/package is on filter list "test-list". Reason: internal. URL: https://example.com/filtered.',
+vendor/package matched dependency policy "test-list". Reason: internal. URL: https://example.com/filtered.',
         ];
 
         yield 'AUDIT_REPORT with matching entry returns STATUS_OK' => [
@@ -715,7 +715,7 @@ vendor/package is on filter list "test-list". Reason: internal. URL: https://exa
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.
 <warning>Found 1 package matching filters:</warning>
-vendor/package is on filter list "test-list". Reason: internal.',
+vendor/package matched dependency policy "test-list". Reason: internal.',
         ];
 
         yield 'AUDIT_FAIL with matching entry shows summary line only (summary format)' => [
@@ -744,8 +744,8 @@ Found 1 package matching filters.',
             'expected' => Auditor::STATUS_FILTERED,
             'output' => 'No security vulnerability advisories found.
 Found 2 packages matching filters:
-vendor/package is on filter list "test-list". Reason: internal.
-vendor/other is on filter list "test-list". Reason: internal.',
+vendor/package matched dependency policy "test-list". Reason: internal.
+vendor/other matched dependency policy "test-list". Reason: internal.',
         ];
     }
 
@@ -874,7 +874,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
         $output = trim(str_replace("\r", '', $io->getOutput()));
         self::assertStringContainsString('Found 2 security vulnerability advisories affecting 1 package:', $output);
         self::assertStringContainsString('Found 1 package matching filters:', $output);
-        self::assertStringContainsString('vendor1/package2 is on filter list "test-list". Reason: internal', $output);
+        self::assertStringContainsString('vendor1/package2 matched dependency policy "test-list". Reason: internal', $output);
     }
 
     /**

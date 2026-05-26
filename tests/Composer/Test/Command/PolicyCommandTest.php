@@ -215,7 +215,7 @@ class PolicyCommandTest extends TestCase
     public function testAddSourceRejectsBuiltInListName(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Built-in list "advisories" does not support sources');
+        $this->expectExceptionMessage('Built-in dependency policy "advisories" does not support sources');
 
         $this->initTempComposer([]);
 
@@ -283,7 +283,7 @@ class PolicyCommandTest extends TestCase
     public function testAddSourceRejectsNameContainingDot(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Invalid list name "bad.name"');
+        $this->expectExceptionMessage('Invalid dependency policy name "bad.name"');
 
         $this->initTempComposer([]);
 
