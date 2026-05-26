@@ -21,6 +21,7 @@ use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
 use Composer\Util\GitLab;
 use Composer\Util\Http\Response;
+use Composer\Util\Url;
 
 /**
  * Driver for GitLab API, use the Git driver for local checkouts.
@@ -94,7 +95,7 @@ class GitLabDriver extends VcsDriver
     public function initialize(): void
     {
         if (!Preg::isMatch(self::URL_REGEX, $this->url, $match)) {
-            throw new \InvalidArgumentException(sprintf('The GitLab repository URL %s is invalid. It must be the HTTP URL of a GitLab project.', $this->url));
+            throw new \InvalidArgumentException(sprintf('The GitLab repository URL %s is invalid. It must be the HTTP URL of a GitLab project.', Url::sanitize($this->url)));
         }
 
         $guessedDomain = $match['domain'] ?? (string) $match['domain2'];
@@ -107,7 +108,7 @@ class GitLabDriver extends VcsDriver
         ;
         $origin = self::determineOrigin($configuredDomains, $guessedDomain, $urlParts, $match['port']);
         if (false === $origin) {
-            throw new \LogicException('It should not be possible to create a gitlab driver with an unparsable origin URL ('.$this->url.')');
+            throw new \LogicException('It should not be possible to create a gitlab driver with an unparsable origin URL ('.Url::sanitize($this->url).')');
         }
         $this->originUrl = $origin;
 
@@ -418,7 +419,7 @@ class GitLabDriver extends VcsDriver
         } catch (\RuntimeException $e) {
             $this->gitDriver = null;
 
-            $this->io->writeError('<error>Failed to clone the '.$url.' repository, try running in interactive mode so that you can enter your credentials</error>');
+            $this->io->writeError('<error>Failed to clone the '.Url::sanitize($url).' repository, try running in interactive mode so that you can enter your credentials</error>');
             throw $e;
         }
     }
@@ -529,7 +530,7 @@ class GitLabDriver extends VcsDriver
                         return new Response(['url' => 'dummy'], 200, [], 'null');
                     }
                     $this->io->writeError('<warning>Failed to download ' . $this->namespace . '/' . $this->repository . ':' . $e->getMessage() . '</warning>');
-                    $gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, 'Your credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
+                    $gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, 'Your credentials are required to fetch private repository metadata (<info>'.Url::sanitize($this->url).'</info>)');
 
                     return parent::getContents($url);
 
@@ -573,7 +574,7 @@ class GitLabDriver extends VcsDriver
         }
 
         if ('https' === $scheme && !extension_loaded('openssl')) {
-            $io->writeError('Skipping GitLab driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
+            $io->writeError('Skipping GitLab driver for '.Url::sanitize($url).' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
 
             return false;
         }

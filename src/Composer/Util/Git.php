@@ -141,7 +141,7 @@ class Git
         };
 
         if (Preg::isMatch('{^ssh://[^@]+@[^:]+:[^0-9]+}', $url)) {
-            throw new \InvalidArgumentException('The source URL ' . $url . ' is invalid, ssh URLs should have a port number after ":".' . "\n" . 'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
+            throw new \InvalidArgumentException('The source URL ' . Url::sanitize($url) . ' is invalid, ssh URLs should have a port number after ":".' . "\n" . 'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
         }
 
         if (!$initialClone) {
@@ -176,7 +176,7 @@ class Git
 
             // failed to checkout, first check git accessibility
             if (!$this->io->hasAuthentication($match[1]) && !$this->io->isInteractive()) {
-                $this->throwException('Failed to clone ' . $url . ' via ' . implode(', ', $protocols) . ' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
+                $this->throwException('Failed to clone ' . Url::sanitize($url) . ' via ' . implode(', ', $protocols) . ' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
             }
         }
 
@@ -375,7 +375,7 @@ class Git
     public function syncMirror(string $url, string $dir): bool
     {
         if ((bool) Platform::getEnv('COMPOSER_DISABLE_NETWORK') && Platform::getEnv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
-            $this->io->writeError('<warning>Aborting git mirror sync of '.$url.' as network is disabled</warning>');
+            $this->io->writeError('<warning>Aborting git mirror sync of '.Url::sanitize($url).' as network is disabled</warning>');
 
             return false;
         }
@@ -651,7 +651,7 @@ class Git
         clearstatcache();
 
         if (0 !== $this->process->execute(['git', '--version'], $ignoredOutput)) {
-            throw new \RuntimeException(Url::sanitize('Failed to clone ' . $url . ', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
+            throw new \RuntimeException(Url::sanitize('Failed to clone ' . Url::sanitize($url) . ', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
         }
 
         throw new \RuntimeException(Url::sanitize($message));

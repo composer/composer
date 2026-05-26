@@ -94,7 +94,7 @@ class AuthHelper
 
             if ($requiresSso) {
                 $ssoUrl = $gitHubUtil->getSsoUrl($headers);
-                $message = 'GitHub API token requires SSO authorization. Authorize this token at ' . $ssoUrl . "\n";
+                $message = 'GitHub API token requires SSO authorization. Authorize this token at ' . Url::sanitize($ssoUrl) . "\n";
                 $this->io->writeError($message);
                 if (!$this->io->isInteractive()) {
                     throw new TransportException('Could not authenticate against ' . $origin, 403);
@@ -113,7 +113,7 @@ class AuthHelper
                 }
 
                 $message = sprintf(
-                    'GitHub API limit (%d calls/hr) is exhausted, could not fetch '.$url.'. '.$message.' You can also wait until %s for the rate limit to reset.',
+                    'GitHub API limit (%d calls/hr) is exhausted, could not fetch '.Url::sanitize($url).'. '.$message.' You can also wait until %s for the rate limit to reset.',
                     $rateLimit['limit'],
                     $rateLimit['reset']
                 )."\n";
@@ -128,9 +128,9 @@ class AuthHelper
                 }
 
                 if ($gitHubApiMessage !== null) {
-                    $message .= 'Could not fetch '.$url.': '.$gitHubApiMessage;
+                    $message .= 'Could not fetch '.Url::sanitize($url).': '.$gitHubApiMessage;
                 } else {
-                    $message .= 'Could not fetch '.$url.', please ';
+                    $message .= 'Could not fetch '.Url::sanitize($url).', please ';
                     if ($this->io->hasAuthentication($origin)) {
                         $message .= 'review your configured GitHub OAuth token or enter a new one to access private repos';
                     } else {
@@ -145,14 +145,14 @@ class AuthHelper
                 throw new TransportException('Could not authenticate against '.$origin, 401);
             }
         } elseif (in_array($origin, $this->config->get('gitlab-domains'), true)) {
-            $message = "\n".'Could not fetch '.$url.', enter your ' . $origin . ' credentials ' .($statusCode === 401 ? 'to access private repos' : 'to go over the API rate limit');
+            $message = "\n".'Could not fetch '.Url::sanitize($url).', enter your ' . $origin . ' credentials ' .($statusCode === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
 
             $auth = null;
             if ($this->io->hasAuthentication($origin)) {
                 $auth = $this->io->getAuthentication($origin);
                 if (in_array($auth['password'], ['gitlab-ci-token', 'private-token', 'oauth2'], true)) {
-                    throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
+                    throw new TransportException("Invalid credentials for '" . Url::sanitize($url) . "', aborting.", $statusCode);
                 }
             }
 
@@ -164,7 +164,7 @@ class AuthHelper
 
             if ($auth !== null && $this->io->hasAuthentication($origin)) {
                 if ($auth === $this->io->getAuthentication($origin)) {
-                    throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
+                    throw new TransportException("Invalid credentials for '" . Url::sanitize($url) . "', aborting.", $statusCode);
                 }
             }
         } elseif ($origin === 'bitbucket.org' || $origin === 'api.bitbucket.org') {
@@ -191,7 +191,7 @@ class AuthHelper
             }
 
             if ($askForOAuthToken) {
-                $message = "\n".'Could not fetch ' . $url . ', please create a bitbucket OAuth token to ' . (($statusCode === 401 || $statusCode === 403) ? 'access private repos' : 'go over the API rate limit');
+                $message = "\n".'Could not fetch ' . Url::sanitize($url) . ', please create a bitbucket OAuth token to ' . (($statusCode === 401 || $statusCode === 403) ? 'access private repos' : 'go over the API rate limit');
                 $bitBucketUtil = new Bitbucket($this->io, $this->config);
                 if (!$bitBucketUtil->authorizeOAuth($origin)
                     && (!$this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($origin, $message))
@@ -208,9 +208,9 @@ class AuthHelper
             // fail if the console is not interactive
             if (!$this->io->isInteractive()) {
                 if ($statusCode === 401) {
-                    $message = "The '" . $url . "' URL required authentication (HTTP 401).\nYou must be using the interactive console to authenticate";
+                    $message = "The '" . Url::sanitize($url) . "' URL required authentication (HTTP 401).\nYou must be using the interactive console to authenticate";
                 } elseif ($statusCode === 403) {
-                    $message = "The '" . $url . "' URL could not be accessed (HTTP 403): " . $reason;
+                    $message = "The '" . Url::sanitize($url) . "' URL could not be accessed (HTTP 403): " . $reason;
                 } else {
                     $message = "Unknown error code '" . $statusCode . "', reason: " . $reason;
                 }
@@ -226,7 +226,7 @@ class AuthHelper
                     return ['retry' => true, 'storeAuth' => false];
                 }
 
-                throw new TransportException("Invalid credentials (HTTP $statusCode) for '$url', aborting.", $statusCode);
+                throw new TransportException("Invalid credentials (HTTP $statusCode) for '" . Url::sanitize($url) . "', aborting.", $statusCode);
             }
 
             $this->io->writeError('    Authentication required (<info>'.$origin.'</info>):');

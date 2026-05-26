@@ -80,10 +80,10 @@ class Hg
 
             $error = $this->process->getErrorOutput();
         } else {
-            $error = 'The given URL (' .$url. ') does not match the required format (ssh|http(s)://(username:password@)example.com/path-to-repository)';
+            $error = 'The given URL (' .Url::sanitize($url). ') does not match the required format (ssh|http(s)://(username:password@)example.com/path-to-repository)';
         }
 
-        $this->throwException("Failed to clone $url, \n\n" . $error, $url);
+        $this->throwException("Failed to clone " . Url::sanitize($url) . ", \n\n" . $error, $url);
     }
 
     /**
@@ -95,7 +95,7 @@ class Hg
     {
         if (null === self::getVersion($this->process)) {
             throw new \RuntimeException(Url::sanitize(
-                'Failed to clone ' . $url . ', hg was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()
+                'Failed to clone ' . Url::sanitize($url) . ', hg was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()
             ));
         }
 

@@ -21,6 +21,7 @@ use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Url;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -705,10 +706,10 @@ class Config
                         return;
                     }
 
-                    throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-svn-domains for details.");
+                    throw new TransportException("Your configuration does not allow connections to " . Url::sanitize($url) . ". See https://getcomposer.org/doc/06-config.md#secure-svn-domains for details.");
                 }
 
-                throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
+                throw new TransportException("Your configuration does not allow connections to " . Url::sanitize($url) . ". See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             }
             if ($io !== null) {
                 if (is_string($hostname)) {

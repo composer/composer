@@ -20,6 +20,7 @@ use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\GitHub;
 use Composer\Util\Http\Response;
+use Composer\Util\Url;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -62,7 +63,7 @@ class GitHubDriver extends VcsDriver
     public function initialize(): void
     {
         if (!Preg::isMatch('#^(?:(?:https?|git)://([^/]+)/|git@([^:]+):/?)([^/]+)/([^/]+?)(?:\.git|/)?$#', $this->url, $match)) {
-            throw new \InvalidArgumentException(sprintf('The GitHub repository URL %s is invalid.', $this->url));
+            throw new \InvalidArgumentException(sprintf('The GitHub repository URL %s is invalid.', Url::sanitize($this->url)));
         }
 
         $this->owner = $match[3];
@@ -437,7 +438,7 @@ class GitHubDriver extends VcsDriver
         }
 
         if (!extension_loaded('openssl')) {
-            $io->writeError('Skipping GitHub driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
+            $io->writeError('Skipping GitHub driver for '.Url::sanitize($url).' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
 
             return false;
         }
@@ -511,7 +512,7 @@ class GitHubDriver extends VcsDriver
                     // non-authenticated requests get no scopesNeeded, so ask for credentials
                     // authenticated requests which failed some scopes should ask for new credentials too
                     if (!$headers || !count($scopesNeeded) || count($scopesFailed)) {
-                        $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'Your GitHub credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
+                        $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'Your GitHub credentials are required to fetch private repository metadata (<info>'.Url::sanitize($this->url).'</info>)');
                     }
 
                     return parent::getContents($url);
@@ -531,11 +532,11 @@ class GitHubDriver extends VcsDriver
 
                     if (!$this->io->hasAuthentication($this->originUrl)) {
                         if (!$this->io->isInteractive()) {
-                            $this->io->writeError('<error>GitHub API limit exhausted. Failed to get metadata for the '.$this->url.' repository, try running in interactive mode so that you can enter your GitHub credentials to increase the API limit</error>');
+                            $this->io->writeError('<error>GitHub API limit exhausted. Failed to get metadata for the '.Url::sanitize($this->url).' repository, try running in interactive mode so that you can enter your GitHub credentials to increase the API limit</error>');
                             throw $e;
                         }
 
-                        $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'API limit exhausted. Enter your GitHub credentials to get a larger API limit (<info>'.$this->url.'</info>)');
+                        $gitHubUtil->authorizeOAuthInteractively($this->originUrl, 'API limit exhausted. Enter your GitHub credentials to get a larger API limit (<info>'.Url::sanitize($this->url).'</info>)');
 
                         return parent::getContents($url);
                     }
