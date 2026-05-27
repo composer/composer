@@ -60,6 +60,20 @@ class AuditCommandTest extends TestCase
         );
     }
 
+    public function testErrorAuditWithNoInstalledPackages(): void
+    {
+        $this->initTempComposer(['require' => ['dummy/pkg' => '1.0.0']]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'audit']);
+
+        self::assertSame(Auditor::STATUS_FAILED, $appTester->getStatusCode());
+        self::assertStringContainsString(
+            'No installed packages found. Please run "composer install" before running "audit"',
+            trim($appTester->getDisplay(true))
+        );
+    }
+
     public function testAuditPackageWithNoDevOptionPassed(): void
     {
         $this->initTempComposer();

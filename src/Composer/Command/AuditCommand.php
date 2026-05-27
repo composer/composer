@@ -61,9 +61,16 @@ EOT
         $packages = $this->getPackages($composer, $input);
 
         if (count($packages) === 0) {
+            if ($composer->getPackage()->getRequires() !== []
+                || (!$input->getOption('no-dev') && $composer->getPackage()->getDevRequires() !== [])) {
+                $this->getIO()->writeError('No installed packages found. Please run "composer install" before running "audit".');
+
+                return Auditor::STATUS_FAILED;
+            }
+
             $this->getIO()->writeError('No packages - skipping audit.');
 
-            return 0;
+            return Auditor::STATUS_OK;
         }
 
         $auditor = new Auditor();
