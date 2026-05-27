@@ -63,8 +63,8 @@ EOT
         if (count($packages) === 0) {
             if ($composer->getPackage()->getRequires() !== []
                 || (!$input->getOption('no-dev') && $composer->getPackage()->getDevRequires() !== [])) {
-                $this->getIO()->writeError('No installed packages found. Please run "composer install" before running "audit".');
-
+                $this->getIO()->writeError('No installed packages found. Please run "composer install" before running "audit" or pass "--locked" to audit the lock file.');
+ 
                 return Auditor::STATUS_FAILED;
             }
 
