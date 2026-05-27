@@ -160,7 +160,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 }
             }
 
-            throw new \RuntimeException('The `url` supplied for the path (' . $this->url . ') repository does not exist');
+            throw new \RuntimeException('The `url` supplied for the path (' . Url::sanitize($this->url) . ') repository does not exist');
         }
 
         foreach ($urlMatches as $url) {
@@ -243,7 +243,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         if (defined('GLOB_BRACE')) {
             $flags |= GLOB_BRACE;
         } elseif (strpos($this->url, '{') !== false || strpos($this->url, '}') !== false) {
-            throw new \RuntimeException('The operating system does not support GLOB_BRACE which is required for the url '. $this->url);
+            throw new \RuntimeException('The operating system does not support GLOB_BRACE which is required for the url '. Url::sanitize($this->url));
         }
 
         // Ensure environment-specific path separators are normalized to URL separators

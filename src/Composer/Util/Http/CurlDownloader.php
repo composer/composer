@@ -186,7 +186,7 @@ class CurlDownloader
             is_callable($options['prevent_url_access_callable']) &&
             $options['prevent_url_access_callable']($url)
         ) {
-            throw new TransportException('Access to "'.$url.'" is blocked.');
+            throw new TransportException('Access to "'.Url::sanitize($url).'" is blocked.');
         }
 
         $curlHandle = curl_init();
@@ -213,7 +213,7 @@ class CurlDownloader
         $bodyHandle = fopen($bodyTarget, 'w+b');
         restore_error_handler();
         if (false === $bodyHandle) {
-            throw new TransportException('The "'.$url.'" file could not be written to '.($copyTo ?? 'a temporary file').': '.$errorMessage);
+            throw new TransportException('The "'.Url::sanitize($url).'" file could not be written to '.($copyTo ?? 'a temporary file').': '.$errorMessage);
         }
 
         curl_setopt($curlHandle, CURLOPT_URL, $url);
@@ -353,7 +353,7 @@ class CurlDownloader
 
             $progress = curl_getinfo($curlHandle);
             if (false === $progress) {
-                throw new \RuntimeException('Failed getting info from curl handle '.$i.' ('.$this->jobs[$i]['url'].')');
+                throw new \RuntimeException('Failed getting info from curl handle '.$i.' ('.Url::sanitize($this->jobs[$i]['url']).')');
             }
             $job = $this->jobs[$i];
             unset($this->jobs[$i]);
@@ -524,7 +524,7 @@ class CurlDownloader
                         is_callable($this->jobs[$i]['options']['prevent_ip_access_callable']) &&
                         $this->jobs[$i]['options']['prevent_ip_access_callable']($progress['primary_ip'])
                     ) {
-                        $this->rejectJob($this->jobs[$i], new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], $progress['url'])));
+                        $this->rejectJob($this->jobs[$i], new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], Url::sanitize($progress['url']))));
                     }
 
                     $this->jobs[$i]['primaryIp'] = (string) $progress['primary_ip'];
@@ -566,7 +566,7 @@ class CurlDownloader
             return $targetUrl;
         }
 
-        throw new TransportException('The "'.$job['url'].'" file could not be downloaded, got redirect without Location ('.$response->getStatusMessage().')');
+        throw new TransportException('The "'.Url::sanitize($job['url']).'" file could not be downloaded, got redirect without Location ('.$response->getStatusMessage().')');
     }
 
     /**
@@ -669,7 +669,7 @@ class CurlDownloader
             $details = ':'.PHP_EOL.substr($response->getBody(), 0, 200).(strlen($response->getBody()) > 200 ? '...' : '');
         }
 
-        return new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')' . $details, $response->getStatusCode());
+        return new TransportException('The "'.Url::sanitize($job['url']).'" file could not be downloaded ('.$errorMessage.')' . $details, $response->getStatusCode());
     }
 
     /**

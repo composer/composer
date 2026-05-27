@@ -141,7 +141,7 @@ class Git
         };
 
         if (Preg::isMatch('{^ssh://[^@]+@[^:]+:[^0-9]+}', $url)) {
-            throw new \InvalidArgumentException('The source URL ' . $url . ' is invalid, ssh URLs should have a port number after ":".' . "\n" . 'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
+            throw new \InvalidArgumentException('The source URL ' . Url::sanitize($url) . ' is invalid, ssh URLs should have a port number after ":".' . "\n" . 'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
         }
 
         if (!$initialClone) {
@@ -375,7 +375,7 @@ class Git
     public function syncMirror(string $url, string $dir): bool
     {
         if ((bool) Platform::getEnv('COMPOSER_DISABLE_NETWORK') && Platform::getEnv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
-            $this->io->writeError('<warning>Aborting git mirror sync of '.$url.' as network is disabled</warning>');
+            $this->io->writeError('<warning>Aborting git mirror sync of '.Url::sanitize($url).' as network is disabled</warning>');
 
             return false;
         }
@@ -641,6 +641,8 @@ class Git
     }
 
     /**
+     * Wraps $message in Url::sanitize() before throwing, so callers do not need to pre-sanitize the URL they pass in.
+     *
      * @param non-empty-string $message
      *
      * @return never

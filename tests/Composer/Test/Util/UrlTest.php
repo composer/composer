@@ -70,9 +70,19 @@ class UrlTest extends TestCase
         self::assertSame($expected, Url::sanitize($url));
     }
 
+    /**
+     * @dataProvider sanitizeProvider
+     */
+    public function testSanitizeIsIdempotent(string $expected, string $url): void
+    {
+        self::assertSame($expected, Url::sanitize(Url::sanitize($url)));
+    }
+
     public static function sanitizeProvider(): array
     {
         return [
+            // empty input safe (callers may pass `$x ?? ''` for nullable URLs)
+            ['', ''],
             // with scheme
             ['https://foo:***@example.org/', 'https://foo:bar@example.org/'],
             ['https://foo@example.org/', 'https://foo@example.org/'],
