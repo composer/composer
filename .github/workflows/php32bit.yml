@@ -23,7 +23,7 @@ jobs:
     name: "CI"
 
     runs-on: ubuntu-latest
-    container: shivammathur/node:latest-i386
+    container: shivammathur/node:latest-i386@sha256:4423e9d5afa33b58f0371bc4f857c6ddf06ecc37937ac914dc984ff8d0e5a4b6
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
