@@ -31,7 +31,7 @@ class RepositoryFactory
      */
     public static function configFromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false)
     {
-        if (0 === strpos($repository, 'http')) {
+        if (0 === stripos($repository, 'http')) {
             $repoConfig = ['type' => 'composer', 'url' => $repository];
         } elseif ("json" === pathinfo($repository, PATHINFO_EXTENSION)) {
             $json = new JsonFile($repository, Factory::createHttpDownloader($io, $config));
