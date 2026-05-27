@@ -391,7 +391,7 @@ class SvnDriver extends VcsDriver
             }
 
             throw new \RuntimeException(
-                'Repository '.Url::sanitize($this->url).' could not be processed, '.$e->getMessage()
+                'Repository '.Url::sanitize($this->url).' could not be processed, '.Url::sanitize($e->getMessage())
             );
         }
     }

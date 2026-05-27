@@ -176,7 +176,7 @@ class Git
 
             // failed to checkout, first check git accessibility
             if (!$this->io->hasAuthentication($match[1]) && !$this->io->isInteractive()) {
-                $this->throwException('Failed to clone ' . Url::sanitize($url) . ' via ' . implode(', ', $protocols) . ' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
+                $this->throwException('Failed to clone ' . $url . ' via ' . implode(', ', $protocols) . ' protocols, aborting.' . "\n\n" . implode("\n", $messages), $url);
             }
         }
 
@@ -641,6 +641,8 @@ class Git
     }
 
     /**
+     * Wraps $message in Url::sanitize() before throwing, so callers do not need to pre-sanitize the URL they pass in.
+     *
      * @param non-empty-string $message
      *
      * @return never
@@ -651,7 +653,7 @@ class Git
         clearstatcache();
 
         if (0 !== $this->process->execute(['git', '--version'], $ignoredOutput)) {
-            throw new \RuntimeException(Url::sanitize('Failed to clone ' . Url::sanitize($url) . ', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
+            throw new \RuntimeException(Url::sanitize('Failed to clone ' . $url . ', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
         }
 
         throw new \RuntimeException(Url::sanitize($message));

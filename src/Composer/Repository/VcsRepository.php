@@ -190,7 +190,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         $driver = $this->getDriver();
         if (!$driver) {
-            throw new \InvalidArgumentException('No driver found to handle VCS repository '.$this->url);
+            throw new \InvalidArgumentException('No driver found to handle VCS repository '.Url::sanitize($this->url));
         }
 
         $this->versionParser = new VersionParser;

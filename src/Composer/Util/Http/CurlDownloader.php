@@ -353,7 +353,7 @@ class CurlDownloader
 
             $progress = curl_getinfo($curlHandle);
             if (false === $progress) {
-                throw new \RuntimeException('Failed getting info from curl handle '.$i.' ('.$this->jobs[$i]['url'].')');
+                throw new \RuntimeException('Failed getting info from curl handle '.$i.' ('.Url::sanitize($this->jobs[$i]['url']).')');
             }
             $job = $this->jobs[$i];
             unset($this->jobs[$i]);
@@ -524,7 +524,7 @@ class CurlDownloader
                         is_callable($this->jobs[$i]['options']['prevent_ip_access_callable']) &&
                         $this->jobs[$i]['options']['prevent_ip_access_callable']($progress['primary_ip'])
                     ) {
-                        $this->rejectJob($this->jobs[$i], new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], $progress['url'])));
+                        $this->rejectJob($this->jobs[$i], new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], Url::sanitize($progress['url']))));
                     }
 
                     $this->jobs[$i]['primaryIp'] = (string) $progress['primary_ip'];

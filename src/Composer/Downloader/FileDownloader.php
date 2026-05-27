@@ -205,12 +205,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 }
 
                 if (!file_exists($fileName)) {
-                    throw new \UnexpectedValueException($url['base'].' could not be saved to '.$fileName.', make sure the'
+                    throw new \UnexpectedValueException(UrlUtil::sanitize($url['base']).' could not be saved to '.$fileName.', make sure the'
                         .' directory is writable and you have internet connectivity');
                 }
 
                 if ($checksum !== null && $checksum !== '' && hash_file('sha1', $fileName) !== $checksum) {
-                    throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url['base'].')');
+                    throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.UrlUtil::sanitize($url['base']).')');
                 }
 
                 if ($this->eventDispatcher !== null) {
