@@ -94,7 +94,7 @@ class Config
         'client-certificate' => [],
         'forgejo-domains' => ['codeberg.org'],
         'forgejo-token' => [],
-        'source-fallback' => true,
+        'source-fallback' => false,
     ];
 
     /** @var array<string, mixed> */
@@ -398,7 +398,6 @@ class Config
             // booleans with env var support
             case 'cache-read-only':
             case 'htaccess-protect':
-            case 'source-fallback':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
@@ -416,6 +415,7 @@ class Config
             case 'secure-http':
             case 'use-github-api':
             case 'lock':
+            case 'source-fallback':
                 // special case for secure-http
                 if ($key === 'secure-http' && $this->get('disable-tls') === true) {
                     return false;

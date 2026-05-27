@@ -115,35 +115,30 @@ optionally be an object with package name patterns for keys for more granular in
 
 ## source-fallback
 
-Defaults to `true`. When set to `true`, Composer will automatically fall back
+> **Deprecated:** This option is deprecated and will be removed in Composer 2.11.
+> It exists as a temporary opt-in while we disable automatic source fallback for
+> security reasons (silently switching from a dist to a less-trusted or manipulated
+> source may have security implications). If you have a legitimate use case for this
+> and do not want us to remove it in 2.11, please open an issue at
+> https://github.com/composer/composer/issues to let us know.
+
+Defaults to `false`. When set to `true`, Composer will automatically fall back
 to an alternative installation source (e.g., from dist to source or vice versa)
-when a download fails. Set to `false` to disable this behavior and fail immediately
-if the preferred source is unavailable.
+when a download fails. Leave at `false` (the default) to fail immediately if
+the preferred source is unavailable.
 
 ```json
 {
     "config": {
-        "source-fallback": false
+        "source-fallback": true
     }
 }
 ```
 
-This can also be specified on the command line:
-
-```bash
-composer install --no-source-fallback
-composer update --source-fallback
-```
-
-Or via the `COMPOSER_SOURCE_FALLBACK` environment variable:
-
-```bash
-COMPOSER_SOURCE_FALLBACK=0 composer install
-```
-
-> **Note:** When this option is disabled and a download fails, Composer will
-> immediately throw an error instead of trying alternative sources. Make sure
-> your preferred installation source (`preferred-install`) is correctly configured.
+> **Note:** With this option disabled (the default) and a download failing,
+> Composer immediately throws an error instead of trying alternative sources.
+> Make sure your preferred installation source (`preferred-install`) is
+> correctly configured.
 
 ## policy
 

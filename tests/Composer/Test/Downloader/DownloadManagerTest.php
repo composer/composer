@@ -294,6 +294,9 @@ class DownloadManagerTest extends TestCase
                 $downloaderSuccess
             );
 
+        // Source fallback now defaults to false; opt in to exercise failover.
+        $manager->setSourceFallback(true);
+
         $manager->download($package, 'target_dir');
     }
 
@@ -1240,7 +1243,13 @@ class DownloadManagerTest extends TestCase
                 $downloaderSuccess
             );
 
-        // Explicitly enable source fallback (default behavior)
+        // 4 writeError calls fire: 2 deprecation warnings, "Failed to download from dist",
+        // and "Now trying to download from source" during the retry.
+        $this->io
+            ->expects($this->exactly(4))
+            ->method('writeError');
+
+        // Explicitly enable source fallback (opt-in, deprecated)
         $manager->setSourceFallback(true);
 
         $manager->download($package, 'target_dir');

@@ -770,7 +770,7 @@
                 },
                 "source-fallback": {
                     "type": "boolean",
-                    "description": "If true (default), Composer will fall back to a different installation source (e.g., from dist to source or vice versa) when a download fails. Set to false to disable this behavior."
+                    "description": "DEPRECATED, will be removed in Composer 2.11. Defaults to false. If true, Composer will fall back to a different installation source (e.g., from dist to source or vice versa) when a download fails. Automatic source fallback has security implications, please open an issue at https://github.com/composer/composer/issues if you need this kept around."
                 },
                 "github-protocols": {
                     "type": "array",
