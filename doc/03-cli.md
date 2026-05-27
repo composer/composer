@@ -1173,23 +1173,17 @@ php composer.phar archive vendor/package 2.0.21 --format=zip
 
 ## audit
 
-This command is used to audit the packages you have installed for potential security issues. It checks for and lists security
-vulnerability advisories using the [Packagist.org API](https://packagist.org/apidoc#list-security-advisories) by default
-or other repositories if specified in the `repositories` section of `composer.json`.
-The command also detects abandoned packages.
+This command is used to audit the packages you have installed against defined dependency policies,
+such as security advisories. It checks for and lists security vulnerability advisories using the
+[Packagist.org API](https://packagist.org/apidoc#list-security-advisories) by default or other
+repositories if specified in the `repositories` section of `composer.json`. The command also detects
+abandoned packages and packages flagged as malware, or packages matched by other dependency policies.
 
-The audit command determines if there are vulnerable, abandoned, or filtered packages and returns the following exit codes based on
-the findings:
+The audit command determines if there are vulnerable, abandoned, malware packages, or packages matched by other dependency
+policies and returns the following exit codes based on the findings:
 
 * `0` No issues;
-* `1` Vulnerable packages;
-* `2` Abandoned packages;
-* `3` Vulnerable and abandoned packages.
-* `4` Filtered packages.
-* `5` Vulnerable and filtered packages.
-* `6` Abandoned and filtered packages.
-* `7` Vulnerable, abandoned, and filtered packages.
-* `8` Failure due to missing required packages.
+* `1` Found packages matching dependency policies or failed due to missing required packages.
 
 ```shell
 php composer.phar audit
@@ -1205,10 +1199,6 @@ php composer.phar audit
   flag will override the config value and the environment variable.
 * **--ignore-severity:** Ignore advisories of a certain severity level. Can be passed one or more
   time to ignore multiple severities.
-* **--filtered:** Behavior on packages matched by the `malware` dependency policy and custom
-  dependency policies. Must be "ignore", "report", or "fail". Overrides the per-policy `audit`
-  setting (`config.policy.malware.audit` and every custom policy's `audit`) for the duration
-  of this command.
 
 ## help
 
