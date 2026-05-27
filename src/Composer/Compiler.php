@@ -204,6 +204,7 @@ class Compiler
             'vendor/symfony/polyfill-php84/Resources/Deprecated.php',
             'vendor/symfony/polyfill-php84/Resources/RoundingMode.php',
             'vendor/symfony/polyfill-php84/bootstrap82.php',
+            'vendor/symfony/polyfill-intl-grapheme/bootstrap85.php',
         ]);
     }
 
