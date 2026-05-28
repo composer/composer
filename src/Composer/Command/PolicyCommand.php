@@ -24,11 +24,11 @@ use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Manage policy lists and their sources.
+ * Manage dependency policies and their sources.
  *
  * Examples:
- *  - composer policy add-source my-list url https://example.org/list.json
- *  - composer policy add-source my-list '{"type":"url","url":"https://example.org/list.json"}'
+ *  - composer policy add-source my-policy url https://example.org/my-pkgs.json
+ *  - composer policy add-source my-policy '{"type":"url","url":"https://example.org/my-pkgs.json"}'
  */
 class PolicyCommand extends BaseConfigCommand
 {
@@ -36,27 +36,27 @@ class PolicyCommand extends BaseConfigCommand
     {
         $this
             ->setName('policy')
-            ->setDescription('Manages policy lists and their sources')
+            ->setDescription('Manages custom dependency policies and their sources')
             ->setDefinition([
                 new InputOption('global', 'g', InputOption::VALUE_NONE, 'Apply command to the global config file'),
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
                 new InputArgument('action', InputArgument::REQUIRED, 'Action to perform: add-source', null, ['add-source']),
-                new InputArgument('name', InputArgument::OPTIONAL, 'Policy list name', null, $this->suggestListNames()),
+                new InputArgument('name', InputArgument::OPTIONAL, 'Policy name', null, $this->suggestListNames()),
                 new InputArgument('arg1', InputArgument::OPTIONAL, 'Source type (e.g. "url") for add-source', null, $this->suggestArg1()),
                 new InputArgument('arg2', InputArgument::OPTIONAL, 'URL for add-source (if not using JSON)'),
             ])
             ->setHelp(
                 <<<EOT
-This command lets you manage policy lists and their sources in composer.json.
+This command lets you manage custom dependency policies and their sources in composer.json.
 
 Examples:
-  composer policy add-source my-list url https://example.org/list.json
-  composer policy add-source my-list '{"type":"url","url":"https://example.org/list.json"}'
+  composer policy add-source my-policy url https://example.org/my-pkgs.json
+  composer policy add-source my-policy '{"type":"url","url":"https://example.org/my-pkgs.json"}'
 
-Adding a source to a list that does not exist will create the list.
+Adding a source for a dependency policy that does not exist will create the policy.
 
-Built-in lists (advisories, malware, abandoned) do not accept sources and
-are rejected by add-source. Use `composer config policy.<list>.<field>`
+Built-in dependency policies (advisories, malware, abandoned) do not accept sources and
+are rejected by add-source. Use `composer config policy.<policy>.<field>`
 to adjust their settings.
 
 Use --global/-g to alter the global config.json instead.
@@ -75,7 +75,7 @@ EOT
         switch ($action) {
             case 'add-source':
                 if ($listName === null) {
-                    throw new \RuntimeException('You must pass a list name. Example: composer policy add-source my-list url https://example.org');
+                    throw new \RuntimeException('You must pass a dependency policy name. Example: composer policy add-source my-policy url https://example.org');
                 }
                 $this->assertCustomListName((string) $listName);
                 if ($arg1 === null) {
@@ -89,7 +89,7 @@ EOT
                     }
                 } else {
                     if ($arg2 === null) {
-                        throw new \RuntimeException('You must pass the source type and a url. Example: composer policy add-source my-list url https://example.org');
+                        throw new \RuntimeException('You must pass the source type and a url. Example: composer policy add-source my-policy url https://example.org');
                     }
                     $sourceConfig = ['type' => (string) $arg1, 'url' => (string) $arg2];
                 }
@@ -107,7 +107,7 @@ EOT
                         && ($existing['type'] ?? null) === $sourceConfig['type']
                         && ($existing['url'] ?? null) === ($sourceConfig['url'] ?? null)
                     ) {
-                        $this->getIO()->write('<info>Source '.$sourceConfig['url'].' already present in list '.$listName.'</info>');
+                        $this->getIO()->write('<info>Source '.$sourceConfig['url'].' already present in policy '.$listName.'</info>');
 
                         return 0;
                     }
@@ -126,7 +126,7 @@ EOT
     private function assertCustomListName(string $name): void
     {
         if (in_array($name, PolicyConfig::BUILTIN_LIST_NAMES, true)) {
-            throw new \RuntimeException('Built-in list "'.$name.'" does not support sources. Use `composer config policy.'.$name.'.<field>` to configure it.');
+            throw new \RuntimeException('Built-in dependency policy "'.$name.'" does not support sources. Use `composer config policy.'.$name.'.<field>` to configure it.');
         }
 
         $error = PolicyConfig::getFutureReservedListNameError($name);
@@ -135,7 +135,7 @@ EOT
         }
 
         if ($name === '' || strpos($name, '.') !== false) {
-            throw new \RuntimeException('Invalid list name "'.$name.'".');
+            throw new \RuntimeException('Invalid dependency policy name "'.$name.'".');
         }
     }
 

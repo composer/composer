@@ -137,14 +137,14 @@ class PolicyConfig
     {
         if (in_array($listName, self::RESERVED_NAMES, true)) {
             throw new \UnexpectedValueException(sprintf(
-                'Invalid custom policy list name "%s": this name is reserved for a built-in list.',
+                'Invalid custom dependency policy name "%s": this name is reserved for a built-in dependency policy.',
                 $listName
             ));
         }
 
         $error = self::getFutureReservedListNameError($listName);
         if ($error !== null) {
-            throw new \UnexpectedValueException('Invalid custom policy list name: '.$error);
+            throw new \UnexpectedValueException('Invalid custom dependency policy name: '.$error);
         }
     }
 
@@ -397,28 +397,19 @@ class PolicyConfig
     }
 
     /**
-     * `$abandoned` overrides only the abandoned list. `$filtered` is a blunt
-     * override: it overwrites the audit setting for malware *and every custom
-     * list*, including lists explicitly configured as audit=fail in the policy
-     * config.
-     *
+     * `$abandoned` overrides only the abandoned list audit setting.
+     * *
      * @param null|ListPolicyConfig::AUDIT_* $abandoned
-     * @param null|ListPolicyConfig::AUDIT_* $filtered
      * @return static
      */
-    public function withAudit(?string $abandoned, ?string $filtered)
+    public function withAudit(?string $abandoned)
     {
-        $customLists = [];
-        foreach ($this->customLists as $name => $list) {
-            $customLists[$name] = $list->withAudit($filtered !== null ? $filtered : $list->audit);
-        }
-
         return new self(
             $this->enabled,
             $this->advisories,
-            $this->malware->withAudit($filtered !== null ? $filtered : $this->malware->audit),
+            $this->malware,
             $this->abandoned->withAudit($abandoned !== null ? $abandoned : $this->abandoned->audit),
-            $customLists,
+            $this->customLists,
             $this->ignoreUnreachable
         );
     }

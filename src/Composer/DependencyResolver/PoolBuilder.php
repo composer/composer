@@ -840,7 +840,7 @@ class PoolBuilder
 
         $this->io->write(sprintf('Filter list pool filter completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERY_VERBOSE);
         $this->io->write(sprintf(
-            '<info>Found %s package versions referenced in your dependency graph. %s (%d%%) were filtered away by filter lists.</info>',
+            '<info>Found %s package versions referenced in your dependency graph. %s (%d%%) were filtered away by dependency policies.</info>',
             number_format($total),
             number_format($filtered),
             round(100 / $total * $filtered)

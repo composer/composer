@@ -147,12 +147,13 @@ COMPOSER_SOURCE_FALLBACK=0 composer install
 
 ## policy
 
-Unified security and package policy configuration. Controls security advisories, malware detection,
-abandoned packages, and custom policy lists. Audit reports can be generated with `composer audit`;
-blocking prevents insecure or otherwise flagged package versions from being installed during
-`composer update`, `require`, or `remove` and for the malware detection additionally during a `composer install`.
+Unified dependency policy configuration. Controls Composer behavior for dependencies with security
+advisories, flagged as malware, abandoned packages, and custom dependency policies. Audit reports
+can be generated with `composer audit`; blocking prevents insecure or otherwise flagged package
+versions from being installed during `composer update`, `require`, or `remove` and malware also
+during a `composer install`.
 
-Set to `false` to disable all policy enforcement:
+Set to `false` to disable all dependency policy enforcement:
 
 ```json
 {
@@ -265,8 +266,8 @@ and scoping (`on-block`/`on-audit`) to limit where the ignore applies.
 
 #### ignore
 
-A list of package names to ignore for security advisories. Supports wildcards and optional version
-constraints. See the [ignore format](#ignore-format) for all supported syntax variants.
+A list of package names to ignore for security advisory handling. Supports wildcards and optional
+version constraints. See the [ignore format](#ignore-format) for all supported syntax variants.
 
 #### ignore-severity
 
@@ -369,11 +370,11 @@ abandoned state. See the [ignore format](#ignore-format) for all supported synta
 
 ### malware
 
-Configuration for packages flagged as containing malware.
+Configuration for package versions flagged as containing malware.
 
 #### block
 
-Defaults to `true`. When `true`, packages flagged as malware are blocked.
+Defaults to `true`. When `true`, package versions flagged as malware are blocked.
 
 #### block-scope
 
@@ -422,12 +423,12 @@ A list of source names to exclude from malware checks.
 
 ### ignore-unreachable
 
-Defaults to `["update", "install"]`. When the operation is ignored, repositories and policy sources that are unreachable or return a
-non-200 response are silently ignored rather than causing an error. Useful in environments where not all package
+Defaults to `["update", "install"]`. When the operation is listed here, repositories and policies with URL sources that are unreachable or
+return a non-200 response are silently ignored rather than causing an error. Useful in environments where not all package
 repositories are accessible.
 
-Set to `true` to ignore unreachable repositories and policy sources for all operations and to `false` to ignore them for no operations.
-Possible values are: `audit`, `install`, and `update`.
+Set to `true` to ignore unreachable repositories and custom dependency policy sources for all operations and to `false` to ignore them
+for no operations. Possible values are: `audit`, `install`, and `update`.
 
 ```json
 {
@@ -439,21 +440,21 @@ Possible values are: `audit`, `install`, and `update`.
 }
 ```
 
-### Custom lists
+### Custom dependency policies
 
-In addition to the built-in `advisories`, `malware`, and `abandoned` lists, you can define named
-custom policy lists. A custom list receives its data from one or more URL sources (configured by
-package repositories or set explicitly here).
+In addition to the built-in `advisories`, `malware`, and `abandoned` dependency policies, you can
+define named custom dependency policies. A custom dependency policy needs its own set of package
+versions, supplied by one or more sources (advertised by package repositories or set explicitly here).
 
 ```json
 {
     "config": {
         "policy": {
-            "my-list": {
+            "my-policy": {
                 "block": true,
                 "audit": "fail",
                 "sources": [
-                    {"type": "url", "url": "https://example.org/policy-list.json"}
+                    {"type": "url", "url": "https://example.org/my-bad-packages-list.json"}
                 ],
                 "ignore": {
                     "vendor/package": "Assessed and accepted."
@@ -467,18 +468,18 @@ package repositories or set explicitly here).
 Source URLs must use `https://`. `http://` and other schemes are rejected both at
 schema validation time (`composer validate`) and at config load time.
 
-Custom list names must not conflict with the reserved names `advisories`, `malware`, or
+Custom dependency policy names must not conflict with the reserved names `advisories`, `malware`, or
 `abandoned`, and must not start with `ignore` (the only `ignore`-prefixed key allowed at this
 level is the documented `ignore-unreachable` setting).
 
-The following names are reserved for future built-in lists and cannot be used as custom list
-names: `package`, `packages`, `license`, `licence`, `licenses`, `licences`, `support`,
+The following names are reserved for future built-in dependency policies and cannot be used as custom
+dependency policy names: `package`, `packages`, `license`, `licence`, `licenses`, `licences`, `support`,
 `maintenance`, `security`, `minimum-release-age`. Composer rejects any colliding key both at
 schema validation time (`composer validate`) and at config load time.
 
 ### ignore format
 
-The `ignore` key on every list accepts package name patterns with optional version constraints
+The `ignore` key on every dependency policy accepts package name patterns with optional version constraints
 and per-rule scoping. All formats may be mixed in the same map.
 
 ##### Simple list (ignore all versions):
@@ -487,7 +488,7 @@ and per-rule scoping. All formats may be mixed in the same map.
 {
     "config": {
         "policy": {
-            "<list>": {
+            "<policy>": {
                 "ignore": ["vendor/package", "acme/*"]
             }
         }
@@ -501,7 +502,7 @@ and per-rule scoping. All formats may be mixed in the same map.
 {
     "config": {
         "policy": {
-            "<list>": {
+            "<policy>": {
                 "ignore": {
                     "vendor/package": "Assessed, no risk."
                 }
@@ -517,7 +518,7 @@ and per-rule scoping. All formats may be mixed in the same map.
 {
     "config": {
         "policy": {
-            "<list>": {
+            "<policy>": {
                 "ignore": {
                     "vendor/package": {"constraint": "^2.0", "reason": "Only v2 is affected."}
                 }
@@ -536,7 +537,7 @@ and per-rule scoping. All formats may be mixed in the same map.
 {
     "config": {
         "policy": {
-            "<list>": {
+            "<policy>": {
                 "ignore": {
                     "vendor/package": {"on-audit": false, "reason": "Workaround applied; keep reporting."}
                 }
@@ -552,7 +553,7 @@ and per-rule scoping. All formats may be mixed in the same map.
 {
     "config": {
         "policy": {
-            "<list>": {
+            "<policy>": {
                 "ignore": {
                     "vendor/package": [
                         {"constraint": "^1.0", "on-audit": false},
@@ -578,7 +579,7 @@ dependencies, ensuring they cannot be installed.
 ### How `config.audit` interacts with `config.policy`
 
 The legacy `config.audit` keys are only read as a fallback when the corresponding
-[`config.policy`](#policy) block is **absent**. The fallback is all-or-nothing per built-in list:
+[`config.policy`](#policy) section is **absent**. The fallback is all-or-nothing per built-in dependency policy:
 
 - If [`config.policy.advisories`](#advisories) is set (to any value, including `false`),
   every advisories-related `audit.*` key ([`audit.block-insecure`](#block-insecure), [`audit.ignore`](#ignore-3),
@@ -586,13 +587,13 @@ The legacy `config.audit` keys are only read as a fallback when the correspondin
   [`policy.advisories.block`](#block), [`policy.advisories.ignore`](#ignore), and
   [`policy.advisories.ignore-severity`](#ignore-severity) are read. Mix-and-matching,
   e.g. setting `policy.advisories.block` while expecting `audit.ignore-severity` to still
-  apply, is not supported — migrate all advisories-related settings together.
+  apply, is not supported. Migrate all advisories-related settings together.
 - If [`config.policy.abandoned`](#abandoned) is set (to any value, including `false`),
   every abandoned-related `audit.*` key ([`audit.block-abandoned`](#block-abandoned), [`audit.abandoned`](#abandoned-1),
   [`audit.ignore-abandoned`](#ignore-abandoned)) is **ignored entirely** — only
   [`policy.abandoned.block`](#block-1), [`policy.abandoned.audit`](#audit-1), and
   [`policy.abandoned.ignore`](#ignore-1) are read.
-- The two built-in lists are independent: configuring `policy.advisories` while leaving the
+- The two built-in dependency policies are independent: configuring `policy.advisories` while leaving the
   abandoned settings under `audit.*` is allowed and vice versa.
 - Setting [`policy.ignore-unreachable`](#ignore-unreachable) supersedes the legacy
   [`audit.ignore-unreachable`](#ignore-unreachable-1) key.

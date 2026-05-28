@@ -58,10 +58,7 @@ class Auditor
 
     /** Values to determine the audit result. */
     public const STATUS_OK = 0;
-    public const STATUS_VULNERABLE = 1;
-    public const STATUS_ABANDONED = 2;
-    public const STATUS_FILTERED = 4;
-    public const STATUS_FAILED = 8;
+    public const STATUS_FAILED = 1;
 
     /**
      * @param PolicyConfig $policyConfig Source of truth for ignore lists, severity filters, and per-list audit settings.
@@ -69,7 +66,7 @@ class Auditor
      * @param self::FORMAT_* $format The format that will be used to output audit results.
      * @param bool $warningOnly If true, outputs a warning. If false, outputs an error.
      *
-     * @return int-mask<self::STATUS_*> A bitmask of STATUS_* constants or 0 on success
+     * @return 0|1 Where 0 on success means no issues found, and 1 means there were issues found
      * @throws InvalidArgumentException If no packages are passed in
      */
     public function audit(IOInterface $io, RepositorySet $repoSet, PolicyConfig $policyConfig, array $packages, string $format, bool $warningOnly = true, ?FilterListProviderSet $filterListProviderSet = null): int
@@ -127,7 +124,7 @@ class Auditor
             }
         }
 
-        $auditBitmask = $this->calculateBitmask(0 < $affectedPackagesCount, 0 < $abandonedCount, 0 < $filteredCount);
+        $auditResult = (0 < $affectedPackagesCount || 0 < $abandonedCount || 0 < $filteredCount) ? self::STATUS_FAILED : self::STATUS_OK;
 
         if (self::FORMAT_JSON === $format) {
             $json = ['advisories' => $advisories];
@@ -153,7 +150,7 @@ class Auditor
 
             $io->write(JsonFile::encode($json));
 
-            return $auditBitmask;
+            return $auditResult;
         }
 
         $errorOrWarn = $warningOnly ? 'warning' : 'error';
@@ -202,7 +199,7 @@ class Auditor
             }
         }
 
-        return $auditBitmask;
+        return $auditResult;
     }
 
     /**
@@ -509,28 +506,6 @@ class Auditor
     }
 
     /**
-     * @return int-mask<self::STATUS_*>
-     */
-    private function calculateBitmask(bool $hasVulnerablePackages, bool $hasAbandonedPackages, bool $hasFilteredPackages = false): int
-    {
-        $bitmask = self::STATUS_OK;
-
-        if ($hasVulnerablePackages) {
-            $bitmask |= self::STATUS_VULNERABLE;
-        }
-
-        if ($hasAbandonedPackages) {
-            $bitmask |= self::STATUS_ABANDONED;
-        }
-
-        if ($hasFilteredPackages) {
-            $bitmask |= self::STATUS_FILTERED;
-        }
-
-        return $bitmask;
-    }
-
-    /**
      * @param array<string, list<FilterListEntry>> $filteredPackages
      * @param self::FORMAT_PLAIN|self::FORMAT_TABLE $format
      */
@@ -540,7 +515,7 @@ class Auditor
             foreach ($filteredPackages as $data) {
                 foreach ($data as $entry) {
                     $parts = [
-                        $entry->packageName . ' is on filter list "' . $entry->listName . '"',
+                        $entry->packageName . ' matched dependency policy "' . $entry->listName . '"',
                     ];
                     if ($entry->reason !== null) {
                         $parts[] = 'Reason: ' . $entry->reason;

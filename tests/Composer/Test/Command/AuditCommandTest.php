@@ -108,27 +108,7 @@ class AuditCommandTest extends TestCase
         self::assertStringContainsString('malicious/pkg', $display);
         self::assertStringContainsString('banned/pkg', $display);
 
-        self::assertSame(Auditor::STATUS_FILTERED, $exitCode);
-    }
-
-    public function testAuditWithFilteredIgnoreFlagSkipsFilterChecks(): void
-    {
-        $packages = [
-            ['name' => 'safe/pkg', 'version' => '1.0.0'],
-            ['name' => 'malicious/pkg', 'version' => '1.0.0'],
-            ['name' => 'banned/pkg', 'version' => '1.0.0'],
-        ];
-
-        $this->initTempComposerWithFilterLists($packages);
-        $this->createComposerLockWithPackages($packages);
-
-        $appTester = $this->getApplicationTester();
-        $exitCode = $appTester->run(['command' => 'audit', '--locked' => true, '--filtered' => ListPolicyConfig::AUDIT_IGNORE]);
-
-        $display = $appTester->getDisplay(true);
-        self::assertStringNotContainsString('matching filters', $display);
-        self::assertStringContainsString('No security vulnerability advisories found.', $display);
-        self::assertSame(Auditor::STATUS_OK, $exitCode);
+        self::assertSame(Auditor::STATUS_FAILED, $exitCode);
     }
 
     public function testAuditWithCustomListAuditReportDoesNotFail(): void

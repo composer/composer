@@ -269,7 +269,7 @@ abstract class Rule
 
             case self::RULE_LOCKED_FILTER_LIST_REMOVED:
                 $package = $this->deduplicateDefaultBranchAlias($this->getReasonData()['package']);
-                return $package->getPrettyName().' '.$package->getPrettyVersion().' was removed by a policy filter list (e.g. malware) and cannot be installed.';
+                return $package->getPrettyName().' '.$package->getPrettyVersion().' was removed by a dependency policy (e.g. malware) and cannot be installed.';
 
             case self::RULE_PACKAGE_CONFLICT:
                 $package1 = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[0]));

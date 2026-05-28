@@ -539,7 +539,7 @@
                         "ignore-unreachable": {
                             "type": "boolean",
                             "deprecated": true,
-                            "description": "DEPRECATED: use 'config.policy.ignore-unreachable' instead. The new key accepts a boolean or an array of scopes ('audit', 'install', 'update') and is shared across all policy lists."
+                            "description": "DEPRECATED: use 'config.policy.ignore-unreachable' instead. The new key accepts a boolean or an array of scopes ('audit', 'install', 'update') and is shared across all dependency policies."
                         },
                         "block-insecure": {
                             "type": "boolean",
@@ -711,15 +711,15 @@
                     "patternProperties": {
                         "^ignore(?!-unreachable$)": {
                             "not": {},
-                            "description": "Custom policy list names must not start with \"ignore\" — that prefix is reserved for future use."
+                            "description": "Custom dependency policy names must not start with \"ignore\" — that prefix is reserved for future use."
                         },
                         "^(package|packages|license|licence|licenses|licences|support|maintenance|security|minimum-release-age)$": {
                             "not": {},
-                            "description": "This name is reserved for future use and cannot be used as a custom policy list name."
+                            "description": "This name is reserved for future use and cannot be used as a custom dependency policy name."
                         }
                     },
                     "additionalProperties": {
-                        "description": "Custom policy list configuration.",
+                        "description": "Custom dependency policy configuration.",
                         "oneOf": [
                             {
                                 "type": "boolean"
@@ -734,12 +734,12 @@
                                     },
                                     "audit": {
                                         "enum": ["ignore", "report", "fail"],
-                                        "description": "How composer audit treats packages matched by this list. Defaults to fail.",
+                                        "description": "How composer audit treats packages matched by this dependency policy. Defaults to fail.",
                                         "default": "fail"
                                     },
                                     "sources": {
                                         "type": "array",
-                                        "description": "URL sources to fetch this policy list data from.",
+                                        "description": "Sources supplying the package versions this dependency policy applies to.",
                                         "items": {
                                             "type": "object",
                                             "required": ["type", "url"],
@@ -752,7 +752,7 @@
                                                 "url": {
                                                     "type": "string",
                                                     "pattern": "^https://",
-                                                    "description": "URL to fetch the policy list data from. Must use https://."
+                                                    "description": "URL to fetch the list of package versions from. Must use https://."
                                                 }
                                             },
                                             "additionalProperties": false

@@ -611,7 +611,7 @@ EOT
             if ($isCustomPolicyIgnore) {
                 $reservedError = PolicyConfig::getFutureReservedListNameError((string) $customIgnoreMatches[1]);
                 if ($reservedError !== null) {
-                    throw new \RuntimeException('Invalid policy list name: '.$reservedError);
+                    throw new \RuntimeException('Invalid dependency policy name: '.$reservedError);
                 }
             }
 
@@ -694,7 +694,7 @@ EOT
         ) {
             $reservedError = PolicyConfig::getFutureReservedListNameError($matches[1]);
             if ($reservedError !== null) {
-                throw new \RuntimeException('Invalid policy list name: '.$reservedError);
+                throw new \RuntimeException('Invalid dependency policy name: '.$reservedError);
             }
             if (!$booleanValidator($values[0])) {
                 throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, expected a boolean', $values[0], $settingKey));
@@ -710,7 +710,7 @@ EOT
         ) {
             $reservedError = PolicyConfig::getFutureReservedListNameError($matches[1]);
             if ($reservedError !== null) {
-                throw new \RuntimeException('Invalid policy list name: '.$reservedError);
+                throw new \RuntimeException('Invalid dependency policy name: '.$reservedError);
             }
             if ($matches[2] === 'block') {
                 if (!$booleanValidator($values[0])) {
@@ -731,7 +731,7 @@ EOT
         // `composer config`, since sources have structured shape (type/url) and validation rules.
         if (Preg::isMatch('/^policy\.([^.]+)\.sources$/', $settingKey, $matches)) {
             throw new \RuntimeException(sprintf(
-                'Setting policy sources is not supported by `composer config`. Use `composer policy add-source %s url <https-url>` instead.',
+                'Setting dependency policy sources is not supported by `composer config`. Use `composer policy add-source %s url <https-url>` instead.',
                 $matches[1]
             ));
         }

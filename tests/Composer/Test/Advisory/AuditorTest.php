@@ -64,7 +64,7 @@ class AuditorTest extends TestCase
                 ],
                 'warningOnly' => true,
             ],
-            'expected' => Auditor::STATUS_VULNERABLE,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => '<warning>Found 2 security vulnerability advisories affecting 1 package:</warning>
 Package: vendor1/package1
 Severity: high
@@ -141,7 +141,7 @@ Reported at: 2022-05-25T13:21:00+00:00',
                 'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'ignore-abandoned' => ['acme/test' => 'ignoring because yolo'],
             ],
-            'expected' => Auditor::STATUS_ABANDONED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => 'No security vulnerability advisories found.
 Found 2 abandoned packages:
 vendor/abandoned is abandoned. Use foo/bar instead.
@@ -174,7 +174,7 @@ vendor/abandoned2 is abandoned. No replacement was suggested.',
                 'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'format' => Auditor::FORMAT_TABLE,
             ],
-            'expected' => Auditor::STATUS_ABANDONED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => 'No security vulnerability advisories found.
 Found 2 abandoned packages:
 +-------------------+----------------------------------------------------------------------------------+
@@ -196,7 +196,7 @@ Found 2 abandoned packages:
                 'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'format' => Auditor::FORMAT_TABLE,
             ],
-            'expected' => Auditor::STATUS_VULNERABLE | Auditor::STATUS_ABANDONED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => 'Found 2 security vulnerability advisories affecting 1 package:
 +-------------------+----------------------------------------------------------------------------------+
 | Package           | vendor1/package1                                                                 |
@@ -237,7 +237,7 @@ Found 2 abandoned packages:
                 'abandoned' => ListPolicyConfig::AUDIT_FAIL,
                 'format' => Auditor::FORMAT_JSON,
             ],
-            'expected' => Auditor::STATUS_ABANDONED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => '{
     "advisories": [],
     "abandoned": {
@@ -581,7 +581,7 @@ Found 2 abandoned packages:
         $result = $auditor->audit($io, $repoSet, $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, true), $packages, Auditor::FORMAT_PLAIN, false);
 
         // Should find advisories from the reachable repositories
-        self::assertSame(Auditor::STATUS_VULNERABLE, $result);
+        self::assertSame(Auditor::STATUS_FAILED, $result);
 
         $output = $io->getOutput();
         self::assertStringContainsString('The following repositories were unreachable:', $output);
@@ -596,7 +596,7 @@ Found 2 abandoned packages:
         // Test with JSON format
         $io = new BufferIO();
         $result = $auditor->audit($io, $repoSet, $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, true), $packages, Auditor::FORMAT_JSON, false);
-        self::assertSame(Auditor::STATUS_VULNERABLE, $result);
+        self::assertSame(Auditor::STATUS_FAILED, $result);
 
         $json = json_decode($io->getOutput(), true);
         self::assertArrayHasKey('unreachable-repositories', $json);
@@ -685,15 +685,15 @@ Found 2 abandoned packages:
             'output' => 'No security vulnerability advisories found.',
         ];
 
-        yield 'AUDIT_FAIL with matching entry returns STATUS_FILTERED (plain)' => [
+        yield 'AUDIT_FAIL with matching entry returns STATUS_FAILED (plain)' => [
             'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
             'filterEntriesByList' => ['test-list' => [$matchingEntry]],
             'filtered' => ListPolicyConfig::AUDIT_FAIL,
             'format' => Auditor::FORMAT_PLAIN,
-            'expected' => Auditor::STATUS_FILTERED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => 'No security vulnerability advisories found.
 Found 1 package matching filters:
-vendor/package is on filter list "test-list". Reason: internal.',
+vendor/package matched dependency policy "test-list". Reason: internal.',
         ];
 
         yield 'AUDIT_FAIL with matching entry shows url and reason (plain)' => [
@@ -701,10 +701,10 @@ vendor/package is on filter list "test-list". Reason: internal.',
             'filterEntriesByList' => ['test-list' => [$matchingEntryWithDetails]],
             'filtered' => ListPolicyConfig::AUDIT_FAIL,
             'format' => Auditor::FORMAT_PLAIN,
-            'expected' => Auditor::STATUS_FILTERED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => 'No security vulnerability advisories found.
 Found 1 package matching filters:
-vendor/package is on filter list "test-list". Reason: internal. URL: https://example.com/filtered.',
+vendor/package matched dependency policy "test-list". Reason: internal. URL: https://example.com/filtered.',
         ];
 
         yield 'AUDIT_REPORT with matching entry returns STATUS_OK' => [
@@ -715,7 +715,7 @@ vendor/package is on filter list "test-list". Reason: internal. URL: https://exa
             'expected' => Auditor::STATUS_OK,
             'output' => 'No security vulnerability advisories found.
 <warning>Found 1 package matching filters:</warning>
-vendor/package is on filter list "test-list". Reason: internal.',
+vendor/package matched dependency policy "test-list". Reason: internal.',
         ];
 
         yield 'AUDIT_FAIL with matching entry shows summary line only (summary format)' => [
@@ -723,7 +723,7 @@ vendor/package is on filter list "test-list". Reason: internal.',
             'filterEntriesByList' => ['test-list' => [$matchingEntry]],
             'filtered' => ListPolicyConfig::AUDIT_FAIL,
             'format' => Auditor::FORMAT_SUMMARY,
-            'expected' => Auditor::STATUS_FILTERED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => 'No security vulnerability advisories found.
 Found 1 package matching filters.',
         ];
@@ -741,11 +741,11 @@ Found 1 package matching filters.',
             ],
             'filtered' => ListPolicyConfig::AUDIT_FAIL,
             'format' => Auditor::FORMAT_PLAIN,
-            'expected' => Auditor::STATUS_FILTERED,
+            'expected' => Auditor::STATUS_FAILED,
             'output' => 'No security vulnerability advisories found.
 Found 2 packages matching filters:
-vendor/package is on filter list "test-list". Reason: internal.
-vendor/other is on filter list "test-list". Reason: internal.',
+vendor/package matched dependency policy "test-list". Reason: internal.
+vendor/other matched dependency policy "test-list". Reason: internal.',
         ];
     }
 
@@ -817,7 +817,7 @@ vendor/other is on filter list "test-list". Reason: internal.',
             $providerSet
         );
 
-        self::assertSame(Auditor::STATUS_FILTERED, $result);
+        self::assertSame(Auditor::STATUS_FAILED, $result);
 
         $json = json_decode($io->getOutput(), true);
         self::assertIsArray($json);
@@ -870,11 +870,11 @@ vendor/other is on filter list "test-list". Reason: internal.',
             $providerSet
         );
 
-        self::assertSame(Auditor::STATUS_VULNERABLE | Auditor::STATUS_FILTERED, $result);
+        self::assertSame(Auditor::STATUS_FAILED, $result);
         $output = trim(str_replace("\r", '', $io->getOutput()));
         self::assertStringContainsString('Found 2 security vulnerability advisories affecting 1 package:', $output);
         self::assertStringContainsString('Found 1 package matching filters:', $output);
-        self::assertStringContainsString('vendor1/package2 is on filter list "test-list". Reason: internal', $output);
+        self::assertStringContainsString('vendor1/package2 matched dependency policy "test-list". Reason: internal', $output);
     }
 
     /**

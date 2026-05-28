@@ -591,7 +591,7 @@ EOT
         }
         $repoSet->addRepository(new ComposerRepository(['type' => 'composer', 'url' => 'https://packagist.org'], new NullIO(), $config, $this->httpDownloader));
         $policyConfig = $this->createPolicyConfig($config, null);
-        $policyConfig = $policyConfig->withAudit(ListPolicyConfig::AUDIT_IGNORE, null);
+        $policyConfig = $policyConfig->withAudit(ListPolicyConfig::AUDIT_IGNORE);
 
         try {
             $io = new BufferIO();
