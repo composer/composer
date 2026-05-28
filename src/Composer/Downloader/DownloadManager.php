@@ -217,8 +217,13 @@ class DownloadManager
 
             $handleError = function ($e) use ($sources, $source, $package, $io, $download) {
                 if ($e instanceof \RuntimeException && !$e instanceof IrrecoverableDownloadException) {
-                    if (count($sources) === 0 || !$this->sourceFallback) {
-                        if (!$this->sourceFallback && count($sources) > 0) {
+                    $nextSource = $sources[0] ?? null;
+                    // Only fallback from dist to source is gated by the sourceFallback flag, as it can
+                    // silently switch to less-trusted code or cause other issues where people rely on dists.
+                    // Falling back the other way around (source -> dist) is always allowed.
+                    $blocked = $nextSource === 'source' && !$this->sourceFallback;
+                    if ($nextSource === null || $blocked) {
+                        if ($blocked) {
                             $io->writeError(
                                 '    <warning>Failed to download '.
                                 $package->getPrettyName().
