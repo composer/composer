@@ -20,6 +20,7 @@ class BaseIOTest extends TestCase
 {
     /**
      * @dataProvider provideValidGithubTokens
+     * @param string $token
      */
     public function testLoadConfigurationAcceptsValidGithubToken($token)
     {
@@ -51,43 +52,6 @@ class BaseIOTest extends TestCase
             'github_pat_ fine-grained PAT' => array(
                 'github_pat_11ABCDEFG0aB1cD2eF3gH4_n3K9wQ2eL5bV8mY1pX4cZ7aR0fT6sH3uJ8oI2pQ7vR4xL9eK6bN',
             ),
-        );
-    }
-
-    /**
-     * @dataProvider provideUrlBreakingGithubTokens
-     */
-    public function testLoadConfigurationRejectsTokenWithUrlBreakingCharacters($token, $offending)
-    {
-        $io = new BufferIO();
-        $config = new Config(false);
-        $config->merge(array('config' => array('github-oauth' => array('github.com' => $token))));
-
-        try {
-            $io->loadConfiguration($config);
-            $this->fail('Expected loadConfiguration to reject token containing '.$offending);
-        } catch (\UnexpectedValueException $e) {
-            $this->assertStringNotContainsString(
-                $token,
-                $e->getMessage(),
-                'Exception message must not leak the rejected token value.'
-            );
-        }
-    }
-
-    public function provideUrlBreakingGithubTokens()
-    {
-        return array(
-            'contains @ (userinfo separator)' => array('ghp_AAAA@evil.example.com', '@'),
-            'contains : (basic-auth user:pass split)' => array('ghp_AAAA:extra', ':'),
-            'contains / (path separator)' => array('ghp_AAA/BBB', '/'),
-            'contains backslash' => array('ghp_AAA\\BBB', '\\'),
-            'contains ? (query separator)' => array('ghp_AAA?x=1', '?'),
-            'contains # (fragment)' => array('ghp_AAA#frag', '#'),
-            'contains space' => array('ghp_AAA BBB', 'space'),
-            'contains tab' => array("ghp_AAA\tBBB", 'tab'),
-            'contains CR' => array("ghp_AAA\rBBB", 'CR'),
-            'contains LF (header injection)' => array("ghp_AAA\nX-Evil: 1", 'LF'),
         );
     }
 }

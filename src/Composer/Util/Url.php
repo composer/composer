@@ -119,6 +119,9 @@ class Url
             if (Preg::isMatch(GitHub::GITHUB_TOKEN_REGEX, $m['user'])) {
                 return $m['prefix'].'***:***@';
             }
+            if (strlen($m['user']) >= 12) {
+                return $m['prefix'].substr($m['user'], 0, 8).'***:***@';
+            }
 
             return $m['prefix'].$m['user'].':***@';
         }, $url);
