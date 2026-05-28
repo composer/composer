@@ -113,19 +113,34 @@ optionally be an object with package name patterns for keys for more granular in
 > configuration in global and package configurations the string notation
 > is translated to a `*` package pattern.
 
+> **Tip:** If you want a source checkout for some packages so you can make
+> local edits, but only on your own machine (not in CI), prefer configuring
+> `preferred-install` globally rather than committing it to the project. For
+> example:
+>
+> ```
+> composer config --global preferred-install.my-vendor/* source
+> ```
+>
+> CI then keeps installing from `dist` by default, while your dev machine
+> always pulls those packages from source. This avoids relying on a source
+> install failure to fall back to dist, and saves CI from attempting a clone
+> first, which keep the output leaner and your CI faster.
+
 ## source-fallback
 
 > **Deprecated:** This option is deprecated and will be removed in Composer 2.11.
-> It exists as a temporary opt-in while we disable automatic source fallback for
-> security reasons (silently switching from a dist to a less-trusted or manipulated
-> source may have security implications). If you have a legitimate use case for this
-> and do not want us to remove it in 2.11, please open an issue at
-> https://github.com/composer/composer/issues to let us know.
+> Do not set it unless you absolutely need to. It exists as a temporary opt-in
+> while we disable the dist → source fallback for security reasons (silently
+> switching from a dist to a less-trusted or manipulated source checkout has
+> security implications). If you have a legitimate use case for re-enabling
+> the dist → source fallback and do not want us to remove it in 2.11, please
+> open an issue at https://github.com/composer/composer/issues to let us know.
 
-Defaults to `false`. When set to `true`, Composer will automatically fall back
-to an alternative installation source (e.g., from dist to source or vice versa)
-when a download fails. Leave at `false` (the default) to fail immediately if
-the preferred source is unavailable.
+Defaults to `false`. When set to `true`, a failed **dist** install will fall
+back to a **source** checkout. This option only governs the dist → source
+direction; falling back from a failed source checkout to the dist artifact is
+always allowed regardless of this setting.
 
 ```json
 {
@@ -135,10 +150,10 @@ the preferred source is unavailable.
 }
 ```
 
-> **Note:** With this option disabled (the default) and a download failing,
-> Composer immediately throws an error instead of trying alternative sources.
-> Make sure your preferred installation source (`preferred-install`) is
-> correctly configured.
+> **Note:** With this option at its default (`false`) and a dist download
+> failing, Composer throws an error immediately instead of trying a source
+> checkout. Make sure your preferred installation source (`preferred-install`)
+> is correctly configured.
 
 ## policy
 
