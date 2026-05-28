@@ -692,12 +692,12 @@ class Config
     public function prohibitUrlByConfig(string $url, ?IOInterface $io = null, array $repoOptions = []): void
     {
         // Return right away if the URL is malformed or custom (see issue #5173), but only for non-HTTP(S) URLs
-        if (false === filter_var($url, FILTER_VALIDATE_URL) && !Preg::isMatch('{^https?://}', $url)) {
+        if (false === filter_var($url, FILTER_VALIDATE_URL) && !Preg::isMatch('{^https?://}i', $url)) {
             return;
         }
 
         // Extract scheme and throw exception on known insecure protocols
-        $scheme = parse_url($url, PHP_URL_SCHEME);
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
         $hostname = parse_url($url, PHP_URL_HOST);
         if (in_array($scheme, ['http', 'git', 'ftp', 'svn'])) {
             if ($this->get('secure-http')) {
