@@ -1,3 +1,11 @@
+### [2.10.0] 2026-05-28
+
+  * BC Break / Security: Disabled automatic fallback to source checkout if dist/zip install fails, we have introduced a new `source-fallback` config option as a temporary way to restore the old behavior, but if you need this talk to us as we plan to remove it entirely in 2.11 (#12885)
+  * BC Break: Minor break for `audit` consumers, the exit code is now always 0 (success) or 1 if anything failed the audit (#12881)
+  * Security: Hardened output filtering of URLs to reduce chances of token leaks (#12882, #12886)
+  * Security: Fixed handling of uppercase schemes in URL validation that might have allowed https requirement bypass (#12884)
+  * Fixed `audit` command returning a success code when the vendor dir was not present (#12880)
+
 ### [2.10.0-RC2] 2026-05-20
 
   * Since 2.10.0-RC1, fixes in 2.9.6 - 2.9.8, many of which security relevant, are also included
@@ -2174,6 +2182,7 @@
 
   * Initial release
 
+[2.10.0]: https://github.com/composer/composer/compare/2.10.0-RC2...2.10.0
 [2.10.0-RC2]: https://github.com/composer/composer/compare/2.10.0-RC1...2.10.0-RC2
 [2.10.0-RC1]: https://github.com/composer/composer/compare/2.9.5...2.10.0-RC1
 [2.9.8]: https://github.com/composer/composer/compare/2.9.7...2.9.8
