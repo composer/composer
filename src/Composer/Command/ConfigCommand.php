@@ -427,6 +427,7 @@ EOT
             }],
             'sort-packages' => [$booleanValidator, $booleanNormalizer],
             'optimize-autoloader' => [$booleanValidator, $booleanNormalizer],
+            'strict-psr-autoloader' => [$booleanValidator, $booleanNormalizer],
             'classmap-authoritative' => [$booleanValidator, $booleanNormalizer],
             'apcu-autoloader' => [$booleanValidator, $booleanNormalizer],
             'prepend-autoloader' => [$booleanValidator, $booleanNormalizer],

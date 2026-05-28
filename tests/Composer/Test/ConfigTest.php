@@ -662,4 +662,27 @@ class ConfigTest extends TestCase
         $config->merge(['config' => ['allow-plugins' => true]]);
         self::assertEquals(true, $config->get('allow-plugins'));
     }
+
+    public function testStrictPsrAutoloaderDefaultsToFalse(): void
+    {
+        $config = new Config(false);
+        self::assertFalse($config->get('strict-psr-autoloader'));
+    }
+
+    public function testStrictPsrAutoloaderCanBeDisabled(): void
+    {
+        $config = new Config(false);
+        $config->merge(['config' => ['strict-psr-autoloader' => false]]);
+        self::assertFalse($config->get('strict-psr-autoloader'));
+    }
+
+    public function testStrictPsrAutoloaderCanBeSetFromString(): void
+    {
+        $config = new Config(false);
+        $config->merge(['config' => ['strict-psr-autoloader' => 'false']]);
+        self::assertFalse($config->get('strict-psr-autoloader'));
+
+        $config->merge(['config' => ['strict-psr-autoloader' => 'true']]);
+        self::assertTrue($config->get('strict-psr-autoloader'));
+    }
 }
