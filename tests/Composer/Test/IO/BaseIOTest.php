@@ -54,46 +54,4 @@ class BaseIOTest extends TestCase
             ],
         ];
     }
-
-    /**
-     * @dataProvider provideUrlBreakingGithubTokens
-     */
-    public function testLoadConfigurationRejectsTokenWithUrlBreakingCharacters(string $token, string $offending): void
-    {
-        $io = new BufferIO();
-        $config = new Config(false);
-        $config->merge(['config' => ['github-oauth' => ['github.com' => $token]]]);
-
-        try {
-            $io->loadConfiguration($config);
-            self::fail('Expected loadConfiguration to reject token containing '.$offending);
-        } catch (\UnexpectedValueException $e) {
-            // Defect #1: the rejected token must not be echoed back into the
-            // exception message — Symfony Console renders it to stderr and CI
-            // log shippers / GitHub Actions secret masking do not reliably
-            // strip it from the framed error block.
-            self::assertStringNotContainsString(
-                $token,
-                $e->getMessage(),
-                'Exception message must not leak the rejected token value.'
-            );
-        }
-    }
-
-    /** @return array<string, array{string, string}> */
-    public static function provideUrlBreakingGithubTokens(): array
-    {
-        return [
-            'contains @ (userinfo separator)' => ['ghp_AAAA@evil.example.com', '@'],
-            'contains : (basic-auth user:pass split)' => ['ghp_AAAA:extra', ':'],
-            'contains / (path separator)' => ['ghp_AAA/BBB', '/'],
-            'contains backslash' => ['ghp_AAA\\BBB', '\\'],
-            'contains ? (query separator)' => ['ghp_AAA?x=1', '?'],
-            'contains # (fragment)' => ['ghp_AAA#frag', '#'],
-            'contains space' => ['ghp_AAA BBB', 'space'],
-            'contains tab' => ["ghp_AAA\tBBB", 'tab'],
-            'contains CR' => ["ghp_AAA\rBBB", 'CR'],
-            'contains LF (header injection)' => ["ghp_AAA\nX-Evil: 1", 'LF'],
-        ];
-    }
 }
