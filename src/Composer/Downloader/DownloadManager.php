@@ -39,7 +39,9 @@ class DownloadManager
     /** @var array<string, DownloaderInterface> */
     private $downloaders = [];
     /** @var bool */
-    private $sourceFallback = true;
+    private $sourceFallback = false;
+    /** @var bool */
+    private $sourceFallbackDeprecationWarned = false;
 
     /**
      * Initializes download manager.
@@ -96,6 +98,12 @@ class DownloadManager
      */
     public function setSourceFallback(bool $sourceFallback): self
     {
+        if ($sourceFallback && !$this->sourceFallbackDeprecationWarned) {
+            $this->io->writeError('<warning>The source-fallback option is deprecated and will be removed in Composer 2.11 as automatic fallback between dist and source has security implications.</warning>');
+            $this->io->writeError('<warning>If you have a legitimate use case and do not want us to remove it in 2.11, please open an issue at https://github.com/composer/composer/issues to let us know.</warning>');
+            $this->sourceFallbackDeprecationWarned = true;
+        }
+
         $this->sourceFallback = $sourceFallback;
 
         return $this;

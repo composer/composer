@@ -663,10 +663,10 @@ class ConfigTest extends TestCase
         self::assertEquals(true, $config->get('allow-plugins'));
     }
 
-    public function testSourceFallbackDefaultsToTrue(): void
+    public function testSourceFallbackDefaultsToFalse(): void
     {
         $config = new Config(false);
-        self::assertTrue($config->get('source-fallback'));
+        self::assertFalse($config->get('source-fallback'));
     }
 
     public function testSourceFallbackCanBeDisabled(): void
@@ -686,13 +686,4 @@ class ConfigTest extends TestCase
         self::assertTrue($config->get('source-fallback'));
     }
 
-    public function testSourceFallbackEnvOverride(): void
-    {
-        Platform::putEnv('COMPOSER_SOURCE_FALLBACK', '0');
-        $config = new Config(true);
-        $result = $config->get('source-fallback');
-        Platform::clearEnv('COMPOSER_SOURCE_FALLBACK');
-
-        self::assertFalse($result);
-    }
 }

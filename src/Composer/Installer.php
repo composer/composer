@@ -147,8 +147,6 @@ class Installer
     /** @var bool */
     protected $preferDist = false;
     /** @var bool */
-    protected $sourceFallback = true;
-    /** @var bool */
     protected $optimizeAutoloader = false;
     /** @var bool */
     protected $classMapAuthoritative = false;
@@ -315,7 +313,6 @@ class Installer
 
         $this->downloadManager->setPreferSource($this->preferSource);
         $this->downloadManager->setPreferDist($this->preferDist);
-        $this->downloadManager->setSourceFallback($this->sourceFallback);
 
         $localRepo = $this->repositoryManager->getLocalRepository();
 
@@ -1302,16 +1299,6 @@ class Installer
     public function setPreferDist(bool $preferDist = true): self
     {
         $this->preferDist = $preferDist;
-
-        return $this;
-    }
-
-    /**
-     * Allow fallback to alternative sources when download fails.
-     */
-    public function setSourceFallback(bool $sourceFallback): self
-    {
-        $this->sourceFallback = $sourceFallback;
 
         return $this;
     }

@@ -529,8 +529,8 @@ class Factory
             $dm->setPreferences($preferred);
         }
 
-        if (!$config->get('source-fallback')) {
-            $dm->setSourceFallback(false);
+        if ($config->get('source-fallback')) {
+            $dm->setSourceFallback(true);
         }
 
         $dm->setDownloader('git', new Downloader\GitDownloader($io, $config, $process, $fs));

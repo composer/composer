@@ -97,7 +97,6 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('ask', null, InputOption::VALUE_NONE, 'Whether to ask for project directory.'),
-                new InputOption('source-fallback', null, InputOption::VALUE_NEGATABLE, 'Whether to fall back to alternative sources (dist/source) on download failure.'),
             ])
             ->setHelp(
                 <<<EOT
@@ -268,7 +267,6 @@ EOT
             $installer = Installer::create($io, $composer);
             $installer->setPreferSource($preferSource)
                 ->setPreferDist($preferDist)
-                ->setSourceFallback($input->getOption('source-fallback') ?? $config->get('source-fallback'))
                 ->setDevMode($installDevPackages)
                 ->setPlatformRequirementFilter($platformRequirementFilter)
                 ->setSuggestedPackagesReporter($this->suggestedPackagesReporter)
@@ -485,8 +483,7 @@ EOT
 
         $dm = $composer->getDownloadManager();
         $dm->setPreferSource($preferSource)
-            ->setPreferDist($preferDist)
-            ->setSourceFallback($input->getOption('source-fallback') ?? $config->get('source-fallback'));
+            ->setPreferDist($preferDist);
 
         $projectInstaller = new ProjectInstaller($directory, $dm, $fs);
         $im = $composer->getInstallationManager();
