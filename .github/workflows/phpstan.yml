@@ -8,6 +8,10 @@ on:
     paths-ignore:
       - 'doc/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
   SYMFONY_PHPUNIT_VERSION: ""
@@ -28,10 +32,12 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v3"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
           coverage: "none"
           extensions: "intl, zip"
@@ -44,18 +50,18 @@ jobs:
         run: "echo \"::set-output name=directory::$(composer config cache-dir)\""
 
       - name: "Cache dependencies installed with composer"
-        uses: "actions/cache@v4"
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: "${{ steps.determine-composer-cache-directory.outputs.directory }}"
           key: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}-${{ hashFiles('**/composer.lock') }}"
           restore-keys: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}"
 
       - name: "Install highest dependencies from composer.json using composer binary provided by system"
-        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer config platform --unset && composer update $COMPOSER_FLAGS'
 
       - name: "Install PHPStan"
         # Locked to phpunit 7.5 here as newer ones have void return types which break inheritance
-        run: "bin/composer require --dev phpstan/phpstan:1.4.* phpstan/phpstan-phpunit:1.0.* phpstan/phpstan-deprecation-rules:1.0.* phpstan/phpstan-strict-rules:1.1.* phpunit/phpunit:^7.5.20 --with-all-dependencies ${{ env.COMPOSER_FLAGS }}"
+        run: 'bin/composer require --dev phpstan/phpstan:1.4.* phpstan/phpstan-phpunit:1.0.* phpstan/phpstan-deprecation-rules:1.0.* phpstan/phpstan-strict-rules:1.1.* phpunit/phpunit:^7.5.20 --with-all-dependencies $COMPOSER_FLAGS'
 
       - name: "Run PHPStan"
         run: "vendor/bin/phpstan analyse --configuration=phpstan/config.neon"

@@ -8,6 +8,10 @@ on:
     paths-ignore:
       - 'doc/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
   COMPOSER_UPDATE_FLAGS: ""
@@ -65,10 +69,12 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v3"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
           coverage: "none"
           extensions: "intl, zip"
@@ -94,11 +100,11 @@ jobs:
 
       - name: "Update dependencies from composer.json using composer binary provided by system"
         if: "contains(matrix.dependencies, 'highest') || contains(matrix.dependencies, 'lowest')"
-        run: "composer update ${{ env.COMPOSER_UPDATE_FLAGS }} ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer update $COMPOSER_UPDATE_FLAGS $COMPOSER_FLAGS'
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'locked'"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer install $COMPOSER_FLAGS'
 
       - name: "Remove platform config"
         run: composer config platform --unset
@@ -113,10 +119,10 @@ jobs:
         run: "echo \"SYMFONY_DEPRECATIONS_HELPER=baselineFile=./tests/deprecations-8.1.json&max[direct]=0\" >> $GITHUB_ENV"
 
       - name: "Update dev requirements to latest available for the current PHP even on locked builds as they are not bundled dependencies"
-        run: "composer update ${{ env.COMPOSER_FLAGS }} -W symfony/phpunit-bridge phpspec/prophecy phpdocumentor/* sebastian/* doctrine/instantiator"
+        run: 'composer update $COMPOSER_FLAGS -W symfony/phpunit-bridge phpspec/prophecy phpdocumentor/* sebastian/* doctrine/instantiator'
 
       - name: "Run install again using composer binary from source"
-        run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'bin/composer install $COMPOSER_FLAGS'
 
       - name: "Prepare git environment"
         run: "git config --global user.name composer && git config --global user.email composer@example.com"
@@ -136,10 +142,12 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v3"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
           coverage: "none"
           extensions: "intl, zip"
@@ -148,7 +156,7 @@ jobs:
           tools: "composer:snapshot"
 
       - name: "Install dependencies"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer install $COMPOSER_FLAGS'
 
       - name: "Validate composer.json"
         run: "bin/composer validate --strict"
