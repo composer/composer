@@ -8,6 +8,13 @@ on:
     paths-ignore:
       - 'doc/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
 
@@ -49,10 +56,12 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
           coverage: "none"
           extensions: "intl"
@@ -64,7 +73,7 @@ jobs:
         run: "echo \"::set-output name=directory::$(composer config cache-dir)\""
 
       - name: "Cache dependencies installed with composer"
-        uses: "actions/cache@v1"
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: "${{ steps.determine-composer-cache-directory.outputs.directory }}"
           key: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}-${{ hashFiles('**/composer.lock') }}"
@@ -72,18 +81,18 @@ jobs:
 
       - name: "Install highest dependencies from composer.json using composer binary provided by system"
         if: "matrix.dependencies == 'highest'"
-        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer config platform --unset && composer update $COMPOSER_FLAGS'
 
       - name: "Install lowest dependencies from composer.json using composer binary provided by system"
         if: "matrix.dependencies == 'lowest'"
-        run: "composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest"
+        run: 'composer update $COMPOSER_FLAGS --prefer-lowest'
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'locked'"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer install $COMPOSER_FLAGS'
 
       - name: "Run install again using composer binary from source"
-        run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'bin/composer install $COMPOSER_FLAGS'
 
       - name: "Validate composer.json"
         run: "bin/composer validate"
