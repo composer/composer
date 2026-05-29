@@ -5,30 +5,40 @@ on:
     tags:
       - "*"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+permissions: {}
+
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
 
 jobs:
   build:
+    permissions:
+      contents: write # for gh to create a release
+      id-token: write # for actions/attest to create a attestation certificate
+      attestations: write # for actions/attest to upload the attestation
     name: Upload Release Asset
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+      - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
           coverage: "none"
           extensions: "intl"
           ini-values: "memory_limit=-1"
           php-version: "8.0"
+          tools: "composer:snapshot"
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer install $COMPOSER_FLAGS'
 
       - name: "Run install again using composer binary from source"
-        run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'bin/composer install $COMPOSER_FLAGS'
 
       - name: "Validate composer.json"
         run: "bin/composer validate"
@@ -36,40 +46,49 @@ jobs:
       - name: Build phar file
         run: "php -d phar.readonly=0 bin/compile"
 
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate build provenance attestation
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: true
-          body: TODO
+          subject-path: '${{ github.workspace }}/composer.phar'
 
-      - name: Upload phar
-        uses: actions/upload-release-asset@v1
+      - name: Configure GPG key and sign phar
+        run: |
+          mkdir -p ~/.gnupg/
+          chmod 0700 ~/.gnupg/
+          echo "$GPG_SIGNING_KEY" > ~/.gnupg/private.key
+          gpg --import ~/.gnupg/private.key
+          gpg -u contact@packagist.com --detach-sign --output composer.phar.asc composer.phar
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./composer.phar
-          asset_name: composer.phar
-          asset_content_type: application/octet-stream
+          GPG_SIGNING_KEY: |
+            ${{ secrets.GPG_KEY_161DFBE342889F01DDAC4E61CBB3D576F2A0946F }}
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF_NAME: ${{ github.ref_name }}
+        run: gh release create "$REF_NAME" --title "$REF_NAME" --notes TODO --draft --verify-tag
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF_NAME: ${{ github.ref_name }}
+        run: gh release upload "$REF_NAME" composer.phar composer.phar.asc --clobber
 
       # This step requires a secret token with `pull` access to composer/docker. The default
       # secrets.GITHUB_TOKEN is scoped to this repository only which is not sufficient.
       - name: "Open issue @ Docker repository"
-        uses: actions/github-script@v2
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPOSITORY: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
         with:
           github-token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           script: |
-            // github.ref value looks like 'refs/tags/TAG', cleanup
-            const tag = "${{ github.ref }}".replace(/refs\/tags\//, '');
             // create new issue on Docker repository
-            github.issues.create({
-              owner: "${{ github.repository_owner }}",
+            github.rest.issues.create({
+              owner: process.env.REPO_OWNER,
               repo: "docker",
-              title: `New Composer tag: ${ tag }`,
-              body: `https://github.com/${{ github.repository }}/releases/tag/${ tag }`,
+              title: `New Composer tag: ${process.env.REF_NAME}`,
+              body: `https://github.com/${process.env.REPOSITORY}/releases/tag/${process.env.REF_NAME}`,
             });
