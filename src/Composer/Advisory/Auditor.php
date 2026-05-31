@@ -176,7 +176,6 @@ class Auditor
         } else {
             $io->write('<info>No security vulnerability advisories found.</info>');
         }
-    
 
         if (count($unreachableRepos) > 0) {
             $io->writeError('<warning>The following repositories were unreachable:</warning>');
@@ -420,7 +419,7 @@ class Auditor
                 $firstAdvisory = false;
             }
         }
-        $io->write($error);
+        $io->writeError($error);
     }
 
     /**
