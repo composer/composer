@@ -438,8 +438,9 @@ class CurlDownloader
                 }
                 fclose($job['bodyHandle']);
 
+                $warningsOutput = false;
                 if ($response->getStatusCode() >= 300 && $response->getHeader('content-type') === 'application/json') {
-                    HttpDownloader::outputWarnings($this->io, $job['origin'], json_decode($response->getBody(), true));
+                    $warningsOutput = HttpDownloader::outputWarnings($this->io, $job['origin'], json_decode($response->getBody(), true));
                 }
 
                 $result = $this->isAuthenticatedRetryNeeded($job, $response);
@@ -469,7 +470,7 @@ class CurlDownloader
                         continue;
                     }
 
-                    throw $this->failResponse($job, $response, $response->getStatusMessage());
+                    throw $this->failResponse($job, $response, $response->getStatusMessage(), $warningsOutput);
                 }
 
                 if ($job['attributes']['storeAuth'] !== false) {
@@ -658,14 +659,15 @@ class CurlDownloader
     /**
      * @param  Job                $job
      */
-    private function failResponse(array $job, Response $response, string $errorMessage): TransportException
+    private function failResponse(array $job, Response $response, string $errorMessage, bool $warningsOutput = false): TransportException
     {
         if (null !== $job['filename']) {
             @unlink($job['filename'].'~');
         }
 
         $details = '';
-        if (in_array(strtolower((string) $response->getHeader('content-type')), ['application/json', 'application/json; charset=utf-8'], true)) {
+        // skip dumping the raw JSON body when outputWarnings already presented it cleanly, to avoid duplicate/messy output
+        if (!$warningsOutput && in_array(strtolower((string) $response->getHeader('content-type')), ['application/json', 'application/json; charset=utf-8'], true)) {
             $details = ':'.PHP_EOL.substr($response->getBody(), 0, 200).(strlen($response->getBody()) > 200 ? '...' : '');
         }
 
