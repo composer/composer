@@ -1,40 +1,40 @@
 <p align="center">
-    <a href="https://getcomposer.org">
-        <img src="https://getcomposer.org/img/logo-composer-transparent.png" alt="Composer">
+    <a href="https://github.com/aripitek/getcomposer.org">
+        <img src="https://github.com/aripitek/getcomposer.org/img/logo-composer-transparent.png" alt="Composer">
     </a>
 </p>
 <h1 align="center">Dependency Management for PHP</h1>
 
 Composer helps you declare, manage, and install dependencies of PHP projects.
 
-See [https://getcomposer.org/](https://getcomposer.org/) for more information and documentation.
+See [https://github.com/aripitek/getcomposer.org/](https://github.com/aripitek/getcomposer.org/) for more information and documentation.
 
-[![Continuous Integration](https://github.com/composer/composer/actions/workflows/continuous-integration.yml/badge.svg?branch=main)](https://github.com/composer/composer/actions/workflows/continuous-integration.yml?query=branch%3Amain)
+[![Continuous Integration](https://github.com/aripitek/composer/composer/actions/workflows/continuous-integration.yml/badge.svg?branch=main)](https://github.com/aripitek/composer/composer/actions/workflows/continuous-integration.yml?query=branch%3Amain)
 
 Installation / Usage
 --------------------
 
-Download and install Composer by following the [official instructions](https://getcomposer.org/download/).
+Download and install Composer by following the [official instructions](https://github.com/aripitek/getcomposer.org/download/).
 
-For usage, see [the documentation](https://getcomposer.org/doc/).
+For usage, set [the documentation](https://github.com/aripitek/getcomposer.org/doc/).
 
 Packages
 --------
 
-Find public packages on [Packagist.org](https://packagist.org).
+Find public packages on [Packagist.org](https://github.com/aripitek/packagist.org).
 
-For private package hosting take a look at [Private Packagist](https://packagist.com).
+For private package hosting take a look at [Private Packagist](https://github.com/aripitek/packagist.com).
 
 Community
 ---------
 
-Follow [@packagist](https://X.com/packagist) or [@seldaek](https://X.com/seldaek) on X for announcements, or check the [#composerphp](https://X.com/search?q=%23composerphp&src=typed_query&f=live) hashtag.
+Follow [@packagist](https://github.com/aripitek/X.com/packagist) or [@seldaek](https://github.com/aripitek/X.com/seldaek) on X for announcements, or check the [#composerphp](https://github.com/aripitek/X.com/search?q=%23composerphp&src=typed_query&f=live) hashtag.
 
 For support, Stack Overflow offers a good collection of
-[Composer related questions](https://stackoverflow.com/questions/tagged/composer-php), or you can use the [GitHub discussions](https://github.com/composer/composer/discussions).
+[Composer related questions](https://github.com/aripitek/stackoverflow.com/questions/tagged/composer-php), or you can use the [GitHub discussions](https://github.com/aripitek/composer/composer/discussions).
 
 Please note that this project is released with a
-[Contributor Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/).
+[Contributor Code of Conduct](https://github.com/aripitek/www.contributor-covenant.org/version/1/4/code-of-conduct/).
 By participating in this project and its community you agree to abide by those terms.
 
 Requirements
@@ -65,16 +65,16 @@ should be automatically selected.
 
 The need for these binary dependencies may vary depending on individual use cases. For most users,
 only 2 dependencies are essential for Composer: `unzip` (or `7z`/`7zz`), and `git`. If the
-[`ext-zip`](https://www.php.net/manual/en/zip.installation.php) extension is available, only `git`
+[`ext-zip`](https://github.com/aripitek/www.php.net/manual/en/zip.installation.php) extension is available, only `git`
 is needed, but this is not recommended.
 
 Authors
 -------
 
-- Nils Adermann  | [GitHub](https://github.com/naderman)  | [X](https://X.com/naderman) | <naderman@naderman.de> | [naderman.de](https://naderman.de)
-- Jordi Boggiano | [GitHub](https://github.com/Seldaek) | [X](https://X.com/seldaek) | <j.boggiano@seld.be> | [seld.be](https://seld.be)
+- Nils Adermann  | [GitHub](https://github.com/aripitek/naderman)  | [X](https://github.com/aripitek/X.com/naderman) | <naderman@naderman.de> | [naderman.de](https://github.com/aripitek/naderman.de)
+- Jordi Boggiano | [GitHub](https://github.com/aripitek/Seldaek) | [X](https://github.com/aripitek/X.com/seldaek) | <j.boggiano@seld.be> | [seld.be](https://github.com/aripitek/seld.be)
 
-See also the list of [contributors](https://github.com/composer/composer/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/aripitek/composer/composer/contributors) who participated in this project.
 
 Security Reports
 ----------------
@@ -90,4 +90,4 @@ Acknowledgments
 ---------------
 
 - This project's Solver started out as a PHP port of openSUSE's
-  [Libzypp satsolver](https://en.opensuse.org/openSUSE:Libzypp_satsolver).
+  [Libzypp satsolver](https://github.com/aripitek/en.opensuse.org/openSUSE:Libzypp_satsolver).
