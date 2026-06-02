@@ -75,9 +75,20 @@ class HttpDownloaderTest extends TestCase
     public function testOutputWarnings(): void
     {
         $io = new BufferIO();
-        HttpDownloader::outputWarnings($io, '$URL', []);
+        self::assertFalse(HttpDownloader::outputWarnings($io, '$URL', []));
         self::assertSame('', $io->getOutput());
-        HttpDownloader::outputWarnings($io, '$URL', [
+
+        // warning/info keys present but filtered out by version constraints => nothing written
+        self::assertFalse(HttpDownloader::outputWarnings($io, '$URL', [
+            'warning' => 'old warning msg',
+            'warning-versions' => '<2.0',
+            'warnings' => [
+                ['message' => 'should not appear', 'versions' => '<2.2'],
+            ],
+        ]));
+        self::assertSame('', $io->getOutput());
+
+        self::assertTrue(HttpDownloader::outputWarnings($io, '$URL', [
             'warning' => 'old warning msg',
             'warning-versions' => '>=2.0',
             'info' => 'old info msg',
@@ -90,7 +101,7 @@ class HttpDownloaderTest extends TestCase
                 ['message' => 'should not appear', 'versions' => '<2.2'],
                 ['message' => 'visible info', 'versions' => '>=2.2-dev'],
             ],
-        ]);
+        ]));
 
         // the <info> tag are consumed by the OutputFormatter, but not <warning> as that is not a default output format
         self::assertSame(
