@@ -51,6 +51,14 @@ parameters:
 			path: ../src/Composer/Config/JsonConfigSource.php
 
 		-
+			message: """
+				#^Call to deprecated method add\\(\\) of class Symfony\\\\Component\\\\Console\\\\Application\\:
+				since Symfony 7\\.4, use Application\\:\\:addCommand\\(\\) instead$#
+			"""
+			count: 2
+			path: ../src/Composer/Console/Application.php
+
+		-
 			message: "#^Call to function method_exists\\(\\) with \\$this\\(Composer\\\\Console\\\\Application\\) and 'setCatchErrors' will always evaluate to true\\.$#"
 			count: 2
 			path: ../src/Composer/Console/Application.php
@@ -104,6 +112,14 @@ parameters:
 			message: "#^Parameter \\#3 \\$length of function fwrite expects int\\<0, max\\>\\|null, int given\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/GzipDownloader.php
+
+		-
+			message: """
+				#^Call to deprecated method add\\(\\) of class Symfony\\\\Component\\\\Console\\\\Application\\:
+				since Symfony 7\\.4, use Application\\:\\:addCommand\\(\\) instead$#
+			"""
+			count: 1
+			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
 			message: "#^Call to function method_exists\\(\\) with Symfony\\\\Component\\\\Console\\\\Application and 'setCatchErrors' will always evaluate to true\\.$#"
@@ -231,6 +247,14 @@ parameters:
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
 		-
+			message: """
+				#^Call to deprecated method add\\(\\) of class Symfony\\\\Component\\\\Console\\\\Application\\:
+				since Symfony 7\\.4, use Application\\:\\:addCommand\\(\\) instead$#
+			"""
+			count: 2
+			path: ../tests/Composer/Test/ApplicationTest.php
+
+		-
 			message: "#^Call to function method_exists\\(\\) with Composer\\\\Console\\\\Application and 'setCatchErrors' will always evaluate to true\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/ApplicationTest.php
@@ -249,6 +273,14 @@ parameters:
 			message: "#^Call to function method_exists\\(\\) with Composer\\\\Console\\\\Application and 'setCatchErrors' will always evaluate to true\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/DocumentationTest.php
+
+		-
+			message: """
+				#^Call to deprecated method add\\(\\) of class Symfony\\\\Component\\\\Console\\\\Application\\:
+				since Symfony 7\\.4, use Application\\:\\:addCommand\\(\\) instead$#
+			"""
+			count: 2
+			path: ../tests/Composer/Test/InstallerTest.php
 
 		-
 			message: "#^Parameter \\#1 \\$callback of function call_user_func_array expects callable\\(\\)\\: mixed, array\\{Composer\\\\Repository\\\\CompositeRepository, string\\} given\\.$#"
