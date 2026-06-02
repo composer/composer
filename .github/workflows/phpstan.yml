@@ -31,7 +31,7 @@ jobs:
         include:
           - php-version: "7.2"
             experimental: false
-          - php-version: "8.4"
+          - php-version: "8.3" # phpstan 1.x has trouble parsing php 8.4+ code so we need to ensure we don't upgrade dependencies that far
             experimental: true
       fail-fast: false
 
