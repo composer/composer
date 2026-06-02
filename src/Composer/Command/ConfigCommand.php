@@ -196,11 +196,11 @@ EOT
                     }
                 }
             } else {
-                $editor = escapeshellcmd($editor);
+                $editor = escapeshellarg($editor);
             }
 
             $file = $input->getOption('auth') ? $this->authConfigFile->getPath() : $this->configFile->getPath();
-            system($editor . ' ' . $file . (Platform::isWindows() ? '' : ' > `tty`'));
+            system($editor . ' ' . escapeshellarg($file) . (Platform::isWindows() ? '' : ' > `tty`'));
 
             return 0;
         }
