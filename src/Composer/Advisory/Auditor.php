@@ -493,7 +493,7 @@ class Auditor
             return 'NO CVE';
         }
 
-        return '<href=https://cve.mitre.org/cgi-bin/cvename.cgi?name='.$advisory->cve.'>'.$advisory->cve.'</>';
+        return '<href=https://www.cve.org/CVERecord?id='.$advisory->cve.'>'.$advisory->cve.'</>';
     }
 
     private function getURL(SecurityAdvisory $advisory): string
