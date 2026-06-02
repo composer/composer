@@ -730,6 +730,34 @@ class AuthHelperTest extends TestCase
         self::assertSame($expectedResult, $authOrigin);
     }
 
+    public function testPromptAuthIfNeededMultipleGithubDownloads(): void
+    {
+        $origin = 'github.com';
+
+        $this->config->method('get')->willReturnMap([
+            ['github-domains', 0, ['github.com']],
+            ['gitlab-domains', 0, []],
+        ]);
+
+        // a parallel request already obtained and stored the token
+        $this->io->method('hasAuthentication')->with($origin)->willReturn(true);
+        // therefore no interactive prompt must happen
+        $this->io->expects($this->never())->method('ask');
+        $this->io->expects($this->never())->method('askAndHideAnswer');
+        $this->io->expects($this->never())->method('setAuthentication');
+
+        $result = $this->authHelper->promptAuthIfNeeded(
+            'https://api.github.com/repos/symfony/process/zipball/abc',
+            $origin,
+            403,
+            'HTTP/2 403 ',
+            [],
+            0 // retryCount === 0 → sibling should silently retry
+        );
+
+        self::assertSame(['retry' => true, 'storeAuth' => false], $result);
+    }
+
     public static function findAuthOriginProvider() : array
     {
         return [

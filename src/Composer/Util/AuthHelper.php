@@ -86,6 +86,13 @@ class AuthHelper
         $storeAuth = false;
 
         if (in_array($origin, $this->config->get('github-domains'), true)) {
+            // if two or more requests are started together for the same GitHub origin, the first one
+            // will prompt for and store a token; the others should retry with that token before
+            // prompting again, so the user is not asked for the same token multiple times
+            // see https://github.com/composer/composer/issues/12905
+            if ($this->io->hasAuthentication($origin) && $retryCount === 0) {
+                return ['retry' => true, 'storeAuth' => false];
+            }
             $gitHubUtil = new GitHub($this->io, $this->config, null);
             $message = "\n";
 
