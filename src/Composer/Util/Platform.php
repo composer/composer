@@ -60,7 +60,7 @@ class Platform
      * NB: Do not remove recursive `realpath()` calls. Fixes failing Windows `realpath()` implementation.
      * @see https://bugs.php.net/bug.php?id=72738
      *
-     * @throws \RuntimeException If the path does not exist. Distinct from `\realpath()` returning `false` in that case.
+     * @throws \RuntimeException If the path does not exist or is not accessible. Distinct from `\realpath()` returning `false` in that case.
      */
     public static function realpath(string $path): string
     {
