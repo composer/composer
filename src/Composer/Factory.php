@@ -326,7 +326,7 @@ class Factory
         $config = static::createConfig($io, $cwd);
         try{
             $isGlobal = $localConfigSource !== Config::SOURCE_UNKNOWN && Platform::realpath($config->get('home')) === Platform::realpath(dirname($localConfigSource));
-        }catch(\RuntimeException|\TypeError $e){
+        }catch(\RuntimeException $e){
             $isGlobal = false;
         }
         $config->merge($localConfig, $localConfigSource);
