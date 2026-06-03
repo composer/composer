@@ -91,12 +91,16 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         }
         $realUrl = Platform::realpath($url);
 
-        if (Platform::realpath($path) === $realUrl) {
-            if ($output) {
-                $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));
-            }
+        try {
+            if (Platform::realpath($path) === $realUrl) {
+                if ($output) {
+                    $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));
+                }
 
-            return \React\Promise\resolve(null);
+                return \React\Promise\resolve(null);
+            }
+        } catch (\RuntimeException $exception) {
+            // Most likely $path does not exist; it is about to be deleted anyway.
         }
 
         // Get the transport options with default values
