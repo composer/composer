@@ -93,7 +93,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 $filesystem->removeDirectory($path);
             }
             $this->removeCleanupPath($package, $temporaryDir);
-            try{
+            try {
                 $realpath = Platform::realpath($path);
                 $this->removeCleanupPath($package, $realpath);
             } catch (\RuntimeException $e) {

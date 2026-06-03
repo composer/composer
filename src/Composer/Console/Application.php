@@ -204,9 +204,9 @@ class Application extends BaseApplication
             && $input->hasParameterOption('-h', true) === false
         ) {
             $dir = dirname(Platform::getCwd(true));
-            try{
+            try {
                 $home = Platform::realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
-            }catch(\TypeError|\RuntimeException $e){
+            } catch (\TypeError|RuntimeException $e) {
                 $home = Platform::realpath('/');
             }
 
@@ -301,10 +301,10 @@ class Application extends BaseApplication
             } catch (ParsingException $e) {
                 $details = $e->getDetails();
 
-                try{
+                try {
                     $composerFile = Factory::getComposerFile();
                     $file = Platform::realpath($composerFile);
-                } catch(RuntimeException $realpathException) {
+                } catch (RuntimeException $realpathException) {
                     $file = $composerFile;
                 }
 

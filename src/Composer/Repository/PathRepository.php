@@ -173,7 +173,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             if (!file_exists($composerFilePath)) {
                 continue;
             }
-    
+
             $json = file_get_contents($composerFilePath);
             $package = JsonFile::parseJson($json, $composerFilePath);
             $package['dist'] = [

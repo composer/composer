@@ -324,9 +324,9 @@ class Factory
 
         // Load config and override with local config/auth config
         $config = static::createConfig($io, $cwd);
-        try{
+        try {
             $isGlobal = $localConfigSource !== Config::SOURCE_UNKNOWN && Platform::realpath($config->get('home')) === Platform::realpath(dirname($localConfigSource));
-        }catch(\RuntimeException $e){
+        } catch (\RuntimeException $e) {
             $isGlobal = false;
         }
         $config->merge($localConfig, $localConfigSource);

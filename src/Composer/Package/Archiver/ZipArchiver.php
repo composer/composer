@@ -98,7 +98,7 @@ class ZipArchiver implements ArchiverInterface
             $sources,
             $zip->getStatusString()
         );
-        throw new \RuntimeException($message);
+        throw new RuntimeException($message);
     }
 
     /**
