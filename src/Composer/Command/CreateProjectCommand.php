@@ -466,6 +466,7 @@ EOT
                 $handler->exitWithLastSignal();
             });
         } catch (\RuntimeException $exception) {
+            // If `mkdir` failed causing `Platform::realpath()` to throw, no `SignalHandler` was added, but none is needed since all it does is delete the directory.
         }
 
         // avoid displaying 9999999-dev as version if default-branch was selected
