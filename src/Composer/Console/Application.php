@@ -301,8 +301,8 @@ class Application extends BaseApplication
             } catch (ParsingException $e) {
                 $details = $e->getDetails();
 
-                $composerFile = Factory::getComposerFile();
                 try{
+                    $composerFile = Factory::getComposerFile();
                     $file = Platform::realpath($composerFile);
                 } catch(RuntimeException $realpathException) {
                     $file = $composerFile;
