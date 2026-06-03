@@ -437,6 +437,7 @@ class FilesystemTest extends TestCase
     /**
      * Same dataset as {@see FilesystemTest::isAbsolutePathDataProvider} but with different expected results.
      *
+     * @used-by self::testIsStreamWrapperPath
      * @return array<string, array{0:string,1:bool}>
      */
     public static function isStreamWrapperPathProvider(): array
