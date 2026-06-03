@@ -1036,6 +1036,11 @@ parameters:
 			path: ../src/Composer/Downloader/DownloadManager.php
 
 		-
+			message: "#^Cannot call method prepare\\(\\) on Composer\\\\Downloader\\\\DownloaderInterface\\|null\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/DownloadManager.php
+
+		-
 			message: "#^Cannot call method remove\\(\\) on Composer\\\\Downloader\\\\DownloaderInterface\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/DownloadManager.php

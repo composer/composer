@@ -619,6 +619,11 @@ class DownloadManagerTest extends TestCase
         $xzDownloader = $this->createDownloaderMock();
         $xzDownloader
             ->expects($this->once())
+            ->method('prepare')
+            ->with('uninstall', $initial, 'vendor/bundles/FOS/UserBundle')
+            ->will($this->returnValue(\React\Promise\resolve(null)));
+        $xzDownloader
+            ->expects($this->once())
             ->method('remove')
             ->with($initial, 'vendor/bundles/FOS/UserBundle')
             ->will($this->returnValue(\React\Promise\resolve(null)));
@@ -642,6 +647,115 @@ class DownloadManagerTest extends TestCase
         $manager->setDownloader('xz', $xzDownloader);
         $manager->setDownloader('zip', $zipDownloader);
 
+        $manager->update($initial, $target, 'vendor/bundles/FOS/UserBundle');
+    }
+
+    public function testUpdateRunsRemovalGuardWhenDownloaderTypeChanges(): void
+    {
+        $initial = $this->createPackageMock();
+        $initial
+            ->expects($this->any())
+            ->method('getInstallationSource')
+            ->will($this->returnValue('source'));
+        $initial
+            ->expects($this->any())
+            ->method('getSourceType')
+            ->will($this->returnValue('git'));
+
+        $target = $this->createPackageMock();
+        $target
+            ->expects($this->any())
+            ->method('getInstallationSource')
+            ->will($this->returnValue('dist'));
+        $target
+            ->expects($this->any())
+            ->method('getDistType')
+            ->will($this->returnValue('zip'));
+
+        $sourceDownloader = $this->createDownloaderMock();
+        $sourceDownloader
+            ->expects($this->once())
+            ->method('prepare')
+            ->with('uninstall', $initial, 'vendor/bundles/FOS/UserBundle')
+            ->will($this->returnValue(\React\Promise\resolve(null)));
+        $sourceDownloader
+            ->expects($this->once())
+            ->method('remove')
+            ->with($initial, 'vendor/bundles/FOS/UserBundle')
+            ->will($this->returnValue(\React\Promise\resolve(null)));
+        $sourceDownloader
+            ->expects($this->any())
+            ->method('getInstallationSource')
+            ->will($this->returnValue('source'));
+
+        $distDownloader = $this->createDownloaderMock();
+        $distDownloader
+            ->expects($this->once())
+            ->method('install')
+            ->with($target, 'vendor/bundles/FOS/UserBundle')
+            ->will($this->returnValue(\React\Promise\resolve(null)));
+        $distDownloader
+            ->expects($this->any())
+            ->method('getInstallationSource')
+            ->will($this->returnValue('dist'));
+
+        $manager = new DownloadManager($this->io, false, $this->filesystem);
+        $manager->setDownloader('git', $sourceDownloader);
+        $manager->setDownloader('zip', $distDownloader);
+
+        $manager->update($initial, $target, 'vendor/bundles/FOS/UserBundle');
+    }
+
+    public function testUpdateDoesNotWipeWhenRemovalGuardAborts(): void
+    {
+        $initial = $this->createPackageMock();
+        $initial
+            ->expects($this->any())
+            ->method('getInstallationSource')
+            ->will($this->returnValue('source'));
+        $initial
+            ->expects($this->any())
+            ->method('getSourceType')
+            ->will($this->returnValue('git'));
+
+        $target = $this->createPackageMock();
+        $target
+            ->expects($this->any())
+            ->method('getInstallationSource')
+            ->will($this->returnValue('dist'));
+        $target
+            ->expects($this->any())
+            ->method('getDistType')
+            ->will($this->returnValue('zip'));
+
+        $sourceDownloader = $this->createDownloaderMock();
+        $sourceDownloader
+            ->expects($this->once())
+            ->method('prepare')
+            ->with('uninstall', $initial, 'vendor/bundles/FOS/UserBundle')
+            ->will($this->throwException(new \RuntimeException('Source directory has uncommitted changes.')));
+        $sourceDownloader
+            ->expects($this->never())
+            ->method('remove');
+        $sourceDownloader
+            ->expects($this->any())
+            ->method('getInstallationSource')
+            ->will($this->returnValue('source'));
+
+        $distDownloader = $this->createDownloaderMock();
+        $distDownloader
+            ->expects($this->never())
+            ->method('install');
+        $distDownloader
+            ->expects($this->any())
+            ->method('getInstallationSource')
+            ->will($this->returnValue('dist'));
+
+        $manager = new DownloadManager($this->io, false, $this->filesystem);
+        $manager->setDownloader('git', $sourceDownloader);
+        $manager->setDownloader('zip', $distDownloader);
+
+        self::expectException('RuntimeException');
         $manager->update($initial, $target, 'vendor/bundles/FOS/UserBundle');
     }
 

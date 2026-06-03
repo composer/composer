@@ -349,7 +349,17 @@ class DownloadManager
 
         // if downloader type changed, or update failed and user asks for reinstall,
         // we wipe the dir and do a new install instead of updating it
-        $promise = $initialDownloader->remove($initial, $targetDir);
+        $promise = \React\Promise\resolve(null);
+        if ($initialType !== $targetType) {
+            // on a type change the existing source install is about to be wiped, so
+            // run its uninstall guard first to avoid silently dropping local changes
+            // in a modified VCS checkout
+            $promise = $initialDownloader->prepare('uninstall', $initial, $targetDir);
+        }
+
+        $promise = $promise->then(function ($res) use ($initialDownloader, $initial, $targetDir): PromiseInterface {
+            return $initialDownloader->remove($initial, $targetDir);
+        });
 
         return $promise->then(function ($res) use ($target, $targetDir): PromiseInterface {
             return $this->install($target, $targetDir);
