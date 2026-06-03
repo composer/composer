@@ -303,7 +303,13 @@ class AuthHelper
                     $authenticationDisplayMessage = 'Using GitHub token authentication';
                 }
             } elseif (
-                in_array($auth['password'], ['oauth2', 'private-token', 'gitlab-ci-token'], true)
+                $auth['username'] === 'gitlab-ci-token'
+                && in_array($origin, $this->config->get('gitlab-domains'), true)
+            ) {
+                $headers[] = 'JOB-TOKEN: '.$auth['password'];
+                $authenticationDisplayMessage = 'Using GitLab CI job token authentication';
+            } elseif (
+                in_array($auth['password'], ['oauth2', 'private-token'], true)
                 && in_array($origin, $this->config->get('gitlab-domains'), true)
             ) {
                 if ($auth['password'] === 'oauth2') {
