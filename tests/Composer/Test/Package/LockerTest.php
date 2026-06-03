@@ -225,6 +225,9 @@ class LockerTest extends TestCase
         self::assertFalse($locker->isFresh());
     }
 
+    /**
+     * @return array<string, array{path:string, isValidPath:bool}>
+     */
     public static function provideGetPackageTimePath(): array
     {
         return [

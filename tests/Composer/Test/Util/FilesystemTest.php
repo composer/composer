@@ -407,6 +407,8 @@ class FilesystemTest extends TestCase
      * A Windows path is absolute if it starts with a drive letter followed by a colon and a back-slash.
      * A network path is always absolute and starts with two backslashes.
      * A stream path is always absolute and starts with a scheme followed by "://".
+     *
+     * @return array<string, array{0:string,1:bool}>
      */
     public static function isAbsolutePathDataProvider(): array
     {
@@ -434,6 +436,8 @@ class FilesystemTest extends TestCase
 
     /**
      * Same dataset as {@see FilesystemTest::isAbsolutePathDataProvider} but with different expected results.
+     *
+     * @return array<string, array{0:string,1:bool}>
      */
     public static function isStreamWrapperPathProvider(): array
     {
@@ -461,6 +465,8 @@ class FilesystemTest extends TestCase
 
     /**
      * Similar dataset as {@see FilesystemTest::isAbsolutePathDataProvider} but with different expected results.
+     *
+     * @return array<string, array{0:string,1:bool}>
      */
     public static function isLocalPathProvider(): array
     {
