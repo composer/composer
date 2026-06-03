@@ -163,28 +163,6 @@ EOT
     {
         parent::initialize($input, $output);
 
-        if ($input->getOption('global') && null !== $input->getOption('file')) {
-            throw new \RuntimeException('--file and --global can not be combined');
-        }
-
-        $io = $this->getIO();
-        $this->config = Factory::createConfig($io);
-
-        $configFile = $this->getComposerConfigFile($input, $this->config);
-
-        // Create global composer.json if this was invoked using `composer global config`
-        if (
-            ($configFile === 'composer.json' || $configFile === './composer.json')
-            && !file_exists($configFile)
-            && Platform::realpath(Platform::getCwd()) === Platform::realpath($this->config->get('home'))
-        ) {
-            file_put_contents($configFile, "{\n}\n");
-        }
-
-        $this->configFile = new JsonFile($configFile, null, $io);
-        $this->configSource = new JsonConfigSource($this->configFile);
-
-
         $authConfigFile = $this->getAuthConfigFile($input, $this->config);
 
         $this->authConfigFile = new JsonFile($authConfigFile, null, $this->getIO());
