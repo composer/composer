@@ -77,11 +77,14 @@ class SelfUpdateCommandTest extends TestCase
         }
 
         $appTester = new Process([PHP_BINARY, $this->phar, 'self-update', $option]);
-        $status = $appTester->run();
-        self::assertSame(0, $status, $appTester->getErrorOutput());
+        $output = '';
+        $status = $appTester->run(function ($type, $data) use (&$output) {
+            $output .= $data;
+        });
+        self::assertSame(0, $status, $output);
 
-        self::assertStringContainsString('Upgrading to version', $appTester->getOutput());
-        self::assertStringContainsString($expectedOutput, $appTester->getOutput());
+        self::assertStringContainsString('Upgrading to version', $output);
+        self::assertStringContainsString($expectedOutput, $output);
     }
 
     /**
