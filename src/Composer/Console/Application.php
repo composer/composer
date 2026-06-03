@@ -206,7 +206,7 @@ class Application extends BaseApplication
             $dir = dirname(Platform::getCwd(true));
             try{
                 $home = Platform::realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
-            }catch(\Throwable $e){
+            }catch(\TypeError|\RuntimeException $e){
                 $home = Platform::realpath('/');
             }
 
