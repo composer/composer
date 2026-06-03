@@ -1048,6 +1048,12 @@ Specifications, and `$COMPOSER_HOME` on other unix systems. Right now it is only
 used for storing past composer.phar files to be able to roll back to older
 versions. See also [COMPOSER_HOME](03-cli.md#composer-home).
 
+Because `self-update --rollback` restores a previously stored `composer.phar` from
+this directory, it must be writable only by the user that owns the Composer
+installation and should be treated as a trusted location. A directory writable by
+other users would let them plant a malicious phar that a privileged rollback would
+install.
+
 ## cache-dir
 
 Defaults to `C:\Users\<user>\AppData\Local\Composer` on Windows,
