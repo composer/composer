@@ -296,6 +296,8 @@ class RemoteFilesystemTest extends TestCase
             if (str_contains($e->getMessage(), 'Connection timed out')) {
                 $this->markTestSkipped('Bitbucket unreliability skip');
             }
+
+            throw $e;
         }
 
         self::assertEquals($contents, $result);
