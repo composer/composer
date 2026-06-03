@@ -55,7 +55,7 @@ class Platform
     }
 
     /**
-     * Infallible realpath version that falls back on the given $path if realpath is not working
+     * Realpath function that assumes stream wrapper paths are valid and throws when realpath fails.
      *
      * NB: Do not remove recursive `realpath()` calls. Fixes failing Windows `realpath()` implementation.
      * @see https://bugs.php.net/bug.php?id=72738
