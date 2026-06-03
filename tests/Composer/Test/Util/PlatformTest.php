@@ -23,9 +23,15 @@ use RuntimeException;
  */
 class PlatformTest extends TestCase
 {
+    public function setUp(): void
+    {
+        stream_wrapper_register('composertestsstreamwrapper', \stdClass::class);
+    }
+
     protected function tearDown(): void
     {
         Platform::clearEnv('COMPOSER_TEST_BOOL_ENV');
+        stream_wrapper_unregister('composertestsstreamwrapper');
         parent::tearDown();
     }
 
@@ -113,6 +119,12 @@ class PlatformTest extends TestCase
         $file = __FILE__;
         $streamPath = 'file://' . $file;
         self::assertEquals($file, Platform::realpath($streamPath));
+    }
+
+    public function testRealPathStreamWrapperPath(): void
+    {
+        $streamPath = 'composertestsstreamwrapper://any/path.true';
+        self::assertEquals($streamPath, Platform::realpath($streamPath));
     }
 
     public function testRealPathException(): void
