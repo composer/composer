@@ -93,15 +93,15 @@ class StatusCommandTest extends TestCase
         ];
 
         yield 'locally modified package from dist' => [
-            ['require' => ['smarty/smarty' => '^3.1']],
+            ['require' => ['composer/ca-bundle' => '^1.5']],
             ['--verbose' => true],
             [
-                'name' => 'smarty/smarty',
-                'version' => '3.1.7',
+                'name' => 'composer/ca-bundle',
+                'version' => '1.5.12',
                 'installation_source' => 'dist',
                 'type' => 'zip',
-                'url' => 'https://www.smarty.net/files/Smarty-3.1.7.zip',
-                'reference' => null,
+                'url' => 'https://api.github.com/repos/composer/ca-bundle/zipball/00a2f4201641d5c53f7fc0195e6c8d9fcc321a78',
+                'reference' => '00a2f4201641d5c53f7fc0195e6c8d9fcc321a78',
             ],
         ];
     }

@@ -290,7 +290,13 @@ class RemoteFilesystemTest extends TestCase
         $rfs = new RemoteFilesystem($io, $this->getConfigMock());
         $hostname = parse_url($url, PHP_URL_HOST);
 
-        $result = $rfs->getContents($hostname, $url, false);
+        try {
+            $result = $rfs->getContents($hostname, $url, false);
+        } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), 'Connection timed out')) {
+                $this->markTestSkipped('Bitbucket unreliability skip');
+            }
+        }
 
         self::assertEquals($contents, $result);
     }
