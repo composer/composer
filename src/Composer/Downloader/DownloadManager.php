@@ -211,7 +211,7 @@ class DownloadManager
             $package->setInstallationSource($source);
 
             $downloader = $this->getDownloaderForPackage($package);
-            if (!$downloader) {
+            if (null === $downloader) {
                 return \React\Promise\resolve(null);
             }
 
@@ -322,13 +322,18 @@ class DownloadManager
         $initialDownloader = $this->getDownloaderForPackage($initial);
 
         // no downloaders present means update from metapackage to metapackage, nothing to do
-        if (!$initialDownloader && !$downloader) {
+        if (null === $initialDownloader && null === $downloader) {
             return \React\Promise\resolve(null);
         }
 
         // if we have a downloader present before, but not after, the package became a metapackage and its files should be removed
-        if (!$downloader) {
+        if (null === $downloader) {
             return $initialDownloader->remove($initial, $targetDir);
+        }
+
+        // we had no downloader but now have one, so a metapackage became a concrete package and we just install it
+        if (null === $initialDownloader) {
+            return $downloader->install($target, $targetDir);
         }
 
         $initialType = $this->getDownloaderType($initialDownloader);
