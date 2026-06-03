@@ -79,6 +79,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
     /**
      * @inheritDoc
+     *
+     * @throws \RuntimeException When package dist url, or target path do not exist.
      */
     public function install(PackageInterface $package, string $path, bool $output = true): PromiseInterface
     {
