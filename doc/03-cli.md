@@ -809,6 +809,16 @@ sudo -H composer self-update
 If Composer was not installed as a PHAR, this command is not available.
 (This is sometimes the case when Composer was installed by an operating system package manager.)
 
+Backups created for `--rollback` are stored in the [`data-dir`](06-config.md#data-dir),
+and the public keys used to verify downloads are stored in `COMPOSER_HOME`. Both
+directories must be writable only by the user that owns the Composer installation and
+should be treated as trusted: a directory writable by other users could be used to plant
+a malicious `composer.phar` that a privileged `self-update --rollback` would then install.
+When rolling back to a tagged release the backup is verified against the published
+signature from getcomposer.org before being installed (the rollback aborts on a mismatch
+or if the signature cannot be downloaded); snapshot/dev builds cannot be verified this way,
+so a rollback to one asks for confirmation when run interactively.
+
 ### Options
 
 * **--rollback (-r):** Rollback to the last version you had installed.
@@ -1286,6 +1296,10 @@ and `/Users/<user>/.composer` on macOS. On \*nix systems that follow the [XDG Ba
 Directory Specifications](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html),
 it points to `$XDG_CONFIG_HOME/composer`. On other \*nix systems, it points to
 `/home/<user>/.composer`.
+
+This directory holds the public keys used to verify Composer downloads during
+`self-update`, so it must be writable only by the user that owns the Composer
+installation and should be treated as a trusted location.
 
 #### COMPOSER_HOME/config.json
 
