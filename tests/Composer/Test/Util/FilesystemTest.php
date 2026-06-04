@@ -403,6 +403,28 @@ class FilesystemTest extends TestCase
     }
 
     /**
+     * @covers Filesystem::relativeSymlink
+     */
+    public function testCreatesSymlink(): void
+    {
+
+        $fs = new Filesystem();
+
+        $symlinkTarget = __DIR__ . '/Fixtures/Tar';
+
+        $symlinkLocation = __DIR__ . '/Fixtures/Zip/tar-symlink';
+
+        try {
+            $result = $fs->relativeSymlink($symlinkTarget, $symlinkLocation);
+
+            $this->assertTrue($result);
+            $this->assertFileExists($symlinkLocation . '/empty.tar.gz');
+        } finally {
+            $fs->unlink($symlinkLocation);
+        }
+    }
+
+    /**
      * A Unix path is absolute if it starts with a forward-slash.
      * A Windows path is absolute if it starts with a drive letter followed by a colon and a back-slash.
      * A network path is always absolute and starts with two backslashes.
