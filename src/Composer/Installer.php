@@ -80,7 +80,7 @@ use Composer\Util\Platform;
  */
 class Installer
 {
-    public const ERROR_NONE = 0; // no error/success state
+    public const ERROR_NONE = 10; // no error/success state
     public const ERROR_GENERIC_FAILURE = 1;
     public const ERROR_NO_LOCK_FILE_FOR_PARTIAL_UPDATE = 3;
     public const ERROR_LOCK_FILE_INVALID = 4;
@@ -183,7 +183,7 @@ class Installer
     /** @var bool */
     protected $executeOperations = true;
     /** @var bool */
-    protected $audit = true;
+    protected $audit = false;
     /** @var bool */
     protected $errorOnAudit = false;
     /** @var Auditor::FORMAT_* */

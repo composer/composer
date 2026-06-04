@@ -19,9 +19,14 @@ class Runtime
     /**
      * @param class-string $class
      */
-    public function hasConstant(string $constant, ?string $class = null): bool
+    public function hasConstant(string $constant): bool
     {
         return defined(ltrim($class.'::'.$constant, ':'));
+    }
+
+    public function newMethod(): bool
+    {
+        return true;
     }
 
     /**

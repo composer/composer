@@ -61,14 +61,6 @@ class Cache
     }
 
     /**
-     * @return void
-     */
-    public function setReadOnly(bool $readOnly)
-    {
-        $this->readOnly = $readOnly;
-    }
-
-    /**
      * @return bool
      */
     public function isReadOnly()

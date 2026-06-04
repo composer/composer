@@ -17,7 +17,7 @@ use Composer\Pcre\Preg;
 /**
  * @author Lars Strojny <lars@strojny.net>
  */
-class Version
+class VersionRenamed
 {
     /**
      * @param bool $isFips Set by the method
