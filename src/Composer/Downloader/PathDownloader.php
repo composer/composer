@@ -56,7 +56,11 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             ));
         }
 
-        $realPath = Platform::realpath($path);
+        try {
+            $realPath = Platform::realpath($path);
+        } catch (\RuntimeException $exception) {
+            $realPath = false;
+        }
         if ($realPath === $realUrl) {
             return \React\Promise\resolve(null);
         }
