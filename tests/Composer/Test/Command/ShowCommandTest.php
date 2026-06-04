@@ -17,6 +17,7 @@ use Composer\Pcre\Preg;
 use Composer\Pcre\Regex;
 use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
+use Composer\Util\Filesystem;
 use DateTimeImmutable;
 use InvalidArgumentException;
 
@@ -627,7 +628,7 @@ OUTPUT;
     public function testSelf(): void
     {
         $tmpDir = $this->initTempComposer(['name' => 'vendor/package', 'version' => '1.2.3', 'time' => date('Y-m-d')]);
-        $packageDir = $tmpDir.'/vendor/vendor/package';
+        $packageDir = (new Filesystem())->normalizePath($tmpDir.'/vendor/vendor/package');
         mkdir($packageDir, 0777, true);
 
         $appTester = $this->getApplicationTester();
