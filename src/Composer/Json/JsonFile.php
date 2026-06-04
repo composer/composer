@@ -107,7 +107,7 @@ class JsonFile
                     $realpathInfo = '';
                     $realpath = Platform::realpath($this->path);
                     $filesystem = new Filesystem();
-                    if ($filesystem->normalizePath($realpath) !== $filesystem->($this->path)) {
+                    if ($filesystem->normalizePath($realpath) !== $filesystem->normalizePath($this->path)) {
                         $realpathInfo = ' (' . $realpath . ')';
                     }
 
