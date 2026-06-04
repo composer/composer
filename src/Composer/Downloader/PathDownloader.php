@@ -256,7 +256,12 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         }
         $realUrl = Platform::realpath($url);
 
-        if (Platform::realpath($path) === $realUrl) {
+        try {
+            $realpath = Platform::realpath($path);
+        } catch (\RuntimeException $exception) {
+            $realpath = false;
+        }
+        if ($realpath === $realUrl) {
             return ': Source already present';
         }
 
