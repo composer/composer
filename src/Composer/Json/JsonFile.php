@@ -106,7 +106,8 @@ class JsonFile
                 if ($this->io && $this->io->isDebug()) {
                     $realpathInfo = '';
                     $realpath = Platform::realpath($this->path);
-                    if ($realpath !== $this->path) {
+                    $filesystem = new Filesystem();
+                    if ($filesystem->normalizePath($realpath) !== $filesystem->($this->path)) {
                         $realpathInfo = ' (' . $realpath . ')';
                     }
 
