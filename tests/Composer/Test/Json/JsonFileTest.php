@@ -513,7 +513,7 @@ class JsonFileTest extends TestCase
     public function testPrintsMessageWhenReadingSymlink(): void
     {
         $io = $this->getIOMock();
-        $io->expects([['text' => 'Reading ' . __DIR__ . '/Fixtures/tabs2.json (' . __DIR__ . '/Fixtures/tabs.json)']], true);
+        $io->expects([['text' => 'Reading ' . __DIR__ . '/Fixtures/tabs2.json (' . __DIR__ . str_replace('/', DIRECTORY_SEPARATOR, '/Fixtures/tabs.json)')]], true);
 
         $filesystem = new Filesystem();
         $filesystem->relativeSymlink(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/tabs2.json');
