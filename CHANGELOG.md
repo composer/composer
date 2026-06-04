@@ -1,3 +1,12 @@
+### [2.10.1] 2026-06-04
+
+  * Security: Fixed shell escaping when opening an editor (#12903)
+  * Security: Verify backup phar signature before restoring it when using self-update --rollback (#12918)
+  * Fixed `source-fallback` also disabling fallbacks to dist install when source is the preferred install method (#12888)
+  * Fixed source -> dist package updates wiping the .git dir without checking for local changes first (#12912)
+  * Fixed GitHub token prompt happening multiple times on parallel auth failures (#12913)
+  * Fixed warnings from Composer repositories being printed twice in some cases (#12907)
+
 ### [2.10.0] 2026-05-28
 
   * BC Break / Security: Disabled automatic fallback to source checkout if dist/zip install fails, we have introduced a new `source-fallback` config option as a temporary way to restore the old behavior, but if you need this talk to us as we plan to remove it entirely in 2.11 (#12885)
@@ -2182,6 +2191,7 @@
 
   * Initial release
 
+[2.10.1]: https://github.com/composer/composer/compare/2.10.0...2.10.1
 [2.10.0]: https://github.com/composer/composer/compare/2.10.0-RC2...2.10.0
 [2.10.0-RC2]: https://github.com/composer/composer/compare/2.10.0-RC1...2.10.0-RC2
 [2.10.0-RC1]: https://github.com/composer/composer/compare/2.9.5...2.10.0-RC1
