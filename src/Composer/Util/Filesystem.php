@@ -797,7 +797,7 @@ class Filesystem
 
         $relativePath = $this->findShortestPath($link, $target);
         chdir(\dirname($link));
-        $result = @symlink($relativePath, $link);
+        $result = @symlink($relativePath, basename($link));
 
         chdir($cwd);
 
