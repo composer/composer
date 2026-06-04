@@ -309,7 +309,8 @@ class LockerTest extends TestCase
                             case ($command === [ 'git', '--version' ]):
                                 $output = '2.49.0';
                                 break;
-                            case ($command === ['git', 'log', '-n1', '--pretty=%ct', 'git']):
+                            case (in_array('--format=%ct', $command, true)):
+                                // `ct` = committer timestamp.
                                 $output = (string) time();
                                 break;
                             default:
