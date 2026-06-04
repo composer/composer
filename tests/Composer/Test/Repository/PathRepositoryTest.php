@@ -183,18 +183,21 @@ class PathRepositoryTest extends TestCase
      */
     public function testLoadPackageFromFileSystemThroughSymlink(): void
     {
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'with-version']);
-        $symlinkUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'link-target-with-version']);
+        $repositoryTargetUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'with-version']);
+        $symlinkLocationUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'link-location-with-version']);
 
         $filesystem = new Filesystem();
-        $filesystem->relativeSymlink($repositoryUrl, $symlinkUrl);
 
-        $repository = $this->createPathRepo(['url' => $symlinkUrl]);
+        $filesystem->relativeSymlink($repositoryTargetUrl, $symlinkLocationUrl);
 
-        self::assertSame(1, $repository->count());
-        self::assertTrue($repository->hasPackage(self::getPackage('test/path-versioned', '0.0.2')));
+        try {
+            $repository = $this->createPathRepo(['url' => $symlinkLocationUrl]);
 
-        $filesystem->remove($symlinkUrl);
+            self::assertSame(1, $repository->count());
+            self::assertTrue($repository->hasPackage(self::getPackage('test/path-versioned', '0.0.2')));
+        } finally {
+            $filesystem->remove($symlinkLocationUrl);
+        }
     }
 
     /**
