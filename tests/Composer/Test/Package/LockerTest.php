@@ -313,7 +313,7 @@ class LockerTest extends TestCase
                                 $output = (string) time();
                                 break;
                             default:
-                                throw new \Exception('Unexpected command to ProcessExecutor in test LockerTest::testGetPackageTime()');
+                                throw new \Exception('Unexpected command to ProcessExecutor in test LockerTest::testGetPackageTime(): [\'' . implode("', '", $command) . '\']');
                         }
 
                         return 0;
