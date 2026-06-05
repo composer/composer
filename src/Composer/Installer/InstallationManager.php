@@ -12,6 +12,8 @@
 
 namespace Composer\Installer;
 
+use Composer\ClassMapGenerator\ClassMapGenerator;
+use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Package\PackageInterface;
@@ -25,8 +27,10 @@ use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\Downloader\FileDownloader;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Util\Filesystem;
 use Composer\Util\Loop;
 use Composer\Util\Platform;
+use Composer\Util\Silencer;
 use React\Promise\PromiseInterface;
 use Seld\Signal\SignalHandler;
 
@@ -53,6 +57,8 @@ class InstallationManager
     private $eventDispatcher;
     /** @var bool */
     private $outputProgress;
+    /** @var bool */
+    private $runtimeClassesPreloaded = false;
 
     public function __construct(Loop $loop, IOInterface $io, ?EventDispatcher $eventDispatcher = null)
     {
@@ -182,6 +188,7 @@ class InstallationManager
     {
         /** @var array<callable(): ?PromiseInterface<void|null>> $cleanupPromises */
         $cleanupPromises = [];
+        $this->runtimeClassesPreloaded = false;
 
         $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) use (&$cleanupPromises) {
             $this->io->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
@@ -334,6 +341,8 @@ class InstallationManager
         $promises = [];
         $postExecCallbacks = [];
 
+        $this->preloadRuntimeClassesBeforeSelfUpdate($repo, $operations);
+
         foreach ($operations as $index => $operation) {
             $opType = $operation->getOperationType();
 
@@ -414,6 +423,231 @@ class InstallationManager
         foreach ($postExecCallbacks as $cb) {
             $cb();
         }
+    }
+
+    /**
+     * When Composer is executed from a vendor install and that same install is being
+     * updated, packages can disappear before Composer lazily loads a class from them.
+     *
+     * @param OperationInterface[] $operations
+     */
+    private function preloadRuntimeClassesBeforeSelfUpdate(InstalledRepositoryInterface $repo, array $operations): void
+    {
+        if ($this->runtimeClassesPreloaded) {
+            return;
+        }
+
+        $composerClassFile = (new \ReflectionClass(Composer::class))->getFileName();
+        if (!is_string($composerClassFile)) {
+            return;
+        }
+
+        $composerClassFile = realpath($composerClassFile);
+        if (!is_string($composerClassFile)) {
+            return;
+        }
+
+        $currentComposerPackage = null;
+        foreach ($operations as $operation) {
+            $initialPackage = $this->getInitialPackageForOperation($operation);
+            if (null === $initialPackage) {
+                continue;
+            }
+
+            if ($initialPackage->getName() !== 'composer/composer') {
+                continue;
+            }
+
+            $installPath = $this->getPackageInstallPath($initialPackage);
+            if (null !== $installPath && $this->pathContainsFile($installPath, $composerClassFile)) {
+                $currentComposerPackage = $initialPackage;
+                break;
+            }
+        }
+
+        if (null === $currentComposerPackage) {
+            return;
+        }
+
+        $runtimePackageNames = $this->getRuntimePackageNames($repo, $currentComposerPackage);
+        foreach ($operations as $operation) {
+            $initialPackage = $this->getInitialPackageForOperation($operation);
+            if (null === $initialPackage || !isset($runtimePackageNames[$initialPackage->getName()])) {
+                continue;
+            }
+
+            $installPath = $this->getPackageInstallPath($initialPackage);
+            if (null !== $installPath) {
+                $this->preloadPackageClasses($initialPackage, $installPath);
+            }
+        }
+
+        $this->runtimeClassesPreloaded = true;
+    }
+
+    private function getInitialPackageForOperation(OperationInterface $operation): ?PackageInterface
+    {
+        if ($operation instanceof UpdateOperation) {
+            return $operation->getInitialPackage();
+        }
+
+        if ($operation instanceof UninstallOperation) {
+            return $operation->getPackage();
+        }
+
+        return null;
+    }
+
+    private function getPackageInstallPath(PackageInterface $package): ?string
+    {
+        $installPath = $this->getInstallPath($package);
+        if (null === $installPath) {
+            return null;
+        }
+
+        $realpath = realpath($installPath);
+        if (!is_string($realpath)) {
+            return null;
+        }
+
+        return $realpath;
+    }
+
+    private function pathContainsFile(string $path, string $file): bool
+    {
+        return strpos($this->normalizeComparablePath($file).'/', $this->normalizeComparablePath($path).'/') === 0;
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    private function getRuntimePackageNames(InstalledRepositoryInterface $repo, PackageInterface $composerPackage): array
+    {
+        $packagesByName = [];
+        $repoPackages = $repo->getPackages();
+        if (!is_array($repoPackages)) {
+            return [$composerPackage->getName() => true];
+        }
+
+        foreach ($repoPackages as $package) {
+            if (!isset($packagesByName[$package->getName()])) {
+                $packagesByName[$package->getName()] = $package;
+            }
+        }
+
+        $runtimePackageNames = [];
+        $queue = [$composerPackage];
+        while ($package = array_shift($queue)) {
+            $runtimePackageNames[$package->getName()] = true;
+
+            foreach ($package->getRequires() as $link) {
+                $target = $link->getTarget();
+                if (isset($packagesByName[$target]) && !isset($runtimePackageNames[$target])) {
+                    $queue[] = $packagesByName[$target];
+                }
+            }
+        }
+
+        return $runtimePackageNames;
+    }
+
+    private function preloadPackageClasses(PackageInterface $package, string $installPath): void
+    {
+        $autoload = $package->getAutoload();
+        $classMap = $this->buildPackageClassMap($autoload, $installPath);
+        if ($classMap === []) {
+            return;
+        }
+
+        foreach ($classMap as $class => $path) {
+            if (class_exists($class, false) || interface_exists($class, false) || trait_exists($class, false) || (function_exists('enum_exists') && enum_exists($class, false))) {
+                continue;
+            }
+
+            $contents = file_get_contents($path);
+            if (is_string($contents) && strpos($contents, 'E_USER_DEPRECATED') !== false && strpos($contents, 'trigger_error') !== false) {
+                continue;
+            }
+
+            Silencer::suppress();
+            try {
+                require_once $path;
+            } catch (\Throwable $e) {
+                continue;
+            } finally {
+                Silencer::restore();
+            }
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $autoload
+     *
+     * @return array<class-string, non-empty-string>
+     */
+    private function buildPackageClassMap(array $autoload, string $installPath): array
+    {
+        $filesystem = new Filesystem;
+        $generator = (new ClassMapGenerator(['php', 'inc', 'hh']))->avoidDuplicateScans();
+
+        if (isset($autoload['classmap']) && is_array($autoload['classmap'])) {
+            foreach ($autoload['classmap'] as $path) {
+                if (!is_string($path)) {
+                    continue;
+                }
+
+                $this->scanPreloadPath($generator, $this->resolvePackageAutoloadPath($filesystem, $installPath, $path));
+            }
+        }
+
+        foreach (['psr-4', 'psr-0'] as $autoloadType) {
+            if (!isset($autoload[$autoloadType]) || !is_array($autoload[$autoloadType])) {
+                continue;
+            }
+
+            foreach ($autoload[$autoloadType] as $namespace => $paths) {
+                if (!is_string($namespace)) {
+                    continue;
+                }
+
+                foreach ((array) $paths as $path) {
+                    if (!is_string($path)) {
+                        continue;
+                    }
+
+                    $this->scanPreloadPath($generator, $this->resolvePackageAutoloadPath($filesystem, $installPath, $path), $autoloadType, ltrim($namespace, '\\'));
+                }
+            }
+        }
+
+        return $generator->getClassMap()->getMap();
+    }
+
+    /**
+     * @param 'classmap'|'psr-0'|'psr-4' $autoloadType
+     */
+    private function scanPreloadPath(ClassMapGenerator $generator, string $path, string $autoloadType = 'classmap', ?string $namespace = null): void
+    {
+        try {
+            $generator->scanPaths($path, null, $autoloadType, $namespace, ['vendor']);
+        } catch (\RuntimeException $e) {
+        }
+    }
+
+    private function resolvePackageAutoloadPath(Filesystem $filesystem, string $installPath, string $path): string
+    {
+        if ($path === '') {
+            return $installPath;
+        }
+
+        return $filesystem->normalizePath($filesystem->isAbsolutePath($path) ? $path : $installPath.'/'.$path);
+    }
+
+    private function normalizeComparablePath(string $path): string
+    {
+        $path = str_replace('\\', '/', $path);
+
+        return Platform::isWindows() ? strtolower($path) : $path;
     }
 
     /**

@@ -115,6 +115,60 @@ EOL
         ];
     }
 
+    public function testDoesNotRemoveOrOverwriteCurrentProcessBinary(): void
+    {
+        $package = $this->createPackageMock();
+        $package->expects($this->any())
+            ->method('getBinaries')
+            ->willReturn(['binary']);
+
+        self::ensureDirectoryExistsAndClear($this->vendorDir.'/foo/bar');
+        file_put_contents($this->vendorDir.'/foo/bar/binary', '<?php echo "new";');
+
+        $link = $this->binDir.'/binary';
+        file_put_contents($link, '<?php echo "current";');
+
+        $previousScriptFilename = $_SERVER['SCRIPT_FILENAME'] ?? null;
+        $_SERVER['SCRIPT_FILENAME'] = $link;
+
+        try {
+            $installer = new BinaryInstaller($this->io, $this->binDir, 'full', $this->fs);
+            $installer->removeBinaries($package);
+            self::assertFileExists($link);
+            self::assertSame('<?php echo "current";', file_get_contents($link));
+
+            unlink($link);
+            $installer->installBinaries($package, $this->vendorDir.'/foo/bar');
+            self::assertFileDoesNotExist($link);
+        } finally {
+            if ($previousScriptFilename === null) {
+                unset($_SERVER['SCRIPT_FILENAME']);
+            } else {
+                $_SERVER['SCRIPT_FILENAME'] = $previousScriptFilename;
+            }
+        }
+    }
+
+    public function testDoesNotOverwriteIncludedCurrentProcessBinary(): void
+    {
+        $package = $this->createPackageMock();
+        $package->expects($this->any())
+            ->method('getBinaries')
+            ->willReturn(['binary']);
+
+        self::ensureDirectoryExistsAndClear($this->vendorDir.'/foo/bar');
+        file_put_contents($this->vendorDir.'/foo/bar/binary', '<?php echo "new";');
+
+        $link = $this->binDir.'/binary';
+        file_put_contents($link, '<?php return true;');
+        include $link;
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'full', $this->fs);
+        $installer->installBinaries($package, $this->vendorDir.'/foo/bar');
+
+        self::assertSame('<?php return true;', file_get_contents($link));
+    }
+
     /**
      * @return \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject
      */

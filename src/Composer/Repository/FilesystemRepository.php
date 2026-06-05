@@ -163,10 +163,10 @@ class FilesystemRepository extends WritableArrayRepository
             $versions = $this->generateInstalledVersions($installationManager, $installPaths, $devMode, $repoDir);
 
             $this->filesystem->filePutContentsIfModified($repoDir.'/installed.php', '<?php return ' . $this->dumpToPhpCode($versions) . ';'."\n");
-            $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
+            $installedVersionsClass = $this->getInstalledVersionsClass();
 
             // this normally should not happen but during upgrades of Composer when it is installed in the project it is a possibility
-            if ($installedVersionsClass !== false) {
+            if (null !== $installedVersionsClass) {
                 $this->filesystem->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
 
                 // make sure the in memory state is up to date with on disk
@@ -191,6 +191,21 @@ class FilesystemRepository extends WritableArrayRepository
                 }
             }
         }
+    }
+
+    private function getInstalledVersionsClass(): ?string
+    {
+        $installedVersionsClass = @file_get_contents(__DIR__.'/../InstalledVersions.php');
+        if ($installedVersionsClass !== false) {
+            return $installedVersionsClass;
+        }
+
+        $installedVersionsClass = @file_get_contents((string) (new \ReflectionClass(\Composer\InstalledVersions::class))->getFileName());
+        if ($installedVersionsClass !== false) {
+            return $installedVersionsClass;
+        }
+
+        return null;
     }
 
     /**

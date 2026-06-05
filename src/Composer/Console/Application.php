@@ -304,8 +304,10 @@ class Application extends BaseApplication
                     $line = $details['line'];
                 }
 
-                $ghe = new GithubActionError($this->io);
-                $ghe->emit($e->getMessage(), $file, $line);
+                if (class_exists(GithubActionError::class)) {
+                    $ghe = new GithubActionError($this->io);
+                    $ghe->emit($e->getMessage(), $file, $line);
+                }
 
                 throw $e;
             }
@@ -469,8 +471,10 @@ class Application extends BaseApplication
 
             return $e->getCode();
         } catch (\Throwable $e) {
-            $ghe = new GithubActionError($this->io);
-            $ghe->emit($e->getMessage());
+            if (class_exists(GithubActionError::class)) {
+                $ghe = new GithubActionError($this->io);
+                $ghe->emit($e->getMessage());
+            }
 
             $this->hintCommonErrors($e, $output);
 

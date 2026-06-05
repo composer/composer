@@ -114,10 +114,10 @@ class BinaryInstaller
         }
         foreach ($binaries as $bin) {
             $link = $this->binDir.'/'.basename($bin);
-            if (is_link($link) || file_exists($link)) { // still checking for symlinks here for legacy support
+            if ((is_link($link) || file_exists($link)) && !$this->isCurrentProcessBinary($link)) { // still checking for symlinks here for legacy support
                 $this->filesystem->unlink($link);
             }
-            if (is_file($link.'.bat')) {
+            if (is_file($link.'.bat') && !$this->isCurrentProcessBinary($link)) {
                 $this->filesystem->unlink($link.'.bat');
             }
         }
@@ -170,8 +170,61 @@ class BinaryInstaller
 
     protected function installUnixyProxyBinaries(string $binPath, string $link): void
     {
+        if ($this->isCurrentProcessBinary($link)) {
+            return;
+        }
+
         file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
         Silencer::call('chmod', $link, 0777 & ~umask());
+    }
+
+    private function isCurrentProcessBinary(string $link): bool
+    {
+        $candidates = [];
+        foreach (['SCRIPT_FILENAME', 'PHP_SELF'] as $serverKey) {
+            if (isset($_SERVER[$serverKey]) && is_string($_SERVER[$serverKey])) {
+                $candidates[] = $_SERVER[$serverKey];
+            }
+        }
+
+        if (isset($_SERVER['argv'][0]) && is_string($_SERVER['argv'][0])) {
+            $candidates[] = $_SERVER['argv'][0];
+        }
+
+        foreach (get_included_files() as $includedFile) {
+            $candidates[] = $includedFile;
+        }
+
+        if (isset($GLOBALS['_composer_bin_dir']) && is_string($GLOBALS['_composer_bin_dir'])) {
+            $candidates[] = $GLOBALS['_composer_bin_dir'].'/'.basename($link);
+            $candidates[] = $GLOBALS['_composer_bin_dir'].'/'.basename($link).'.bat';
+        }
+
+        $linkCandidates = [$link, $link.'.bat'];
+        foreach ($linkCandidates as $linkCandidate) {
+            $normalizedLink = $this->normalizeComparablePath($linkCandidate);
+            foreach ($candidates as $candidate) {
+                if ($normalizedLink === $this->normalizeComparablePath($candidate)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function normalizeComparablePath(string $path): string
+    {
+        $realpath = realpath($path);
+        if (is_string($realpath)) {
+            return $this->filesystem->normalizePath($realpath);
+        }
+
+        if (!$this->filesystem->isAbsolutePath($path)) {
+            $path = Platform::getCwd().'/'.$path;
+        }
+
+        return $this->filesystem->normalizePath($path);
     }
 
     protected function initializeBinDir(): void

@@ -293,6 +293,25 @@ class InstallationManagerTest extends TestCase
         $manager->ensureBinariesPresence($package);
     }
 
+    public function testPackageClassPreloadDoesNotScanNestedVendorDirectory(): void
+    {
+        $installPath = self::getUniqueTmpDirectory();
+        self::ensureDirectoryExistsAndClear($installPath.'/src/Foo');
+        self::ensureDirectoryExistsAndClear($installPath.'/vendor/Foo');
+
+        file_put_contents($installPath.'/src/Foo/Runtime.php', '<?php namespace Foo; class Runtime {}');
+        file_put_contents($installPath.'/vendor/Foo/DevDependency.php', '<?php namespace Foo; class DevDependency {}');
+
+        $manager = new InstallationManager($this->loop, $this->io);
+        $method = new \ReflectionMethod($manager, 'buildPackageClassMap');
+        $method->setAccessible(true);
+
+        $classMap = $method->invoke($manager, ['psr-4' => ['Foo\\' => 'src/Foo']], $installPath);
+
+        self::assertArrayHasKey('Foo\\Runtime', $classMap);
+        self::assertArrayNotHasKey('Foo\\DevDependency', $classMap);
+    }
+
     /**
      * @return \Composer\Installer\InstallerInterface&\PHPUnit\Framework\MockObject\MockObject
      */
