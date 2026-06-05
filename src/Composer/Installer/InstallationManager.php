@@ -447,29 +447,17 @@ class InstallationManager
             return;
         }
 
-        $currentComposerPackage = null;
-        foreach ($operations as $operation) {
-            $initialPackage = $this->getInitialPackageForOperation($operation);
-            if (null === $initialPackage) {
-                continue;
-            }
-
-            if ($initialPackage->getName() !== 'composer/composer') {
-                continue;
-            }
-
-            $installPath = $this->getPackageInstallPath($initialPackage);
-            if (null !== $installPath && $this->pathContainsFile($installPath, $composerClassFile)) {
-                $currentComposerPackage = $initialPackage;
-                break;
-            }
-        }
+        $currentComposerPackage = $this->getCurrentComposerPackage($repo, $composerClassFile);
 
         if (null === $currentComposerPackage) {
             return;
         }
 
         $runtimePackageNames = $this->getRuntimePackageNames($repo, $currentComposerPackage);
+        if (!$this->operationTouchesPackageNames($operations, $runtimePackageNames)) {
+            return;
+        }
+
         foreach ($operations as $operation) {
             $initialPackage = $this->getInitialPackageForOperation($operation);
             if (null === $initialPackage || !isset($runtimePackageNames[$initialPackage->getName()])) {
@@ -483,6 +471,43 @@ class InstallationManager
         }
 
         $this->runtimeClassesPreloaded = true;
+    }
+
+    /**
+     * @param OperationInterface[] $operations
+     * @param array<string, true> $packageNames
+     */
+    private function operationTouchesPackageNames(array $operations, array $packageNames): bool
+    {
+        foreach ($operations as $operation) {
+            $initialPackage = $this->getInitialPackageForOperation($operation);
+            if (null !== $initialPackage && isset($packageNames[$initialPackage->getName()])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function getCurrentComposerPackage(InstalledRepositoryInterface $repo, string $composerClassFile): ?PackageInterface
+    {
+        $repoPackages = $repo->getPackages();
+        if (!is_array($repoPackages)) {
+            return null;
+        }
+
+        foreach ($repoPackages as $package) {
+            if ($package->getName() !== 'composer/composer') {
+                continue;
+            }
+
+            $installPath = $this->getPackageInstallPath($package);
+            if (null !== $installPath && $this->pathContainsFile($installPath, $composerClassFile)) {
+                return $package;
+            }
+        }
+
+        return null;
     }
 
     private function getInitialPackageForOperation(OperationInterface $operation): ?PackageInterface

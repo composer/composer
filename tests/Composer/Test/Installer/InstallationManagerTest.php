@@ -17,6 +17,9 @@ use Composer\Installer\NoopInstaller;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\Package\Link;
+use Composer\Package\Package;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 
 class InstallationManagerTest extends TestCase
@@ -310,6 +313,57 @@ class InstallationManagerTest extends TestCase
 
         self::assertArrayHasKey('Foo\\Runtime', $classMap);
         self::assertArrayNotHasKey('Foo\\DevDependency', $classMap);
+    }
+
+    public function testRuntimeDependencyClassPreloadRunsWhenOnlyDependencyIsUpdated(): void
+    {
+        $runtimeClass = 'Composer\\Test\\Installer\\RuntimeDependencyPreloadFixture\\Finder';
+        self::assertFalse(class_exists($runtimeClass, false));
+
+        $composerInstallPath = realpath(dirname(__DIR__, 4));
+        self::assertIsString($composerInstallPath);
+
+        $finderInstallPath = self::getUniqueTmpDirectory();
+        self::ensureDirectoryExistsAndClear($finderInstallPath.'/src');
+        file_put_contents($finderInstallPath.'/src/Finder.php', '<?php namespace Composer\Test\Installer\RuntimeDependencyPreloadFixture; class Finder {}');
+
+        $composerPackage = new Package('composer/composer', '2.10.1.0', '2.10.1');
+        $composerPackage->setRequires([
+            'symfony/finder' => new Link('composer/composer', 'symfony/finder', new MatchAllConstraint()),
+        ]);
+
+        $initialFinderPackage = new Package('symfony/finder', '8.0.8.0', '8.0.8');
+        $initialFinderPackage->setAutoload([
+            'classmap' => ['src/Finder.php'],
+        ]);
+
+        $targetFinderPackage = new Package('symfony/finder', '8.1.0.0', '8.1.0');
+        $operation = new UpdateOperation($initialFinderPackage, $targetFinderPackage);
+
+        $repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
+        $repository
+            ->expects($this->exactly(2))
+            ->method('getPackages')
+            ->willReturn([$composerPackage, $initialFinderPackage]);
+
+        $manager = $this->getMockBuilder(InstallationManager::class)
+            ->setConstructorArgs([$this->loop, $this->io])
+            ->onlyMethods(['getInstallPath'])
+            ->getMock();
+
+        $manager
+            ->expects($this->exactly(2))
+            ->method('getInstallPath')
+            ->willReturnMap([
+                [$composerPackage, $composerInstallPath],
+                [$initialFinderPackage, $finderInstallPath],
+            ]);
+
+        $method = new \ReflectionMethod($manager, 'preloadRuntimeClassesBeforeSelfUpdate');
+        $method->setAccessible(true);
+        $method->invoke($manager, $repository, [$operation]);
+
+        self::assertTrue(class_exists($runtimeClass, false));
     }
 
     /**
