@@ -135,6 +135,10 @@ class BinaryInstaller
         }
 
         $handle = fopen($bin, 'r');
+        if (false === $handle) {
+            return 'php';
+        }
+
         $line = fgets($handle);
         fclose($handle);
         if (Preg::isMatchStrictGroups('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', (string) $line, $match)) {

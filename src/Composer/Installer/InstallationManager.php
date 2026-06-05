@@ -589,11 +589,6 @@ class InstallationManager
                 continue;
             }
 
-            $contents = file_get_contents($path);
-            if (is_string($contents) && strpos($contents, 'E_USER_DEPRECATED') !== false && strpos($contents, 'trigger_error') !== false) {
-                continue;
-            }
-
             Silencer::suppress();
             try {
                 require_once $path;
