@@ -307,7 +307,7 @@ class InstallationManagerTest extends TestCase
 
         $manager = new InstallationManager($this->loop, $this->io);
         $method = new \ReflectionMethod($manager, 'buildPackageClassMap');
-        $method->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
 
         $classMap = $method->invoke($manager, ['psr-4' => ['Foo\\' => 'src/Foo']], $installPath);
 
@@ -360,7 +360,7 @@ class InstallationManagerTest extends TestCase
             ]);
 
         $method = new \ReflectionMethod($manager, 'preloadRuntimeClassesBeforeSelfUpdate');
-        $method->setAccessible(true);
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
         $method->invoke($manager, $repository, [$operation]);
 
         self::assertTrue(class_exists($runtimeClass, false));
