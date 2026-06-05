@@ -109,6 +109,7 @@ class ConsoleIOTest extends TestCase
         $outputMock->expects($this->any())
             ->method('getVerbosity')
             ->willReturn(OutputInterface::VERBOSITY_NORMAL);
+        $outputMock->method('isDecorated')->willReturn(true);
         $outputMock->expects($this->atLeast(7))
             ->method('write')
             ->willReturnCallback(static function (...$args) {
@@ -137,6 +138,57 @@ class ConsoleIOTest extends TestCase
         $consoleIO->write('something (<question>strlen = 23</question>)');
         $consoleIO->overwrite('shorter (<comment>12</comment>)', false);
         $consoleIO->overwrite('something longer than initial (<info>34</info>)');
+    }
+
+    public function testOverwriteErrorWithoutDecorationWritesNoBackspaces(): void
+    {
+        $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
+        $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\ConsoleOutputInterface')->getMock();
+        $outputMock->method('getVerbosity')->willReturn(OutputInterface::VERBOSITY_NORMAL);
+        $outputMock->method('getErrorOutput')->willReturn($outputMock);
+        $outputMock->method('isDecorated')->willReturn(false);
+
+        $written = '';
+        $outputMock->method('write')->willReturnCallback(static function ($messages) use (&$written): void {
+            $written .= implode('', (array) $messages);
+        });
+
+        $helperMock = $this->getMockBuilder('Symfony\Component\Console\Helper\HelperSet')->getMock();
+
+        $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
+        $consoleIO->writeError('Loading composer repositories with package information');
+        $consoleIO->overwriteError('', false);
+
+        self::assertStringNotContainsString("\x08", $written);
+        self::assertStringContainsString('Loading composer repositories with package information', $written);
+    }
+
+    public function testOverwriteErrorChecksTheErrorOutputDecoration(): void
+    {
+        // stdout is a decorated terminal but the error output is redirected (not decorated),
+        // so overwriteError must write a plain line and no backspaces to the error output
+        $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
+
+        $written = '';
+        $errorOutput = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
+        $errorOutput->method('isDecorated')->willReturn(false);
+        $errorOutput->method('write')->willReturnCallback(static function ($messages) use (&$written): void {
+            $written .= implode('', (array) $messages);
+        });
+
+        $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\ConsoleOutputInterface')->getMock();
+        $outputMock->method('getVerbosity')->willReturn(OutputInterface::VERBOSITY_NORMAL);
+        $outputMock->method('isDecorated')->willReturn(true);
+        $outputMock->method('getErrorOutput')->willReturn($errorOutput);
+
+        $helperMock = $this->getMockBuilder('Symfony\Component\Console\Helper\HelperSet')->getMock();
+
+        $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
+        $consoleIO->writeError('Loading composer repositories with package information');
+        $consoleIO->overwriteError('Reading composer.json of acme/foo (1.0.0)', false);
+
+        self::assertStringNotContainsString("\x08", $written);
+        self::assertStringContainsString('Reading composer.json of acme/foo (1.0.0)', $written);
     }
 
     public function testAsk(): void
