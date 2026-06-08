@@ -519,6 +519,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $url .= '?filter='.urlencode($packageFilter);
             $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
+            HttpDownloader::outputWarnings($this->io, $this->url, $result);
+
             return $result['packageNames'];
         }
 
@@ -531,6 +533,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
+
+        HttpDownloader::outputWarnings($this->io, $this->url, $result);
+
         if (!$this->cache->isReadOnly()) {
             $this->cache->write($cacheKey, implode("\n", $result['packageNames']));
         }
@@ -618,6 +623,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $search = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
+            HttpDownloader::outputWarnings($this->io, $this->url, $search);
+
             if (empty($search['results'])) {
                 return [];
             }
@@ -652,6 +659,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (Preg::isMatchStrictGroups('{^\^(?P<query>(?P<vendor>[a-z0-9_.-]+)/[a-z0-9_.-]*)\*?$}i', $query, $match) && $this->listUrl !== null) {
                 $url = $this->listUrl . '?vendor='.urlencode($match['vendor']).'&filter='.urlencode($match['query'].'*');
                 $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
+
+                HttpDownloader::outputWarnings($this->io, $this->url, $result);
 
                 $results = [];
                 foreach ($result['packageNames'] as $name) {
@@ -770,8 +779,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $response = $this->httpDownloader->get($apiUrl, $options);
             $warned = false;
+            $advisoryData = $response->decodeJson();
+            HttpDownloader::outputWarnings($this->io, $this->url, $advisoryData);
             /** @var string $name */
-            foreach ($response->decodeJson()['advisories'] as $name => $list) {
+            foreach ($advisoryData['advisories'] as $name => $list) {
                 if (!isset($packageConstraintMap[$name])) {
                     if (!$warned) {
                         $this->io->writeError('<warning>'.$this->getRepoName().' returned names which were not requested in response to the security-advisories API. '.$name.' was not requested but is present in the response. Requested names were: '.implode(', ', array_keys($packageConstraintMap)).'</warning>');
@@ -831,6 +842,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $configuredLists
             );
             $decoded = $response->decodeJson();
+            HttpDownloader::outputWarnings($this->io, $this->url, $decoded);
             if (!isset($decoded['filter']) || !is_array($decoded['filter'])) {
                 throw new TransportException('Filter api-url '.$this->filterConfig->apiUrl.' returned an unexpected response for '.$this->getRepoName(), 0);
             }
@@ -1006,6 +1018,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
                 throw $e;
             }
+
+            HttpDownloader::outputWarnings($this->io, $this->url, $apiResult);
 
             foreach ($apiResult['providers'] as $provider) {
                 $result[$provider['name']] = $provider;
