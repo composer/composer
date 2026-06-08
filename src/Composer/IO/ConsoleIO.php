@@ -225,6 +225,22 @@ class ConsoleIO extends BaseIO
         // messages can be an array, let's convert it to string anyway
         $messages = implode($newline ? "\n" : '', (array) $messages);
 
+        $decorated = $stderr ? $this->getErrorOutput()->isDecorated() : $this->output->isDecorated();
+
+        // backspaces corrupt non-decorated output, so write a plain line instead
+        if (!$decorated) {
+            if ($messages !== '') {
+                $this->doWrite($messages, true, $stderr, $verbosity);
+            }
+            if ($stderr) {
+                $this->lastMessageErr = $messages;
+            } else {
+                $this->lastMessage = $messages;
+            }
+
+            return;
+        }
+
         // since overwrite is supposed to overwrite last message...
         if (!isset($size)) {
             // removing possible formatting of lastMessage with strip_tags
