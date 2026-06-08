@@ -204,11 +204,38 @@ EOT
         }
 
         $effectiveChannel = $requestedChannel === null ? $versionsUtil->getChannel() : $requestedChannel;
+        $stableSuggested = false;
         if (is_numeric($effectiveChannel) && strpos($latestStable['version'], $effectiveChannel) !== 0) {
             $io->writeError('<warning>Warning: You forced the install of '.$latestVersion.' via --'.$effectiveChannel.', but '.$latestStable['version'].' is the latest stable version. Updating to it via composer self-update --stable is recommended.</warning>');
+            $stableSuggested = true;
         }
-        if (isset($latest['eol'])) {
-            $io->writeError('<warning>Warning: Version '.$latestVersion.' is EOL / End of Life. '.$latestStable['version'].' is the latest stable version. Updating to it via composer self-update --stable is recommended.</warning>');
+
+        // Warn about the maintenance status of the version we are about to install, but only when no
+        // specific version was requested: an explicitly requested version is generally not the channel
+        // head listed in the versions data, so there is no entry to classify it against.
+        if (null === $input->getArgument('version')) {
+            $maintenanceWarning = Versions::getMaintenanceWarning($latest, new \DateTimeImmutable());
+            if ($maintenanceWarning !== null) {
+                if ($maintenanceWarning['type'] === 'eol') {
+                    $message = 'Warning: Composer '.$latestVersion.($maintenanceWarning['lts'] ? ' LTS' : '').' is end of life and will not receive any further bug or security fixes.';
+                } else {
+                    $message = 'Warning: Composer '.$latestVersion.($maintenanceWarning['lts'] ? ' LTS' : '').' is nearing end of life and only receives critical security fixes now (maintained until '.$maintenanceWarning['until'].').';
+                }
+                // Point users to the latest stable, unless the forced-channel warning above already did, or
+                // the latest stable is the very version we are warning about (e.g. the user's PHP is too old
+                // to install anything newer, in which case the PHP warning below explains the real problem).
+                if (!$stableSuggested && $latestStable['version'] !== $latestVersion) {
+                    $message .= ' '.$latestStable['version'].' is the latest stable version, update to it by running "composer self-update --stable".';
+                }
+                $io->writeError('<warning>'.$message.'</warning>');
+            }
+
+            // If a newer Composer exists but requires a newer PHP than the one running, self-update silently
+            // pins the user to an older (often LTS/EOL) line. Explain why, and which PHP version would help.
+            $phpBlocked = $versionsUtil->getNewerPhpBlockedVersion();
+            if ($phpBlocked !== null) {
+                $io->writeError('<warning>Warning: A newer Composer version ('.$phpBlocked['version'].') is available but requires PHP '.self::formatPhpVersionId($phpBlocked['min-php']).' or higher, while you are running PHP '.PHP_VERSION.'. You are pinned to the older '.$latestVersion.(($latest['lts'] ?? false) ? ' LTS' : '').' line, upgrade PHP to receive newer Composer releases.</warning>');
+            }
         }
 
         if (Preg::isMatch('{^[0-9a-f]{40}$}', $updateVersion) && $updateVersion !== $latestVersion) {
@@ -638,6 +665,14 @@ TAGSPUBKEY
         }
 
         return [$match['version'], !Preg::isMatch('{^[0-9a-f]{7}$}', $match['version'])];
+    }
+
+    /**
+     * Formats a PHP_VERSION_ID style integer (e.g. 70205) back into a human version string (e.g. "7.2.5").
+     */
+    private static function formatPhpVersionId(int $versionId): string
+    {
+        return sprintf('%d.%d.%d', intdiv($versionId, 10000), intdiv($versionId % 10000, 100), $versionId % 100);
     }
 
     protected function getLastBackupVersion(string $rollbackDir): ?string
