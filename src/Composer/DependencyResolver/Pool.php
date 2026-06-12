@@ -49,6 +49,8 @@ class Pool implements \Countable
     private $abandonedRemovedVersions = [];
     /** @var array<string, array<string, list<FilterListEntry>>> Map of package name => normalized version => filter list entries */
     private $filterListRemovedVersions = [];
+    /** @var array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>> Map of package name => normalized version => cooldown info */
+    private $cooldownRemovedVersions = [];
 
     /**
      * @param BasePackage[] $packages
@@ -58,8 +60,9 @@ class Pool implements \Countable
      * @param array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> $securityRemovedVersions
      * @param array<string, array<string, string>> $abandonedRemovedVersions
      * @param array<string, array<string, list<FilterListEntry>>> $filterListRemovedVersions
+     * @param array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>> $cooldownRemovedVersions
      */
-    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [], array $filterListRemovedVersions = [])
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [], array $filterListRemovedVersions = [], array $cooldownRemovedVersions = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
@@ -69,6 +72,7 @@ class Pool implements \Countable
         $this->securityRemovedVersions = $securityRemovedVersions;
         $this->abandonedRemovedVersions = $abandonedRemovedVersions;
         $this->filterListRemovedVersions = $filterListRemovedVersions;
+        $this->cooldownRemovedVersions = $cooldownRemovedVersions;
     }
 
     /**
@@ -224,6 +228,46 @@ class Pool implements \Countable
         }
 
         return $result;
+    }
+
+    public function isCooldownRemovedPackageVersion(string $packageName, ?ConstraintInterface $constraint): bool
+    {
+        foreach ($this->cooldownRemovedVersions[$packageName] ?? [] as $version => $info) {
+            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>>
+     */
+    public function getAllCooldownRemovedPackageVersions(): array
+    {
+        return $this->cooldownRemovedVersions;
+    }
+
+    /**
+     * Returns the cooldown info for the matching version that becomes available
+     * soonest (earliest release date), so the error message points the user at
+     * the shortest wait.
+     *
+     * @return array{prettyVersion: string, releaseDate: string, availableIn: string}|null
+     */
+    public function getCooldownInfoForPackageVersion(string $packageName, ?ConstraintInterface $constraint): ?array
+    {
+        $earliest = null;
+        foreach ($this->cooldownRemovedVersions[$packageName] ?? [] as $version => $info) {
+            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
+                if ($earliest === null || $info['releaseDate'] < $earliest['releaseDate']) {
+                    $earliest = $info;
+                }
+            }
+        }
+
+        return $earliest;
     }
 
     /**

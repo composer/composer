@@ -21,6 +21,7 @@ use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Policy\AbandonedPolicyConfig;
+use Composer\Policy\CooldownPolicyConfig;
 use Composer\Policy\AdvisoriesPolicyConfig;
 use Composer\Policy\CustomListPolicyConfig;
 use Composer\Policy\ListPolicyConfig;
@@ -923,6 +924,7 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
             $advisories,
             MalwarePolicyConfig::disabled(),
             new AbandonedPolicyConfig(false, $abandoned, $abandonedIgnore),
+            CooldownPolicyConfig::disabled(),
             $customLists,
             $ignoreUnreachableAudit ? IgnoreUnreachable::all() : IgnoreUnreachable::default()
         );

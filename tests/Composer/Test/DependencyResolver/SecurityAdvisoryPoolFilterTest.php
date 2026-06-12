@@ -22,6 +22,7 @@ use Composer\IO\NullIO;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Policy\AbandonedPolicyConfig;
+use Composer\Policy\CooldownPolicyConfig;
 use Composer\Policy\AdvisoriesPolicyConfig;
 use Composer\Policy\IgnoreIdRule;
 use Composer\Policy\IgnorePackageRule;
@@ -51,6 +52,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             new AdvisoriesPolicyConfig($advisoriesBlock, ListPolicyConfig::AUDIT_FAIL, $advisoriesIgnore, [], []),
             MalwarePolicyConfig::disabled(),
             new AbandonedPolicyConfig($abandonedBlock, ListPolicyConfig::AUDIT_FAIL, $abandonedIgnore),
+            CooldownPolicyConfig::disabled(),
             [],
             IgnoreUnreachable::default()
         );
@@ -99,6 +101,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             ),
             MalwarePolicyConfig::disabled(),
             new AbandonedPolicyConfig(true, ListPolicyConfig::AUDIT_FAIL, []),
+            CooldownPolicyConfig::disabled(),
             [],
             IgnoreUnreachable::default()
         );
@@ -236,6 +239,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             new AdvisoriesPolicyConfig(true, ListPolicyConfig::AUDIT_FAIL, [], [], []),
             MalwarePolicyConfig::disabled(),
             new AbandonedPolicyConfig(true, ListPolicyConfig::AUDIT_FAIL, []),
+            CooldownPolicyConfig::disabled(),
             [],
             IgnoreUnreachable::none()
         );

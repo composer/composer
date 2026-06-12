@@ -242,6 +242,26 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.abandoned.audit', 'setting-value' => ['fail']],
             ['config' => ['policy' => ['abandoned' => ['audit' => 'fail']]]],
         ];
+        yield 'set policy.cooldown.age duration string' => [
+            [],
+            ['setting-key' => 'policy.cooldown.age', 'setting-value' => ['7 days']],
+            ['config' => ['policy' => ['cooldown' => ['age' => '7 days']]]],
+        ];
+        yield 'set policy.cooldown.age integer seconds' => [
+            [],
+            ['setting-key' => 'policy.cooldown.age', 'setting-value' => ['604800']],
+            ['config' => ['policy' => ['cooldown' => ['age' => 604800]]]],
+        ];
+        yield 'set policy.cooldown.age null disables' => [
+            [],
+            ['setting-key' => 'policy.cooldown.age', 'setting-value' => ['null']],
+            ['config' => ['policy' => ['cooldown' => ['age' => null]]]],
+        ];
+        yield 'set policy.cooldown.block false' => [
+            [],
+            ['setting-key' => 'policy.cooldown.block', 'setting-value' => ['false']],
+            ['config' => ['policy' => ['cooldown' => ['block' => false]]]],
+        ];
         yield 'set policy.ignore-unreachable bool true' => [
             [],
             ['setting-key' => 'policy.ignore-unreachable', 'setting-value' => ['true']],

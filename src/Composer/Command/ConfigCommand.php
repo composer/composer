@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Pcre\Preg;
+use Composer\Policy\CooldownPolicyConfig;
 use Composer\Policy\IgnoreUnreachable;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
@@ -506,6 +507,29 @@ EOT
             'policy.malware.audit' => [$auditValidator, $keepAsIsNormalizer],
             'policy.abandoned.block' => [$booleanValidator, $booleanNormalizer],
             'policy.abandoned.audit' => [$auditValidator, $keepAsIsNormalizer],
+            'policy.cooldown.block' => [$booleanValidator, $booleanNormalizer],
+            'policy.cooldown.audit' => [$auditValidator, $keepAsIsNormalizer],
+            'policy.cooldown.age' => [
+                static function ($val): bool {
+                    if ($val === 'null' || $val === '') {
+                        return true;
+                    }
+                    try {
+                        CooldownPolicyConfig::parseDuration($val);
+
+                        return true;
+                    } catch (\RuntimeException $e) {
+                        return false;
+                    }
+                },
+                static function ($val) {
+                    if ($val === 'null' || $val === '') {
+                        return null;
+                    }
+
+                    return is_numeric($val) ? (int) $val : $val;
+                },
+            ],
             'policy.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
         ];
         $multiConfigValues = [

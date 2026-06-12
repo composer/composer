@@ -1448,16 +1448,19 @@ DEPRECATED, use [COMPOSER_POLICY_ABANDONED_BLOCK](#composer-policy-abandoned-blo
 
 If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `audit.block-abandoned` config to `true`). If set to `0`, disables blocking of abandoned packages. It overrides the config option [audit.block-abandoned](06-config.md#block-abandoned).
 
-### COMPOSER_MINIMUM_RELEASE_AGE
+### COMPOSER_POLICY_COOLDOWN_AGE
 
 If set to a duration string (e.g., `"7 days"`, `"24 hours"`) or an integer (seconds),
-enables filtering of newly released package versions. Package versions that are newer
-than the specified age will not be used during dependency resolution. Set to `0` to
-disable the feature. This overrides only the `minimum-age` value from
-[minimum-release-age](06-config.md#minimum-release-age) - any package exceptions
-configured in composer.json are still respected. Security fixes (versions released
-after a security advisory that fix the vulnerability) automatically bypass the release
-age requirement.
+enables the cooldown policy. Package versions newer than the specified age will be
+withheld during `composer update`/`require`. Set to `0` to disable. This overrides only
+the `age` value from [policy.cooldown](06-config.md#cooldown) - any `ignore` rules
+configured in composer.json are still respected. Security fixes (versions released after
+a security advisory that fix the vulnerability) automatically bypass the cooldown.
+
+### COMPOSER_POLICY_COOLDOWN_BLOCK
+
+If set to `1`, forces cooldown blocking on; if set to `0`, disables it. Overrides the
+[policy.cooldown.block](06-config.md#block-2) config option.
 
 ### COMPOSER_NO_DEV
 

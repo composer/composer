@@ -440,6 +440,13 @@ class Problem
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the ' . $ignorePaths . ' config. To turn the feature off entirely, you can set ' . $offPaths . ' to false.'];
             }
 
+            if ($pool->isCooldownRemovedPackageVersion($packageName, $constraint)) {
+                $cooldownInfo = $pool->getCooldownInfoForPackageVersion($packageName, $constraint);
+                $availableIn = $cooldownInfo !== null ? ' (available in ' . $cooldownInfo['availableIn'] . ')' : '';
+
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they have not yet cleared the cooldown configured in "policy.cooldown"' . $availableIn . '. To bypass the cooldown for this package, add it to the "policy.cooldown.ignore" config. To turn the feature off entirely, you can set "policy.cooldown.block" to false.'];
+            }
+
             if (!array_any($packages, static function ($p): bool {
                 return !$p->getRepository() instanceof LockArrayRepository;
             })) {

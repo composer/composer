@@ -35,6 +35,8 @@ class SecurityAdvisoryPoolFilter
     private $policyConfig;
     /** @var IOInterface */
     private $io;
+    /** @var array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> */
+    private $advisoryMap = [];
 
     public function __construct(
         Auditor $auditor,
@@ -44,6 +46,19 @@ class SecurityAdvisoryPoolFilter
         $this->auditor = $auditor;
         $this->policyConfig = $policyConfig;
         $this->io = $io;
+    }
+
+    /**
+     * Advisories resolved during the most recent filter() run.
+     *
+     * Exposed so the cooldown filter can let recent, non-vulnerable security
+     * fixes bypass the cooldown without re-fetching advisory data.
+     *
+     * @return array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>
+     */
+    public function getAdvisoryMap(): array
+    {
+        return $this->advisoryMap;
     }
 
     /**
@@ -86,6 +101,7 @@ class SecurityAdvisoryPoolFilter
         }
 
         $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $ignoreListForBlocking, $advisories->getIgnoreSeverityForOperation('block'))['advisories'];
+        $this->advisoryMap = $advisoryMap;
 
         $ignoreAbandonedForBlocking = $abandoned->getFlatIgnoreForOperation('block');
 

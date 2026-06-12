@@ -14,10 +14,11 @@ namespace Composer\DependencyResolver;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\Pcre\Preg;
+use Composer\Policy\CooldownPolicyConfig;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\PlatformRepository;
-use Composer\Repository\RepositoryInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MatchAllConstraint;
@@ -26,13 +27,17 @@ use DateTimeImmutable;
 use DateTimeInterface;
 
 /**
- * Filters packages from the pool that are newer than the minimum release age
+ * Withholds package versions published more recently than the configured cooldown age.
+ *
+ * Unlike the list-based policies (advisories/malware/custom lists) this filter is purely
+ * time-based and has no remote sources to fetch, so it is wired as a dedicated pool filter
+ * rather than through FilterListPoolFilter.
  *
  * @internal
  */
-class ReleaseAgePoolFilter
+class CooldownPoolFilter
 {
-    /** @var ReleaseAgeConfig */
+    /** @var CooldownPolicyConfig */
     private $config;
 
     /** @var DateTimeImmutable */
@@ -41,7 +46,7 @@ class ReleaseAgePoolFilter
     /** @var array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> */
     private $securityAdvisories = [];
 
-    public function __construct(ReleaseAgeConfig $config, ?DateTimeImmutable $now = null)
+    public function __construct(CooldownPolicyConfig $config, ?DateTimeImmutable $now = null)
     {
         $this->config = $config;
         $this->now = $now ?? new DateTimeImmutable();
@@ -51,7 +56,7 @@ class ReleaseAgePoolFilter
      * Set security advisories to enable security fix detection
      *
      * When set, packages that are security fixes (released after an advisory
-     * and not affected by it) will bypass the minimum release age requirement.
+     * and not affected by it) will bypass the cooldown requirement.
      *
      * @param array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> $advisories
      */
@@ -61,18 +66,16 @@ class ReleaseAgePoolFilter
     }
 
     /**
-     * Filter packages from the pool that don't meet the minimum release age requirement
-     *
-     * @param array<RepositoryInterface> $repositories
+     * Filter packages from the pool that have not yet cleared the cooldown
      */
-    public function filter(Pool $pool, array $repositories, Request $request): Pool
+    public function filter(Pool $pool, Request $request): Pool
     {
-        if (!$this->config->isEnabled()) {
+        if (!$this->config->hasCooldown() || !$this->config->block) {
             return $pool;
         }
 
-        $minimumAge = $this->config->minimumReleaseAge;
-        $cutoffDate = $this->now->modify("-{$minimumAge} seconds");
+        $age = $this->config->age;
+        $cutoffDate = $this->now->modify("-{$age} seconds");
 
         // First pass: find oldest security fix per package per constraint part
         // This ensures we only allow the oldest (most vetted) security fix to bypass
@@ -80,7 +83,7 @@ class ReleaseAgePoolFilter
         $oldestSecurityFixDate = $this->findOldestSecurityFixPerConstraint($pool, $request);
 
         $packages = [];
-        $releaseAgeRemovedVersions = [];
+        $cooldownRemovedVersions = [];
 
         foreach ($pool->getPackages() as $package) {
             // Skip filtering for packages that should always be allowed through:
@@ -88,28 +91,28 @@ class ReleaseAgePoolFilter
             // 2. Platform packages (php, ext-*, lib-*, etc.)
             // 3. Already locked packages (installed)
             // 4. Dev versions (mutable, no stable release date concept)
-            // 5. Excepted packages (matching configured patterns)
+            // 5. Ignored packages (matching configured policy.cooldown.ignore rules)
             // 6. Packages without release date (conservative - don't block unverifiable)
             if ($package instanceof RootPackageInterface
                 || PlatformRepository::isPlatformPackage($package->getName())
                 || $request->isLockedPackage($package)
                 || $package->isDev()
-                || $this->config->isPackageExcepted($package->getName())
-                || $package->getReleaseDate() === null
+                || $this->isIgnored($package)
+                || $this->getEffectiveDate($package) === null
             ) {
                 $packages[] = $package;
                 continue;
             }
 
             // Check if package is old enough
-            $releaseDate = $package->getReleaseDate();
+            $releaseDate = $this->getEffectiveDate($package);
             if ($releaseDate <= $cutoffDate) {
                 $packages[] = $package;
                 continue;
             }
 
             // Check if this is the oldest security fix for its constraint part
-            // Only the oldest security fix per constraint part bypasses the release age
+            // Only the oldest security fix per constraint part bypasses the cooldown
             if ($this->isOldestSecurityFixForConstraint($package, $oldestSecurityFixDate, $request)) {
                 $packages[] = $package;
                 continue;
@@ -117,7 +120,7 @@ class ReleaseAgePoolFilter
 
             // Package is too new - filter it out and track for error messages
             foreach ($package->getNames(false) as $packageName) {
-                $releaseAgeRemovedVersions[$packageName][$package->getVersion()] = [
+                $cooldownRemovedVersions[$packageName][$package->getVersion()] = [
                     'prettyVersion' => $package->getPrettyVersion(),
                     'releaseDate' => $releaseDate->format(DateTimeInterface::ATOM),
                     'availableIn' => $this->formatTimeUntilAvailable($releaseDate),
@@ -132,8 +135,44 @@ class ReleaseAgePoolFilter
             $pool->getAllRemovedVersionsByPackage(),
             $pool->getAllSecurityRemovedPackageVersions(),
             $pool->getAllAbandonedRemovedPackageVersions(),
-            $releaseAgeRemovedVersions
+            $pool->getAllFilterListRemovedPackageVersions(),
+            $cooldownRemovedVersions
         );
+    }
+
+    /**
+     * The timestamp the cooldown is measured against.
+     *
+     * Stage 3 will prefer a server-set published-time over the author-controlled
+     * release date; for now only the release date is available.
+     */
+    private function getEffectiveDate(PackageInterface $package): ?DateTimeInterface
+    {
+        return $package->getReleaseDate();
+    }
+
+    /**
+     * Whether a package version matches a configured policy.cooldown.ignore rule.
+     */
+    private function isIgnored(PackageInterface $package): bool
+    {
+        $ignore = $this->config->getIgnoreForOperation('block');
+        if (count($ignore) === 0) {
+            return false;
+        }
+
+        $packageConstraint = new Constraint('==', $package->getVersion());
+        foreach ($ignore as $rules) {
+            foreach ($rules as $rule) {
+                foreach ($package->getNames(false) as $name) {
+                    if (Preg::isMatch($rule->packageNameRegex, $name) && $rule->constraint->matches($packageConstraint)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -152,7 +191,7 @@ class ReleaseAgePoolFilter
             }
 
             $name = $package->getName();
-            $releaseDate = $package->getReleaseDate();
+            $releaseDate = $this->getEffectiveDate($package);
             if ($releaseDate === null) {
                 continue;
             }
@@ -216,7 +255,7 @@ class ReleaseAgePoolFilter
         }
 
         $name = $package->getName();
-        $releaseDate = $package->getReleaseDate();
+        $releaseDate = $this->getEffectiveDate($package);
         if ($releaseDate === null) {
             return false;
         }
@@ -242,8 +281,8 @@ class ReleaseAgePoolFilter
      */
     private function formatTimeUntilAvailable(DateTimeInterface $releaseDate): string
     {
-        $availableAt = (new \DateTimeImmutable($releaseDate->format(\DateTimeInterface::ATOM)))
-            ->modify("+{$this->config->minimumReleaseAge} seconds");
+        $availableAt = (new DateTimeImmutable($releaseDate->format(DateTimeInterface::ATOM)))
+            ->modify("+{$this->config->age} seconds");
         $diff = $this->now->diff($availableAt);
 
         $parts = [];
@@ -263,18 +302,18 @@ class ReleaseAgePoolFilter
     }
 
     /**
-     * Check if a package version is a security fix that should bypass release age requirement
+     * Check if a package version is a security fix that should bypass the cooldown requirement
      *
      * A version is considered a security fix if:
      * 1. The package has known security advisories
      * 2. This version is NOT affected by any of those advisories
-     * 3. For full SecurityAdvisory: released after advisory and within 2x minimum age after advisory
-     * 4. For PartialSecurityAdvisory: released within 2x minimum age from now (fallback when reportedAt unavailable)
+     * 3. For full SecurityAdvisory: released after advisory and within 2x the cooldown age after advisory
+     * 4. For PartialSecurityAdvisory: released within 2x the cooldown age from now (fallback when reportedAt unavailable)
      */
     private function isSecurityFix(PackageInterface $package): bool
     {
         $packageName = $package->getName();
-        $releaseDate = $package->getReleaseDate();
+        $releaseDate = $this->getEffectiveDate($package);
 
         // Need both release date and advisories to determine if it's a security fix
         if ($releaseDate === null || !isset($this->securityAdvisories[$packageName])) {
@@ -282,14 +321,14 @@ class ReleaseAgePoolFilter
         }
 
         $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
-        $minimumAge = $this->config->minimumReleaseAge;
+        $age = $this->config->age;
 
-        // Should not happen as isSecurityFix is only called when filter is enabled
-        if ($minimumAge === null) {
+        // Should not happen as isSecurityFix is only called when the filter is active
+        if ($age === null) {
             return false;
         }
 
-        $bypassWindow = $minimumAge * 2;
+        $bypassWindow = $age * 2;
 
         foreach ($this->securityAdvisories[$packageName] as $advisory) {
             // Skip if this version is affected by the advisory (it's vulnerable, not a fix)
@@ -306,7 +345,7 @@ class ReleaseAgePoolFilter
                     continue;
                 }
 
-                // Only bypass if within 2x the minimum release age after the advisory
+                // Only bypass if within 2x the cooldown age after the advisory
                 // This prevents old advisories from granting perpetual bypass
                 $windowEnd = (new DateTimeImmutable($advisoryDate->format(DateTimeInterface::ATOM)))
                     ->modify("+{$bypassWindow} seconds");
@@ -318,7 +357,7 @@ class ReleaseAgePoolFilter
                 }
             } else {
                 // PartialSecurityAdvisory without reportedAt: use now-relative timing
-                // Allow bypass only if version was released recently (within 2x minimum age from now)
+                // Allow bypass only if version was released recently (within 2x the cooldown age from now)
                 // This prevents old advisories from granting perpetual bypass
                 $windowStart = $this->now->modify("-{$bypassWindow} seconds");
 

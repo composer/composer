@@ -692,6 +692,39 @@
                                 }
                             ]
                         },
+                        "cooldown": {
+                            "oneOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "object",
+                                    "description": "Configuration for the cooldown policy, which withholds package versions published more recently than the configured age during update/require.",
+                                    "properties": {
+                                        "age": {
+                                            "description": "Cooldown duration as a human readable string (e.g. \"7 days\", \"24 hours\"), an integer number of seconds, or null to disable. Defaults to null (no cooldown).",
+                                            "anyOf": [
+                                                { "type": "string" },
+                                                { "type": "integer" },
+                                                { "type": "null" }
+                                            ]
+                                        },
+                                        "block": {
+                                            "type": "boolean",
+                                            "description": "When true, versions still within the cooldown cannot be installed during update/require. Defaults to true (only takes effect once age is set).",
+                                            "default": true
+                                        },
+                                        "audit": {
+                                            "enum": ["ignore", "report", "fail"],
+                                            "description": "How composer audit treats versions within the cooldown. Defaults to ignore.",
+                                            "default": "ignore"
+                                        },
+                                        "ignore": { "$ref": "#/definitions/policy-ignore" }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
                         "ignore-unreachable": {
                             "description": "Controls for which operations unreachable repositories and policy sources are silently ignored. Defaults to [\"update\", \"install\"]. Set to true to ignore for all operations, false for none.",
                             "oneOf": [

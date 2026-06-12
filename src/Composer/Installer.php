@@ -26,6 +26,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
+use Composer\DependencyResolver\CooldownPoolFilter;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\DependencyResolver\PolicyInterface;
@@ -527,7 +528,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_UPDATE), $this->createCooldownPoolFilter());
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
@@ -1189,6 +1190,19 @@ class Installer
         }
 
         return new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader(), $blockScope, $this->repositoryManager->getRepositories(), $this->io);
+    }
+
+    private function createCooldownPoolFilter(): ?CooldownPoolFilter
+    {
+        $policyConfig = $this->getPolicyConfig();
+
+        // Cooldown blocks during update/require only for now, and is skipped when
+        // only refreshing mirror/dist information (no version changes happen then).
+        if ($policyConfig->enabled && $policyConfig->cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE) && !$this->updateMirrors) {
+            return new CooldownPoolFilter($policyConfig->cooldown);
+        }
+
+        return null;
     }
 
     /**
