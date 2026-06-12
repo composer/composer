@@ -124,6 +124,7 @@ class CooldownPoolFilter
                     'prettyVersion' => $package->getPrettyVersion(),
                     'releaseDate' => $releaseDate->format(DateTimeInterface::ATOM),
                     'availableIn' => $this->formatTimeUntilAvailable($releaseDate),
+                    'source' => $package->getPublishedDate() !== null ? 'published-time' : 'time',
                 ];
             }
         }
@@ -143,12 +144,13 @@ class CooldownPoolFilter
     /**
      * The timestamp the cooldown is measured against.
      *
-     * Stage 3 will prefer a server-set published-time over the author-controlled
-     * release date; for now only the release date is available.
+     * Prefers the server-set publication date (which the package author cannot
+     * influence) and falls back to the author-controlled release date when the
+     * repository does not provide one.
      */
     private function getEffectiveDate(PackageInterface $package): ?DateTimeInterface
     {
-        return $package->getReleaseDate();
+        return $package->getPublishedDate() ?? $package->getReleaseDate();
     }
 
     /**

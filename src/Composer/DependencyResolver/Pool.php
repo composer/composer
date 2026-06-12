@@ -49,7 +49,7 @@ class Pool implements \Countable
     private $abandonedRemovedVersions = [];
     /** @var array<string, array<string, list<FilterListEntry>>> Map of package name => normalized version => filter list entries */
     private $filterListRemovedVersions = [];
-    /** @var array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>> Map of package name => normalized version => cooldown info */
+    /** @var array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string, source: string}>> Map of package name => normalized version => cooldown info */
     private $cooldownRemovedVersions = [];
 
     /**
@@ -60,7 +60,7 @@ class Pool implements \Countable
      * @param array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> $securityRemovedVersions
      * @param array<string, array<string, string>> $abandonedRemovedVersions
      * @param array<string, array<string, list<FilterListEntry>>> $filterListRemovedVersions
-     * @param array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>> $cooldownRemovedVersions
+     * @param array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string, source: string}>> $cooldownRemovedVersions
      */
     public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [], array $filterListRemovedVersions = [], array $cooldownRemovedVersions = [])
     {
@@ -242,7 +242,7 @@ class Pool implements \Countable
     }
 
     /**
-     * @return array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>>
+     * @return array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string, source: string}>>
      */
     public function getAllCooldownRemovedPackageVersions(): array
     {
@@ -254,7 +254,7 @@ class Pool implements \Countable
      * soonest (earliest release date), so the error message points the user at
      * the shortest wait.
      *
-     * @return array{prettyVersion: string, releaseDate: string, availableIn: string}|null
+     * @return array{prettyVersion: string, releaseDate: string, availableIn: string, source: string}|null
      */
     public function getCooldownInfoForPackageVersion(string $packageName, ?ConstraintInterface $constraint): ?array
     {

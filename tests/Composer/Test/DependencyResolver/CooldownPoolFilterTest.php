@@ -50,6 +50,45 @@ class CooldownPoolFilterTest extends TestCase
         $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
     }
 
+    public function testPublishedDateTakesPrecedenceOverReleaseDate(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // Author-controlled `time` claims the version is old enough, but the
+        // server-set published date shows it is actually brand new -> withheld.
+        $package = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $package->setReleaseDate(new DateTimeImmutable('2025-01-01 12:00:00'));
+        $package->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $pool = new Pool([$package]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        self::assertEmpty($filteredPool->getPackages());
+        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0'));
+        self::assertNotNull($info);
+        self::assertSame('published-time', $info['source']);
+    }
+
+    public function testFallsBackToReleaseDateWhenNoPublishedDate(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $package = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $package->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00')); // no published date
+
+        $pool = new Pool([$package]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        self::assertEmpty($filteredPool->getPackages());
+        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0'));
+        self::assertNotNull($info);
+        self::assertSame('time', $info['source']);
+    }
+
     public function testIgnoredPackagesAreNotFiltered(): void
     {
         $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [

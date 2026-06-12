@@ -443,8 +443,13 @@ class Problem
             if ($pool->isCooldownRemovedPackageVersion($packageName, $constraint)) {
                 $cooldownInfo = $pool->getCooldownInfoForPackageVersion($packageName, $constraint);
                 $availableIn = $cooldownInfo !== null ? ' (available in ' . $cooldownInfo['availableIn'] . ')' : '';
+                // When the cooldown fell back to the author-controlled `time` field, flag that the
+                // timestamp is not authoritative so users know the protection is weaker for this package.
+                $sourceHint = ($cooldownInfo !== null && $cooldownInfo['source'] === 'time')
+                    ? ' The cooldown used the package-supplied release date because the repository did not provide an authoritative publication timestamp.'
+                    : '';
 
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they have not yet cleared the cooldown configured in "policy.cooldown"' . $availableIn . '. To bypass the cooldown for this package, add it to the "policy.cooldown.ignore" config. To turn the feature off entirely, you can set "policy.cooldown.block" to false.'];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they have not yet cleared the cooldown configured in "policy.cooldown"' . $availableIn . '.' . $sourceHint . ' To bypass the cooldown for this package, add it to the "policy.cooldown.ignore" config. To turn the feature off entirely, you can set "policy.cooldown.block" to false.'];
             }
 
             if (!array_any($packages, static function ($p): bool {

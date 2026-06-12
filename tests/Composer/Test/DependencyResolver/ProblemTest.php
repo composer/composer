@@ -71,6 +71,7 @@ class ProblemTest extends TestCase
                         'prettyVersion' => '2.0.0',
                         'releaseDate' => '2026-01-10T12:00:00+00:00',
                         'availableIn' => '5 days',
+                        'source' => 'published-time',
                     ],
                 ],
             ]
@@ -99,5 +100,48 @@ class ProblemTest extends TestCase
         self::assertStringContainsString('available in 5 days', $message);
         self::assertStringContainsString('"policy.cooldown.ignore"', $message);
         self::assertStringContainsString('"policy.cooldown.block"', $message);
+        // authoritative publication timestamp -> no fallback caveat
+        self::assertStringNotContainsString('package-supplied release date', $message);
+    }
+
+    public function testGetMissingPackageReasonForCooldownRemovedPackageWithTimeFallback(): void
+    {
+        $package = self::getPackage('vendor/pkg', '2.0.0');
+
+        $pool = new Pool(
+            [],
+            [],
+            ['vendor/pkg' => ['2.0.0.0' => '2.0.0']],
+            [],
+            [],
+            [],
+            [],
+            [
+                'vendor/pkg' => [
+                    '2.0.0.0' => [
+                        'prettyVersion' => '2.0.0',
+                        'releaseDate' => '2026-01-10T12:00:00+00:00',
+                        'availableIn' => '5 days',
+                        'source' => 'time',
+                    ],
+                ],
+            ]
+        );
+
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository(new ArrayRepository([$package]));
+
+        $message = implode('', Problem::getMissingPackageReason(
+            $repositorySet,
+            new Request(),
+            $pool,
+            false,
+            'vendor/pkg',
+            new MultiConstraint([new Constraint('>=', '1.0.0.0'), new Constraint('<', '3.0.0.0')], true)
+        ));
+
+        self::assertStringContainsString('cleared the cooldown', $message);
+        // fell back to the author-controlled `time` field -> caveat is shown
+        self::assertStringContainsString('package-supplied release date', $message);
     }
 }
