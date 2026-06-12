@@ -490,6 +490,8 @@ FUNDING;
         $process->expects([
             ['cmd' => ['git', 'config', 'github.accesstoken'], 'return' => 1],
             ['git', 'clone', '--mirror', '--', $repoSshUrl, $this->config->get('cache-vcs-dir').'/git-github.com-composer-packagist.git/'],
+            ['git', 'remote', '-v'],
+            ['git', 'remote', 'set-url', 'origin', '--', $repoSshUrl],
             [
                 'cmd' => ['git', 'show-ref', '--tags', '--dereference'],
                 'stdout' => $sha.' refs/tags/'.$identifier,

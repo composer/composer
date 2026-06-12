@@ -7,6 +7,10 @@ on:
     paths-ignore:
       - 'doc/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
   COMPOSER_UPDATE_FLAGS: ""
@@ -19,24 +23,26 @@ jobs:
     name: "CI"
 
     runs-on: ubuntu-latest
-    container: shivammathur/node:latest-i386
+    container: shivammathur/node:latest-i386@sha256:4423e9d5afa33b58f0371bc4f857c6ddf06ecc37937ac914dc984ff8d0e5a4b6
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
 
-      - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # 2.36.0
+      - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
           coverage: "none"
           extensions: "intl, zip"
           ini-values: "memory_limit=-1, phar.readonly=0, error_reporting=E_ALL, display_errors=On, display_startup_errors=On"
           php-version: "8.4"
-          tools: composer
+          tools: "composer:snapshot"
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer install $COMPOSER_FLAGS'
 
       - name: "Run install again using composer binary from source"
-        run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'bin/composer install $COMPOSER_FLAGS'
 
       - name: "Make source binary the one used by default"
         run: |

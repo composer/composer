@@ -113,14 +113,506 @@ optionally be an object with package name patterns for keys for more granular in
 > configuration in global and package configurations the string notation
 > is translated to a `*` package pattern.
 
+> **Tip:** If you want a source checkout for some packages so you can make
+> local edits, but only on your own machine (not in CI), prefer configuring
+> `preferred-install` globally rather than committing it to the project. For
+> example:
+>
+> ```
+> composer config --global preferred-install.my-vendor/* source
+> ```
+>
+> CI then keeps installing from `dist` by default, while your dev machine
+> always pulls those packages from source. This avoids relying on a source
+> install failure to fall back to dist, and saves CI from attempting a clone
+> first, which keep the output leaner and your CI faster.
+
+## source-fallback
+
+> **Deprecated:** This option is deprecated and will be removed in Composer 2.11.
+> Do not set it unless you absolutely need to. It exists as a temporary opt-in
+> while we disable the dist → source fallback for security reasons (silently
+> switching from a dist to a less-trusted or manipulated source checkout has
+> security implications). If you have a legitimate use case for re-enabling
+> the dist → source fallback and do not want us to remove it in 2.11, please
+> open an issue at https://github.com/composer/composer/issues to let us know.
+
+Defaults to `false`. When set to `true`, a failed **dist** install will fall
+back to a **source** checkout. This option only governs the dist → source
+direction; falling back from a failed source checkout to the dist artifact is
+always allowed regardless of this setting.
+
+```json
+{
+    "config": {
+        "source-fallback": true
+    }
+}
+```
+
+> **Note:** With this option at its default (`false`) and a dist download
+> failing, Composer throws an error immediately instead of trying a source
+> checkout. Make sure your preferred installation source (`preferred-install`)
+> is correctly configured.
+
+## policy
+
+Unified dependency policy configuration. Controls Composer behavior for dependencies with security
+advisories, flagged as malware, abandoned packages, and custom dependency policies. Audit reports
+can be generated with `composer audit`; blocking prevents insecure or otherwise flagged package
+versions from being installed during `composer update`, `require`, or `remove` and malware also
+during a `composer install`.
+
+Set to `false` to disable all dependency policy enforcement:
+
+```json
+{
+    "config": {
+        "policy": false
+    }
+}
+```
+
+> **Migrating from `config.audit`?** See
+> [How `config.audit` interacts with `config.policy`](#how-config-audit-interacts-with-config-policy)
+> for how the legacy keys are still honored as a fallback while you migrate.
+
+### advisories
+
+Configuration for packages affected by security advisories.
+
+#### block
+
+Defaults to `true`. When `true`, package versions with active security advisories are blocked and
+cannot be installed during `update`/`require`/`remove` unless the advisory or package is ignored.
+
+```json
+{
+    "config": {
+        "policy": {
+            "advisories": {
+                "block": false
+            }
+        }
+    }
+}
+```
+
+#### audit
+
+Defaults to `fail`. How `composer audit` treats packages with security advisories.
+
+- `ignore` — advisories are not reported
+- `report` — advisories are reported but do not cause a non-zero exit code
+- `fail` — advisories cause `composer audit` to exit with a non-zero code
+
+```json
+{
+    "config": {
+        "policy": {
+            "advisories": {
+                "audit": "report"
+            }
+        }
+    }
+}
+```
+
+#### ignore-id
+
+A list of advisory IDs (CVE, GHSA, PKSA, …) to ignore. Each entry can optionally include a reason
+and scoping (`on-block`/`on-audit`) to limit where the ignore applies.
+
+##### Simple list:
+
+```json
+{
+    "config": {
+        "policy": {
+            "advisories": {
+                "ignore-id": ["CVE-1234", "GHSA-xx"]
+            }
+        }
+    }
+}
+```
+
+##### With reasons:
+
+```json
+{
+    "config": {
+        "policy": {
+            "advisories": {
+                "ignore-id": {
+                    "CVE-1234": "Not affected.",
+                    "GHSA-xx": "Patch applied."
+                }
+            }
+        }
+    }
+}
+```
+
+##### With scoping:
+
+`on-block: false` means the advisory no longer blocks updates but is still reported in audit.
+`on-audit: false` means the advisory still blocks updates but is no longer reported in audit.
+
+```json
+{
+    "config": {
+        "policy": {
+            "advisories": {
+                "ignore-id": {
+                    "CVE-1234": {"on-block": false, "reason": "Patch applied, still want blocking."},
+                    "GHSA-xx":  {"on-audit": false, "reason": "False positive, still report."}
+                }
+            }
+        }
+    }
+}
+```
+
+#### ignore
+
+A list of package names to ignore for security advisory handling. Supports wildcards and optional
+version constraints. See the [ignore format](#ignore-format) for all supported syntax variants.
+
+#### ignore-severity
+
+A list of advisory severity levels to ignore: `low`, `medium`, `high`, `critical`.
+
+##### Simple list:
+
+```json
+{
+    "config": {
+        "policy": {
+            "advisories": {
+                "ignore-severity": ["low", "medium"]
+            }
+        }
+    }
+}
+```
+
+##### With scoping:
+
+```json
+{
+    "config": {
+        "policy": {
+            "advisories": {
+                "ignore-severity": {
+                    "low":    {"on-block": false},
+                    "medium": {"on-audit": false, "reason": "Handled via WAF"}
+                }
+            }
+        }
+    }
+}
+```
+
+### abandoned
+
+Configuration for abandoned packages.
+
+#### block
+
+Defaults to `false`. When `true`, abandoned packages cannot be installed during
+`update`/`require`/`remove`.
+
+```json
+{
+    "config": {
+        "policy": {
+            "abandoned": {
+                "block": true
+            }
+        }
+    }
+}
+```
+
+#### audit
+
+Defaults to `fail`. How `composer audit` treats abandoned packages.
+
+- `ignore` — abandoned packages are not reported
+- `report` — abandoned packages are reported but do not cause a non-zero exit code
+- `fail` — abandoned packages cause `composer audit` to exit with a non-zero code
+
+```json
+{
+    "config": {
+        "policy": {
+            "abandoned": {
+                "audit": "report"
+            }
+        }
+    }
+}
+```
+
+Can be overridden via the [`COMPOSER_AUDIT_ABANDONED`](03-cli.md#composer-audit-abandoned)
+environment variable or the [`--abandoned`](03-cli.md#audit) CLI option.
+
+#### ignore
+
+A list of package names (or patterns) to ignore for the abandoned check, regardless of their
+abandoned state. See the [ignore format](#ignore-format) for all supported syntax variants.
+
+```json
+{
+    "config": {
+        "policy": {
+            "abandoned": {
+                "ignore": {
+                    "acme/*": "Scheduled for replacement next quarter.",
+                    "vendor/legacy": {"on-block": false, "reason": "Allow in updates but still report."}
+                }
+            }
+        }
+    }
+}
+```
+
+### malware
+
+Configuration for package versions flagged as containing malware.
+
+#### block
+
+Defaults to `true`. When `true`, package versions flagged as malware are blocked.
+
+#### block-scope
+
+Defaults to `all`. Controls which commands trigger blocking:
+
+- `all` — block during both `update`/`require`/`remove` and `install`
+- `update` — block only during `update`/`require`/`remove`
+- `install` — block only during `install`
+
+```json
+{
+    "config": {
+        "policy": {
+            "malware": {
+                "block-scope": "update"
+            }
+        }
+    }
+}
+```
+
+#### audit
+
+Defaults to `fail`. Same values as [advisories.audit](#audit).
+
+#### ignore
+
+Package names to exclude from malware checks. See the [ignore format](#ignore-format) for all
+supported syntax variants.
+
+#### ignore-source
+
+A list of source names to exclude from malware checks.
+
+```json
+{
+    "config": {
+        "policy": {
+            "malware": {
+                "ignore-source": ["aikido"]
+            }
+        }
+    }
+}
+```
+
+### ignore-unreachable
+
+Defaults to `["update", "install"]`. When the operation is listed here, repositories and policies with URL sources that are unreachable or
+return a non-200 response are silently ignored rather than causing an error. Useful in environments where not all package
+repositories are accessible.
+
+Set to `true` to ignore unreachable repositories and custom dependency policy sources for all operations and to `false` to ignore them
+for no operations. Possible values are: `audit`, `install`, and `update`.
+
+```json
+{
+    "config": {
+        "policy": {
+            "ignore-unreachable": ["install", "update", "audit"]
+        }
+    }
+}
+```
+
+### Custom dependency policies
+
+In addition to the built-in `advisories`, `malware`, and `abandoned` dependency policies, you can
+define named custom dependency policies. A custom dependency policy needs its own set of package
+versions, supplied by one or more sources (advertised by package repositories or set explicitly here).
+
+```json
+{
+    "config": {
+        "policy": {
+            "my-policy": {
+                "block": true,
+                "audit": "fail",
+                "sources": [
+                    {"type": "url", "url": "https://example.org/my-bad-packages-list.json"}
+                ],
+                "ignore": {
+                    "vendor/package": "Assessed and accepted."
+                }
+            }
+        }
+    }
+}
+```
+
+Source URLs must use `https://`. `http://` and other schemes are rejected both at
+schema validation time (`composer validate`) and at config load time.
+
+Custom dependency policy names must not conflict with the reserved names `advisories`, `malware`, or
+`abandoned`, and must not start with `ignore` (the only `ignore`-prefixed key allowed at this
+level is the documented `ignore-unreachable` setting).
+
+The following names are reserved for future built-in dependency policies and cannot be used as custom
+dependency policy names: `package`, `packages`, `license`, `licence`, `licenses`, `licences`, `support`,
+`maintenance`, `security`, `minimum-release-age`. Composer rejects any colliding key both at
+schema validation time (`composer validate`) and at config load time.
+
+### ignore format
+
+The `ignore` key on every dependency policy accepts package name patterns with optional version constraints
+and per-rule scoping. All formats may be mixed in the same map.
+
+##### Simple list (ignore all versions):
+
+```json
+{
+    "config": {
+        "policy": {
+            "<policy>": {
+                "ignore": ["vendor/package", "acme/*"]
+            }
+        }
+    }
+}
+```
+
+##### With reason:
+
+```json
+{
+    "config": {
+        "policy": {
+            "<policy>": {
+                "ignore": {
+                    "vendor/package": "Assessed, no risk."
+                }
+            }
+        }
+    }
+}
+```
+
+##### With version constraint:
+
+```json
+{
+    "config": {
+        "policy": {
+            "<policy>": {
+                "ignore": {
+                    "vendor/package": {"constraint": "^2.0", "reason": "Only v2 is affected."}
+                }
+            }
+        }
+    }
+}
+```
+
+##### With scoping:
+
+`on-block: false` ignores only for audit (the package is still blocked during updates as on-block ignoring is disabled).
+`on-audit: false` ignores only for blocking (the package is still reported in audit).
+
+```json
+{
+    "config": {
+        "policy": {
+            "<policy>": {
+                "ignore": {
+                    "vendor/package": {"on-audit": false, "reason": "Workaround applied; keep reporting."}
+                }
+            }
+        }
+    }
+}
+```
+
+##### Multiple rules for the same package:
+
+```json
+{
+    "config": {
+        "policy": {
+            "<policy>": {
+                "ignore": {
+                    "vendor/package": [
+                        {"constraint": "^1.0", "on-audit": false},
+                        {"constraint": "^2.0", "reason": "v2 is patched."}
+                    ]
+                }
+            }
+        }
+    }
+}
+```
+
 ## audit
+
+> **Deprecated.** Use [`config.policy`](#policy) instead. All `config.audit` keys are still
+> supported for backwards compatibility but will be removed in a future major version.
 
 Security audit and version blocking configuration options. Audit reports can be generated with `composer audit`
 and short format versions are automatically reported at the end of update or require commands. Version blocking
 discards package versions identified as insecure or abandoned, depending on configuration, before resolving
 dependencies, ensuring they cannot be installed.
 
+### How `config.audit` interacts with `config.policy`
+
+The legacy `config.audit` keys are only read as a fallback when the corresponding
+[`config.policy`](#policy) section is **absent**. The fallback is all-or-nothing per built-in dependency policy:
+
+- If [`config.policy.advisories`](#advisories) is set (to any value, including `false`),
+  every advisories-related `audit.*` key ([`audit.block-insecure`](#block-insecure), [`audit.ignore`](#ignore-3),
+  [`audit.ignore-severity`](#ignore-severity-1)) is **ignored entirely** — only
+  [`policy.advisories.block`](#block), [`policy.advisories.ignore`](#ignore), and
+  [`policy.advisories.ignore-severity`](#ignore-severity) are read. Mix-and-matching,
+  e.g. setting `policy.advisories.block` while expecting `audit.ignore-severity` to still
+  apply, is not supported. Migrate all advisories-related settings together.
+- If [`config.policy.abandoned`](#abandoned) is set (to any value, including `false`),
+  every abandoned-related `audit.*` key ([`audit.block-abandoned`](#block-abandoned), [`audit.abandoned`](#abandoned-1),
+  [`audit.ignore-abandoned`](#ignore-abandoned)) is **ignored entirely** — only
+  [`policy.abandoned.block`](#block-1), [`policy.abandoned.audit`](#audit-1), and
+  [`policy.abandoned.ignore`](#ignore-1) are read.
+- The two built-in dependency policies are independent: configuring `policy.advisories` while leaving the
+  abandoned settings under `audit.*` is allowed and vice versa.
+- Setting [`policy.ignore-unreachable`](#ignore-unreachable) supersedes the legacy
+  [`audit.ignore-unreachable`](#ignore-unreachable-1) key.
+
 ### ignore
+
+> **Deprecated.** Use [`config.policy.advisories.ignore-id`](#ignore-id) for advisory IDs
+> (CVE, GHSA, PKSA) and [`config.policy.advisories.ignore`](#ignore) for package names instead.
+> Note: the new format uses `on-block`/`on-audit` booleans instead of `"apply": "audit|block|all"`.
 
 A list of advisory ids, remote ids, CVE ids or package names (not recommended) that are ignored in audit reports and/or version blocking.
 
@@ -186,6 +678,8 @@ All formats can be mixed together in the same configuration.
 
 ### abandoned
 
+> **Deprecated.** Use [`config.policy.abandoned.audit`](#audit-1) instead.
+
 Defaults to `fail` since Composer 2.7 (defaulted to `report` in Composer 2.6 that added the option). Defines whether and how audit reports should report abandoned packages. There are three possible values:
 
 - `ignore` means audit reports do not consider abandoned packages at all.
@@ -213,6 +707,9 @@ Since Composer 2.8, the option can be overridden via the
 config value and the environment variable.
 
 ### ignore-abandoned
+
+> **Deprecated.** Use [`config.policy.abandoned.ignore`](#ignore-1) instead.
+> Note: the new format uses `on-block`/`on-audit` booleans instead of `"apply": "audit|block|all"`.
 
 A list of abandoned package names that are ignored for audit reports and/or version blocking. Allows you to select packages that you want to keep
 using despite their abandoned state.
@@ -274,6 +771,9 @@ All formats can be mixed together in the same configuration.
 
 ### ignore-severity
 
+> **Deprecated.** Use [`config.policy.advisories.ignore-severity`](#ignore-severity) instead.
+> Note: the new format uses `on-block`/`on-audit` booleans instead of `"apply": "audit|block|all"`.
+
 Defaults to `[]`. A list of severity levels that are ignored for audit reports and/or version blocking.
 
 #### Simple format:
@@ -316,6 +816,8 @@ All formats can be mixed together in the same configuration.
 
 ### ignore-unreachable
 
+> **Deprecated.** Use [`config.policy.ignore-unreachable`](#ignore-unreachable) instead.
+
 Defaults to `false`. Should unreachable repositories be ignored during a `composer audit`. This can be helpful if you are running the command
 in an environment from which not all repositories can be accessed. This setting does not apply to version blocking or audit reports generated
 in other places than the `compoder audit` command.
@@ -332,6 +834,8 @@ in other places than the `compoder audit` command.
 
 ### block-insecure
 
+> **Deprecated.** Use [`config.policy.advisories.block`](#block) instead.
+
 Defaults to `true`. If `true`, any package versions affected by security advisories will be blocked and cannot be used
 during a composer update/require/delete commands, unless the security advisories are ignored. If [`block-abandoned`](#block-abandoned) is
 enabled, version blocking will also prevent use of abandoned packages.
@@ -347,6 +851,8 @@ enabled, version blocking will also prevent use of abandoned packages.
 ```
 
 ### block-abandoned
+
+> **Deprecated.** Use [`config.policy.abandoned.block`](#block-1) instead.
 
 Defaults to `false`. If `true`, any abandoned packages cannot be used during a composer update/required/delete command. Only applies if
 version blocking is not disabled by setting [`block-insecure`](#block-insecure) to false.
@@ -636,6 +1142,12 @@ Defaults to `C:\Users\<user>\AppData\Roaming\Composer` on Windows,
 Specifications, and `$COMPOSER_HOME` on other unix systems. Right now it is only
 used for storing past composer.phar files to be able to roll back to older
 versions. See also [COMPOSER_HOME](03-cli.md#composer-home).
+
+Because `self-update --rollback` restores a previously stored `composer.phar` from
+this directory, it must be writable only by the user that owns the Composer
+installation and should be treated as a trusted location. A directory writable by
+other users would let them plant a malicious phar that a privileged rollback would
+install.
 
 ## cache-dir
 

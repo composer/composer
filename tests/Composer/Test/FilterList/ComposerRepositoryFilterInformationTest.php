@@ -1,0 +1,133 @@
+<?php declare(strict_types=1);
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Composer\Test\FilterList;
+
+use Composer\FilterList\ComposerRepositoryFilterInformation;
+use Composer\Test\TestCase;
+
+class ComposerRepositoryFilterInformationTest extends TestCase
+{
+    public function testFromDataPassesThroughCustomLists(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData([
+            'metadata' => true,
+            'lists' => ['company-policy' => ['enabled' => true], 'aikido' => ['enabled' => true]],
+        ]);
+
+        self::assertTrue($info->metadata);
+        self::assertSame(['company-policy', 'aikido'], $info->lists);
+    }
+
+    public function testFromDataSkipsListsNotEnabled(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData([
+            'lists' => ['company-policy' => ['enabled' => true], 'aikido' => ['enabled' => false]],
+        ]);
+
+        self::assertSame(['company-policy'], $info->lists);
+    }
+
+    public function testFromDataSkipsListsWithMissingEnabledFlag(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData([
+            'lists' => ['company-policy' => ['enabled' => true], 'malware' => []],
+        ]);
+
+        self::assertSame(['company-policy'], $info->lists);
+    }
+
+    public function testFromDataSkipsListsWithScalarConfig(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData([
+            'lists' => ['company-policy' => ['enabled' => true], 'malware' => true],
+        ]);
+
+        self::assertSame(['company-policy'], $info->lists);
+    }
+
+    public function testFromDataDropsReservedListNamesAdvertisedByRepository(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData([
+            'lists' => [
+                'advisories' => ['enabled' => true],
+                'company-policy' => ['enabled' => true],
+                'abandoned' => ['enabled' => true],
+            ],
+        ]);
+
+        self::assertSame(['company-policy'], $info->lists);
+    }
+
+    public function testFromDataDropsListNamesWithReservedPrefixAdvertisedByRepository(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData([
+            'lists' => [
+                'ignore-foo' => ['enabled' => true],
+                'ignoremalware' => ['enabled' => true],
+                'company-policy' => ['enabled' => true],
+            ],
+        ]);
+
+        self::assertSame(['company-policy'], $info->lists);
+    }
+
+    public function testFromDataDefaultsSummaryUrlToNull(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData(['lists' => ['malware' => ['enabled' => true]]]);
+
+        self::assertNull($info->summaryUrl);
+    }
+
+    public function testFromDataAppliesCanonicalizerToSummaryUrl(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData(
+            ['lists' => ['malware' => ['enabled' => true]], 'summary-url' => '/p2/filter-summary.json'],
+            static function (string $url): string {
+                return 'https://example.org' . $url;
+            }
+        );
+
+        self::assertSame('https://example.org/p2/filter-summary.json', $info->summaryUrl);
+    }
+
+    public function testFromDataIgnoresNonStringSummaryUrl(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData(
+            ['lists' => ['malware' => ['enabled' => true]], 'summary-url' => ['oops']],
+            static function (string $url): string {
+                return $url;
+            }
+        );
+
+        self::assertNull($info->summaryUrl);
+    }
+
+    public function testFromDataDefaultsApiUrlToNull(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData(['lists' => ['malware' => ['enabled' => true]]]);
+
+        self::assertNull($info->apiUrl);
+    }
+
+    public function testFromDataAppliesCanonicalizerToApiUrl(): void
+    {
+        $info = ComposerRepositoryFilterInformation::fromData(
+            ['lists' => ['malware' => ['enabled' => true]], 'api-url' => '/api/filter'],
+            static function (string $url): string {
+                return 'https://example.org' . $url;
+            }
+        );
+
+        self::assertSame('https://example.org/api/filter', $info->apiUrl);
+    }
+}

@@ -462,6 +462,55 @@ libSSH Version => libssh2/1.11.0',
                 ],
                 [['curl_version', [], ['version' => '8.1.2']]],
             ],
+            'curl: SecureTransport with LibreSSL' => [
+                'curl',
+                '
+curl
+
+cURL support => enabled
+cURL Information => 8.1.2
+Age => 10
+Features
+AsynchDNS => Yes
+CharConv => No
+Debug => No
+GSS-Negotiate => No
+IDN => No
+IPv6 => Yes
+krb4 => No
+Largefile => Yes
+libz => Yes
+NTLM => Yes
+NTLMWB => Yes
+SPNEGO => Yes
+SSL => Yes
+SSPI => No
+TLS-SRP => No
+HTTP2 => Yes
+GSSAPI => Yes
+KERBEROS5 => Yes
+UNIX_SOCKETS => Yes
+PSL => No
+HTTPS_PROXY => Yes
+MULTI_SSL => Yes
+BROTLI => No
+ALTSVC => Yes
+HTTP3 => No
+UNICODE => No
+ZSTD => No
+HSTS => Yes
+GSASL => No
+Protocols => dict, file, ftp, ftps, gopher, gophers, http, https, imap, imaps, ldap, ldaps, mqtt, pop3, pop3s, rtsp, smb, smbs, smtp, smtps, telnet, tftp
+Host => x86_64-apple-darwin20.0
+SSL Version => (SecureTransport) LibreSSL/2.8.3
+ZLib Version => 1.2.11',
+                [
+                    'lib-curl' => '8.1.2',
+                    'lib-curl-securetransport' => ['2.8.3', ['lib-curl-libressl']],
+                    'lib-curl-zlib' => '1.2.11',
+                ],
+                [['curl_version', [], ['version' => '8.1.2']]],
+            ],
             'date' => [
                 'date',
                 '

@@ -153,7 +153,10 @@ class HttpDownloader
         if ('' === $url) {
             throw new \InvalidArgumentException('$url must not be an empty string');
         }
-        [$job] = $this->addJob(['url' => $url, 'options' => $options, 'copyTo' => $to], true);
+        [$job, $promise] = $this->addJob(['url' => $url, 'options' => $options, 'copyTo' => $to], true);
+        $promise->then(null, static function (\Throwable $e) {
+            // suppress error as it is rethrown to the caller by getResponse() a few lines below
+        });
         $this->wait($job['id']);
 
         return $this->getResponse($job['id']);
@@ -437,9 +440,12 @@ class HttpDownloader
      * @internal
      *
      * @param  array{warning?: string, info?: string, warning-versions?: string, info-versions?: string, warnings?: array<array{versions: string, message: string}>, infos?: array<array{versions: string, message: string}>} $data
+     *
+     * @return bool whether any warning/info was actually written to the output
      */
-    public static function outputWarnings(IOInterface $io, string $url, $data): void
+    public static function outputWarnings(IOInterface $io, string $url, $data): bool
     {
+        $wrote = false;
         $cleanMessage = static function ($msg) use ($io) {
             if (!$io->isDecorated()) {
                 $msg = Preg::replace('{'.chr(27).'\\[[;\d]*m}u', '', $msg);
@@ -464,6 +470,7 @@ class HttpDownloader
             }
 
             $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$cleanMessage($data[$type]).'</'.$type.'>');
+            $wrote = true;
         }
 
         // modern Composer 2.2+ format with support for multiple warning/info messages
@@ -482,8 +489,11 @@ class HttpDownloader
                 }
 
                 $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$cleanMessage($spec['message']).'</'.$type.'>');
+                $wrote = true;
             }
         }
+
+        return $wrote;
     }
 
     /**

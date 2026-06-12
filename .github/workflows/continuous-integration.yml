@@ -8,6 +8,10 @@ on:
     paths-ignore:
       - 'doc/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
   COMPOSER_UPDATE_FLAGS: ""
@@ -67,15 +71,17 @@ jobs:
             experimental: true
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
 
-      - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # 2.36.0
+      - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
           coverage: "none"
           extensions: "intl, zip"
           ini-values: "memory_limit=-1, phar.readonly=0, error_reporting=E_ALL, display_errors=On, display_startup_errors=On"
           php-version: "${{ matrix.php-version }}"
-          tools: composer
+          tools: "composer:snapshot"
 
       - name: "Handle lowest dependencies update"
         if: "contains(matrix.dependencies, 'lowest')"
@@ -97,14 +103,14 @@ jobs:
 
       - name: "Update dependencies from composer.json using composer binary provided by system"
         if: "contains(matrix.dependencies, 'highest') || contains(matrix.dependencies, 'lowest')"
-        run: "composer update ${{ env.COMPOSER_UPDATE_FLAGS }} ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer update $COMPOSER_UPDATE_FLAGS $COMPOSER_FLAGS'
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'locked'"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer install $COMPOSER_FLAGS'
 
       - name: "Run install again using composer binary from source"
-        run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'bin/composer install $COMPOSER_FLAGS'
 
       - name: "Make source binary the one used by default (Linux / macOS)"
         if: "!contains(matrix.os, 'windows')"
@@ -138,18 +144,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
 
-      - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1 # 2.36.0
+      - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
           coverage: "none"
           extensions: "intl, zip"
           ini-values: "memory_limit=-1, phar.readonly=0, error_reporting=E_ALL, display_errors=On, display_startup_errors=On"
           php-version: "7.4"
-          tools: composer
+          tools: "composer:snapshot"
 
       - name: "Install dependencies"
-        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+        run: 'composer install $COMPOSER_FLAGS'
 
       - name: "Validate composer.json"
         run: "bin/composer validate --strict"

@@ -49,6 +49,39 @@
                 }
             }
         },
+        "filter": {
+            "type": "object",
+            "description": "Filter list configuration advertised by the repository.",
+            "required": ["metadata", "lists"],
+            "properties": {
+                "metadata": {
+                    "type": "boolean",
+                    "description": "Whether metadata files contain filter list data."
+                },
+                "lists": {
+                    "type": "object",
+                    "description": "Names of all filter lists provided by this repository, mapped to an object describing the list. The object shape allows future per-list metadata to be added without another wire-format break.",
+                    "additionalProperties": {
+                        "type": "object",
+                        "required": ["enabled"],
+                        "properties": {
+                            "enabled": {
+                                "type": "boolean",
+                                "description": "Indicates if the filter list is available."
+                            }
+                        }
+                    }
+                },
+                "summary-url": {
+                    "type": "string",
+                    "description": "Endpoint returning a compact mapping of list name to package name to version constraint, used to skip per-package metadata fetches for packages that cannot match any active list."
+                },
+                "api-url": {
+                    "type": "string",
+                    "description": "Endpoint that accepts a POST body with the relevant package PURLs and configured list names and returns the matching filter entries directly. Takes precedence over summary-url when both are advertised."
+                }
+            }
+        },
         "metadata-changes-url": {
             "type": "string",
             "description": "Endpoint to retrieve package metadata updates from. This should receive a timestamp since last call to be able to return new changes. e.g. '/metadata/changes.json'."

@@ -20,15 +20,21 @@ class UpdateCommandTest extends TestCase
 {
     /**
      * @dataProvider provideUpdates
-     * @param array<mixed> $composerJson
-     * @param array<mixed> $command
+     * @param array<mixed>   $composerJson
+     * @param array<mixed>   $command
+     * @param ?array<string> $createLockPackages
      */
-    public function testUpdate(array $composerJson, array $command, string $expected, bool $createLock = false): void
+    public function testUpdate(array $composerJson, array $command, string $expected, ?array $createLockPackages = null): void
     {
         $this->initTempComposer($composerJson);
 
-        if ($createLock) {
-            $this->createComposerLock();
+        if ($createLockPackages !== null) {
+            $this->createComposerLock(array_map(
+                static function (string $packages) {
+                    return self::getPackage($packages);
+                },
+                $createLockPackages
+            ));
         }
 
         $appTester = $this->getApplicationTester();
@@ -147,7 +153,8 @@ Bumping dependencies
 <warning>Alternatively you can use --bump-after-update=dev to only bump dependencies within "require-dev".</warning>
 No requirements to update in ./composer.json.
 OUTPUT
-            , true,
+            ,
+            [],
         ];
 
         yield 'update & bump with lock' => [
@@ -160,7 +167,8 @@ Nothing to modify in lock file
 Installing dependencies from lock file (including require-dev)
 Nothing to install, update or remove
 OUTPUT
-            , true,
+            ,
+            [],
         ];
 
         yield 'update & bump dev only' => [
@@ -179,10 +187,11 @@ Package operations: 2 installs, 0 updates, 0 removals
 Bumping dependencies
 No requirements to update in ./composer.json.
 OUTPUT
-            , true,
+            ,
+            [],
         ];
 
-        yield 'update & dump with failing update' => [
+        yield 'update & bump with failing update' => [
             $rootDepAndTransitiveDep,
             ['--with' => ['dep/pkg:^2'], '--bump-after-update' => true],
             <<<OUTPUT
@@ -208,6 +217,87 @@ Your requirements could not be resolved to an installable set of packages.
     - Root composer.json requires root/req 1.* -> satisfiable by root/req[1.0.0].
     - root/req 1.0.0 requires dep/pkg ^1 -> found dep/pkg[1.0.0, 1.0.1, 1.0.2] but it conflicts with your temporary update constraint (replaced/pkg:^2).
 OUTPUT
+        ];
+
+        $twoDepsThatMustBeUpdatedTogether = [
+            'type' => 'project',
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'acme/foo', 'version' => '1.0.0'],
+                        ['name' => 'acme/foo', 'version' => '1.2.0'],
+                        ['name' => 'acme/bar', 'version' => '1.0.0', 'require' => ['acme/foo' => '^1.0.0']],
+                        ['name' => 'acme/bar', 'version' => '1.2.0', 'require' => ['acme/foo' => '^1.2.0']],
+                    ],
+                ],
+            ],
+            'require' => [
+                'acme/foo' => '^1.0.0',
+                'acme/bar' => '^1.0.0',
+            ],
+        ];
+
+        yield 'update & bump without specifying package' => [
+            $twoDepsThatMustBeUpdatedTogether,
+            ['--bump-after-update' => true],
+            <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 2 updates, 0 removals
+  - Upgrading acme/bar (1.0.0 => 1.2.0)
+  - Upgrading acme/foo (1.0.0 => 1.2.0)
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
+  - Installing acme/foo (1.2.0)
+  - Installing acme/bar (1.2.0)
+Bumping dependencies
+./composer.json would be updated with:
+ - require.acme/foo: ^1.2.0
+ - require.acme/bar: ^1.2.0
+OUTPUT
+            ,
+            ['acme/foo', 'acme/bar'],
+        ];
+
+        yield 'update & bump of single dependency without "--with-all-dependencies"' => [
+            $twoDepsThatMustBeUpdatedTogether,
+            ['packages' => ['acme/bar:^1.2'], '--bump-after-update' => true],
+            <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires acme/bar ^1.0.0 -> satisfiable by acme/bar[1.2.0].
+    - acme/bar 1.2.0 requires acme/foo ^1.2.0 -> found acme/foo[1.2.0] but the package is fixed to 1.0.0 (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.
+
+Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
+OUTPUT
+            ,
+            ['acme/foo', 'acme/bar'],
+        ];
+
+        yield 'update & bump of single dependency with "--with-all-dependencies"' => [
+            $twoDepsThatMustBeUpdatedTogether,
+            ['packages' => ['acme/bar:^1.2'], '--bump-after-update' => true, '--with-all-dependencies' => true],
+            <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 2 updates, 0 removals
+  - Upgrading acme/bar (1.0.0 => 1.2.0)
+  - Upgrading acme/foo (1.0.0 => 1.2.0)
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
+  - Installing acme/foo (1.2.0)
+  - Installing acme/bar (1.2.0)
+Bumping dependencies
+./composer.json would be updated with:
+ - require.acme/foo: ^1.2.0
+ - require.acme/bar: ^1.2.0
+OUTPUT
+            ,
+            ['acme/foo', 'acme/bar'],
         ];
     }
 
@@ -473,6 +563,49 @@ OUTPUT
         self::assertStringNotContainsString('Locking vulnerable/pkg (1.0.0)', $display);
     }
 
+    public function testNoBlockingAllowsMalwareFlaggedPackages(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'malicious/pkg', 'version' => '1.0.0'],
+                        ['name' => 'malicious/pkg', 'version' => '1.1.0'],
+                    ],
+                    'filter' => [
+                        'malware' => [
+                            [
+                                'package' => 'malicious/pkg',
+                                'constraint' => '>=1.1.0',
+                                'reason' => 'malware',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'require' => [
+                'malicious/pkg' => '^1.0',
+            ],
+        ]);
+
+        // Without --no-blocking, the malware-flagged 1.1.0 must be filtered out.
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringContainsString('Locking malicious/pkg (1.0.0)', $display);
+        self::assertStringNotContainsString('Locking malicious/pkg (1.1.0)', $display);
+
+        // With --no-blocking, the malware-flagged 1.1.0 must come through.
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--no-blocking' => true]);
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringContainsString('Locking malicious/pkg (1.1.0)', $display);
+        self::assertStringNotContainsString('Locking malicious/pkg (1.0.0)', $display);
+    }
+
     public function testBumpAfterUpdateWithoutLockfile(): void
     {
         $this->initTempComposer([
@@ -489,8 +622,8 @@ OUTPUT
                 'root/a' => '^1.0.0',
             ],
             'config' => [
-                'lock' => false
-            ]
+                'lock' => false,
+            ],
         ]);
 
         $appTester = $this->getApplicationTester();
@@ -504,6 +637,128 @@ Package operations: 1 install, 0 updates, 0 removals
 Bumping dependencies
 ./composer.json would be updated with:
  - require-dev.root/a: ^1.1.0
+OUTPUT;
+
+        self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+    }
+
+    public function testUpdateWithTemporaryConstraintUsingWildcard(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/a', 'version' => '1.0.0'],
+                        ['name' => 'root/a', 'version' => '2.0.0'],
+                        ['name' => 'root/ab', 'version' => '1.0.0'],
+                        ['name' => 'root/ab', 'version' => '2.0.0'],
+                        ['name' => 'root/abc', 'version' => '1.0.0'],
+                        ['name' => 'root/abc', 'version' => '2.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/a' => '^1 || ^2',
+                'root/ab' => '^1 || ^2',
+                'root/abc' => '^1 || ^2',
+            ],
+        ]);
+
+        $package = self::getPackage('root/a', '2.0.0');
+        $package2 = self::getPackage('root/ab', '2.0.0');
+        $package3 = self::getPackage('root/abc', '2.0.0');
+        $this->createComposerLock([$package, $package2, $package3]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--with' => ['root/*:^1']]));
+
+        $expected = <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 3 updates, 0 removals
+  - Downgrading root/a (2.0.0 => 1.0.0)
+  - Downgrading root/ab (2.0.0 => 1.0.0)
+  - Downgrading root/abc (2.0.0 => 1.0.0)
+OUTPUT;
+
+        self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--with' => ['root/ab*:^1']]));
+
+        $expected = <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 2 updates, 0 removals
+  - Downgrading root/ab (2.0.0 => 1.0.0)
+  - Downgrading root/abc (2.0.0 => 1.0.0)
+OUTPUT;
+
+        self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+    }
+
+    public function testUpdateWithTemporaryConstraintWildcardFailsIntersection(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/a', 'version' => '1.0.0'],
+                        ['name' => 'root/a', 'version' => '2.0.0'],
+                        ['name' => 'root/ab', 'version' => '1.0.0'],
+                        ['name' => 'root/ab', 'version' => '2.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/a' => '^1',
+                'root/ab' => '^1',
+            ],
+        ]);
+
+        $package = self::getPackage('root/a', '1.0.0');
+        $package2 = self::getPackage('root/ab', '1.0.0');
+        $this->createComposerLock([$package, $package2]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--with' => ['root/*:^2']]));
+
+        $expected = <<<OUTPUT
+The temporary constraint "^2" for "root/*" matching "root/a" must be a subset of the constraint in your composer.json (^1)
+OUTPUT;
+
+        self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));
+    }
+
+    public function testUpdateWithTemporaryConstraintWildcardMatchingNothing(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'root/a', 'version' => '1.0.0'],
+                        ['name' => 'root/a', 'version' => '2.0.0'],
+                    ],
+                ],
+            ],
+            'require' => [
+                'root/a' => '^1 || ^2',
+            ],
+        ]);
+
+        $package = self::getPackage('root/a', '2.0.0');
+        $this->createComposerLock([$package]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--with' => ['other/*:^1']]));
+
+        $expected = <<<OUTPUT
+Loading composer repositories with package information
+Updating dependencies
+Nothing to modify in lock file
 OUTPUT;
 
         self::assertStringMatchesFormat(trim($expected), trim($appTester->getDisplay(true)));

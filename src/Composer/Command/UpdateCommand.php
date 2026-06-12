@@ -13,6 +13,8 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
@@ -64,7 +66,8 @@ class UpdateCommand extends BaseCommand
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Skip the install step after updating the composer.lock file.'),
                 new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Skip the audit step after updating the composer.lock file (can also be set via the COMPOSER_NO_AUDIT=1 env var).'),
                 new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
-                new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'Allows installing packages with security advisories or that are abandoned (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
+                new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'DEPRECATED: use --no-blocking instead. Allows installing packages with security advisories or that are abandoned (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
+                new InputOption('no-blocking', null, InputOption::VALUE_NONE, 'Disables all policy blocking during this command (can also be set via the COMPOSER_NO_BLOCKING=1 env var).'),
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
@@ -73,6 +76,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
+                new InputOption('strict-psr-autoloader', null, InputOption::VALUE_NONE, 'Return a failed status code (6) if PSR-4 or PSR-0 mapping errors are present. Requires --optimize-autoloader to work.'),
                 new InputOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
@@ -165,12 +169,30 @@ EOT
         foreach ($reqs as $package => $constraint) {
             $package = strtolower($package);
             $parsedConstraint = $parser->parseConstraints($constraint);
-            $temporaryConstraints[$package] = $parsedConstraint;
-            if (isset($rootRequirements[$package]) && !Intervals::haveIntersections($parsedConstraint, $rootRequirements[$package]->getConstraint())) {
-                $io->writeError('<error>The temporary constraint "'.$constraint.'" for "'.$package.'" must be a subset of the constraint in your composer.json ('.$rootRequirements[$package]->getPrettyConstraint().')</error>');
-                $io->write('<info>Run `composer require '.$package.'` or `composer require '.$package.':'.$constraint.'` instead to replace the constraint</info>');
 
-                return self::FAILURE;
+            // handling wildcard packages will only work for root requirements, not for transient dependencies
+            if (str_contains($package, '*')) {
+                $packageFilterRegex = BasePackage::packageNameToRegexp($package);
+                foreach ($rootRequirements as $rootRequirementPackageName => $rootRequirement) {
+                    if (!Preg::isMatch($packageFilterRegex, $rootRequirementPackageName)) {
+                        continue;
+                    }
+
+                    $temporaryConstraints[$rootRequirementPackageName] = $parsedConstraint;
+                    if (!Intervals::haveIntersections($parsedConstraint, $rootRequirement->getConstraint())) {
+                        $io->writeError('<error>The temporary constraint "'.$constraint.'" for "'.$package.'" matching "'.$rootRequirementPackageName.'" must be a subset of the constraint in your composer.json ('.$rootRequirement->getPrettyConstraint().')</error>');
+
+                        return self::FAILURE;
+                    }
+                }
+            } else {
+                $temporaryConstraints[$package] = $parsedConstraint;
+                if (isset($rootRequirements[$package]) && !Intervals::haveIntersections($parsedConstraint, $rootRequirements[$package]->getConstraint())) {
+                    $io->writeError('<error>The temporary constraint "'.$constraint.'" for "'.$package.'" must be a subset of the constraint in your composer.json ('.$rootRequirements[$package]->getPrettyConstraint().')</error>');
+                    $io->write('<info>Run `composer require '.$package.'` or `composer require '.$package.':'.$constraint.'` instead to replace the constraint</info>');
+
+                    return self::FAILURE;
+                }
             }
         }
 
@@ -241,6 +263,10 @@ EOT
         $apcu = $apcuPrefix !== null || $input->getOption('apcu-autoloader') || $config->get('apcu-autoloader');
         $minimalChanges = $input->getOption('minimal-changes') || $config->get('update-with-minimal-changes');
 
+        if ($input->getOption('strict-psr-autoloader') && !$optimize && !$authoritative) {
+            throw new \InvalidArgumentException('--strict-psr-autoloader mode only works with optimized autoloader, use --optimize-autoloader or --classmap-authoritative if you want a strict return value.');
+        }
+
         $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
         if ($input->getOption('with-all-dependencies')) {
             $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
@@ -257,6 +283,7 @@ EOT
             ->setDumpAutoloader(!$input->getOption('no-autoloader'))
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
+            ->setStrictPsrAutoloader($input->getOption('strict-psr-autoloader'))
             ->setApcuAutoloader($apcu, $apcuPrefix)
             ->setUpdate(true)
             ->setInstall(!$input->getOption('no-install'))
@@ -267,7 +294,8 @@ EOT
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
             ->setTemporaryConstraints($temporaryConstraints)
-            ->setAuditConfig($this->createAuditConfig($composer->getConfig(), $input))
+            ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
+            ->setAuditConfig($this->createAuditConfig($input))
             ->setMinimalUpdate($minimalChanges)
         ;
 
@@ -284,17 +312,31 @@ EOT
             }
 
             if (false !== $bumpAfterUpdate) {
-                $io->writeError('<info>Bumping dependencies</info>');
-                $bumpCommand = new BumpCommand();
-                $bumpCommand->setComposer($composer);
-                $result = $bumpCommand->doBump(
-                    $io,
-                    $bumpAfterUpdate === 'dev',
-                    $bumpAfterUpdate === 'no-dev',
-                    $input->getOption('dry-run'),
-                    $input->getArgument('packages'),
-                    '--bump-after-update=dev'
-                );
+                $updatedPackages = [];
+                $lockTransaction = $install->getLockTransaction();
+                if ($lockTransaction !== null) {
+                    foreach ($lockTransaction->getOperations() as $operation) {
+                        if ($operation instanceof InstallOperation) {
+                            $updatedPackages[] = $operation->getPackage()->getName();
+                        } elseif ($operation instanceof UpdateOperation) {
+                            $updatedPackages[] = $operation->getTargetPackage()->getName();
+                        }
+                    }
+                }
+
+                if (\count($updatedPackages) > 0) {
+                    $io->writeError('<info>Bumping dependencies</info>');
+                    $bumpCommand = new BumpCommand();
+                    $bumpCommand->setComposer($composer);
+                    $result = $bumpCommand->doBump(
+                        $io,
+                        $bumpAfterUpdate === 'dev',
+                        $bumpAfterUpdate === 'no-dev',
+                        $input->getOption('dry-run'),
+                        $updatedPackages,
+                        '--bump-after-update=dev'
+                    );
+                }
             }
         }
 

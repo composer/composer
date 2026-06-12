@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Command\SelfUpdateCommand;
 use Composer\Composer;
 use Composer\Test\TestCase;
 use Symfony\Component\Process\Process;
@@ -27,6 +28,11 @@ class SelfUpdateCommandTest extends TestCase
      */
     private $phar;
 
+    /**
+     * @var string
+     */
+    private $home;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -34,6 +40,8 @@ class SelfUpdateCommandTest extends TestCase
         $dir = $this->initTempComposer();
         copy(__DIR__.'/../../../composer-test.phar', $dir.'/composer.phar');
         $this->phar = $dir.'/composer.phar';
+        // initTempComposer() points COMPOSER_HOME (and thus data-dir) here, which the phar subprocess inherits
+        $this->home = $dir.'/composer-home';
     }
 
     public function testSuccessfulUpdate(): void
@@ -77,11 +85,14 @@ class SelfUpdateCommandTest extends TestCase
         }
 
         $appTester = new Process([PHP_BINARY, $this->phar, 'self-update', $option]);
-        $status = $appTester->run();
-        self::assertSame(0, $status, $appTester->getErrorOutput());
+        $output = '';
+        $status = $appTester->run(function ($type, $data) use (&$output) {
+            $output .= $data;
+        });
+        self::assertSame(0, $status, $output);
 
-        self::assertStringContainsString('Upgrading to version', $appTester->getOutput());
-        self::assertStringContainsString($expectedOutput, $appTester->getOutput());
+        self::assertStringContainsString('Upgrading to version', $output);
+        self::assertStringContainsString($expectedOutput, $output);
     }
 
     /**
@@ -93,6 +104,70 @@ class SelfUpdateCommandTest extends TestCase
             ['--stable', 'stable channel'],
             ['--preview', 'preview channel'],
             ['--snapshot', 'snapshot channel'],
+        ];
+    }
+
+    public function testRollbackRefusesTamperedTaggedBackup(): void
+    {
+        if (!extension_loaded('openssl')) {
+            $this->markTestSkipped('The openssl extension is required to verify phar signatures');
+        }
+
+        // Plant a backup named as the 2.4.0 release but whose contents are not the genuine 2.4.0 phar,
+        // simulating a malicious backup dropped into a writable data-dir. The published 2.4.0 signature
+        // is downloaded and must not match these contents, so the rollback has to be refused.
+        @mkdir($this->home, 0777, true);
+        copy($this->phar, $this->home.'/2024-01-01_00-00-00-2.4.0'.'-old.phar');
+
+        $appTester = new Process([PHP_BINARY, $this->phar, 'self-update', '--rollback', '--no-interaction']);
+        $output = '';
+        $status = $appTester->run(function ($type, $data) use (&$output) {
+            $output .= $data;
+        });
+
+        self::assertNotSame(0, $status, $output);
+        self::assertStringContainsString('The phar signature did not match', $output);
+    }
+
+    public function testRollbackToSnapshotBackupWarnsButProceeds(): void
+    {
+        // Snapshot/dev backups (7-char commit sha) have no published signature, so verification is skipped
+        // with a warning; in non-interactive mode it proceeds (interactively it would prompt for confirmation).
+        @mkdir($this->home, 0777, true);
+        copy($this->phar, $this->home.'/2024-01-01_00-00-00-abc1234'.'-old.phar');
+
+        $appTester = new Process([PHP_BINARY, $this->phar, 'self-update', '--rollback', '--no-interaction']);
+        $output = '';
+        $status = $appTester->run(function ($type, $data) use (&$output) {
+            $output .= $data;
+        });
+
+        self::assertSame(0, $status, $output);
+        self::assertStringContainsString('no signature is published for snapshot/dev builds', $output);
+    }
+
+    /**
+     * @dataProvider backupVersionProvider
+     * @param array{0: string, 1: bool} $expected
+     */
+    public function testParseBackupVersion(string $rollbackVersion, array $expected): void
+    {
+        $method = new \ReflectionMethod(SelfUpdateCommand::class, 'parseBackupVersion');
+        $method->setAccessible(true);
+
+        self::assertSame($expected, $method->invoke(new SelfUpdateCommand(), $rollbackVersion));
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: array{0: string, 1: bool}}>
+     */
+    public function backupVersionProvider(): array
+    {
+        return [
+            'tagged release' => ['2024-06-15_10-30-45-2.5.0', ['2.5.0', true]],
+            'tag with stability suffix' => ['2024-06-15_10-30-45-2.4.0-RC1', ['2.4.0-RC1', true]],
+            'snapshot/dev sha' => ['2024-06-15_10-30-45-a1b2c3d', ['a1b2c3d', false]],
+            'unrecognised/legacy name' => ['totally-unexpected', ['totally-unexpected', false]],
         ];
     }
 }

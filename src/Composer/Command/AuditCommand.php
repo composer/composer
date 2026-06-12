@@ -12,8 +12,10 @@
 
 namespace Composer\Command;
 
-use Composer\Advisory\AuditConfig;
 use Composer\Composer;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\RepositoryUtils;
 use Symfony\Component\Console\Input\InputInterface;
@@ -34,7 +36,7 @@ class AuditCommand extends BaseCommand
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables auditing of require-dev packages.'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_TABLE, Auditor::FORMATS),
                 new InputOption('locked', null, InputOption::VALUE_NONE, 'Audit based on the lock file instead of the installed packages.'),
-                new InputOption('abandoned', null, InputOption::VALUE_REQUIRED, 'Behavior on abandoned packages. Must be "ignore", "report", or "fail".', null, Auditor::ABANDONEDS),
+                new InputOption('abandoned', null, InputOption::VALUE_REQUIRED, 'Behavior on abandoned packages. Must be "ignore", "report", or "fail".', null, ListPolicyConfig::AUDITS),
                 new InputOption('ignore-severity', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Ignore advisories of a certain severity level.', [], ['low', 'medium', 'high', 'critical']),
                 new InputOption('ignore-unreachable', null, InputOption::VALUE_NONE, 'Ignore repositories that are unreachable or return a non-200 status code.'),
             ])
@@ -58,9 +60,16 @@ EOT
         $packages = $this->getPackages($composer, $input);
 
         if (count($packages) === 0) {
+            if ($composer->getPackage()->getRequires() !== []
+                || (!$input->getOption('no-dev') && $composer->getPackage()->getDevRequires() !== [])) {
+                $this->getIO()->writeError('No installed packages found. Please run "composer install" before running "audit" or pass "--locked" to audit the lock file.');
+ 
+                return Auditor::STATUS_FAILED;
+            }
+
             $this->getIO()->writeError('No packages - skipping audit.');
 
-            return 0;
+            return Auditor::STATUS_OK;
         }
 
         $auditor = new Auditor();
@@ -69,29 +78,34 @@ EOT
             $repoSet->addRepository($repo);
         }
 
-        $auditConfig = AuditConfig::fromConfig($composer->getConfig());
-
         $abandoned = $input->getOption('abandoned');
-        if ($abandoned !== null && !in_array($abandoned, Auditor::ABANDONEDS, true)) {
-            throw new \InvalidArgumentException('--abandoned must be one of '.implode(', ', Auditor::ABANDONEDS).'.');
+        if ($abandoned !== null && !in_array($abandoned, ListPolicyConfig::AUDITS, true)) {
+            throw new \InvalidArgumentException('--abandoned must be one of '.implode(', ', ListPolicyConfig::AUDITS).'.');
         }
 
-        $abandoned = $abandoned ?? $auditConfig->auditAbandoned;
+        $policyConfig = $this->createPolicyConfig($composer->getConfig(), $input);
+        if ($abandoned !== null) {
+            $policyConfig = $policyConfig->withAudit($abandoned);
+        }
 
-        $ignoreSeverities = array_merge(array_fill_keys($input->getOption('ignore-severity'), null), $auditConfig->ignoreSeverityForAudit);
-        $ignoreUnreachable = $input->getOption('ignore-unreachable') || $auditConfig->ignoreUnreachable;
+        $ignoreSeverities = $input->getOption('ignore-severity');
+        if (count($ignoreSeverities) > 0) {
+            $policyConfig = $policyConfig->withIgnoreSeverity(array_values($ignoreSeverities));
+        }
+        if ($input->getOption('ignore-unreachable')) {
+            $policyConfig = $policyConfig->withIgnoreUnreachable('audit');
+        }
+
+        $filterListProviderSet = $policyConfig->enabled ? FilterListProviderSet::create($policyConfig, $composer->getRepositoryManager()->getRepositories(), $composer->getLoop()->getHttpDownloader()) : null;
 
         return min(255, $auditor->audit(
             $this->getIO(),
             $repoSet,
+            $policyConfig,
             $packages,
             $this->getAuditFormat($input, 'format'),
             false,
-            $auditConfig->ignoreListForAudit,
-            $abandoned,
-            $ignoreSeverities,
-            $ignoreUnreachable,
-            $auditConfig->ignoreAbandonedForAudit
+            $filterListProviderSet
         ));
 
     }

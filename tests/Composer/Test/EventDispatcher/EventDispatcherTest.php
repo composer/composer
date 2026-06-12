@@ -21,7 +21,6 @@ use Composer\Config;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
-use Composer\Repository\ArrayRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Test\Mock\HttpDownloaderMock;
@@ -133,7 +132,7 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Autoload\AutoloadGenerator
+     * @return \PHPUnit\Framework\MockObject\MockObject&AutoloadGenerator
      */
     private function getGeneratorMockForDevModePassingTest()
     {
@@ -160,7 +159,7 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Repository\RepositoryManager
+     * @return \PHPUnit\Framework\MockObject\MockObject&RepositoryManager
      */
     private function getRepositoryManagerMockForDevModePassingTest()
     {

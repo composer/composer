@@ -189,6 +189,9 @@ COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 COPY --from=composer/composer:2-bin /composer /usr/bin/composer
 ```
 
+**Note:** you need to manually install other runtime dependencies inside your image when using this method;
+see also https://github.com/composer/composer/blob/main/README.md#binary-dependencies.
+
 Read the [image description](https://hub.docker.com/r/composer/composer) for further usage information.
 
 **Note:** Docker specific issues should be filed [on the composer/docker repository](https://github.com/composer/docker/issues).

@@ -181,6 +181,14 @@ class CurlDownloader
             $this->config->prohibitUrlByConfig($url, $this->io, $options);
         }
 
+        if (
+            isset($options['prevent_url_access_callable']) &&
+            is_callable($options['prevent_url_access_callable']) &&
+            $options['prevent_url_access_callable']($url)
+        ) {
+            throw new TransportException('Access to "'.Url::sanitize($url).'" is blocked.');
+        }
+
         $curlHandle = curl_init();
         $headerHandle = fopen('php://temp/maxmemory:32768', 'w+b');
         if (false === $headerHandle) {
@@ -205,7 +213,7 @@ class CurlDownloader
         $bodyHandle = fopen($bodyTarget, 'w+b');
         restore_error_handler();
         if (false === $bodyHandle) {
-            throw new TransportException('The "'.$url.'" file could not be written to '.($copyTo ?? 'a temporary file').': '.$errorMessage);
+            throw new TransportException('The "'.Url::sanitize($url).'" file could not be written to '.($copyTo ?? 'a temporary file').': '.$errorMessage);
         }
 
         curl_setopt($curlHandle, CURLOPT_URL, $url);
@@ -237,8 +245,12 @@ class CurlDownloader
         $version = curl_version();
         $features = $version['features'];
 
+        $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
+
         if (0 === strpos($url, 'https://')) {
-            if (\defined('CURL_VERSION_HTTP3') && \defined('CURL_HTTP_VERSION_3') && (CURL_VERSION_HTTP3 & $features) !== 0) {
+            $willUseProxy = $proxy->getStatus() !== '' && !$proxy->isExcludedByNoProxy();
+
+            if (!$willUseProxy && \defined('CURL_VERSION_HTTP3') && \defined('CURL_HTTP_VERSION_3') && (CURL_VERSION_HTTP3 & $features) !== 0) {
                 curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_3);
             } elseif (\defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features) !== 0) {
                 curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
@@ -266,7 +278,6 @@ class CurlDownloader
             }
         }
 
-        $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
         curl_setopt_array($curlHandle, $proxy->getCurlOptions($options['ssl'] ?? []));
 
         $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
@@ -321,8 +332,6 @@ class CurlDownloader
 
     public function tick(): void
     {
-        static $timeoutWarning = false;
-
         if (count($this->jobs) === 0) {
             return;
         }
@@ -344,7 +353,7 @@ class CurlDownloader
 
             $progress = curl_getinfo($curlHandle);
             if (false === $progress) {
-                throw new \RuntimeException('Failed getting info from curl handle '.$i.' ('.$this->jobs[$i]['url'].')');
+                throw new \RuntimeException('Failed getting info from curl handle '.$i.' ('.Url::sanitize($this->jobs[$i]['url']).')');
             }
             $job = $this->jobs[$i];
             unset($this->jobs[$i]);
@@ -366,11 +375,6 @@ class CurlDownloader
                         $error = curl_strerror($errno);
                     }
                     $progress['error_code'] = $errno;
-
-                    if ($errno === 28 /* CURLE_OPERATION_TIMEDOUT */ && \PHP_VERSION_ID >= 70300 && $progress['namelookup_time'] === 0.0 && !$timeoutWarning) {
-                        $timeoutWarning = true;
-                        $this->io->writeError('<warning>A connection timeout was encountered. If you intend to run Composer without connecting to the internet, run the command again prefixed with COMPOSER_DISABLE_NETWORK=1 to make Composer run in offline mode.</warning>');
-                    }
 
                     if (
                         (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')
@@ -434,8 +438,9 @@ class CurlDownloader
                 }
                 fclose($job['bodyHandle']);
 
+                $warningsOutput = false;
                 if ($response->getStatusCode() >= 300 && $response->getHeader('content-type') === 'application/json') {
-                    HttpDownloader::outputWarnings($this->io, $job['origin'], json_decode($response->getBody(), true));
+                    $warningsOutput = HttpDownloader::outputWarnings($this->io, $job['origin'], json_decode($response->getBody(), true));
                 }
 
                 $result = $this->isAuthenticatedRetryNeeded($job, $response);
@@ -465,7 +470,7 @@ class CurlDownloader
                         continue;
                     }
 
-                    throw $this->failResponse($job, $response, $response->getStatusMessage());
+                    throw $this->failResponse($job, $response, $response->getStatusMessage(), $warningsOutput);
                 }
 
                 if ($job['attributes']['storeAuth'] !== false) {
@@ -520,7 +525,7 @@ class CurlDownloader
                         is_callable($this->jobs[$i]['options']['prevent_ip_access_callable']) &&
                         $this->jobs[$i]['options']['prevent_ip_access_callable']($progress['primary_ip'])
                     ) {
-                        $this->rejectJob($this->jobs[$i], new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], $progress['url'])));
+                        $this->rejectJob($this->jobs[$i], new TransportException(sprintf('IP "%s" is blocked for "%s".', $progress['primary_ip'], Url::sanitize($progress['url']))));
                     }
 
                     $this->jobs[$i]['primaryIp'] = (string) $progress['primary_ip'];
@@ -562,7 +567,7 @@ class CurlDownloader
             return $targetUrl;
         }
 
-        throw new TransportException('The "'.$job['url'].'" file could not be downloaded, got redirect without Location ('.$response->getStatusMessage().')');
+        throw new TransportException('The "'.Url::sanitize($job['url']).'" file could not be downloaded, got redirect without Location ('.$response->getStatusMessage().')');
     }
 
     /**
@@ -572,7 +577,7 @@ class CurlDownloader
     private function isAuthenticatedRetryNeeded(array $job, Response $response): array
     {
         if (in_array($response->getStatusCode(), [401, 403]) && $job['attributes']['retryAuthFailure']) {
-            $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $response->getHeaders(), $job['attributes']['retries']);
+            $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $response->getHeaders(), $job['attributes']['retries'], $response->getBody());
 
             if ($result['retry']) {
                 return $result;
@@ -654,18 +659,19 @@ class CurlDownloader
     /**
      * @param  Job                $job
      */
-    private function failResponse(array $job, Response $response, string $errorMessage): TransportException
+    private function failResponse(array $job, Response $response, string $errorMessage, bool $warningsOutput = false): TransportException
     {
         if (null !== $job['filename']) {
             @unlink($job['filename'].'~');
         }
 
         $details = '';
-        if (in_array(strtolower((string) $response->getHeader('content-type')), ['application/json', 'application/json; charset=utf-8'], true)) {
+        // skip dumping the raw JSON body when outputWarnings already presented it cleanly, to avoid duplicate/messy output
+        if (!$warningsOutput && in_array(strtolower((string) $response->getHeader('content-type')), ['application/json', 'application/json; charset=utf-8'], true)) {
             $details = ':'.PHP_EOL.substr($response->getBody(), 0, 200).(strlen($response->getBody()) > 200 ? '...' : '');
         }
 
-        return new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')' . $details, $response->getStatusCode());
+        return new TransportException('The "'.Url::sanitize($job['url']).'" file could not be downloaded ('.$errorMessage.')' . $details, $response->getStatusCode());
     }
 
     /**

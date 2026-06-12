@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Pcre\Preg;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Input\InputInterface;
 use Composer\Console\Input\InputOption;
 use Composer\Console\Input\InputArgument;
@@ -84,6 +85,10 @@ EOT
             throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
         }
 
-        return $composer->getEventDispatcher()->dispatchScript($this->script, $input->getOption('dev') || !$input->getOption('no-dev'), $args['args'], ['script-alias-input' => Preg::replace('{^\S+ ?}', '', $input->__toString(), 1)]);
+        $devMode = $input->getOption('dev') || !$input->getOption('no-dev');
+
+        Platform::putEnv('COMPOSER_DEV_MODE', $devMode ? '1' : '0');
+
+        return $composer->getEventDispatcher()->dispatchScript($this->script, $devMode, $args['args'], ['script-alias-input' => Preg::replace('{^\S+ ?}', '', $input->__toString(), 1)]);
     }
 }

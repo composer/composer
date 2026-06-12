@@ -12,12 +12,13 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Advisory\AuditConfig;
 use Composer\Advisory\Auditor;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Policy\PolicyConfig;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
@@ -30,30 +31,19 @@ class SecurityAdvisoryPoolFilter
 {
     /** @var Auditor */
     private $auditor;
-    /** @var AuditConfig $auditConfig */
-    private $auditConfig;
-    /** @var array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> */
-    private $advisoryMap = [];
+    /** @var PolicyConfig */
+    private $policyConfig;
+    /** @var IOInterface */
+    private $io;
 
     public function __construct(
         Auditor $auditor,
-        AuditConfig $auditConfig
+        PolicyConfig $policyConfig,
+        IOInterface $io
     ) {
         $this->auditor = $auditor;
-        $this->auditConfig = $auditConfig;
-    }
-
-    /**
-     * Get the advisory map built during filtering
-     *
-     * This allows other filters (like ReleaseAgePoolFilter) to identify
-     * security fixes that should bypass release age restrictions.
-     *
-     * @return array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>
-     */
-    public function getAdvisoryMap(): array
-    {
-        return $this->advisoryMap;
+        $this->policyConfig = $policyConfig;
+        $this->io = $io;
     }
 
     /**
@@ -61,7 +51,10 @@ class SecurityAdvisoryPoolFilter
      */
     public function filter(Pool $pool, array $repositories, Request $request): Pool
     {
-        if (!$this->auditConfig->blockInsecure) {
+        $advisories = $this->policyConfig->advisories;
+        $abandoned = $this->policyConfig->abandoned;
+
+        if (!$advisories->block) {
             return $pool;
         }
 
@@ -77,25 +70,37 @@ class SecurityAdvisoryPoolFilter
             }
         }
 
-        $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true, true);
-        if ($this->auditor->needsCompleteAdvisoryLoad($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking)) {
-            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, false, true);
+        $ignoreListForBlocking = $advisories->getIgnoreListForOperation('block');
+        $ignoreUnreachableUpdate = $this->policyConfig->ignoreUnreachable->update;
+
+        $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, true, $ignoreUnreachableUpdate);
+        if ($this->auditor->needsCompleteAdvisoryLoad($allAdvisories['advisories'], $ignoreListForBlocking)) {
+            $allAdvisories = $repoSet->getMatchingSecurityAdvisories($packagesForAdvisories, false, $ignoreUnreachableUpdate);
         }
 
-        $this->advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $this->auditConfig->ignoreListForBlocking, $this->auditConfig->ignoreSeverityForBlocking)['advisories'];
+        if ($ignoreUnreachableUpdate && count($allAdvisories['unreachableRepos']) > 0) {
+            $this->io->writeError('<warning>Security advisory data could not be fetched from some repositories (ignored per policy.ignore-unreachable); matches may be incomplete:</warning>');
+            foreach ($allAdvisories['unreachableRepos'] as $repo) {
+                $this->io->writeError('  - ' . $repo);
+            }
+        }
+
+        $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $ignoreListForBlocking, $advisories->getIgnoreSeverityForOperation('block'))['advisories'];
+
+        $ignoreAbandonedForBlocking = $abandoned->getFlatIgnoreForOperation('block');
 
         $packages = [];
         $securityRemovedVersions = [];
         $abandonedRemovedVersions = [];
         foreach ($pool->getPackages() as $package) {
-            if ($this->auditConfig->blockAbandoned && count($this->auditor->filterAbandonedPackages([$package], $this->auditConfig->ignoreAbandonedForBlocking)) !== 0) {
+            if ($abandoned->block && count($this->auditor->filterAbandonedPackages([$package], $ignoreAbandonedForBlocking)) !== 0) {
                 foreach ($package->getNames(false) as $packageName) {
                     $abandonedRemovedVersions[$packageName][$package->getVersion()] = $package->getPrettyVersion();
                 }
                 continue;
             }
 
-            $matchingAdvisories = $this->getMatchingAdvisories($package, $this->advisoryMap);
+            $matchingAdvisories = $this->getMatchingAdvisories($package, $advisoryMap);
             if (count($matchingAdvisories) > 0) {
                 foreach ($package->getNames(false) as $packageName) {
                     $securityRemovedVersions[$packageName][$package->getVersion()] = $matchingAdvisories;

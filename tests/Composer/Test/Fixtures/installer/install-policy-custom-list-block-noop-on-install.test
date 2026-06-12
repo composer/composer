@@ -1,0 +1,69 @@
+--TEST--
+Install proceeds when a non-malware list has block:true (custom lists do not opt into install-time blocking)
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0",
+                    "dist": {
+                        "type": "zip",
+                        "url": "http://www.example.com/dist.zip",
+                        "reference": "459720ff3b74ee0c0d159277c6f2f5df89d8a4f6"
+                    }
+                }
+            ],
+            "filter": {
+                "test-list": [
+                    {
+                        "package": "acme/library",
+                        "constraint": "*",
+                        "url": "https://example.org/test-list/acme/library",
+                        "reason": "internal block",
+                        "id": "ID-test"
+                    }
+                ]
+            }
+        }
+    ],
+    "config": {
+        "policy": {
+            "test-list": {
+                "block": true
+            }
+        }
+    },
+    "require": {
+        "acme/library": "1.0"
+    }
+}
+--RUN--
+install
+
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "acme/library",
+            "version": "1.0",
+            "dist": {
+                "type": "zip",
+                "url": "http://www.example.com/dist.zip",
+                "reference": "459720ff3b74ee0c0d159277c6f2f5df89d8a4f6"
+            },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+
+--EXPECT--
+Installing acme/library (1.0)

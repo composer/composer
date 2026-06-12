@@ -257,10 +257,12 @@
             }
         },
         "target-dir": {
+            "deprecated": true,
             "description": "DEPRECATED: Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
             "type": "string"
         },
         "include-path": {
+            "deprecated": true,
             "type": ["array"],
             "description": "DEPRECATED: A list of directories which should get added to PHP's include path. This is only present to support legacy projects, and all new code should preferably use autoloading.",
             "items": {
@@ -324,10 +326,28 @@
                     "default": null
                 },
                 "download-url-method": {
-                    "type": "string",
-                    "description": "If specified, this technique will be used to override the URL that PIE uses to download the asset. The default, if not specified, is composer-default.",
-                    "enum": ["composer-default", "pre-packaged-source"],
-                    "example": "composer-default"
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "DEPRECATED: use the array form instead. If specified, this technique will be used to override the URL that PIE uses to download the asset. The default, if not specified, is composer-default.",
+                            "deprecated": true,
+                            "enum": ["composer-default", "pre-packaged-source", "pre-packaged-binary"],
+                            "example": "composer-default",
+                            "default": "composer-default"
+                        },
+                        {
+                            "type": "array",
+                            "description": "Multiple techniques can be specified, in which case PIE will try each in turn until one succeeds. The first technique that succeeds will be used.",
+                            "items": {
+                                "type": "string",
+                                "description": "If specified, this technique will be used to override the URL that PIE uses to download the asset. The default, if not specified, is composer-default.",
+                                "enum": ["composer-default", "pre-packaged-source", "pre-packaged-binary"],
+                                "example": ["pre-packaged-binary", "composer-default"]
+                            },
+                            "minItems": 1,
+                            "default": ["composer-default"]
+                        }
+                    ]
                 },
                 "os-families": {
                     "type": "array",
@@ -424,9 +444,12 @@
                 },
                 "audit": {
                     "type": "object",
-                    "description": "Security audit and version blocking configuration options",
+                    "deprecated": true,
+                    "description": "DEPRECATED: use 'config.policy' instead. All 'audit.*' keys still work as a fallback for now. See https://getcomposer.org/doc/06-config.md#policy",
                     "properties": {
                         "ignore": {
+                            "deprecated": true,
+                            "description": "DEPRECATED: use 'config.policy.advisories.ignore-id' for advisory IDs (CVE/GHSA/PKSA) and 'config.policy.advisories.ignore' for package names instead. The new format uses 'on-block' / 'on-audit' booleans instead of 'apply: audit|block|all'.",
                             "anyOf": [
                                 {
                                     "type": "object",
@@ -470,9 +493,12 @@
                         },
                         "abandoned": {
                             "enum": ["ignore", "report", "fail"],
-                            "description": "Whether abandoned packages should be ignored, reported as problems or cause an audit failure. Applies only to audit reports, not to version blocking."
+                            "deprecated": true,
+                            "description": "DEPRECATED: use 'config.policy.abandoned.audit' instead. Whether abandoned packages should be ignored, reported as problems or cause an audit failure. Applies only to audit reports, not to version blocking."
                         },
                         "ignore-severity": {
+                            "deprecated": true,
+                            "description": "DEPRECATED: use 'config.policy.advisories.ignore-severity' instead. The new format uses 'on-block' / 'on-audit' booleans instead of 'apply: audit|block|all'.",
                             "anyOf": [
                                 {
                                     "type": "object",
@@ -512,19 +538,24 @@
                         },
                         "ignore-unreachable": {
                             "type": "boolean",
-                            "description": "Whether repositories that are unreachable or return a non-200 status code should be ignored or not. Applies only to the composer audit command, does not affect audit report summaries in other commands or version blocking."
+                            "deprecated": true,
+                            "description": "DEPRECATED: use 'config.policy.ignore-unreachable' instead. The new key accepts a boolean or an array of scopes ('audit', 'install', 'update') and is shared across all dependency policies."
                         },
                         "block-insecure": {
                             "type": "boolean",
-                            "description": "Whether insecure versions should be blocked during a composer update/require command or not.",
+                            "deprecated": true,
+                            "description": "DEPRECATED: use 'config.policy.advisories.block' instead. Whether insecure versions should be blocked during a composer update/require command or not.",
                             "default": true
                         },
                         "block-abandoned": {
                             "type": "boolean",
-                            "description": "Whether abandoned packages should be blocked during a composer update/require command or not. Applies only if blocking of insecure versions is enabled.",
+                            "deprecated": true,
+                            "description": "DEPRECATED: use 'config.policy.abandoned.block' instead. Whether abandoned packages should be blocked during a composer update/require command or not.",
                             "default": false
                         },
                         "ignore-abandoned": {
+                            "deprecated": true,
+                            "description": "DEPRECATED: use 'config.policy.abandoned.ignore' instead. The new format uses 'on-block' / 'on-audit' booleans instead of 'apply: audit|block|all'.",
                             "anyOf": [
                                 {
                                     "type": "object",
@@ -568,49 +599,179 @@
                         }
                     }
                 },
-                "minimum-release-age": {
-                    "type": "object",
-                    "description": "Configuration for filtering out newly released package versions to reduce the risk of exposure to supply chain attacks.",
+                "policy": {
+                    "type": ["boolean", "object"],
+                    "description": "Unified security and package policy configuration. Set to false to disable all policy enforcement.",
                     "properties": {
-                        "minimum-age": {
-                            "anyOf": [
+                        "advisories": {
+                            "oneOf": [
                                 {
-                                    "type": "string",
-                                    "description": "A duration string (e.g., '7 days', '24 hours', '1 week') representing the minimum age a package version must have before it can be installed."
+                                    "type": "boolean"
                                 },
                                 {
-                                    "type": "integer",
-                                    "description": "Minimum age in seconds."
-                                },
-                                {
-                                    "type": "null",
-                                    "description": "Set to null to disable the feature."
+                                    "type": "object",
+                                    "description": "Configuration for packages affected by security advisories.",
+                                    "properties": {
+                                        "block": {
+                                            "type": "boolean",
+                                            "description": "When true (default), package versions with active security advisories are blocked during update/require/remove.",
+                                            "default": true
+                                        },
+                                        "audit": {
+                                            "enum": ["ignore", "report", "fail"],
+                                            "description": "How composer audit treats packages with security advisories. Defaults to fail.",
+                                            "default": "fail"
+                                        },
+                                        "ignore-id": { "$ref": "#/definitions/policy-ignore-id" },
+                                        "ignore": { "$ref": "#/definitions/policy-ignore" },
+                                        "ignore-severity": { "$ref": "#/definitions/policy-ignore-severity" }
+                                    },
+                                    "additionalProperties": false
                                 }
                             ]
                         },
-                        "exceptions": {
-                            "type": "array",
-                            "description": "A list of packages that should bypass the minimum release age check.",
-                            "items": {
-                                "type": "object",
-                                "required": ["package"],
-                                "properties": {
-                                    "package": {
-                                        "type": "string",
-                                        "description": "Package name or pattern (e.g., 'vendor/*', 'vendor/package')."
+                        "malware": {
+                            "oneOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "object",
+                                    "description": "Configuration for packages flagged as containing malware.",
+                                    "properties": {
+                                        "block": {
+                                            "type": "boolean",
+                                            "description": "When true (default), packages flagged as malware are blocked.",
+                                            "default": true
+                                        },
+                                        "block-scope": {
+                                            "enum": ["all", "update", "install"],
+                                            "description": "Controls which commands trigger blocking: all (default), update (only update/require/remove), or install (only install).",
+                                            "default": "all"
+                                        },
+                                        "audit": {
+                                            "enum": ["ignore", "report", "fail"],
+                                            "description": "How composer audit treats packages flagged as malware. Defaults to fail.",
+                                            "default": "fail"
+                                        },
+                                        "ignore": { "$ref": "#/definitions/policy-ignore" },
+                                        "ignore-source": {
+                                            "type": "array",
+                                            "description": "A list of source names to exclude from malware checks.",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
                                     },
-                                    "reason": {
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
+                        "abandoned": {
+                            "oneOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "object",
+                                    "description": "Configuration for abandoned packages.",
+                                    "properties": {
+                                        "block": {
+                                            "type": "boolean",
+                                            "description": "When true, abandoned packages cannot be installed during update/require/remove. Defaults to false.",
+                                            "default": false
+                                        },
+                                        "audit": {
+                                            "enum": ["ignore", "report", "fail"],
+                                            "description": "How composer audit treats abandoned packages. Defaults to fail.",
+                                            "default": "fail"
+                                        },
+                                        "ignore": { "$ref": "#/definitions/policy-ignore" }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
+                        "ignore-unreachable": {
+                            "description": "Controls for which operations unreachable repositories and policy sources are silently ignored. Defaults to [\"update\", \"install\"]. Set to true to ignore for all operations, false for none.",
+                            "oneOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
                                         "type": "string",
-                                        "description": "Explanation for why this package is excepted from the minimum release age requirement."
+                                        "enum": ["audit", "install", "update"]
                                     }
                                 }
-                            }
+                            ]
                         }
+                    },
+                    "patternProperties": {
+                        "^ignore(?!-unreachable$)": {
+                            "not": {},
+                            "description": "Custom dependency policy names must not start with \"ignore\" — that prefix is reserved for future use."
+                        },
+                        "^(package|packages|license|licence|licenses|licences|support|maintenance|security|minimum-release-age)$": {
+                            "not": {},
+                            "description": "This name is reserved for future use and cannot be used as a custom dependency policy name."
+                        }
+                    },
+                    "additionalProperties": {
+                        "description": "Custom dependency policy configuration.",
+                        "oneOf": [
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "block": {
+                                        "type": "boolean",
+                                        "description": "When true (default), matched packages are blocked during update/require/remove.",
+                                        "default": true
+                                    },
+                                    "audit": {
+                                        "enum": ["ignore", "report", "fail"],
+                                        "description": "How composer audit treats packages matched by this dependency policy. Defaults to fail.",
+                                        "default": "fail"
+                                    },
+                                    "sources": {
+                                        "type": "array",
+                                        "description": "Sources supplying the package versions this dependency policy applies to.",
+                                        "items": {
+                                            "type": "object",
+                                            "required": ["type", "url"],
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "enum": ["url"],
+                                                    "description": "Source type, currently only 'url' is supported."
+                                                },
+                                                "url": {
+                                                    "type": "string",
+                                                    "pattern": "^https://",
+                                                    "description": "URL to fetch the list of package versions from. Must use https://."
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "ignore": { "$ref": "#/definitions/policy-ignore" }
+                                }
+                            }
+                        ]
                     }
                 },
                 "notify-on-install": {
                     "type": "boolean",
                     "description": "Composer allows repositories to define a notification URL, so that they get notified whenever a package from that repository is installed. This option allows you to disable that behaviour, defaults to true."
+                },
+                "source-fallback": {
+                    "type": "boolean",
+                    "description": "DEPRECATED, will be removed in Composer 2.11. Defaults to false. If true, Composer will fall back to a different installation source (e.g., from dist to source or vice versa) when a download fails. Automatic source fallback has security implications, please open an issue at https://github.com/composer/composer/issues if you need this kept around.",
+                    "deprecated": true
                 },
                 "github-protocols": {
                     "type": "array",
@@ -1140,7 +1301,15 @@
                     "additionalProperties": true
                 },
                 "allow_ssl_downgrade": { "type": "boolean" },
-                "force-lazy-providers": { "type": "boolean" }
+                "force-lazy-providers": { "type": "boolean" },
+                "filter": {
+                    "type": ["boolean", "object"],
+                    "description": "Filter list configuration for this repository. Set to false to disable all filter lists advertised by this repository, or to an object listing advertised list names that should be skipped (set to false). Lists not mentioned remain enabled.",
+                    "additionalProperties": {
+                        "type": "boolean",
+                        "description": "Set to false to skip this list from the repository."
+                    }
+                }
             }
         },
         "vcs-repository": {
@@ -1296,6 +1465,7 @@
                     "type": "string"
                 },
                 "target-dir": {
+                    "deprecated": true,
                     "description": "DEPRECATED: Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
                     "type": "string"
                 },
@@ -1386,6 +1556,7 @@
                     }
                 },
                 "include-path": {
+                    "deprecated": true,
                     "type": ["array"],
                     "description": "DEPRECATED: A list of directories which should get added to PHP's include path. This is only present to support legacy projects, and all new code should preferably use autoloading.",
                     "items": {
@@ -1439,6 +1610,125 @@
                     "type": "array"
                 }
             }
+        },
+        "policy-ignore": {
+            "description": "Package name patterns with optional version constraints and per-rule scoping (on-block/on-audit).",
+            "anyOf": [
+                {
+                    "type": "array",
+                    "description": "Simple list of package names or patterns to ignore.",
+                    "items": { "type": "string" }
+                },
+                {
+                    "type": "object",
+                    "description": "Map of package names/patterns to reason strings or detailed rule objects.",
+                    "additionalProperties": {
+                        "anyOf": [
+                            { "type": "string", "description": "Reason for ignoring this package." },
+                            { "type": "null", "description": "Ignore without explanation." },
+                            {
+                                "type": "object",
+                                "description": "Detailed ignore rule with optional constraint and scoping.",
+                                "properties": {
+                                    "constraint": { "type": "string", "description": "Version constraint to limit the ignore to specific versions." },
+                                    "reason": { "type": "string", "description": "Explanation for ignoring this package." },
+                                    "on-block": { "type": "boolean", "description": "If false, does not ignore during version blocking (only during audit)." },
+                                    "on-audit": { "type": "boolean", "description": "If false, does not ignore during audit reporting (only during blocking)." }
+                                }
+                            },
+                            {
+                                "type": "array",
+                                "description": "Multiple ignore rules for the same package.",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "constraint": { "type": "string" },
+                                        "reason": { "type": "string" },
+                                        "on-block": { "type": "boolean" },
+                                        "on-audit": { "type": "boolean" }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "policy-ignore-id": {
+            "description": "Advisory IDs (CVE, GHSA, PKSA, ...) with optional reason and per-rule scoping (on-block/on-audit).",
+            "anyOf": [
+                {
+                    "type": "array",
+                    "description": "Simple list of advisory IDs to ignore.",
+                    "items": { "type": "string" }
+                },
+                {
+                    "type": "object",
+                    "description": "Map of advisory IDs to reason strings or detailed rule objects.",
+                    "additionalProperties": {
+                        "anyOf": [
+                            { "type": "string", "description": "Reason for ignoring this advisory ID." },
+                            { "type": "null", "description": "Ignore without explanation." },
+                            {
+                                "type": "object",
+                                "description": "Detailed ignore rule with optional scoping.",
+                                "properties": {
+                                    "reason": { "type": "string", "description": "Explanation for ignoring this advisory ID." },
+                                    "on-block": { "type": "boolean", "description": "If false, does not ignore during version blocking (only during audit)." },
+                                    "on-audit": { "type": "boolean", "description": "If false, does not ignore during audit reporting (only during blocking)." }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "policy-ignore-severity": {
+            "description": "Advisory severity levels (low, medium, high, critical) with optional reason and per-rule scoping (on-block/on-audit).",
+            "$comment": "anyOf (not oneOf) because the array and object branches both contain string values that can validate against multiple sub-schemas; oneOf would reject otherwise-valid input.",
+            "anyOf": [
+                {
+                    "anyOf": [
+                        {
+                            "type": "array",
+                            "description": "Simple list of severity levels to ignore.",
+                            "items": { "type": "string", "enum": ["low", "medium", "high", "critical"] }
+                        },
+                        {
+                            "type": "object",
+                            "description": "Map of severity levels to reason strings or detailed rule objects.",
+                            "additionalProperties": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "description": "Reason for ignoring this severity level."
+                                    },
+                                    {
+                                        "type": "null",
+                                        "description": "Ignore without explanation."
+                                    },
+                                    {
+                                        "type": "object",
+                                        "description": "Detailed ignore rule with optional scoping.",
+                                        "properties": {
+                                            "reason": { "type": "string", "description": "Explanation for ignoring this severity level." },
+                                            "on-block": { "type": "boolean", "description": "If false, does not ignore during version blocking (only during audit)." },
+                                            "on-audit": { "type": "boolean", "description": "If false, does not ignore during audit reporting (only during blocking)." }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "array",
+                    "description": "A list of severities for which advisories with matching severity will be ignored, e.g. critical, high, medium, low, or none. Applies to audit reports and version blocking.",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ]
         }
     }
 }

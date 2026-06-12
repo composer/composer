@@ -94,4 +94,60 @@ class ApplicationTest extends TestCase
         self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
         self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
     }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testNoPluginsDisablesPluginsWhenScriptCommandsExist(): void
+    {
+        $dir = $this->initTempComposer([
+            'scripts' => [
+                'my-script' => 'echo hello',
+            ],
+        ]);
+
+        $application = new Application();
+        $application->setAutoExit(false);
+        $application->setCatchExceptions(false);
+        if (method_exists($application, 'setCatchErrors')) {
+            $application->setCatchErrors(false);
+        }
+
+        // Run list command with --no-plugins, this triggers script command registration which previously
+        // created a Composer instance with plugins enabled regardless of the --no-plugins flag
+        $application->doRun(new ArrayInput(['command' => 'list', '--no-plugins' => true]), new BufferedOutput());
+
+        $composer = $application->getComposer(false);
+        self::assertNotNull($composer, 'Composer instance should have been created during script command registration');
+        self::assertTrue($composer->getPluginManager()->arePluginsDisabled('local'), 'Plugins should be disabled when --no-plugins is used');
+        self::assertTrue($composer->getPluginManager()->arePluginsDisabled('global'), 'Global plugins should be disabled when --no-plugins is used');
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @see https://github.com/composer/composer/issues/12802
+     */
+    public function testScriptCommandTakesPriorityOverAbbreviatedBuiltinCommand(): void
+    {
+        $this->initTempComposer([
+            'scripts' => [
+                'check' => 'echo hello',
+            ],
+        ]);
+
+        $application = new Application();
+        $application->setAutoExit(false);
+        $application->setCatchExceptions(false);
+        if (method_exists($application, 'setCatchErrors')) {
+            $application->setCatchErrors(false);
+        }
+
+        $appOutput = new BufferedOutput();
+        $exitCode = $application->doRun(new ArrayInput(['command' => 'check']), $appOutput);
+
+        self::assertSame(0, $exitCode, 'Script command should have run successfully');
+        self::assertStringContainsString('hello', $appOutput->fetch(), 'The "check" script should have been executed instead of the check-platform-reqs command');
+    }
 }

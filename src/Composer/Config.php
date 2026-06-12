@@ -17,8 +17,11 @@ use Composer\Config\ConfigSourceInterface;
 use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\PolicyConfig;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
+use Composer\Util\Url;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -38,7 +41,8 @@ class Config
         'allow-plugins' => [],
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
-        'audit' => ['ignore' => [], 'abandoned' => Auditor::ABANDONED_FAIL],
+        'audit' => ['ignore' => [], 'abandoned' => ListPolicyConfig::AUDIT_FAIL],
+        'policy' => true,
         'notify-on-install' => true,
         'github-protocols' => ['https', 'ssh', 'git'],
         'gitlab-protocol' => null,
@@ -91,7 +95,7 @@ class Config
         'client-certificate' => [],
         'forgejo-domains' => ['codeberg.org'],
         'forgejo-token' => [],
-        'minimum-release-age' => ['minimum-age' => null, 'exceptions' => []],
+        'source-fallback' => false,
     ];
 
     /** @var array<string, mixed> */
@@ -234,6 +238,62 @@ class Config
                     $this->config[$key] = array_merge($this->config['audit'], $val);
                     $this->setSourceOfConfigValue($val, $key, $source);
                     $this->config['audit']['ignore'] = array_merge($currentIgnores, $val['ignore'] ?? []);
+                } elseif ('policy' === $key) {
+                    // The schema accepts `true`, `{}` as equivalent.
+                    // Canonicalise `true` to `[]` here so both shapes share a single merge code path and layer identically across config sources.
+                    if ($val === true) {
+                        $val = [];
+                    }
+
+                    if ($val === false) {
+                        $this->config[$key] = false;
+                    } elseif (\is_array($val)) {
+                        $current = \is_array($this->config['policy']) ? $this->config['policy'] : [];
+                        // Inner array keys that must be deep-merged so user ignore rules from
+                        // global + project sources both apply
+                        $deepMergeKeys = ['ignore', 'ignore-id', 'ignore-severity', 'ignore-source'];
+                        foreach ($val as $listName => $listConfig) {
+                            if (in_array($listName, PolicyConfig::NON_LIST_KEYS, true)) {
+                                $current[$listName] = $listConfig;
+                                continue;
+                            }
+
+                            // Per-list canonicalisation: `true` ≡ `[]` ≡ "use defaults".
+                            if ($listConfig === true) {
+                                $listConfig = [];
+                            }
+
+                            $existing = $current[$listName] ?? null;
+                            if ($existing === true) {
+                                $existing = [];
+                            }
+
+                            if ($listConfig === false) {
+                                // Explicit disable always overrides any prior shape.
+                                $current[$listName] = false;
+                            } elseif ($existing === null || $existing === false) {
+                                // No prior layer (or it was disabled and is being re-enabled);
+                                // store the new value as-is.
+                                $current[$listName] = $listConfig;
+                            } elseif (\is_array($existing) && \is_array($listConfig)) {
+                                $merged = array_merge($existing, $listConfig);
+                                foreach ($deepMergeKeys as $innerKey) {
+                                    $existingInner = $existing[$innerKey] ?? null;
+                                    $incomingInner = $listConfig[$innerKey] ?? null;
+                                    if (\is_array($existingInner) && \is_array($incomingInner)) {
+                                        $merged[$innerKey] = array_merge($existingInner, $incomingInner);
+                                    }
+                                }
+                                $current[$listName] = $merged;
+                            } else {
+                                // Should not be reachable after the canonicalisations above,
+                                // but keep a deterministic fallback: incoming wins.
+                                $current[$listName] = $listConfig;
+                            }
+                        }
+                        $this->config[$key] = $current;
+                    }
+                    $this->setSourceOfConfigValue($val, $key, $source);
                 } else {
                     $this->config[$key] = $val;
                     $this->setSourceOfConfigValue($val, $key, $source);
@@ -356,6 +416,7 @@ class Config
             case 'secure-http':
             case 'use-github-api':
             case 'lock':
+            case 'source-fallback':
                 // special case for secure-http
                 if ($key === 'secure-http' && $this->get('disable-tls') === true) {
                     return false;
@@ -465,9 +526,9 @@ class Config
                 $result = $this->config[$key];
                 $abandonedEnv = $this->getComposerEnv('COMPOSER_AUDIT_ABANDONED');
                 if (false !== $abandonedEnv) {
-                    if (!in_array($abandonedEnv, $validChoices = Auditor::ABANDONEDS, true)) {
+                    if (!in_array($abandonedEnv, ListPolicyConfig::AUDITS, true)) {
                         throw new \RuntimeException(
-                            "Invalid value for COMPOSER_AUDIT_ABANDONED: {$abandonedEnv}. Expected one of ".implode(', ', Auditor::ABANDONEDS)."."
+                            "Invalid value for COMPOSER_AUDIT_ABANDONED: {$abandonedEnv}. Expected one of ".implode(', ', ListPolicyConfig::AUDITS)."."
                         );
                     }
                     $result['abandoned'] = $abandonedEnv;
@@ -475,16 +536,29 @@ class Config
 
                 $blockAbandonedEnv = $this->getComposerEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
                 if (false !== $blockAbandonedEnv) {
-                    if (!in_array($blockAbandonedEnv, ['0', '1'], true)) {
-                        throw new \RuntimeException(
-                            "Invalid value for COMPOSER_SECURITY_BLOCKING_ABANDONED: {$blockAbandonedEnv}. Expected 0 or 1."
-                        );
-                    }
-                    $result['block-abandoned'] = (bool) (int) $blockAbandonedEnv;
+                    $result['block-abandoned'] = Platform::getBoolEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
                 }
 
                 return $result;
+            case 'policy':
+                $policyConfig = $this->config[$key];
+                // Only the main switch (COMPOSER_POLICY) lives here, since it
+                // can flip the whole config to `false`. Per-list block toggles
+                // (COMPOSER_POLICY_MALWARE_BLOCK, COMPOSER_POLICY_ADVISORIES_BLOCK,
+                // COMPOSER_SECURITY_BLOCKING_ABANDONED, COMPOSER_AUDIT_ABANDONED)
+                // are applied in PolicyConfig::fromConfig against the parsed
+                // objects so the override layer is consistent and we never have
+                // to rewrite the raw array shape.
+                $policyEnv = Platform::getBoolEnv('COMPOSER_POLICY');
+                if (false === $policyEnv) {
+                    $policyConfig = false;
+                } elseif (true === $policyEnv && false === $policyConfig) {
+                    // Re-enable a config-disabled policy. Existing array configs
+                    // are left untouched — the env var only flips the kill switch.
+                    $policyConfig = true;
+                }
 
+                return $policyConfig;
             default:
                 if (!isset($this->config[$key])) {
                     return null;
@@ -618,12 +692,12 @@ class Config
     public function prohibitUrlByConfig(string $url, ?IOInterface $io = null, array $repoOptions = []): void
     {
         // Return right away if the URL is malformed or custom (see issue #5173), but only for non-HTTP(S) URLs
-        if (false === filter_var($url, FILTER_VALIDATE_URL) && !Preg::isMatch('{^https?://}', $url)) {
+        if (false === filter_var($url, FILTER_VALIDATE_URL) && !Preg::isMatch('{^https?://}i', $url)) {
             return;
         }
 
         // Extract scheme and throw exception on known insecure protocols
-        $scheme = parse_url($url, PHP_URL_SCHEME);
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
         $hostname = parse_url($url, PHP_URL_HOST);
         if (in_array($scheme, ['http', 'git', 'ftp', 'svn'])) {
             if ($this->get('secure-http')) {
@@ -632,10 +706,10 @@ class Config
                         return;
                     }
 
-                    throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-svn-domains for details.");
+                    throw new TransportException("Your configuration does not allow connections to " . Url::sanitize($url) . ". See https://getcomposer.org/doc/06-config.md#secure-svn-domains for details.");
                 }
 
-                throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
+                throw new TransportException("Your configuration does not allow connections to " . Url::sanitize($url) . ". See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             }
             if ($io !== null) {
                 if (is_string($hostname)) {

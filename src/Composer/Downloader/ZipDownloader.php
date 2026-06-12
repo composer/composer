@@ -44,17 +44,18 @@ class ZipDownloader extends ArchiveDownloader
         if (null === self::$unzipCommands) {
             self::$unzipCommands = [];
             $finder = new ExecutableFinder;
-            if (Platform::isWindows() && ($cmd = $finder->find('7z', null, ['C:\Program Files\7-Zip']))) {
+            if (Platform::isWindows() && null !== ($cmd = $finder->find('7z', null, ['C:\Program Files\7-Zip']))) {
                 self::$unzipCommands[] = ['7z', $cmd, 'x', '-bb0', '-y', '%file%', '-o%path%'];
             }
-            if ($cmd = $finder->find('unzip')) {
+            if (null !== ($cmd = $finder->find('unzip'))) {
                 self::$unzipCommands[] = ['unzip', $cmd, '-qq', '%file%', '-d', '%path%'];
             }
-            if (!Platform::isWindows() && ($cmd = $finder->find('7z'))) { // 7z linux/macOS support is only used if unzip is not present
+            if (!Platform::isWindows() && null !== ($cmd = $finder->find('7z'))) { // 7z linux/macOS support is only used if unzip is not present
                 self::$unzipCommands[] = ['7z', $cmd, 'x', '-bb0', '-y', '%file%', '-o%path%'];
-            }
-            if (!Platform::isWindows() && ($cmd = $finder->find('7zz'))) { // 7zz linux/macOS support is only used if unzip is not present
+            } elseif (!Platform::isWindows() && null !== ($cmd = $finder->find('7zz'))) { // 7zz linux/macOS support is only used if unzip is not present
                 self::$unzipCommands[] = ['7zz', $cmd, 'x', '-bb0', '-y', '%file%', '-o%path%'];
+            } elseif (!Platform::isWindows() && null !== ($cmd = $finder->find('7za'))) { // 7za linux/macOS support is only used if unzip is not present
+                self::$unzipCommands[] = ['7za', $cmd, 'x', '-bb0', '-y', '%file%', '-o%path%'];
             }
         }
 
@@ -132,7 +133,7 @@ class ZipDownloader extends ArchiveDownloader
             return strtr($value, $map);
         }, $command);
 
-        if (!$warned7ZipLinux && !Platform::isWindows() && in_array($executable, ['7z', '7zz'], true)) {
+        if (!$warned7ZipLinux && !Platform::isWindows() && in_array($executable, ['7z', '7zz', '7za'], true)) {
             $warned7ZipLinux = true;
             if (0 === $this->process->execute([$commandSpec[1]], $output)) {
                 if (Preg::isMatchStrictGroups('{^\s*7-Zip(?: \[64\])? ([0-9.]+)}', $output, $match) && version_compare($match[1], '21.01', '<')) {

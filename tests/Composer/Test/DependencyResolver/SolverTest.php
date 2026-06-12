@@ -12,6 +12,8 @@
 
 namespace Composer\Test\DependencyResolver;
 
+use Composer\DependencyResolver\Rule;
+use Composer\FilterList\FilterListEntry;
 use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\LockArrayRepository;
@@ -1038,6 +1040,41 @@ class SolverTest extends TestCase
         // verify that the code path leading to a negative literal resulting in a positive learned literal is actually
         // executed
         self::assertTrue($this->solver->testFlagLearnedPositiveLiteral);
+    }
+
+    public function testSolveSurfacesFilterListRemovedLockedPackagesAsProblems(): void
+    {
+        $package = self::getPackage('vendor/malware', '1.0.0');
+        $pool = new Pool([], [], [], [], [], [], [
+            'vendor/malware' => ['1.0.0.0' => [
+                new FilterListEntry(
+                    'vendor/malware',
+                    new MatchAllConstraint(),
+                    'malware'
+                ),
+            ]],
+        ]);
+
+        $request = new Request($this->repoLocked);
+        $request->fixPackage($package);
+        $request->lockPackage($package);
+
+        $solver = new Solver($this->policy, $pool, new NullIO());
+
+        try {
+            $solver->solve($request);
+            self::fail('Expected SolverProblemsException for filter-list-removed package');
+        } catch (SolverProblemsException $e) {
+            $problems = $e->getProblems();
+            self::assertCount(1, $problems);
+            $reasons = $problems[0]->getReasons();
+            self::assertNotEmpty($reasons);
+            $firstSection = reset($reasons);
+            self::assertNotEmpty($firstSection);
+            $rule = reset($firstSection);
+            self::assertSame(Rule::RULE_LOCKED_FILTER_LIST_REMOVED, $rule->getReason());
+            self::assertSame($package, $rule->getReasonData()['package']);
+        }
     }
 
     protected function reposComplete(): void

@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
+use Composer\FilterList\FilterListEntry;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\CompilingMatcher;
@@ -46,8 +47,8 @@ class Pool implements \Countable
     private $securityRemovedVersions = [];
     /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
     private $abandonedRemovedVersions = [];
-    /** @var array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>> Map of package name => normalized version => release age info */
-    private $releaseAgeRemovedVersions = [];
+    /** @var array<string, array<string, list<FilterListEntry>>> Map of package name => normalized version => filter list entries */
+    private $filterListRemovedVersions = [];
 
     /**
      * @param BasePackage[] $packages
@@ -56,9 +57,9 @@ class Pool implements \Countable
      * @param array<string, array<string, string>> $removedVersionsByPackage
      * @param array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> $securityRemovedVersions
      * @param array<string, array<string, string>> $abandonedRemovedVersions
-     * @param array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>> $releaseAgeRemovedVersions
+     * @param array<string, array<string, list<FilterListEntry>>> $filterListRemovedVersions
      */
-    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [], array $releaseAgeRemovedVersions = [])
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $securityRemovedVersions = [], array $abandonedRemovedVersions = [], array $filterListRemovedVersions = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
@@ -67,7 +68,7 @@ class Pool implements \Countable
         $this->removedVersionsByPackage = $removedVersionsByPackage;
         $this->securityRemovedVersions = $securityRemovedVersions;
         $this->abandonedRemovedVersions = $abandonedRemovedVersions;
-        $this->releaseAgeRemovedVersions = $releaseAgeRemovedVersions;
+        $this->filterListRemovedVersions = $filterListRemovedVersions;
     }
 
     /**
@@ -171,9 +172,9 @@ class Pool implements \Countable
         return $this->abandonedRemovedVersions;
     }
 
-    public function isReleaseAgeRemovedPackageVersion(string $packageName, ?ConstraintInterface $constraint): bool
+    public function isFilterListRemovedPackageVersion(string $packageName, ?ConstraintInterface $constraint): bool
     {
-        foreach ($this->releaseAgeRemovedVersions[$packageName] ?? [] as $version => $info) {
+        foreach ($this->filterListRemovedVersions[$packageName] ?? [] as $version => $entries) {
             if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
                 return true;
             }
@@ -183,31 +184,46 @@ class Pool implements \Countable
     }
 
     /**
-     * Get release age info for the package version that will be available soonest
-     *
-     * @return array{prettyVersion: string, releaseDate: string, availableIn: string}|null
+     * @return array<string, array<string, list<FilterListEntry>>>
      */
-    public function getReleaseAgeInfoForPackageVersion(string $packageName, ?ConstraintInterface $constraint): ?array
+    public function getAllFilterListRemovedPackageVersions(): array
     {
-        $earliest = null;
-        foreach ($this->releaseAgeRemovedVersions[$packageName] ?? [] as $version => $info) {
-            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
-                // Find the version with the earliest release date (will be available soonest)
-                if ($earliest === null || $info['releaseDate'] < $earliest['releaseDate']) {
-                    $earliest = $info;
-                }
-            }
-        }
-
-        return $earliest;
+        return $this->filterListRemovedVersions;
     }
 
     /**
-     * @return array<string, array<string, array{prettyVersion: string, releaseDate: string, availableIn: string}>>
+     * @return string[]
      */
-    public function getAllReleaseAgeRemovedPackageVersions(): array
+    public function getFilterListEntryForPackageVersion(string $packageName, ?ConstraintInterface $constraint): array
     {
-        return $this->releaseAgeRemovedVersions;
+        $lists = [];
+        $seen = [];
+        foreach ($this->filterListRemovedVersions[$packageName] ?? [] as $version => $filterListEntries) {
+            if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
+                foreach ($filterListEntries as $entry) {
+                    $entryKey = spl_object_hash($entry);
+                    if (isset($seen[$entryKey])) {
+                        continue;
+                    }
+
+                    $seen[$entryKey] = true;
+
+                    $url = (bool) $entry->url ? ' (see ' . $entry->url . ')' : '';
+                    $reason = (bool) $entry->reason ? ' reason: ' . $entry->reason : '';
+
+                    $lists[$entry->listName][] =  $url . $reason;
+                }
+
+            }
+        }
+
+        $result = [];
+        foreach ($lists as $listName => $listEntries) {
+            $action = $listName === 'malware' ? 'flagged as ' : 'filtered by ';
+            $result[$listName] = $action . $listName . implode(', ', $listEntries);
+        }
+
+        return $result;
     }
 
     /**

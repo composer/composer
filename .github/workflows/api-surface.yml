@@ -1,0 +1,24 @@
+name: "API Surface Check"
+
+# Minimal pull_request workflow whose only job is to fire workflow_run for the
+# api-surface-comment workflow (which has pull-requests:write even on fork PRs
+# and runs the actual analysis from trusted action code).
+
+on:
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
+      - 'tests/**'
+
+permissions: {}
+
+concurrency:
+  group: api-surface-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  signal:
+    name: 'Trigger check'
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'true'

@@ -17,6 +17,7 @@ use Composer\Factory;
 use Composer\Config;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
+use Composer\Util\HttpDownloader;
 use Composer\Util\Platform;
 use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
@@ -100,6 +101,7 @@ EOT
         // to ensure we do not try to load them from the new phar, see https://github.com/composer/composer/issues/10252
         class_exists('Composer\Util\Platform');
         class_exists('Composer\Downloader\FilesystemException');
+        class_exists('Composer\Console\GithubActionError');
 
         $config = Factory::createConfig();
 
@@ -155,20 +157,13 @@ EOT
             throw new FilesystemException('Composer update failed: the "'.$tmpDir.'" directory used to download the temp file could not be written');
         }
 
-        // check if composer is running as the same user that owns the directory root, only if POSIX is defined and callable
-        if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
-            $composerUser = posix_getpwuid(posix_geteuid());
-            $homeDirOwnerId = fileowner($home);
-            if (is_array($composerUser) && $homeDirOwnerId !== false) {
-                $homeOwner = posix_getpwuid($homeDirOwnerId);
-                if (is_array($homeOwner) && $composerUser['name'] !== $homeOwner['name']) {
-                    $io->writeError('<warning>You are running Composer as "'.$composerUser['name'].'", while "'.$home.'" is owned by "'.$homeOwner['name'].'"</warning>');
-                }
-            }
-        }
+        // warn if COMPOSER_HOME (where the self-update verification public keys are stored) is owned by
+        // another user or writable by others, as that could let someone substitute the public keys. Only
+        // performed where POSIX functions are available (i.e. not on Windows).
+        $this->warnIfUntrustedDir($io, $home, 'COMPOSER_HOME');
 
         if ($input->getOption('rollback')) {
-            return $this->rollback($output, $rollbackDir, $localFilename);
+            return $this->rollback($output, $rollbackDir, $localFilename, $home, $httpDownloader, $baseUrl, $config);
         }
 
         if ($input->getArgument('command') === 'self' && $input->getArgument('version') === 'update') {
@@ -279,78 +274,7 @@ EOT
         if (!extension_loaded('openssl') && $config->get('disable-tls')) {
             $io->writeError('<warning>Skipping phar signature verification as you have disabled OpenSSL via config.disable-tls</warning>');
         } else {
-            if (!extension_loaded('openssl')) {
-                throw new \RuntimeException('The openssl extension is required for phar signatures to be verified but it is not available. '
-                . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
-            }
-
-            $sigFile = 'file://'.$home.'/' . ($updatingToTag ? 'keys.tags.pub' : 'keys.dev.pub');
-            if (!file_exists($sigFile)) {
-                file_put_contents(
-                    $home.'/keys.dev.pub',
-                    <<<DEVPUBKEY
------BEGIN PUBLIC KEY-----
-MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAnBDHjZS6e0ZMoK3xTD7f
-FNCzlXjX/Aie2dit8QXA03pSrOTbaMnxON3hUL47Lz3g1SC6YJEMVHr0zYq4elWi
-i3ecFEgzLcj+pZM5X6qWu2Ozz4vWx3JYo1/a/HYdOuW9e3lwS8VtS0AVJA+U8X0A
-hZnBmGpltHhO8hPKHgkJtkTUxCheTcbqn4wGHl8Z2SediDcPTLwqezWKUfrYzu1f
-o/j3WFwFs6GtK4wdYtiXr+yspBZHO3y1udf8eFFGcb2V3EaLOrtfur6XQVizjOuk
-8lw5zzse1Qp/klHqbDRsjSzJ6iL6F4aynBc6Euqt/8ccNAIz0rLjLhOraeyj4eNn
-8iokwMKiXpcrQLTKH+RH1JCuOVxQ436bJwbSsp1VwiqftPQieN+tzqy+EiHJJmGf
-TBAbWcncicCk9q2md+AmhNbvHO4PWbbz9TzC7HJb460jyWeuMEvw3gNIpEo2jYa9
-pMV6cVqnSa+wOc0D7pC9a6bne0bvLcm3S+w6I5iDB3lZsb3A9UtRiSP7aGSo7D72
-8tC8+cIgZcI7k9vjvOqH+d7sdOU2yPCnRY6wFh62/g8bDnUpr56nZN1G89GwM4d4
-r/TU7BQQIzsZgAiqOGXvVklIgAMiV0iucgf3rNBLjjeNEwNSTTG9F0CtQ+7JLwaE
-wSEuAuRm+pRqi8BRnQ/GKUcCAwEAAQ==
------END PUBLIC KEY-----
-DEVPUBKEY
-                );
-
-                file_put_contents(
-                    $home.'/keys.tags.pub',
-                    <<<TAGSPUBKEY
------BEGIN PUBLIC KEY-----
-MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0Vi/2K6apCVj76nCnCl2
-MQUPdK+A9eqkYBacXo2wQBYmyVlXm2/n/ZsX6pCLYPQTHyr5jXbkQzBw8SKqPdlh
-vA7NpbMeNCz7wP/AobvUXM8xQuXKbMDTY2uZ4O7sM+PfGbptKPBGLe8Z8d2sUnTO
-bXtX6Lrj13wkRto7st/w/Yp33RHe9SlqkiiS4MsH1jBkcIkEHsRaveZzedUaxY0M
-mba0uPhGUInpPzEHwrYqBBEtWvP97t2vtfx8I5qv28kh0Y6t+jnjL1Urid2iuQZf
-noCMFIOu4vksK5HxJxxrN0GOmGmwVQjOOtxkwikNiotZGPR4KsVj8NnBrLX7oGuM
-nQvGciiu+KoC2r3HDBrpDeBVdOWxDzT5R4iI0KoLzFh2pKqwbY+obNPS2bj+2dgJ
-rV3V5Jjry42QOCBN3c88wU1PKftOLj2ECpewY6vnE478IipiEu7EAdK8Zwj2LmTr
-RKQUSa9k7ggBkYZWAeO/2Ag0ey3g2bg7eqk+sHEq5ynIXd5lhv6tC5PBdHlWipDK
-tl2IxiEnejnOmAzGVivE1YGduYBjN+mjxDVy8KGBrjnz1JPgAvgdwJ2dYw4Rsc/e
-TzCFWGk/HM6a4f0IzBWbJ5ot0PIi4amk07IotBXDWwqDiQTwyuGCym5EqWQ2BD95
-RGv89BPD+2DLnJysngsvVaUCAwEAAQ==
------END PUBLIC KEY-----
-TAGSPUBKEY
-                );
-            }
-
-            $pubkeyid = openssl_pkey_get_public($sigFile);
-            if (false === $pubkeyid) {
-                throw new \RuntimeException('Failed loading the public key from '.$sigFile);
-            }
-            $algo = defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
-            if (!in_array('sha384', array_map('strtolower', openssl_get_md_methods()), true)) {
-                throw new \RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
-            }
-            $signatureData = json_decode($signature, true);
-            $signatureSha384 = base64_decode($signatureData['sha384'], true);
-            if (false === $signatureSha384) {
-                throw new \RuntimeException('Failed loading the phar signature from '.$remoteFilename.'.sig, got '.$signature);
-            }
-            $verified = 1 === openssl_verify((string) file_get_contents($tempFilename), $signatureSha384, $pubkeyid, $algo);
-
-            // PHP 8 automatically frees the key instance and deprecates the function
-            if (\PHP_VERSION_ID < 80000) {
-                // @phpstan-ignore function.deprecated
-                openssl_free_key($pubkeyid);
-            }
-
-            if (!$verified) {
-                throw new \RuntimeException('The phar signature did not match the file you downloaded, this means your public keys are outdated or that the phar file is corrupt/has been modified');
-            }
+            $this->verifyPhar($tempFilename, $signature, $updatingToTag, $home, $remoteFilename.'.sig');
         }
 
         // remove saved installations of composer
@@ -428,7 +352,7 @@ TAGSPUBKEY
     /**
      * @throws FilesystemException
      */
-    protected function rollback(OutputInterface $output, string $rollbackDir, string $localFilename): int
+    protected function rollback(OutputInterface $output, string $rollbackDir, string $localFilename, string $home, HttpDownloader $httpDownloader, string $baseUrl, Config $config): int
     {
         $rollbackVersion = $this->getLastBackupVersion($rollbackDir);
         if (null === $rollbackVersion) {
@@ -446,6 +370,48 @@ TAGSPUBKEY
 
         $io = $this->getIO();
         $io->writeError(sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
+
+        // The backup we are about to install over composer.phar must be trustworthy. If its directory or
+        // the file itself is owned by another user or writable by others, it may have been tampered with,
+        // so warn and ask for confirmation before trusting it.
+        $untrusted = $this->warnIfUntrustedDir($io, $rollbackDir, 'data-dir');
+        $untrusted = $this->warnIfUntrustedDir($io, $oldFile, 'backup file') || $untrusted;
+        if ($untrusted && $io->isInteractive() && !$io->askConfirmation('Do you want to roll back to this backup despite the warning above? [<comment>y/N</comment>] ', false)) {
+            $io->writeError('<warning>Rollback aborted.</warning>');
+
+            return 1;
+        }
+
+        // Verify the backup phar before installing it. The backup is taken from data-dir which may, on
+        // misconfigured multi-user setups, be writable by other users, so an unverified rollback could
+        // install a phar planted by an attacker. We download the published signature for the backed-up
+        // version and verify against it, exactly like the self-update download does.
+        [$version, $isTag] = $this->parseBackupVersion($rollbackVersion);
+
+        if (!extension_loaded('openssl') && $config->get('disable-tls')) {
+            $io->writeError('<warning>Skipping phar signature verification as you have disabled OpenSSL via config.disable-tls</warning>');
+        } elseif (!$isTag) {
+            // Snapshot/dev builds are not downloadable per-commit so no signature is published for them.
+            $io->writeError('<warning>The signature of "'.$rollbackVersion.'" can not be verified as no signature is published for snapshot/dev builds. Make sure your data-dir ("'.$rollbackDir.'") is not writable by untrusted users.</warning>');
+            if ($io->isInteractive() && !$io->askConfirmation('Do you want to roll back to this unverified backup anyway? [<comment>y/N</comment>] ', false)) {
+                $io->writeError('<warning>Rollback aborted.</warning>');
+
+                return 1;
+            }
+        } else {
+            $sigUrl = $baseUrl.'/download/'.$version.'/composer.phar.sig';
+            try {
+                $signature = $httpDownloader->get($sigUrl)->getBody();
+            } catch (TransportException $e) {
+                throw new \RuntimeException('Composer rollback failed: could not download the signature from '.$sigUrl.' to verify the backup, aborting to avoid installing an unverified composer.phar. Retry once you are online.', 0, $e);
+            }
+            if (null === $signature || '' === $signature) {
+                throw new \RuntimeException('Composer rollback failed: an empty signature was downloaded from '.$sigUrl);
+            }
+            // Throws on mismatch, which aborts the rollback before setLocalPhar() installs the backup.
+            $this->verifyPhar($oldFile, $signature, true, $home, $sigUrl);
+        }
+
         if (!$this->setLocalPhar($localFilename, $oldFile)) {
             return 1;
         }
@@ -511,6 +477,133 @@ TAGSPUBKEY
         }
     }
 
+    /**
+     * Verifies a phar file against the getcomposer.org signature using the stored public keys.
+     *
+     * The exact same verification is used for both the self-update download and the rollback path.
+     *
+     * @param  string             $pharPath    Path to the phar file to verify
+     * @param  string             $signature   The JSON .sig body ({"sha384": "<base64>"}) for that phar
+     * @param  bool               $verifyAsTag Whether to verify against the tags key (true) or the dev key (false)
+     * @param  string             $home        The Composer home dir where the public keys are stored
+     * @param  string             $sigSource   Human-readable signature source, used in error messages
+     * @throws \RuntimeException  When openssl is unavailable or the signature does not match the phar
+     */
+    private function verifyPhar(string $pharPath, string $signature, bool $verifyAsTag, string $home, string $sigSource): void
+    {
+        if (!extension_loaded('openssl')) {
+            throw new \RuntimeException('The openssl extension is required for phar signatures to be verified but it is not available. '
+            . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
+        }
+
+        $sigFile = 'file://'.$home.'/' . ($verifyAsTag ? 'keys.tags.pub' : 'keys.dev.pub');
+        if (!file_exists($sigFile)) {
+            file_put_contents(
+                $home.'/keys.dev.pub',
+                <<<DEVPUBKEY
+-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAnBDHjZS6e0ZMoK3xTD7f
+FNCzlXjX/Aie2dit8QXA03pSrOTbaMnxON3hUL47Lz3g1SC6YJEMVHr0zYq4elWi
+i3ecFEgzLcj+pZM5X6qWu2Ozz4vWx3JYo1/a/HYdOuW9e3lwS8VtS0AVJA+U8X0A
+hZnBmGpltHhO8hPKHgkJtkTUxCheTcbqn4wGHl8Z2SediDcPTLwqezWKUfrYzu1f
+o/j3WFwFs6GtK4wdYtiXr+yspBZHO3y1udf8eFFGcb2V3EaLOrtfur6XQVizjOuk
+8lw5zzse1Qp/klHqbDRsjSzJ6iL6F4aynBc6Euqt/8ccNAIz0rLjLhOraeyj4eNn
+8iokwMKiXpcrQLTKH+RH1JCuOVxQ436bJwbSsp1VwiqftPQieN+tzqy+EiHJJmGf
+TBAbWcncicCk9q2md+AmhNbvHO4PWbbz9TzC7HJb460jyWeuMEvw3gNIpEo2jYa9
+pMV6cVqnSa+wOc0D7pC9a6bne0bvLcm3S+w6I5iDB3lZsb3A9UtRiSP7aGSo7D72
+8tC8+cIgZcI7k9vjvOqH+d7sdOU2yPCnRY6wFh62/g8bDnUpr56nZN1G89GwM4d4
+r/TU7BQQIzsZgAiqOGXvVklIgAMiV0iucgf3rNBLjjeNEwNSTTG9F0CtQ+7JLwaE
+wSEuAuRm+pRqi8BRnQ/GKUcCAwEAAQ==
+-----END PUBLIC KEY-----
+DEVPUBKEY
+            );
+
+            file_put_contents(
+                $home.'/keys.tags.pub',
+                <<<TAGSPUBKEY
+-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0Vi/2K6apCVj76nCnCl2
+MQUPdK+A9eqkYBacXo2wQBYmyVlXm2/n/ZsX6pCLYPQTHyr5jXbkQzBw8SKqPdlh
+vA7NpbMeNCz7wP/AobvUXM8xQuXKbMDTY2uZ4O7sM+PfGbptKPBGLe8Z8d2sUnTO
+bXtX6Lrj13wkRto7st/w/Yp33RHe9SlqkiiS4MsH1jBkcIkEHsRaveZzedUaxY0M
+mba0uPhGUInpPzEHwrYqBBEtWvP97t2vtfx8I5qv28kh0Y6t+jnjL1Urid2iuQZf
+noCMFIOu4vksK5HxJxxrN0GOmGmwVQjOOtxkwikNiotZGPR4KsVj8NnBrLX7oGuM
+nQvGciiu+KoC2r3HDBrpDeBVdOWxDzT5R4iI0KoLzFh2pKqwbY+obNPS2bj+2dgJ
+rV3V5Jjry42QOCBN3c88wU1PKftOLj2ECpewY6vnE478IipiEu7EAdK8Zwj2LmTr
+RKQUSa9k7ggBkYZWAeO/2Ag0ey3g2bg7eqk+sHEq5ynIXd5lhv6tC5PBdHlWipDK
+tl2IxiEnejnOmAzGVivE1YGduYBjN+mjxDVy8KGBrjnz1JPgAvgdwJ2dYw4Rsc/e
+TzCFWGk/HM6a4f0IzBWbJ5ot0PIi4amk07IotBXDWwqDiQTwyuGCym5EqWQ2BD95
+RGv89BPD+2DLnJysngsvVaUCAwEAAQ==
+-----END PUBLIC KEY-----
+TAGSPUBKEY
+            );
+        }
+
+        $pubkeyid = openssl_pkey_get_public($sigFile);
+        if (false === $pubkeyid) {
+            throw new \RuntimeException('Failed loading the public key from '.$sigFile);
+        }
+        $algo = defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
+        if (!in_array('sha384', array_map('strtolower', openssl_get_md_methods()), true)) {
+            throw new \RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
+        }
+        $signatureData = json_decode($signature, true);
+        $signatureSha384 = base64_decode($signatureData['sha384'], true);
+        if (false === $signatureSha384) {
+            throw new \RuntimeException('Failed loading the phar signature from '.$sigSource.', got '.$signature);
+        }
+        $verified = 1 === openssl_verify((string) file_get_contents($pharPath), $signatureSha384, $pubkeyid, $algo);
+
+        // PHP 8 automatically frees the key instance and deprecates the function
+        if (\PHP_VERSION_ID < 80000) {
+            // @phpstan-ignore function.deprecated
+            openssl_free_key($pubkeyid);
+        }
+
+        if (!$verified) {
+            throw new \RuntimeException('The phar signature did not match the file you downloaded, this means your public keys are outdated or that the phar file is corrupt/has been modified');
+        }
+    }
+
+    /**
+     * Warns when a path Composer trusts is owned by another user or writable by group/other users.
+     *
+     * Such a location could let another user tamper with files that Composer later trusts, e.g. a
+     * rollback backup in data-dir or a public key in COMPOSER_HOME. The check is only performed where
+     * POSIX functions are available (i.e. not on Windows) and is silently skipped otherwise.
+     *
+     * @return bool Whether a trust problem was found (and a warning emitted).
+     */
+    private function warnIfUntrustedDir(IOInterface $io, string $path, string $label): bool
+    {
+        if (!function_exists('posix_getpwuid') || !function_exists('posix_geteuid')) {
+            return false;
+        }
+
+        $ownerId = @fileowner($path);
+        $perms = @fileperms($path);
+        if ($ownerId === false || $perms === false) {
+            return false;
+        }
+
+        $untrusted = false;
+
+        $composerUser = posix_getpwuid(posix_geteuid());
+        $owner = posix_getpwuid($ownerId);
+        if (is_array($composerUser) && is_array($owner) && $composerUser['name'] !== $owner['name']) {
+            $io->writeError('<warning>You are running Composer as "'.$composerUser['name'].'", while "'.$path.'" ('.$label.') is owned by "'.$owner['name'].'"</warning>');
+            $untrusted = true;
+        }
+
+        // group- or world-writable paths let other users tamper with files that Composer trusts there
+        if (($perms & 0022) !== 0) {
+            $io->writeError('<warning>The '.$label.' "'.$path.'" is writable by other users, which is a security risk as another user could tamper with the files Composer trusts there. Make sure it is only writable by the user running Composer.</warning>');
+            $untrusted = true;
+        }
+
+        return $untrusted;
+    }
+
     protected function cleanBackups(string $rollbackDir, ?string $except = null): void
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
@@ -525,6 +618,26 @@ TAGSPUBKEY
             $io->writeError('<info>Removing: '.$file.'</info>');
             $fs->remove($file);
         }
+    }
+
+    /**
+     * Splits a backup version string (the basename without the -old.phar suffix) into its version part.
+     *
+     * Backup names are built as "<RELEASE_DATE ' :'->'_-'>-<version>" (see the update path), so the
+     * prefix is the fixed-width date "YYYY-MM-DD_HH-MM-SS" followed by the version, which is either a
+     * tag (may itself contain "-") or the first 7 characters of a snapshot/dev commit sha.
+     *
+     * @return array{0: string, 1: bool} The [version, isTag] pair. isTag is false for snapshot/dev
+     *                                    backups (and unrecognized/legacy names), for which no signature
+     *                                    is published and which therefore cannot be verified.
+     */
+    protected function parseBackupVersion(string $rollbackVersion): array
+    {
+        if (!Preg::isMatchStrictGroups('{^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-(?<version>.+)$}', $rollbackVersion, $match)) {
+            return [$rollbackVersion, false];
+        }
+
+        return [$match['version'], !Preg::isMatch('{^[0-9a-f]{7}$}', $match['version'])];
     }
 
     protected function getLastBackupVersion(string $rollbackDir): ?string

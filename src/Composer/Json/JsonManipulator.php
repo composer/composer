@@ -376,12 +376,65 @@ class JsonManipulator
      */
     public function addConfigSetting(string $name, $value): bool
     {
+        // policy config has one more nesting level than the rest of the config e.g. policy.list-name.key
+        // Rewrite as a policy.<list> update with the merged list block so addSubNode can do a
+        // surgical edit at the list level rather than falling back to a whole-file rewrite.
+        if (strpos($name, 'policy.') === 0 && substr_count($name, '.') >= 2) {
+            [$listName, $fieldName] = explode('.', substr($name, 7), 2);
+            if (str_contains($fieldName, '.')) {
+                return false;
+            }
+            $listBlock = $this->getCurrentPolicyListBlock($listName);
+            $listBlock[$fieldName] = $value;
+
+            return $this->addSubNode('config', 'policy.'.$listName, $listBlock);
+        }
+
         return $this->addSubNode('config', $name, $value);
     }
 
     public function removeConfigSetting(string $name): bool
     {
+        // policy.<list>.<field>: drop the field from the list block, then either rewrite the
+        // block (surgical) or defer to the whole-file fallback when the block ends up empty so
+        // the cascade-cleanup of empty ancestors can run.
+        if (strpos($name, 'policy.') === 0 && substr_count($name, '.') >= 2) {
+            [$listName, $fieldName] = explode('.', substr($name, 7), 2);
+            if (str_contains($fieldName, '.')) {
+                return false;
+            }
+
+            $listBlock = $this->getCurrentPolicyListBlock($listName);
+            if (!array_key_exists($fieldName, $listBlock)) {
+                return true;
+            }
+            unset($listBlock[$fieldName]);
+            if (count($listBlock) === 0) {
+                return $this->removeConfigSetting('policy.'.$listName);
+            }
+
+            return $this->addSubNode('config', 'policy.'.$listName, $listBlock);
+        }
+
         return $this->removeSubNode('config', $name);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function getCurrentPolicyListBlock(string $listName): array
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+        if (!is_array($decoded)) {
+            return [];
+        }
+        $policySection = $decoded['config']['policy'] ?? null;
+        if (!is_array($policySection)) {
+            return [];
+        }
+        $listBlock = $policySection[$listName] ?? [];
+
+        return is_array($listBlock) ? $listBlock : [];
     }
 
     /**

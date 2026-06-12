@@ -326,6 +326,152 @@ can be configured.
 }
 ```
 
+#### filter
+
+A Composer repository can advertise filter list support to clients by including a `filter` object in
+its `packages.json` response. This tells Composer that the repository provides filter list data and
+describes what lists are available.
+
+```json
+{
+    "metadata-url": "/p2/%package%.json",
+    "filter": {
+        "metadata": true,
+        "lists": {
+            "malware": { "enabled": true },
+            "typosquatting": { "enabled": true }
+        },
+        "summary-url": "/p2/filter-summary.json"
+    }
+}
+```
+
+- **`metadata`** (required, boolean) — Set to `true` to indicate that per-package metadata files
+  (served via `metadata-url`) contain filter list data. Composer will fetch the metadata for each
+  relevant package and look for a `filter` key containing list entries.
+- **`lists`** (required, object) — The names of all filter lists this repository provides, mapped to
+  an object describing the list. The object currently carries an `enabled` flag (set to `true` when
+  the list is available) and is structured this way so future per-list metadata can be added without
+  breaking the wire format.
+- **`summary-url`** (optional, string) — A URL (absolute or root-relative) returning a compact
+  mapping of list name → package name → version constraint. When configured, Composer fetches this
+  endpoint during `composer install`, `composer update` and `composer audit` and uses it to skip per-package metadata
+  fetches for packages that cannot match any active list.
+
+  The summary endpoint must return JSON of the form:
+
+  ```json
+  {
+      "filter": {
+          "malware": {
+              "vendor/package": ">=1.0.0,<1.2.0",
+              "other/package": "*"
+          }
+      }
+  }
+  ```
+
+  Composer revalidates the cached summary via `If-Modified-Since` on every install/update/audit, using the
+  same on-disk repository cache as package metadata.
+
+- **`api-url`** (optional, string) — A URL (absolute or root-relative) that accepts a POST request
+  with the relevant package PURLs and configured list names, and replies with the matching filter
+  entries directly. When set, Composer uses `api-url` instead of `summary-url` and per-package
+  metadata for filter purposes; this is useful when the summary would be too large to serve in
+  full. If both `summary-url` and `api-url` are advertised, `api-url` takes precedence and
+  `summary-url` is ignored. Implementors should be aware that large amounts (a few hundreds
+  would be normal) of package names can be submitted by Composer. You can decide to cap
+  that list and return only the first 1000 or whatever you decide but make sure to limit this
+  somehow.
+
+  The endpoint receives a JSON body of the form:
+
+  ```json
+  {
+      "packages": ["pkg://composer/vendor/package", "pkg://composer/other/package"],
+      "lists": ["malware"]
+  }
+  ```
+
+  and must return JSON of the form:
+
+  ```json
+  {
+      "filter": {
+          "malware": [
+              {
+                  "package": "vendor/package",
+                  "constraint": ">=1.0.0,<1.2.0",
+                  "url": "https://example.org/filters/123",
+                  "reason": "Malware",
+                  "id": "PKFE-xxxx-xxxx-xxxx"
+              }
+          ]
+      }
+  }
+  ```
+
+  Each entry has the same shape as a per-package metadata filter entry, with the addition of the
+  `package` field (since one response covers many packages). The `api-url` POST is not cached
+  client-side because each request body is different.
+
+Per-package metadata files should include a `filter` key whose value is an object mapping list names
+to arrays of filter entries:
+
+```json
+{
+    "packages": {
+        "vendor/package": [{ ... }]
+    },
+    "filter": {
+        "malware": [
+            {
+                "constraint": ">=1.0.0,<1.2.0",
+                "url": "https://example.org/filters/123",
+                "reason": "Malware",
+                "id": "PKFE-xxxx-xxxx-xxxx"
+            }
+        ]
+    }
+}
+```
+
+In a `composer.json` file, the `filter` key on a repository definition controls which lists advertised by that
+repository are honoured for audit reports and version blocking.
+
+Set `filter: false` to opt out of every list this repository advertises:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "filter": false
+        }
+    ]
+}
+```
+
+Set `filter` to an object listing advertised list names that should be skipped from this repository.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "filter": {
+                "untrusted-list": false
+            }
+        }
+    ]
+}
+```
+
+The repo-level `filter` only narrows what this repository contributes; it cannot enable a list that is not
+configured globally under [`config.policy`](06-config.md#policy).
+
 ### VCS
 
 VCS stands for version control system. This includes versioning systems like

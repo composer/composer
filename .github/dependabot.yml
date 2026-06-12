@@ -4,4 +4,24 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
+    labels: []
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "2.2"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    labels: []
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "1.10"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
     labels: []

@@ -173,7 +173,7 @@ class Request
      */
     public function getLockedPackages(): array
     {
-        return $this->lockedPackages;
+        return array_merge($this->lockedPackages, $this->fixedLockedPackages);
     }
 
     public function isLockedPackage(PackageInterface $package): bool

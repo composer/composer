@@ -4,16 +4,23 @@ on:
   schedule:
   - cron: '32 1 * * *'
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions: {}
+
 jobs:
   stale:
+    name: "Mark and close stale support issues"
 
     runs-on: ubuntu-latest
     permissions:
-      issues: write
-      pull-requests: write
+      issues: write # for actions/stale to label/close stale issues
+      pull-requests: write # for actions/stale to label/close stale pull requests
 
     steps:
-    - uses: actions/stale@997185467fa4f803885201cee163a9f38240193d # v10.1.1
+    - uses: actions/stale@eb5cf3af3ac0a1aa4c9c45633dd1ae542a27a899 # v10.3.0
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         days-before-stale: 180

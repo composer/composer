@@ -24,9 +24,8 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
+use Composer\DependencyResolver\FilterListPoolFilter;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
-use Composer\DependencyResolver\ReleaseAgePoolFilter;
-use Composer\DependencyResolver\ReleaseAgeConfig;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\DependencyResolver\PolicyInterface;
@@ -36,7 +35,11 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
+use Composer\FilterList\FilterListAuditor;
+use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Installer\InstallationManager;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Policy\PolicyConfig;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
@@ -84,6 +87,7 @@ class Installer
     // used/declared in SolverProblemsException, carried over here for completeness
     public const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
     public const ERROR_AUDIT_FAILED = 5;
+    public const ERROR_PSR_AUTOLOAD_VIOLATION = 6;
     // technically exceptions are thrown with various status codes >400, but the process exit code is normalized to 100
     public const ERROR_TRANSPORT_EXCEPTION = 100;
 
@@ -147,6 +151,8 @@ class Installer
     /** @var bool */
     protected $classMapAuthoritative = false;
     /** @var bool */
+    protected $strictPsrAutoloader = false;
+    /** @var bool */
     protected $apcuAutoloader = false;
     /** @var string|null */
     protected $apcuAutoloaderPrefix = null;
@@ -184,6 +190,8 @@ class Installer
     protected $auditFormat = Auditor::FORMAT_SUMMARY;
     /** @var AuditConfig|null */
     private $auditConfig = null;
+    /** @var PolicyConfig|null */
+    private $policyConfig = null;
     /** @var list<string> */
     private $ignoredTypes = ['php-ext', 'php-ext-zend'];
     /** @var list<string>|null */
@@ -217,6 +225,9 @@ class Installer
 
     /** @var array<string, ConstraintInterface> */
     protected $temporaryConstraints = [];
+
+    /** @var LockTransaction|null */
+    protected $lockTransaction = null;
 
     /**
      * Constructor
@@ -264,7 +275,13 @@ class Installer
 
         // Force update if there is no lock file present
         if (!$this->update && !$this->locker->isLocked()) {
-            $this->io->writeError('<warning>No composer.lock file present. Updating dependencies to latest instead of installing from lock file. See https://getcomposer.org/install for more information.</warning>');
+            $updateFallbackMessage = 'Updating dependencies to latest instead of installing from lock file. See https://getcomposer.org/install for more information.';
+            if ($this->writeLock === false) {
+                // Print more specific warning message when creating the lock file is disabled in config, but still notify the user that the update command is used
+                $this->io->writeError(sprintf('<warning>Lockfile creation is disabled in config. %s</warning>', $updateFallbackMessage));
+            } else {
+                $this->io->writeError(sprintf('<warning>No composer.lock file present. %s</warning>', $updateFallbackMessage));
+            }
             $this->update = true;
         }
 
@@ -363,7 +380,7 @@ class Installer
             $this->autoloadGenerator->setApcu($this->apcuAutoloader, $this->apcuAutoloaderPrefix);
             $this->autoloadGenerator->setRunScripts($this->runScripts);
             $this->autoloadGenerator->setPlatformRequirementFilter($this->platformRequirementFilter);
-            $this
+            $classMap = $this
                 ->autoloadGenerator
                 ->dump(
                     $this->config,
@@ -375,6 +392,10 @@ class Installer
                     null,
                     $this->locker
                 );
+
+            if ($this->strictPsrAutoloader && count($classMap->getPsrViolations()) > 0) {
+                return self::ERROR_PSR_AUTOLOAD_VIOLATION;
+            }
         }
 
         if ($this->install && $this->executeOperations) {
@@ -438,8 +459,10 @@ class Installer
                     foreach ($this->repositoryManager->getRepositories() as $repo) {
                         $repoSet->addRepository($repo);
                     }
+                    $policyConfig = $this->getPolicyConfig();
+                    $filterListProviderSet = $policyConfig->enabled ? FilterListProviderSet::create($policyConfig, $this->repositoryManager->getRepositories(), $this->repositoryManager->getHttpDownloader()) : null;
 
-                    return $auditor->audit($this->io, $repoSet, $packages, $auditConfig->auditFormat, true, $auditConfig->ignoreListForAudit, $auditConfig->auditAbandoned, $auditConfig->ignoreSeverityForAudit, $auditConfig->ignoreUnreachable, $auditConfig->ignoreAbandonedForAudit) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
+                    return $auditor->audit($this->io, $repoSet, $policyConfig, $packages, $auditConfig->auditFormat, true, $filterListProviderSet) > 0 && $this->errorOnAudit ? self::ERROR_AUDIT_FAILED : 0;
                 } catch (TransportException $e) {
                     $this->io->error('Failed to audit '.$target.' packages.');
                     if ($this->io->isVerbose()) {
@@ -504,14 +527,14 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createReleaseAgePoolFilter());
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
         // solve dependencies
         $solver = new Solver($policy, $pool, $this->io);
         try {
-            $lockTransaction = $solver->solve($request, $this->platformRequirementFilter);
+            $this->lockTransaction = $solver->solve($request, $this->platformRequirementFilter);
             $ruleSetSize = $solver->getRuleSetSize();
             $solver = null;
         } catch (SolverProblemsException $e) {
@@ -535,7 +558,7 @@ class Installer
 
         $pool = null;
 
-        if (!$lockTransaction->getOperations()) {
+        if (!$this->lockTransaction->getOperations()) {
             $this->io->writeError('Nothing to modify in lock file');
 
             if ($this->minimalUpdate && $this->updateAllowList === null && $this->locker->isFresh()) {
@@ -543,7 +566,7 @@ class Installer
             }
         }
 
-        $exitCode = $this->extractDevPackages($lockTransaction, $platformRepo, $aliases, $policy, $lockedRepository);
+        $exitCode = $this->extractDevPackages($this->lockTransaction, $platformRepo, $aliases, $policy, $lockedRepository);
         if ($exitCode !== 0) {
             return $exitCode;
         }
@@ -555,9 +578,9 @@ class Installer
         $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
 
         $installsUpdates = $uninstalls = [];
-        if ($lockTransaction->getOperations()) {
+        if ($this->lockTransaction->getOperations()) {
             $installNames = $updateNames = $uninstallNames = [];
-            foreach ($lockTransaction->getOperations() as $operation) {
+            foreach ($this->lockTransaction->getOperations() as $operation) {
                 if ($operation instanceof InstallOperation) {
                     $installsUpdates[] = $operation;
                     $installNames[] = $operation->getPackage()->getPrettyName().':'.$operation->getPackage()->getFullPrettyVersion();
@@ -638,11 +661,11 @@ class Installer
         }
 
         $updatedLock = $this->locker->setLockData(
-            $lockTransaction->getNewLockPackages(false, $this->updateMirrors),
-            $lockTransaction->getNewLockPackages(true, $this->updateMirrors),
+            $this->lockTransaction->getNewLockPackages(false, $this->updateMirrors),
+            $this->lockTransaction->getNewLockPackages(true, $this->updateMirrors),
             $platformReqs,
             $platformDevReqs,
-            $lockTransaction->getAliases($aliases),
+            $this->lockTransaction->getAliases($aliases),
             $this->package->getMinimumStability(),
             $this->package->getStabilityFlags(),
             $this->preferStable || $this->package->getPreferStable(),
@@ -778,7 +801,7 @@ class Installer
             }
             unset($rootRequires, $link);
 
-            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes, null);
+            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, null, $this->ignoredTypes, $this->allowedTypes, null, $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_INSTALL));
 
             // solve dependencies
             $solver = new Solver($policy, $pool, $this->io);
@@ -1111,10 +1134,19 @@ class Installer
         return new PoolOptimizer($policy);
     }
 
+    private function getPolicyConfig(): PolicyConfig
+    {
+        if (null === $this->policyConfig) {
+            $this->policyConfig = PolicyConfig::fromConfig($this->config);
+        }
+
+        return $this->policyConfig;
+    }
+
     private function getAuditConfig(): AuditConfig
     {
         if (null === $this->auditConfig) {
-            $this->auditConfig = AuditConfig::fromConfig($this->config, $this->audit, $this->auditFormat);
+            $this->auditConfig = new AuditConfig($this->audit, $this->auditFormat);
         }
 
         return $this->auditConfig;
@@ -1122,24 +1154,41 @@ class Installer
 
     private function createSecurityAuditPoolFilter(): ?SecurityAdvisoryPoolFilter
     {
-        $auditConfig = $this->getAuditConfig();
+        $policyConfig = $this->getPolicyConfig();
 
-        if ($auditConfig->blockInsecure && !$this->updateMirrors) {
-            return new SecurityAdvisoryPoolFilter(new Auditor(), $auditConfig);
+        if ($policyConfig->enabled && $policyConfig->advisories->shouldBlock('update') && !$this->updateMirrors) {
+            return new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig, $this->io);
         }
 
         return null;
     }
 
-    private function createReleaseAgePoolFilter(): ?ReleaseAgePoolFilter
+    /**
+     * @param ListPolicyConfig::BLOCK_SCOPE_UPDATE|ListPolicyConfig::BLOCK_SCOPE_INSTALL $blockScope
+     */
+    private function createFilterListPoolFilter(string $blockScope): ?FilterListPoolFilter
     {
-        $releaseAgeConfig = ReleaseAgeConfig::fromConfig($this->config);
+        $policyConfig = $this->getPolicyConfig();
 
-        if ($releaseAgeConfig->isEnabled() && !$this->updateMirrors) {
-            return new ReleaseAgePoolFilter($releaseAgeConfig);
+        if (!$policyConfig->enabled) {
+            return null;
         }
 
-        return null;
+        $hasUpdateLists = \count($policyConfig->getActiveBlockFilterLists(ListPolicyConfig::BLOCK_SCOPE_UPDATE)) > 0;
+        $hasInstallLists = \count($policyConfig->getActiveBlockFilterLists(ListPolicyConfig::BLOCK_SCOPE_INSTALL)) > 0;
+
+        if ($blockScope === ListPolicyConfig::BLOCK_SCOPE_INSTALL && !$hasInstallLists) {
+            return null;
+        }
+
+        // For UPDATE scope we may also need install-scope lists for locked
+        // packages (so a malware-flagged dependency in the lock file is still
+        // blocked during a partial update / `update mirrors`).
+        if ($blockScope === ListPolicyConfig::BLOCK_SCOPE_UPDATE && !$hasUpdateLists && !$hasInstallLists) {
+            return null;
+        }
+
+        return new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->repositoryManager->getHttpDownloader(), $blockScope, $this->repositoryManager->getRepositories(), $this->io);
     }
 
     /**
@@ -1291,6 +1340,16 @@ class Installer
     {
         $this->apcuAutoloader = $apcuAutoloader;
         $this->apcuAutoloaderPrefix = $apcuAutoloaderPrefix;
+
+        return $this;
+    }
+
+    /**
+     * Whether or not to be strict about PSR violations.
+     */
+    public function setStrictPsrAutoloader(bool $strictPsr): self
+    {
+        $this->strictPsrAutoloader = $strictPsr;
 
         return $this;
     }
@@ -1556,6 +1615,21 @@ class Installer
     }
 
     /**
+     * Sets a custom PolicyConfig to override the default configuration from Config.
+     *
+     * Used by commands that need to alter policy at runtime (e.g. --no-blocking
+     * disabling blocking for malware/custom lists in addition to advisories).
+     *
+     * @internal
+     */
+    public function setPolicyConfig(PolicyConfig $policyConfig): self
+    {
+        $this->policyConfig = $policyConfig;
+
+        return $this;
+    }
+
+    /**
      * Disables plugins.
      *
      * Call this if you want to ensure that third-party code never gets
@@ -1574,5 +1648,10 @@ class Installer
         $this->suggestedPackagesReporter = $suggestedPackagesReporter;
 
         return $this;
+    }
+
+    public function getLockTransaction(): ?LockTransaction
+    {
+        return $this->lockTransaction;
     }
 }

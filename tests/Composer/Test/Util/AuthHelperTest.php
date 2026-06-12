@@ -710,4 +710,99 @@ class AuthHelperTest extends TestCase
             ->with($origin)
             ->willReturn($auth);
     }
+
+    /**
+     * @dataProvider findAuthOriginProvider
+     */
+    public function testFindAuthOrigin(string $origin, bool $originResult, string $originToPass, bool $originToPassResult, ?string $expectedResult = null): void
+    {
+        $this->io->method('hasAuthentication')
+            ->willReturnCallback(function ($originInTheCall) use ($origin, $originResult, $originToPass, $originToPassResult) {
+               if ($origin === $originInTheCall) {
+                   return $originResult;
+               }
+               if ($originToPass === $originInTheCall) {
+                   return $originToPassResult;
+               }
+               return false;
+            });
+        $authOrigin = AuthHelper::findAuthOrigin($this->io, $originToPass);
+        self::assertSame($expectedResult, $authOrigin);
+    }
+
+    public function testPromptAuthIfNeededMultipleGithubDownloads(): void
+    {
+        $origin = 'github.com';
+
+        $this->config->method('get')->willReturnMap([
+            ['github-domains', 0, ['github.com']],
+            ['gitlab-domains', 0, []],
+        ]);
+
+        // a parallel request already obtained and stored the token
+        $this->io->method('hasAuthentication')->with($origin)->willReturn(true);
+        // therefore no interactive prompt must happen
+        $this->io->expects($this->never())->method('ask');
+        $this->io->expects($this->never())->method('askAndHideAnswer');
+        $this->io->expects($this->never())->method('setAuthentication');
+
+        $result = $this->authHelper->promptAuthIfNeeded(
+            'https://api.github.com/repos/symfony/process/zipball/abc',
+            $origin,
+            403,
+            'HTTP/2 403 ',
+            [],
+            0 // retryCount === 0 → sibling should silently retry
+        );
+
+        self::assertSame(['retry' => true, 'storeAuth' => false], $result);
+    }
+
+    public static function findAuthOriginProvider() : array
+    {
+        return [
+            [
+                'github.com',
+                true,
+                'github.com',
+                true,
+                'github.com',
+            ],
+            [
+                'github.com',
+                true,
+                'api.github.com',
+                false,
+                'github.com'
+            ],
+            [
+                'bitbucket.org',
+                true,
+                'bitbucket.org',
+                false,
+                'bitbucket.org'
+            ],
+            [
+                'bitbucket.org',
+                true,
+                'api.bitbucket.org',
+                false,
+                'bitbucket.org',
+            ],
+            [
+                'bitbucket.org',
+                false,
+                'bitbucket.org',
+                false,
+                null,
+            ],
+            [
+                'gitlab.com',
+                true,
+                'api.gitlab.com',
+                false,
+                null,
+            ]
+        ];
+    }
 }

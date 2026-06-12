@@ -109,6 +109,7 @@ class ConsoleIOTest extends TestCase
         $outputMock->expects($this->any())
             ->method('getVerbosity')
             ->willReturn(OutputInterface::VERBOSITY_NORMAL);
+        $outputMock->method('isDecorated')->willReturn(true);
         $outputMock->expects($this->atLeast(7))
             ->method('write')
             ->willReturnCallback(static function (...$args) {
@@ -137,6 +138,57 @@ class ConsoleIOTest extends TestCase
         $consoleIO->write('something (<question>strlen = 23</question>)');
         $consoleIO->overwrite('shorter (<comment>12</comment>)', false);
         $consoleIO->overwrite('something longer than initial (<info>34</info>)');
+    }
+
+    public function testOverwriteErrorWithoutDecorationWritesNoBackspaces(): void
+    {
+        $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
+        $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\ConsoleOutputInterface')->getMock();
+        $outputMock->method('getVerbosity')->willReturn(OutputInterface::VERBOSITY_NORMAL);
+        $outputMock->method('getErrorOutput')->willReturn($outputMock);
+        $outputMock->method('isDecorated')->willReturn(false);
+
+        $written = '';
+        $outputMock->method('write')->willReturnCallback(static function ($messages) use (&$written): void {
+            $written .= implode('', (array) $messages);
+        });
+
+        $helperMock = $this->getMockBuilder('Symfony\Component\Console\Helper\HelperSet')->getMock();
+
+        $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
+        $consoleIO->writeError('Loading composer repositories with package information');
+        $consoleIO->overwriteError('', false);
+
+        self::assertStringNotContainsString("\x08", $written);
+        self::assertStringContainsString('Loading composer repositories with package information', $written);
+    }
+
+    public function testOverwriteErrorChecksTheErrorOutputDecoration(): void
+    {
+        // stdout is a decorated terminal but the error output is redirected (not decorated),
+        // so overwriteError must write a plain line and no backspaces to the error output
+        $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
+
+        $written = '';
+        $errorOutput = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
+        $errorOutput->method('isDecorated')->willReturn(false);
+        $errorOutput->method('write')->willReturnCallback(static function ($messages) use (&$written): void {
+            $written .= implode('', (array) $messages);
+        });
+
+        $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\ConsoleOutputInterface')->getMock();
+        $outputMock->method('getVerbosity')->willReturn(OutputInterface::VERBOSITY_NORMAL);
+        $outputMock->method('isDecorated')->willReturn(true);
+        $outputMock->method('getErrorOutput')->willReturn($errorOutput);
+
+        $helperMock = $this->getMockBuilder('Symfony\Component\Console\Helper\HelperSet')->getMock();
+
+        $consoleIO = new ConsoleIO($inputMock, $outputMock, $helperMock);
+        $consoleIO->writeError('Loading composer repositories with package information');
+        $consoleIO->overwriteError('Reading composer.json of acme/foo (1.0.0)', false);
+
+        self::assertStringNotContainsString("\x08", $written);
+        self::assertStringContainsString('Reading composer.json of acme/foo (1.0.0)', $written);
     }
 
     public function testAsk(): void
@@ -295,5 +347,236 @@ class ConsoleIOTest extends TestCase
 
         self::assertTrue($consoleIO->hasAuthentication('repoName'));
         self::assertFalse($consoleIO->hasAuthentication('repoName2'));
+    }
+
+    /**
+     * @dataProvider sanitizeProvider
+     * @param string|string[] $input
+     * @param string|string[] $expected
+     */
+    public function testSanitize($input, bool $allowNewlines, $expected): void
+    {
+        self::assertSame($expected, ConsoleIO::sanitize($input, $allowNewlines));
+    }
+
+    /**
+     * @return array<string, array{input: string|string[], allowNewlines: bool, expected: string|string[]}>
+     */
+    public static function sanitizeProvider(): array
+    {
+        return [
+            // String input with allowNewlines=true
+            'string with \n allowed' => [
+                'input' => "Hello\nWorld",
+                'allowNewlines' => true,
+                'expected' => "Hello\nWorld",
+            ],
+            'string with \r\n allowed' => [
+                'input' => "Hello\r\nWorld",
+                'allowNewlines' => true,
+                'expected' => "Hello\r\nWorld",
+            ],
+            'string with standalone \r removed' => [
+                'input' => "Hello\rWorld",
+                'allowNewlines' => true,
+                'expected' => "HelloWorld",
+            ],
+            'string with escape sequence removed' => [
+                'input' => "Hello\x1B[31mWorld",
+                'allowNewlines' => true,
+                'expected' => "HelloWorld",
+            ],
+            'string with control chars removed' => [
+                'input' => "Hello\x01\x08\x09World",
+                'allowNewlines' => true,
+                'expected' => "HelloWorld",
+            ],
+            'string with mixed control chars and newlines' => [
+                'input' => "Line1\n\x1B[32mLine2\x08\rLine3",
+                'allowNewlines' => true,
+                'expected' => "Line1\nLine2Line3",
+            ],
+            'string with null bytes are allowed' => [
+                'input' => "Hello\x00World",
+                'allowNewlines' => true,
+                'expected' => "Hello\x00World",
+            ],
+
+            // String input with allowNewlines=false
+            'string with \n removed' => [
+                'input' => "Hello\nWorld",
+                'allowNewlines' => false,
+                'expected' => "HelloWorld",
+            ],
+            'string with \r\n removed' => [
+                'input' => "Hello\r\nWorld",
+                'allowNewlines' => false,
+                'expected' => "HelloWorld",
+            ],
+            'string with escape sequence removed (no newlines)' => [
+                'input' => "Hello\x1B[31mWorld",
+                'allowNewlines' => false,
+                'expected' => "HelloWorld",
+            ],
+            'string with all control chars removed' => [
+                'input' => "Hello\x01\x08\x09\x0A\x0DWorld",
+                'allowNewlines' => false,
+                'expected' => "HelloWorld",
+            ],
+
+            // Array input with allowNewlines=true
+            'array with newlines allowed' => [
+                'input' => ["Hello\nWorld", "Foo\r\nBar"],
+                'allowNewlines' => true,
+                'expected' => ["Hello\nWorld", "Foo\r\nBar"],
+            ],
+            'array with control chars removed' => [
+                'input' => ["Hello\x1B[31mWorld", "Foo\x08Bar\r"],
+                'allowNewlines' => true,
+                'expected' => ["HelloWorld", "FooBar"],
+            ],
+
+            // Array input with allowNewlines=false
+            'array with newlines removed' => [
+                'input' => ["Hello\nWorld", "Foo\r\nBar"],
+                'allowNewlines' => false,
+                'expected' => ["HelloWorld", "FooBar"],
+            ],
+            'array with all control chars removed' => [
+                'input' => ["Test\x01\x0A", "Data\x1B[m\x0D"],
+                'allowNewlines' => false,
+                'expected' => ["Test", "Data"],
+            ],
+
+            // Edge cases
+            'empty string' => [
+                'input' => '',
+                'allowNewlines' => true,
+                'expected' => '',
+            ],
+            'empty array' => [
+                'input' => [],
+                'allowNewlines' => true,
+                'expected' => [],
+            ],
+            'string with no control chars' => [
+                'input' => 'Hello World',
+                'allowNewlines' => true,
+                'expected' => 'Hello World',
+            ],
+            'string with unicode' => [
+                'input' => "Hello 世界\nTest",
+                'allowNewlines' => true,
+                'expected' => "Hello 世界\nTest",
+            ],
+
+            // Various ANSI escape sequences
+            'CSI with multiple parameters' => [
+                'input' => "Text\x1B[1;31;40mColored\x1B[0mNormal",
+                'allowNewlines' => true,
+                'expected' => "TextColoredNormal",
+            ],
+            'CSI SGR reset' => [
+                'input' => "Before\x1B[mAfter",
+                'allowNewlines' => true,
+                'expected' => "BeforeAfter",
+            ],
+            'CSI cursor positioning' => [
+                'input' => "Line\x1B[2J\x1B[H\x1B[10;5HText",
+                'allowNewlines' => true,
+                'expected' => "LineText",
+            ],
+            'OSC with BEL terminator' => [
+                'input' => "Text\x1B]0;Window Title\x07More",
+                'allowNewlines' => true,
+                'expected' => "TextMore",
+            ],
+            'OSC with ST terminator' => [
+                'input' => "Text\x1B]2;Title\x1B\\More",
+                'allowNewlines' => true,
+                'expected' => "TextMore",
+            ],
+            'Simple ESC sequences' => [
+                'input' => "Text\x1B7Saved\x1B8Restored\x1BcReset",
+                'allowNewlines' => true,
+                'expected' => "TextSavedRestoredReset",
+            ],
+            'ESC D (Index)' => [
+                'input' => "Line1\x1BDLine2",
+                'allowNewlines' => true,
+                'expected' => "Line1Line2",
+            ],
+            'ESC E (Next Line)' => [
+                'input' => "Line1\x1BELine2",
+                'allowNewlines' => true,
+                'expected' => "Line1Line2",
+            ],
+            'ESC M (Reverse Index)' => [
+                'input' => "Text\x1BMMore",
+                'allowNewlines' => true,
+                'expected' => "TextMore",
+            ],
+            'ESC N (SS2) and ESC O (SS3)' => [
+                'input' => "Text\x1BNchar\x1BOanother",
+                'allowNewlines' => true,
+                'expected' => "Textcharanother",
+            ],
+            'Multiple escape sequences in sequence' => [
+                'input' => "\x1B[1m\x1B[31m\x1B[44mBold Red on Blue\x1B[0m",
+                'allowNewlines' => true,
+                'expected' => "Bold Red on Blue",
+            ],
+            'CSI with question mark (private mode)' => [
+                'input' => "Text\x1B[?25lHidden\x1B[?25hVisible",
+                'allowNewlines' => true,
+                'expected' => "TextHiddenVisible",
+            ],
+            'CSI erase sequences' => [
+                'input' => "Clear\x1B[2J\x1B[K\x1B[1KScreen",
+                'allowNewlines' => true,
+                'expected' => "ClearScreen",
+            ],
+            'Hyperlink OSC 8' => [
+                'input' => "Click \x1B]8;;https://example.com\x1B\\here\x1B]8;;\x1B\\ for link",
+                'allowNewlines' => true,
+                'expected' => "Click here for link",
+            ],
+            'Mixed content with complex sequences' => [
+                'input' => "\x1B[1;33mWarning:\x1B[0m File\x1B[31m not\x1B[0m found\n\x1B[2KRetrying...",
+                'allowNewlines' => true,
+                'expected' => "Warning: File not found\nRetrying...",
+            ],
+            // Malformed UTF-8 handling
+            'malformed UTF-8 single byte' => [
+                'input' => "Hello\xFFWorld",
+                'allowNewlines' => true,
+                'expected' => "Hello?World",
+            ],
+            'malformed UTF-8 multiple bytes' => [
+                'input' => "Test\xC3\x28Data",
+                'allowNewlines' => true,
+                'expected' => "Test?(Data",
+            ],
+            'malformed UTF-8 with ANSI escape' => [
+                'input' => "Line\xFF\x1B[31mColor\xFE",
+                'allowNewlines' => true,
+                'expected' => "Line?Color?",
+            ],
+            'malformed UTF-8 in array' => [
+                'input' => ["Item\xFF", "Data\xC3\x28"],
+                'allowNewlines' => true,
+                'expected' => ["Item?", "Data?("],
+            ],
+            'valid UTF-8 unchanged' => [
+                'input' => "Hello 世界 Test",
+                'allowNewlines' => true,
+                'expected' => "Hello 世界 Test",
+            ],
+            'mixed valid and invalid UTF-8' => [
+                'input' => "Hello\xFF世界\xFETest",
+                'allowNewlines' => true,
+                'expected' => "Hello?世界?Test",
+            ],
+        ];
     }
 }

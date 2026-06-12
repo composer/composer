@@ -92,7 +92,7 @@ EOT
             $query = preg_quote($query);
         }
 
-        $results = $repos->search($query, $mode, $type);
+        $results = $repos->search($query, $mode, $type, $io);
 
         if (\count($results) > 0 && $format === 'text') {
             $width = $this->getTerminalWidth();

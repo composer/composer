@@ -97,6 +97,8 @@ class InstallerTest extends TestCase
                     case 'audit':
                     case 'minimum-release-age':
                         return [];
+                    case 'policy':
+                        return false;
                 }
 
                 throw new \UnexpectedValueException('Unknown key '.$key);
@@ -138,7 +140,7 @@ class InstallerTest extends TestCase
         $autoloadGenerator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')->disableOriginalConstructor()->getMock();
 
         $installer = new Installer($io, $config, clone $rootPackage, $downloadManager, $repositoryManager, $locker, $installationManager, $eventDispatcher, $autoloadGenerator);
-        $installer->setAuditConfig(AuditConfig::fromConfig($config, false));
+        $installer->setAuditConfig(new AuditConfig(false));
         $result = $installer->run();
 
         $output = str_replace("\r", '', $io->getOutput());
@@ -364,14 +366,14 @@ class InstallerTest extends TestCase
         $install->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY);
         $install->addOption('no-dev', null, InputOption::VALUE_NONE);
         $install->addOption('dry-run', null, InputOption::VALUE_NONE);
-        $install->setCode(static function (InputInterface $input, OutputInterface $output) use ($installer, $composer): int {
+        $install->setCode(static function (InputInterface $input, OutputInterface $output) use ($installer): int {
             $ignorePlatformReqs = true === $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
             $installer
                 ->setDevMode(false === $input->getOption('no-dev'))
                 ->setDryRun($input->getOption('dry-run'))
                 ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
-                ->setAuditConfig(AuditConfig::fromConfig($composer->getConfig(), false));
+                ->setAuditConfig(new AuditConfig(false));
 
             return $installer->run();
         });
@@ -392,7 +394,7 @@ class InstallerTest extends TestCase
         $update->addOption('prefer-stable', null, InputOption::VALUE_NONE);
         $update->addOption('prefer-lowest', null, InputOption::VALUE_NONE);
         $update->addArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL);
-        $update->setCode(static function (InputInterface $input, OutputInterface $output) use ($installer, $composer): int {
+        $update->setCode(static function (InputInterface $input, OutputInterface $output) use ($installer): int {
             $packages = $input->getArgument('packages');
             $filteredPackages = array_filter($packages, static function ($package): bool {
                 return !in_array($package, ['lock', 'nothing', 'mirrors'], true);
@@ -420,7 +422,7 @@ class InstallerTest extends TestCase
                 ->setPreferStable($input->getOption('prefer-stable'))
                 ->setPreferLowest($input->getOption('prefer-lowest'))
                 ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
-                ->setAuditConfig(AuditConfig::fromConfig($composer->getConfig(), false))
+                ->setAuditConfig(new AuditConfig(false))
                 ->setMinimalUpdate($input->getOption('minimal-changes'));
 
             return $installer->run();

@@ -2865,6 +2865,107 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddConfigSettingPolicyListFieldDoesSurgicalEdit(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "name": "vendor/pkg",
+    "config": {
+        "vendor-dir": "vendor",
+        "policy": {
+            "advisories": {
+                "audit": "report"
+            },
+            "abandoned": {
+                "block": true
+            }
+        },
+        "sort-packages": true
+    }
+}');
+
+        self::assertTrue($manipulator->addConfigSetting('policy.advisories.block', true));
+        self::assertEquals('{
+    "name": "vendor/pkg",
+    "config": {
+        "vendor-dir": "vendor",
+        "policy": {
+            "advisories": {
+                "audit": "report",
+                "block": true
+            },
+            "abandoned": {
+                "block": true
+            }
+        },
+        "sort-packages": true
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddConfigSettingPolicyListFieldCreatesMissingList(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "policy": {
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addConfigSetting('policy.advisories.block', false));
+        self::assertEquals('{
+    "config": {
+        "policy": {
+            "advisories": {
+                "block": false
+            }
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveConfigSettingPolicyListFieldDoesSurgicalEdit(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "policy": {
+            "advisories": {
+                "audit": "report",
+                "block": true
+            }
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->removeConfigSetting('policy.advisories.audit'));
+        self::assertEquals('{
+    "config": {
+        "policy": {
+            "advisories": {
+                "block": true
+            }
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveConfigSettingPolicyListFieldNoOpWhenAbsent(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "policy": {
+            "advisories": {
+                "audit": "report"
+            }
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->removeConfigSetting('policy.advisories.block'));
+    }
+
     public function testRemoveConfigSettingCanRemoveSubKeyInHash(): void
     {
         $manipulator = new JsonManipulator('{

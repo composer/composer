@@ -1,3 +1,99 @@
+### [2.10.1] 2026-06-04
+
+  * Security: Fixed shell escaping when opening an editor (#12903)
+  * Security: Verify backup phar signature before restoring it when using self-update --rollback (#12918)
+  * Fixed `source-fallback` also disabling fallbacks to dist install when source is the preferred install method (#12888)
+  * Fixed source -> dist package updates wiping the .git dir without checking for local changes first (#12912)
+  * Fixed GitHub token prompt happening multiple times on parallel auth failures (#12913)
+  * Fixed warnings from Composer repositories being printed twice in some cases (#12907)
+
+### [2.10.0] 2026-05-28
+
+  * BC Break / Security: Disabled automatic fallback to source checkout if dist/zip install fails, we have introduced a new `source-fallback` config option as a temporary way to restore the old behavior, but if you need this talk to us as we plan to remove it entirely in 2.11 (#12885)
+  * BC Break: Minor break for `audit` consumers, the exit code is now always 0 (success) or 1 if anything failed the audit (#12881)
+  * Security: Hardened output filtering of URLs to reduce chances of token leaks (#12882, #12886)
+  * Security: Fixed handling of uppercase schemes in URL validation that might have allowed https requirement bypass (#12884)
+  * Fixed `audit` command returning a success code when the vendor dir was not present (#12880)
+
+### [2.10.0-RC2] 2026-05-20
+
+  * Since 2.10.0-RC1, fixes in 2.9.6 - 2.9.8, many of which security relevant, are also included
+  * Since 2.10.0-RC1 a lot of the new filter list config format was modified - see #12786 for the latest state of this new feature
+  * Added a new `policy` config block to control all security related update/install/audit policies. This replaces and deprecates most of the `audit` config (#12804 for implementation, #12786 for RFC/upgrade docs)
+  * Enabled blocking of malware packages at `install` time by default
+  * Fixed --no-plugins handling regression (#12789)
+  * Fixed regression in startup performance when many scripts are defined (#12832)
+  * Improved classmap dumping performance
+
+### [2.10.0-RC1] 2026-04-01
+
+  * Security: Added filter lists to block package versions where malware was detected on `update` or report it with `audit` (#12786)
+  * Security: Fixed git credentials remaining in git mirror .git/config after clone or update failed (2bcbfc3d)
+  * Security: Fixed usage of insecure 3DES ciphers when ext-curl is missing (5e71d77e)
+  * Security: Enforce allow-plugins even in non-interactive mode for very old pre-2.2 lock files (#12764)
+  * Added support for temporary `--with` constraints with wildcards in the package name for the `update` command (#12658)
+  * Added `--strict-psr-autoloader` flag to `install` and `update` commands (#12647)
+  * Added `source-fallback` config option to disable or enable source fallback on download failure (#12698)
+  * Added `--require` parameter to `create-project` to add new packages to the project as it gets installed (#12738)
+  * Optimized plugin autoloading by avoiding regenerating classmaps for every package per plugin (#12696)
+  * Optimized PoolOptimizer memory usage (#12783)
+  * Fixed `update --bump-after-update` to only bump packages that actually were updated (#12733)
+  * Fixed GitHub API authentication errors not being visible to the user (#12737)
+  * Fixed error reporting for clarity when a constraint cannot be parsed (#12743)
+  * Fixed warning being shown when lock file is disabled (#12760)
+  * Fixed inconsistent treatment of SingleCommandApplication script commands wrt autoloading (#12758)
+  * Fixed some platform package parsing failing when Composer runs in web SAPIs (#12735)
+
+### [2.9.8] 2026-05-13
+
+  * Security: Fixed GitHub token validation and disclosure (GHSA-f9f8-rm49-7jv2)
+
+### [2.9.7] 2026-04-14
+
+  * Fixes regression calling custom script command aliases that are called a substring of a composer command (#12802)
+
+### [2.9.6] 2026-04-14
+
+  * Security: Fixed command injection via malicious Perforce reference (GHSA-gqw4-4w2p-838q / CVE-2026-40261)
+  * Security: Fixed command injection via malicious Perforce repository definition (GHSA-wg36-wvj6-r67p / CVE-2026-40176)
+  * Security: Fixed git credentials remaining in git mirror .git/config after clone or update failed (2bcbfc3d)
+  * Security: Fixed usage of insecure 3DES ciphers when ext-curl is missing (5e71d77e)
+  * Security: Fixed Perforce unescaped user input in queryP4User shell command (ef3fc088)
+  * Security: Hardened git/hg/perforce/fossil identifier validation to ensure branch names starting with `-` do not cause issues (6621d45, d836b90, 5e08c764)
+  * Fixed inconsistent treatment of SingleCommandApplication script commands wrt autoloading (#12758)
+  * Fixed GitHub API authentication errors not being visible to the user (#12737)
+  * Fixed some platform package parsing failing when Composer runs in web SAPIs (#12735)
+  * Fixed error reporting for clarity when a constraint cannot be parsed (#12743)
+
+### [2.9.5] 2026-01-29
+
+  * Added support for new `pie` `download-url-methods` (#12727)
+  * Fixed detection of 7z when installed as 7za on some linux systems (#12731)
+  * Fixed warning because of the symfony/process CVE, 2.9.4 had a workaround already
+
+### [2.9.4] 2026-01-22
+
+  * Added active plugins to the diagnose command output (#12706)
+  * Fixed `HTTP/3` causing issues with proxies (#12699)
+  * Fixed `show` command regression with long descriptions containing unicode characters (#12704)
+  * Fixed regression handling invalid unicode sequences in output (#12707)
+  * Fixed `git rev-list` usages to support older pre-2.33 git versions (#12705)
+  * Fixed issue handling paths with `=` in them on Windows (#12726)
+
+### [2.9.3] 2025-12-30
+
+  * Security: Fixed ANSI sequence injection (GHSA-59pp-r3rg-353g / CVE-2025-67746)
+  * Fixed `COMPOSER_NO_SECURITY_BLOCKING` env var not being respected for `updates` done via the `install` command, and added `--no-security-blocking` flag to `install` as well (#12677)
+  * Fixed `update --lock` / `update mirrors` not working when locked packages contain vulnerabilities (#12645)
+  * Fixed `client-certificate` authentication implementation (#12667)
+  * Fixed `php-ext` schema not being validated in ValidatingArrayLoader (#12694)
+  * Fixed crash when `--bump-after-update` is used and the lock file is disabled (#12660)
+  * Fixed support for SecureTransport + LibreSSL on macOS (#12615)
+  * Fixed display of reasons for why advisories are ignored (#12668)
+  * Fixed compatibility issues when git has log.showSignature enabled (#12666)
+  * Fixed curl downloader not retrying when a timeout (err 28) failure occurs (#12662)
+  * Fixed EventDispatcher requiring a full Composer instance to function (#12629)
+
 ### [2.9.2] 2025-11-19
 
   * Added new `--no-security-blocking` flag to disable/configure security blocking (#12617)
@@ -2095,6 +2191,16 @@
 
   * Initial release
 
+[2.10.1]: https://github.com/composer/composer/compare/2.10.0...2.10.1
+[2.10.0]: https://github.com/composer/composer/compare/2.10.0-RC2...2.10.0
+[2.10.0-RC2]: https://github.com/composer/composer/compare/2.10.0-RC1...2.10.0-RC2
+[2.10.0-RC1]: https://github.com/composer/composer/compare/2.9.5...2.10.0-RC1
+[2.9.8]: https://github.com/composer/composer/compare/2.9.7...2.9.8
+[2.9.7]: https://github.com/composer/composer/compare/2.9.6...2.9.7
+[2.9.6]: https://github.com/composer/composer/compare/2.9.5...2.9.6
+[2.9.5]: https://github.com/composer/composer/compare/2.9.4...2.9.5
+[2.9.4]: https://github.com/composer/composer/compare/2.9.3...2.9.4
+[2.9.3]: https://github.com/composer/composer/compare/2.9.2...2.9.3
 [2.9.2]: https://github.com/composer/composer/compare/2.9.1...2.9.2
 [2.9.1]: https://github.com/composer/composer/compare/2.9.0...2.9.1
 [2.9.0]: https://github.com/composer/composer/compare/2.9.0-RC1...2.9.0

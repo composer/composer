@@ -468,4 +468,65 @@ class InitCommandTest extends TestCase
         $file = new JsonFile($dir . '/composer.json');
         self::assertEquals($expected, $file->read());
     }
+
+    public function testFormatAuthors(): void
+    {
+        $authorWithEmail = 'John Smith <john@example.com>';
+        $authorWithoutEmail = 'John Smith';
+        $command = new DummyInitCommand;
+        $authors = $command->formatAuthors($authorWithEmail);
+        self::assertEquals(['name' => 'John Smith', 'email' => 'john@example.com'], $authors[0]);
+        $authors = $command->formatAuthors($authorWithoutEmail);
+        self::assertEquals(['name' => 'John Smith'], $authors[0]);
+    }
+
+    public function testGetGitConfig(): void
+    {
+        $command = new DummyInitCommand;
+        $gitConfig = $command->getGitConfig();
+        self::assertArrayHasKey('user.name', $gitConfig);
+        self::assertArrayHasKey('user.email', $gitConfig);
+    }
+
+    public function testAddVendorIgnore(): void
+    {
+        $command = new DummyInitCommand;
+        $ignoreFile = self::getUniqueTmpDirectory().'/ignore';
+        $command->addVendorIgnore($ignoreFile);
+        self::assertFileExists($ignoreFile);
+        $content = (string) file_get_contents($ignoreFile);
+        self::assertStringContainsString('/vendor/', $content);
+    }
+
+    public function testHasVendorIgnore(): void
+    {
+        $command = new DummyInitCommand;
+        $ignoreFile = self::getUniqueTmpDirectory().'/ignore';
+        self::assertFalse($command->hasVendorIgnore($ignoreFile));
+        $command->addVendorIgnore($ignoreFile);
+        self::assertTrue($command->hasVendorIgnore($ignoreFile));
+    }
+}
+
+class DummyInitCommand extends InitCommand
+{
+    public function formatAuthors(string $author): array
+    {
+        return parent::formatAuthors($author);
+    }
+
+    public function getGitConfig(): array
+    {
+        return parent::getGitConfig();
+    }
+
+    public function addVendorIgnore(string $ignoreFile, string $vendor = '/vendor/'): void
+    {
+        parent::addVendorIgnore($ignoreFile, $vendor);
+    }
+
+    public function hasVendorIgnore(string $ignoreFile, string $vendor = 'vendor'): bool
+    {
+        return parent::hasVendorIgnore($ignoreFile, $vendor);
+    }
 }

@@ -156,8 +156,8 @@ class PoolBuilder
     /** @var ?SecurityAdvisoryPoolFilter */
     private $securityAdvisoryPoolFilter;
 
-    /** @var ?ReleaseAgePoolFilter */
-    private $releaseAgePoolFilter;
+    /** @var ?FilterListPoolFilter */
+    private $filterListPoolFilter;
 
     /**
      * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
@@ -170,7 +170,7 @@ class PoolBuilder
      * @phpstan-param array<string, string> $rootReferences
      * @param array<string, ConstraintInterface> $temporaryConstraints Runtime temporary constraints that will be used to filter packages
      */
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $temporaryConstraints = [], ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null, ?ReleaseAgePoolFilter $releaseAgePoolFilter = null)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $temporaryConstraints = [], ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null, ?FilterListPoolFilter $filterListPoolFilter = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
@@ -181,7 +181,7 @@ class PoolBuilder
         $this->io = $io;
         $this->temporaryConstraints = $temporaryConstraints;
         $this->securityAdvisoryPoolFilter = $securityAdvisoryPoolFilter;
-        $this->releaseAgePoolFilter = $releaseAgePoolFilter;
+        $this->filterListPoolFilter = $filterListPoolFilter;
     }
 
     /**
@@ -357,8 +357,7 @@ class PoolBuilder
         // filter vulnerable packages before optimizing the pool otherwise we may end up with inconsistent state where the optimizer took away versions
         // that were not vulnerable and now suddenly the vulnerable ones are removed and we are missing some versions to make it solvable
         $pool = $this->runSecurityAdvisoryFilter($pool, $repositories, $request);
-        // filter packages that don't meet the minimum-release-age requirement
-        $pool = $this->runReleaseAgeFilter($pool, $repositories, $request);
+        $pool = $this->runFilterListFilter($pool, $request);
         $pool = $this->runOptimizer($request, $pool);
 
         Intervals::clear();
@@ -820,6 +819,36 @@ class PoolBuilder
         return $pool;
     }
 
+    private function runFilterListFilter(Pool $pool, Request $request): Pool
+    {
+        if (null === $this->filterListPoolFilter) {
+            return $pool;
+        }
+
+        $this->io->debug('Running filter list pool filter.');
+
+        $before = microtime(true);
+        $total = \count($pool->getPackages());
+
+        $pool = $this->filterListPoolFilter->filter($pool, $request);
+
+        $filtered = $total - \count($pool->getPackages());
+
+        if (0 === $filtered) {
+            return $pool;
+        }
+
+        $this->io->write(sprintf('Filter list pool filter completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERY_VERBOSE);
+        $this->io->write(sprintf(
+            '<info>Found %s package versions referenced in your dependency graph. %s (%d%%) were filtered away by dependency policies.</info>',
+            number_format($total),
+            number_format($filtered),
+            round(100 / $total * $filtered)
+        ), true, IOInterface::VERY_VERBOSE);
+
+        return $pool;
+    }
+
     /**
      * @param RepositoryInterface[] $repositories
      */
@@ -848,43 +877,6 @@ class PoolBuilder
             number_format($total),
             number_format($filtered),
             round(100 / $total * $filtered)
-        ), true, IOInterface::VERY_VERBOSE);
-
-        return $pool;
-    }
-
-    /**
-     * @param RepositoryInterface[] $repositories
-     */
-    private function runReleaseAgeFilter(Pool $pool, array $repositories, Request $request): Pool
-    {
-        if (null === $this->releaseAgePoolFilter) {
-            return $pool;
-        }
-
-        $this->io->debug('Running release age pool filter.');
-
-        // Pass security advisories to enable security fix detection
-        // Security fixes bypass the release age requirement to ensure fast propagation
-        if (null !== $this->securityAdvisoryPoolFilter) {
-            $this->releaseAgePoolFilter->setSecurityAdvisories($this->securityAdvisoryPoolFilter->getAdvisoryMap());
-        }
-
-        $before = microtime(true);
-        $total = \count($pool->getPackages());
-
-        $pool = $this->releaseAgePoolFilter->filter($pool, $repositories, $request);
-
-        $filtered = $total - \count($pool->getPackages());
-
-        if (0 === $filtered) {
-            return $pool;
-        }
-
-        $this->io->write(sprintf('Release age pool filter completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERY_VERBOSE);
-        $this->io->write(sprintf(
-            '<info>%d package version(s) filtered due to minimum-release-age policy.</info>',
-            $filtered
         ), true, IOInterface::VERY_VERBOSE);
 
         return $pool;

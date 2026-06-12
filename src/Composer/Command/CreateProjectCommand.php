@@ -80,6 +80,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories to look the package up, either by URL or using JSON arrays'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'DEPRECATED: Use --repository instead.'),
                 new InputOption('add-repository', null, InputOption::VALUE_NONE, 'Add the custom repository in the composer.json. If a lock file is present it will be deleted and an update will be run instead of install.'),
+                new InputOption('require', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Require additional package(s) to composer.json after installing the project. If a lock file is present it will be deleted and an update will be run instead of install.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
@@ -91,7 +92,8 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
                 new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Whether to skip auditing of the installed package dependencies (can also be set via the COMPOSER_NO_AUDIT=1 env var).'),
                 new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", "json" or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
-                new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'Allows installing packages with security advisories or that are abandoned (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
+                new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'DEPRECATED: use --no-blocking instead. Allows installing packages with security advisories or that are abandoned (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
+                new InputOption('no-blocking', null, InputOption::VALUE_NONE, 'Disables all policy blocking during this command (can also be set via the COMPOSER_NO_BLOCKING=1 env var).'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('ask', null, InputOption::VALUE_NONE, 'Whether to ask for project directory.'),
@@ -168,16 +170,18 @@ EOT
             $input->getOption('no-install'),
             $this->getPlatformRequirementFilter($input),
             !$input->getOption('no-secure-http'),
-            $input->getOption('add-repository')
+            $input->getOption('add-repository'),
+            $input->getOption('require')
         );
     }
 
     /**
      * @param string|array<string>|null $repositories
+     * @param array<string> $requiredPackages
      *
      * @throws \Exception
      */
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, ?string $packageName = null, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $noInstall = false, ?PlatformRequirementFilterInterface $platformRequirementFilter = null, bool $secureHttp = true, bool $addRepository = false): int
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, ?string $packageName = null, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $noInstall = false, ?PlatformRequirementFilterInterface $platformRequirementFilter = null, bool $secureHttp = true, bool $addRepository = false, array $requiredPackages = []): int
     {
         $oldCwd = Platform::getCwd();
 
@@ -198,11 +202,8 @@ EOT
             $installedFromVcs = false;
         }
 
-        if ($repositories !== null && $addRepository && is_file('composer.lock')) {
-            unlink('composer.lock');
-        }
-
         $composer = $this->createComposerInstance($input, $io, null, $disablePlugins, $disableScripts);
+        $flushLockFile = false;
 
         // add the repository to the composer.json and use it for the install run later
         if ($repositories !== null && $addRepository) {
@@ -220,9 +221,33 @@ EOT
                 } else {
                     $configSource->addRepository($name, $repoConfig, false);
                 }
+                $flushLockFile = true;
 
                 $composer = $this->createComposerInstance($input, $io, null, $disablePlugins);
             }
+        }
+
+        // add packages to be installed in package.json
+        if (\count($requiredPackages) > 0) {
+            $configSource = new JsonConfigSource(new JsonFile('composer.json'));
+            $flushLockFile = true;
+
+            foreach ($requiredPackages as $nameColonConstraint) {
+                $nameColonConstraintExploded = explode(':', $nameColonConstraint);
+                $nameColonConstraintExploded[1] = $nameColonConstraintExploded[1] ?? '*';
+
+                $configSource->addLink(
+                    'require',
+                    $nameColonConstraintExploded[0],
+                    $nameColonConstraintExploded[1]
+                );
+            }
+
+            $composer = $this->createComposerInstance($input, $io, null, $disablePlugins);
+        }
+
+        if ($flushLockFile && is_file('composer.lock')) {
+            unlink('composer.lock');
         }
 
         $process = $composer->getLoop()->getProcessExecutor();
@@ -248,7 +273,8 @@ EOT
                 ->setOptimizeAutoloader($config->get('optimize-autoloader'))
                 ->setClassMapAuthoritative($config->get('classmap-authoritative'))
                 ->setApcuAutoloader($config->get('apcu-autoloader'))
-                ->setAuditConfig($this->createAuditConfig($config, $input));
+                ->setPolicyConfig($this->createPolicyConfig($config, $input))
+                ->setAuditConfig($this->createAuditConfig($input));
 
             if (!$composer->getLocker()->isLocked()) {
                 $installer->setUpdate(true);

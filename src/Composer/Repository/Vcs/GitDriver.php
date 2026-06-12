@@ -43,7 +43,7 @@ class GitDriver extends VcsDriver
         if (Filesystem::isLocalPath($this->url)) {
             $this->url = Preg::replace('{[\\/]\.git/?$}', '', $this->url);
             if (!is_dir($this->url)) {
-                throw new \RuntimeException('Failed to read package information from '.$this->url.' as the path does not exist');
+                throw new \RuntimeException('Failed to read package information from '.Url::sanitize($this->url).' as the path does not exist');
             }
             $this->repoDir = $this->url;
             $cacheUrl = realpath($this->url);
@@ -54,25 +54,25 @@ class GitDriver extends VcsDriver
 
             $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($this->url)) . '/';
 
-            GitUtil::cleanEnv();
+            GitUtil::cleanEnv($this->process);
 
             $fs = new Filesystem();
             $fs->ensureDirectoryExists(dirname($this->repoDir));
 
             if (!is_writable(dirname($this->repoDir))) {
-                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.dirname($this->repoDir).'" directory is not writable by the current user.');
+                throw new \RuntimeException('Can not clone '.Url::sanitize($this->url).' to access package information. The "'.dirname($this->repoDir).'" directory is not writable by the current user.');
             }
 
             if (Preg::isMatch('{^ssh://[^@]+@[^:]+:[^0-9]+}', $this->url)) {
-                throw new \InvalidArgumentException('The source URL '.$this->url.' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
+                throw new \InvalidArgumentException('The source URL '.Url::sanitize($this->url).' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
             }
 
             $gitUtil = new GitUtil($this->io, $this->config, $this->process, $fs);
             if (!$gitUtil->syncMirror($this->url, $this->repoDir)) {
                 if (!is_dir($this->repoDir)) {
-                    throw new \RuntimeException('Failed to clone '.$this->url.' to read package information from it');
+                    throw new \RuntimeException('Failed to clone '.Url::sanitize($this->url).' to read package information from it');
                 }
-                $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated</error>');
+                $this->io->writeError('<error>Failed to update '.Url::sanitize($this->url).', package information from this repository may be outdated</error>');
             }
 
             $cacheUrl = $this->url;
@@ -164,9 +164,14 @@ class GitDriver extends VcsDriver
      */
     public function getChangeDate(string $identifier): ?\DateTimeImmutable
     {
-        $this->process->execute(['git', 'rev-list', '--no-commit-header', '-n1', '--format=%at', $identifier], $output, $this->repoDir);
+        if (isset($identifier[0]) && $identifier[0] === '-') {
+            throw new \RuntimeException('Invalid git identifier detected. Identifier must not start with a -, given: ' . $identifier);
+        }
 
-        return new \DateTimeImmutable('@'.trim($output), new \DateTimeZone('UTC'));
+        $command = GitUtil::buildRevListCommand($this->process, ['-n1', '--format=%at', $identifier]);
+        $this->process->execute($command, $output, $this->repoDir);
+
+        return new \DateTimeImmutable('@'.trim(GitUtil::parseRevListOutput($output, $this->process)), new \DateTimeZone('UTC'));
     }
 
     /**
@@ -239,8 +244,9 @@ class GitDriver extends VcsDriver
             return false;
         }
 
-        $gitUtil = new GitUtil($io, $config, new ProcessExecutor($io), new Filesystem());
-        GitUtil::cleanEnv();
+        $process = new ProcessExecutor($io);
+        $gitUtil = new GitUtil($io, $config, $process, new Filesystem());
+        GitUtil::cleanEnv($process);
 
         try {
             $gitUtil->runCommands([['git', 'ls-remote', '--heads', '--', '%url%']], $url, sys_get_temp_dir());

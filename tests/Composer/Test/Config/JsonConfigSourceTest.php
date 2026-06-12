@@ -111,6 +111,111 @@ class JsonConfigSourceTest extends TestCase
         self::assertFileEquals(self::fixturePath('composer-empty.json'), $config);
     }
 
+    public function testAddPolicyListFieldPreservesFormatting(): void
+    {
+        $config = $this->workingDir.'/composer.json';
+        $original = '{
+    "name": "vendor/pkg", "config": {
+        "vendor-dir": "vendor", "sort-packages": true,
+        "policy": {
+            "advisories": {
+                "audit": "report"
+            },
+            "abandoned": {
+                "block": true
+            }
+        }
+    }
+}
+';
+        file_put_contents($config, $original);
+
+        $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
+        $jsonConfigSource->addConfigSetting('policy.advisories.block', true);
+
+        $expected = '{
+    "name": "vendor/pkg", "config": {
+        "vendor-dir": "vendor", "sort-packages": true,
+        "policy": {
+            "advisories": {
+                "audit": "report",
+                "block": true
+            },
+            "abandoned": {
+                "block": true
+            }
+        }
+    }
+}
+';
+        self::assertSame($expected, file_get_contents($config));
+    }
+
+    public function testRemovePolicyListFieldPreservesFormatting(): void
+    {
+        $config = $this->workingDir.'/composer.json';
+        $original = '{
+    "name": "vendor/pkg", "config": {
+        "vendor-dir": "vendor", "sort-packages": true,
+        "policy": {
+            "advisories": {
+                "audit": "report",
+                "block": true
+            }
+        }
+    }
+}
+';
+        file_put_contents($config, $original);
+
+        $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
+        $jsonConfigSource->removeConfigSetting('policy.advisories.audit');
+
+        $expected = '{
+    "name": "vendor/pkg", "config": {
+        "vendor-dir": "vendor", "sort-packages": true,
+        "policy": {
+            "advisories": {
+                "block": true
+            }
+        }
+    }
+}
+';
+        self::assertSame($expected, file_get_contents($config));
+    }
+
+    public function testRemovePolicyListFieldCascadesEmptyAncestors(): void
+    {
+        $config = $this->workingDir.'/composer.json';
+        $original = '{
+    "name": "vendor/pkg", "config": {
+        "vendor-dir": "vendor", "sort-packages": true,
+        "policy": {
+            "advisories": {
+                "block": true
+            }
+        }
+    }
+}
+';
+        file_put_contents($config, $original);
+
+        $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
+        $jsonConfigSource->removeConfigSetting('policy.advisories.block');
+
+        $expected = '{
+    "name": "vendor/pkg", "config": {
+        "vendor-dir": "vendor",
+        "sort-packages": true,
+        "policy": {
+        }
+    }
+}
+';
+        self::assertSame($expected, file_get_contents($config));
+    }
+
     /**
      * Test addLink()
      *
