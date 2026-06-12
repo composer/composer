@@ -484,11 +484,18 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if ($this->validateArray('autoload') && isset($this->config['autoload'])) {
-            $types = ['psr-0', 'psr-4', 'classmap', 'files', 'exclude-from-classmap'];
+            $types = ['psr-0', 'psr-4', 'moto', 'classmap', 'files', 'exclude-from-classmap'];
             foreach ($this->config['autoload'] as $type => $typeConfig) {
                 if (!in_array($type, $types)) {
                     $this->errors[] = 'autoload : invalid value ('.$type.'), must be one of '.implode(', ', $types);
                     unset($this->config['autoload'][$type]);
+                }
+                if ($type === 'moto') {
+                    foreach ($typeConfig as $namespace => $dirs) {
+                        if ($namespace !== '' && '\\' !== substr((string) $namespace, -1)) {
+                            $this->errors[] = 'autoload.moto : invalid value ('.$namespace.'), namespaces must end with a namespace separator, should be '.$namespace.'\\\\';
+                        }
+                    }
                 }
                 if ($type === 'psr-4') {
                     foreach ($typeConfig as $namespace => $dirs) {
@@ -498,6 +505,13 @@ class ValidatingArrayLoader implements LoaderInterface
                     }
                 }
             }
+        }
+
+        if (isset($this->config['autoload']['moto']) && isset($this->config['target-dir'])) {
+            $this->errors[] = 'target-dir : this can not be used together with the autoload.moto setting, remove target-dir to upgrade to moto';
+            // Unset the moto setting, since unsetting target-dir might
+            // interfere with other settings.
+            unset($this->config['autoload']['moto']);
         }
 
         if (isset($this->config['autoload']['psr-4']) && isset($this->config['target-dir'])) {

@@ -52,6 +52,62 @@ class ClassLoaderTest extends TestCase
     }
 
     /**
+     * Tests Moto file resolution.
+     *
+     * @dataProvider getMotoFindFileTests
+     *
+     * @param string $class    The fully-qualified class name to test.
+     * @param string $expected The expected file path suffix.
+     */
+    public function testMotoFindFile(string $class, string $expected): void
+    {
+        $loader = new ClassLoader();
+        $loader->addMoto('MotoVendor\\MotoPackage\\', __DIR__ . '/Fixtures/MotoVendor');
+        $file = $loader->findFile($class);
+        self::assertNotFalse($file, "->findFile() finds '$class'");
+        self::assertStringEndsWith($expected, $file, "->findFile() resolves '$class' to the correct file");
+    }
+
+    /**
+     * Provides arguments for ->testMotoFindFile().
+     *
+     * @return array<array<string>> Array of parameter sets to test with.
+     */
+    public static function getMotoFindFileTests(): array
+    {
+        return [
+            ['MotoVendor\\MotoPackage\\SubNamespace\\Foo', 'SubNamespace' . DIRECTORY_SEPARATOR . 'Foo.php'],
+            ['MotoVendor\\MotoPackage\\SubNamespace\\Foo_Bar', 'SubNamespace' . DIRECTORY_SEPARATOR . 'Foo.php'],
+            ['MotoVendor\\MotoPackage\\SubNamespace\\Foo_Baz', 'SubNamespace' . DIRECTORY_SEPARATOR . 'Foo.php'],
+        ];
+    }
+
+    /**
+     * Tests that Moto resolution returns false when the partial name
+     * is empty after underscore stripping.
+     *
+     * @dataProvider getMotoEmptyPartialNameTests
+     */
+    public function testMotoEmptyPartialNameReturnsFalse(string $class): void
+    {
+        $loader = new ClassLoader();
+        $loader->addMoto('MotoVendor\\MotoPackage\\', __DIR__ . '/Fixtures/MotoVendor');
+        self::assertFalse($loader->findFile($class));
+    }
+
+    /**
+     * @return array<array<string>>
+     */
+    public static function getMotoEmptyPartialNameTests(): array
+    {
+        return [
+            ['MotoVendor\\MotoPackage\\_Foo'],
+            ['MotoVendor\\MotoPackage\\SubNamespace\\_Foo'],
+            ['MotoVendor\\MotoPackage\\_'],
+        ];
+    }
+
+    /**
      * getPrefixes method should return empty array if ClassLoader does not have any psr-0 configuration
      */
     public function testGetPrefixesWithNoPSR0Configuration(): void
@@ -67,6 +123,8 @@ class ClassLoaderTest extends TestCase
         $loader->add('', __DIR__ . '/FALLBACK');
         $loader->addPsr4('ShinyVendor\\ShinyPackage\\', __DIR__ . '/Fixtures');
         $loader->addPsr4('', __DIR__ . '/FALLBACKPSR4');
+        $loader->addMoto('MotoVendor\\MotoPackage\\', __DIR__ . '/Fixtures/MotoVendor');
+        $loader->addMoto('', __DIR__ . '/FALLBACKMOTO');
         $loader->addClassMap(['A' => '', 'B' => 'path']);
         $loader->setApcuPrefix('prefix');
         $loader->setClassMapAuthoritative(true);
@@ -78,8 +136,10 @@ class ClassLoaderTest extends TestCase
         self::assertSame($loader->getClassMap(), $loader2->getClassMap());
         self::assertSame($loader->getFallbackDirs(), $loader2->getFallbackDirs());
         self::assertSame($loader->getFallbackDirsPsr4(), $loader2->getFallbackDirsPsr4());
+        self::assertSame($loader->getFallbackDirsMoto(), $loader2->getFallbackDirsMoto());
         self::assertSame($loader->getPrefixes(), $loader2->getPrefixes());
         self::assertSame($loader->getPrefixesPsr4(), $loader2->getPrefixesPsr4());
+        self::assertSame($loader->getPrefixesMoto(), $loader2->getPrefixesMoto());
         self::assertSame($loader->getUseIncludePath(), $loader2->getUseIncludePath());
     }
 }
