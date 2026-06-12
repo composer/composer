@@ -269,7 +269,7 @@ class CooldownPoolFilter
         foreach ($constraintParts as $index => $part) {
             if ($part->matches($packageConstraint)) {
                 $key = $name . ':' . $index;
-                if (isset($oldestSecurityFixDate[$key]) && $releaseDate === $oldestSecurityFixDate[$key]) {
+                if (isset($oldestSecurityFixDate[$key]) && $releaseDate->getTimestamp() === $oldestSecurityFixDate[$key]->getTimestamp()) {
                     return true;
                 }
             }
@@ -287,9 +287,13 @@ class CooldownPoolFilter
             ->modify("+{$this->config->age} seconds");
         $diff = $this->now->diff($availableAt);
 
+        // Use the total day count; $diff->d alone resets each month and would
+        // under-report waits longer than a month.
+        $days = (int) $diff->days;
+
         $parts = [];
-        if ($diff->d > 0) {
-            $parts[] = $diff->d . ' day' . ($diff->d > 1 ? 's' : '');
+        if ($days > 0) {
+            $parts[] = $days . ' day' . ($days > 1 ? 's' : '');
         }
         if ($diff->h > 0) {
             $parts[] = $diff->h . ' hour' . ($diff->h > 1 ? 's' : '');

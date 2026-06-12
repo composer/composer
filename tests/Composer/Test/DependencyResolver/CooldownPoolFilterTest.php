@@ -50,6 +50,25 @@ class CooldownPoolFilterTest extends TestCase
         $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
     }
 
+    public function testAvailableInReportsTotalDaysForLongWaits(): void
+    {
+        // 60-day cooldown; released 1 day ago -> available in 59 days.
+        // Guards against using DateInterval->d (which resets per month and would show "29 days").
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 60 * 24 * 3600);
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $package = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $package->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $pool = new Pool([$package]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0'));
+        self::assertNotNull($info);
+        self::assertSame('59 days', $info['availableIn']);
+    }
+
     public function testPublishedDateTakesPrecedenceOverReleaseDate(): void
     {
         $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
