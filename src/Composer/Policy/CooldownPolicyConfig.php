@@ -21,7 +21,7 @@ use Composer\Util\Platform;
  * A cooldown withholds package versions whose publication is more recent than
  * the configured `age` during update/require, to reduce exposure to a
  * compromised-maintainer release. On top of the shared list skeleton
- * (block/audit/ignore) it carries the cooldown duration in `age`.
+ * (block/audit/ignore), it carries the cooldown duration in `age`.
  *
  * @internal
  * @final
@@ -59,7 +59,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
     }
 
     /**
-     * Whether a cooldown duration is actually configured. Without one the
+     * Whether a cooldown duration is actually configured. Without one, the
      * policy is inert regardless of the `block` flag.
      */
     public function hasCooldown(): bool
@@ -116,7 +116,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
         $age = self::parseDuration($cooldownConfig['age'] ?? null);
 
         // Environment variable overrides the configured duration but preserves
-        // the block/audit/ignore settings from config.
+        // the block/audit/ignore settings from config
         $envValue = Platform::getEnv('COMPOSER_POLICY_COOLDOWN_AGE');
         if ($envValue !== false && $envValue !== '') {
             $age = self::parseDuration($envValue);
@@ -143,9 +143,9 @@ class CooldownPolicyConfig extends ListPolicyConfig
     /**
      * Parse a duration into seconds.
      *
-     * Accepts an integer number of seconds, a numeric string, or a human
-     * readable duration such as "7 days", "24 hours" or "1 week". null, an
-     * empty string and 0 all mean "no cooldown".
+     * Accepts an integer number of seconds, a numeric string, or a
+     * human-readable duration such as "7 days", "24 hours" or "1 week".
+     * null, an empty string, and 0 all mean "no cooldown".
      *
      * @param string|int|null $duration
      * @throws \RuntimeException on a negative or unparseable duration

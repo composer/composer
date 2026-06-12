@@ -347,8 +347,8 @@ class PolicyConfig
     private function filterableLists(): array
     {
         $allLists = $this->getAllLists();
-        // advisories and abandoned are surfaced via SecurityAdvisoryPoolFilter;
-        // cooldown has its own dedicated CooldownPoolFilter (it is time-based and
+        // `advisories` and `abandoned` are surfaced via SecurityAdvisoryPoolFilter;
+        // `cooldown` has its own dedicated CooldownPoolFilter (it is time-based and
         // has no URL sources to fetch), so it is likewise excluded here.
         unset($allLists['abandoned'], $allLists['advisories'], $allLists['cooldown']);
 

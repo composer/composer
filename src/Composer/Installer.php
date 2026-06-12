@@ -1197,7 +1197,7 @@ class Installer
         $policyConfig = $this->getPolicyConfig();
 
         // Cooldown blocks during update/require only for now, and is skipped when
-        // only refreshing mirror/dist information (no version changes happen then).
+        // only refreshing mirror/dist information (no version changes happen then)
         if ($policyConfig->enabled && $policyConfig->cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE) && !$this->updateMirrors) {
             return new CooldownPoolFilter($policyConfig->cooldown);
         }

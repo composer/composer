@@ -286,9 +286,6 @@ class CooldownPoolFilter
         $availableAt = (new DateTimeImmutable($releaseDate->format(DateTimeInterface::ATOM)))
             ->modify("+{$this->config->age} seconds");
         $diff = $this->now->diff($availableAt);
-
-        // Use the total day count; $diff->d alone resets each month and would
-        // under-report waits longer than a month.
         $days = (int) $diff->days;
 
         $parts = [];

@@ -50,10 +50,9 @@ class CooldownPoolFilterTest extends TestCase
         $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
     }
 
-    public function testAvailableInReportsTotalDaysForLongWaits(): void
+    public function testAvailableInReportsTotalDaysForLongWaitsSpanningMultipleMonths(): void
     {
-        // 60-day cooldown; released 1 day ago -> available in 59 days.
-        // Guards against using DateInterval->d (which resets per month and would show "29 days").
+        // 60-day cooldown; released 1 day ago -> available in 59 days
         $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 60 * 24 * 3600);
         $now = new DateTimeImmutable('2026-01-15 12:00:00');
         $filter = new CooldownPoolFilter($config, $now);
@@ -76,7 +75,7 @@ class CooldownPoolFilterTest extends TestCase
         $filter = new CooldownPoolFilter($config, $now);
 
         // Author-controlled `time` claims the version is old enough, but the
-        // server-set published date shows it is actually brand new -> withheld.
+        // server-set published date shows it is actually brand new -> withheld
         $package = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
         $package->setReleaseDate(new DateTimeImmutable('2025-01-01 12:00:00'));
         $package->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00'));
@@ -491,17 +490,17 @@ class CooldownPoolFilterTest extends TestCase
 
     public function testDeadlockScenarioWithPartialSecurityAdvisory(): void
     {
-        // This test verifies the fix for the deadlock scenario:
+        // Verifies the following scenario:
         // - Security advisory blocks all old versions (< 2.0.0)
-        // - Minimum release age would block all new versions (>= 2.0.0)
-        // - With the fix, version 2.0.0 (security fix) should be allowed
+        // - Cooldown policy would block all new versions (>= 2.0.0)
+        // - Version 2.0.0 is a security fix => should be allowed
 
         $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
         $now = new DateTimeImmutable('2026-01-15 12:00:00');
         $filter = new CooldownPoolFilter($config, $now);
 
         $versionParser = new VersionParser();
-        // PartialSecurityAdvisory (no reportedAt) - simulates real-world scenario
+        // PartialSecurityAdvisory (no reportedAt)
         $advisory = new PartialSecurityAdvisory(
             'vendor/pkg',
             'ADVISORY-1',
@@ -512,14 +511,14 @@ class CooldownPoolFilterTest extends TestCase
             'vendor/pkg' => [$advisory],
         ]);
 
-        // Version 2.0.0 - the security fix, released 2 days ago (too new for normal release age)
+        // Version 2.0.0 - the security fix, released 2 days ago (too new for normal cooldown)
         $securityFixPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
         $securityFixPackage->setReleaseDate(new DateTimeImmutable('2026-01-13 12:00:00'));
 
         $pool = new Pool([$securityFixPackage]);
         $filteredPool = $filter->filter($pool, new Request());
 
-        // Should NOT be filtered - this is the security fix that resolves the deadlock
+        // Should NOT be filtered
         $this->assertSame([$securityFixPackage], $filteredPool->getPackages());
         $this->assertFalse($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
     }
@@ -541,7 +540,7 @@ class CooldownPoolFilterTest extends TestCase
             'vendor/pkg' => [$advisory],
         ]);
 
-        // Multiple security fix versions - all newer than minimum release age
+        // Multiple security fix versions - all newer than cooldown policy allows
         $fix1 = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
         $fix1->setReleaseDate(new DateTimeImmutable('2026-01-10 12:00:00')); // Oldest fix
 

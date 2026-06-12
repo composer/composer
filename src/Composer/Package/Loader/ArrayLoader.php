@@ -252,7 +252,7 @@ class ArrayLoader implements LoaderInterface
 
         // Server-set publication timestamp, owned by the repository and not
         // overridable by the package author (unlike `time`). Preferred by the
-        // cooldown policy when present.
+        // cooldown policy when present
         if (isset($config['published-time']) && '' !== $config['published-time']) {
             $publishedTime = Preg::isMatch('/^\d++$/D', $config['published-time']) ? '@'.$config['published-time'] : $config['published-time'];
 
