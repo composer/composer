@@ -626,7 +626,9 @@ OUTPUT;
 
     public function testSelf(): void
     {
-        $this->initTempComposer(['name' => 'vendor/package', 'version' => '1.2.3', 'time' => date('Y-m-d')]);
+        $tmpDir = $this->initTempComposer(['name' => 'vendor/package', 'version' => '1.2.3', 'time' => date('Y-m-d')]);
+        $packageDir = str_replace('/', DIRECTORY_SEPARATOR, $tmpDir.'/vendor/vendor/package');
+        mkdir($packageDir, 0777, true);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'show', '--self' => true]);
@@ -640,7 +642,7 @@ OUTPUT;
             'homepage' => '',
             'source' => '[]  ',
             'dist' => '[]  ',
-            'path' => '',
+            'path' => $packageDir,
             'names' => 'vendor/package',
         ];
         $expectedString = implode(

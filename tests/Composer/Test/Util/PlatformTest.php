@@ -14,6 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Util\Platform;
 use Composer\Test\TestCase;
+use RuntimeException;
 
 /**
  * PlatformTest
@@ -22,9 +23,15 @@ use Composer\Test\TestCase;
  */
 class PlatformTest extends TestCase
 {
+    public function setUp(): void
+    {
+        stream_wrapper_register('composertestsstreamwrapper', \stdClass::class);
+    }
+
     protected function tearDown(): void
     {
         Platform::clearEnv('COMPOSER_TEST_BOOL_ENV');
+        stream_wrapper_unregister('composertestsstreamwrapper');
         parent::tearDown();
     }
 
@@ -105,5 +112,25 @@ class PlatformTest extends TestCase
         self::expectExceptionMessage('Invalid value for COMPOSER_TEST_BOOL_ENV');
 
         Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV');
+    }
+
+    public function testRealPathFileStreamStripsScheme(): void
+    {
+        $file = __FILE__;
+        $streamPath = 'file://' . $file;
+        self::assertEquals($file, Platform::realpath($streamPath));
+    }
+
+    public function testRealPathStreamWrapperPath(): void
+    {
+        $streamPath = 'composertestsstreamwrapper://any/path.true';
+        self::assertEquals($streamPath, Platform::realpath($streamPath));
+    }
+
+    public function testRealPathException(): void
+    {
+        // Test that `::realpath()` throws an exception on a non-existing path
+        $this->expectException(RuntimeException::class);
+        Platform::realpath('/path/does/not/exist');
     }
 }

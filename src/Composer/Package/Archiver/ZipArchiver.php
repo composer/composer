@@ -14,6 +14,7 @@ namespace Composer\Package\Archiver;
 
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
+use RuntimeException;
 use ZipArchive;
 
 /**
@@ -32,11 +33,12 @@ class ZipArchiver implements ArchiverInterface
     public function archive(string $sources, string $target, string $format, array $excludes = [], bool $ignoreFilters = false): string
     {
         $fs = new Filesystem();
-        $sourcesRealpath = realpath($sources);
-        if (false !== $sourcesRealpath) {
-            $sources = $sourcesRealpath;
+
+        try {
+            $sources = Platform::realpath($sources);
+        } catch (RuntimeException $exception) {
         }
-        unset($sourcesRealpath);
+
         $sources = $fs->normalizePath($sources);
 
         $zip = new ZipArchive();
@@ -96,7 +98,7 @@ class ZipArchiver implements ArchiverInterface
             $sources,
             $zip->getStatusString()
         );
-        throw new \RuntimeException($message);
+        throw new RuntimeException($message);
     }
 
     /**

@@ -566,7 +566,12 @@ class Filesystem
      */
     public function isAbsolutePath(string $path)
     {
-        return strpos($path, '/') === 0 || substr($path, 1, 1) === ':' || strpos($path, '\\\\') === 0;
+        $path = Preg::replace('{^file://}i', '', $path);
+
+        return strpos($path, '/') === 0
+               || substr($path, 1, 1) === ':'
+               || strpos($path, '\\\\') === 0
+               || self::isStreamWrapperPath($path);
     }
 
     /**
@@ -653,6 +658,28 @@ class Filesystem
         }
 
         return $path;
+    }
+
+    /**
+     * Is the file addressed with a streamwrapper:// prefix?
+     *
+     * `file://` is excluded – its paths can be relative, distinct from other stream wrappers which are always absolute.
+     *
+     * @see https://www.php.net/manual/en/intro.stream.php
+     *
+     * @param string $path Path to check
+     */
+    public static function isStreamWrapperPath(string $path): bool
+    {
+        $wrappers = array_map('preg_quote', stream_get_wrappers());
+        if (count($wrappers) === 0) {
+            return false;
+        }
+        $streamWrappersRegex = sprintf('{^(?:%s)://}', implode('|', $wrappers));
+
+        $path = Preg::replace('{^file://}i', '', $path);
+
+        return Preg::isMatch($streamWrappersRegex, $path);
     }
 
     /**
@@ -770,7 +797,7 @@ class Filesystem
 
         $relativePath = $this->findShortestPath($link, $target);
         chdir(\dirname($link));
-        $result = @symlink($relativePath, $link);
+        $result = symlink($relativePath, $link);
 
         chdir($cwd);
 

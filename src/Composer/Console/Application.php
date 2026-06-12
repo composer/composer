@@ -204,7 +204,11 @@ class Application extends BaseApplication
             && $input->hasParameterOption('-h', true) === false
         ) {
             $dir = dirname(Platform::getCwd(true));
-            $home = realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
+            try {
+                $home = Platform::realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
+            } catch (\TypeError|RuntimeException $e) {
+                $home = Platform::realpath('/');
+            }
 
             // abort when we reach the home dir or top of the filesystem
             while (dirname($dir) !== $dir && $dir !== $home) {
@@ -297,7 +301,12 @@ class Application extends BaseApplication
             } catch (ParsingException $e) {
                 $details = $e->getDetails();
 
-                $file = realpath(Factory::getComposerFile());
+                try {
+                    $composerFile = Factory::getComposerFile();
+                    $file = Platform::realpath($composerFile);
+                } catch (RuntimeException $realpathException) {
+                    $file = $composerFile;
+                }
 
                 $line = null;
                 if ($details && isset($details['line'])) {

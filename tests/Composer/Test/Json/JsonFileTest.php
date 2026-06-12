@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Json;
 
+use Composer\Util\Filesystem;
 use Seld\JsonLint\ParsingException;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
@@ -491,6 +492,94 @@ class JsonFileTest extends TestCase
             self::assertEquals($json, $file->encode($data));
         } else {
             self::assertEquals($json, $file->encode($data, $options));
+        }
+    }
+
+    /**
+     * @covers \Composer\Json\JsonFile::read
+     */
+    public function testPrintsMessageWhenReading(): void
+    {
+        $io = $this->getIOMock();
+        $io->expects([['text' => 'Reading ' . __DIR__ . '/Fixtures/tabs.json']], true);
+
+        $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs.json', null, $io);
+        $jsonFile->read();
+    }
+
+    /**
+     * @covers \Composer\Json\JsonFile::read
+     */
+    public function testPrintsMessageWhenReadingSymlink(): void
+    {
+        $io = $this->getIOMock();
+        $io->expects([['text' => 'Reading ' . __DIR__ . '/Fixtures/tabs2.json (' . __DIR__ . str_replace('/', DIRECTORY_SEPARATOR, '/Fixtures/tabs.json)')]], true);
+
+        $filesystem = new Filesystem();
+        $filesystem->relativeSymlink(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/tabs2.json');
+
+        try {
+            $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs2.json', null, $io);
+            $jsonFile->read();
+        } finally {
+            $filesystem->unlink(__DIR__.'/Fixtures/tabs2.json');
+        }
+    }
+
+    /**
+     * @covers \Composer\Json\JsonFile::read
+     */
+    public function testThrowsWhenReadingBrokenSymlink(): void
+    {
+        copy(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/tabs2.json');
+
+        $filesystem = new Filesystem();
+        $filesystem->relativeSymlink(__DIR__.'/Fixtures/tabs2.json', __DIR__.'/Fixtures/tabs3.json');
+        $filesystem->unlink(__DIR__.'/Fixtures/tabs2.json');
+
+        try {
+            $exceptionMessage = '';
+            try {
+                $jsonFile = new JsonFile(__DIR__.'/Fixtures/tabs3.json');
+                $jsonFile->read();
+            } catch (\RuntimeException $e) {
+                $exceptionMessage = $e->getMessage();
+            }
+
+            self::assertStringEndsWith('The file "' . __DIR__ . '/Fixtures/tabs3.json" is not readable.', $exceptionMessage);
+        } finally {
+            $filesystem->unlink(__DIR__.'/Fixtures/tabs3.json');
+        }
+    }
+
+    /**
+     * @covers \Composer\Json\JsonFile::write
+     */
+    public function testThrowsWhenWriteConflict(): void
+    {
+        @mkdir(__DIR__.'/Fixtures/subdirfile/');
+        copy(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/subdirfile/tabs.json');
+
+        $jsonFile = new JsonFile(__DIR__.'/Fixtures/subdirfile/tabs.json');
+        $jsonFile->read();
+
+        $filesystem = new Filesystem();
+        $filesystem->unlink(__DIR__.'/Fixtures/subdirfile/tabs.json');
+        $filesystem->removeDirectory(__DIR__.'/Fixtures/subdirfile');
+
+        copy(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/subdirfile');
+
+        try {
+            $exceptionMessage = '';
+            try {
+                $jsonFile->write(['foo' => 'bar']);
+            } catch (\UnexpectedValueException $e) {
+                $exceptionMessage = $e->getMessage();
+            }
+
+            self::assertStringEndsWith(__DIR__ . '/Fixtures/subdirfile exists and is not a directory.', $exceptionMessage);
+        } finally {
+            $filesystem->unlink(__DIR__.'/Fixtures/subdirfile');
         }
     }
 }

@@ -14,6 +14,7 @@ namespace Composer\Json;
 
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
@@ -104,10 +105,12 @@ class JsonFile
                 }
                 if ($this->io && $this->io->isDebug()) {
                     $realpathInfo = '';
-                    $realpath = realpath($this->path);
-                    if (false !== $realpath && $realpath !== $this->path) {
+                    $realpath = Platform::realpath($this->path);
+                    $filesystem = new Filesystem();
+                    if ($filesystem->normalizePath($realpath) !== $filesystem->normalizePath($this->path)) {
                         $realpathInfo = ' (' . $realpath . ')';
                     }
+
                     $this->io->writeError('Reading ' . $this->path . $realpathInfo);
                 }
                 $json = file_get_contents($this->path);
@@ -147,7 +150,7 @@ class JsonFile
         if (!is_dir($dir)) {
             if (file_exists($dir)) {
                 throw new \UnexpectedValueException(
-                    realpath($dir).' exists and is not a directory.'
+                    Platform::realpath($dir).' exists and is not a directory.'
                 );
             }
             if (!@mkdir($dir, 0777, true)) {

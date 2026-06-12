@@ -22,6 +22,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Spdx\SpdxLicenses;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -172,10 +173,10 @@ EOT
         }
 
         if ($input->isInteractive() && is_dir('.git')) {
-            $ignoreFile = realpath('.gitignore');
-
-            if (false === $ignoreFile) {
-                $ignoreFile = realpath('.') . '/.gitignore';
+            try {
+                $ignoreFile = Platform::realpath('.gitignore');
+            } catch (\RuntimeException $exception) {
+                $ignoreFile = Platform::realpath('.') . '/.gitignore';
             }
 
             if (!$this->hasVendorIgnore($ignoreFile)) {
@@ -615,7 +616,7 @@ EOT
     private function getDefaultPackageName(): string
     {
         $git = $this->getGitConfig();
-        $cwd = realpath(".");
+        $cwd = Platform::realpath('.');
         $name = basename($cwd);
         $name = $this->sanitizePackageNameComponent($name);
 

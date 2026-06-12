@@ -14,6 +14,7 @@ namespace Composer\Test\Repository;
 
 use Composer\Repository\PathRepository;
 use Composer\Test\TestCase;
+use Composer\Util\Filesystem;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Loop;
 use Composer\Util\Platform;
@@ -173,5 +174,54 @@ class PathRepositoryTest extends TestCase
         $loop = new Loop(new HttpDownloader($io, $config), $proc);
 
         return new PathRepository($options, $io, $config, null, null, $proc);
+    }
+
+    /**
+     * Ensure `realpath()` is invoked and its result is valid in loading the repository.
+     *
+     * @covers \Composer\Repository\PathRepository::initialize()
+     */
+    public function testLoadPackageFromFileSystemThroughSymlink(): void
+    {
+        $repositoryTargetUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'with-version']);
+        $symlinkLocationUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'link-location-with-version']);
+
+        $filesystem = new Filesystem();
+
+        $filesystem->relativeSymlink($repositoryTargetUrl, $symlinkLocationUrl);
+
+        try {
+            $repository = $this->createPathRepo(['url' => $symlinkLocationUrl]);
+
+            self::assertSame(1, $repository->count());
+            self::assertTrue($repository->hasPackage(self::getPackage('test/path-versioned', '0.0.2')));
+        } finally {
+            $filesystem->remove($symlinkLocationUrl);
+        }
+    }
+
+    /**
+     * @covers \Composer\Repository\PathRepository::initialize()
+     */
+    public function testLoadPackageFromFileSystemWithGitVersion(): void
+    {
+        $fixtureSource = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'without-version']);
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'with-git-version']);
+        $repository = $this->createPathRepo(['url' => $repositoryUrl]);
+
+        $filesystem = new Filesystem();
+        $filesystem->copy($fixtureSource, $repositoryUrl);
+
+        $process = new ProcessExecutor();
+        $command = 'git init; git add .; git commit -am "Initial commit"; git tag -a v1.4 -m "my version 1.4"; git checkout v1.4';
+        $process->execute($command, $output, $repositoryUrl);
+
+        $packages = $repository->getPackages();
+        $packageVersion = $packages[0]->getPrettyVersion();
+
+        self::assertEquals('v1.4', $packageVersion);
+
+        // Cleanup.
+        $filesystem->remove($repositoryUrl);
     }
 }
