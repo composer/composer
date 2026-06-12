@@ -28,6 +28,7 @@ use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\LockArrayRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\FilterRepository;
@@ -101,6 +102,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
+                new InputOption('only-dev', null, InputOption::VALUE_NONE, 'Restricts the list of packages to your require-dev packages.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages). Use with the --outdated option'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages). Use with the --outdated option'),
             ])
@@ -158,6 +160,12 @@ EOT
 
         if ($input->getOption('tree') && ($input->getOption('all') || $input->getOption('available'))) {
             $io->writeError('The --tree (-t) option is not usable in combination with --all or --available (-a)');
+
+            return 1;
+        }
+
+        if ($input->getOption('no-dev') && $input->getOption('only-dev')) {
+            $io->writeError('The --no-dev and --only-dev options cannot be combined.');
 
             return 1;
         }
@@ -240,9 +248,19 @@ EOT
                 throw new \UnexpectedValueException('A valid composer.json and composer.lock files is required to run this command with --locked');
             }
             $locker = $composer->getLocker();
-            $lockedRepo = $locker->getLockedRepository(!$input->getOption('no-dev'));
+            $lockedRepo = $locker->getLockedRepository(!$input->getOption('no-dev') || $input->getOption('only-dev'));
             if ($input->getOption('self')) {
                 $lockedRepo->addPackage(clone $composer->getPackage());
+            }
+            if ($input->getOption('only-dev')) {
+                $prodPackages = RepositoryUtils::filterRequiredPackages($lockedRepo->getPackages(), $composer->getPackage());
+                $devAndProdPackages = RepositoryUtils::filterRequiredPackages($lockedRepo->getPackages(), $composer->getPackage(), true);
+                $onlyDevPackages = array_values(array_filter($devAndProdPackages, static function (PackageInterface $package) use ($prodPackages) {
+                    return !in_array($package, $prodPackages, true);
+                }));
+                $lockedRepo = new LockArrayRepository(array_map(static function (PackageInterface $package) {
+                    return clone $package;
+                }, $onlyDevPackages));
             }
             $repos = $installedRepo = new InstalledRepository([$lockedRepo]);
         } else {
@@ -261,6 +279,16 @@ EOT
                 $repos = $installedRepo = new InstalledRepository([$rootRepo, new InstalledArrayRepository(array_map(static function ($pkg): PackageInterface {
                     return clone $pkg;
                 }, $packages))]);
+            } elseif ($input->getOption('only-dev')) {
+                $localPackages = $composer->getRepositoryManager()->getLocalRepository()->getPackages();
+                $prodPackages = RepositoryUtils::filterRequiredPackages($localPackages, $rootPkg, false);
+                $devAndProdPackages = RepositoryUtils::filterRequiredPackages($localPackages, $rootPkg, true);
+                $onlyDevPackages = array_values(array_filter($devAndProdPackages, static function (PackageInterface $package) use ($prodPackages) {
+                    return !in_array($package, $prodPackages, true);
+                }));
+                $repos = $installedRepo = new InstalledRepository([$rootRepo, new InstalledArrayRepository(array_map(static function (PackageInterface $package) {
+                    return clone $package;
+                }, $onlyDevPackages))]);
             } else {
                 $repos = $installedRepo = new InstalledRepository([$rootRepo, $composer->getRepositoryManager()->getLocalRepository()]);
             }
