@@ -1121,6 +1121,12 @@ otherwise, a random suffix will be generated.
 
 Defaults to `false`. If `true`, always optimize when dumping the autoloader.
 
+## strict-psr-autoloader
+
+Defaults to `false`. If `true`, Return a failed exit code (6)
+if PSR-4 or PSR-0 mapping errors are present in the current project (dependencies excluded)
+Requires `optimize-autoloader` or `classmap-authoritative` to be enabled to work"
+
 ## sort-packages
 
 Defaults to `false`. If `true`, the `require` command keeps packages sorted
