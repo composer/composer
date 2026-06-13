@@ -165,16 +165,16 @@ class Auditor
                     $plurality = $totalAdvisoryCount === 1 ? 'y' : 'ies';
                     $pkgPlurality = $pkgCount === 1 ? '' : 's';
                     $punctuation = $format === 'summary' ? '.' : ':';
-                    $io->writeError(sprintf($message, $totalAdvisoryCount, $plurality, $pkgCount, $pkgPlurality, $punctuation));
+                    $io->write(sprintf($message, $totalAdvisoryCount, $plurality, $pkgCount, $pkgPlurality, $punctuation));
                     $this->outputAdvisories($io, $advisoriesToOutput, $format);
                 }
             }
 
             if ($format === self::FORMAT_SUMMARY) {
-                $io->writeError('Run "composer audit" for a full list of advisories.');
+                $io->write('Run "composer audit" for a full list of advisories.');
             }
         } else {
-            $io->writeError('<info>No security vulnerability advisories found.</info>');
+            $io->write('<info>No security vulnerability advisories found.</info>');
         }
 
         if (count($unreachableRepos) > 0) {
