@@ -250,17 +250,20 @@ class RepositorySet
      */
     public function getMatchingSecurityAdvisories(array $packages, bool $allowPartialAdvisories = false, bool $ignoreUnreachable = false): array
     {
-        $map = [];
+        $constraintsByName = [];
         foreach ($packages as $package) {
             // ignore root alias versions as they are not actual package versions and should not matter when it comes to vulnerabilities
             if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
                 continue;
             }
-            if (isset($map[$package->getName()])) {
-                $map[$package->getName()] = new MultiConstraint([new Constraint('=', $package->getVersion()), $map[$package->getName()]], false);
-            } else {
-                $map[$package->getName()] = new Constraint('=', $package->getVersion());
-            }
+            // key by version so duplicate versions collapse and the resulting OR constraint stays flat
+            // (nesting one MultiConstraint per version produces trees deep enough to blow the stack, see composer/semver#177)
+            $constraintsByName[$package->getName()][$package->getVersion()] = new Constraint('=', $package->getVersion());
+        }
+
+        $map = [];
+        foreach ($constraintsByName as $name => $constraints) {
+            $map[$name] = MultiConstraint::create(array_values($constraints), false);
         }
 
         $unreachableRepos = [];
