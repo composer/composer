@@ -193,7 +193,7 @@ class Auditor
             $punctuation = $format === self::FORMAT_SUMMARY ? '.' : ':';
             $style = $filteredCount > 0 ? 'error' : 'warning';
 
-            $io->writeError(sprintf('<%s>Found %d package%s matching filters%s</%s>', $style, count($filteredPackages), $plurality, $punctuation, $style));
+            $io->write(sprintf('<%s>Found %d package%s matching filters%s</%s>', $style, count($filteredPackages), $plurality, $punctuation, $style));
             if ($format !== self::FORMAT_SUMMARY) {
                 $this->outputFilteredPackages($io, $filteredPackages, $format);
             }
@@ -419,7 +419,7 @@ class Auditor
                 $firstAdvisory = false;
             }
         }
-        $io->writeError($error);
+        $io->write($error);
     }
 
     /**
@@ -428,14 +428,14 @@ class Auditor
      */
     private function outputAbandonedPackages(IOInterface $io, array $packages, string $format): void
     {
-        $io->writeError(sprintf('<error>Found %d abandoned package%s:</error>', count($packages), count($packages) > 1 ? 's' : ''));
+        $io->write(sprintf('<error>Found %d abandoned package%s:</error>', count($packages), count($packages) > 1 ? 's' : ''));
 
         if ($format === self::FORMAT_PLAIN) {
             foreach ($packages as $pkg) {
                 $replacement = $pkg->getReplacementPackage() !== null
                     ? 'Use '.$pkg->getReplacementPackage().' instead'
                     : 'No replacement was suggested';
-                $io->writeError(sprintf(
+                $io->write(sprintf(
                     '%s is abandoned. %s.',
                     $this->getPackageNameWithLink($pkg),
                     $replacement
@@ -523,7 +523,7 @@ class Auditor
                     if ($entry->url !== null) {
                         $parts[] = 'URL: ' . $entry->url;
                     }
-                    $io->writeError(implode('. ', $parts) . '.');
+                    $io->write(implode('. ', $parts) . '.');
                 }
             }
 
