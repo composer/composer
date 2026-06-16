@@ -204,12 +204,12 @@ class SuggestedPackagesReporter
             // one making it provides the target, so a package that both provides
             // and suggests a name (e.g. an extension polyfill) does not hide its
             // own suggestion.
-            $providedByOthers = isset($installedNames[$suggestion['target']]) && \count(array_filter(
+            $providedByOthers = isset($installedNames[$suggestion['target']]) && array_any(
                 $installedNames[$suggestion['target']],
                 static function (string $providerName) use ($suggestion): bool {
                     return $providerName !== strtolower($suggestion['source']);
                 }
-            )) > 0;
+            );
 
             if ($providedByOthers || (\count($sourceFilter) > 0 && !in_array($suggestion['source'], $sourceFilter))) {
                 continue;
