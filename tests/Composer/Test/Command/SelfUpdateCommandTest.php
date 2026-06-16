@@ -91,7 +91,18 @@ class SelfUpdateCommandTest extends TestCase
         });
         self::assertSame(0, $status, $output);
 
-        self::assertStringContainsString('Upgrading to version', $output);
+        if ($option === '--snapshot') {
+            // the snapshot channel is published as a commit sha, so if getcomposer.org built the
+            // latest snapshot from the exact commit this phar was compiled from (a race when CI runs
+            // right after a push) there is nothing to upgrade to and reporting the latest version is
+            // a valid outcome
+            self::assertThat($output, self::logicalOr(
+                self::stringContains('Upgrading to version'),
+                self::stringContains('You are already using the latest available Composer version')
+            ), $output);
+        } else {
+            self::assertStringContainsString('Upgrading to version', $output);
+        }
         self::assertStringContainsString($expectedOutput, $output);
     }
 
