@@ -213,8 +213,12 @@ class PathRepositoryTest extends TestCase
         $filesystem->copy($fixtureSource, $repositoryUrl);
 
         $process = new ProcessExecutor();
-        $command = 'git init; git add .; git commit -am "Initial commit"; git tag -a v1.4 -m "my version 1.4"; git checkout v1.4';
-        $process->execute($command, $output, $repositoryUrl);
+
+        self::assertSame(0, $process->execute('git init', $output, $repositoryUrl), $output);
+        self::assertSame(0, $process->execute('git add .', $output, $repositoryUrl), $output);
+        self::assertSame(0, $process->execute('git commit -m "Initial commit"', $output, $repositoryUrl), $output);
+        self::assertSame(0, $process->execute('git tag -a v1.4 -m "my version 1.4"', $output, $repositoryUrl), $output);
+        self::assertSame(0, $process->execute('git checkout v1.4', $output, $repositoryUrl), $output);
 
         $packages = $repository->getPackages();
         $packageVersion = $packages[0]->getPrettyVersion();
