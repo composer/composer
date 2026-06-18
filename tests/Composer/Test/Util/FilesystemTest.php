@@ -407,11 +407,13 @@ class FilesystemTest extends TestCase
      */
     public function testCreatesSymlink(): void
     {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('Does not run on windows');
+        }
 
         $fs = new Filesystem();
 
         $symlinkTarget = __DIR__ . '/Fixtures/Tar';
-
         $symlinkLocation = __DIR__ . '/Fixtures/Zip/tar-symlink';
 
         try {
