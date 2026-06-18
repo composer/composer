@@ -13,6 +13,7 @@
 namespace Composer\Test\Json;
 
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Seld\JsonLint\ParsingException;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
@@ -531,6 +532,10 @@ class JsonFileTest extends TestCase
      */
     public function testThrowsWhenReadingBrokenSymlink(): void
     {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('Does not run on windows');
+        }
+
         copy(__DIR__.'/Fixtures/tabs.json', __DIR__.'/Fixtures/tabs2.json');
 
         $filesystem = new Filesystem();

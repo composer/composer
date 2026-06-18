@@ -183,6 +183,10 @@ class PathRepositoryTest extends TestCase
      */
     public function testLoadPackageFromFileSystemThroughSymlink(): void
     {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('Does not run on windows');
+        }
+
         $repositoryTargetUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'with-version']);
         $symlinkLocationUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'link-location-with-version']);
 
