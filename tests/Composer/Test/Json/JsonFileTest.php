@@ -546,7 +546,8 @@ class JsonFileTest extends TestCase
                 $exceptionMessage = $e->getMessage();
             }
 
-            self::assertStringEndsWith('The file "' . __DIR__ . '/Fixtures/tabs3.json" is not readable.', $exceptionMessage);
+            $expectedPath = __DIR__ . str_replace('/', DIRECTORY_SEPARATOR, '/Fixtures/tabs3.json');
+            self::assertStringEndsWith('The file "' . $expectedPath . '" is not readable.', $exceptionMessage);
         } finally {
             $filesystem->unlink(__DIR__.'/Fixtures/tabs3.json');
         }
@@ -577,7 +578,8 @@ class JsonFileTest extends TestCase
                 $exceptionMessage = $e->getMessage();
             }
 
-            self::assertStringEndsWith(__DIR__ . '/Fixtures/subdirfile exists and is not a directory.', $exceptionMessage);
+            $expectedPath = __DIR__ . str_replace('/', DIRECTORY_SEPARATOR, '/Fixtures/subdirfile');
+            self::assertStringEndsWith($expectedPath . ' exists and is not a directory.', $exceptionMessage);
         } finally {
             $filesystem->unlink(__DIR__.'/Fixtures/subdirfile');
         }
