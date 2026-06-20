@@ -268,15 +268,11 @@ class CooldownPoolFilter
      */
     private function isSecurityFix(PackageInterface $package): bool
     {
-        $packageName = $package->getName();
         $releaseDate = $this->effectiveDate($package);
-
-        // Need both release date and advisories to determine if it's a security fix
-        if ($releaseDate === null || !isset($this->securityAdvisories[$packageName])) {
+        if ($releaseDate === null) {
             return false;
         }
 
-        $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
         $age = $this->config->age;
 
         // Should not happen as isSecurityFix is only called when the filter is active
@@ -284,42 +280,51 @@ class CooldownPoolFilter
             return false;
         }
 
+        $packageConstraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
         $bypassWindow = $age * 2;
 
-        foreach ($this->securityAdvisories[$packageName] as $advisory) {
-            // Skip if this version is affected by the advisory (it's vulnerable, not a fix)
-            if ($advisory->affectedVersions->matches($packageConstraint)) {
+        // Match advisories under any of the package's names (including replaced names),
+        // mirroring SecurityAdvisoryPoolFilter::getMatchingAdvisories().
+        foreach ($package->getNames(false) as $packageName) {
+            if (!isset($this->securityAdvisories[$packageName])) {
                 continue;
             }
 
-            // Full SecurityAdvisory with reportedAt: use advisory-relative timing
-            if ($advisory instanceof SecurityAdvisory) {
-                $advisoryDate = $advisory->reportedAt;
-
-                // Only bypass if released AFTER the advisory was reported
-                if ($releaseDate <= $advisoryDate) {
+            foreach ($this->securityAdvisories[$packageName] as $advisory) {
+                // Skip if this version is affected by the advisory (it's vulnerable, not a fix)
+                if ($advisory->affectedVersions->matches($packageConstraint)) {
                     continue;
                 }
 
-                // Only bypass if within 2x the cooldown age after the advisory
-                // This prevents old advisories from granting perpetual bypass
-                $windowEnd = (new DateTimeImmutable($advisoryDate->format(DateTimeInterface::ATOM)))
-                    ->modify("+{$bypassWindow} seconds");
+                // Full SecurityAdvisory with reportedAt: use advisory-relative timing
+                if ($advisory instanceof SecurityAdvisory) {
+                    $advisoryDate = $advisory->reportedAt;
 
-                if ($releaseDate <= $windowEnd) {
-                    // Package was released after advisory but within bypass window
-                    // and is not affected - it's likely a security fix
-                    return true;
-                }
-            } else {
-                // PartialSecurityAdvisory without reportedAt: use now-relative timing
-                // Allow bypass only if version was released recently (within 2x the cooldown age from now)
-                // This prevents old advisories from granting perpetual bypass
-                $windowStart = $this->now->modify("-{$bypassWindow} seconds");
+                    // Only bypass if released AFTER the advisory was reported
+                    if ($releaseDate <= $advisoryDate) {
+                        continue;
+                    }
 
-                if ($releaseDate >= $windowStart) {
-                    // Version is recent and not affected by advisory - likely a security fix
-                    return true;
+                    // Only bypass if within 2x the cooldown age after the advisory
+                    // This prevents old advisories from granting perpetual bypass
+                    $windowEnd = (new DateTimeImmutable($advisoryDate->format(DateTimeInterface::ATOM)))
+                        ->modify("+{$bypassWindow} seconds");
+
+                    if ($releaseDate <= $windowEnd) {
+                        // Package was released after advisory but within bypass window
+                        // and is not affected - it's likely a security fix
+                        return true;
+                    }
+                } else {
+                    // PartialSecurityAdvisory without reportedAt: use now-relative timing
+                    // Allow bypass only if version was released recently (within 2x the cooldown age from now)
+                    // This prevents old advisories from granting perpetual bypass
+                    $windowStart = $this->now->modify("-{$bypassWindow} seconds");
+
+                    if ($releaseDate >= $windowStart) {
+                        // Version is recent and not affected by advisory - likely a security fix
+                        return true;
+                    }
                 }
             }
         }

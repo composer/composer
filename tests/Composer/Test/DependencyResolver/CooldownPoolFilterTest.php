@@ -20,6 +20,7 @@ use Composer\Policy\IgnorePackageRule;
 use Composer\Policy\ListPolicyConfig;
 use Composer\DependencyResolver\CooldownPoolFilter;
 use Composer\DependencyResolver\Request;
+use Composer\Package\Link;
 use Composer\Package\Package;
 use Composer\Package\RootPackage;
 use Composer\Semver\Constraint\Constraint;
@@ -267,6 +268,42 @@ class CooldownPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         // Should NOT be filtered because it's a security fix
+        $this->assertSame([$securityFixPackage], $filteredPool->getPackages());
+    }
+
+    public function testSecurityFixBypassesCooldownWhenAdvisoryIsUnderReplacedName(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // Advisory is recorded under the original package name, not the fork's own name.
+        $versionParser = new VersionParser();
+        $advisory = new SecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0'),
+            'Security vulnerability in vendor/pkg',
+            [['name' => 'packagist', 'remoteId' => 'ADVISORY-1']],
+            new DateTimeImmutable('2026-01-10 12:00:00'),
+            'CVE-2026-0001'
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // The fork replaces vendor/pkg; its fresh release fixes the advisory.
+        $securityFixPackage = new Package('vendor/pkg-fork', '2.0.0.0', '2.0.0');
+        $securityFixPackage->setReplaces([
+            'vendor/pkg' => new Link('vendor/pkg-fork', 'vendor/pkg', new MatchAllConstraint(), Link::TYPE_REPLACE),
+        ]);
+        $securityFixPackage->setReleaseDate(new DateTimeImmutable('2026-01-12 12:00:00')); // within cooldown
+
+        $pool = new Pool([$securityFixPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // The advisory keyed under the replaced name must still grant the bypass.
         $this->assertSame([$securityFixPackage], $filteredPool->getPackages());
     }
 
