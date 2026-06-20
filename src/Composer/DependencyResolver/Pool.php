@@ -259,10 +259,13 @@ class Pool implements \Countable
     public function getCooldownInfoForPackageVersion(string $packageName, ?ConstraintInterface $constraint): ?array
     {
         $earliest = null;
+        $earliestDate = null;
         foreach ($this->cooldownRemovedVersions[$packageName] ?? [] as $version => $info) {
             if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
-                if ($earliest === null || $info['releaseDate'] < $earliest['releaseDate']) {
+                $date = new \DateTimeImmutable($info['releaseDate']);
+                if ($earliest === null || $date < $earliestDate) {
                     $earliest = $info;
+                    $earliestDate = $date;
                 }
             }
         }
