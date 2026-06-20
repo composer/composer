@@ -271,6 +271,43 @@ class CooldownPoolFilterTest extends TestCase
         $this->assertSame([$securityFixPackage], $filteredPool->getPackages());
     }
 
+    public function testOnlyOldestSecurityFixBypassesWhenReleasedInTheSameSecond(): void
+    {
+        // Two non-affected fixes match the same constraint part and share the same whole second
+        // but differ by a fraction. Only the genuinely oldest one may bypass the cooldown; the
+        // later sibling must stay withheld (regression test for the whole-second comparison bug).
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        $advisory = new SecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0'),
+            'Security vulnerability in vendor/pkg',
+            [['name' => 'packagist', 'remoteId' => 'ADVISORY-1']],
+            new DateTimeImmutable('2026-01-10 12:00:00'),
+            'CVE-2026-0001'
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        $oldestFix = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $oldestFix->setReleaseDate(new DateTimeImmutable('2026-01-12 12:00:00.000000'));
+
+        $laterFix = new Package('vendor/pkg', '2.0.1.0', '2.0.1');
+        $laterFix->setReleaseDate(new DateTimeImmutable('2026-01-12 12:00:00.500000'));
+
+        $pool = new Pool([$oldestFix, $laterFix]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Only the oldest fix bypasses; the same-second-but-later one stays held by the cooldown.
+        $this->assertSame([$oldestFix], $filteredPool->getPackages());
+    }
+
     public function testSecurityFixBypassesCooldownWhenAdvisoryIsUnderReplacedName(): void
     {
         $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days

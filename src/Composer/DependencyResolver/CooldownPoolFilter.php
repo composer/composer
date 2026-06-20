@@ -244,11 +244,15 @@ class CooldownPoolFilter
         $constraintParts = $this->getConstraintParts($name, $request->getRequires());
         $packageConstraint = new Constraint('==', $package->getVersion());
 
-        // Check all matching constraint parts - package bypasses if it's the oldest for ANY part
+        // Check all matching constraint parts - package bypasses if it's the oldest for ANY part.
+        // Compare instants with the same precision used when selecting the oldest in
+        // findOldestSecurityFixPerConstraint() (the '<' there). The stored value is the per-key
+        // minimum, so "<= minimum" is true only for the oldest version; a sibling released in the
+        // same whole second but a fraction later is correctly excluded.
         foreach ($constraintParts as $index => $part) {
             if ($part->matches($packageConstraint)) {
                 $key = $name . ':' . $index;
-                if (isset($oldestSecurityFixDate[$key]) && $releaseDate->getTimestamp() === $oldestSecurityFixDate[$key]->getTimestamp()) {
+                if (isset($oldestSecurityFixDate[$key]) && $releaseDate <= $oldestSecurityFixDate[$key]) {
                     return true;
                 }
             }

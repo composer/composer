@@ -44,10 +44,18 @@ class CooldownPolicyConfigTest extends TestCase
 
     public function testParseDurationHumanReadable(): void
     {
+        self::assertSame(90, CooldownPolicyConfig::parseDuration('90 seconds'));
+        self::assertSame(60, CooldownPolicyConfig::parseDuration('1 minute'));
+        self::assertSame(1800, CooldownPolicyConfig::parseDuration('30 minutes'));
         self::assertSame(3600, CooldownPolicyConfig::parseDuration('1 hour'));
         self::assertSame(86400, CooldownPolicyConfig::parseDuration('1 day'));
         self::assertSame(604800, CooldownPolicyConfig::parseDuration('7 days'));
         self::assertSame(604800, CooldownPolicyConfig::parseDuration('1 week'));
+        self::assertSame(1209600, CooldownPolicyConfig::parseDuration('2 weeks'));
+        // unit matching is case-insensitive and tolerant of surrounding/no whitespace
+        self::assertSame(86400, CooldownPolicyConfig::parseDuration('1 DAY'));
+        self::assertSame(604800, CooldownPolicyConfig::parseDuration('1week'));
+        self::assertSame(7200, CooldownPolicyConfig::parseDuration('  2 hours  '));
     }
 
     public function testParseDurationInvalidFormatThrows(): void
@@ -58,14 +66,42 @@ class CooldownPolicyConfigTest extends TestCase
     }
 
     /**
+     * Relative phrases and unsupported units must throw rather than silently
+     * resolving to a surprising (or zero, i.e. disabled) cooldown.
+     *
+     * @return iterable<string, array{0: string}>
+     */
+    public static function invalidFormatProvider(): iterable
+    {
+        yield 'relative tomorrow' => ['tomorrow'];
+        yield 'relative next week' => ['next week'];
+        yield 'relative next month' => ['next month'];
+        yield 'relative today' => ['today'];
+        yield 'relative midnight' => ['midnight'];
+        yield 'unsupported unit month' => ['1 month'];
+        yield 'unsupported unit year' => ['1 year'];
+        yield 'past relative' => ['2 days ago'];
+        yield 'trailing words' => ['7 days extra'];
+        yield 'fractional seconds' => ['1.5'];
+    }
+
+    /**
+     * @dataProvider invalidFormatProvider
+     */
+    public function testParseDurationInvalidFormatProviderThrows(string $duration): void
+    {
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('Invalid policy.cooldown.age format');
+        CooldownPolicyConfig::parseDuration($duration);
+    }
+
+    /**
      * @return iterable<string, array{0: int|string}>
      */
     public static function negativeDurationProvider(): iterable
     {
         yield 'negative int' => [-3600];
         yield 'negative numeric string' => ['-3600'];
-        yield 'negative human readable' => ['-2 days'];
-        yield 'past relative' => ['2 days ago'];
     }
 
     /**

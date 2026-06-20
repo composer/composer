@@ -238,9 +238,15 @@ class CooldownPolicyConfig extends ListPolicyConfig
     /**
      * Parse a duration into seconds.
      *
-     * Accepts an integer number of seconds, a numeric string, or a
-     * human-readable duration such as "7 days", "24 hours" or "1 week".
-     * null, an empty string, and 0 all mean "no cooldown".
+     * Accepts an integer number of seconds, an integer string, or an explicit
+     * unit duration such as "7 days", "24 hours", "30 minutes", "90 seconds" or
+     * "1 week" (the unit may be singular or plural). null, an empty string, and 0
+     * all mean "no cooldown".
+     *
+     * Relative phrases such as "tomorrow" or "next week" are intentionally
+     * rejected: they would resolve to surprising values (and some to 0, which
+     * silently disables the policy), so a typo throws instead of distorting the
+     * cooldown.
      *
      * @param string|int|null $duration
      * @throws \RuntimeException on a negative or unparseable duration
@@ -259,25 +265,35 @@ class CooldownPolicyConfig extends ListPolicyConfig
             return $duration;
         }
 
-        if (is_numeric($duration)) {
-            $value = (int) $duration;
-            if ($value < 0) {
+        $trimmed = trim($duration);
+
+        // A plain integer is interpreted as a number of seconds.
+        if (Preg::isMatch('/^\d+$/D', $trimmed)) {
+            return (int) $trimmed;
+        }
+
+        // Reject any other numeric value (negative or fractional) with a clear message.
+        if (is_numeric($trimmed)) {
+            if ((float) $trimmed < 0) {
                 throw new \RuntimeException("Invalid policy.cooldown.age: duration cannot be negative ({$duration}).");
             }
 
-            return $value;
+            throw new \RuntimeException("Invalid policy.cooldown.age format: {$duration}. Use an integer number of seconds or a duration like '7 days', '24 hours', '30 minutes' or '1 week'.");
         }
 
-        // Parse strings like "7 days", "1 week", "24 hours"
-        $timestamp = strtotime($duration, 0);
-        if ($timestamp === false) {
-            throw new \RuntimeException("Invalid policy.cooldown.age format: {$duration}. Use formats like '7 days', '24 hours', or an integer for seconds.");
+        // Otherwise only explicit unit durations are accepted.
+        static $units = [
+            'second' => 1,
+            'minute' => 60,
+            'hour' => 3600,
+            'day' => 86400,
+            'week' => 604800,
+        ];
+
+        if (Preg::isMatchStrictGroups('/^(\d+)\s*(second|minute|hour|day|week)s?$/i', $trimmed, $matches)) {
+            return (int) $matches[1] * $units[strtolower($matches[2])];
         }
 
-        if ($timestamp < 0) {
-            throw new \RuntimeException("Invalid policy.cooldown.age: duration cannot be negative ({$duration}).");
-        }
-
-        return $timestamp;
+        throw new \RuntimeException("Invalid policy.cooldown.age format: {$duration}. Use an integer number of seconds or a duration like '7 days', '24 hours', '30 minutes' or '1 week'.");
     }
 }
