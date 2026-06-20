@@ -809,6 +809,12 @@ sudo -H composer self-update
 If Composer was not installed as a PHAR, this command is not available.
 (This is sometimes the case when Composer was installed by an operating system package manager.)
 
+When updating, Composer warns you if the version you are on or updating to is end of life, or is an
+older line nearing end of life that only receives critical security fixes, and points you to the
+latest stable release. If a newer Composer version exists but requires a newer PHP version than the
+one you are running, Composer tells you which PHP version you would need and that you are pinned to
+an older release line.
+
 Backups created for `--rollback` are stored in the [`data-dir`](06-config.md#data-dir),
 and the public keys used to verify downloads are stored in `COMPOSER_HOME`. Both
 directories must be writable only by the user that owns the Composer installation and
