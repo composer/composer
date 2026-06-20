@@ -14,7 +14,6 @@ namespace Composer\DependencyResolver;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
-use Composer\Pcre\Preg;
 use Composer\Policy\CooldownPolicyConfig;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
@@ -74,9 +73,6 @@ class CooldownPoolFilter
             return $pool;
         }
 
-        $age = $this->config->age;
-        $cutoffDate = $this->now->modify("-{$age} seconds");
-
         // First pass: find oldest security fix per package per constraint part
         // This ensures we only allow the oldest (most vetted) security fix to bypass
         // while still supporting disjunctive constraints (e.g., ^3.0 || ^4.0)
@@ -97,16 +93,16 @@ class CooldownPoolFilter
                 || PlatformRepository::isPlatformPackage($package->getName())
                 || $request->isLockedPackage($package)
                 || $package->isDev()
-                || $this->isIgnored($package)
-                || $this->getEffectiveDate($package) === null
+                || $this->config->isIgnored($package, 'block')
+                || $this->config->getEffectiveDate($package) === null
             ) {
                 $packages[] = $package;
                 continue;
             }
 
             // Check if package is old enough
-            $releaseDate = $this->getEffectiveDate($package);
-            if ($releaseDate <= $cutoffDate) {
+            $releaseDate = $this->config->getEffectiveDate($package);
+            if (!$this->config->isWithinCooldown($releaseDate, $this->now)) {
                 $packages[] = $package;
                 continue;
             }
@@ -123,7 +119,7 @@ class CooldownPoolFilter
                 $cooldownRemovedVersions[$packageName][$package->getVersion()] = [
                     'prettyVersion' => $package->getPrettyVersion(),
                     'releaseDate' => $releaseDate->format(DateTimeInterface::ATOM),
-                    'availableIn' => $this->formatTimeUntilAvailable($releaseDate),
+                    'availableIn' => $this->config->formatTimeUntilAvailable($releaseDate, $this->now),
                     'source' => $package->getPublishedDate() !== null ? 'published-time' : 'time',
                 ];
             }
@@ -142,42 +138,6 @@ class CooldownPoolFilter
     }
 
     /**
-     * The timestamp the cooldown is measured against.
-     *
-     * Prefers the server-set publication date (which the package author cannot
-     * influence) and falls back to the author-controlled release date when the
-     * repository does not provide one.
-     */
-    private function getEffectiveDate(PackageInterface $package): ?DateTimeInterface
-    {
-        return $package->getPublishedDate() ?? $package->getReleaseDate();
-    }
-
-    /**
-     * Whether a package version matches a configured policy.cooldown.ignore rule.
-     */
-    private function isIgnored(PackageInterface $package): bool
-    {
-        $ignore = $this->config->getIgnoreForOperation('block');
-        if (count($ignore) === 0) {
-            return false;
-        }
-
-        $packageConstraint = new Constraint('==', $package->getVersion());
-        foreach ($ignore as $rules) {
-            foreach ($rules as $rule) {
-                foreach ($package->getNames(false) as $name) {
-                    if (Preg::isMatch($rule->packageNameRegex, $name) && $rule->constraint->matches($packageConstraint)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Find the oldest security fix release date per package per constraint part
      *
      * @return array<string, DateTimeInterface> Map of "packageName:constraintIndex" => oldest release date
@@ -193,7 +153,7 @@ class CooldownPoolFilter
             }
 
             $name = $package->getName();
-            $releaseDate = $this->getEffectiveDate($package);
+            $releaseDate = $this->config->getEffectiveDate($package);
             if ($releaseDate === null) {
                 continue;
             }
@@ -257,7 +217,7 @@ class CooldownPoolFilter
         }
 
         $name = $package->getName();
-        $releaseDate = $this->getEffectiveDate($package);
+        $releaseDate = $this->config->getEffectiveDate($package);
         if ($releaseDate === null) {
             return false;
         }
@@ -279,32 +239,6 @@ class CooldownPoolFilter
     }
 
     /**
-     * Format the time until a package version will be available
-     */
-    private function formatTimeUntilAvailable(DateTimeInterface $releaseDate): string
-    {
-        $availableAt = (new DateTimeImmutable($releaseDate->format(DateTimeInterface::ATOM)))
-            ->modify("+{$this->config->age} seconds");
-        $diff = $this->now->diff($availableAt);
-        $days = (int) $diff->days;
-
-        $parts = [];
-        if ($days > 0) {
-            $parts[] = $days . ' day' . ($days > 1 ? 's' : '');
-        }
-        if ($diff->h > 0) {
-            $parts[] = $diff->h . ' hour' . ($diff->h > 1 ? 's' : '');
-        }
-        if (count($parts) === 0 && $diff->i > 0) {
-            $parts[] = $diff->i . ' minute' . ($diff->i > 1 ? 's' : '');
-        }
-
-        $result = implode(' ', $parts);
-
-        return $result !== '' ? $result : 'less than a minute';
-    }
-
-    /**
      * Check if a package version is a security fix that should bypass the cooldown requirement
      *
      * A version is considered a security fix if:
@@ -316,7 +250,7 @@ class CooldownPoolFilter
     private function isSecurityFix(PackageInterface $package): bool
     {
         $packageName = $package->getName();
-        $releaseDate = $this->getEffectiveDate($package);
+        $releaseDate = $this->config->getEffectiveDate($package);
 
         // Need both release date and advisories to determine if it's a security fix
         if ($releaseDate === null || !isset($this->securityAdvisories[$packageName])) {

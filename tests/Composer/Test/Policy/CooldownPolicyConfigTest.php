@@ -174,6 +174,16 @@ class CooldownPolicyConfigTest extends TestCase
         self::assertFalse($cooldown->hasCooldown());
     }
 
+    public function testInvalidEnvValueThrowsWithEnvName(): void
+    {
+        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_AGE', 'not a duration');
+
+        // the error must name the env var the user set, not the config key
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('Invalid value for COMPOSER_POLICY_COOLDOWN_AGE');
+        CooldownPolicyConfig::fromRawConfig([], new VersionParser());
+    }
+
     public function testWithBlockingDisabled(): void
     {
         $cooldown = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 604800);

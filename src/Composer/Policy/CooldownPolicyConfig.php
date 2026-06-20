@@ -12,8 +12,13 @@
 
 namespace Composer\Policy;
 
+use Composer\Package\PackageInterface;
+use Composer\Pcre\Preg;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\VersionParser;
 use Composer\Util\Platform;
+use DateTimeImmutable;
+use DateTimeInterface;
 
 /**
  * Configuration for the cooldown policy.
@@ -79,6 +84,87 @@ class CooldownPolicyConfig extends ListPolicyConfig
         return parent::shouldBlock($blockScope);
     }
 
+    /**
+     * The timestamp the cooldown is measured against.
+     *
+     * Prefers the server-set publication date (which the package author cannot
+     * influence) and falls back to the author-controlled release date when the
+     * repository does not provide one.
+     */
+    public function getEffectiveDate(PackageInterface $package): ?DateTimeInterface
+    {
+        return $package->getPublishedDate() ?? $package->getReleaseDate();
+    }
+
+    /**
+     * Whether a package version matches a configured policy.cooldown.ignore rule
+     * for the given operation.
+     *
+     * @param 'block'|'audit' $operation
+     */
+    public function isIgnored(PackageInterface $package, string $operation): bool
+    {
+        $ignore = $this->getIgnoreForOperation($operation);
+        if (count($ignore) === 0) {
+            return false;
+        }
+
+        $packageConstraint = new Constraint('==', $package->getVersion());
+        foreach ($ignore as $rules) {
+            foreach ($rules as $rule) {
+                foreach ($package->getNames(false) as $name) {
+                    if (Preg::isMatch($rule->packageNameRegex, $name) && $rule->constraint->matches($packageConstraint)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Whether the given effective date is still inside the cooldown window
+     * relative to $now (i.e. too recent to be allowed).
+     */
+    public function isWithinCooldown(DateTimeInterface $effectiveDate, DateTimeInterface $now): bool
+    {
+        if (!$this->hasCooldown()) {
+            return false;
+        }
+
+        $cutoffDate = (new DateTimeImmutable($now->format(DateTimeInterface::ATOM)))
+            ->modify("-{$this->age} seconds");
+
+        return $effectiveDate > $cutoffDate;
+    }
+
+    /**
+     * Format the time until a package version will clear the cooldown.
+     */
+    public function formatTimeUntilAvailable(DateTimeInterface $effectiveDate, DateTimeImmutable $now): string
+    {
+        $availableAt = (new DateTimeImmutable($effectiveDate->format(DateTimeInterface::ATOM)))
+            ->modify("+{$this->age} seconds");
+        $diff = $now->diff($availableAt);
+        $days = (int) $diff->days;
+
+        $parts = [];
+        if ($days > 0) {
+            $parts[] = $days . ' day' . ($days > 1 ? 's' : '');
+        }
+        if ($diff->h > 0) {
+            $parts[] = $diff->h . ' hour' . ($diff->h > 1 ? 's' : '');
+        }
+        if (count($parts) === 0 && $diff->i > 0) {
+            $parts[] = $diff->i . ' minute' . ($diff->i > 1 ? 's' : '');
+        }
+
+        $result = implode(' ', $parts);
+
+        return $result !== '' ? $result : 'less than a minute';
+    }
+
     public function withBlockingDisabled()
     {
         return new static(
@@ -119,7 +205,16 @@ class CooldownPolicyConfig extends ListPolicyConfig
         // the block/audit/ignore settings from config
         $envValue = Platform::getEnv('COMPOSER_POLICY_COOLDOWN_AGE');
         if ($envValue !== false && $envValue !== '') {
-            $age = self::parseDuration($envValue);
+            try {
+                $age = self::parseDuration($envValue);
+            } catch (\RuntimeException $e) {
+                throw new \RuntimeException(
+                    "Invalid value for COMPOSER_POLICY_COOLDOWN_AGE: {$envValue}. "
+                    . "Use formats like '7 days', '24 hours', or an integer number of seconds.",
+                    0,
+                    $e
+                );
+            }
         }
 
         return new self(
