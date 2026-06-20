@@ -45,6 +45,9 @@ class CooldownPoolFilter
     /** @var array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> */
     private $securityAdvisories = [];
 
+    /** @var array<string, ?DateTimeInterface> */
+    private $effectiveDateCache = [];
+
     public function __construct(CooldownPolicyConfig $config, ?DateTimeImmutable $now = null)
     {
         $this->config = $config;
@@ -73,6 +76,8 @@ class CooldownPoolFilter
             return $pool;
         }
 
+        $this->effectiveDateCache = [];
+
         // First pass: find oldest security fix per package per constraint part
         // This ensures we only allow the oldest (most vetted) security fix to bypass
         // while still supporting disjunctive constraints (e.g., ^3.0 || ^4.0)
@@ -94,14 +99,14 @@ class CooldownPoolFilter
                 || $request->isLockedPackage($package)
                 || $package->isDev()
                 || $this->config->isIgnored($package, 'block')
-                || $this->config->getEffectiveDate($package) === null
+                || $this->effectiveDate($package) === null
             ) {
                 $packages[] = $package;
                 continue;
             }
 
             // Check if package is old enough
-            $releaseDate = $this->config->getEffectiveDate($package);
+            $releaseDate = $this->effectiveDate($package);
             if (!$this->config->isWithinCooldown($releaseDate, $this->now)) {
                 $packages[] = $package;
                 continue;
@@ -138,6 +143,20 @@ class CooldownPoolFilter
     }
 
     /**
+     * Resolve a package's effective date once per filter() run and reuse it across the
+     * skip/age checks and the security-fix passes.
+     */
+    private function effectiveDate(PackageInterface $package): ?DateTimeInterface
+    {
+        $key = spl_object_hash($package);
+        if (!array_key_exists($key, $this->effectiveDateCache)) {
+            $this->effectiveDateCache[$key] = $this->config->getEffectiveDate($package);
+        }
+
+        return $this->effectiveDateCache[$key];
+    }
+
+    /**
      * Find the oldest security fix release date per package per constraint part
      *
      * @return array<string, DateTimeInterface> Map of "packageName:constraintIndex" => oldest release date
@@ -153,7 +172,7 @@ class CooldownPoolFilter
             }
 
             $name = $package->getName();
-            $releaseDate = $this->config->getEffectiveDate($package);
+            $releaseDate = $this->effectiveDate($package);
             if ($releaseDate === null) {
                 continue;
             }
@@ -217,7 +236,7 @@ class CooldownPoolFilter
         }
 
         $name = $package->getName();
-        $releaseDate = $this->config->getEffectiveDate($package);
+        $releaseDate = $this->effectiveDate($package);
         if ($releaseDate === null) {
             return false;
         }
@@ -250,7 +269,7 @@ class CooldownPoolFilter
     private function isSecurityFix(PackageInterface $package): bool
     {
         $packageName = $package->getName();
-        $releaseDate = $this->config->getEffectiveDate($package);
+        $releaseDate = $this->effectiveDate($package);
 
         // Need both release date and advisories to determine if it's a security fix
         if ($releaseDate === null || !isset($this->securityAdvisories[$packageName])) {
