@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Util\Platform;
 use Composer\Util\Tar;
 use Composer\Test\TestCase;
 
@@ -20,6 +21,23 @@ use Composer\Test\TestCase;
  */
 class TarTest extends TestCase
 {
+    /** @var string|false */
+    private $originalAllowUnsafePharMetadata;
+
+    public function setUp()
+    {
+        $this->originalAllowUnsafePharMetadata = Platform::getEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
+    }
+
+    public function tearDown()
+    {
+        if (false === $this->originalAllowUnsafePharMetadata) {
+            Platform::clearEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
+        } else {
+            Platform::putEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA', $this->originalAllowUnsafePharMetadata);
+        }
+    }
+
     public function testReturnsNullifTheTarIsNotFound()
     {
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/invalid.zip');
@@ -61,5 +79,17 @@ class TarTest extends TestCase
     {
         $this->setExpectedException('RuntimeException');
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/multiple.tar.gz');
+    }
+
+    public function testThrowsOnUnsafePhpVersionWithoutOptIn()
+    {
+        if (PHP_VERSION_ID >= 80000) {
+            $this->markTestSkipped('Parsing phar/tar metadata is only unsafe on PHP < 8.0');
+        }
+
+        Platform::clearEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
+
+        $this->setExpectedException('RuntimeException', 'Refusing to parse a tar/phar archive on PHP < 8.0');
+        Tar::getComposerJson(__DIR__.'/Fixtures/Tar/root.tar.gz');
     }
 }
