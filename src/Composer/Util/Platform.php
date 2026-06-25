@@ -112,6 +112,29 @@ class Platform
     }
 
     /**
+     * Refuses to parse a tar/phar archive on PHP < 8.0, where the \Phar/\PharData
+     * constructor handles archive metadata in a way that is unsafe with untrusted
+     * input. PHP 8.0+ is not affected, so this is a no-op there.
+     *
+     * @internal
+     * @throws \RuntimeException when run on PHP < 8.0 without the explicit opt-out env var
+     */
+    public static function assertPharMetadataSafe(): void
+    {
+        if (\PHP_VERSION_ID >= 80000) {
+            return;
+        }
+        // TODO remove it from tests/bootstrap.php when removing this code
+        if (self::getBoolEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA', false)) {
+            return;
+        }
+        throw new \RuntimeException(
+            'Refusing to parse a tar/phar archive on PHP < 8.0 because it is not safe to process untrusted archives on that PHP version. '
+            .'Upgrade to PHP 8.0+ to remove this risk, or set COMPOSER_ALLOW_UNSAFE_PHAR_METADATA=1 to override (not recommended).'
+        );
+    }
+
+    /**
      * putenv() equivalent but updates the runtime global variables too
      */
     public static function putEnv(string $name, string $value): void

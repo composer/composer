@@ -1240,6 +1240,14 @@ If set to 1, this env disables the warning about running commands as root/super 
 It also disables automatic clearing of sudo sessions, so you should really only set this
 if you use Composer as a super user at all times like in docker containers.
 
+### COMPOSER_ALLOW_UNSAFE_PHAR_METADATA
+
+This env var only has an effect on PHP versions before 8.0. On those versions Composer
+refuses to read or extract `tar`/`phar` dist archives, because parsing such an archive
+is not safe to do with untrusted input on PHP < 8.0. The recommended fix is to upgrade
+to PHP 8.0 or newer. If you cannot upgrade and accept the risk, set this to 1 to allow
+Composer to process these archives anyway. PHP 8.0+ is unaffected and ignores this setting.
+
 ### COMPOSER_ALLOW_XDEBUG
 
 If set to 1, this env allows running Composer when the Xdebug extension is enabled, without restarting PHP without it.
