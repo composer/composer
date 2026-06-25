@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Composer;
 use Composer\Util\Http\ProxyManager;
 use Composer\Util\StreamContextFactory;
 use Composer\Test\TestCase;
@@ -22,6 +23,8 @@ class StreamContextFactoryTest extends TestCase
     {
         unset($_SERVER['HTTP_PROXY'], $_SERVER['http_proxy'], $_SERVER['HTTPS_PROXY'], $_SERVER['https_proxy'], $_SERVER['NO_PROXY'], $_SERVER['no_proxy']);
         ProxyManager::reset();
+        Composer::setRunningCommand(null);
+        Composer::setRunningOperation(null);
     }
 
     protected function tearDown(): void
@@ -29,6 +32,8 @@ class StreamContextFactoryTest extends TestCase
         parent::tearDown();
         unset($_SERVER['HTTP_PROXY'], $_SERVER['http_proxy'], $_SERVER['HTTPS_PROXY'], $_SERVER['https_proxy'], $_SERVER['NO_PROXY'], $_SERVER['no_proxy']);
         ProxyManager::reset();
+        Composer::setRunningCommand(null);
+        Composer::setRunningOperation(null);
     }
 
     /**
@@ -243,5 +248,79 @@ class StreamContextFactoryTest extends TestCase
         $headers = implode(' ', $options['http']['header']);
 
         self::assertFalse(stripos($headers, 'Proxy-Authorization'));
+    }
+
+    public function testUserAgentIncludesRunningCommand(): void
+    {
+        Composer::setRunningCommand('install');
+
+        $options = StreamContextFactory::initOptions('https://example.org', []);
+
+        self::assertMatchesRegularExpression('{User-Agent: Composer/\S.*; cmd:install\)}', $this->getUserAgent($options));
+    }
+
+    public function testUserAgentOmitsCommandWhenNotSet(): void
+    {
+        Composer::setRunningCommand(null);
+
+        $options = StreamContextFactory::initOptions('https://example.org', []);
+
+        self::assertStringNotContainsString('cmd:', $this->getUserAgent($options));
+    }
+
+    public function testUserAgentSanitizesRunningCommand(): void
+    {
+        Composer::setRunningCommand("foo bar\r\nInjected: header");
+
+        $options = StreamContextFactory::initOptions('https://example.org', []);
+        $userAgent = $this->getUserAgent($options);
+
+        self::assertStringNotContainsString("\r", $userAgent);
+        self::assertStringNotContainsString("\n", $userAgent);
+        self::assertStringContainsString('; cmd:foobarInjected:header)', $userAgent);
+    }
+
+    public function testUserAgentAppendsRunningOperation(): void
+    {
+        Composer::setRunningCommand('require');
+        Composer::setRunningOperation('update');
+
+        $options = StreamContextFactory::initOptions('https://example.org', []);
+
+        self::assertStringContainsString('; cmd:require,update)', $this->getUserAgent($options));
+    }
+
+    public function testUserAgentOmitsRunningOperationWhenSameAsCommand(): void
+    {
+        Composer::setRunningCommand('install');
+        Composer::setRunningOperation('install');
+
+        $options = StreamContextFactory::initOptions('https://example.org', []);
+
+        self::assertStringContainsString('; cmd:install)', $this->getUserAgent($options));
+        self::assertStringNotContainsString('install,install', $this->getUserAgent($options));
+    }
+
+    public function testUserAgentUsesRunningOperationWhenNoCommand(): void
+    {
+        Composer::setRunningOperation('update');
+
+        $options = StreamContextFactory::initOptions('https://example.org', []);
+
+        self::assertStringContainsString('; cmd:update)', $this->getUserAgent($options));
+    }
+
+    /**
+     * @param mixed[] $options
+     */
+    private function getUserAgent(array $options): string
+    {
+        foreach ($options['http']['header'] as $header) {
+            if (stripos($header, 'User-Agent:') === 0) {
+                return $header;
+            }
+        }
+
+        throw new \RuntimeException('No User-Agent header was built');
     }
 }

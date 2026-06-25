@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\Composer;
+use Composer\Pcre\Preg;
 use Composer\CaBundle\CaBundle;
 use Composer\Downloader\TransportException;
 use Composer\Repository\PlatformRepository;
@@ -115,15 +116,24 @@ final class StreamContextFactory
 
         if (!isset($options['http']['header']) || false === stripos(implode('', $options['http']['header']), 'user-agent')) {
             $platformPhpVersion = PlatformRepository::getPlatformPhpVersion();
+            $runningCommand = Composer::getRunningCommand();
+            if ($runningCommand !== null) {
+                $runningCommand = Preg::replace('{[^a-z0-9:_-]}i', '', $runningCommand);
+            }
+            $operation = Composer::getRunningOperation();
+            if ($operation !== null && $operation !== $runningCommand) {
+                $runningCommand = $runningCommand !== null ? $runningCommand.','.$operation : $operation;
+            }
             $options['http']['header'][] = sprintf(
-                'User-Agent: Composer/%s (%s; %s; %s; %s%s%s)',
+                'User-Agent: Composer/%s (%s; %s; %s; %s%s%s%s)',
                 Composer::getVersion(),
                 function_exists('php_uname') ? php_uname('s') : 'Unknown',
                 function_exists('php_uname') ? php_uname('r') : 'Unknown',
                 $phpVersion,
                 $httpVersion,
                 $platformPhpVersion ? '; Platform-PHP '.$platformPhpVersion : '',
-                Platform::getEnv('CI') ? '; CI' : ''
+                Platform::getEnv('CI') ? '; CI' : '',
+                $runningCommand !== null ? '; cmd:'.$runningCommand : ''
             );
         }
 

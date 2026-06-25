@@ -10,10 +10,15 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test;
+namespace Composer\Test\Console;
 
+use Composer\Command\AboutCommand;
 use Composer\Console\Application;
+use Composer\Command\ScriptAliasCommand;
+use Composer\Test\TestCase;
 use Composer\Util\Platform;
+use Symfony\Component\Console\Command\Command as SymfonyCommand;
+use Symfony\Component\Console\Command\HelpCommand;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 
@@ -64,7 +69,7 @@ class ApplicationTest extends TestCase
 
         $application = new Application;
         // Compatibility layer for symfony/console <7.4
-        // @phpstan-ignore method.notFound, function.alreadyNarrowedType
+        // @phpstan-ignore method.notFound, function.alreadyNarrowedType, method.deprecated
         method_exists($application, 'addCommand') ? $application->addCommand(new \Composer\Command\SelfUpdateCommand) : $application->add(new \Composer\Command\SelfUpdateCommand);
 
         if (!defined('COMPOSER_DEV_WARNING_TIME')) {
@@ -89,7 +94,7 @@ class ApplicationTest extends TestCase
     {
         $application = new Application;
         // Compatibility layer for symfony/console <7.4
-        // @phpstan-ignore method.notFound, function.alreadyNarrowedType
+        // @phpstan-ignore method.notFound, function.alreadyNarrowedType, method.deprecated
         method_exists($application, 'addCommand') ? $application->addCommand(new \Composer\Command\AboutCommand) : $application->add(new \Composer\Command\AboutCommand);
         self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
         self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
@@ -110,6 +115,7 @@ class ApplicationTest extends TestCase
         $application = new Application();
         $application->setAutoExit(false);
         $application->setCatchExceptions(false);
+        // @phpstan-ignore function.alreadyNarrowedType
         if (method_exists($application, 'setCatchErrors')) {
             $application->setCatchErrors(false);
         }
@@ -140,6 +146,7 @@ class ApplicationTest extends TestCase
         $application = new Application();
         $application->setAutoExit(false);
         $application->setCatchExceptions(false);
+        // @phpstan-ignore function.alreadyNarrowedType
         if (method_exists($application, 'setCatchErrors')) {
             $application->setCatchErrors(false);
         }
@@ -149,5 +156,31 @@ class ApplicationTest extends TestCase
 
         self::assertSame(0, $exitCode, 'Script command should have run successfully');
         self::assertStringContainsString('hello', $appOutput->fetch(), 'The "check" script should have been executed instead of the check-platform-reqs command');
+    }
+
+    /**
+     * @dataProvider provideTelemetryCommandNames
+     */
+    public function testGetTelemetryCommandName(SymfonyCommand $command, string $expected): void
+    {
+        $method = new \ReflectionMethod(Application::class, 'getTelemetryCommandName');
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+
+        self::assertSame($expected, $method->invoke(null, $command));
+    }
+
+    /**
+     * @return array<string, array{SymfonyCommand, string}>
+     */
+    public static function provideTelemetryCommandNames(): array
+    {
+        return [
+            // built-in Composer command reports its own name
+            'composer command' => [new AboutCommand(), 'about'],
+            // composer.json script aliases are reported generically as "script"
+            'script alias' => [new ScriptAliasCommand('myscript', null), 'script'],
+            // Symfony's built-in console commands report their own name
+            'symfony builtin' => [new HelpCommand(), 'help'],
+        ];
     }
 }
