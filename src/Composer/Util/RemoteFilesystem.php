@@ -684,6 +684,10 @@ class RemoteFilesystem
         }
 
         if (!empty($targetUrl)) {
+            if (!Url::isAllowedRedirect($targetUrl)) {
+                throw new TransportException('Could not follow the redirect to "'.Url::sanitize($targetUrl).'" because only http and https redirects are supported.');
+            }
+
             $this->redirects++;
 
             $this->io->writeError('', true, IOInterface::DEBUG);

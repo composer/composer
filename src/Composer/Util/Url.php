@@ -103,6 +103,19 @@ class Url
         return $origin;
     }
 
+    /**
+     * Whether a redirect to the given URL may be followed. Composer only follows
+     * redirects to http(s) targets, never to other stream wrappers (file://, etc.).
+     *
+     * @internal
+     */
+    public static function isAllowedRedirect(string $url): bool
+    {
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+
+        return is_string($scheme) && in_array(strtolower($scheme), ['http', 'https'], true);
+    }
+
     public static function sanitize(string $url): string
     {
         // GitHub repository rename result in redirect locations containing the access_token as GET parameter
