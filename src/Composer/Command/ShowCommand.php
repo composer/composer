@@ -42,6 +42,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Semver;
 use Composer\Spdx\SpdxLicenses;
 use Composer\Util\PackageInfo;
+use Composer\Util\Platform;
 use DateTimeInterface;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
@@ -355,7 +356,7 @@ EOT
                 $io->write($package->getName(), false);
                 $path = $composer->getInstallationManager()->getInstallPath($package);
                 if (is_string($path)) {
-                    $io->write(' ' . strtok(realpath($path), "\r\n"));
+                    $io->write(' ' . strtok(Platform::realpath($path), "\r\n"));
                 } else {
                     $io->write(' null');
                 }
@@ -577,7 +578,7 @@ EOT
                         if ($writePath) {
                             $path = $composer->getInstallationManager()->getInstallPath($package);
                             if (is_string($path)) {
-                                $packageViewData['path'] = strtok(realpath($path), "\r\n");
+                                $packageViewData['path'] = strtok(Platform::realpath($path), "\r\n");
                             } else {
                                 $packageViewData['path'] = null;
                             }
@@ -918,7 +919,7 @@ EOT
         if ($isInstalledPackage) {
             $path = $this->requireComposer()->getInstallationManager()->getInstallPath($package);
             if (is_string($path)) {
-                $io->write('<info>path</info>     : ' . realpath($path));
+                $io->write('<info>path</info>     : ' . Platform::realpath($path));
             } else {
                 $io->write('<info>path</info>     : null');
             }
@@ -1076,13 +1077,9 @@ EOT
 
         if (!PlatformRepository::isPlatformPackage($package->getName()) && $installedRepo->hasPackage($package)) {
             $path = $this->requireComposer()->getInstallationManager()->getInstallPath($package);
+            $json['path'] = null;
             if (is_string($path)) {
-                $path = realpath($path);
-                if ($path !== false) {
-                    $json['path'] = $path;
-                }
-            } else {
-                $json['path'] = null;
+                $json['path'] = Platform::realpath($path);
             }
 
             if ($package->getReleaseDate() !== null) {

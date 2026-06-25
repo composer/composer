@@ -23,6 +23,7 @@ use Composer\Util\Silencer;
 use Composer\Util\Platform;
 use React\Promise\PromiseInterface;
 use Composer\Downloader\DownloadManager;
+use RuntimeException;
 
 /**
  * Package installation manager.
@@ -90,7 +91,9 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         }
 
         if (is_link($installPath)) {
-            if (realpath($installPath) === false) {
+            try {
+                Platform::realpath($installPath);
+            } catch (RuntimeException $exception) {
                 return false;
             }
 
@@ -330,7 +333,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     protected function initializeVendorDir()
     {
         $this->filesystem->ensureDirectoryExists($this->vendorDir);
-        $this->vendorDir = realpath($this->vendorDir);
+        $this->vendorDir = Platform::realpath($this->vendorDir);
     }
 
     protected function getDownloadManager(): DownloadManager

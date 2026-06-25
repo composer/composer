@@ -38,6 +38,7 @@ class FilesystemTest extends TestCase
         $this->fs = new Filesystem;
         $this->workingDir = self::getUniqueTmpDirectory();
         $this->testFile = self::getUniqueTmpDirectory() . '/composer_test_file';
+        stream_wrapper_register('composertestsstreamwrapper', \stdClass::class);
     }
 
     protected function tearDown(): void
@@ -49,6 +50,7 @@ class FilesystemTest extends TestCase
         if (is_file($this->testFile)) {
             $this->fs->removeDirectory(dirname($this->testFile));
         }
+        stream_wrapper_unregister('composertestsstreamwrapper');
     }
 
     /**
@@ -398,5 +400,125 @@ class FilesystemTest extends TestCase
         self::assertDirectoryDoesNotExist($this->workingDir . '/foo/baz', 'Still a directory: ' . $this->workingDir . '/foo/baz');
         self::assertDirectoryDoesNotExist($this->workingDir . '/foo/bar', 'Still a directory: ' . $this->workingDir . '/foo/bar');
         self::assertDirectoryDoesNotExist($this->workingDir . '/foo', 'Still a directory: ' . $this->workingDir . '/foo');
+    }
+
+    /**
+     * @covers Filesystem::relativeSymlink
+     */
+    public function testCreatesSymlink(): void
+    {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('Does not run on windows');
+        }
+
+        $fs = new Filesystem();
+
+        $symlinkTarget = __DIR__ . '/Fixtures/Tar';
+        $symlinkLocation = __DIR__ . '/Fixtures/Zip/tar-symlink';
+
+        try {
+            $result = $fs->relativeSymlink($symlinkTarget, $symlinkLocation);
+
+            $this->assertTrue($result);
+            $this->assertFileExists($symlinkLocation . '/empty.tar.gz');
+        } finally {
+            $fs->unlink($symlinkLocation);
+        }
+    }
+
+    /**
+     * A Unix path is absolute if it starts with a forward-slash.
+     * A Windows path is absolute if it starts with a drive letter followed by a colon and a back-slash.
+     * A network path is always absolute and starts with two backslashes.
+     * A stream path is always absolute and starts with a scheme followed by "://".
+     *
+     * @return array<string, array{0:string,1:bool}>
+     */
+    public static function isAbsolutePathDataProvider(): array
+    {
+        return [
+            'unixPath' => ['/foo/bar', true],
+            'smbPath' => ['\\\\smb\\folder\\file.txt', true],
+            'windowsPath' => ['C:\\foo\\bar', true],
+            'streamPath' => ['composertestsstreamwrapper://path/to/whatever', true],
+            'fileStreamAbsolutePath' => ['file:///path/to/whatever', true],
+            'fileStreamRelativePath' => ['file://path/to/whatever', false],
+            'relativeSubPath' => ['foo/bar', false],
+            'relativeSubPath2' => ['./foo/bar', false],
+            'relativeParentPath' => ['../foo/bar', false],
+        ];
+    }
+
+    /**
+     * @covers \Composer\Util\Filesystem::isAbsolutePath
+     * @dataProvider isAbsolutePathDataProvider
+     */
+    public function testIsAbsolutePath(string $path, bool $expected): void
+    {
+        self::assertEquals($expected, (new Filesystem())->isAbsolutePath($path));
+    }
+
+    /**
+     * Same dataset as {@see FilesystemTest::isAbsolutePathDataProvider} but with different expected results.
+     *
+     * @used-by self::testIsStreamWrapperPath
+     * @return array<string, array{0:string,1:bool}>
+     */
+    public static function isStreamWrapperPathProvider(): array
+    {
+        return [
+            'unixPath' => ['/foo/bar', false],
+            'smbPath' => ['\\\\smb\\folder\\file.txt', false],
+            'windowsPath' => ['C:\\foo\\bar', false],
+            'streamPath' => ['composertestsstreamwrapper://path/to/whatever', true],
+            'fileStreamAbsolutePath' => ['file:///path/to/whatever', false],
+            'fileStreamRelativePath' => ['file://path/to/whatever', false],
+            'relativeSubPath' => ['foo/bar', false],
+            'relativeSubPath2' => ['./foo/bar', false],
+            'relativeParentPath' => ['../foo/bar', false],
+        ];
+    }
+
+    /**
+     * @covers \Composer\Util\Filesystem::isStreamWrapperPath
+     * @dataProvider isStreamWrapperPathProvider
+     */
+    public function testIsStreamWrapperPath(string $path, bool $expected): void
+    {
+        self::assertEquals($expected, Filesystem::isStreamWrapperPath($path));
+    }
+
+    /**
+     * Similar dataset as {@see FilesystemTest::isAbsolutePathDataProvider} but with different expected results.
+     *
+     * @return array<string, array{0:string,1:bool}>
+     */
+    public static function isLocalPathProvider(): array
+    {
+        return [
+            'unixPath' => ['/foo/bar', true],
+            'smbPath' => ['\\\\smb\\folder\\file.txt', false],
+            'windowsPath' => ['C:\\foo\\bar', true],
+            'streamPath' => ['composertestsstreamwrapper://path/to/whatever', false],
+            'fileStreamAbsolutePath' => ['file:///path/to/whatever', true],
+            'fileStreamRelativePath' => ['file://path/to/whatever', true],
+            'relativeSubPath' => ['foo/bar', true],
+            'relativeSubPath2' => ['./foo/bar', true],
+            'relativeParentPath' => ['../foo/bar', true],
+        ];
+    }
+
+    /**
+     * The purpose of this method is generally to determine if a cache should be used. With stream wrappers, we can't
+     * tell if the path is local or not. Currently, we return false, meaning that a cache typically will be used. While
+     * it could be argued that caching is the business of whoever is implementing the stream wrapper, some such as
+     * http:// and git:// are clearly remote paths, so we should return false for `::isLocalPath()` on stream wrappers.
+     *
+     * @covers \Composer\Util\Filesystem::isLocalPath
+     * @dataProvider isLocalPathProvider
+     */
+    public function testIsLocalPath(string $path, bool $expected): void
+    {
+        self::assertEquals($expected, Filesystem::isLocalPath($path));
     }
 }

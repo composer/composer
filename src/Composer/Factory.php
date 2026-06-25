@@ -324,14 +324,19 @@ class Factory
 
         // Load config and override with local config/auth config
         $config = static::createConfig($io, $cwd);
-        $isGlobal = $localConfigSource !== Config::SOURCE_UNKNOWN && realpath($config->get('home')) === realpath(dirname($localConfigSource));
+        try {
+            $isGlobal = $localConfigSource !== Config::SOURCE_UNKNOWN && Platform::realpath($config->get('home')) === Platform::realpath(dirname($localConfigSource));
+        } catch (\RuntimeException $e) {
+            $isGlobal = false;
+        }
         $config->merge($localConfig, $localConfigSource);
 
         if (isset($composerFile)) {
-            $io->writeError('Loading config file ' . $composerFile .' ('.realpath($composerFile).')', true, IOInterface::DEBUG);
-            $config->setConfigSource(new JsonConfigSource(new JsonFile(realpath($composerFile), null, $io)));
+            $composerFileRealpath = Platform::realpath($composerFile);
+            $io->writeError('Loading config file ' . $composerFile .' ('.$composerFileRealpath.')', true, IOInterface::DEBUG);
+            $config->setConfigSource(new JsonConfigSource(new JsonFile($composerFileRealpath, null, $io)));
 
-            $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json', null, $io);
+            $localAuthFile = new JsonFile(dirname($composerFileRealpath) . '/auth.json', null, $io);
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 self::validateJsonSchema($io, $localAuthFile, JsonFile::AUTH_SCHEMA);

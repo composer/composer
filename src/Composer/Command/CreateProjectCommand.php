@@ -457,13 +457,16 @@ EOT
 
         // handler Ctrl+C aborts gracefully
         @mkdir($directory, 0777, true);
-        if (false !== ($realDir = realpath($directory))) {
+        try {
+            $realDir = Platform::realpath($directory);
             $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) use ($realDir) {
                 $this->getIO()->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
                 $fs = new Filesystem();
                 $fs->removeDirectory($realDir);
                 $handler->exitWithLastSignal();
             });
+        } catch (\RuntimeException $exception) {
+            // If `mkdir` failed causing `Platform::realpath()` to throw, no `SignalHandler` was added, but none is needed since all it does is delete the directory.
         }
 
         // avoid displaying 9999999-dev as version if default-branch was selected

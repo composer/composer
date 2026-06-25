@@ -46,8 +46,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if (null === $url) {
             throw new \RuntimeException('The package '.$package->getPrettyName().' has no dist url configured, cannot download.');
         }
-        $realUrl = realpath($url);
-        if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
+        try {
+            $realUrl = Platform::realpath($url);
+        } catch (\RuntimeException $exception) {
             throw new \RuntimeException(sprintf(
                 'Source path "%s" is not found for package %s',
                 $url,
@@ -55,11 +56,16 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             ));
         }
 
-        if (realpath($path) === $realUrl) {
+        try {
+            $realPath = Platform::realpath($path);
+        } catch (\RuntimeException $exception) {
+            $realPath = false;
+        }
+        if ($realPath === $realUrl) {
             return \React\Promise\resolve(null);
         }
 
-        if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
+        if (strpos($realPath . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
             // IMPORTANT NOTICE: If you wish to change this, don't. You are wasting your time and ours.
             //
             // Please see https://github.com/composer/composer/pull/5974 and https://github.com/composer/composer/pull/6174
@@ -67,7 +73,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             throw new \RuntimeException(sprintf(
                 'Package %s cannot install to "%s" inside its source at "%s"',
                 $package->getName(),
-                realpath($path),
+                $realPath,
                 $realUrl
             ));
         }
@@ -77,6 +83,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
     /**
      * @inheritDoc
+     *
+     * @throws \RuntimeException When package dist url, or target path do not exist.
      */
     public function install(PackageInterface $package, string $path, bool $output = true): PromiseInterface
     {
@@ -85,17 +93,18 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if (null === $url) {
             throw new \RuntimeException('The package '.$package->getPrettyName().' has no dist url configured, cannot install.');
         }
-        $realUrl = realpath($url);
-        if (false === $realUrl) {
-            throw new \RuntimeException('Failed to realpath '.$url);
-        }
+        $realUrl = Platform::realpath($url);
 
-        if (realpath($path) === $realUrl) {
-            if ($output) {
-                $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));
+        try {
+            if (Platform::realpath($path) === $realUrl) {
+                if ($output) {
+                    $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));
+                }
+
+                return \React\Promise\resolve(null);
             }
-
-            return \React\Promise\resolve(null);
+        } catch (\RuntimeException $exception) {
+            // Most likely $path does not exist; it is about to be deleted anyway.
         }
 
         // Get the transport options with default values
@@ -245,12 +254,14 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if (null === $url) {
             throw new \RuntimeException('The package '.$package->getPrettyName().' has no dist url configured, cannot install.');
         }
-        $realUrl = realpath($url);
-        if (false === $realUrl) {
-            throw new \RuntimeException('Failed to realpath '.$url);
-        }
+        $realUrl = Platform::realpath($url);
 
-        if (realpath($path) === $realUrl) {
+        try {
+            $realpath = Platform::realpath($path);
+        } catch (\RuntimeException $exception) {
+            $realpath = false;
+        }
+        if ($realpath === $realUrl) {
             return ': Source already present';
         }
 
