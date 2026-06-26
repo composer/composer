@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Composer\Util\Platform;
 
 /**
  * Downloader for tar files: tar, tar.gz or tar.bz2
@@ -23,9 +24,14 @@ class TarDownloader extends ArchiveDownloader
 {
     /**
      * @inheritDoc
+     *
+     * @throws \RuntimeException
      */
     protected function extract(PackageInterface $package, $file, $path)
     {
+        // Guard against unsafe Phar/PharData metadata handling on PHP < 8.0
+        Platform::assertPharMetadataSafe();
+
         // Can throw an UnexpectedValueException
         $archive = new \PharData($file);
         $archive->extractTo($path, null, true);

@@ -24,6 +24,9 @@ class Tar
      */
     public static function getComposerJson($pathToArchive)
     {
+        // Guard against unsafe Phar/PharData metadata handling on PHP < 8.0
+        Platform::assertPharMetadataSafe();
+
         $phar = new \PharData($pathToArchive);
 
         if (!$phar->valid()) {
