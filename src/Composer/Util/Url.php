@@ -105,6 +105,22 @@ class Url
     }
 
     /**
+     * Whether a redirect to the given URL may be followed. Composer only follows
+     * redirects to http(s) targets, never to other stream wrappers (file://, etc.).
+     *
+     * @internal
+     *
+     * @param  string $url
+     * @return bool
+     */
+    public static function isAllowedRedirect($url)
+    {
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+
+        return is_string($scheme) && in_array(strtolower($scheme), array('http', 'https'), true);
+    }
+
+    /**
      * @param  string $url
      * @return string
      */
