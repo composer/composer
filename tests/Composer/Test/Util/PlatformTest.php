@@ -22,9 +22,23 @@ use Composer\Test\TestCase;
  */
 class PlatformTest extends TestCase
 {
+    /** @var string|false */
+    private $originalAllowUnsafePharMetadata;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->originalAllowUnsafePharMetadata = Platform::getEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
+    }
+
     protected function tearDown(): void
     {
         Platform::clearEnv('COMPOSER_TEST_BOOL_ENV');
+        if (false === $this->originalAllowUnsafePharMetadata) {
+            Platform::clearEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
+        } else {
+            Platform::putEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA', $this->originalAllowUnsafePharMetadata);
+        }
         parent::tearDown();
     }
 
@@ -105,5 +119,43 @@ class PlatformTest extends TestCase
         self::expectExceptionMessage('Invalid value for COMPOSER_TEST_BOOL_ENV');
 
         Platform::getBoolEnv('COMPOSER_TEST_BOOL_ENV');
+    }
+
+    public function testAssertPharMetadataSafeAllowsWhenOptedIn(): void
+    {
+        Platform::putEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA', '1');
+
+        Platform::assertPharMetadataSafe();
+
+        // reaching this point without an exception is the assertion
+        $this->addToAssertionCount(1);
+    }
+
+    public function testAssertPharMetadataSafeAllowsOnPhp8WithoutOptIn(): void
+    {
+        if (\PHP_VERSION_ID < 80000) {
+            self::markTestSkipped('Only relevant on PHP 8.0+');
+        }
+
+        Platform::clearEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
+
+        Platform::assertPharMetadataSafe();
+
+        // reaching this point without an exception is the assertion
+        $this->addToAssertionCount(1);
+    }
+
+    public function testAssertPharMetadataSafeThrowsOnPhp7WithoutOptIn(): void
+    {
+        if (\PHP_VERSION_ID >= 80000) {
+            self::markTestSkipped('Only relevant on PHP < 8.0');
+        }
+
+        Platform::clearEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
+
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('Refusing to parse a tar/phar archive on PHP < 8.0');
+
+        Platform::assertPharMetadataSafe();
     }
 }
