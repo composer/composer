@@ -562,6 +562,10 @@ class CurlDownloader
         }
 
         if (!empty($targetUrl)) {
+            if (!Url::isAllowedRedirect($targetUrl)) {
+                throw new TransportException('Could not follow the redirect to "'.Url::sanitize($targetUrl).'" because only http and https redirects are supported.');
+            }
+
             $this->io->writeError(sprintf('Following redirect (%u) %s', $job['attributes']['redirects'] + 1, Url::sanitize($targetUrl)), true, IOInterface::DEBUG);
 
             return $targetUrl;

@@ -78,6 +78,30 @@ class UrlTest extends TestCase
         self::assertSame($expected, Url::sanitize(Url::sanitize($url)));
     }
 
+    /**
+     * @dataProvider isAllowedRedirectProvider
+     */
+    public function testIsAllowedRedirect(bool $expected, string $url): void
+    {
+        self::assertSame($expected, Url::isAllowedRedirect($url));
+    }
+
+    public static function isAllowedRedirectProvider(): array
+    {
+        return [
+            [true, 'http://example.org/foo'],
+            [true, 'https://example.org/foo'],
+            [true, 'HTTPS://example.org/foo'],
+            [false, 'file://localhost/etc/passwd'],
+            [false, 'file:///etc/passwd'],
+            [false, 'phar://archive.phar/file'],
+            [false, 'data://text/plain;base64,Zm9v'],
+            [false, 'ftp://example.org/foo'],
+            [false, '/foo/bar'],
+            [false, 'example.org/foo'],
+        ];
+    }
+
     public static function sanitizeProvider(): array
     {
         return [
