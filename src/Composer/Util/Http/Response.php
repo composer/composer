@@ -15,6 +15,8 @@ namespace Composer\Util\Http;
 use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
+use Composer\Util\Url;
+use Seld\JsonLint\ParsingException;
 
 /**
  * @phpstan-import-type Request from HttpDownloader
@@ -102,7 +104,15 @@ class Response
      */
     public function decodeJson()
     {
-        return JsonFile::parseJson($this->body, $this->request['url']);
+        try {
+            return JsonFile::parseJson($this->body, $this->request['url']);
+        } catch (ParsingException $e) {
+            // The response body may contain sensitive information, so for safety we do not print it
+            // out: JsonLint would otherwise embed a window of the offending bytes into both the
+            // exception message and its details, so re-throw with only the URL. Local files are
+            // parsed through JsonFile directly and keep their detailed parse errors.
+            throw new ParsingException('"'.Url::sanitize($this->request['url']).'" does not contain valid JSON');
+        }
     }
 
     /**
