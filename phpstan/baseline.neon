@@ -3859,6 +3859,11 @@ parameters:
 			path: ../tests/Composer/Test/Command/InitCommandTest.php
 
 		-
+			message: "#^Only booleans are allowed in and, null given on the right side\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Console/ApplicationTest.php
+
+		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Config/JsonConfigSourceTest.php

@@ -285,6 +285,10 @@ class Installer
             $this->update = true;
         }
 
+        // surface the actual install/update operation in telemetry, even when the outer command is a
+        // plugin/script or a command like require/remove that runs the installer (see StreamContextFactory)
+        Composer::setRunningOperation($this->update ? 'update' : 'install');
+
         if ($this->dryRun) {
             $this->verbose = true;
             $this->runScripts = false;

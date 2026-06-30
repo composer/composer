@@ -438,6 +438,16 @@ class Application extends BaseApplication
             }
         }
 
+        // record the running command for telemetry purposes (sent via the User-Agent in StreamContextFactory)
+        // this runs once all commands (incl. plugin and script commands) are registered so it sees the final command
+        if (is_string($rawCommandName) && $rawCommandName !== '') {
+            try {
+                Composer::setRunningCommand(self::getTelemetryCommandName($this->find($rawCommandName)));
+            } catch (\InvalidArgumentException $e) {
+                // command is unknown or ambiguous, nothing to record
+            }
+        }
+
         try {
             if ($input->hasParameterOption('--profile')) {
                 $startTime = microtime(true);
@@ -719,6 +729,25 @@ class Application extends BaseApplication
         }
 
         return $input->getFirstArgument();
+    }
+
+    /**
+     * Classifies the running command for telemetry: built-in Composer and Symfony console commands report
+     * their own name, commands defined as composer.json scripts report "script", and everything else
+     * (plugin commands, command classes shipped by other namespaces) reports "plugin".
+     */
+    private static function getTelemetryCommandName(SymfonyCommand $command): string
+    {
+        if ($command instanceof Command\ScriptAliasCommand) {
+            return 'script';
+        }
+
+        $class = get_class($command);
+        if (str_starts_with($class, 'Composer\\') || str_starts_with($class, 'Symfony\\Component\\Console\\')) {
+            return (string) $command->getName();
+        }
+
+        return 'plugin';
     }
 
     public function getLongVersion(): string
