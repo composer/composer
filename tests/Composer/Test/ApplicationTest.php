@@ -12,9 +12,13 @@
 
 namespace Composer\Test;
 
+use Composer\Command\AboutCommand;
 use Composer\Console\Application;
+use Composer\Command\ScriptAliasCommand;
 use Composer\XdebugHandler\XdebugHandler;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Command\Command as SymfonyCommand;
+use Symfony\Component\Console\Command\HelpCommand;
 
 class ApplicationTest extends TestCase
 {
@@ -154,5 +158,35 @@ class ApplicationTest extends TestCase
     public function testDevWarningPreventedAlias()
     {
         $this->ensureNoDevWarning('self-up');
+    }
+
+    /**
+     * @dataProvider provideTelemetryCommandNames
+     *
+     * @param  SymfonyCommand $command
+     * @param  string         $expected
+     * @return void
+     */
+    public function testGetTelemetryCommandName(SymfonyCommand $command, $expected)
+    {
+        $method = new \ReflectionMethod('Composer\Console\Application', 'getTelemetryCommandName');
+        $method->setAccessible(true);
+
+        $this->assertSame($expected, $method->invoke(null, $command));
+    }
+
+    /**
+     * @return array<string, array{SymfonyCommand, string}>
+     */
+    public function provideTelemetryCommandNames()
+    {
+        return array(
+            // built-in Composer command reports its own name
+            'composer command' => array(new AboutCommand(), 'about'),
+            // composer.json script aliases are reported generically as "script"
+            'script alias' => array(new ScriptAliasCommand('myscript', ''), 'script'),
+            // Symfony's built-in console commands report their own name
+            'symfony builtin' => array(new HelpCommand(), 'help'),
+        );
     }
 }
