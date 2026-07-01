@@ -12,7 +12,10 @@
 
 namespace Composer\Package\Loader;
 
+use Composer\Exception\SecurityException;
 use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Version\VersionParser;
@@ -113,6 +116,21 @@ class ValidatingArrayLoader implements LoaderInterface
                 $this->validateString('bin');
             } else {
                 $this->validateFlatArray('bin');
+            }
+            // A ".." path segment in a bin escapes the package install directory and lets the
+            // package chmod/point at an arbitrary host file during install (GHSA-gjfg-22fp-rrxx).
+            if (isset($this->config['bin']) && is_string($this->config['bin'])) {
+                if (Preg::isMatch('{(?:^|[\\\\/])\.\.(?:[\\\\/]|$)}', $this->config['bin'])) {
+                    $this->errors[] = 'bin : invalid value ('.$this->config['bin'].'), must not contain a ".." path component';
+                    unset($this->config['bin']);
+                }
+            } elseif (isset($this->config['bin']) && is_array($this->config['bin'])) {
+                foreach ($this->config['bin'] as $key => $bin) {
+                    if (is_string($bin) && Preg::isMatch('{(?:^|[\\\\/])\.\.(?:[\\\\/]|$)}', $bin)) {
+                        $this->errors[] = 'bin.'.$key.' : invalid value ('.$bin.'), must not contain a ".." path component';
+                        unset($this->config['bin'][$key]);
+                    }
+                }
             }
         }
 
@@ -642,6 +660,54 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         return null;
+    }
+
+    /**
+     * Re-applies the security-sensitive subset of the load() validation to a resolved package
+     * which may have been loaded via the non-validating ArrayLoader, before it is written to or
+     * installed from the lock file. This guards against malicious package names and source/dist
+     * URLs or references that could be interpreted as command-line options (argument injection)
+     * by the VCS/download tooling.
+     *
+     * @throws SecurityException
+     */
+    public static function validatePackage(PackageInterface $package): void
+    {
+        // The root package's name/metadata is locally controlled and already validated by
+        // RootPackageLoader (and its "__root__" placeholder name would be a false positive here).
+        // RootPackageInterface covers both RootPackage and RootAliasPackage.
+        if ($package instanceof RootPackageInterface) {
+            return;
+        }
+
+        // getName() is already lowercased, so the uppercase style branch never fires and only
+        // structural/security failures throw. Platform packages return null here.
+        if (null !== ($err = self::hasPackageNamingError($package->getName()))) {
+            throw new SecurityException('Invalid package found during dependency resolution, aborting: '.$err);
+        }
+
+        // A url or reference starting with a "-" may be misinterpreted as a command-line option
+        // by the VCS/download tooling, same protection as the source/dist checks done in load().
+        $sourceDist = [
+            'source.url' => $package->getSourceUrl(),
+            'source.reference' => $package->getSourceReference(),
+            'dist.url' => $package->getDistUrl(),
+            'dist.reference' => $package->getDistReference(),
+        ];
+        foreach ($sourceDist as $field => $value) {
+            if ($value !== null && Preg::isMatch('{^\s*-}', $value)) {
+                throw new SecurityException($package->getName().' has an invalid '.$field.', it must not start with a "-": '.$value);
+            }
+        }
+
+        // Bin paths are resolved relative to the package install dir and then chmod'd (and
+        // proxied) by BinaryInstaller. A ".." segment escapes that directory and lets a
+        // dependency chmod/point at an arbitrary host file (GHSA-gjfg-22fp-rrxx), so reject it.
+        foreach ($package->getBinaries() as $bin) {
+            if (Preg::isMatch('{(?:^|[\\\\/])\.\.(?:[\\\\/]|$)}', $bin)) {
+                throw new SecurityException($package->getName().' has an invalid bin '.$bin.', it must not contain ".." path segments');
+            }
+        }
     }
 
     /**

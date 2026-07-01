@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Package;
 use Composer\Pcre\Preg;
 
@@ -69,6 +70,8 @@ class LockTransaction extends Transaction
 
             if ($literal > 0) {
                 $package = $pool->literalToPackage($literal);
+
+                ValidatingArrayLoader::validatePackage($package);
 
                 $this->resultPackages['all'][] = $package;
                 if (!isset($this->unlockableMap[$package->id])) {
