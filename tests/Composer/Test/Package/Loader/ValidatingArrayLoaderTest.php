@@ -556,7 +556,7 @@ class ValidatingArrayLoaderTest extends TestCase
 
     public function testValidatePackageRejectsInvalidName()
     {
-        $this->expectException('Composer\Exception\SecurityException');
+        $this->setExpectedException('Composer\Exception\SecurityException');
         ValidatingArrayLoader::validatePackage($this->getPackage('--evil/pkg', '1.0.0'));
     }
 
@@ -566,8 +566,7 @@ class ValidatingArrayLoaderTest extends TestCase
         $package->setSourceType('git');
         $package->setSourceUrl('--upload-pack=touch /tmp/pwned');
         $package->setSourceReference('main');
-        $this->expectException('Composer\Exception\SecurityException');
-        $this->expectExceptionMessage('vendor/pkg has an invalid source.url');
+        $this->setExpectedException('Composer\Exception\SecurityException', 'vendor/pkg has an invalid source.url');
         ValidatingArrayLoader::validatePackage($package);
     }
 
@@ -577,8 +576,7 @@ class ValidatingArrayLoaderTest extends TestCase
         $package->setSourceType('git');
         $package->setSourceUrl('https://example.org/vendor/pkg.git');
         $package->setSourceReference('--upload-pack=touch /tmp/pwned');
-        $this->expectException('Composer\Exception\SecurityException');
-        $this->expectExceptionMessage('vendor/pkg has an invalid source.reference');
+        $this->setExpectedException('Composer\Exception\SecurityException', 'vendor/pkg has an invalid source.reference');
         ValidatingArrayLoader::validatePackage($package);
     }
 
@@ -587,8 +585,7 @@ class ValidatingArrayLoaderTest extends TestCase
         $package = $this->getPackage('vendor/pkg', '1.0.0');
         $package->setDistType('zip');
         $package->setDistUrl('-oProxyCommand=touch /tmp/pwned');
-        $this->expectException('Composer\Exception\SecurityException');
-        $this->expectExceptionMessage('vendor/pkg has an invalid dist.url');
+        $this->setExpectedException('Composer\Exception\SecurityException', 'vendor/pkg has an invalid dist.url');
         ValidatingArrayLoader::validatePackage($package);
     }
 
@@ -598,8 +595,7 @@ class ValidatingArrayLoaderTest extends TestCase
         $package->setDistType('zip');
         $package->setDistUrl('https://example.org/vendor/pkg.zip');
         $package->setDistReference('--evil');
-        $this->expectException('Composer\Exception\SecurityException');
-        $this->expectExceptionMessage('vendor/pkg has an invalid dist.reference');
+        $this->setExpectedException('Composer\Exception\SecurityException', 'vendor/pkg has an invalid dist.reference');
         ValidatingArrayLoader::validatePackage($package);
     }
 
@@ -607,8 +603,7 @@ class ValidatingArrayLoaderTest extends TestCase
     {
         $package = $this->getPackage('vendor/pkg', '1.0.0');
         $package->setBinaries(array('bin/ok', '../../../../escape-target.txt'));
-        $this->expectException('Composer\Exception\SecurityException');
-        $this->expectExceptionMessage('vendor/pkg has an invalid bin ../../../../escape-target.txt, it must not contain ".." path segments');
+        $this->setExpectedException('Composer\Exception\SecurityException', 'vendor/pkg has an invalid bin ../../../../escape-target.txt, it must not contain ".." path segments');
         ValidatingArrayLoader::validatePackage($package);
     }
 }
