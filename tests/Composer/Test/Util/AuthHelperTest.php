@@ -326,6 +326,37 @@ class AuthHelperTest extends TestCase
         self::assertSame($expectedHeaders, $options['http']['header']);
     }
 
+    public function testAddAuthenticationHeaderWithBasicHttpAuthenticationMasksTokenUsername(): void
+    {
+        $origin = 'some-api.url.com';
+        $auth = [
+            'username' => 'ghp_1234567890abcdefghijklmnopqrstuvwxyzAB',
+            'password' => 'x-oauth-basic',
+        ];
+
+        $options = ['http' => ['header' => []]];
+
+        $this->expectsAuthentication($origin, $auth);
+
+        // the displayed username must be obfuscated so a token in the user slot does not leak to verbose logs
+        // (only the first 3 chars are kept, enough to tell which kind of token is in use)
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with(
+                'Using HTTP basic authentication with username "ghp***"',
+                true,
+                IOInterface::DEBUG
+            );
+
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, 'https://some-api.url.com');
+
+        // the actual auth header must still contain the real, un-obfuscated credentials
+        self::assertSame(
+            ['Authorization: Basic ' . base64_encode($auth['username'] . ':' . $auth['password'])],
+            $options['http']['header']
+        );
+    }
+
     /**
      * Tests that custom HTTP headers are correctly added to the request when using
      * the 'custom-headers' authentication type.

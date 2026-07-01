@@ -328,7 +328,7 @@ class AuthHelper
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
-                $authenticationDisplayMessage = 'Using HTTP basic authentication with username "' . $auth['username'] . '"';
+                $authenticationDisplayMessage = 'Using HTTP basic authentication with username "' . Url::sanitizeUsername((string) $auth['username']) . '"';
             }
 
             if ($authenticationDisplayMessage && (!isset($this->displayedOriginAuthentications[$origin]) || $this->displayedOriginAuthentications[$origin] !== $authenticationDisplayMessage)) {
