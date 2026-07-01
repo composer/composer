@@ -231,6 +231,11 @@ class CurlDownloader
             curl_setopt($curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V6);
         }
 
+        if ($attributes['retries'] > 0) {
+            // when retrying, do not re-use a kept-alive connection from the pool as it may be the cause of the failure
+            curl_setopt($curlHandle, CURLOPT_FRESH_CONNECT, true);
+        }
+
         if (function_exists('curl_share_init')) {
             curl_setopt($curlHandle, CURLOPT_SHARE, $this->shareHandle);
         }
@@ -460,9 +465,12 @@ class CurlDownloader
 
                 // fail 4xx and 5xx responses and capture the response
                 if ($statusCode >= 400 && $statusCode <= 599) {
+                    $retryableStatusCode = in_array($statusCode, [423, 425, 500, 502, 503, 504, 507, 510], true)
+                        // codeload.github.com intermittently returns 400 on reused connections, retry those specifically, see #12958
+                        || ($statusCode === 400 && parse_url($job['url'], PHP_URL_HOST) === 'codeload.github.com');
                     if (
                         (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')
-                        && in_array($statusCode, [423, 425, 500, 502, 503, 504, 507, 510], true)
+                        && $retryableStatusCode
                         && $job['attributes']['retries'] < $this->maxRetries
                     ) {
                         $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to status code '. $statusCode, true, IOInterface::DEBUG);
