@@ -27,7 +27,7 @@ class Url
      *
      * @var string[]
      */
-    const NON_SECRET_CREDENTIALS = array('private-token', 'x-token-auth', 'oauth2', 'gitlab-ci-token', 'x-oauth-basic');
+    public static $NON_SECRET_CREDENTIALS = array('private-token', 'x-token-auth', 'oauth2', 'gitlab-ci-token', 'x-oauth-basic');
 
     /**
      * @param  Config $config
@@ -164,7 +164,7 @@ class Url
     public static function sanitizeUsername($user)
     {
         // well-known non-secret credential markers (e.g. Bitbucket's x-token-auth) are safe to show verbatim
-        if (in_array($user, self::NON_SECRET_CREDENTIALS, true)) {
+        if (in_array($user, self::$NON_SECRET_CREDENTIALS, true)) {
             return $user;
         }
         // GitHub tokens and any other long (12char+) value keep only their first 3 chars
