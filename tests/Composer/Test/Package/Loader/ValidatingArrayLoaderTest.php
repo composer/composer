@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Package\Loader;
 
+use Composer\Package\CompletePackage;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Loader\InvalidPackageException;
 use Composer\Test\TestCase;
@@ -534,6 +535,7 @@ class ValidatingArrayLoaderTest extends TestCase
     public function testValidatePackageAllowsValidPackages()
     {
         $package = $this->getPackage('vendor/package', '1.0.0');
+        assert($package instanceof CompletePackage);
         $package->setSourceType('git');
         $package->setSourceUrl('https://example.org/vendor/package.git');
         $package->setSourceReference('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');

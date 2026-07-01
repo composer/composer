@@ -8335,7 +8335,7 @@ parameters:
 
 		-
 			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertTrue\\(\\) with true will always evaluate to true\\.$#"
-			count: 1
+			count: 2
 			path: ../tests/Composer/Test/Package/Loader/ValidatingArrayLoaderTest.php
 
 		-
