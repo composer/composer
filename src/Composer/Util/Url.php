@@ -21,6 +21,15 @@ use Composer\Pcre\Preg;
 class Url
 {
     /**
+     * Well-known credential markers used in the user or password slot of URLs by various services
+     * (e.g. Bitbucket's x-token-auth or GitLab's gitlab-ci-token). These are not secret and are
+     * therefore safe to display verbatim rather than obfuscating them.
+     *
+     * @var string[]
+     */
+    const NON_SECRET_CREDENTIALS = array('private-token', 'x-token-auth', 'oauth2', 'gitlab-ci-token', 'x-oauth-basic');
+
+    /**
      * @param  Config $config
      * @param  string $url
      * @param  string $ref
@@ -130,18 +139,39 @@ class Url
         // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
         $url = Preg::replace('{([&?]access_token=)[^&]+}', '$1***', $url);
 
-        $url = Preg::replaceCallback('{^(?P<prefix>[a-z0-9]+://)?(?P<user>[^:/\s@]+):(?P<password>[^@\s/]+)@}i', function ($m) {
-            // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx, github_pat_xxx) we obfuscate that
-            if (Preg::isMatch(GitHub::GITHUB_TOKEN_REGEX, $m['user'])) {
-                return $m['prefix'].'***:***@';
-            }
-            if (strlen($m['user']) >= 12) {
-                return $m['prefix'].substr($m['user'], 0, 8).'***:***@';
+        $url = Preg::replaceCallback('{^(?P<prefix>[a-z0-9]+://)?(?P<user>[^:/\s@]+)(?::(?P<password>[^@\s/]+))?@}i', function ($m) {
+            $user = Url::sanitizeUsername($m['user']);
+            if (isset($m['password']) && $m['password'] !== '') {
+                return $m['prefix'].$user.':***@';
             }
 
-            return $m['prefix'].$m['user'].':***@';
+            return $m['prefix'].$user.'@';
         }, $url);
 
         return $url;
+    }
+
+    /**
+     * Returns a display-safe version of the user/token part of a URL's userinfo.
+     *
+     * Modern GitHub tokens (e.g. ghp_xxx, github_pat_xxx) and any other long (12char+) value keep
+     * only their first 3 chars (enough to tell which token is in use); short values (typical
+     * account names) and well-known non-secret markers are returned unchanged.
+     *
+     * @param  string $user
+     * @return string
+     */
+    public static function sanitizeUsername($user)
+    {
+        // well-known non-secret credential markers (e.g. Bitbucket's x-token-auth) are safe to show verbatim
+        if (in_array($user, self::NON_SECRET_CREDENTIALS, true)) {
+            return $user;
+        }
+        // GitHub tokens and any other long (12char+) value keep only their first 3 chars
+        if (Preg::isMatch(GitHub::GITHUB_TOKEN_REGEX, $user) || strlen($user) >= 12) {
+            return substr($user, 0, 3).'***';
+        }
+
+        return $user;
     }
 }

@@ -333,6 +333,49 @@ class AuthHelperTest extends TestCase
         );
     }
 
+    public function testAddAuthenticationHeaderWithBasicHttpAuthenticationMasksTokenUsername()
+    {
+        $origin = 'some-api.url.com';
+        $url = 'https://some-api.url.com';
+        $auth = array(
+            'username' => 'ghp_1234567890abcdefghijklmnopqrstuvwxyzAB',
+            'password' => 'x-oauth-basic',
+        );
+
+        $headers = array(
+            'Accept-Encoding: gzip',
+            'Connection: close',
+        );
+
+        $this->expectsAuthentication($origin, $auth);
+
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('gitlab-domains')
+            ->willReturn(array($origin));
+
+        // the displayed username must be obfuscated so a token in the user slot does not leak to verbose logs
+        // (only the first 3 chars are kept, enough to tell which kind of token is in use)
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with(
+                'Using HTTP basic authentication with username "ghp***"',
+                true,
+                IOInterface::DEBUG
+            );
+
+        // the actual auth header must still contain the real, un-obfuscated credentials
+        $expectedHeaders = array_merge(
+            $headers,
+            array('Authorization: Basic ' . base64_encode($auth['username'] . ':' . $auth['password']))
+        );
+
+        $this->assertSame(
+            $expectedHeaders,
+            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
+        );
+    }
+
     /**
      * @dataProvider bitbucketPublicUrlProvider
      *

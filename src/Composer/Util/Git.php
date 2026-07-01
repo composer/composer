@@ -508,7 +508,7 @@ class Git
         $maskedCredentials = array();
 
         foreach ($credentials as $credential) {
-            if (in_array($credential, array('private-token', 'x-token-auth', 'oauth2', 'gitlab-ci-token', 'x-oauth-basic'))) {
+            if (in_array($credential, Url::NON_SECRET_CREDENTIALS, true)) {
                 $maskedCredentials[] = $credential;
             } elseif (strlen($credential) > 6) {
                 $maskedCredentials[] = substr($credential, 0, 3) . '...' . substr($credential, -3);

@@ -85,11 +85,14 @@ class ProcessExecutorTest extends TestCase
         return array(
             array('echo https://foo:bar@example.org/', 'echo https://foo:***@example.org/'),
             array('echo http://foo@example.org', 'echo http://foo@example.org'),
-            array('echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://***:***@github.com/'),
-            array('echo https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB:x-oauth-basic@github.com/acme/repo', 'echo https://***:***@github.com/acme/repo'),
-            array('echo https://github_pat_1234567890abcdefghijkl_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW:x-oauth-basic@github.com/acme/repo', 'echo https://***:***@github.com/acme/repo'),
+            array('echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://abc***:***@github.com/'),
+            array('echo https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB:x-oauth-basic@github.com/acme/repo', 'echo https://ghp***:***@github.com/acme/repo'),
+            array('echo https://github_pat_1234567890abcdefghijkl_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW:x-oauth-basic@github.com/acme/repo', 'echo https://git***:***@github.com/acme/repo'),
             // ghs_<id>_<base64url>.<base64url>.<base64url> installation token — must be masked, not leaked
-            array('echo https://ghs_1234567890_eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJjb21wb3NlciJ9.aB-cDef_GHIjkl-mnoPQR0123456:x-oauth-basic@github.com/acme/repo', 'echo https://***:***@github.com/acme/repo'),
+            array('echo https://ghs_1234567890_eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJjb21wb3NlciJ9.aB-cDef_GHIjkl-mnoPQR0123456:x-oauth-basic@github.com/acme/repo', 'echo https://ghs***:***@github.com/acme/repo'),
+            // token in the user slot without a password (e.g. http://TOKEN@host)
+            array('echo http://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB@github.com/', 'echo http://ghp***@github.com/'),
+            array('echo http://abcdef1234567890234578@github.com/', 'echo http://abc***@github.com/'),
             array("svn ls --verbose --non-interactive  --username 'foo' --password 'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"),
             array("svn ls --verbose --non-interactive  --username 'foo' --password 'bar \'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"),
         );

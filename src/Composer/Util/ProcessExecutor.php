@@ -447,19 +447,13 @@ class ProcessExecutor
             return;
         }
 
-        $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
-            // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx, github_pat_xxx) we obfuscate that
-            if (Preg::isMatch(GitHub::GITHUB_TOKEN_REGEX, $m['user'])) {
-                return '://***:***@';
-            }
-            if (Preg::isMatch('{^[a-f0-9]{12,}$}', $m['user'])) {
-                return '://***:***@';
-            }
-            if (strlen($m['user']) >= 12) {
-                return '://'.substr($m['user'], 0, 8).'***:***@';
+        $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s@]+)(?::(?P<password>[^@\s/]+))?@}i', function ($m) {
+            $user = Url::sanitizeUsername($m['user']);
+            if (isset($m['password']) && $m['password'] !== '') {
+                return '://'.$user.':***@';
             }
 
-            return '://'.$m['user'].':***@';
+            return '://'.$user.'@';
         }, $command);
         $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
         $this->io->writeError('Executing'.($async ? ' async' : '').' command ('.($cwd ?: 'CWD').'): '.$safeCommand);
