@@ -2,6 +2,7 @@
 
   * Security: Validate package names (GHSA-499r-g7pc-vmp9)
   * Security: Validate package bin paths against path traversal (GHSA-gjfg-22fp-rrxx)
+  * Security: Sanitize URL-embedded usernames/token in verbose output (GHSA-g6xq-892h-64w3)
   * Security: Only follow HTTP redirects from HTTP responses (#12948)
   * Security: Prevent phar metadata unserialization on unsafe PHP versions (#12946)
   * Security: Sanitize JSON parse errors in http responses to avoid leaking response body data (#12959)
