@@ -417,6 +417,25 @@ class ValidatingArrayLoaderTest extends TestCase
                     'require.foo/Bar : a package cannot set a require on itself',
                 ),
             ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'bin' => array('bin/foo', '../../../../etc/evil', 'nested/../../escape'),
+                ),
+                array(
+                    'bin.1 : invalid value (../../../../etc/evil), must not contain a ".." path component',
+                    'bin.2 : invalid value (nested/../../escape), must not contain a ".." path component',
+                ),
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'bin' => '../escape',
+                ),
+                array(
+                    'bin : invalid value (../escape), must not contain a ".." path component',
+                ),
+            ),
         ));
     }
 
@@ -510,5 +529,84 @@ class ValidatingArrayLoaderTest extends TestCase
                 false,
             ),
         );
+    }
+
+    public function testValidatePackageAllowsValidPackages()
+    {
+        $package = $this->getPackage('vendor/package', '1.0.0');
+        $package->setSourceType('git');
+        $package->setSourceUrl('https://example.org/vendor/package.git');
+        $package->setSourceReference('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+        $package->setDistType('zip');
+        $package->setDistUrl('https://example.org/vendor/package.zip');
+        $package->setDistReference('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+        $package->setBinaries(array('bin/foo', 'console', 'some.bin'));
+        ValidatingArrayLoader::validatePackage($package);
+
+        // platform packages are accepted as-is
+        ValidatingArrayLoader::validatePackage($this->getPackage('php', '8.2.0'));
+
+        // the root package is skipped entirely, even with an otherwise invalid name
+        ValidatingArrayLoader::validatePackage($this->getPackage('--evil/root', '1.0.0', 'Composer\Package\RootPackage'));
+
+        $this->assertTrue(true);
+    }
+
+    public function testValidatePackageRejectsInvalidName()
+    {
+        $this->expectException('Composer\Exception\SecurityException');
+        ValidatingArrayLoader::validatePackage($this->getPackage('--evil/pkg', '1.0.0'));
+    }
+
+    public function testValidatePackageRejectsDashSourceUrl()
+    {
+        $package = $this->getPackage('vendor/pkg', '1.0.0');
+        $package->setSourceType('git');
+        $package->setSourceUrl('--upload-pack=touch /tmp/pwned');
+        $package->setSourceReference('main');
+        $this->expectException('Composer\Exception\SecurityException');
+        $this->expectExceptionMessage('vendor/pkg has an invalid source.url');
+        ValidatingArrayLoader::validatePackage($package);
+    }
+
+    public function testValidatePackageRejectsDashSourceReference()
+    {
+        $package = $this->getPackage('vendor/pkg', '1.0.0');
+        $package->setSourceType('git');
+        $package->setSourceUrl('https://example.org/vendor/pkg.git');
+        $package->setSourceReference('--upload-pack=touch /tmp/pwned');
+        $this->expectException('Composer\Exception\SecurityException');
+        $this->expectExceptionMessage('vendor/pkg has an invalid source.reference');
+        ValidatingArrayLoader::validatePackage($package);
+    }
+
+    public function testValidatePackageRejectsDashDistUrl()
+    {
+        $package = $this->getPackage('vendor/pkg', '1.0.0');
+        $package->setDistType('zip');
+        $package->setDistUrl('-oProxyCommand=touch /tmp/pwned');
+        $this->expectException('Composer\Exception\SecurityException');
+        $this->expectExceptionMessage('vendor/pkg has an invalid dist.url');
+        ValidatingArrayLoader::validatePackage($package);
+    }
+
+    public function testValidatePackageRejectsDashDistReference()
+    {
+        $package = $this->getPackage('vendor/pkg', '1.0.0');
+        $package->setDistType('zip');
+        $package->setDistUrl('https://example.org/vendor/pkg.zip');
+        $package->setDistReference('--evil');
+        $this->expectException('Composer\Exception\SecurityException');
+        $this->expectExceptionMessage('vendor/pkg has an invalid dist.reference');
+        ValidatingArrayLoader::validatePackage($package);
+    }
+
+    public function testValidatePackageRejectsBinPathTraversal()
+    {
+        $package = $this->getPackage('vendor/pkg', '1.0.0');
+        $package->setBinaries(array('bin/ok', '../../../../escape-target.txt'));
+        $this->expectException('Composer\Exception\SecurityException');
+        $this->expectExceptionMessage('vendor/pkg has an invalid bin ../../../../escape-target.txt, it must not contain ".." path segments');
+        ValidatingArrayLoader::validatePackage($package);
     }
 }
