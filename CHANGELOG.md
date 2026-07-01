@@ -1,3 +1,12 @@
+### [2.2.29] 2026-07-01
+
+  * Security: Validate package names (GHSA-499r-g7pc-vmp9)
+  * Security: Validate package bin paths against path traversal (GHSA-gjfg-22fp-rrxx)
+  * Security: Only follow HTTP redirects from HTTP responses (#12948)
+  * Security: Prevent phar metadata unserialization on unsafe PHP versions (#12946)
+  * Security: Sanitize JSON parse errors in http responses to avoid leaking response body data (#12959)
+  * Fixed GitHub token validation to be even more relaxed (#12856)
+
 ### [2.2.28] 2026-05-13
 
   * Security: Fixed GitHub token validation and disclosure (GHSA-f9f8-rm49-7jv2)
@@ -1541,6 +1550,7 @@
 
   * Initial release
 
+[2.2.29]: https://github.com/composer/composer/compare/2.2.28...2.2.29
 [2.2.28]: https://github.com/composer/composer/compare/2.2.27...2.2.28
 [2.2.27]: https://github.com/composer/composer/compare/2.2.26...2.2.27
 [2.2.26]: https://github.com/composer/composer/compare/2.2.25...2.2.26
