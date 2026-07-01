@@ -563,6 +563,7 @@ class ValidatingArrayLoaderTest extends TestCase
     public function testValidatePackageRejectsDashSourceUrl()
     {
         $package = $this->getPackage('vendor/pkg', '1.0.0');
+        assert($package instanceof CompletePackage);
         $package->setSourceType('git');
         $package->setSourceUrl('--upload-pack=touch /tmp/pwned');
         $package->setSourceReference('main');
@@ -573,6 +574,7 @@ class ValidatingArrayLoaderTest extends TestCase
     public function testValidatePackageRejectsDashSourceReference()
     {
         $package = $this->getPackage('vendor/pkg', '1.0.0');
+        assert($package instanceof CompletePackage);
         $package->setSourceType('git');
         $package->setSourceUrl('https://example.org/vendor/pkg.git');
         $package->setSourceReference('--upload-pack=touch /tmp/pwned');
@@ -583,6 +585,7 @@ class ValidatingArrayLoaderTest extends TestCase
     public function testValidatePackageRejectsDashDistUrl()
     {
         $package = $this->getPackage('vendor/pkg', '1.0.0');
+        assert($package instanceof CompletePackage);
         $package->setDistType('zip');
         $package->setDistUrl('-oProxyCommand=touch /tmp/pwned');
         $this->setExpectedException('Composer\Exception\SecurityException', 'vendor/pkg has an invalid dist.url');
@@ -592,6 +595,7 @@ class ValidatingArrayLoaderTest extends TestCase
     public function testValidatePackageRejectsDashDistReference()
     {
         $package = $this->getPackage('vendor/pkg', '1.0.0');
+        assert($package instanceof CompletePackage);
         $package->setDistType('zip');
         $package->setDistUrl('https://example.org/vendor/pkg.zip');
         $package->setDistReference('--evil');
@@ -602,6 +606,7 @@ class ValidatingArrayLoaderTest extends TestCase
     public function testValidatePackageRejectsBinPathTraversal()
     {
         $package = $this->getPackage('vendor/pkg', '1.0.0');
+        assert($package instanceof CompletePackage);
         $package->setBinaries(array('bin/ok', '../../../../escape-target.txt'));
         $this->setExpectedException('Composer\Exception\SecurityException', 'vendor/pkg has an invalid bin ../../../../escape-target.txt, it must not contain ".." path segments');
         ValidatingArrayLoader::validatePackage($package);
