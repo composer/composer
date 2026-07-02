@@ -393,8 +393,8 @@ class PlatformRepository extends ArrayRepository
                         $this->addLibrary($libraries, $name.'-libmbfl', $libmbflMatches['version'], 'mbstring libmbfl version');
                     }
 
-                    if ($this->runtime->hasConstant('MB_ONIGURUMA_VERSION')) {
-                        $this->addLibrary($libraries, $name.'-oniguruma', $this->runtime->getConstant('MB_ONIGURUMA_VERSION'), 'mbstring oniguruma version');
+                    if (\PHP_VERSION_ID < 90000 && $this->runtime->hasConstant('MB_ONIGURUMA_VERSION')) {
+                        $this->addLibrary($libraries, $name.'-oniguruma', Silencer::call([$this->runtime, 'getConstant'], 'MB_ONIGURUMA_VERSION'), 'mbstring oniguruma version');
 
                     // Multibyte regex (oniguruma) version => 5.9.5
                     // oniguruma version => 6.9.0
