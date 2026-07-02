@@ -378,12 +378,23 @@ Example:
 }
 ```
 
-> **Note:** This feature has severe technical limitations, as the
-> composer.json metadata will still be read from the branch name you specify
-> before the hash. You should therefore only use this as a temporary solution
-> during development to remediate transient issues, until you can switch to
-> tagged releases. The Composer team does not actively support this feature
-> and will not accept bug reports related to it.
+> **Note:** This feature has severe technical limitations. The reference only
+> changes which commit gets checked out; it is applied at install time as a
+> low-level override that the dependency solver never sees. As a result:
+>
+> - The package's `composer.json` metadata (its own `require` entries, autoload
+>   rules, and so on) is read from the branch you name, at its current state,
+>   not from the commit you pinned. The dependencies Composer resolves can
+>   therefore differ from those declared at that commit.
+> - The override is only reliable for source installs. A dist install can only
+>   honor the reference when the dist is fetched from a source that can build an
+>   archive for an arbitrary commit (e.g. GitHub); otherwise the pinned commit
+>   is ignored when downloading the files.
+>
+> You should therefore only use this as a temporary solution during development
+> to remediate transient issues, until you can switch to tagged releases. The
+> Composer team does not actively support this feature and will not accept bug
+> reports related to it.
 
 It is also possible to inline-alias a package constraint so that it matches
 a constraint that it otherwise would not. For more information [see the
