@@ -58,6 +58,10 @@ class ForgejoDriver extends VcsDriver
         $resource = $this->forgejoUrl->apiUrl.'/contents/' . $file . '?ref='.urlencode($identifier);
         $resource = $this->getContents($resource)->decodeJson();
 
+        if ($resource === []) {
+            return '[]';
+        }
+
         // The Forgejo contents API only returns files up to 1MB as base64 encoded files
         // larger files either need be fetched with a raw accept header or by using the git blob endpoint
         if ((!isset($resource['content']) || $resource['content'] === '') && $resource['encoding'] === 'none' && isset($resource['git_url'])) {
@@ -105,6 +109,9 @@ class ForgejoDriver extends VcsDriver
             do {
                 $response = $this->getContents($resource);
                 $branchData = $response->decodeJson();
+                if ($branchData === null) {
+                    break;
+                }
                 foreach ($branchData as $branch) {
                     $branches[$branch['name']] = $branch['commit']['id'];
                 }
@@ -130,6 +137,9 @@ class ForgejoDriver extends VcsDriver
             do {
                 $response = $this->getContents($resource);
                 $tagsData = $response->decodeJson();
+                if ($tagsData === null) {
+                    break;
+                }
                 foreach ($tagsData as $tag) {
                     $tags[$tag['name']] = $tag['commit']['sha'];
                 }
