@@ -163,18 +163,7 @@ class AuthHelperTest extends TestCase
         self::assertSame($certificateConfiguration, $options['ssl']);
     }
 
-    public static function gitlabPrivateTokenProvider(): array
-    {
-        return [
-          ['private-token'],
-          ['gitlab-ci-token'],
-        ];
-    }
-
-    /**
-     * @dataProvider gitlabPrivateTokenProvider
-     */
-    public function testAddAuthenticationHeaderWithGitlabPrivateToken(string $password): void
+    public function testAddAuthenticationHeaderWithGitlabPrivateToken(): void
     {
         $headers = [
             'Accept-Encoding: gzip',
@@ -185,7 +174,7 @@ class AuthHelperTest extends TestCase
         $url = 'https://api.gitlab.com/';
         $auth = [
             'username' => 'my_username',
-            'password' => $password,
+            'password' => 'private-token',
         ];
 
         $this->expectsAuthentication($origin, $auth);
@@ -200,6 +189,37 @@ class AuthHelperTest extends TestCase
             ->with('Using GitLab private token authentication', true, IOInterface::DEBUG);
 
         $expectedHeaders = array_merge($headers, ['PRIVATE-TOKEN: ' . $auth['username']]);
+        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
+
+        self::assertSame($expectedHeaders, $options['http']['header']);
+    }
+
+    public function testAddAuthenticationHeaderWithGitlabCiJobToken(): void
+    {
+        $headers = [
+            'Accept-Encoding: gzip',
+            'Connection: close',
+        ];
+        $options = ['http' => ['header' => $headers]];
+        $origin = 'gitlab.com';
+        $url = 'https://api.gitlab.com/';
+        $auth = [
+            'username' => 'gitlab-ci-token',
+            'password' => 'some-random-token',
+        ];
+
+        $this->expectsAuthentication($origin, $auth);
+
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('gitlab-domains')
+            ->willReturn([$origin]);
+
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('Using GitLab CI job token authentication', true, IOInterface::DEBUG);
+
+        $expectedHeaders = array_merge($headers, ['JOB-TOKEN: ' . $auth['password']]);
         $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
 
         self::assertSame($expectedHeaders, $options['http']['header']);
