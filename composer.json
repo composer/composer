@@ -23,6 +23,8 @@
     ],
     "require": {
         "php": "^7.2.5 || ^8.0",
+        "ext-filter": "*",
+        "ext-hash": "*",
         "ext-json": "*",
         "composer/ca-bundle": "^1.5",
         "composer/class-map-generator": "^1.4.0",
