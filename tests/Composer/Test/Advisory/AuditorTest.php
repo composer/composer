@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Advisory;
 
+use Composer\Advisory\CooldownAuditor;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\FilterListEntry;
@@ -21,6 +22,7 @@ use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Policy\AbandonedPolicyConfig;
+use Composer\Policy\CooldownPolicyConfig;
 use Composer\Policy\AdvisoriesPolicyConfig;
 use Composer\Policy\CustomListPolicyConfig;
 use Composer\Policy\ListPolicyConfig;
@@ -244,7 +246,8 @@ Found 2 abandoned packages:
         "vendor/abandoned": "foo/bar",
         "vendor/abandoned2": null
     },
-    "filter": []
+    "filter": [],
+    "cooldown": []
 }',
         ];
     }
@@ -877,6 +880,67 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
         self::assertStringContainsString('vendor1/package2 matched dependency policy "test-list". Reason: internal', $output);
     }
 
+    public function testCooldownAuditWiring(): void
+    {
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $recent = new Package('vendor/recent', '2.0.0.0', '2.0.0');
+        $recent->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00')); // 1 day old, within a 7-day cooldown
+        $packages = [$recent];
+
+        // fail -> non-zero exit, JSON carries the cooldown entry
+        $result = (new Auditor(new CooldownAuditor($now)))->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $this->policyConfigWithCooldown(ListPolicyConfig::AUDIT_FAIL),
+            $packages,
+            Auditor::FORMAT_JSON,
+            false
+        );
+        self::assertSame(Auditor::STATUS_FAILED, $result);
+        self::assertStringContainsString('"cooldown"', $io->getOutput());
+        self::assertStringContainsString('vendor/recent', $io->getOutput());
+
+        // report -> listed but does not fail the audit
+        $result = (new Auditor(new CooldownAuditor($now)))->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $this->policyConfigWithCooldown(ListPolicyConfig::AUDIT_REPORT),
+            $packages,
+            Auditor::FORMAT_PLAIN,
+            false
+        );
+        self::assertSame(Auditor::STATUS_OK, $result);
+        self::assertStringContainsString('within the cooldown', $io->getOutput());
+
+        // ignore -> not evaluated at all
+        $result = (new Auditor(new CooldownAuditor($now)))->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $this->policyConfigWithCooldown(ListPolicyConfig::AUDIT_IGNORE),
+            $packages,
+            Auditor::FORMAT_PLAIN,
+            false
+        );
+        self::assertSame(Auditor::STATUS_OK, $result);
+        self::assertStringNotContainsString('within the cooldown', $io->getOutput());
+    }
+
+    /**
+     * @param ListPolicyConfig::AUDIT_* $audit
+     */
+    private function policyConfigWithCooldown(string $audit): PolicyConfig
+    {
+        return new PolicyConfig(
+            true,
+            AdvisoriesPolicyConfig::disabled(),
+            MalwarePolicyConfig::disabled(),
+            AbandonedPolicyConfig::disabled(),
+            new CooldownPolicyConfig(true, $audit, [], 7 * 24 * 3600),
+            [],
+            IgnoreUnreachable::default()
+        );
+    }
+
     /**
      * @param Auditor::ABANDONED_* $abandoned
      * @param ListPolicyConfig::AUDIT_*|null $filteredAudit
@@ -923,6 +987,7 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
             $advisories,
             MalwarePolicyConfig::disabled(),
             new AbandonedPolicyConfig(false, $abandoned, $abandonedIgnore),
+            CooldownPolicyConfig::disabled(),
             $customLists,
             $ignoreUnreachableAudit ? IgnoreUnreachable::all() : IgnoreUnreachable::default()
         );

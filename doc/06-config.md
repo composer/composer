@@ -431,6 +431,99 @@ A list of source names to exclude from malware checks.
 }
 ```
 
+### cooldown
+
+Withholds newly released package versions for a configurable period to reduce exposure to supply
+chain attacks. By introducing a waiting period before a new version becomes installable, you reduce
+the risk of pulling in a release that was compromised shortly after publication — many malicious
+versions are identified and removed within hours or days of being published.
+
+The cooldown applies during `composer update`/`require` only.
+
+#### age
+
+A duration string in the form `"<number> <unit>"` where the unit is one of `second`, `minute`,
+`hour`, `day` or `week` (singular or plural — e.g. `"7 days"`, `"24 hours"`, `"30 minutes"`,
+`"1 week"`), an integer number of seconds, or `null` to disable. Relative phrases such as
+`"tomorrow"` or `"next week"` are rejected. Defaults to `null` (no cooldown). The cooldown only
+takes effect once an age is set.
+
+```json
+{
+    "config": {
+        "policy": {
+            "cooldown": {
+                "age": "7 days"
+            }
+        }
+    }
+}
+```
+
+The following are never withheld by the cooldown:
+
+- **Dev versions** (e.g. `dev-main`) — they represent mutable branch state
+- **Already locked packages** — packages in your `composer.lock` are not affected
+- **Platform packages** — PHP, extensions and other platform requirements
+- **Packages without a publication date** — allowed through conservatively
+- **Security fixes** — versions that fix known vulnerabilities (see below)
+
+#### block
+
+Defaults to `true`. When `true`, versions still within the cooldown cannot be installed during
+`update`/`require`. Set to `false` to keep the cooldown out of blocking entirely.
+
+#### Security fix bypass
+
+Versions that fix a known security vulnerability automatically bypass the cooldown, so fixes
+propagate quickly while regular releases still wait. A version is treated as a security fix when:
+
+1. The package has known security advisories (for other versions)
+2. This version is NOT affected by those advisories
+3. This version was released AFTER the advisory was published
+4. This version was released within 2x the cooldown age after the advisory
+
+For example, with a 7-day cooldown: if an advisory published on January 1st affects versions
+`<2.0.0`, and `2.0.1` is released on January 3rd (not affected), `2.0.1` bypasses the cooldown and
+is immediately available. A version released on January 20th would still be subject to the cooldown
+since it is outside the 14-day bypass window. To limit exposure, only the **oldest** matching
+security fix bypasses the cooldown; later patch releases still wait.
+
+#### ignore
+
+Packages listed under `ignore` bypass the cooldown. This uses the same
+[ignore format](#ignore-format) as the other policies, so each entry may carry a reason and an
+optional version constraint, and package names support wildcards (e.g. `vendor/*`).
+
+```json
+{
+    "config": {
+        "policy": {
+            "cooldown": {
+                "age": "7 days",
+                "ignore": {
+                    "mycompany/*": "We trust the code in our own packages",
+                    "symfony/security-bundle": "Security fixes need to be applied immediately"
+                }
+            }
+        }
+    }
+}
+```
+
+#### Environment variables
+
+`COMPOSER_POLICY_COOLDOWN_AGE` overrides the configured `age` (the `ignore` rules from
+`composer.json` are still respected), and `COMPOSER_POLICY_COOLDOWN_BLOCK` overrides `block`:
+
+```bash
+# Disable the cooldown temporarily
+COMPOSER_POLICY_COOLDOWN_AGE=0 composer update
+
+# Set a specific duration
+COMPOSER_POLICY_COOLDOWN_AGE="24 hours" composer update
+```
+
 ### ignore-unreachable
 
 Defaults to `["update", "install"]`. When the operation is listed here, repositories and policies with URL sources that are unreachable or

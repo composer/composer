@@ -229,6 +229,15 @@ interface PackageInterface
     public function getReleaseDate(): ?\DateTimeInterface;
 
     /**
+     * Returns the publication date of the package as set by the repository.
+     *
+     * Unlike getReleaseDate() (which comes from the author-controlled `time`
+     * field), this is a server-set timestamp the package author cannot
+     * influence, or null if the repository did not provide one.
+     */
+    public function getPublishedDate(): ?\DateTimeInterface;
+
+    /**
      * Returns the stability of this package: one of (dev, alpha, beta, RC, stable)
      *
      * @phpstan-return 'stable'|'RC'|'beta'|'alpha'|'dev'
