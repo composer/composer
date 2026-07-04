@@ -1309,6 +1309,11 @@ EOT
                 'version' => $require->getPrettyConstraint(),
             ];
 
+            $installedPackage = $installedRepo->findPackage($requireName, '*');
+            if (null !== $installedPackage) {
+                $treeChildDesc['installed'] = $installedPackage->getPrettyVersion();
+            }
+
             $deepChildren = $this->addTree($requireName, $require, $installedRepo, $remoteRepos, $packagesInTree);
 
             if ($deepChildren) {
@@ -1414,6 +1419,11 @@ EOT
                     'name' => $requireName,
                     'version' => $require->getPrettyConstraint(),
                 ];
+
+                $installedPackage = $installedRepo->findPackage($requireName, '*');
+                if (null !== $installedPackage) {
+                    $treeChildDesc['installed'] = $installedPackage->getPrettyVersion();
+                }
 
                 if (!in_array($requireName, $currentTree, true)) {
                     $currentTree[] = $requireName;
