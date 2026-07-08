@@ -258,6 +258,12 @@ class Filesystem
             }
 
             if (!@mkdir($directory, 0777, true)) {
+                // maybe another process created it since we checked above?
+                clearstatcache();
+                if (is_dir($directory)) {
+                    return;
+                }
+
                 $e = new \RuntimeException($directory.' does not exist and could not be created: '.(error_get_last()['message'] ?? ''));
 
                 // in pathological cases with paths like path/to/broken-symlink/../foo is_dir will fail to detect path/to/foo
