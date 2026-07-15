@@ -478,6 +478,42 @@ versions, supplied by one or more sources (advertised by package repositories or
 Source URLs must use `https://`. `http://` and other schemes are rejected both at
 schema validation time (`composer validate`) and at config load time.
 
+A `url` source is queried the same way as a repository's [`api-url`](05-repositories.md#filter):
+Composer sends a POST request with the relevant package PURLs and the custom dependency policy name,
+and expects the matching filter entries back. The request is not cached client-side because each
+request body is different. Implementors should be aware that large amounts (a few hundred would be
+normal) of package names can be submitted.
+
+The endpoint receives a JSON body of the form:
+
+```json
+{
+    "packages": ["pkg://composer/vendor/package", "pkg://composer/other/package"],
+    "lists": ["my-policy"]
+}
+```
+
+and must return JSON of the form:
+
+```json
+{
+    "filter": [
+        {
+            "package": "vendor/package",
+            "constraint": ">=1.0.0,<1.2.0",
+            "url": "https://example.org/filters/123",
+            "reason": "Assessed and rejected.",
+            "id": "PKFE-xxxx-xxxx-xxxx"
+        }
+    ]
+}
+```
+
+Unlike a repository's `api-url` response (where `filter` is an object keyed by list name), a custom
+dependency policy `url` source is bound to a single list, so `filter` is a flat array of entries. The
+`package` and `constraint` fields are required on each entry; `url`, `reason`, and `id` are optional.
+Entries whose package does not match a package in the request are ignored.
+
 Custom dependency policy names must not conflict with the reserved names `advisories`, `malware`, or
 `abandoned`, and must not start with `ignore` (the only `ignore`-prefixed key allowed at this
 level is the documented `ignore-unreachable` setting).
