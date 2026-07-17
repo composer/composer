@@ -482,7 +482,10 @@ A `url` source is queried the same way as a repository's [`api-url`](05-reposito
 Composer sends a POST request with the relevant package PURLs and the custom dependency policy name,
 and expects the matching filter entries back. The request is not cached client-side because each
 request body is different. Implementors should be aware that large amounts (a few hundred would be
-normal) of package names can be submitted.
+normal) of package names can be submitted. The submitted PURLs are the full set of candidate package
+names gathered *before* dependency resolution, so they identify packages by name only (no version
+constraints yet), and not every submitted package will necessarily be selected by the resolver
+afterwards.
 
 The endpoint receives a JSON body of the form:
 
