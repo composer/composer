@@ -496,7 +496,15 @@ The endpoint receives a JSON body of the form:
 }
 ```
 
-and must return JSON of the form:
+The request body reuses the wire format of a Composer repository's [`api-url`](05-repositories.md#filter).
+There, a single endpoint can serve several named filter lists (for example `malware` and
+`typosquatting`), so `lists` is an array naming which of them Composer wants, and the response is a
+`filter` object keyed by list name. A custom dependency policy has no such multiplexing: its `url`
+source exists only to serve that one policy. Composer therefore always sends the policy name as the
+sole element of `lists` (so the array carries exactly one value here), and the endpoint should treat
+any list name it receives as referring to that policy.
+
+The endpoint must return JSON of the form:
 
 ```json
 {
@@ -512,8 +520,9 @@ and must return JSON of the form:
 }
 ```
 
-Unlike a repository's `api-url` response (where `filter` is an object keyed by list name), a custom
-dependency policy `url` source is bound to a single list, so `filter` is a flat array of entries. The
+Because the `url` source only ever serves this one policy, the response drops the per-list keying used
+by a repository's `api-url` (where `filter` is an object mapping each requested list name to its
+entries). Here `filter` is instead a flat array of entries that all belong to this policy. The
 `package` and `constraint` fields are required on each entry; `url`, `reason`, and `id` are optional.
 Entries whose package does not match a package in the request are ignored.
 
