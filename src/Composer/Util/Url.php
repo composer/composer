@@ -103,7 +103,7 @@ class Url
             && !in_array($origin, $config->get('gitlab-domains'), true)
         ) {
             foreach ($config->get('gitlab-domains') as $gitlabDomain) {
-                if ($gitlabDomain !== '' && str_starts_with($gitlabDomain, $origin)) {
+                if ($gitlabDomain !== '' && str_starts_with($gitlabDomain, $origin.'/')) {
                     return $gitlabDomain;
                 }
             }

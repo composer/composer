@@ -63,6 +63,30 @@ class UrlTest extends TestCase
     }
 
     /**
+     * @dataProvider getOriginProvider
+     *
+     * @param non-empty-string $url
+     * @param list<string> $gitlabDomains
+     */
+    public function testGetOrigin(string $expected, string $url, array $gitlabDomains): void
+    {
+        $config = new Config();
+        $config->merge(['config' => ['gitlab-domains' => $gitlabDomains]]);
+
+        self::assertSame($expected, Url::getOrigin($config, $url));
+    }
+
+    public static function getOriginProvider(): array
+    {
+        return [
+            // a host that is only a shorter prefix of a configured domain must not resolve to it
+            ['gitlab.example.co', 'https://gitlab.example.co/foo/bar/repository/archive.zip', ['gitlab.example.com']],
+            ['gitlab.example.com', 'https://gitlab.example.com/foo/bar/repository/archive.zip', ['gitlab.example.com']],
+            ['gitlab.example.com/gitlab', 'https://gitlab.example.com/foo/bar/repository/archive.zip', ['gitlab.example.com/gitlab']],
+        ];
+    }
+
+    /**
      * @dataProvider sanitizeProvider
      */
     public function testSanitize(string $expected, string $url): void
