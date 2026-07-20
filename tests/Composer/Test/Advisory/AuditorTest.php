@@ -895,7 +895,7 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
     ): PolicyConfig {
         $customLists = [];
         if ($filteredAudit !== null) {
-            $customLists[$filteredListName] = new CustomListPolicyConfig($filteredListName, false, $filteredAudit, [], []);
+            $customLists[$filteredListName] = new CustomListPolicyConfig($filteredListName, false, $filteredAudit, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [], []);
         }
 
         $packageRules = [];
