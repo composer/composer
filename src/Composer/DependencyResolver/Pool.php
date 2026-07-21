@@ -208,10 +208,11 @@ class Pool implements \Countable
 
                     $seen[$entryKey] = true;
 
+                    $source = (bool) $entry->source ? ' reported by ' . $entry->source : '';
                     $url = (bool) $entry->url ? ' (see ' . $entry->url . ')' : '';
                     $reason = (bool) $entry->reason ? ' reason: ' . $entry->reason : '';
 
-                    $lists[$entry->listName][] =  $url . $reason;
+                    $lists[$entry->listName][] =  $source . $url . $reason;
                 }
 
             }

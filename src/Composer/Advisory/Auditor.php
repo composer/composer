@@ -523,6 +523,9 @@ class Auditor
                     if ($entry->url !== null) {
                         $parts[] = 'URL: ' . $entry->url;
                     }
+                    if ($entry->source !== null) {
+                        $parts[] = 'Source: ' . $entry->source;
+                    }
                     $io->write(implode('. ', $parts) . '.');
                 }
             }

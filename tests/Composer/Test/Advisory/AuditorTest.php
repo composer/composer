@@ -666,6 +666,15 @@ Found 2 abandoned packages:
             'internal',
             'ID-test-1'
         );
+        $matchingEntryWithSource = new FilterListEntry(
+            'vendor/package',
+            new Constraint('>=', '8.0.0.0'),
+            'test-list',
+            'https://example.com/filtered',
+            'internal',
+            'ID-test-1',
+            'aikido'
+        );
 
         yield 'AUDIT_IGNORE skips filter processing' => [
             'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
@@ -705,6 +714,17 @@ vendor/package matched dependency policy "test-list". Reason: internal.',
             'output' => 'No security vulnerability advisories found.
 Found 1 package matching filters:
 vendor/package matched dependency policy "test-list". Reason: internal. URL: https://example.com/filtered.',
+        ];
+
+        yield 'AUDIT_FAIL with matching entry shows source (plain)' => [
+            'packages' => [new Package('vendor/package', '9.0.0', '9.0.0')],
+            'filterEntriesByList' => ['test-list' => [$matchingEntryWithSource]],
+            'filtered' => ListPolicyConfig::AUDIT_FAIL,
+            'format' => Auditor::FORMAT_PLAIN,
+            'expected' => Auditor::STATUS_FAILED,
+            'output' => 'No security vulnerability advisories found.
+Found 1 package matching filters:
+vendor/package matched dependency policy "test-list". Reason: internal. URL: https://example.com/filtered. Source: aikido.',
         ];
 
         yield 'AUDIT_REPORT with matching entry returns STATUS_OK' => [
