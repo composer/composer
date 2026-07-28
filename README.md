@@ -81,6 +81,24 @@ Security Reports
 
 Please send any sensitive issue to [security@packagist.org](mailto:security@packagist.org). Thanks!
 
+Sponsors
+--------
+
+Thank you to our sponsors for supporting the ongoing development and maintenance of Composer and Packagist.org! See [packagist.org/sponsor](https://packagist.org/sponsor/) for more information on becoming a sponsor.
+
+<p align="center">
+    <a href="https://packagist.com/?utm_source=composer"><img src="https://packagist.org/img/private-packagist-dark.svg" alt="Private Packagist" width="180" height="60"></a>
+    <a href="https://www.aikido.dev/?utm_source=composer"><img src="https://packagist.org/img/aikido-dark.svg" alt="Aikido" width="180" height="60"></a>
+    <a href="https://www.sovereign.tech/?utm_source=composer"><img src="https://packagist.org/img/sovereign-tech-agency-dark.svg" alt="Sovereign Tech Fund" width="180" height="60"></a>
+    <a href="https://aws.amazon.com/?utm_source=composer"><img src="https://packagist.org/img/aws-dark.svg" alt="AWS" width="180" height="60"></a>
+    <a href="https://socket.dev/?utm_source=composer"><img src="https://packagist.org/img/socket-dark.svg" alt="Socket" width="180" height="60"></a>
+    <a href="https://upsun.com/?utm_source=composer"><img src="https://packagist.org/img/upsun-dark.svg" alt="Upsun" width="180" height="60"></a>
+    <a href="https://bunny.net/?utm_source=composer"><img src="https://packagist.org/img/bunny-net-dark.svg" alt="Bunny.net" width="180" height="60"></a>
+    <a href="https://tideways.com/?utm_source=composer"><img src="https://packagist.org/img/tideways-dark.svg" alt="Tideways" width="180" height="60"></a>
+    <a href="https://datadog.com/?utm_source=composer"><img src="https://packagist.org/img/datadog-dark.svg" alt="Datadog" width="180" height="60"></a>
+    <a href="https://www.algolia.com/?utm_source=composer"><img src="https://packagist.org/img/algolia-dark.svg" alt="Algolia" width="180" height="60"></a>
+</p>
+
 License
 -------
 
