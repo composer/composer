@@ -84,7 +84,7 @@ Please send any sensitive issue to [security@packagist.org](mailto:security@pack
 Sponsors
 --------
 
-Thank you to our sponsors for supporting the ongoing development and maintenance of Composer and Packagist.org! See [packagist.org/sponsor](https://packagist.org/sponsor/) for more information on becoming a sponsor.
+Thank you to our sponsors for supporting the ongoing development and maintenance of Composer and Packagist.org! See [getcomposer.org/sponsor](https://getcomposer.org/sponsor/) for more information on becoming a sponsor.
 
 <p align="center">
     <a href="https://packagist.com/?utm_source=composer"><img src="https://packagist.org/img/private-packagist-dark.svg" alt="Private Packagist" height="60" hspace="15"></a>
