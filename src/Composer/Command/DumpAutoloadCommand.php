@@ -137,7 +137,7 @@ EOT
             return 1;
         }
 
-        if ($input->getOption('strict-ambiguous') && count($classMap->getAmbiguousClasses(false)) > 0) {
+        if ($input->getOption('strict-ambiguous') && (count($classMap->getAmbiguousClasses(false)) > 0 || count($classMap->getAmbiguousFolders(false)) > 0)) {
             return 2;
         }
 

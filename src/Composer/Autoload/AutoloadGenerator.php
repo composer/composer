@@ -365,8 +365,10 @@ EOF;
         $classMap = $classMapGenerator->getClassMap();
         if ($strictAmbiguous) {
             $ambiguousClasses = $classMap->getAmbiguousClasses(false);
+            $ambiguousFolders = $classMap->getAmbiguousFolders(false);
         } else {
             $ambiguousClasses = $classMap->getAmbiguousClasses();
+            $ambiguousFolders = $classMap->getAmbiguousFolders();
         }
         foreach ($ambiguousClasses as $className => $ambiguousPaths) {
             if (count($ambiguousPaths) > 1) {
@@ -381,7 +383,13 @@ EOF;
                 );
             }
         }
-        if (\count($ambiguousClasses) > 0) {
+        foreach ($ambiguousFolders as $ambiguousFolderSet) {
+            $this->io->writeError(
+                '<warning>Warning: Ambiguous folder/file resolution'.
+                ' multiple folders/files ('. count($ambiguousFolderSet) .') map to the same case-insensitive path: "'. implode('", "', $ambiguousFolderSet) .'", this results in broken autoloading on case-insensitive filesystems.</warning>'
+            );
+        }
+        if (\count($ambiguousClasses) > 0 || \count($ambiguousFolders) > 0) {
             $this->io->writeError('<info>To resolve ambiguity in classes not under your control you can ignore them by path using <href='.OutputFormatter::escape('https://getcomposer.org/doc/04-schema.md#exclude-files-from-classmaps').'>exclude-from-classmap</>');
         }
 
