@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver\Operation;
 
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 
@@ -23,6 +24,7 @@ use Composer\Package\Version\VersionParser;
 class UpdateOperation extends SolverOperation implements OperationInterface
 {
     protected const TYPE = 'update';
+    private const METADATA_CHANGES = ', metadata changes';
 
     /**
      * @var PackageInterface
@@ -72,17 +74,23 @@ class UpdateOperation extends SolverOperation implements OperationInterface
     {
         $fromVersion = $initialPackage->getFullPrettyVersion();
         $toVersion = $targetPackage->getFullPrettyVersion();
+        $isSameVersion = $fromVersion === $toVersion;
+        $updateDescription = '';
 
-        if ($fromVersion === $toVersion && $initialPackage->getSourceReference() !== $targetPackage->getSourceReference()) {
+        if ($isSameVersion && $initialPackage->getSourceReference() !== $targetPackage->getSourceReference()) {
             $fromVersion = $initialPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_SOURCE_REF);
             $toVersion = $targetPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_SOURCE_REF);
-        } elseif ($fromVersion === $toVersion && $initialPackage->getDistReference() !== $targetPackage->getDistReference()) {
+        } elseif ($isSameVersion && $initialPackage->getDistReference() !== $targetPackage->getDistReference()) {
             $fromVersion = $initialPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_DIST_REF);
             $toVersion = $targetPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_DIST_REF);
         }
 
+        if ($isSameVersion && $initialPackage instanceof CompletePackageInterface && $targetPackage instanceof CompletePackageInterface && ($initialPackage->isAbandoned() !== $targetPackage->isAbandoned() || $initialPackage->getReplacementPackage() !== $targetPackage->getReplacementPackage())) {
+            $updateDescription = self::METADATA_CHANGES;
+        }
+
         $actionName = VersionParser::isUpgrade($initialPackage->getVersion(), $targetPackage->getVersion()) ? 'Upgrading' : 'Downgrading';
 
-        return $actionName.' <info>'.$initialPackage->getPrettyName().'</info> (<comment>'.$fromVersion.'</comment> => <comment>'.$toVersion.'</comment>)';
+        return $actionName.' <info>'.$initialPackage->getPrettyName().'</info> (<comment>'.$fromVersion.'</comment> => <comment>'.$toVersion.'</comment>'.$updateDescription.')';
     }
 }

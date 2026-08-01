@@ -49,4 +49,4 @@ Update updates the outdated state of packages
 --RUN--
 update
 --EXPECT--
-Upgrading a/a (1.0.0 => 1.0.0)
+Upgrading a/a (1.0.0 => 1.0.0, metadata changes)
