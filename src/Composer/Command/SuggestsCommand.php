@@ -69,9 +69,19 @@ EOT
         $installedRepo = new InstalledRepository($installedRepos);
         $reporter = new SuggestedPackagesReporter($this->getIO());
 
-        $filter = $input->getArgument('packages');
+        $filter = array_map('strtolower', $input->getArgument('packages'));
         $packages = $installedRepo->getPackages();
         $packages[] = $composer->getPackage();
+        foreach ($filter as $package) {
+            if ($installedRepo->findPackages($package) !== []) {
+                continue;
+            }
+
+            $this->getIO()->writeError('<error>Package "'.$package.'" is not installed</error>');
+
+            return self::FAILURE;
+        }
+
         foreach ($packages as $package) {
             if (!empty($filter) && !in_array($package->getName(), $filter)) {
                 continue;

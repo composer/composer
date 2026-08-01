@@ -50,6 +50,15 @@ class SuggestsCommandTest extends TestCase
         self::assertEmpty($appTester->getDisplay(true));
     }
 
+    public function testFailsWhenFilteringByNonInstalledPackage(): void
+    {
+        $this->initTempComposer();
+
+        $appTester = $this->getApplicationTester();
+        self::assertEquals(Command::FAILURE, $appTester->run(['command' => 'suggest', 'packages' => ['vendor/not-installed']]));
+        self::assertSame('Package "vendor/not-installed" is not installed', trim($appTester->getDisplay(true)));
+    }
+
     /**
      * @dataProvider provideSuggest
      * @param array<string, bool|string|array<int, string>> $command
@@ -404,6 +413,13 @@ vendor4/dev-suggested is suggested by:
         yield 'without lockfile, show suggested for package' => [
             false,
             ['packages' => ['vendor2/package2']],
+            'vendor2/package2 suggests:
+ - vendor4/dev-suggested: helpful for vendor2/package2',
+        ];
+
+        yield 'with lockfile, show suggested for package case insensitively' => [
+            true,
+            ['packages' => ['Vendor2/Package2']],
             'vendor2/package2 suggests:
  - vendor4/dev-suggested: helpful for vendor2/package2',
         ];
