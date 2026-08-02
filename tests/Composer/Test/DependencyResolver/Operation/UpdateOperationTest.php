@@ -18,7 +18,37 @@ use Composer\Test\TestCase;
 
 class UpdateOperationTest extends TestCase
 {
-    public function testFormatIncludesReferenceAndMetadataChanges(): void
+    /**
+     * @dataProvider abandonedStateChangesProvider
+     *
+     * @param bool|string $initialAbandoned
+     * @param bool|string $targetAbandoned
+     */
+    public function testFormatIncludesAbandonedStateChanges($initialAbandoned, $targetAbandoned): void
+    {
+        $initialPackage = new CompletePackage('vendor/package', '1.0.0.0', '1.0.0');
+        $initialPackage->setAbandoned($initialAbandoned);
+        $targetPackage = new CompletePackage('vendor/package', '1.0.0.0', '1.0.0');
+        $targetPackage->setAbandoned($targetAbandoned);
+
+        self::assertSame(
+            'Upgrading <info>vendor/package</info> (<comment>1.0.0</comment> => <comment>1.0.0</comment>, abandoned state changed)',
+            UpdateOperation::format($initialPackage, $targetPackage)
+        );
+    }
+
+    /**
+     * @return array<string, array{bool|string, bool|string}>
+     */
+    public static function abandonedStateChangesProvider(): array
+    {
+        return [
+            'isAbandoned changed' => [false, true],
+            'replacementPackage changed' => ['vendor/old-replacement', 'vendor/new-replacement'],
+        ];
+    }
+
+    public function testFormatIncludesReferenceAndAbandonedStateChanges(): void
     {
         $initialPackage = new CompletePackage('vendor/package', '1.0.0.0', '1.0.0');
         $initialPackage->setSourceReference('old-reference');
@@ -27,7 +57,7 @@ class UpdateOperationTest extends TestCase
         $targetPackage->setAbandoned(true);
 
         self::assertSame(
-            'Upgrading <info>vendor/package</info> (<comment>1.0.0 old-reference</comment> => <comment>1.0.0 new-reference</comment>, metadata changes)',
+            'Upgrading <info>vendor/package</info> (<comment>1.0.0 old-reference</comment> => <comment>1.0.0 new-reference</comment>, abandoned state changed)',
             UpdateOperation::format($initialPackage, $targetPackage)
         );
     }

@@ -24,7 +24,6 @@ use Composer\Package\Version\VersionParser;
 class UpdateOperation extends SolverOperation implements OperationInterface
 {
     protected const TYPE = 'update';
-    private const METADATA_CHANGES = ', metadata changes';
 
     /**
      * @var PackageInterface
@@ -85,12 +84,20 @@ class UpdateOperation extends SolverOperation implements OperationInterface
             $toVersion = $targetPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_DIST_REF);
         }
 
-        if ($isSameVersion && $initialPackage instanceof CompletePackageInterface && $targetPackage instanceof CompletePackageInterface && ($initialPackage->isAbandoned() !== $targetPackage->isAbandoned() || $initialPackage->getReplacementPackage() !== $targetPackage->getReplacementPackage())) {
-            $updateDescription = self::METADATA_CHANGES;
+        if ($isSameVersion && self::hasAbandonedStateChanged($initialPackage, $targetPackage)) {
+            $updateDescription = ', abandoned state changed';
         }
 
         $actionName = VersionParser::isUpgrade($initialPackage->getVersion(), $targetPackage->getVersion()) ? 'Upgrading' : 'Downgrading';
 
         return $actionName.' <info>'.$initialPackage->getPrettyName().'</info> (<comment>'.$fromVersion.'</comment> => <comment>'.$toVersion.'</comment>'.$updateDescription.')';
+    }
+
+    public static function hasAbandonedStateChanged(PackageInterface $initialPackage, PackageInterface $targetPackage): bool
+    {
+        return $initialPackage instanceof CompletePackageInterface
+            && $targetPackage instanceof CompletePackageInterface
+            && ($initialPackage->isAbandoned() !== $targetPackage->isAbandoned()
+                || $initialPackage->getReplacementPackage() !== $targetPackage->getReplacementPackage());
     }
 }

@@ -39,4 +39,4 @@ Install triggers a reinstall of packages that have outdated information if their
 --RUN--
 install
 --EXPECT--
-Upgrading a/a (1.0.0 => 1.0.0, metadata changes)
+Upgrading a/a (1.0.0 => 1.0.0, abandoned state changed)
