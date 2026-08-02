@@ -67,23 +67,47 @@ EOT
         }
 
         $installedRepo = new InstalledRepository($installedRepos);
-        $reporter = new SuggestedPackagesReporter($this->getIO());
+        $filter = $input->getArgument('packages');
+        $normalizedFilter = array_map('strtolower', $filter);
+        $validationRepo = $installedRepo;
+        if ($locker->isLocked() && $input->getOption('no-dev')) {
+            $validationRepo = new InstalledRepository([$locker->getLockedRepository(true)]);
+        }
 
-        $filter = array_map('strtolower', $input->getArgument('packages'));
-        $packages = $installedRepo->getPackages();
-        $packages[] = $composer->getPackage();
-        foreach ($filter as $package) {
+        $missingPackages = [];
+        $excludedPackages = [];
+        foreach ($normalizedFilter as $index => $package) {
             if ($installedRepo->findPackages($package) !== []) {
                 continue;
             }
 
-            $this->getIO()->writeError('<error>Package "'.$package.'" is not installed</error>');
-
-            return self::FAILURE;
+            if ($validationRepo->findPackages($package) !== []) {
+                $excludedPackages[] = $filter[$index];
+            } else {
+                $missingPackages[] = $filter[$index];
+            }
         }
 
+        $errors = [];
+        if ($missingPackages !== []) {
+            $errors[] = count($missingPackages) === 1
+                ? 'Package "'.$missingPackages[0].'" is not installed.'
+                : 'Packages "'.implode('", "', $missingPackages).'" are not installed.';
+        }
+        if ($excludedPackages !== []) {
+            $errors[] = count($excludedPackages) === 1
+                ? 'Package "'.$excludedPackages[0].'" is excluded by --no-dev.'
+                : 'Packages "'.implode('", "', $excludedPackages).'" are excluded by --no-dev.';
+        }
+        if ($errors !== []) {
+            throw new \InvalidArgumentException(implode(' ', $errors));
+        }
+
+        $reporter = new SuggestedPackagesReporter($this->getIO());
+        $packages = $installedRepo->getPackages();
+        $packages[] = $composer->getPackage();
         foreach ($packages as $package) {
-            if (!empty($filter) && !in_array($package->getName(), $filter)) {
+            if ($normalizedFilter !== [] && !in_array($package->getName(), $normalizedFilter, true)) {
                 continue;
             }
 
@@ -106,7 +130,7 @@ EOT
             $mode = SuggestedPackagesReporter::MODE_LIST;
         }
 
-        $reporter->output($mode, $installedRepo, empty($filter) && !$input->getOption('all') ? $composer->getPackage() : null);
+        $reporter->output($mode, $installedRepo, $normalizedFilter === [] && !$input->getOption('all') ? $composer->getPackage() : null);
 
         return 0;
     }

@@ -15,6 +15,7 @@ namespace Composer\Test\Command;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Test\TestCase;
+use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
 
 class SuggestsCommandTest extends TestCase
@@ -50,13 +51,57 @@ class SuggestsCommandTest extends TestCase
         self::assertEmpty($appTester->getDisplay(true));
     }
 
-    public function testFailsWhenFilteringByNonInstalledPackage(): void
+    /**
+     * @dataProvider provideMissingPackageFilters
+     * @param list<string> $filters
+     */
+    public function testFailsWhenFilteringByNonInstalledPackages(array $filters, string $message): void
     {
         $this->initTempComposer();
 
-        $appTester = $this->getApplicationTester();
-        self::assertEquals(Command::FAILURE, $appTester->run(['command' => 'suggest', 'packages' => ['vendor/not-installed']]));
-        self::assertSame('Package "vendor/not-installed" is not installed', trim($appTester->getDisplay(true)));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage($message);
+
+        $this->getApplicationTester()->run(['command' => 'suggest', 'packages' => $filters]);
+    }
+
+    public static function provideMissingPackageFilters(): \Generator
+    {
+        yield 'single' => [['Vendor/Not-Installed'], 'Package "Vendor/Not-Installed" is not installed.'];
+        yield 'multiple' => [['Vendor/Not-Installed', 'other/missing'], 'Packages "Vendor/Not-Installed", "other/missing" are not installed.'];
+    }
+
+    /**
+     * @dataProvider provideExcludedDevPackageFilters
+     * @param list<string> $filters
+     */
+    public function testFilteringByDevPackageWithNoDevReportsItAsExcluded(array $filters, string $message): void
+    {
+        $this->initTempComposer([
+            'require-dev' => [
+                'vendor/dev-package' => '^1',
+                'other/dev-package' => '^1',
+            ],
+        ]);
+
+        $devPackages = [self::getPackage('vendor/dev-package'), self::getPackage('other/dev-package')];
+        $this->createInstalledJson([], $devPackages);
+        $this->createComposerLock([], $devPackages);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage($message);
+
+        $this->getApplicationTester()->run(['command' => 'suggest', '--no-dev' => true, 'packages' => $filters]);
+    }
+
+    public static function provideExcludedDevPackageFilters(): \Generator
+    {
+        yield 'single' => [['Vendor/Dev-Package'], 'Package "Vendor/Dev-Package" is excluded by --no-dev.'];
+        yield 'multiple' => [['Vendor/Dev-Package', 'other/dev-package'], 'Packages "Vendor/Dev-Package", "other/dev-package" are excluded by --no-dev.'];
+        yield 'missing and excluded' => [
+            ['missing/package', 'Vendor/Dev-Package'],
+            'Package "missing/package" is not installed. Package "Vendor/Dev-Package" is excluded by --no-dev.',
+        ];
     }
 
     /**
