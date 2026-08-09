@@ -325,6 +325,15 @@ class JsonManipulator
         $isAssoc = ($decoded->repositories ?? null) instanceof \stdClass;
 
         foreach ((array) ($decoded->repositories ?? []) as $repositoryIndex => $repository) {
+            // a numeric name addresses a list entry by position (e.g. `config repositories.0 ...`); remove that entry
+            if (!$isAssoc && is_numeric($name) && $repositoryIndex === (int) $name) {
+                if (!$this->removeListItem('repositories', $repositoryIndex)) {
+                    return false;
+                }
+
+                break;
+            }
+
             if ($repositoryIndex === $name && $isAssoc) {
                 if (!$this->removeSubNode('repositories', $repositoryIndex)) {
                     return false;

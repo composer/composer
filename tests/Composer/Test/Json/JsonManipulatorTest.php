@@ -2329,6 +2329,38 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddRepositoryByNumericIndexOverwritesListEntry(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../"
+        },
+        {
+            "type": "composer",
+            "url": "https://other.test"
+        }
+    ]
+}
+');
+
+        self::assertTrue($manipulator->addRepository('0', ['type' => 'composer', 'url' => 'https://replaced.test'], false));
+        self::assertEquals('{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://replaced.test"
+        },
+        {
+            "type": "composer",
+            "url": "https://other.test"
+        }
+    ]
+}
+', $manipulator->getContents());
+    }
+
     /**
      * @dataProvider provideTestSetUrlInRepository
      */

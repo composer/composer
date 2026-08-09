@@ -42,6 +42,11 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'scripts.test', 'setting-value' => ['foo bar']],
             ['scripts' => ['test' => 'foo bar']],
         ];
+        yield 'overwrite a repository addressed by numeric index in a list' => [
+            ['repositories' => [['type' => 'path', 'url' => '../'], ['type' => 'composer', 'url' => 'https://other.test']]],
+            ['setting-key' => 'repositories.0', 'setting-value' => ['composer', 'https://replaced.test']],
+            ['repositories' => [['type' => 'composer', 'url' => 'https://replaced.test'], ['type' => 'composer', 'url' => 'https://other.test'], ['packagist.org' => false]]],
+        ];
         yield 'unset scripts' => [
             ['scripts' => ['test' => 'foo bar', 'lala' => 'baz']],
             ['setting-key' => 'scripts.lala', '--unset' => true],
