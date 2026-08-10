@@ -751,6 +751,20 @@ class PoolBuilder
                             }
                         }
                     }
+
+                    // symlinked path repo packages are auto-unlocked and thus never end up in getFixedOrLockedPackages(),
+                    // but they are already loaded in the pool and their requirements on this now-unlocked package must
+                    // still be honored, otherwise the constraint range they need may not be loaded (see #13024)
+                    foreach ($this->packages as $loadedPackage) {
+                        if (!isset($this->pathRepoUnlocked[$loadedPackage->getName()])) {
+                            continue;
+                        }
+
+                        $requires = $loadedPackage->getRequires();
+                        if (isset($requires[$lockedPackage->getName()])) {
+                            $this->markPackageNameForLoading($request, $lockedPackage->getName(), $requires[$lockedPackage->getName()]->getConstraint());
+                        }
+                    }
                 }
             }
         }

@@ -1,0 +1,48 @@
+--TEST--
+When unlocking a locked package during a partial update, the version constraints required by a symlinked path-repo package must still be honored, otherwise the locked version needed by the path package is never loaded into the pool (https://github.com/composer/composer/issues/13024).
+
+--REQUEST--
+{
+    "require": {
+        "symlinked/path-pkg": "*",
+        "trigger/dep": "*"
+    },
+    "locked": [
+        {
+            "name": "symlinked/path-pkg",
+            "version": "1.0.0",
+            "require": {"locked/dep": "^2.0"},
+            "dist": {"type": "path", "url": "./symlinked-path-repo-with-locked-dep", "reference": "abcd"}, "transport-options": {}
+        },
+        {"name": "trigger/dep", "version": "1.0.0"},
+        {"name": "locked/dep", "version": "2.0.0"}
+    ],
+    "allowList": [
+        "trigger/dep"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    {"type": "path", "url": "./symlinked-path-repo-with-locked-dep"},
+    [
+        {"name": "trigger/dep", "version": "1.0.0"},
+        {"name": "trigger/dep", "version": "1.2.0", "require": {"locked/dep": "1.*"}},
+        {"name": "locked/dep", "version": "1.0.0"},
+        {"name": "locked/dep", "version": "2.0.0"}
+    ]
+]
+
+--EXPECT--
+[
+    "trigger/dep-1.0.0.0",
+    "trigger/dep-1.2.0.0",
+    "symlinked/path-pkg-1.0.0.0",
+    "locked/dep-1.0.0.0",
+    "locked/dep-2.0.0.0"
+]
