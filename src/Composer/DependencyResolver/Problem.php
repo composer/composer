@@ -38,7 +38,7 @@ class Problem
 {
     /**
      * A map containing the id of each rule part of this problem as a key
-     * @var array<string, true>
+     * @var array<int, true>
      */
     protected $reasonSeen;
 
@@ -58,7 +58,7 @@ class Problem
      */
     public function addRule(Rule $rule): void
     {
-        $this->addReason(spl_object_hash($rule), $rule);
+        $this->addReason(spl_object_id($rule), $rule);
     }
 
     /**
@@ -182,7 +182,7 @@ class Problem
                 $messages[] = $template;
                 $templates[$template][$m[1]][$parser->normalize($m[2])] = $m[2];
                 $sourcePackage = $rule->getSourcePackage($pool);
-                foreach ($pool->getRemovedVersionsByPackage(spl_object_hash($sourcePackage)) as $version => $prettyVersion) {
+                foreach ($pool->getRemovedVersionsByPackage(spl_object_id($sourcePackage)) as $version => $prettyVersion) {
                     $templates[$template][$m[1]][$version] = $prettyVersion;
                 }
             } elseif ($message !== '') {
@@ -230,10 +230,10 @@ class Problem
     /**
      * Store a reason descriptor but ignore duplicates
      *
-     * @param string $id     A canonical identifier for the reason
-     * @param Rule   $reason The reason descriptor
+     * @param int  $id     A canonical identifier for the reason
+     * @param Rule $reason The reason descriptor
      */
-    protected function addReason(string $id, Rule $reason): void
+    protected function addReason(int $id, Rule $reason): void
     {
         // TODO: if a rule is part of a problem description in two sections, isn't this going to remove a message
         // that is important to understand the issue?
@@ -553,7 +553,7 @@ class Problem
                 }
             }
             if ($pool !== null && $useRemovedVersionGroup) {
-                foreach ($pool->getRemovedVersionsByPackage(spl_object_hash($package)) as $version => $prettyVersion) {
+                foreach ($pool->getRemovedVersionsByPackage(spl_object_id($package)) as $version => $prettyVersion) {
                     $prepared[$package->getName()]['versions'][$version] = $prettyVersion;
                 }
             }

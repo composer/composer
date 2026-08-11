@@ -71,10 +71,10 @@ class ArrayRepository implements RepositoryInterface
                     && !isset($alreadyLoaded[$package->getName()][$package->getVersion()])
                 ) {
                     // add selected packages which match stability requirements
-                    $result[spl_object_hash($package)] = $package;
+                    $result[spl_object_id($package)] = $package;
                     // add the aliased package for packages where the alias matches
-                    if ($package instanceof AliasPackage && !isset($result[spl_object_hash($package->getAliasOf())])) {
-                        $result[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
+                    if ($package instanceof AliasPackage && !isset($result[spl_object_id($package->getAliasOf())])) {
+                        $result[spl_object_id($package->getAliasOf())] = $package->getAliasOf();
                     }
                 }
 
@@ -85,8 +85,8 @@ class ArrayRepository implements RepositoryInterface
         // add aliases of packages that were selected, even if the aliases did not match
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
-                if (isset($result[spl_object_hash($package->getAliasOf())])) {
-                    $result[spl_object_hash($package)] = $package;
+                if (isset($result[spl_object_id($package->getAliasOf())])) {
+                    $result[spl_object_id($package)] = $package;
                 }
             }
         }

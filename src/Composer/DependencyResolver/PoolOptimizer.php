@@ -59,7 +59,7 @@ class PoolOptimizer
     private $aliasesPerPackage = [];
 
     /**
-     * @var array<string, array<string, string>>
+     * @var array<int, array<string, string>>
      */
     private $removedVersionsByPackage = [];
 
@@ -364,7 +364,7 @@ class PoolOptimizer
         }
 
         foreach ($versions as $version => $prettyVersion) {
-            $this->removedVersionsByPackage[spl_object_hash($package)][$version] = $prettyVersion;
+            $this->removedVersionsByPackage[spl_object_id($package)][$version] = $prettyVersion;
         }
     }
 

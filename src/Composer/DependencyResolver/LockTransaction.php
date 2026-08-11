@@ -27,9 +27,9 @@ class LockTransaction extends Transaction
     /**
      * packages in current lock file, platform repo or otherwise present
      *
-     * Indexed by spl_object_hash
+     * Indexed by spl_object_id
      *
-     * @var array<string, BasePackage>
+     * @var array<int, BasePackage>
      */
     protected $presentMap;
 
@@ -48,7 +48,7 @@ class LockTransaction extends Transaction
     protected $resultPackages;
 
     /**
-     * @param array<string, BasePackage> $presentMap
+     * @param array<int, BasePackage> $presentMap
      * @param array<int, BasePackage> $unlockableMap
      */
     public function __construct(Pool $pool, array $presentMap, array $unlockableMap, Decisions $decisions)
@@ -112,7 +112,7 @@ class LockTransaction extends Transaction
             }
 
             // if we're just updating mirrors we need to reset everything to the same as currently "present" packages' references to keep the lock file as-is
-            if ($updateMirrors === true && !array_key_exists(spl_object_hash($package), $this->presentMap)) {
+            if ($updateMirrors === true && !array_key_exists(spl_object_id($package), $this->presentMap)) {
                 $package = $this->updateMirrorAndUrls($package);
             }
 

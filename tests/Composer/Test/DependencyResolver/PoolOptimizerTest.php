@@ -64,7 +64,7 @@ class PoolOptimizerTest extends TestCase
         $poolOptimizer = new PoolOptimizer(new DefaultPolicy());
         $optimizedPool = $poolOptimizer->optimize($request, $pool);
 
-        $removedVersions = $optimizedPool->getRemovedVersionsByPackage(spl_object_hash($packageA110));
+        $removedVersions = $optimizedPool->getRemovedVersionsByPackage(spl_object_id($packageA110));
 
         // Versions from 'package/a' name group
         self::assertArrayHasKey($packageA100->getVersion(), $removedVersions, 'Should contain package/a 1.0.0 from package/a name group');
@@ -98,9 +98,9 @@ class PoolOptimizerTest extends TestCase
             $package111->getVersion() => $package111->getPrettyVersion(),
         ];
 
-        self::assertSame($expectedVersions, $optimizedPool->getRemovedVersionsByPackage(spl_object_hash($package110Alias)));
-        self::assertSame($expectedVersions, $optimizedPool->getRemovedVersionsByPackage(spl_object_hash($package110)));
-        self::assertSame($expectedVersions, $optimizedPool->getRemovedVersionsByPackage(spl_object_hash($package110SiblingAlias)));
+        self::assertSame($expectedVersions, $optimizedPool->getRemovedVersionsByPackage(spl_object_id($package110Alias)));
+        self::assertSame($expectedVersions, $optimizedPool->getRemovedVersionsByPackage(spl_object_id($package110)));
+        self::assertSame($expectedVersions, $optimizedPool->getRemovedVersionsByPackage(spl_object_id($package110SiblingAlias)));
     }
 
     /**

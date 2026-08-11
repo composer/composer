@@ -41,7 +41,7 @@ class Pool implements \Countable
     protected $unacceptableFixedOrLockedPackages;
     /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
     protected $removedVersions = [];
-    /** @var array<string, array<string, string>> Map of package object hash => removed normalized versions => removed pretty version */
+    /** @var array<int, array<string, string>> Map of package object id => removed normalized versions => removed pretty version */
     protected $removedVersionsByPackage = [];
     /** @var array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> Map of package name => normalized version => security advisories */
     private $securityRemovedVersions = [];
@@ -54,7 +54,7 @@ class Pool implements \Countable
      * @param BasePackage[] $packages
      * @param BasePackage[] $unacceptableFixedOrLockedPackages
      * @param array<string, array<string, string>> $removedVersions
-     * @param array<string, array<string, string>> $removedVersionsByPackage
+     * @param array<int, array<string, string>> $removedVersionsByPackage
      * @param array<string, array<string, array<SecurityAdvisory|PartialSecurityAdvisory>>> $securityRemovedVersions
      * @param array<string, array<string, string>> $abandonedRemovedVersions
      * @param array<string, array<string, list<FilterListEntry>>> $filterListRemovedVersions
@@ -101,17 +101,17 @@ class Pool implements \Countable
     /**
      * @return array<string, string>
      */
-    public function getRemovedVersionsByPackage(string $objectHash): array
+    public function getRemovedVersionsByPackage(int $objectId): array
     {
-        if (!isset($this->removedVersionsByPackage[$objectHash])) {
+        if (!isset($this->removedVersionsByPackage[$objectId])) {
             return [];
         }
 
-        return $this->removedVersionsByPackage[$objectHash];
+        return $this->removedVersionsByPackage[$objectId];
     }
 
     /**
-     * @return array<string, array<string, string>>
+     * @return array<int, array<string, string>>
      */
     public function getAllRemovedVersionsByPackage(): array
     {
@@ -201,7 +201,7 @@ class Pool implements \Countable
         foreach ($this->filterListRemovedVersions[$packageName] ?? [] as $version => $filterListEntries) {
             if ($constraint !== null && $constraint->matches(new Constraint('==', $version))) {
                 foreach ($filterListEntries as $entry) {
-                    $entryKey = spl_object_hash($entry);
+                    $entryKey = spl_object_id($entry);
                     if (isset($seen[$entryKey])) {
                         continue;
                     }
