@@ -707,10 +707,10 @@ class EventDispatcher
             return 'fn:'.$cb;
         }
         if (is_object($cb)) {
-            return 'obj:'.spl_object_hash($cb);
+            return 'obj:'.spl_object_id($cb);
         }
         if (is_array($cb)) {
-            return 'array:'.(is_string($cb[0]) ? $cb[0] : get_class($cb[0]) .'#'.spl_object_hash($cb[0])).'::'.$cb[1];
+            return 'array:'.(is_string($cb[0]) ? $cb[0] : get_class($cb[0]) .'#'.spl_object_id($cb[0])).'::'.$cb[1];
         }
 
         // not great but also do not want to break everything here

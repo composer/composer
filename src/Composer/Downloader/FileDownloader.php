@@ -448,7 +448,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $extension = $package->getDistType();
         }
 
-        return rtrim($this->config->get('vendor-dir') . '/composer/tmp-' . hash('md5', $package . spl_object_hash($package)) . '.' . $extension, '.');
+        return rtrim($this->config->get('vendor-dir') . '/composer/tmp-' . hash('md5', $package . spl_object_id($package)) . '.' . $extension, '.');
     }
 
     /**
