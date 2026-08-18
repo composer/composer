@@ -27,6 +27,9 @@ class FilterListApiClient
     /** @var mixed[] */
     private $options;
 
+    /**
+     * @param mixed[] $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
+     */
     public function __construct(HttpDownloader $httpDownloader, array $options = [])
     {
         $this->httpDownloader = $httpDownloader;
