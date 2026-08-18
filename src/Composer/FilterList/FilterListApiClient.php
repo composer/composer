@@ -24,10 +24,13 @@ class FilterListApiClient
 {
     /** @var HttpDownloader */
     private $httpDownloader;
+    /** @var mixed[] */
+    private $options;
 
-    public function __construct(HttpDownloader $httpDownloader)
+    public function __construct(HttpDownloader $httpDownloader, array $options = [])
     {
         $this->httpDownloader = $httpDownloader;
+        $this->options = $options;
     }
 
     /**
@@ -47,8 +50,11 @@ class FilterListApiClient
             'lists' => $configuredLists,
         ];
 
-        $options = [];
+        $options = $this->options;
         $options['http']['method'] = 'POST';
+        if (isset($options['http']['header'])) {
+            $options['http']['header'] = (array) $options['http']['header'];
+        }
         $options['http']['header'][] = 'Content-type: application/json';
         $options['http']['timeout'] = 10;
         $options['http']['content'] = json_encode($body);
