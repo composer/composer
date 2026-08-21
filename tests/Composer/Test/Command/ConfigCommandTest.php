@@ -42,6 +42,21 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'scripts.test', 'setting-value' => ['foo bar']],
             ['scripts' => ['test' => 'foo bar']],
         ];
+        yield 'overwrite a repository addressed by numeric index in a list' => [
+            ['repositories' => [['type' => 'path', 'url' => '../'], ['type' => 'composer', 'url' => 'https://other.test']]],
+            ['setting-key' => 'repositories.0', 'setting-value' => ['composer', 'https://replaced.test']],
+            ['repositories' => [['type' => 'composer', 'url' => 'https://replaced.test'], ['type' => 'composer', 'url' => 'https://other.test'], ['packagist.org' => false]]],
+        ];
+        yield 'overwrite a repository addressed by numeric index in the middle of a list' => [
+            ['repositories' => [['type' => 'path', 'url' => '../a'], ['type' => 'path', 'url' => '../b'], ['type' => 'composer', 'url' => 'https://c.test']]],
+            ['setting-key' => 'repositories.1', 'setting-value' => ['composer', 'https://replaced.test']],
+            ['repositories' => [['type' => 'path', 'url' => '../a'], ['type' => 'composer', 'url' => 'https://replaced.test'], ['type' => 'composer', 'url' => 'https://c.test'], ['packagist.org' => false]]],
+        ];
+        yield 'unset a repository addressed by numeric index in a list' => [
+            ['repositories' => [['type' => 'path', 'url' => '../a'], ['type' => 'path', 'url' => '../b']]],
+            ['setting-key' => 'repositories.1', '--unset' => true],
+            ['repositories' => [['type' => 'path', 'url' => '../a'], ['packagist.org' => false]]],
+        ];
         yield 'unset scripts' => [
             ['scripts' => ['test' => 'foo bar', 'lala' => 'baz']],
             ['setting-key' => 'scripts.lala', '--unset' => true],

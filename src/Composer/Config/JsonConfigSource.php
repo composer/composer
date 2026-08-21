@@ -105,14 +105,23 @@ class JsonConfigSource implements ConfigSourceInterface
                 return;
             }
 
-            if (is_array($repoConfig) && $repo !== '' && !isset($repoConfig['name'])) {
+            if (is_array($repoConfig) && $repo !== '' && !ctype_digit($repo) && !isset($repoConfig['name'])) {
                 $repoConfig = ['name' => $repo] + $repoConfig;
             }
 
-            // ensure uniqueness by removing any existing entries which use the same name
-            $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($repo) {
-                return !isset($val['name']) || $val['name'] !== $repo || $val !== [$repo => false];
-            }));
+            // ensure uniqueness by removing any existing entry which uses the same name or position
+            $index = self::findRepositoryIndex($config['repositories'] ?? [], $repo);
+
+            if ($index !== null) {
+                // a repository addressed by position is replaced in place, $append does not apply
+                if (ctype_digit($repo) && $index === (int) $repo) {
+                    array_splice($config['repositories'], $index, 1, [$repoConfig]);
+
+                    return;
+                }
+
+                array_splice($config['repositories'], $index, 1);
+            }
 
             if ($append) {
                 $config['repositories'][] = $repoConfig;
@@ -149,30 +158,20 @@ class JsonConfigSource implements ConfigSourceInterface
                 $config['repositories'] = $list;
             }
 
-            // ensure uniqueness by removing any existing entries which use the same name
-            $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($name) {
-                return !isset($val['name']) || $val['name'] !== $name || $val !== [$name => false];
-            }));
+            // ensure uniqueness by removing any existing entry which uses the same name or position
+            $index = self::findRepositoryIndex($config['repositories'] ?? [], $name);
 
-            $indexToInsert = null;
-
-            foreach ($config['repositories'] as $repositoryIndex => $repository) {
-                if (($repository['name'] ?? null) === $referenceName) {
-                    $indexToInsert = $repositoryIndex;
-                    break;
-                }
-
-                if ([$referenceName => false] === $repository) {
-                    $indexToInsert = $repositoryIndex;
-                    break;
-                }
+            if ($index !== null) {
+                array_splice($config['repositories'], $index, 1);
             }
+
+            $indexToInsert = self::findRepositoryIndex($config['repositories'] ?? [], $referenceName);
 
             if ($indexToInsert === null) {
                 throw new \RuntimeException(sprintf('The referenced repository "%s" does not exist.', $referenceName));
             }
 
-            if (is_array($repoConfig) && $name !== '' && !isset($repoConfig['name'])) {
+            if (is_array($repoConfig) && $name !== '' && !ctype_digit($name) && !isset($repoConfig['name'])) {
                 $repoConfig = ['name' => $name] + $repoConfig;
             }
 
@@ -208,18 +207,41 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeRepository(string $name): void
     {
         $this->manipulateJson('removeRepository', static function (&$config, $repo): void {
-            if (isset($config['repositories'][$repo])) {
+            if (isset($config['repositories'][$repo]) && !array_is_list($config['repositories'])) {
                 unset($config['repositories'][$repo]);
             } else {
-                $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($repo) {
-                    return !isset($val['name']) || $val['name'] !== $repo || $val !== [$repo => false];
-                }));
+                $index = self::findRepositoryIndex($config['repositories'] ?? [], $repo);
+
+                if ($index !== null) {
+                    array_splice($config['repositories'], $index, 1);
+                }
             }
 
-            if ([] === $config['repositories']) {
+            if ([] === ($config['repositories'] ?? [])) {
                 unset($config['repositories']);
             }
         }, $name);
+    }
+
+    /**
+     * Finds a repository in a list by name, falling back to its position for a numeric name
+     *
+     * @param array<int|string, mixed> $repositories
+     */
+    private static function findRepositoryIndex(array $repositories, string $name): ?int
+    {
+        if (!array_is_list($repositories)) {
+            return null;
+        }
+
+        foreach ($repositories as $index => $repository) {
+            if (is_array($repository) && (($repository['name'] ?? null) === $name || [$name => false] === $repository)) {
+                return $index;
+            }
+        }
+
+        // names take precedence, so a position is only matched once nothing matched by name
+        return ctype_digit($name) && isset($repositories[(int) $name]) ? (int) $name : null;
     }
 
     /**

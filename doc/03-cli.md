@@ -901,6 +901,17 @@ If your repository requires more configuration options, you can instead pass its
 php composer.phar config repositories.foo '{"type": "vcs", "url": "http://svn.example.org/my-project/", "trunk-path": "master"}'
 ```
 
+Repositories which have no `name` can be addressed by their position in the list instead, which is
+what `composer repo list` shows in brackets. The repository at that position is then replaced in
+place rather than a new one being added:
+
+```shell
+php composer.phar config repositories.0 vcs https://github.com/foo/bar
+```
+
+Positions shift as repositories are added and removed, so giving each repository a `name` and using
+that is more robust.
+
 ### Modifying Extra Values
 
 In addition to modifying the config section, the `config` command also supports making
@@ -937,13 +948,16 @@ repo [options] enable packagist.org
 repo [options] disable packagist.org
 ```
 
+`[repo-name]` is the repository's `name`. Repositories which do not have one can be addressed by
+their position in the list instead, as shown in brackets by `repo list`.
+
 ### Options
 
 - **--global (-g):** to modify the global `$COMPOSER_HOME/config.json`.
 - **--file (-f):** to modify a specific file instead of composer.json.
 - **--append:** to add a repository with lower priority (by default repositories are prepended and have thus higher priority than existing ones).
 - **--before [name]:** to insert the new repository before an existing repository named `[name]`.
-- **--after [name]:** to insert the new repository after an existing repository named `[name]`. The `[name]` must match an existing repository name.
+- **--after [name]:** to insert the new repository after an existing repository named `[name]`. The `[name]` must match an existing repository name or position.
 
 ### Examples
 
