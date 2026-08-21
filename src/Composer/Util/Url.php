@@ -103,7 +103,9 @@ class Url
             && !in_array($origin, $config->get('gitlab-domains'), true)
         ) {
             foreach ($config->get('gitlab-domains') as $gitlabDomain) {
-                if ($gitlabDomain !== '' && str_starts_with($gitlabDomain, $origin.'/')) {
+                // configured domains may spell out a port the URL omits, see GitLab::authorizeOAuth
+                $bcDomain = Preg::replace('{^([^/]+):\d+}', '$1', $gitlabDomain);
+                if ($gitlabDomain !== '' && ($bcDomain === $origin || str_starts_with($bcDomain, $origin.'/'))) {
                     return $gitlabDomain;
                 }
             }

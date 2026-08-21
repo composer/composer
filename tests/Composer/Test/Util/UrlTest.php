@@ -66,12 +66,11 @@ class UrlTest extends TestCase
      * @dataProvider getOriginProvider
      *
      * @param non-empty-string $url
-     * @param list<string> $gitlabDomains
+     * @param list<string> $extraGitlabDomains domains merged on top of the default gitlab.com
      */
-    public function testGetOrigin(string $expected, string $url, array $gitlabDomains): void
+    public function testGetOrigin(string $expected, string $url, array $extraGitlabDomains): void
     {
-        $config = new Config();
-        $config->merge(['config' => ['gitlab-domains' => $gitlabDomains]]);
+        $config = $this->getConfig(['gitlab-domains' => $extraGitlabDomains]);
 
         self::assertSame($expected, Url::getOrigin($config, $url));
     }
@@ -81,8 +80,12 @@ class UrlTest extends TestCase
         return [
             // a host that is only a shorter prefix of a configured domain must not resolve to it
             ['gitlab.example.co', 'https://gitlab.example.co/foo/bar/repository/archive.zip', ['gitlab.example.com']],
+            ['gitlab.example.co', 'https://gitlab.example.co/foo/bar/repository/archive.zip', ['gitlab.example.co.uk/gitlab']],
             ['gitlab.example.com', 'https://gitlab.example.com/foo/bar/repository/archive.zip', ['gitlab.example.com']],
             ['gitlab.example.com/gitlab', 'https://gitlab.example.com/foo/bar/repository/archive.zip', ['gitlab.example.com/gitlab']],
+            // a configured domain may spell out a port the URL omits
+            ['gitlab.example.com:443', 'https://gitlab.example.com/foo/bar/repository/archive.zip', ['gitlab.example.com:443']],
+            ['gitlab.example.com:443/gitlab', 'https://gitlab.example.com/foo/bar/repository/archive.zip', ['gitlab.example.com:443/gitlab']],
         ];
     }
 
