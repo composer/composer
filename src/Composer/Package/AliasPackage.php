@@ -361,6 +361,11 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getReleaseDate();
     }
 
+    public function getPublishedDate(): ?\DateTimeInterface
+    {
+        return $this->aliasOf->getPublishedDate();
+    }
+
     public function getBinaries(): array
     {
         return $this->aliasOf->getBinaries();

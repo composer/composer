@@ -57,6 +57,8 @@ class Package extends BasePackage
     protected $prettyVersion;
     /** @var ?\DateTimeInterface */
     protected $releaseDate;
+    /** @var ?\DateTimeInterface */
+    protected $publishedDate;
     /** @var mixed[] */
     protected $extra = [];
     /** @var string[] */
@@ -393,6 +395,19 @@ class Package extends BasePackage
     public function getReleaseDate(): ?\DateTimeInterface
     {
         return $this->releaseDate;
+    }
+
+    public function setPublishedDate(?\DateTimeInterface $publishedDate): void
+    {
+        $this->publishedDate = $publishedDate;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPublishedDate(): ?\DateTimeInterface
+    {
+        return $this->publishedDate;
     }
 
     /**
