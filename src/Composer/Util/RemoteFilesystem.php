@@ -320,7 +320,7 @@ class RemoteFilesystem
             $contentLength = !empty($http_response_header[0]) ? Response::findHeaderValue($http_response_header, 'content-length') : null;
             if ($contentLength && Platform::strlen($result) < $contentLength) {
                 // alas, this is not possible via the stream callback because STREAM_NOTIFY_COMPLETED is documented, but not implemented anywhere in PHP
-                $e = new TransportException('Content-Length mismatch, received '.Platform::strlen($result).' bytes out of the expected '.$contentLength);
+                $e = new TransportException('Content-Length mismatch, received '.Platform::strlen($result).' bytes out of the expected '.$contentLength.' for '.Url::sanitize($fileUrl));
                 $e->setHeaders($http_response_header);
                 $e->setStatusCode(self::findStatusCode($http_response_header));
                 try {
@@ -537,7 +537,7 @@ class RemoteFilesystem
         }
 
         if ($result !== false && $maxFileSize !== null && Platform::strlen($result) >= $maxFileSize) {
-            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($result) . ' of allowed ' .  $maxFileSize . ' bytes');
+            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($result) . ' of allowed ' .  $maxFileSize . ' bytes for ' . Url::sanitize($fileUrl));
         }
 
         // https://www.php.net/manual/en/reserved.variables.httpresponseheader.php

@@ -1815,7 +1815,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 if ($cacheKey && ($contents = $this->cache->read($cacheKey))) {
                     if (!$this->degradedMode) {
-                        $this->io->writeError('<warning>'.Url::sanitize($this->url).' could not be fully loaded ('.Url::sanitize($filename).': '.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
+                        $this->io->writeError('<warning>'.Url::sanitize($this->url).' could not be fully loaded ('.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
                     }
                     $this->degradedMode = true;
                     $data = JsonFile::parseJson($contents, $this->cache->getRoot().$cacheKey);
@@ -1892,7 +1892,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             if (!$this->degradedMode) {
-                $this->io->writeError('<warning>'.Url::sanitize($this->url).' could not be fully loaded ('.Url::sanitize($filename).': '.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
+                $this->io->writeError('<warning>'.Url::sanitize($this->url).' could not be fully loaded ('.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
             }
             $this->degradedMode = true;
 
@@ -1992,7 +1992,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             if (!$degradedMode) {
-                $io->writeError('<warning>'.Url::sanitize($url).' could not be fully loaded ('.Url::sanitize($filename).': '.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
+                $io->writeError('<warning>'.Url::sanitize($url).' could not be fully loaded ('.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
             }
             $degradedMode = true;
 

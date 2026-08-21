@@ -432,7 +432,7 @@ class CurlDownloader
                         // Gzipped responses with missing Content-Length header cannot be detected during the file download
                         // because $progress['size_download'] refers to the gzipped size downloaded, not the actual file size
                         if ($contents !== false && Platform::strlen($contents) >= $maxFileSize) {
-                            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($contents) . ' of allowed ' .  $maxFileSize . ' bytes');
+                            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($contents) . ' of allowed ' .  $maxFileSize . ' bytes for ' . Url::sanitize($job['url']));
                         }
                     } else {
                         $contents = stream_get_contents($job['bodyHandle']);
@@ -518,12 +518,12 @@ class CurlDownloader
                 if (isset($this->jobs[$i]['options']['max_file_size'])) {
                     // Compare max_file_size with the content-length header this value will be -1 until the header is parsed
                     if ($this->jobs[$i]['options']['max_file_size'] < $progress['download_content_length']) {
-                        $this->rejectJob($this->jobs[$i], new MaxFileSizeExceededException('Maximum allowed download size reached. Content-length header indicates ' . $progress['download_content_length'] . ' bytes. Allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes'));
+                        $this->rejectJob($this->jobs[$i], new MaxFileSizeExceededException('Maximum allowed download size reached. Content-length header indicates ' . $progress['download_content_length'] . ' bytes. Allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes for ' . Url::sanitize($this->jobs[$i]['url'])));
                     }
 
                     // Compare max_file_size with the download size in bytes
                     if ($this->jobs[$i]['options']['max_file_size'] < $progress['size_download']) {
-                        $this->rejectJob($this->jobs[$i], new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . $progress['size_download'] . ' of allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes'));
+                        $this->rejectJob($this->jobs[$i], new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . $progress['size_download'] . ' of allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes for ' . Url::sanitize($this->jobs[$i]['url'])));
                     }
                 }
 
