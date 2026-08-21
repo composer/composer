@@ -65,6 +65,35 @@ class UrlTest extends TestCase
     }
 
     /**
+     * @dataProvider getOriginProvider
+     *
+     * @param string        $expected
+     * @param string        $url
+     * @param array<string> $extraGitlabDomains domains merged on top of the default gitlab.com
+     */
+    public function testGetOrigin($expected, $url, $extraGitlabDomains)
+    {
+        $config = new Config();
+        $config->merge(array('config' => array('gitlab-domains' => $extraGitlabDomains)));
+
+        $this->assertSame($expected, Url::getOrigin($config, $url));
+    }
+
+    public static function getOriginProvider()
+    {
+        return array(
+            // a host that is only a shorter prefix of a configured domain must not resolve to it
+            array('gitlab.example.co', 'https://gitlab.example.co/foo/bar/repository/archive.zip', array('gitlab.example.com')),
+            array('gitlab.example.co', 'https://gitlab.example.co/foo/bar/repository/archive.zip', array('gitlab.example.co.uk/gitlab')),
+            array('gitlab.example.com', 'https://gitlab.example.com/foo/bar/repository/archive.zip', array('gitlab.example.com')),
+            array('gitlab.example.com/gitlab', 'https://gitlab.example.com/foo/bar/repository/archive.zip', array('gitlab.example.com/gitlab')),
+            // a configured domain may spell out a port the URL omits
+            array('gitlab.example.com:443', 'https://gitlab.example.com/foo/bar/repository/archive.zip', array('gitlab.example.com:443')),
+            array('gitlab.example.com:443/gitlab', 'https://gitlab.example.com/foo/bar/repository/archive.zip', array('gitlab.example.com:443/gitlab')),
+        );
+    }
+
+    /**
      * @dataProvider sanitizeProvider
      *
      * @param string $expected
