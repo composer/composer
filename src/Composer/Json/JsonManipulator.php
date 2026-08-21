@@ -159,7 +159,12 @@ class JsonManipulator
      */
     public function addRepository(string $name, $config, bool $append = true): bool
     {
-        if ("" !== $name && !$this->doRemoveRepository($name)) {
+        // a false config disables a repository by name, so it never addresses a list position
+        $key = "" !== $name ? $this->findRepositoryKey($name, is_array($config)) : null;
+        // a repository addressed by position is replaced in place, $append does not apply
+        $replaceInPlace = is_int($key) && ctype_digit($name) && $key === (int) $name;
+
+        if ($key !== null && !$replaceInPlace && !$this->doRemoveRepositoryAt($key)) {
             return false;
         }
 
@@ -167,10 +172,17 @@ class JsonManipulator
             return false;
         }
 
-        if (is_array($config) && !is_numeric($name) && '' !== $name) {
+        if (is_array($config) && !ctype_digit($name) && '' !== $name) {
             $config = ['name' => $name] + $config;
         } elseif ($config === false) {
             $config = [$name => $config];
+        }
+
+        if ($replaceInPlace) {
+            // insert before removing, so that a single entry list never goes through an empty
+            // state, which would lose the indentation of the whole block
+            return $this->insertListItem('repositories', $config, $key)
+                && $this->removeListItem('repositories', $key + 1);
         }
 
         return $this->addListItem('repositories', $config, $append);
@@ -198,7 +210,7 @@ class JsonManipulator
                     if (!$this->addListItem('repositories', [$repositoryName => $repository], true)) {
                         return false;
                     }
-                } elseif (is_numeric($repositoryName)) {
+                } elseif (ctype_digit((string) $repositoryName)) {
                     if (!$this->addListItem('repositories', $repository, true)) {
                         return false;
                     }
@@ -218,20 +230,7 @@ class JsonManipulator
 
     public function setRepositoryUrl(string $name, string $url): bool
     {
-        $decoded = JsonFile::parseJson($this->contents);
-        $repositoryIndex = null;
-
-        foreach ($decoded['repositories'] ?? [] as $index => $repository) {
-            if ($name === $index) {
-                $repositoryIndex = $index;
-                break;
-            }
-
-            if ($name === ($repository['name'] ?? null)) {
-                $repositoryIndex = $index;
-                break;
-            }
-        }
+        $repositoryIndex = $this->findRepositoryKey($name);
 
         if (null === $repositoryIndex) {
             return false;
@@ -281,31 +280,14 @@ class JsonManipulator
             return false;
         }
 
-        $indexToInsert = null;
-        $decoded = JsonFile::parseJson($this->contents);
+        // repositories are a list at this point, so the reference always resolves to an index
+        $indexToInsert = $this->findRepositoryKey($referenceName);
 
-        foreach ($decoded['repositories'] as $repositoryIndex => $repository) {
-            if (($repository['name'] ?? null) === $referenceName) {
-                $indexToInsert = $repositoryIndex;
-                break;
-            }
-
-            if ($repositoryIndex === $referenceName) {
-                $indexToInsert = $repositoryIndex;
-                break;
-            }
-
-            if ([$referenceName => false] === $repository) {
-                $indexToInsert = $repositoryIndex;
-                break;
-            }
-        }
-
-        if ($indexToInsert === null) {
+        if (!is_int($indexToInsert)) {
             return false;
         }
 
-        if (is_array($config) && !is_numeric($name) && '' !== $name) {
+        if (is_array($config) && !ctype_digit($name) && '' !== $name) {
             $config = ['name' => $name] + $config;
         } elseif ($config === false) {
             $config = ['name' => $config];
@@ -321,63 +303,53 @@ class JsonManipulator
 
     private function doRemoveRepository(string $name): bool
     {
+        $key = $this->findRepositoryKey($name);
+
+        return $key === null || $this->doRemoveRepositoryAt($key);
+    }
+
+    /**
+     * @param int|string $key int for a list index, string for an object key
+     */
+    private function doRemoveRepositoryAt($key): bool
+    {
+        return is_int($key)
+            ? $this->removeListItem('repositories', $key)
+            : $this->removeSubNode('repositories', $key);
+    }
+
+    /**
+     * Finds a repository by name, falling back to its position for a numeric name in a list
+     *
+     * @return int|string|null int for a list index, string for an object key, null if not found
+     */
+    private function findRepositoryKey(string $name, bool $allowIndex = true)
+    {
         $decoded = json_decode($this->contents, false);
         $isAssoc = ($decoded->repositories ?? null) instanceof \stdClass;
+        // numeric object keys come back as ints from the array cast, so compare them as strings
+        $repositories = (array) ($decoded->repositories ?? []);
 
-        foreach ((array) ($decoded->repositories ?? []) as $repositoryIndex => $repository) {
-            // a numeric name addresses a list entry by position (e.g. `config repositories.0 ...`); remove that entry
-            if (!$isAssoc && is_numeric($name) && $repositoryIndex === (int) $name) {
-                if (!$this->removeListItem('repositories', $repositoryIndex)) {
-                    return false;
-                }
-
-                break;
-            }
-
-            if ($repositoryIndex === $name && $isAssoc) {
-                if (!$this->removeSubNode('repositories', $repositoryIndex)) {
-                    return false;
-                }
-
-                break;
-            }
-
-            if (($repository->name ?? null) === $name) {
-                if ($isAssoc) {
-                    if (!$this->removeSubNode('repositories', (string) $repositoryIndex)) {
-                        return false;
-                    }
-                } else {
-                    if (!$this->removeListItem('repositories', (int) $repositoryIndex)) {
-                        return false;
-                    }
-                }
-
-                break;
-            }
-
+        foreach ($repositories as $repositoryIndex => $repository) {
             if ($isAssoc) {
-                if ($name === $repositoryIndex && false === $repository) {
-                    if (!$this->removeSubNode('repositories', $repositoryIndex)) {
-                        return false;
-                    }
-
-                    return true;
+                if ((string) $repositoryIndex === $name || ($repository->name ?? null) === $name) {
+                    return (string) $repositoryIndex;
                 }
-            } else {
-                $repositoryAsArray = (array) $repository;
 
-                if (false === ($repositoryAsArray[$name] ?? null) && 1 === count($repositoryAsArray)) {
-                    if (!$this->removeListItem('repositories', (int) $repositoryIndex)) {
-                        return false;
-                    }
+                continue;
+            }
 
-                    return true;
-                }
+            if (($repository->name ?? null) === $name || [$name => false] === (array) $repository) {
+                return (int) $repositoryIndex;
             }
         }
 
-        return true;
+        // names take precedence, so a position is only matched once nothing matched by name
+        if ($allowIndex && !$isAssoc && ctype_digit($name) && isset($repositories[(int) $name])) {
+            return (int) $name;
+        }
+
+        return null;
     }
 
     /**

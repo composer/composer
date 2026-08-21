@@ -446,4 +446,57 @@ class RepositoryCommandTest extends TestCase
         self::assertSame(1, $countFoo, 'Exactly one repository entry with name foo should exist');
         self::assertSame('https://example.org/new', $url, 'The foo repository should have been updated to the new URL');
     }
+
+    public function testSetUrlByPosition(): void
+    {
+        $this->initTempComposer(['repositories' => [
+            ['type' => 'path', 'url' => '../a'],
+            ['type' => 'path', 'url' => '../b'],
+        ]], [], [], false);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'repo', 'action' => 'set-url', 'name' => '1', 'arg1' => '../new']);
+        $appTester->assertCommandIsSuccessful($appTester->getDisplay());
+
+        $json = json_decode((string) file_get_contents('composer.json'), true);
+        self::assertSame('../a', $json['repositories'][0]['url']);
+        self::assertSame('../new', $json['repositories'][1]['url']);
+    }
+
+    public function testRemoveByPosition(): void
+    {
+        $this->initTempComposer(['repositories' => [
+            ['type' => 'path', 'url' => '../a'],
+            ['type' => 'path', 'url' => '../b'],
+        ]], [], [], false);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'repo', 'action' => 'remove', 'name' => '0']);
+        $appTester->assertCommandIsSuccessful($appTester->getDisplay());
+
+        $json = json_decode((string) file_get_contents('composer.json'), true);
+        self::assertSame([['type' => 'path', 'url' => '../b']], $json['repositories']);
+    }
+
+    public function testAddBeforeAPosition(): void
+    {
+        $this->initTempComposer(['repositories' => [
+            ['type' => 'path', 'url' => '../a'],
+            ['type' => 'path', 'url' => '../b'],
+        ]], [], [], false);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run([
+            'command' => 'repo',
+            'action' => 'add',
+            'name' => 'foo',
+            'arg1' => 'vcs',
+            'arg2' => 'https://example.org',
+            '--before' => '1',
+        ]);
+        $appTester->assertCommandIsSuccessful($appTester->getDisplay());
+
+        $json = json_decode((string) file_get_contents('composer.json'), true);
+        self::assertSame(['../a', 'https://example.org', '../b'], array_column($json['repositories'], 'url'));
+    }
 }
