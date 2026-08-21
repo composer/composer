@@ -719,6 +719,42 @@ class PoolBuilder
 
         unset($this->skippedLoad[$name], $this->loadedPackages[$name], $this->maxExtendedReqs[$name], $this->pathRepoUnlocked[$name]);
 
+        // symlinked path repo packages are auto-unlocked and thus never end up in getFixedOrLockedPackages(), but they
+        // are already loaded in the pool, so their requirements on this now-unlocked package must be re-registered too,
+        // otherwise the version range they need may never be loaded back into the pool (see #13024)
+        if (\count($this->pathRepoUnlocked) > 0) {
+            // collected up front as the loop further below unlocks them from the request
+            $unlockedReplaces = [];
+            foreach ($request->getLockedPackages() as $lockedPackage) {
+                if (!($lockedPackage instanceof AliasPackage) && $lockedPackage->getName() === $name) {
+                    foreach ($lockedPackage->getReplaces() as $replace) {
+                        $unlockedReplaces[] = $replace;
+                    }
+                }
+            }
+
+            foreach ($this->packages as $loadedPackage) {
+                if (!isset($this->pathRepoUnlocked[$loadedPackage->getName()])) {
+                    continue;
+                }
+
+                $requires = $loadedPackage->getRequires();
+                if (isset($requires[$name])) {
+                    $this->markPackageNameForLoading($request, $name, $requires[$name]->getConstraint());
+                }
+
+                // and if the unlocked package replaces something the path repo package requires, load that replaced
+                // package too in case an update to the unlocked package removes the replacement
+                foreach ($unlockedReplaces as $replace) {
+                    if (isset($requires[$replace->getTarget()], $this->skippedLoad[$replace->getTarget()])) {
+                        $this->unlockPackage($request, $repositories, $replace->getTarget());
+                        // this package is in $requires so no need to call markPackageNameForLoadingIfRequired
+                        $this->markPackageNameForLoading($request, $replace->getTarget(), $replace->getConstraint());
+                    }
+                }
+            }
+        }
+
         // remove locked package by this name which was already initialized
         foreach ($request->getLockedPackages() as $lockedPackage) {
             if (!($lockedPackage instanceof AliasPackage) && $lockedPackage->getName() === $name) {
@@ -749,20 +785,6 @@ class PoolBuilder
                                     $this->markPackageNameForLoading($request, $replace->getTarget(), $replace->getConstraint());
                                 }
                             }
-                        }
-                    }
-
-                    // symlinked path repo packages are auto-unlocked and thus never end up in getFixedOrLockedPackages(),
-                    // but they are already loaded in the pool and their requirements on this now-unlocked package must
-                    // still be honored, otherwise the constraint range they need may not be loaded (see #13024)
-                    foreach ($this->packages as $loadedPackage) {
-                        if (!isset($this->pathRepoUnlocked[$loadedPackage->getName()])) {
-                            continue;
-                        }
-
-                        $requires = $loadedPackage->getRequires();
-                        if (isset($requires[$lockedPackage->getName()])) {
-                            $this->markPackageNameForLoading($request, $lockedPackage->getName(), $requires[$lockedPackage->getName()]->getConstraint());
                         }
                     }
                 }
