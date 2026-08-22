@@ -287,6 +287,11 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.my-list.audit', 'setting-value' => ['report']],
             ['config' => ['policy' => ['my-list' => ['audit' => 'report']]]],
         ];
+        yield 'set custom policy list block-scope' => [
+            [],
+            ['setting-key' => 'policy.my-list.block-scope', 'setting-value' => ['install']],
+            ['config' => ['policy' => ['my-list' => ['block-scope' => 'install']]]],
+        ];
         yield 'unset policy.advisories.block leaves siblings' => [
             ['config' => ['policy' => ['advisories' => ['block' => false, 'audit' => 'fail']]]],
             ['setting-key' => 'policy.advisories.block', '--unset' => true],
@@ -542,6 +547,17 @@ class ConfigCommandTest extends TestCase
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'config', 'setting-key' => 'policy.malware.block-scope', 'setting-value' => ['bogus']]);
+    }
+
+    public function testConfigThrowsForInvalidCustomPolicyBlockScope(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('must be one of: all, update, install');
+
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'policy.my-list.block-scope', 'setting-value' => ['bogus']]);
     }
 
     public function testConfigThrowsForInvalidPolicyIgnoreSeverity(): void
