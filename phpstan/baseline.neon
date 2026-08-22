@@ -7,11 +7,11 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 9
+			count: 11
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
 
 		-
-			message: "#^Method Composer\\\\Autoload\\\\AutoloadGenerator\\:\\:parseAutoloads\\(\\) should return array\\{psr\\-0\\: array\\<string, array\\<string\\>\\>, psr\\-4\\: array\\<string, array\\<string\\>\\>, classmap\\: array\\<int, string\\>, files\\: array\\<string, string\\>, exclude\\-from\\-classmap\\: array\\<int, string\\>\\} but returns array\\{psr\\-0\\: array\\<int\\|string, array\\<string\\>\\|string\\>, psr\\-4\\: array\\<int\\|string, array\\<string\\>\\|string\\>, classmap\\: array\\<int\\|string, array\\<string\\>\\|string\\>, files\\: array\\<int\\|string, array\\<string\\>\\|string\\>, exclude\\-from\\-classmap\\: array\\<int\\|string, array\\<string\\>\\|string\\>\\}\\.$#"
+			message: "#^Method Composer\\\\Autoload\\\\AutoloadGenerator\\:\\:parseAutoloads\\(\\) should return array\\{psr\\-0\\: array\\<string, array\\<string\\>\\>, psr\\-4\\: array\\<string, array\\<string\\>\\>, moto\\: array\\<string, array\\<string\\>\\>, classmap\\: array\\<int, string\\>, files\\: array\\<string, string\\>, exclude\\-from\\-classmap\\: array\\<int, string\\>\\} but returns array\\{psr\\-0\\: array\\<int\\|string, array\\<string\\>\\|string\\>, psr\\-4\\: array\\<int\\|string, array\\<string\\>\\|string\\>, moto\\: array\\<int\\|string, array\\<string\\>\\|string\\>, classmap\\: array\\<int\\|string, array\\<string\\>\\|string\\>, files\\: array\\<int\\|string, array\\<string\\>\\|string\\>, exclude\\-from\\-classmap\\: array\\<int\\|string, array\\<string\\>\\|string\\>\\}\\.$#"
 			count: 1
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
 
@@ -102,7 +102,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
-			count: 4
+			count: 6
 			path: ../src/Composer/Autoload/ClassLoader.php
 
 		-
