@@ -441,6 +441,11 @@ class ClassLoader
      */
     public function findFile($class)
     {
+        // PHP can ask for an empty class name, e.g. via is_callable('\::method')
+        if ('' === $class) {
+            return false;
+        }
+
         // class map lookup
         if (isset($this->classMap[$class])) {
             return $this->classMap[$class];
