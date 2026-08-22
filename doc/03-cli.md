@@ -1102,7 +1102,8 @@ performance.
 * **--strict-psr:** Return a failed exit code (1) if PSR-4 or PSR-0 mapping errors
   are present in the current project (dependencies excluded). Requires `--optimize` to work.
 * **--strict-ambiguous:** Return a failed exit code (2) if the same class is found
-  in multiple files. Requires `--optimize` to work.
+  in multiple files. It also checks if files or folders exist with different case variants that
+  cause issues on case-insensitive filesystems. Requires `--optimize` to work.
 
 ## clear-cache / clearcache / cc
 
