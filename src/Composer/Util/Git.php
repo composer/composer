@@ -81,7 +81,7 @@ class Git
             $callables[] = static function (string $url) use ($cmd): array {
                 $map = [
                     '%url%' => $url,
-                    '%sanitizedUrl%' => Preg::replace('{://([^@]+?):(.+?)@}', '://', $url),
+                    '%sanitizedUrl%' => Url::stripCredentials($url),
                 ];
 
                 return array_map(static function ($value) use ($map): string {
@@ -573,10 +573,13 @@ class Git
                 $commands = [
                     ['git', 'remote', 'set-url', 'origin', '--', '%url%'],
                     ['git', 'remote', 'show', 'origin'],
-                    ['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%'],
                 ];
 
-                $this->runCommands($commands, $url, $dir, false, $output);
+                try {
+                    $this->runCommands($commands, $url, $dir, false, $output);
+                } finally {
+                    $this->runCommands([['git', 'remote', 'set-url', 'origin', '--', '%sanitizedUrl%']], $url, $dir);
+                }
             }
 
             $lines = $this->process->splitLines($output);
