@@ -170,6 +170,53 @@ class UrlTest extends TestCase
             array('abc***@example.org:123/', 'abcdefghijklmnop@example.org:123/'),
             array('example.org/foo/bar?access_token=***', 'example.org/foo/bar?access_token=abcdef'),
             array('example.org/foo/bar?foo=bar&access_token=***', 'example.org/foo/bar?foo=bar&access_token=abcdef'),
+            // anywhere in the string, as URLs usually reach sanitize() embedded in a longer message
+            array('Failed to execute git clone --mirror -- https://foo:***@example.org/private/repo.git /cache/repo', 'Failed to execute git clone --mirror -- https://foo:bar@example.org/private/repo.git /cache/repo'),
+            array('tried https://foo:***@example.org/a and https://baz:***@example.com/b', 'tried https://foo:bar@example.org/a and https://baz:qux@example.com/b'),
+            array("fatal: unable to access 'https://gitlab-ci-token:***@example.org/g/r.git/'", "fatal: unable to access 'https://gitlab-ci-token:realtoken@example.org/g/r.git/'"),
+            // passwords/usernames containing @ are masked up to the last @ of the authority
+            array('https://foo:***@example.org/repo.git', 'https://foo:bar@baz@example.org/repo.git'),
+            array('https://use***:***@example.org/repo.git', 'https://user@corp.example:realtoken@example.org/repo.git'),
+            // empty user slot, e.g. https://:TOKEN@host
+            array('https://:***@example.org/', 'https://:realtoken@example.org/'),
+            // schemes containing + . -
+            array('git+ssh://foo:***@example.org/repo.git', 'git+ssh://foo:bar@example.org/repo.git'),
+            array('svn+ssh://foo:***@example.org/repo', 'svn+ssh://foo:bar@example.org/repo'),
+            // @ without credentials in front of it is left alone
+            array("fatal: unable to access 'https://example.org/private/repo.git/': Could not resolve host", "fatal: unable to access 'https://example.org/private/repo.git/': Could not resolve host"),
+            array('https://example.org/foo/bar@2x.png', 'https://example.org/foo/bar@2x.png'),
+        );
+    }
+
+    /**
+     * @dataProvider stripCredentialsProvider
+     *
+     * @param string $expected
+     * @param string $url
+     *
+     * @return void
+     */
+    public function testStripCredentials($expected, $url)
+    {
+        $this->assertSame($expected, Url::stripCredentials($url));
+    }
+
+    /**
+     * @return array<array{string, string}>
+     */
+    public static function stripCredentialsProvider()
+    {
+        return array(
+            array('https://example.org/repo.git', 'https://user:pass@example.org/repo.git'),
+            // a bare token in the user slot is a credential too, and has no colon to key off
+            array('https://github.com/acme/repo.git', 'https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB@github.com/acme/repo.git'),
+            array('https://example.org/repo.git', 'https://user:pa@ss@example.org/repo.git'),
+            array('https://example.org:8080/repo.git', 'https://user:pass@example.org:8080/repo.git'),
+            array('https://example.org/repo.git?ref=a@b', 'https://user:pass@example.org/repo.git?ref=a@b'),
+            // nothing to strip
+            array('https://example.org/repo.git', 'https://example.org/repo.git'),
+            array('https://example.org/@scope/repo.git', 'https://example.org/@scope/repo.git'),
+            array('git@example.org:acme/repo.git', 'git@example.org:acme/repo.git'),
         );
     }
 }

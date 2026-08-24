@@ -121,7 +121,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                     ProcessExecutor::escape($url),
                     ProcessExecutor::escape($path),
                     ProcessExecutor::escape($cachePath),
-                    ProcessExecutor::escape(Preg::replace('{://([^@]+?):(.+?)@}', '://', $url)),
+                    ProcessExecutor::escape(Url::stripCredentials($url)),
                 ),
                 $command
             );
@@ -179,7 +179,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                     ProcessExecutor::escape($url),
                     ProcessExecutor::escape($ref.'^{commit}'),
                     ProcessExecutor::escape($cachePath),
-                    ProcessExecutor::escape(Preg::replace('{://([^@]+?):(.+?)@}', '://', $url)),
+                    ProcessExecutor::escape(Url::stripCredentials($url)),
                 ),
                 $command
             );
