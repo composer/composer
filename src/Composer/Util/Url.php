@@ -104,7 +104,9 @@ class Url
             && !in_array($origin, $config->get('gitlab-domains'))
         ) {
             foreach ($config->get('gitlab-domains') as $gitlabDomain) {
-                if (0 === strpos($gitlabDomain, $origin)) {
+                // configured domains may spell out a port the URL omits, see GitLab::authorizeOAuth
+                $bcDomain = Preg::replace('{^([^/]+):\d+}', '$1', $gitlabDomain);
+                if ($bcDomain === $origin || 0 === strpos($bcDomain, $origin.'/')) {
                     return $gitlabDomain;
                 }
             }
