@@ -143,6 +143,12 @@ class JsonConfigSourceTest extends TestCase
                 },
                 [['type' => 'path', 'url' => '../b'], ['name' => 'foo', 'type' => 'vcs', 'url' => 'https://new.test']],
             ],
+            'set-url by position' => [
+                static function (JsonConfigSource $source): void {
+                    $source->setRepositoryUrl('1', 'https://updated.test');
+                },
+                [['name' => 'foo', 'type' => 'vcs', 'url' => 'https://foo.test'], ['type' => 'path', 'url' => 'https://updated.test']],
+            ],
             'add by position replaces in place' => [
                 static function (JsonConfigSource $source): void {
                     $source->addRepository('1', ['type' => 'path', 'url' => '../new']);

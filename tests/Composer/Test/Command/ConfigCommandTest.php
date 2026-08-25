@@ -506,6 +506,28 @@ class ConfigCommandTest extends TestCase
         $appTester->run(['command' => 'config', '--file' => 'alt.composer.json', '--global' => true]);
     }
 
+    public function testConfigThrowsWhenANamedRepositoryIsAddressedByPosition(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('The repository at position 0 is named "foo", address it by that name instead.');
+
+        $this->initTempComposer(['repositories' => [['name' => 'foo', 'type' => 'vcs', 'url' => 'https://example.org']]]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'repositories.0', 'setting-value' => ['vcs', 'https://other.org']]);
+    }
+
+    public function testConfigThrowsWhenUnsettingANamedRepositoryByPosition(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('The repository at position 0 is named "foo", address it by that name instead.');
+
+        $this->initTempComposer(['repositories' => [['name' => 'foo', 'type' => 'vcs', 'url' => 'https://example.org']]]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'repositories.0', '--unset' => true]);
+    }
+
     public function testConfigThrowsForInvalidSeverity(): void
     {
         $this->expectException(RuntimeException::class);

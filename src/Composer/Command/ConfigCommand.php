@@ -870,6 +870,8 @@ EOT
 
         // handle repositories
         if (Preg::isMatchStrictGroups('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
+            $this->validateRepositoryKey($matches[1]);
+
             if ($input->getOption('unset')) {
                 $this->configSource->removeRepository($matches[1]);
 

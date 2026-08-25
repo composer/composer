@@ -901,16 +901,17 @@ If your repository requires more configuration options, you can instead pass its
 php composer.phar config repositories.foo '{"type": "vcs", "url": "http://svn.example.org/my-project/", "trunk-path": "master"}'
 ```
 
-Repositories which have no `name` can be addressed by their position in the list instead, which is
-what `composer repo list` shows in brackets. The repository at that position is then replaced in
-place rather than a new one being added:
+A numeric key addresses a repository by its position in the `repositories` array of the file being
+modified, replacing the entry at that position rather than adding a new one:
 
 ```shell
 php composer.phar config repositories.0 vcs https://github.com/foo/bar
 ```
 
-Positions shift as repositories are added and removed, so giving each repository a `name` and using
-that is more robust.
+This is discouraged and warns, because positions shift as repositories are added or removed, and
+they do not match the numbers `composer repo list` displays once the global config defines
+repositories of its own. Addressing a repository which has a `name` by its position is an error —
+use the name. Give each repository a `name` and you never have to think about positions.
 
 ### Modifying Extra Values
 
@@ -948,8 +949,9 @@ repo [options] enable packagist.org
 repo [options] disable packagist.org
 ```
 
-`[repo-name]` is the repository's `name`. Repositories which do not have one can be addressed by
-their position in the list instead, as shown in brackets by `repo list`.
+`[repo-name]` is the repository's `name`. A repository without one can be addressed by its position
+in the `repositories` array of the file being modified, but this is discouraged and warns — see
+[Modifying Repositories](#modifying-repositories).
 
 ### Options
 
@@ -957,7 +959,7 @@ their position in the list instead, as shown in brackets by `repo list`.
 - **--file (-f):** to modify a specific file instead of composer.json.
 - **--append:** to add a repository with lower priority (by default repositories are prepended and have thus higher priority than existing ones).
 - **--before [name]:** to insert the new repository before an existing repository named `[name]`.
-- **--after [name]:** to insert the new repository after an existing repository named `[name]`. The `[name]` must match an existing repository name or position.
+- **--after [name]:** to insert the new repository after an existing repository named `[name]`. The `[name]` must match an existing repository name, or its position.
 
 ### Examples
 

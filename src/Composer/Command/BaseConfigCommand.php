@@ -81,6 +81,45 @@ abstract class BaseConfigCommand extends BaseCommand
     }
 
     /**
+     * Repositories are meant to be addressed by name. A numeric key falls back to the position of
+     * the entry in the repositories list, which is unreliable: positions shift as repositories are
+     * added or removed, and they do not line up with what `composer repo list` displays once the
+     * global config defines repositories of its own. So warn about it, and refuse it outright when
+     * it would silently act on a repository which does have a name.
+     */
+    protected function validateRepositoryKey(string $name): void
+    {
+        if (!ctype_digit($name) || !$this->configFile->exists()) {
+            return;
+        }
+
+        $repositories = $this->configFile->read()['repositories'] ?? [];
+
+        // in the object format a numeric key is a name rather than a position
+        if (!is_array($repositories) || !array_is_list($repositories)) {
+            return;
+        }
+
+        foreach ($repositories as $repository) {
+            if (is_array($repository) && ($repository['name'] ?? null) === $name) {
+                return;
+            }
+        }
+
+        $target = $repositories[(int) $name] ?? null;
+
+        if (is_array($target) && isset($target['name']) && is_string($target['name'])) {
+            throw new \RuntimeException(sprintf(
+                'The repository at position %s is named "%s", address it by that name instead.',
+                $name,
+                $target['name']
+            ));
+        }
+
+        $this->getIO()->writeError('<warning>Addressing a repository by its position ("'.$name.'") is unreliable as positions shift when repositories are added or removed, and do not match what "composer repo list" shows when the global config defines repositories. Give the repository a "name" and use that instead.</warning>');
+    }
+
+    /**
      * Get the local composer.json, global config.json, or the file passed by the user
      */
     protected function getComposerConfigFile(InputInterface $input, Config $config): string

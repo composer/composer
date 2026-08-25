@@ -122,11 +122,16 @@ EOT
                         throw new \RuntimeException('Cannot use --before/--after with boolean repository values');
                     }
 
-                    $this->configSource->insertRepository((string) $name, $repoConfig, $before ?? $after, $after !== null ? 1 : 0);
+                    // the ordering option is what addresses an existing repository here, the name
+                    // argument only names the new one
+                    $reference = (string) ($before ?? $after);
+                    $this->validateRepositoryKey($reference);
+                    $this->configSource->insertRepository((string) $name, $repoConfig, $reference, $after !== null ? 1 : 0);
 
                     return 0;
                 }
 
+                $this->validateRepositoryKey((string) $name);
                 $this->configSource->addRepository((string) $name, $repoConfig, (bool) $input->getOption('append'));
 
                 return 0;
@@ -137,6 +142,7 @@ EOT
                 if ($name === null) {
                     throw new \RuntimeException('You must pass the repository name to remove.');
                 }
+                $this->validateRepositoryKey((string) $name);
                 $this->configSource->removeRepository((string) $name);
                 if (in_array($name, ['packagist', 'packagist.org'], true)) {
                     $this->configSource->addRepository('packagist.org', false);
@@ -150,6 +156,7 @@ EOT
                     throw new \RuntimeException('Usage: composer repo set-url <name> <new-url>');
                 }
 
+                $this->validateRepositoryKey($name);
                 $this->configSource->setRepositoryUrl($name, $arg1);
 
                 return 0;

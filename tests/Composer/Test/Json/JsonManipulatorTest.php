@@ -2615,6 +2615,59 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddRepositoryByNumericKeyInObjectFormatReplacesTheNamedEntry(): void
+    {
+        // in the object format a numeric key is a name, so it must be replaced rather than duplicated
+        $manipulator = new JsonManipulator('{
+    "repositories": {
+        "foo": {
+            "type": "composer",
+            "url": "https://foo.test"
+        },
+        "1": {
+            "type": "path",
+            "url": "../one"
+        },
+        "bar": {
+            "type": "composer",
+            "url": "https://bar.test"
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addRepository('1', ['type' => 'composer', 'url' => 'https://replaced.test'], false));
+        self::assertSame(
+            ['https://replaced.test', 'https://foo.test', 'https://bar.test'],
+            array_column(JsonFile::parseJson($manipulator->getContents())['repositories'], 'url')
+        );
+    }
+
+    public function testInsertRepositoryDoesNotRemoveTheEntryAtTheNamesPosition(): void
+    {
+        // --before/--after already state the position, so a numeric name only names the new entry
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "name": "a",
+            "type": "path",
+            "url": "../a"
+        },
+        {
+            "name": "b",
+            "type": "path",
+            "url": "../b"
+        }
+    ]
+}
+');
+
+        self::assertTrue($manipulator->insertRepository('0', ['type' => 'vcs', 'url' => 'https://moved.test'], 'b', 0));
+        self::assertSame(
+            ['../a', 'https://moved.test', '../b'],
+            array_column(JsonFile::parseJson($manipulator->getContents())['repositories'], 'url')
+        );
+    }
+
     public function testSetRepositoryUrlByNumericIndex(): void
     {
         $manipulator = new JsonManipulator(self::REPOSITORY_LIST);

@@ -447,6 +447,59 @@ class RepositoryCommandTest extends TestCase
         self::assertSame('https://example.org/new', $url, 'The foo repository should have been updated to the new URL');
     }
 
+    /**
+     * @dataProvider provideAddressingANamedRepositoryByPosition
+     * @param array<string, mixed> $command
+     */
+    public function testAddressingANamedRepositoryByPositionFails(array $command, string $expected): void
+    {
+        $this->initTempComposer(['repositories' => [
+            ['name' => 'a', 'type' => 'path', 'url' => '../a'],
+            ['name' => 'b', 'type' => 'path', 'url' => '../b'],
+            ['name' => 'c', 'type' => 'composer', 'url' => 'https://c.test'],
+        ]], [], [], false);
+
+        $before = (string) file_get_contents('composer.json');
+
+        $appTester = $this->getApplicationTester();
+
+        try {
+            $appTester->run(['command' => 'repo'] + $command);
+            self::fail('Expected a RuntimeException');
+        } catch (RuntimeException $e) {
+            self::assertStringContainsString($expected, $e->getMessage());
+        }
+
+        // the file must be left alone rather than half-rewritten
+        self::assertSame($before, file_get_contents('composer.json'));
+    }
+
+    /**
+     * @return array<string, array{array<string, mixed>, string}>
+     */
+    public static function provideAddressingANamedRepositoryByPosition(): array
+    {
+        return [
+            // https://github.com/composer/composer/pull/13025#discussion -- this used to delete repository "a"
+            'add before a position' => [
+                ['action' => 'add', 'name' => '0', 'arg1' => 'vcs', 'arg2' => 'https://moved.test', '--before' => '1'],
+                'The repository at position 1 is named "b"',
+            ],
+            'add' => [
+                ['action' => 'add', 'name' => '0', 'arg1' => 'vcs', 'arg2' => 'https://moved.test'],
+                'The repository at position 0 is named "a"',
+            ],
+            'remove' => [
+                ['action' => 'remove', 'name' => '2'],
+                'The repository at position 2 is named "c"',
+            ],
+            'set-url' => [
+                ['action' => 'set-url', 'name' => '1', 'arg1' => 'https://new.test'],
+                'The repository at position 1 is named "b"',
+            ],
+        ];
+    }
+
     public function testSetUrlByPosition(): void
     {
         $this->initTempComposer(['repositories' => [

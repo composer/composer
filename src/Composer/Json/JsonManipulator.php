@@ -245,7 +245,16 @@ class JsonManipulator
         $objectRegex = '{'.self::DEFINES.'^(?P<start>\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?"repositories"\s*:\s*\{\s*(?:(?&string)\s*:\s*(?&json)\s*,\s*)*?' . preg_quote(JsonFile::encode($repositoryIndex)) . '\s*:\s*)(?P<repository>(?&object))(?P<end>.*)}sx';
         $matches = null;
 
-        if (($listRegex !== null && Preg::isMatch($listRegex, $this->contents, $matches)) || Preg::isMatch($objectRegex, $this->contents, $matches)) {
+        try {
+            $found = ($listRegex !== null && Preg::isMatch($listRegex, $this->contents, $matches)) || Preg::isMatch($objectRegex, $this->contents, $matches);
+        } catch (\RuntimeException $e) {
+            if ($e->getCode() === PREG_BACKTRACK_LIMIT_ERROR) {
+                return false;
+            }
+            throw $e;
+        }
+
+        if ($found) {
             assert(isset($matches['start']) && is_string($matches['start']));
             assert(isset($matches['repository']) && is_string($matches['repository']));
             assert(isset($matches['end']) && is_string($matches['end']));
@@ -272,7 +281,11 @@ class JsonManipulator
      */
     public function insertRepository(string $name, $config, string $referenceName, int $offset = 0): bool
     {
-        if ("" !== $name && !$this->doRemoveRepository($name)) {
+        // the position is stated by $referenceName here, so $name only ever names the new
+        // repository and must not be resolved to a position of its own
+        $key = "" !== $name ? $this->findRepositoryKey($name, false) : null;
+
+        if ($key !== null && !$this->doRemoveRepositoryAt($key)) {
             return false;
         }
 

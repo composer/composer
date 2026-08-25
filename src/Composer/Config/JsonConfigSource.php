@@ -158,8 +158,9 @@ class JsonConfigSource implements ConfigSourceInterface
                 $config['repositories'] = $list;
             }
 
-            // ensure uniqueness by removing any existing entry which uses the same name or position
-            $index = self::findRepositoryIndex($config['repositories'] ?? [], $name);
+            // the position is stated by $referenceName here, so $name only ever names the new
+            // repository and must not be resolved to a position of its own
+            $index = self::findRepositoryIndex($config['repositories'] ?? [], $name, false);
 
             if ($index !== null) {
                 array_splice($config['repositories'], $index, 1);
@@ -185,18 +186,17 @@ class JsonConfigSource implements ConfigSourceInterface
     public function setRepositoryUrl(string $name, string $url): void
     {
         $this->manipulateJson('setRepositoryUrl', static function (&$config, $name, $url): void {
-            foreach ($config['repositories'] ?? [] as $index => $repository) {
-                if ($name === $index) {
-                    $config['repositories'][$index]['url'] = $url;
+            // object format keys are names, lists are matched by name or position
+            if (isset($config['repositories'][$name]) && !array_is_list($config['repositories'])) {
+                $config['repositories'][$name]['url'] = $url;
 
-                    return;
-                }
+                return;
+            }
 
-                if ($name === ($repository['name'] ?? null)) {
-                    $config['repositories'][$index]['url'] = $url;
+            $index = self::findRepositoryIndex($config['repositories'] ?? [], $name);
 
-                    return;
-                }
+            if ($index !== null) {
+                $config['repositories'][$index]['url'] = $url;
             }
         }, $name, $url);
     }
@@ -228,7 +228,7 @@ class JsonConfigSource implements ConfigSourceInterface
      *
      * @param array<int|string, mixed> $repositories
      */
-    private static function findRepositoryIndex(array $repositories, string $name): ?int
+    private static function findRepositoryIndex(array $repositories, string $name, bool $allowIndex = true): ?int
     {
         if (!array_is_list($repositories)) {
             return null;
@@ -241,7 +241,7 @@ class JsonConfigSource implements ConfigSourceInterface
         }
 
         // names take precedence, so a position is only matched once nothing matched by name
-        return ctype_digit($name) && isset($repositories[(int) $name]) ? (int) $name : null;
+        return $allowIndex && ctype_digit($name) && isset($repositories[(int) $name]) ? (int) $name : null;
     }
 
     /**
