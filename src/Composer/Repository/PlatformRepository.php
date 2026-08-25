@@ -234,7 +234,7 @@ class PlatformRepository extends ArrayRepository
                     $info = $this->runtime->getExtensionInfo($name);
 
                     // SSL Version => OpenSSL/1.0.1t
-                    if (Preg::isMatchStrictGroups('{^SSL Version => (?<library>[^/]+)/(?<version>.+)$}im', $info, $sslMatches)) {
+                    if (Preg::isMatchStrictGroups('{^SSL Version => (?<library>[^\r\n/]+)/(?<version>[^\r\n]+)$}im', $info, $sslMatches)) {
                         $library = strtolower($sslMatches['library']);
                         if ($library === 'openssl') {
                             $parsedVersion = Version::parseOpenssl($sslMatches['version'], $isFips);

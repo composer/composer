@@ -253,6 +253,21 @@ curl.cainfo => no value => no value',
                 ],
                 [['curl_version', [], ['version' => '2.0.0']]],
             ],
+            'curl: Schannel without version' => [
+                'curl',
+                '
+curl
+
+SSL Version => Schannel
+ZLib Version => 1.3.2
+libSSH Version => libssh2/1.11.1',
+                [
+                    'lib-curl' => '8.16.0',
+                    'lib-curl-zlib' => '1.3.2',
+                    'lib-curl-libssh2' => '1.11.1',
+                ],
+                [['curl_version', [], ['version' => '8.16.0']]],
+            ],
 
             'curl: OpenSSL fips version' => [
                 'curl',
