@@ -18,6 +18,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
+use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\StabilityFilter;
 use Composer\Pcre\Preg;
@@ -132,6 +133,15 @@ class PoolBuilder
      * @var array<string, true>
      */
     private $pathRepoUnlocked = [];
+
+    /**
+     * Loaded packages from auto-unlocked path repositories, keyed like $this->packages
+     *
+     * Indexed on load to avoid rescanning every loaded package each time one gets unlocked
+     *
+     * @var array<int, BasePackage>
+     */
+    private $loadedPathRepoPackages = [];
 
     /**
      * Keeps a list of dependencies which are root requirements, and as such
@@ -347,6 +357,7 @@ class PoolBuilder
         $this->loadedPackages = [];
         $this->loadedPerRepo = [];
         $this->packages = [];
+        $this->loadedPathRepoPackages = [];
         $this->unacceptableFixedOrLockedPackages = [];
         $this->maxExtendedReqs = [];
         $this->skippedLoad = [];
@@ -482,6 +493,12 @@ class PoolBuilder
         }
 
         $name = $package->getName();
+
+        // aliases forward getRequires() to the package they alias, so indexing them too would only cause
+        // the same requires to be re-registered twice in unlockPackage()
+        if (!$package instanceof AliasPackage && isset($this->pathRepoUnlocked[$name])) {
+            $this->loadedPathRepoPackages[$index] = $package;
+        }
 
         // we're simply setting the root references on all versions for a name here and rely on the solver to pick the
         // right version. It'd be more work to figure out which versions and which aliases of those versions this may
@@ -719,39 +736,18 @@ class PoolBuilder
 
         unset($this->skippedLoad[$name], $this->loadedPackages[$name], $this->maxExtendedReqs[$name], $this->pathRepoUnlocked[$name]);
 
-        // symlinked path repo packages are auto-unlocked and thus never end up in getFixedOrLockedPackages(), but they
-        // are already loaded in the pool, so their requirements on this now-unlocked package must be re-registered too,
-        // otherwise the version range they need may never be loaded back into the pool (see #13024)
-        if (\count($this->pathRepoUnlocked) > 0) {
-            // collected up front as the loop further below unlocks them from the request
-            $unlockedReplaces = [];
-            foreach ($request->getLockedPackages() as $lockedPackage) {
-                if (!($lockedPackage instanceof AliasPackage) && $lockedPackage->getName() === $name) {
-                    foreach ($lockedPackage->getReplaces() as $replace) {
-                        $unlockedReplaces[] = $replace;
-                    }
-                }
-            }
-
-            foreach ($this->packages as $loadedPackage) {
-                if (!isset($this->pathRepoUnlocked[$loadedPackage->getName()])) {
-                    continue;
-                }
-
-                $requires = $loadedPackage->getRequires();
-                if (isset($requires[$name])) {
-                    $this->markPackageNameForLoading($request, $name, $requires[$name]->getConstraint());
-                }
-
-                // and if the unlocked package replaces something the path repo package requires, load that replaced
-                // package too in case an update to the unlocked package removes the replacement
-                foreach ($unlockedReplaces as $replace) {
-                    if (isset($requires[$replace->getTarget()], $this->skippedLoad[$replace->getTarget()])) {
-                        $this->unlockPackage($request, $repositories, $replace->getTarget());
-                        // this package is in $requires so no need to call markPackageNameForLoadingIfRequired
-                        $this->markPackageNameForLoading($request, $replace->getTarget(), $replace->getConstraint());
-                    }
-                }
+        // Symlinked path repo packages are auto-unlocked, so they are absent from getFixedOrLockedPackages() and the
+        // loop below cannot see them. They are loaded in the pool though, and their constraint on this name was dropped
+        // when they were loaded because the locked version already satisfied it, so re-register it now or the versions
+        // they need may never be loaded back into the pool. See #13024.
+        //
+        // Unlike the loop below this must run even when no locked package carries this name itself, as the name may be
+        // present in the lock file only through a replace. It must also stay below the unset() above, which is what
+        // stops it from recursing endlessly in that case.
+        foreach ($this->loadedPathRepoPackages as $pathRepoPackage) {
+            $requires = $pathRepoPackage->getRequires();
+            if (isset($requires[$name])) {
+                $this->markPackageNameForLoading($request, $name, $requires[$name]->getConstraint());
             }
         }
 
@@ -778,16 +774,34 @@ class PoolBuilder
                                 $this->markPackageNameForLoading($request, $lockedPackage->getName(), $requires[$lockedPackage->getName()]->getConstraint());
                             }
 
-                            foreach ($lockedPackage->getReplaces() as $replace) {
-                                if (isset($requires[$replace->getTarget()], $this->skippedLoad[$replace->getTarget()])) {
-                                    $this->unlockPackage($request, $repositories, $replace->getTarget());
-                                    // this package is in $requires so no need to call markPackageNameForLoadingIfRequired
-                                    $this->markPackageNameForLoading($request, $replace->getTarget(), $replace->getConstraint());
-                                }
-                            }
+                            $this->loadReplacedPackages($request, $repositories, $lockedPackage, $requires);
                         }
                     }
+
+                    // path repo packages had their own constraint re-registered above already, but they may equally
+                    // require a package which the one being unlocked replaces
+                    foreach ($this->loadedPathRepoPackages as $pathRepoPackage) {
+                        $this->loadReplacedPackages($request, $repositories, $lockedPackage, $pathRepoPackage->getRequires());
+                    }
                 }
+            }
+        }
+    }
+
+    /**
+     * Ensures packages replaced by the one being unlocked are loaded, in case an update to it drops the replacement
+     *
+     * @param RepositoryInterface[] $repositories
+     * @param array<string, Link>   $requires requires of a package which will not be reloaded, and which therefore
+     *                                        had its constraints dropped while $unlockedPackage was still locked
+     */
+    private function loadReplacedPackages(Request $request, array $repositories, BasePackage $unlockedPackage, array $requires): void
+    {
+        foreach ($unlockedPackage->getReplaces() as $replace) {
+            if (isset($requires[$replace->getTarget()], $this->skippedLoad[$replace->getTarget()])) {
+                $this->unlockPackage($request, $repositories, $replace->getTarget());
+                // this package is in $requires so no need to call markPackageNameForLoadingIfRequired
+                $this->markPackageNameForLoading($request, $replace->getTarget(), $replace->getConstraint());
             }
         }
     }
@@ -815,7 +829,7 @@ class PoolBuilder
         $repoIndex = array_search($package->getRepository(), $repositories, true);
 
         unset($this->loadedPerRepo[$repoIndex][$package->getName()][$package->getVersion()]);
-        unset($this->packages[$index]);
+        unset($this->packages[$index], $this->loadedPathRepoPackages[$index]);
         if (isset($this->aliasMap[spl_object_id($package)])) {
             foreach ($this->aliasMap[spl_object_id($package)] as $aliasIndex => $aliasPackage) {
                 unset($this->loadedPerRepo[$repoIndex][$aliasPackage->getName()][$aliasPackage->getVersion()]);
