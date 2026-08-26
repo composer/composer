@@ -284,7 +284,7 @@ class Git
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             try {
                 $commandCallable = function ($url) {
-                    $sanitizedUrl = Preg::replace('{://([^@]+?):(.+?)@}', '://', $url);
+                    $sanitizedUrl = Url::stripCredentials($url);
 
                     return sprintf('git remote set-url origin -- %s && git remote update --prune origin && git remote set-url origin -- %s && git gc --auto', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
                 };

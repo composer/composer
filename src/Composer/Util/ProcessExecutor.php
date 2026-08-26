@@ -447,14 +447,7 @@ class ProcessExecutor
             return;
         }
 
-        $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s@]+)(?::(?P<password>[^@\s/]+))?@}i', function ($m) {
-            $user = Url::sanitizeUsername($m['user']);
-            if (isset($m['password']) && $m['password'] !== '') {
-                return '://'.$user.':***@';
-            }
-
-            return '://'.$user.'@';
-        }, $command);
+        $safeCommand = Url::sanitize($command);
         $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
         $this->io->writeError('Executing'.($async ? ' async' : '').' command ('.($cwd ?: 'CWD').'): '.$safeCommand);
     }
