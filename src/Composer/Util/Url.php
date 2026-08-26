@@ -133,7 +133,9 @@ class Url
         // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
         $url = Preg::replace('{([&?]access_token=)[^&]+}', '$1***', $url);
 
-        $url = Preg::replaceCallback('{^(?P<prefix>[a-z0-9]+://)?(?P<user>[^:/\s@]+)(?::(?P<password>[^@\s/]+))?@}i', static function ($m): string {
+        // matches every scheme://user:pass@ in the string as URLs are usually embedded in a longer
+        // message, plus a scheme-less one at the very start for URLs passed in on their own
+        $url = Preg::replaceCallback('{(?:(?P<prefix>[a-z0-9][a-z0-9+.-]*://)|\A)(?P<user>[^:/\s?#]*)(?::(?P<password>[^\s/?#]+))?@}i', static function ($m): string {
             $user = self::sanitizeUsername($m['user']);
             if (($m['password'] ?? '') !== '') {
                 return $m['prefix'].$user.':***@';
@@ -143,6 +145,16 @@ class Url
         }, $url);
 
         return $url;
+    }
+
+    /**
+     * Removes the credentials from a URL entirely, for URLs which get persisted somewhere (e.g. in a git remote)
+     *
+     * Unlike sanitize() this also drops the username, as a bare token in the user slot is a credential too.
+     */
+    public static function stripCredentials(string $url): string
+    {
+        return Preg::replace('{://[^/\s?#]+@}', '://', $url);
     }
 
     /**

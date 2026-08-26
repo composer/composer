@@ -167,6 +167,45 @@ class UrlTest extends TestCase
             ['ghp***@github.com/acme/repo', 'ghp_1234567890abcdefghijklmnopqrstuvwxyzAB@github.com/acme/repo'],
             ['10a***@example.org', '10a8f08e8d7b7b9@example.org'],
             ['abc***@example.org:123/', 'abcdefghijklmnop@example.org:123/'],
+            // anywhere in the string, as URLs usually reach sanitize() embedded in a longer message
+            ['Failed to execute git clone --mirror -- https://foo:***@example.org/private/repo.git /cache/repo', 'Failed to execute git clone --mirror -- https://foo:bar@example.org/private/repo.git /cache/repo'],
+            ['tried https://foo:***@example.org/a and https://baz:***@example.com/b', 'tried https://foo:bar@example.org/a and https://baz:qux@example.com/b'],
+            ["fatal: unable to access 'https://gitlab-ci-token:***@example.org/g/r.git/'", "fatal: unable to access 'https://gitlab-ci-token:realtoken@example.org/g/r.git/'"],
+            // passwords/usernames containing @ are masked up to the last @ of the authority
+            ['https://foo:***@example.org/repo.git', 'https://foo:bar@baz@example.org/repo.git'],
+            ['https://use***:***@example.org/repo.git', 'https://user@corp.example:realtoken@example.org/repo.git'],
+            // empty user slot, e.g. https://:TOKEN@host
+            ['https://:***@example.org/', 'https://:realtoken@example.org/'],
+            // schemes containing + . -
+            ['git+ssh://foo:***@example.org/repo.git', 'git+ssh://foo:bar@example.org/repo.git'],
+            ['svn+ssh://foo:***@example.org/repo', 'svn+ssh://foo:bar@example.org/repo'],
+            // @ without credentials in front of it is left alone
+            ["fatal: unable to access 'https://example.org/private/repo.git/': Could not resolve host", "fatal: unable to access 'https://example.org/private/repo.git/': Could not resolve host"],
+            ['https://example.org/foo/bar@2x.png', 'https://example.org/foo/bar@2x.png'],
+        ];
+    }
+
+    /**
+     * @dataProvider stripCredentialsProvider
+     */
+    public function testStripCredentials(string $expected, string $url): void
+    {
+        self::assertSame($expected, Url::stripCredentials($url));
+    }
+
+    public static function stripCredentialsProvider(): array
+    {
+        return [
+            ['https://example.org/repo.git', 'https://user:pass@example.org/repo.git'],
+            // a bare token in the user slot is a credential too, and has no colon to key off
+            ['https://github.com/acme/repo.git', 'https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB@github.com/acme/repo.git'],
+            ['https://example.org/repo.git', 'https://user:pa@ss@example.org/repo.git'],
+            ['https://example.org:8080/repo.git', 'https://user:pass@example.org:8080/repo.git'],
+            ['https://example.org/repo.git?ref=a@b', 'https://user:pass@example.org/repo.git?ref=a@b'],
+            // nothing to strip
+            ['https://example.org/repo.git', 'https://example.org/repo.git'],
+            ['https://example.org/@scope/repo.git', 'https://example.org/@scope/repo.git'],
+            ['git@example.org:acme/repo.git', 'git@example.org:acme/repo.git'],
         ];
     }
 }
