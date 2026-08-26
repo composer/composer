@@ -426,7 +426,10 @@ EOF;
             }
 
             if (null === $suffix) {
-                $suffix = $locker !== null && $locker->isLocked() ? $locker->getLockData()['content-hash'] : bin2hex(random_bytes(16));
+                // a lock file with an unresolved merge conflict has its content-hash replaced by a
+                // human readable message, which would end up inside the autoloader class names
+                $contentHash = $locker !== null && $locker->isLocked() ? $locker->getLockData()['content-hash'] : null;
+                $suffix = is_string($contentHash) && Preg::isMatch('{^[a-f0-9]+$}', $contentHash) ? $contentHash : bin2hex(random_bytes(16));
             }
         }
 
