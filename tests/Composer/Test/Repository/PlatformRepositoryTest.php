@@ -253,6 +253,61 @@ curl.cainfo => no value => no value',
                 ],
                 [['curl_version', [], ['version' => '2.0.0']]],
             ],
+            'curl: SSL backend without version' => [
+                'curl',
+                '
+curl
+
+cURL support => enabled
+cURL Information => 8.16.0
+Age => 11
+Features
+AsynchDNS => Yes
+IDN => Yes
+IPv6 => Yes
+Largefile => Yes
+SSL => Yes
+SSPI => Yes
+Protocols => dict, file, ftp, ftps, gopher, gophers, http, https, imap, imaps, ldap, ldaps, mqtt, pop3, pop3s, rtsp, scp, sftp, smb, smbs, smtp, smtps, telnet, tftp, ws, wss
+Host => x86_64-pc-win32
+SSL Version => Schannel
+ZLib Version => 1.3.2
+libSSH Version => libssh2/1.11.1
+
+Directive => Local Value => Master Value
+curl.cainfo => /etc/ssl/certs/ca-certificates.crt => /etc/ssl/certs/ca-certificates.crt',
+                [
+                    'lib-curl' => '8.16.0',
+                    'lib-curl-openssl' => false,
+                    'lib-curl-schannel' => false,
+                    'lib-curl-zlib' => '1.3.2',
+                    'lib-curl-libssh2' => '1.11.1',
+                ],
+                [['curl_version', [], ['version' => '8.16.0']]],
+            ],
+
+            'curl: libSSH backend without version' => [
+                'curl',
+                '
+curl
+
+cURL support => enabled
+cURL Information => 8.16.0
+Host => x86_64-pc-linux-gnu
+SSL Version => OpenSSL/3.0.16
+ZLib Version => 1.3.2
+libSSH Version => Unknown
+
+Directive => Local Value => Master Value
+curl.cainfo => /etc/ssl/certs/ca-certificates.crt => /etc/ssl/certs/ca-certificates.crt',
+                [
+                    'lib-curl' => '8.16.0',
+                    'lib-curl-openssl' => '3.0.16',
+                    'lib-curl-zlib' => '1.3.2',
+                    'lib-curl-libssh2' => false,
+                ],
+                [['curl_version', [], ['version' => '8.16.0']]],
+            ],
 
             'curl: OpenSSL fips version' => [
                 'curl',
@@ -507,6 +562,25 @@ ZLib Version => 1.2.11',
                 [
                     'lib-curl' => '8.1.2',
                     'lib-curl-securetransport' => ['2.8.3', ['lib-curl-libressl']],
+                    'lib-curl-zlib' => '1.2.11',
+                ],
+                [['curl_version', [], ['version' => '8.1.2']]],
+            ],
+            'curl: multi-SSL backend which is not SecureTransport is skipped rather than reported under an invalid name' => [
+                'curl',
+                '
+curl
+
+cURL support => enabled
+cURL Information => 8.1.2
+MULTI_SSL => Yes
+Host => x86_64-pc-win32
+SSL Version => (Schannel) OpenSSL/3.0.5
+ZLib Version => 1.2.11',
+                [
+                    'lib-curl' => '8.1.2',
+                    'lib-curl-openssl' => false,
+                    'lib-curl-schannel' => false,
                     'lib-curl-zlib' => '1.2.11',
                 ],
                 [['curl_version', [], ['version' => '8.1.2']]],
