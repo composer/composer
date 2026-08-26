@@ -160,7 +160,7 @@ class JsonManipulator
     public function addRepository(string $name, $config, bool $append = true): bool
     {
         // a false config disables a repository by name, so it never addresses a list position
-        $key = "" !== $name ? $this->findRepositoryKey($name, is_array($config)) : null;
+        $key = "" !== $name ? $this->findRepositoryKeyInContents($name, is_array($config)) : null;
         // a repository addressed by position is replaced in place, $append does not apply
         $replaceInPlace = is_int($key) && ctype_digit($name) && $key === (int) $name;
 
@@ -230,7 +230,7 @@ class JsonManipulator
 
     public function setRepositoryUrl(string $name, string $url): bool
     {
-        $repositoryIndex = $this->findRepositoryKey($name);
+        $repositoryIndex = $this->findRepositoryKeyInContents($name);
 
         if (null === $repositoryIndex) {
             return false;
@@ -283,7 +283,7 @@ class JsonManipulator
     {
         // the position is stated by $referenceName here, so $name only ever names the new
         // repository and must not be resolved to a position of its own
-        $key = "" !== $name ? $this->findRepositoryKey($name, false) : null;
+        $key = "" !== $name ? $this->findRepositoryKeyInContents($name, false) : null;
 
         if ($key !== null && !$this->doRemoveRepositoryAt($key)) {
             return false;
@@ -294,7 +294,7 @@ class JsonManipulator
         }
 
         // repositories are a list at this point, so the reference always resolves to an index
-        $indexToInsert = $this->findRepositoryKey($referenceName);
+        $indexToInsert = $this->findRepositoryKeyInContents($referenceName);
 
         if (!is_int($indexToInsert)) {
             return false;
@@ -316,7 +316,7 @@ class JsonManipulator
 
     private function doRemoveRepository(string $name): bool
     {
-        $key = $this->findRepositoryKey($name);
+        $key = $this->findRepositoryKeyInContents($name);
 
         return $key === null || $this->doRemoveRepositoryAt($key);
     }
@@ -332,27 +332,42 @@ class JsonManipulator
     }
 
     /**
+     * @return int|string|null
+     */
+    private function findRepositoryKeyInContents(string $name, bool $allowIndex = true)
+    {
+        return self::findRepositoryKey(json_decode($this->contents, false)->repositories ?? null, $name, $allowIndex);
+    }
+
+    /**
      * Finds a repository by name, falling back to its position for a numeric name in a list
      *
+     * Pass the repositories as decoded, not cast to an array: an object with numeric keys becomes
+     * indistinguishable from a list once cast, which is what made `{"repositories": {"0": {}}}`
+     * never match.
+     *
+     * @param  \stdClass|array<int|string, mixed>|null $repositories
      * @return int|string|null int for a list index, string for an object key, null if not found
      */
-    private function findRepositoryKey(string $name, bool $allowIndex = true)
+    public static function findRepositoryKey($repositories, string $name, bool $allowIndex = true)
     {
-        $decoded = json_decode($this->contents, false);
-        $isAssoc = ($decoded->repositories ?? null) instanceof \stdClass;
-        // numeric object keys come back as ints from the array cast, so compare them as strings
-        $repositories = (array) ($decoded->repositories ?? []);
+        $isAssoc = $repositories instanceof \stdClass || (is_array($repositories) && !array_is_list($repositories));
+        $repositories = (array) ($repositories ?? []);
 
         foreach ($repositories as $repositoryIndex => $repository) {
+            // entries are objects or arrays depending on how the caller decoded them
+            $repository = (array) $repository;
+
             if ($isAssoc) {
-                if ((string) $repositoryIndex === $name || ($repository->name ?? null) === $name) {
+                // numeric object keys come back as ints from the array cast, so compare as strings
+                if ((string) $repositoryIndex === $name || ($repository['name'] ?? null) === $name) {
                     return (string) $repositoryIndex;
                 }
 
                 continue;
             }
 
-            if (($repository->name ?? null) === $name || [$name => false] === (array) $repository) {
+            if (($repository['name'] ?? null) === $name || [$name => false] === $repository) {
                 return (int) $repositoryIndex;
             }
         }

@@ -500,6 +500,20 @@ class RepositoryCommandTest extends TestCase
         ];
     }
 
+    public function testAddThrowsForANumericRepositoryNameInJson(): void
+    {
+        $this->initTempComposer([]);
+
+        $appTester = $this->getApplicationTester();
+
+        try {
+            $appTester->run(['command' => 'repo', 'action' => 'add', 'name' => 'foo', 'arg1' => '{"name":"1","type":"vcs","url":"https://example.org"}']);
+            self::fail('Expected a RuntimeException');
+        } catch (RuntimeException $e) {
+            self::assertStringContainsString('A repository name can not be numeric ("1")', $e->getMessage());
+        }
+    }
+
     public function testSetUrlByPosition(): void
     {
         $this->initTempComposer(['repositories' => [

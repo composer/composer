@@ -897,6 +897,7 @@ EOT
                     }
                 } else {
                     $value = JsonFile::parseJson($values[0]);
+                    $this->validateRepositoryConfig($value);
                     $this->configSource->addRepository($matches[1], $value, $input->getOption('append'));
 
                     return 0;

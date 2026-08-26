@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Config;
 use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonManipulator;
 use Composer\Factory;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
@@ -100,10 +101,9 @@ abstract class BaseConfigCommand extends BaseCommand
             return;
         }
 
-        foreach ($repositories as $repository) {
-            if (is_array($repository) && ($repository['name'] ?? null) === $name) {
-                return;
-            }
+        // a repository actually carrying this name wins over the position
+        if (null !== JsonManipulator::findRepositoryKey($repositories, $name, false)) {
+            return;
         }
 
         $target = $repositories[(int) $name] ?? null;
@@ -117,6 +117,22 @@ abstract class BaseConfigCommand extends BaseCommand
         }
 
         $this->getIO()->writeError('<warning>Addressing a repository by its position ("'.$name.'") is unreliable as positions shift when repositories are added or removed, and do not match what "composer repo list" shows when the global config defines repositories. Give the repository a "name" and use that instead.</warning>');
+    }
+
+    /**
+     * A numeric name would be indistinguishable from a position, so refuse to write one. Only
+     * reachable through a user supplied JSON definition, as the commands never inject one.
+     *
+     * @param mixed $config
+     */
+    protected function validateRepositoryConfig($config): void
+    {
+        if (is_array($config) && isset($config['name']) && is_string($config['name']) && ctype_digit($config['name'])) {
+            throw new \RuntimeException(sprintf(
+                'A repository name can not be numeric ("%s"), as numbers address repositories by their position in the list. Use a descriptive name instead.',
+                $config['name']
+            ));
+        }
     }
 
     /**

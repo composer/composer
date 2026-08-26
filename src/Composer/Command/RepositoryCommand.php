@@ -103,6 +103,7 @@ EOT
                 if (is_string($arg1) && Preg::isMatch('{^\s*\{}', $arg1)) {
                     // JSON config
                     $repoConfig = JsonFile::parseJson($arg1);
+                    $this->validateRepositoryConfig($repoConfig);
                 } else {
                     if ($arg2 === null) {
                         throw new \RuntimeException('You must pass the type and a url. Example: composer repo add foo vcs https://example.org');

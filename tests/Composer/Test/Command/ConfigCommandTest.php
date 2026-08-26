@@ -528,6 +528,17 @@ class ConfigCommandTest extends TestCase
         $appTester->run(['command' => 'config', 'setting-key' => 'repositories.0', '--unset' => true]);
     }
 
+    public function testConfigThrowsForANumericRepositoryName(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('A repository name can not be numeric ("2")');
+
+        $this->initTempComposer(['repositories' => [['type' => 'path', 'url' => '../a'], ['type' => 'path', 'url' => '../b']]]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'repositories.1', 'setting-value' => ['{"name":"2","type":"vcs","url":"https://example.org"}']]);
+    }
+
     public function testConfigThrowsForInvalidSeverity(): void
     {
         $this->expectException(RuntimeException::class);

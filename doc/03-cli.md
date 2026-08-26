@@ -913,6 +913,10 @@ they do not match the numbers `composer repo list` displays once the global conf
 repositories of its own. Addressing a repository which has a `name` by its position is an error —
 use the name. Give each repository a `name` and you never have to think about positions.
 
+For the same reason a repository `name` must not be numeric: a number always addresses a position,
+so a repository called `1` could not be told apart from the second entry in the list. `composer
+validate` warns about any that are already there.
+
 ### Modifying Extra Values
 
 In addition to modifying the config section, the `config` command also supports making
