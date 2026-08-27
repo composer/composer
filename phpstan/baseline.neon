@@ -7832,7 +7832,7 @@ parameters:
 
 		-
 			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
-			count: 6
+			count: 7
 			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
 
 		-
@@ -7980,7 +7980,7 @@ parameters:
 
 		-
 			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:ensureDirectoryExistsAndClear\\(\\)\\.$#"
-			count: 3
+			count: 5
 			path: ../tests/Composer/Test/Installer/BinaryInstallerTest.php
 
 		-

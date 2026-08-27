@@ -103,6 +103,57 @@ class FileDownloaderTest extends TestCase
         }
     }
 
+    public function testInstallDoesNotChmodBinOutsideOfPackage()
+    {
+        $rootDir = $this->getUniqueTmpDirectory();
+        $vendorDir = $rootDir.'/vendor';
+        $path = $vendorDir.'/attacker/pkg';
+
+        $package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+        $package->expects($this->any())
+            ->method('getDistUrl')
+            ->will($this->returnValue('http://example.com/script.js'));
+        // a ".." bin which never went through ValidatingArrayLoader::validatePackage(), as is the
+        // case for composer reinstall which builds its operations straight from installed.json
+        $package->expects($this->any())
+            ->method('getBinaries')
+            ->will($this->returnValue(array('../../../victim.sh')));
+
+        $victim = $rootDir.'/victim.sh';
+        file_put_contents($victim, "#!/bin/sh\necho pwned\n");
+        chmod($victim, 0600);
+        clearstatcache();
+        $modeBefore = fileperms($victim);
+
+        $this->config->expects($this->any())
+            ->method('get')
+            ->with('vendor-dir')
+            ->will($this->returnValue($vendorDir));
+
+        $downloader = $this->getDownloader();
+
+        // seed the downloaded file where install() expects to find it
+        $method = new \ReflectionMethod($downloader, 'getFileName');
+        $method->setAccessible(true);
+        $tmpFile = (string) $method->invoke($downloader, $package, $path);
+        $fs = new Filesystem();
+        $fs->ensureDirectoryExists(dirname($tmpFile));
+        file_put_contents($tmpFile, 'downloaded');
+
+        try {
+            $downloader->install($package, $path, false);
+
+            $this->assertFileExists($path.'/script.js');
+            clearstatcache();
+            $this->assertSame($modeBefore, fileperms($victim), 'A bin escaping the package dir must not be chmod\'d');
+        } catch (\Exception $e) {
+            $fs->removeDirectory($rootDir);
+            throw $e;
+        }
+
+        $fs->removeDirectory($rootDir);
+    }
+
     public function testGetFileName()
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();

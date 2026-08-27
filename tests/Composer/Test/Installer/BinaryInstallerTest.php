@@ -88,6 +88,65 @@ class BinaryInstallerTest extends TestCase
         $this->assertEquals('success arg', $output);
     }
 
+    /**
+     * @requires function symlink
+     */
+    public function testInstallBinaryRejectsSymlinkEscapingPackageDir()
+    {
+        $package = $this->createPackageMock();
+        $package->expects($this->any())
+            ->method('getBinaries')
+            ->willReturn(array('bin/pwn'));
+
+        // A file outside the package install directory that must not be touched.
+        $victim = $this->rootDir.'/victim.sh';
+        file_put_contents($victim, "#!/bin/sh\necho pwned\n");
+        chmod($victim, 0644);
+        clearstatcache();
+        $modeBefore = fileperms($victim);
+
+        $installPath = $this->vendorDir.'/attacker/pkg';
+        $this->ensureDirectoryExistsAndClear($installPath.'/bin');
+        // bin/pwn is a symlink escaping the package to the victim file (GHSA-96h3-5x6v-m776).
+        if (!@symlink('../../../../victim.sh', $installPath.'/bin/pwn')) {
+            $this->markTestSkipped('Symbolic links are not supported on this platform');
+        }
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'full', $this->fs);
+        $installer->installBinaries($package, $installPath);
+
+        $this->assertFileDoesNotExist($this->binDir.'/pwn', 'No vendor/bin proxy must be created for an escaping symlink bin');
+        clearstatcache();
+        $this->assertSame($modeBefore, fileperms($victim), 'A bin symlink escaping the package dir must not be chmod\'d');
+    }
+
+    public function testInstallBinaryRejectsTraversingBinPath()
+    {
+        // ".." bin metadata can reach BinaryInstaller without passing through the solver-time
+        // ValidatingArrayLoader::validatePackage() check, e.g. via the ensureBinariesPresence()
+        // re-generation loop which reads packages straight from installed.json.
+        $package = $this->createPackageMock();
+        $package->expects($this->any())
+            ->method('getBinaries')
+            ->willReturn(array('../../../victim.sh'));
+
+        $victim = $this->rootDir.'/victim.sh';
+        file_put_contents($victim, "#!/bin/sh\necho pwned\n");
+        chmod($victim, 0600);
+        clearstatcache();
+        $modeBefore = fileperms($victim);
+
+        $installPath = $this->vendorDir.'/attacker/pkg';
+        $this->ensureDirectoryExistsAndClear($installPath);
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'full', $this->fs);
+        $installer->installBinaries($package, $installPath);
+
+        $this->assertFileDoesNotExist($this->binDir.'/victim.sh', 'No vendor/bin proxy must be created for a traversing bin');
+        clearstatcache();
+        $this->assertSame($modeBefore, fileperms($victim), 'A bin escaping the package dir via ".." must not be chmod\'d');
+    }
+
     public function executableBinaryProvider()
     {
         $tests = array(
