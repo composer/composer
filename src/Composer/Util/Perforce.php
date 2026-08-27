@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use Composer\Exception\SecurityException;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Symfony\Component\Process\Process;
@@ -68,6 +69,10 @@ class Perforce
      */
     public function __construct($repoConfig, $port, $path, ProcessExecutor $process, $isWindows, IOInterface $io)
     {
+        if (!self::isValidPort($port)) {
+            throw new SecurityException('Invalid Perforce port ('.$port.'), it must be of the form [tcp|ssl:][host:]port');
+        }
+
         $this->windowsFlag = $isWindows;
         $this->p4Port = $port;
         $this->initializePath($path);
@@ -98,9 +103,37 @@ class Perforce
      */
     public static function checkServerExists($url, ProcessExecutor $processExecutor)
     {
+        // this is a detection probe which runs against every VCS repository url when no driver
+        // matched yet, so an unusable port is simply "not a perforce server" and not an error
+        if (!self::isValidPort($url)) {
+            return false;
+        }
+
         $output = null;
 
         return  0 === $processExecutor->execute('p4 -p ' . ProcessExecutor::escape($url) . ' info -s', $output);
+    }
+
+    /**
+     * Checks that a P4PORT value is a network endpoint the p4 client can connect to.
+     *
+     * A `rsh:`/`jsh:` P4PORT makes the p4 client run the rest of the value as a local child process
+     * instead of connecting to a server, so a package-controlled source.url must never reach it
+     * (GHSA-rvx4-ffvw-m9q3). Only the documented `[transport:][host:]port` forms are accepted.
+     *
+     * @param string $url
+     *
+     * @return bool
+     */
+    public static function isValidPort($url)
+    {
+        // rsh/jsh are transport keywords to p4, so "rsh:foo" never parses as host "rsh" port "foo"
+        // and has to be rejected before the shape check below would happily accept it
+        if (Preg::isMatch('{^\s*+(?:rsh|jsh)\s*+:}i', $url)) {
+            return false;
+        }
+
+        return Preg::isMatch('{^(?:(?:tcp|ssl)(?:4|6|46|64)?:)?(?:\[[0-9a-f:.]++\]|[a-z0-9._][a-z0-9._-]*+)(?::[a-z0-9._][a-z0-9._-]*+)?$}iD', $url);
     }
 
     /**

@@ -137,9 +137,14 @@ class PerforceTest extends TestCase
         $this->assertEquals($expected, $p4Command);
     }
 
-    public function testGenerateP4CommandEscapesPortInjection()
+    /**
+     * @return void
+     */
+    public function testCreatingPerforceRejectsPortWithShellMetacharacters()
     {
-        $perforce = new Perforce(
+        $this->setExpectedException('Composer\Exception\SecurityException', 'Invalid Perforce port (localhost:1666; touch /tmp/pwned)');
+
+        new Perforce(
             array('depot' => 'depot', 'branch' => 'branch', 'p4user' => 'user', 'unique_perforce_client_name' => 'TEST'),
             'localhost:1666; touch /tmp/pwned',
             'path',
@@ -147,9 +152,6 @@ class PerforceTest extends TestCase
             false,
             $this->io
         );
-        $command = $perforce->generateP4Command('login -s', false);
-        $this->assertNotContains('-p localhost:1666; touch /tmp/pwned', $command);
-        $this->assertContains('-p ' . ProcessExecutor::escape('localhost:1666; touch /tmp/pwned'), $command);
     }
 
     public function testGenerateP4CommandEscapesUserInjection()
@@ -683,6 +685,95 @@ class PerforceTest extends TestCase
 
         $result = $this->perforce->checkServerExists('perforce.does.exist:port', $processExecutor);
         $this->assertTrue($result);
+    }
+
+    /**
+     * @return void
+     */
+    public function testCheckServerExistsRejectsCommandExecutingPort()
+    {
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+
+        // no process must be started at all for a rsh:/jsh: endpoint, as the p4 client would
+        // execute it instead of connecting to a server
+        $processExecutor->expects($this->never())->method('execute');
+
+        $this->assertFalse(Perforce::checkServerExists('rsh:touch /tmp/pwned', $processExecutor));
+    }
+
+    /**
+     * @dataProvider provideValidPorts
+     *
+     * @param string $port
+     *
+     * @return void
+     */
+    public function testIsValidPortAcceptsNetworkEndpoints($port)
+    {
+        $this->assertTrue(Perforce::isValidPort($port));
+    }
+
+    /**
+     * @return array<array{string}>
+     */
+    public function provideValidPorts()
+    {
+        return array(
+            array('1666'),
+            array('perforce'),
+            array('p4.example.org:1666'),
+            array('perforce.does.exist:port'),
+            array('tcp:p4.example.org:1666'),
+            array('tcp4:p4.example.org:1666'),
+            array('ssl:p4.example.org:1666'),
+            array('SSL:p4.example.org:1666'),
+            array('ssl64:[2001:db8::1]:1666'),
+            array('tcp6:[::1]:1666'),
+        );
+    }
+
+    /**
+     * @dataProvider provideInvalidPorts
+     *
+     * @param string $port
+     *
+     * @return void
+     */
+    public function testIsValidPortRejectsNonNetworkEndpoints($port)
+    {
+        $this->assertFalse(Perforce::isValidPort($port));
+    }
+
+    /**
+     * @return array<array{string}>
+     */
+    public function provideInvalidPorts()
+    {
+        return array(
+            // rsh:/jsh: make the p4 client run the rest of the value as a local command
+            array('rsh:/tmp/evil.sh'),
+            array('rsh:evil'),
+            array('RSH:evil'),
+            array(' rsh:evil'),
+            array('jsh:evil'),
+            array('JsH:evil'),
+            array('rsh :evil'),
+            // not valid endpoints either way
+            array('tcp:p4.example.org:1666; touch /tmp/pwned'),
+            array('https://example.org/vendor/pkg.git'),
+            array('-p1666'),
+            array(''),
+        );
+    }
+
+    /**
+     * @return void
+     */
+    public function testCreatingPerforceWithCommandExecutingPortThrows()
+    {
+        $this->setExpectedException('Composer\Exception\SecurityException', 'Invalid Perforce port (rsh:touch /tmp/pwned)');
+
+        new Perforce($this->repoConfig, 'rsh:touch /tmp/pwned', self::TEST_PATH, $this->processExecutor, false, $this->io);
     }
 
     /**

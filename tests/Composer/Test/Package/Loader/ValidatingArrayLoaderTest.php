@@ -437,6 +437,19 @@ class ValidatingArrayLoaderTest extends TestCase
                     'bin : invalid value (../escape), must not contain a ".." path component',
                 ),
             ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'source' => array(
+                        'type' => 'perforce',
+                        'url' => 'rsh:touch /tmp/pwned',
+                        'reference' => '//depot/main',
+                    ),
+                ),
+                array(
+                    'source.url : invalid Perforce port ("rsh:touch /tmp/pwned"), it must be of the form [tcp|ssl:][host:]port',
+                ),
+            ),
         ));
     }
 
@@ -545,6 +558,13 @@ class ValidatingArrayLoaderTest extends TestCase
         $package->setBinaries(array('bin/foo', 'console', 'some.bin'));
         ValidatingArrayLoader::validatePackage($package);
 
+        $perforcePackage = $this->getPackage('vendor/perforce', '1.0.0');
+        assert($perforcePackage instanceof CompletePackage);
+        $perforcePackage->setSourceType('perforce');
+        $perforcePackage->setSourceUrl('ssl:p4.example.org:1666');
+        $perforcePackage->setSourceReference('//depot/main');
+        ValidatingArrayLoader::validatePackage($perforcePackage);
+
         // platform packages are accepted as-is
         ValidatingArrayLoader::validatePackage($this->getPackage('php', '8.2.0'));
 
@@ -609,6 +629,17 @@ class ValidatingArrayLoaderTest extends TestCase
         assert($package instanceof CompletePackage);
         $package->setBinaries(array('bin/ok', '../../../../escape-target.txt'));
         $this->setExpectedException('Composer\Exception\SecurityException', 'vendor/pkg has an invalid bin ../../../../escape-target.txt, it must not contain ".." path segments');
+        ValidatingArrayLoader::validatePackage($package);
+    }
+
+    public function testValidatePackageRejectsCommandExecutingPerforceSourceUrl()
+    {
+        $package = $this->getPackage('vendor/pkg', '1.0.0');
+        assert($package instanceof CompletePackage);
+        $package->setSourceType('perforce');
+        $package->setSourceUrl('rsh:touch /tmp/pwned');
+        $package->setSourceReference('//depot/main');
+        $this->setExpectedException('Composer\Exception\SecurityException', 'vendor/pkg has an invalid source.url, it must be a Perforce port of the form [tcp|ssl:][host:]port: rsh:touch /tmp/pwned');
         ValidatingArrayLoader::validatePackage($package);
     }
 }
