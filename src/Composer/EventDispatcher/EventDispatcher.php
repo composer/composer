@@ -345,6 +345,10 @@ class EventDispatcher
                         throw $e;
                     }
                 } else {
+                    if ($callable === '') {
+                        continue;
+                    }
+
                     $args = implode(' ', array_map(['Composer\Util\ProcessExecutor', 'escape'], $additionalArgs));
 
                     // @putenv does not receive arguments
