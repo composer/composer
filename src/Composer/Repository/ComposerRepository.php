@@ -798,24 +798,24 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->loop->wait($promises);
             ksort($responses);
 
-            $warned = false;
-            $warningsShown = false;
+            $repoWarningsShown = false;
+            $warnedAboutUnrequestedNames = false;
             foreach ($responses as $advisoryData) {
-                if (!$warningsShown) {
+                if (!$repoWarningsShown) {
                     HttpDownloader::outputWarnings($this->io, $this->url, $advisoryData);
-                    $warningsShown = true;
+                    $repoWarningsShown = true;
                 }
 
                 /** @var string $name */
                 foreach ($advisoryData['advisories'] as $name => $list) {
                     if (!isset($packageConstraintMap[$name])) {
-                        if (!$warned) {
+                        if (!$warnedAboutUnrequestedNames) {
                             $requested = array_keys($packageConstraintMap);
                             $requestedList = count($requested) > 20
                                 ? implode(', ', array_slice($requested, 0, 20)).' and '.(count($requested) - 20).' more'
                                 : implode(', ', $requested);
                             $this->io->writeError('<warning>'.$this->getRepoName().' returned names which were not requested in response to the security-advisories API. '.$name.' was not requested but is present in the response. Requested names were: '.$requestedList.'</warning>');
-                            $warned = true;
+                            $warnedAboutUnrequestedNames = true;
                         }
                         continue;
                     }
