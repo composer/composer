@@ -1,3 +1,16 @@
+### [2.10.3] 2026-08-27
+
+  * Security: Validate package bin paths against path traversal using symlinks (GHSA-96h3-5x6v-m776, CVE-2026-59944)
+  * Security: Fixed command injection via malicious Perforce url (GHSA-rvx4-ffvw-m9q3)
+  * Security: Sanitize URL-embedded usernames/token in a few more places (#13044)
+  * Security: Fixed matching of gitlab URLs to avoid possible credential leak to the wrong domain (#12988)
+  * Fixed PHP 8.6 deprecation warnings (#12967, #13028)
+  * Fixed error output when a policy blocks a package version to be clearer (#12993)
+  * Fixed the lock file's content-hash with a conflict marker ending up breaking at runtime (#13048)
+  * Fixed possible race condition while creating directories like the cache dir when running multiple Composer processes in parallel (#12977)
+  * Fixed forgejo support to handle empty repositories better (#12968)
+  * Fixed FilterListApiClient not forwarding transport options (#13040)
+
 ### [2.10.2] 2026-07-01
 
   * Security: Validate package names (GHSA-499r-g7pc-vmp9)
@@ -2207,6 +2220,7 @@
 
   * Initial release
 
+[2.10.3]: https://github.com/composer/composer/compare/2.10.2...2.10.3
 [2.10.2]: https://github.com/composer/composer/compare/2.10.1...2.10.2
 [2.10.1]: https://github.com/composer/composer/compare/2.10.0...2.10.1
 [2.10.0]: https://github.com/composer/composer/compare/2.10.0-RC2...2.10.0
