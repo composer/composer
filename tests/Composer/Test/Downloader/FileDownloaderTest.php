@@ -83,6 +83,45 @@ class FileDownloaderTest extends TestCase
         }
     }
 
+    public function testInstallDoesNotChmodBinOutsideOfPackage(): void
+    {
+        $rootDir = self::getUniqueTmpDirectory();
+        $vendorDir = $rootDir.'/vendor';
+        $path = $vendorDir.'/attacker/pkg';
+
+        $package = self::getPackage();
+        $package->setDistUrl('http://example.com/script.js');
+        // a ".." bin which never went through ValidatingArrayLoader::validatePackage(), as is the
+        // case for composer reinstall which builds its operations straight from installed.json
+        $package->setBinaries(['../../../victim.sh']);
+
+        $victim = $rootDir.'/victim.sh';
+        file_put_contents($victim, "#!/bin/sh\necho pwned\n");
+        chmod($victim, 0600);
+        clearstatcache();
+        $modeBefore = fileperms($victim);
+
+        $downloader = $this->getDownloader(null, $this->getConfig(['vendor-dir' => $vendorDir]));
+
+        // seed the downloaded file where install() expects to find it
+        $method = new \ReflectionMethod($downloader, 'getFileName');
+        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+        $tmpFile = $method->invoke($downloader, $package, $path);
+        $fs = new Filesystem();
+        $fs->ensureDirectoryExists(dirname($tmpFile));
+        file_put_contents($tmpFile, 'downloaded');
+
+        try {
+            $downloader->install($package, $path, false);
+
+            self::assertFileExists($path.'/script.js');
+            clearstatcache();
+            self::assertSame($modeBefore, fileperms($victim), 'A bin escaping the package dir must not be chmod\'d');
+        } finally {
+            $fs->removeDirectory($rootDir);
+        }
+    }
+
     public function testGetFileName(): void
     {
         $package = self::getPackage();
