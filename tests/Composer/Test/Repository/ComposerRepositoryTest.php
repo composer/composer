@@ -979,6 +979,7 @@ class ComposerRepositoryTest extends TestCase
                     'url' => 'https://example.org/api/filter',
                     'options' => [
                         'http' => [
+                            'verify_peer' => false,
                             'method' => 'POST',
                             'header' => ['Content-type: application/json'],
                             'timeout' => 10,

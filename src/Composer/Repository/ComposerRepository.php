@@ -911,7 +911,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private function getFilterApiClient(): FilterListApiClient
     {
         if ($this->filterApiClient === null) {
-            $this->filterApiClient = new FilterListApiClient($this->httpDownloader);
+            $this->filterApiClient = new FilterListApiClient($this->httpDownloader, $this->options);
         }
 
         return $this->filterApiClient;
