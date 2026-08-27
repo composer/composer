@@ -1,3 +1,10 @@
+### [2.2.30] 2026-08-27
+
+  * Security: Validate package bin paths against path traversal using symlinks (GHSA-96h3-5x6v-m776, CVE-2026-59944)
+  * Security: Fixed command injection via malicious Perforce url (GHSA-rvx4-ffvw-m9q3)
+  * Security: Sanitize URL-embedded usernames/token in a few more places (#13045)
+  * Security: Fixed matching of gitlab URLs to avoid possible credential leak to the wrong domain (#13042)
+
 ### [2.2.29] 2026-07-01
 
   * Security: Validate package names (GHSA-499r-g7pc-vmp9)
@@ -1551,6 +1558,7 @@
 
   * Initial release
 
+[2.2.30]: https://github.com/composer/composer/compare/2.2.29...2.2.30
 [2.2.29]: https://github.com/composer/composer/compare/2.2.28...2.2.29
 [2.2.28]: https://github.com/composer/composer/compare/2.2.27...2.2.28
 [2.2.27]: https://github.com/composer/composer/compare/2.2.26...2.2.27
