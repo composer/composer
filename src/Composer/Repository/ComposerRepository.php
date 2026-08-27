@@ -52,6 +52,14 @@ use React\Promise\PromiseInterface;
 class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
 {
     /**
+     * Package names per security-advisories API request
+     *
+     * Each name costs one form input var, and PHP silently truncates $_POST past
+     * max_input_vars (1000 by default), which would drop advisories without any error.
+     */
+    private const ADVISORY_API_BATCH_SIZE = 500;
+
+    /**
      * @var mixed[]
      * @phpstan-var array{url: string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool}
      */
@@ -775,30 +783,52 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
             $options['http']['header'][] = 'Content-type: application/x-www-form-urlencoded';
             $options['http']['timeout'] = 10;
-            $options['http']['content'] = http_build_query(['packages' => array_keys($packageConstraintMap)]);
 
-            $response = $this->httpDownloader->get($apiUrl, $options);
+            $responses = [];
+            $promises = [];
+            foreach (array_chunk(array_keys($packageConstraintMap), self::ADVISORY_API_BATCH_SIZE) as $batchIndex => $batch) {
+                $batchOptions = $options;
+                $batchOptions['http']['content'] = http_build_query(['packages' => $batch]);
+
+                $promises[] = $this->httpDownloader->add($apiUrl, $batchOptions)
+                    ->then(static function (Response $response) use (&$responses, $batchIndex): void {
+                        $responses[$batchIndex] = $response->decodeJson();
+                    });
+            }
+            $this->loop->wait($promises);
+            ksort($responses);
+
             $warned = false;
-            $advisoryData = $response->decodeJson();
-            HttpDownloader::outputWarnings($this->io, $this->url, $advisoryData);
-            /** @var string $name */
-            foreach ($advisoryData['advisories'] as $name => $list) {
-                if (!isset($packageConstraintMap[$name])) {
-                    if (!$warned) {
-                        $this->io->writeError('<warning>'.$this->getRepoName().' returned names which were not requested in response to the security-advisories API. '.$name.' was not requested but is present in the response. Requested names were: '.implode(', ', array_keys($packageConstraintMap)).'</warning>');
-                        $warned = true;
+            $warningsShown = false;
+            foreach ($responses as $advisoryData) {
+                if (!$warningsShown) {
+                    HttpDownloader::outputWarnings($this->io, $this->url, $advisoryData);
+                    $warningsShown = true;
+                }
+
+                /** @var string $name */
+                foreach ($advisoryData['advisories'] as $name => $list) {
+                    if (!isset($packageConstraintMap[$name])) {
+                        if (!$warned) {
+                            $requested = array_keys($packageConstraintMap);
+                            $requestedList = count($requested) > 20
+                                ? implode(', ', array_slice($requested, 0, 20)).' and '.(count($requested) - 20).' more'
+                                : implode(', ', $requested);
+                            $this->io->writeError('<warning>'.$this->getRepoName().' returned names which were not requested in response to the security-advisories API. '.$name.' was not requested but is present in the response. Requested names were: '.$requestedList.'</warning>');
+                            $warned = true;
+                        }
+                        continue;
                     }
-                    continue;
+                    if (count($list) > 0) {
+                        $advisories[$name] = array_values(array_filter(array_map(
+                            static function ($data) use ($name, $create) {
+                                return $create($data, $name);
+                            },
+                            $list
+                        )));
+                    }
+                    $namesFound[$name] = true;
                 }
-                if (count($list) > 0) {
-                    $advisories[$name] = array_values(array_filter(array_map(
-                        static function ($data) use ($name, $create) {
-                            return $create($data, $name);
-                        },
-                        $list
-                    )));
-                }
-                $namesFound[$name] = true;
             }
         }
 
