@@ -23,6 +23,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\MatchNoneConstraint;
 use Composer\Semver\Intervals;
 use Composer\Spdx\SpdxLicenses;
+use Composer\Util\Perforce;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -551,6 +552,14 @@ class ValidatingArrayLoader implements LoaderInterface
                 if (isset($this->config[$srcType]['url']) && Preg::isMatch('{^\s*-}', (string) $this->config[$srcType]['url'])) {
                     $this->errors[] = $srcType . '.url : must not start with a "-", "'.$this->config[$srcType]['url'].'" given';
                 }
+                // a perforce url is passed to the p4 client as P4PORT, where rsh:/jsh: endpoints
+                // mean "run this command locally" (GHSA-rvx4-ffvw-m9q3)
+                if ($srcType === 'source' && ($this->config[$srcType]['type'] ?? null) === 'perforce'
+                    && isset($this->config[$srcType]['url']) && is_string($this->config[$srcType]['url'])
+                    && !Perforce::isValidPort($this->config[$srcType]['url'])
+                ) {
+                    $this->errors[] = $srcType . '.url : invalid Perforce port ("'.$this->config[$srcType]['url'].'"), it must be of the form [tcp|ssl:][host:]port';
+                }
             }
         }
 
@@ -698,6 +707,14 @@ class ValidatingArrayLoader implements LoaderInterface
             if ($value !== null && Preg::isMatch('{^\s*-}', $value)) {
                 throw new SecurityException($package->getName().' has an invalid '.$field.', it must not start with a "-": '.$value);
             }
+        }
+
+        // A perforce source.url ends up as the p4 client's P4PORT, and a "rsh:"/"jsh:" endpoint
+        // there makes the client execute the rest of the value as a local command instead of
+        // connecting to a server (GHSA-rvx4-ffvw-m9q3), so only accept network endpoints.
+        $sourceUrl = $package->getSourceUrl();
+        if ($package->getSourceType() === 'perforce' && $sourceUrl !== null && !Perforce::isValidPort($sourceUrl)) {
+            throw new SecurityException($package->getName().' has an invalid source.url, it must be a Perforce port of the form [tcp|ssl:][host:]port: '.$sourceUrl);
         }
 
         // Bin paths are resolved relative to the package install dir and then chmod'd (and
