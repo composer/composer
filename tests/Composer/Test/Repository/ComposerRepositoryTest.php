@@ -515,6 +515,64 @@ class ComposerRepositoryTest extends TestCase
         }
     }
 
+    public function testGetSecurityAdvisoriesBatchesLargeRequests(): void
+    {
+        $packageNames = [];
+        for ($i = 0; $i < 1200; $i++) {
+            $packageNames[] = 'foo/pkg'.$i;
+        }
+        $advisory = $this->generateSecurityAdvisory('foo/pkg1100', 'CVE-1999-1000', '>=1.0.0');
+
+        $expectations = [
+            [
+                'url' => 'https://example.org/packages.json',
+                'body' => JsonFile::encode([
+                    'metadata-url' => 'https://example.org/p2/%package%.json',
+                    'security-advisories' => [
+                        'api-url' => 'https://example.org/security-advisories',
+                    ],
+                ]),
+                'options' => ['http' => ['verify_peer' => false]],
+            ],
+        ];
+        // 1200 names must be split into 500/500/200 so that no request exceeds the
+        // servers' max_input_vars, which would silently drop the trailing packages
+        foreach ([array_slice($packageNames, 0, 500), array_slice($packageNames, 500, 500), array_slice($packageNames, 1000)] as $index => $batch) {
+            $expectations[] = [
+                'url' => 'https://example.org/security-advisories',
+                'body' => JsonFile::encode(['advisories' => $index === 2 ? ['foo/pkg1100' => [$advisory]] : []]),
+                'options' => ['http' => [
+                    'verify_peer' => false,
+                    'method' => 'POST',
+                    'header' => ['Content-type: application/x-www-form-urlencoded'],
+                    'timeout' => 10,
+                    'content' => http_build_query(['packages' => $batch]),
+                ]],
+            ];
+        }
+
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects($expectations, true);
+
+        $repository = new ComposerRepository(
+            ['url' => 'https://example.org/packages.json', 'options' => ['http' => ['verify_peer' => false]]],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $constraintMap = [];
+        foreach ($packageNames as $packageName) {
+            $constraintMap[$packageName] = new MatchAllConstraint();
+        }
+
+        $result = $repository->getSecurityAdvisories($constraintMap);
+
+        $httpDownloader->assertComplete();
+        self::assertSame(['foo/pkg1100'], array_keys($result['advisories']));
+        self::assertSame($advisory['advisoryId'], $result['advisories']['foo/pkg1100'][0]->advisoryId);
+    }
+
     public function testGetFilterWithMatchingLists(): void
     {
         $httpDownloader = $this->getHttpDownloaderMock();
