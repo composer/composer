@@ -239,67 +239,6 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testFullPackageDownloadFailover(): void
-    {
-        $package = $this->createPackageMock();
-        $package
-            ->expects($this->once())
-            ->method('getSourceType')
-            ->will($this->returnValue('git'));
-        $package
-            ->expects($this->once())
-            ->method('getDistType')
-            ->will($this->returnValue('pear'));
-        $package
-            ->expects($this->any())
-            ->method('getPrettyString')
-            ->will($this->returnValue('prettyPackage'));
-
-        $package
-            ->expects($this->exactly(2))
-            ->method('setInstallationSource')
-            ->willReturnCallback(static function ($type) {
-                static $series = [
-                    'dist',
-                    'source',
-                ];
-
-                self::assertSame(array_shift($series), $type);
-            });
-
-        $downloaderFail = $this->createDownloaderMock();
-        $downloaderFail
-            ->expects($this->once())
-            ->method('download')
-            ->with($package, 'target_dir')
-            ->will($this->throwException(new \RuntimeException("Foo")));
-
-        $downloaderSuccess = $this->createDownloaderMock();
-        $downloaderSuccess
-            ->expects($this->once())
-            ->method('download')
-            ->with($package, 'target_dir')
-            ->will($this->returnValue(\React\Promise\resolve(null)));
-
-        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs([$this->io, false, $this->filesystem])
-            ->onlyMethods(['getDownloaderForPackage'])
-            ->getMock();
-        $manager
-            ->expects($this->exactly(2))
-            ->method('getDownloaderForPackage')
-            ->with($package)
-            ->willReturnOnConsecutiveCalls(
-                $downloaderFail,
-                $downloaderSuccess
-            );
-
-        // Source fallback now defaults to false; opt in to exercise failover.
-        $manager->setSourceFallback(true);
-
-        $manager->download($package, 'target_dir');
-    }
-
     public function testBadPackageDownload(): void
     {
         $package = $this->createPackageMock();
@@ -1243,7 +1182,7 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testDownloadFailsWithoutFallbackWhenDisabled(): void
+    public function testDownloadFailsWithoutFallbackWhenDistFails(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -1285,86 +1224,12 @@ class DownloadManagerTest extends TestCase
             ->with($package)
             ->will($this->returnValue($downloaderFail));
 
-        // Disable source fallback
-        $manager->setSourceFallback(false);
-
         $this->io
-            ->expects($this->exactly(2))
+            ->expects($this->exactly(1))
             ->method('writeError');
 
         self::expectException('RuntimeException');
         self::expectExceptionMessage('Foo');
-
-        $manager->download($package, 'target_dir');
-    }
-
-    public function testDownloadFallsBackWhenEnabled(): void
-    {
-        $package = $this->createPackageMock();
-        $package
-            ->expects($this->once())
-            ->method('getSourceType')
-            ->will($this->returnValue('git'));
-        $package
-            ->expects($this->once())
-            ->method('getDistType')
-            ->will($this->returnValue('pear'));
-        $package
-            ->expects($this->any())
-            ->method('getPrettyString')
-            ->will($this->returnValue('prettyPackage'));
-        $package
-            ->expects($this->any())
-            ->method('getPrettyName')
-            ->will($this->returnValue('foo/bar'));
-
-        $package
-            ->expects($this->exactly(2))
-            ->method('setInstallationSource')
-            ->willReturnCallback(static function ($type) {
-                static $series = [
-                    'dist',
-                    'source',
-                ];
-
-                self::assertSame(array_shift($series), $type);
-            });
-
-        $downloaderFail = $this->createDownloaderMock();
-        $downloaderFail
-            ->expects($this->once())
-            ->method('download')
-            ->with($package, 'target_dir')
-            ->will($this->throwException(new \RuntimeException("Foo")));
-
-        $downloaderSuccess = $this->createDownloaderMock();
-        $downloaderSuccess
-            ->expects($this->once())
-            ->method('download')
-            ->with($package, 'target_dir')
-            ->will($this->returnValue(\React\Promise\resolve(null)));
-
-        $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
-            ->setConstructorArgs([$this->io, false, $this->filesystem])
-            ->onlyMethods(['getDownloaderForPackage'])
-            ->getMock();
-        $manager
-            ->expects($this->exactly(2))
-            ->method('getDownloaderForPackage')
-            ->with($package)
-            ->willReturnOnConsecutiveCalls(
-                $downloaderFail,
-                $downloaderSuccess
-            );
-
-        // 4 writeError calls fire: 2 deprecation warnings, "Failed to download from dist",
-        // and "Now trying to download from source" during the retry.
-        $this->io
-            ->expects($this->exactly(4))
-            ->method('writeError');
-
-        // Explicitly enable source fallback (opt-in, deprecated)
-        $manager->setSourceFallback(true);
 
         $manager->download($package, 'target_dir');
     }
@@ -1429,14 +1294,11 @@ class DownloadManagerTest extends TestCase
             );
 
         // 2 writeError calls fire: "Failed to download from source" and
-        // "Now trying to download from dist" during the retry. No deprecation
-        // warning, no "Source fallback is disabled" warning — source-fallback
-        // only governs the dist → source direction.
+        // "Now trying to download from dist" during the retry.
         $this->io
             ->expects($this->exactly(2))
             ->method('writeError');
 
-        // Do NOT call setSourceFallback — fallback to dist must work by default.
         $manager->download($package, 'target_dir');
     }
 
