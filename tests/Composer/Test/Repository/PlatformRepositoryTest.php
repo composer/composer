@@ -883,7 +883,8 @@ Multibyte (japanese) regex support => enabled
 Multibyte regex (oniguruma) version => 6.1.3',
                 [
                     'lib-mbstring-libmbfl' => '1.3.2',
-                    'lib-mbstring-oniguruma' => '7.0.0',
+                    // the constant is not read on 8.6+, the version then comes from the extension info
+                    'lib-mbstring-oniguruma' => \PHP_VERSION_ID < 80600 ? '7.0.0' : '6.1.3',
                 ],
                 [],
                 [['MB_ONIGURUMA_VERSION', null, '7.0.0']],
