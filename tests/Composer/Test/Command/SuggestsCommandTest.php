@@ -15,7 +15,6 @@ namespace Composer\Test\Command;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Test\TestCase;
-use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
 
 class SuggestsCommandTest extends TestCase
@@ -59,10 +58,11 @@ class SuggestsCommandTest extends TestCase
     {
         $this->initTempComposer();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage($message);
+        $appTester = $this->getApplicationTester();
 
-        $this->getApplicationTester()->run(['command' => 'suggest', 'packages' => $filters]);
+        self::assertEquals(Command::FAILURE, $appTester->run(['command' => 'suggest', 'packages' => $filters], ['capture_stderr_separately' => true]));
+        self::assertSame('', $appTester->getDisplay(true));
+        self::assertSame($message, trim($appTester->getErrorOutput(true)));
     }
 
     public static function provideMissingPackageFilters(): \Generator
@@ -88,10 +88,11 @@ class SuggestsCommandTest extends TestCase
         $this->createInstalledJson([], $devPackages);
         $this->createComposerLock([], $devPackages);
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage($message);
+        $appTester = $this->getApplicationTester();
 
-        $this->getApplicationTester()->run(['command' => 'suggest', '--no-dev' => true, 'packages' => $filters]);
+        self::assertEquals(Command::FAILURE, $appTester->run(['command' => 'suggest', '--no-dev' => true, 'packages' => $filters], ['capture_stderr_separately' => true]));
+        self::assertSame('', $appTester->getDisplay(true));
+        self::assertSame($message, trim($appTester->getErrorOutput(true)));
     }
 
     public static function provideExcludedDevPackageFilters(): \Generator
@@ -100,7 +101,7 @@ class SuggestsCommandTest extends TestCase
         yield 'multiple' => [['Vendor/Dev-Package', 'other/dev-package'], 'Packages "Vendor/Dev-Package", "other/dev-package" are excluded by --no-dev.'];
         yield 'missing and excluded' => [
             ['missing/package', 'Vendor/Dev-Package'],
-            'Package "missing/package" is not installed. Package "Vendor/Dev-Package" is excluded by --no-dev.',
+            "Package \"missing/package\" is not installed.\nPackage \"Vendor/Dev-Package\" is excluded by --no-dev.",
         ];
     }
 

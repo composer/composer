@@ -100,7 +100,11 @@ EOT
                 : 'Packages "'.implode('", "', $excludedPackages).'" are excluded by --no-dev.';
         }
         if ($errors !== []) {
-            throw new \InvalidArgumentException(implode(' ', $errors));
+            foreach ($errors as $error) {
+                $this->getIO()->writeError('<error>'.$error.'</error>');
+            }
+
+            return 1;
         }
 
         $reporter = new SuggestedPackagesReporter($this->getIO());
