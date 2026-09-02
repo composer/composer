@@ -1506,32 +1506,12 @@ parameters:
 			path: ../src/Composer/Installer/BinaryInstaller.php
 
 		-
-			message: "#^Parameter \\#1 \\$binPath of method Composer\\\\Installer\\\\BinaryInstaller\\:\\:installFullBinaries\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/BinaryInstaller.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of static method Composer\\\\Installer\\\\BinaryInstaller\\:\\:isRepresentableInBatchProxy\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/BinaryInstaller.php
-
-		-
-			message: "#^Parameter \\#1 \\$binPath of method Composer\\\\Installer\\\\BinaryInstaller\\:\\:installUnixyProxyBinaries\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/BinaryInstaller.php
-
-		-
 			message: "#^Parameter \\#1 \\$fp of function fclose expects resource, resource\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/BinaryInstaller.php
 
 		-
 			message: "#^Parameter \\#1 \\$fp of function fgets expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/BinaryInstaller.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of function realpath expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/BinaryInstaller.php
 
