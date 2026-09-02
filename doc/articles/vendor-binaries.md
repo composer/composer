@@ -25,6 +25,11 @@ for any given project.
 }
 ```
 
+Each path is relative to the package root, and is used verbatim to generate the proxy files in
+`vendor/bin`. It must therefore not contain a `..` segment, nor any of the characters
+``*$`"&^|<>()%!;`` or control characters. Wildcards are not expanded either, a `bin/*` entry is
+simply a file that does not exist.
+
 ## What does defining a vendor binary in composer.json do?
 
 It instructs Composer to install the package's binaries to `vendor/bin`

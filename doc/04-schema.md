@@ -887,6 +887,11 @@ Optional.
 A set of files that should be treated as binaries and made available
 into the `bin-dir` (from config).
 
+Each entry is a path relative to the package root. It must not contain a `..` segment, nor any of
+the characters ``*$`"&^|<>()%!;`` or control characters: those cannot be represented safely in the
+proxy files Composer generates in the `bin-dir`. Wildcards are not expanded, a `bin/*` entry is
+simply a file that does not exist.
+
 See [Vendor Binaries](articles/vendor-binaries.md) for more details.
 
 Optional.
