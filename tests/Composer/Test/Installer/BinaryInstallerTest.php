@@ -188,7 +188,7 @@ class BinaryInstallerTest extends TestCase
         // installBinaries() refuses these filenames outright, so go through the generator directly
         // to keep the escaping itself covered
         $installPath = $this->vendorDir.'/attacker/pkg';
-        $this->ensureDirectoryExistsAndClear($installPath);
+        self::ensureDirectoryExistsAndClear($installPath);
         file_put_contents($installPath.'/'.$binFile, "#!/bin/sh\nprintf 'success %s' \"\$1\"\n");
 
         $this->generateProxy($installPath.'/'.$binFile, $this->binDir.'/'.$binFile);
@@ -233,13 +233,13 @@ class BinaryInstallerTest extends TestCase
             ->willReturn(array('binary'));
 
         $installPath = $this->vendorDir.'/attacker/pkg';
-        $this->ensureDirectoryExistsAndClear($installPath);
+        self::ensureDirectoryExistsAndClear($installPath);
         file_put_contents($installPath.'/binary', $shebang."\n<?php\n\necho 'success';");
 
         $installer = new BinaryInstaller($this->io, $this->binDir, 'proxy', $this->fs);
         $installer->installBinaries($package, $installPath);
 
-        $proxy = file_get_contents($this->binDir.'/binary');
+        $proxy = (string) file_get_contents($this->binDir.'/binary');
         $this->assertStringStartsWith("#!/usr/bin/env php\n", $proxy, 'An unsafe shebang must not be carried over');
         $this->assertStringNotContainsString($shebang, $proxy);
     }
@@ -264,7 +264,7 @@ class BinaryInstallerTest extends TestCase
     public function testWindowsProxyFallsBackToPhpForAnUnsafeShebang()
     {
         $installPath = $this->vendorDir.'/attacker/pkg';
-        $this->ensureDirectoryExistsAndClear($installPath);
+        self::ensureDirectoryExistsAndClear($installPath);
         file_put_contents($installPath.'/binary', "#!/usr/bin/env php\" \" & calc.exe\n<?php\n\necho 'success';");
 
         $installer = new BinaryInstaller($this->io, $this->binDir, 'full', $this->fs);
@@ -297,7 +297,7 @@ class BinaryInstallerTest extends TestCase
             ->with($this->stringContains('cannot be used in a Windows bin proxy'));
 
         $installPath = $this->vendorDir.'/foo/bar';
-        $this->ensureDirectoryExistsAndClear($installPath);
+        self::ensureDirectoryExistsAndClear($installPath);
         file_put_contents($installPath.'/binary', "#!/bin/sh\nprintf hi\n");
 
         $installer = new BinaryInstaller($this->io, $binDir, 'full', $this->fs);
@@ -321,7 +321,7 @@ class BinaryInstallerTest extends TestCase
             ->willReturn(array('pwn$(id)'));
 
         $installPath = $this->vendorDir.'/attacker/pkg';
-        $this->ensureDirectoryExistsAndClear($installPath);
+        self::ensureDirectoryExistsAndClear($installPath);
         file_put_contents($installPath.'/pwn$(id)', "#!/bin/sh\nprintf hi\n");
 
         $installer = new BinaryInstaller($this->io, $this->binDir, 'proxy', $this->fs);
