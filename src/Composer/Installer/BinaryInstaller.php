@@ -100,6 +100,10 @@ class BinaryInstaller
                 // already checked the binary's existence). The following helpers
                 // will require absolute paths to work properly.
                 $binPath = realpath($binPath);
+                if (false === $binPath) {
+                    $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': the bin path could not be resolved</warning>');
+                    continue;
+                }
             }
             $this->initializeBinDir();
             $link = $this->binDir.'/'.basename($bin);
