@@ -118,17 +118,15 @@ class ValidatingArrayLoader implements LoaderInterface
             } else {
                 $this->validateFlatArray('bin');
             }
-            // A ".." path segment in a bin escapes the package install directory and lets the
-            // package chmod/point at an arbitrary host file during install (GHSA-gjfg-22fp-rrxx).
             if (isset($this->config['bin']) && is_string($this->config['bin'])) {
-                if (Preg::isMatch('{(?:^|[\\\\/])\.\.(?:[\\\\/]|$)}', $this->config['bin'])) {
-                    $this->errors[] = 'bin : invalid value ('.$this->config['bin'].'), must not contain a ".." path component';
+                if (null !== $error = self::findBinError($this->config['bin'])) {
+                    $this->errors[] = 'bin : invalid value ('.$this->config['bin'].'), '.$error;
                     unset($this->config['bin']);
                 }
             } elseif (isset($this->config['bin']) && is_array($this->config['bin'])) {
                 foreach ($this->config['bin'] as $key => $bin) {
-                    if (is_string($bin) && Preg::isMatch('{(?:^|[\\\\/])\.\.(?:[\\\\/]|$)}', $bin)) {
-                        $this->errors[] = 'bin.'.$key.' : invalid value ('.$bin.'), must not contain a ".." path component';
+                    if (is_string($bin) && null !== $error = self::findBinError($bin)) {
+                        $this->errors[] = 'bin.'.$key.' : invalid value ('.$bin.'), '.$error;
                         unset($this->config['bin'][$key]);
                     }
                 }
@@ -725,6 +723,28 @@ class ValidatingArrayLoader implements LoaderInterface
                 throw new SecurityException($package->getName().' has an invalid bin '.$bin.', it must not contain ".." path segments');
             }
         }
+    }
+
+    /**
+     * Validates a bin path, returning the reason it is unacceptable or null if it is fine
+     *
+     * A ".." segment escapes the package install directory and lets the package chmod/point at an
+     * arbitrary host file during install (GHSA-gjfg-22fp-rrxx). The remaining characters cannot
+     * occur in a legitimate bin path and only serve to make the proxy files generated in the bin
+     * dir harder to generate safely, so they are refused at the source. Note that spaces,
+     * backslashes and single quotes are deliberately allowed, as published packages do use them.
+     */
+    private static function findBinError(string $bin): ?string
+    {
+        if (Preg::isMatch('{(?:^|[\\\\/])\.\.(?:[\\\\/]|$)}', $bin)) {
+            return 'must not contain a ".." path component';
+        }
+
+        if (Preg::isMatch('{[*$`"&^|<>()%!;\x00-\x1f\x7f]}', $bin)) {
+            return 'must not contain any of the characters *$`"&^|<>()%!; nor control characters';
+        }
+
+        return null;
     }
 
     /**
