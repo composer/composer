@@ -15,6 +15,7 @@ namespace Composer\Test\Installer;
 use Composer\Installer\BinaryInstaller;
 use Composer\Util\Filesystem;
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 
 class BinaryInstallerTest extends TestCase
@@ -145,6 +146,203 @@ class BinaryInstallerTest extends TestCase
         self::assertSame($modeBefore, fileperms($victim), 'A bin escaping the package dir via ".." must not be chmod\'d');
     }
 
+    public function testPhpProxyDoesNotRunCodeInjectedViaTheBinPath(): void
+    {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('The bin path of this test cannot be created on Windows');
+        }
+
+        // every segment of a bin path is package controlled, incl. the directory names below
+        $bin = "a*/ namespace Injected; echo 'PWNED'; /* x/binary";
+        $package = $this->createPackageMock();
+        $package->expects($this->any())
+            ->method('getBinaries')
+            ->willReturn([$bin]);
+
+        $installPath = $this->vendorDir.'/attacker/pkg';
+        $this->fs->ensureDirectoryExists($installPath.'/'.dirname($bin));
+        file_put_contents($installPath.'/'.$bin, "<?php\n\necho 'success '.\$_SERVER['argv'][1];");
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'proxy', $this->fs);
+        $installer->installBinaries($package, $installPath);
+
+        // the first comment terminator of the proxy must be the one ending its own docblock
+        $proxy = (string) file_get_contents($this->binDir.'/binary');
+        $docblockEnd = strpos($proxy, '*/');
+        self::assertNotFalse($docblockEnd);
+        self::assertStringContainsString('@generated', substr($proxy, 0, $docblockEnd), 'The bin path must not be able to close the docblock');
+
+        $proc = new ProcessExecutor();
+        $proc->execute(ProcessExecutor::escape($this->binDir.'/binary').' arg', $output);
+        self::assertSame('', $proc->getErrorOutput());
+        self::assertSame('success arg', $output, 'The proxy must run the bin and nothing else');
+    }
+
+    /**
+     * @dataProvider injectedBinFilenameProvider
+     */
+    public function testShProxyDoesNotRunCodeInjectedViaTheBinFilename(string $binFile): void
+    {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('The bin filenames of this test cannot be created on Windows');
+        }
+
+        $package = $this->createPackageMock();
+        $package->expects($this->any())
+            ->method('getBinaries')
+            ->willReturn([$binFile]);
+
+        $installPath = $this->vendorDir.'/attacker/pkg';
+        self::ensureDirectoryExistsAndClear($installPath);
+        file_put_contents($installPath.'/'.$binFile, "#!/bin/sh\nprintf 'success %s' \"\$1\"\n");
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'proxy', $this->fs);
+        $installer->installBinaries($package, $installPath);
+
+        $proc = new ProcessExecutor();
+        $proc->execute(ProcessExecutor::escape($this->binDir.'/'.$binFile).' arg', $output);
+        self::assertSame('', $proc->getErrorOutput());
+        self::assertSame('success arg', $output, 'The proxy must run the bin and nothing else');
+    }
+
+    /**
+     * @dataProvider unsafeShebangProvider
+     */
+    public function testPhpProxyDoesNotCarryOverAnUnsafeShebang(string $shebang): void
+    {
+        $package = $this->createPackageMock();
+        $package->expects($this->any())
+            ->method('getBinaries')
+            ->willReturn(['binary']);
+
+        $installPath = $this->vendorDir.'/attacker/pkg';
+        self::ensureDirectoryExistsAndClear($installPath);
+        file_put_contents($installPath.'/binary', $shebang."\n<?php\n\necho 'success';");
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'proxy', $this->fs);
+        $installer->installBinaries($package, $installPath);
+
+        $proxy = (string) file_get_contents($this->binDir.'/binary');
+        self::assertStringStartsWith("#!/usr/bin/env php\n", $proxy, 'An unsafe shebang must not be carried over');
+        self::assertStringNotContainsString($shebang, $proxy);
+    }
+
+    public function testWindowsProxyEscapesTheTargetPath(): void
+    {
+        $installPath = $this->vendorDir.'/foo/bar/a&b';
+        $this->fs->ensureDirectoryExists($installPath);
+        file_put_contents($installPath.'/bin%x', "#!/bin/sh\nprintf hi\n");
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'full', $this->fs);
+        $method = new \ReflectionMethod($installer, 'generateWindowsProxyCode');
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
+        $bat = $method->invoke($installer, $installPath.'/bin%x', $this->binDir.'/bin%x.bat');
+
+        // the quoted SET keeps cmd.exe from acting on the & of the path, and the % is doubled as a
+        // batch file collapses %% back to a single %
+        self::assertStringContainsString("SET \"BIN_TARGET=%~dp0/../vendor/foo/bar/a&b/bin%%x\"\r\n", $bat);
+        self::assertStringContainsString("SET \"COMPOSER_RUNTIME_BIN_DIR=%~dp0\"\r\n", $bat);
+    }
+
+    public function testWindowsProxyFallsBackToPhpForAnUnsafeShebang(): void
+    {
+        $installPath = $this->vendorDir.'/attacker/pkg';
+        self::ensureDirectoryExistsAndClear($installPath);
+        file_put_contents($installPath.'/binary', "#!/usr/bin/env php\" \" & calc.exe\n<?php\n\necho 'success';");
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'full', $this->fs);
+        $method = new \ReflectionMethod($installer, 'generateWindowsProxyCode');
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
+        $bat = $method->invoke($installer, $installPath.'/binary', $this->binDir.'/binary.bat');
+
+        self::assertStringNotContainsString('calc.exe', $bat);
+        self::assertStringEndsWith("php \"%BIN_TARGET%\" %*\r\n", $bat);
+    }
+
+    public function testFullCompatSkipsABinWhosePathCannotBeRepresentedInABatProxy(): void
+    {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('The bin filename of this test cannot be created on Windows');
+        }
+
+        $package = $this->createPackageMock();
+        $package->expects($this->any())
+            ->method('getBinaries')
+            ->willReturn(['pw"n']);
+
+        $this->io->expects($this->atLeastOnce())
+            ->method('writeError')
+            ->with($this->stringContains('cannot be used in a Windows bin proxy'));
+
+        $installPath = $this->vendorDir.'/attacker/pkg';
+        self::ensureDirectoryExistsAndClear($installPath);
+        file_put_contents($installPath.'/pw"n', "#!/bin/sh\nprintf hi\n");
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'full', $this->fs);
+        $installer->installBinaries($package, $installPath);
+
+        self::assertFileDoesNotExist($this->binDir.'/pw"n');
+        self::assertFileDoesNotExist($this->binDir.'/pw"n.bat');
+    }
+
+    /**
+     * @dataProvider binaryCallerProvider
+     */
+    public function testDetermineBinaryCaller(string $contents, string $expected): void
+    {
+        $bin = $this->rootDir.'/caller-bin';
+        file_put_contents($bin, $contents);
+
+        self::assertSame($expected, BinaryInstaller::determineBinaryCaller($bin));
+    }
+
+    public function testDetermineBinaryCallerForBatFiles(): void
+    {
+        self::assertSame('call', BinaryInstaller::determineBinaryCaller($this->rootDir.'/does-not-exist.bat'));
+        self::assertSame('call', BinaryInstaller::determineBinaryCaller($this->rootDir.'/does-not-exist.exe'));
+    }
+
+    public static function binaryCallerProvider(): array
+    {
+        return [
+            'env php' => ["#!/usr/bin/env php\n<?php", 'php'],
+            'sh' => ["#!/bin/sh\n", 'sh'],
+            'sh with argument' => ["#!/bin/sh -e\n", 'sh -e'],
+            'php with options' => ["#!/usr/bin/env php -d memory_limit=-1\n", 'php -d memory_limit=-1'],
+            'versioned interpreter' => ["#!/usr/bin/php7.4\n", 'php7.4'],
+            'env with split string' => ["#!/usr/bin/env -S php -d x=1\n", '-S php -d x=1'],
+            'crlf line ending' => ["#!/usr/bin/env php\r\n<?php", 'php'],
+            'trailing whitespace' => ["#!/usr/bin/env php  \n", 'php'],
+            'no shebang' => ["<?php\n", 'php'],
+            'cmd metacharacters' => ["#!/usr/bin/env php\" \" & calc.exe\n", 'php'],
+            'command substitution' => ["#!/usr/bin/env php\$(id)\n", 'php'],
+            'php open tag' => ["#!<?php echo 'PWNED'; ?>\n<?php", 'php'],
+        ];
+    }
+
+    public static function unsafeShebangProvider(): array
+    {
+        return [
+            'php open tag' => ["#!<?php echo 'PWNED'; ?>"],
+            'cmd metacharacters' => ['#!/usr/bin/env php" " & calc.exe'],
+            'command substitution' => ['#!/usr/bin/env php$(id)'],
+        ];
+    }
+
+    public static function injectedBinFilenameProvider(): array
+    {
+        return [
+            'command substitution' => ['pwn$(echo INJECTED >&2)'],
+            'backticks' => ['pwn`echo INJECTED >&2`'],
+            'double quote' => ['pwn";echo INJECTED >&2;"'],
+            'single quote' => ["pwn'quote"],
+        ];
+    }
+
     public static function executableBinaryProvider(): array
     {
         return [
@@ -171,6 +369,8 @@ EOL
 echo 'success '.$_SERVER['argv'][1];
 EOL
             ],
+            'php file with crlf shebang' => ["#!/usr/bin/env php\r\n<?php\n\necho 'success '.\$_SERVER['argv'][1];"],
+            'shell script' => ["#!/bin/sh\nprintf 'success %s' \"\$1\"\n"],
         ];
     }
 
