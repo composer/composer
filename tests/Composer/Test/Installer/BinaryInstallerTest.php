@@ -216,9 +216,9 @@ class BinaryInstallerTest extends TestCase
     }
 
     /**
-     * @dataProvider unsafeShebangProvider
+     * @dataProvider notCarriedOverShebangProvider
      */
-    public function testPhpProxyDoesNotCarryOverAnUnsafeShebang(string $shebang): void
+    public function testPhpProxyOnlyCarriesOverAPlainPhpShebang(string $shebang): void
     {
         $package = $this->createPackageMock();
         $package->expects($this->any())
@@ -273,15 +273,72 @@ class BinaryInstallerTest extends TestCase
         self::assertStringEndsWith("php \"%BIN_TARGET%\" %*\r\n", $bat);
     }
 
-    public function testFullCompatSkipsABinWhosePathCannotBeRepresentedInABatProxy(): void
+    /**
+     * @dataProvider phpShebangProvider
+     */
+    public function testWindowsProxyRunsPhpBinsThroughTheUnixyProxy(string $shebang): void
+    {
+        // the unixy proxy is what defines _composer_autoload_path, so the .bat must point at it
+        // rather than at the bin itself, and the % of its own name must still be doubled
+        $installPath = $this->vendorDir.'/foo/bar';
+        self::ensureDirectoryExistsAndClear($installPath);
+        file_put_contents($installPath.'/bin%x', $shebang."<?php\n\necho 'success';");
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'full', $this->fs);
+        $method = new \ReflectionMethod($installer, 'generateWindowsProxyCode');
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
+        $bat = $method->invoke($installer, $installPath.'/bin%x', $this->binDir.'/bin%x.bat');
+
+        self::assertStringContainsString("SET \"BIN_TARGET=%~dp0/bin%%x\"\r\n", $bat);
+    }
+
+    public static function phpShebangProvider(): array
+    {
+        return [
+            'no shebang' => [''],
+            'env php' => ["#!/usr/bin/env php\n"],
+            'versioned interpreter' => ["#!/usr/bin/php7.4\n"],
+            'php with options' => ["#!/usr/bin/env php -d memory_limit=-1\n"],
+        ];
+    }
+
+    public function testPhpProxyDocblockCannotBeBrokenOutOfWithALineBreak(): void
+    {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('The bin path of this test cannot be created on Windows');
+        }
+
+        // the bin path embedded in the docblock is the one relative to the proxy, so it carries the
+        // user's own project path too, which is not covered by isSafeBinPath()
+        $installPath = $this->vendorDir."/foo/li\r\nne/pkg";
+        $this->fs->ensureDirectoryExists($installPath);
+        file_put_contents($installPath.'/binary', "<?php\n\necho 'success';");
+
+        $proxy = $this->generateProxy($installPath.'/binary', $this->binDir.'/binary');
+
+        $docblock = substr($proxy, 0, (int) strpos($proxy, '*/'));
+        self::assertStringContainsString('@generated', $docblock);
+        self::assertMatchesRegularExpression(
+            '{\n \* This file includes the referenced bin path \(\.\./vendor/foo/li  ne/pkg/binary\)\n}',
+            $docblock,
+            'A line break in the bin path must not break out of its docblock line'
+        );
+    }
+
+    /**
+     * @dataProvider unrepresentableBinDirProvider
+     */
+    public function testFullCompatSkipsABinWhosePathCannotBeRepresentedInABatProxy(string $dirName): void
     {
         if (Platform::isWindows()) {
             $this->markTestSkipped('The bin dir of this test cannot be created on Windows');
         }
 
-        // a double quote is unrepresentable in the .bat proxy, and the bin dir comes from the
-        // user's own config rather than from the package, so isSafeBinPath() does not cover it
-        $binDir = $this->rootDir.'/bin"dir';
+        // these are unrepresentable in the .bat proxy, and the bin dir comes from the user's own
+        // config rather than from the package, so isSafeBinPath() does not cover it
+        $binDir = $this->rootDir.'/'.$dirName;
         $this->fs->ensureDirectoryExists($binDir);
 
         $package = $this->createPackageMock();
@@ -302,6 +359,15 @@ class BinaryInstallerTest extends TestCase
 
         self::assertFileDoesNotExist($binDir.'/binary');
         self::assertFileDoesNotExist($binDir.'/binary.bat');
+    }
+
+    public static function unrepresentableBinDirProvider(): array
+    {
+        return [
+            'double quote' => ['bin"dir'],
+            'line break' => ["bin\ndir"],
+            'batch end of file' => ["bin\x1adir"],
+        ];
     }
 
     public function testInstallBinaryRejectsBinPathWithMetacharacters(): void
@@ -368,12 +434,18 @@ class BinaryInstallerTest extends TestCase
         return [
             'env php' => ["#!/usr/bin/env php\n<?php", 'php'],
             'sh' => ["#!/bin/sh\n", 'sh'],
-            'sh with argument' => ["#!/bin/sh -e\n", 'sh -e'],
-            'php with options' => ["#!/usr/bin/env php -d memory_limit=-1\n", 'php -d memory_limit=-1'],
+            // arguments are never carried into the command position of the .bat proxy
+            'sh with argument' => ["#!/bin/sh -e\n", 'sh'],
+            'php with options' => ["#!/usr/bin/env php -d memory_limit=-1\n", 'php'],
             'versioned interpreter' => ["#!/usr/bin/php7.4\n", 'php7.4'],
-            'env with split string' => ["#!/usr/bin/env -S php -d x=1\n", '-S php -d x=1'],
+            'env with split string' => ["#!/usr/bin/env -S php -d x=1\n", 'php'],
+            // -r/-c would make the interpreter read the bin path following it as code
+            'php with -r' => ["#!/usr/bin/php -r\n", 'php'],
+            'sh with -c' => ["#!/bin/sh -c\n", 'sh'],
             'crlf line ending' => ["#!/usr/bin/env php\r\n<?php", 'php'],
             'trailing whitespace' => ["#!/usr/bin/env php  \n", 'php'],
+            // the kernel only honors a "#!" at the very first byte, so this file has no shebang
+            'leading whitespace' => ["  #!/bin/sh\n", 'php'],
             'no shebang' => ["<?php\n", 'php'],
             'cmd metacharacters' => ["#!/usr/bin/env php\" \" & calc.exe\n", 'php'],
             'command substitution' => ["#!/usr/bin/env php\$(id)\n", 'php'],
@@ -381,12 +453,19 @@ class BinaryInstallerTest extends TestCase
         ];
     }
 
-    public static function unsafeShebangProvider(): array
+    public static function notCarriedOverShebangProvider(): array
     {
         return [
             'php open tag' => ["#!<?php echo 'PWNED'; ?>"],
             'cmd metacharacters' => ['#!/usr/bin/env php" " & calc.exe'],
             'command substitution' => ['#!/usr/bin/env php$(id)'],
+            // the kernel would run these as "<interpreter> -r/-c <proxy path>", making the proxy's
+            // own path, which ends in a package controlled filename, be read as code
+            'php reading the proxy as code' => ['#!/usr/bin/php -r'],
+            'sh reading the proxy as a command' => ['#!/bin/sh -c'],
+            // a non-php interpreter above a "<?php" body can only be there to get the proxy itself
+            // handed to it, the body would not run either way
+            'non-php interpreter' => ['#!/bin/sh'],
         ];
     }
 
