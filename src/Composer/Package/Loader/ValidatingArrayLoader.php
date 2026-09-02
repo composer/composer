@@ -13,6 +13,7 @@
 namespace Composer\Package\Loader;
 
 use Composer\Exception\SecurityException;
+use Composer\Installer\BinaryInstaller;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
@@ -729,10 +730,9 @@ class ValidatingArrayLoader implements LoaderInterface
      * Validates a bin path, returning the reason it is unacceptable or null if it is fine
      *
      * A ".." segment escapes the package install directory and lets the package chmod/point at an
-     * arbitrary host file during install (GHSA-gjfg-22fp-rrxx). The remaining characters cannot
-     * occur in a legitimate bin path and only serve to make the proxy files generated in the bin
-     * dir harder to generate safely, so they are refused at the source. Note that spaces,
-     * backslashes and single quotes are deliberately allowed, as published packages do use them.
+     * arbitrary host file during install (GHSA-gjfg-22fp-rrxx). The character check is the same one
+     * BinaryInstaller applies before generating a proxy, done here as well so that packagist.org
+     * and composer validate flag such a bin at the source.
      */
     private static function findBinError(string $bin): ?string
     {
@@ -740,7 +740,7 @@ class ValidatingArrayLoader implements LoaderInterface
             return 'must not contain a ".." path component';
         }
 
-        if (Preg::isMatch('{[*$`"&^|<>()%!;\x00-\x1f\x7f]}', $bin)) {
+        if (!BinaryInstaller::isSafeBinPath($bin)) {
             return 'must not contain any of the characters *$`"&^|<>()%!; nor control characters';
         }
 

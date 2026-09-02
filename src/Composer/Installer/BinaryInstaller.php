@@ -58,6 +58,13 @@ class BinaryInstaller
         Platform::workaroundFilesystemIssues();
 
         foreach ($binaries as $bin) {
+            // ValidatingArrayLoader rejects these at publish time, but bins reach here from sources
+            // it never sees, e.g. path repositories, custom installers, or the ensureBinariesPresence()
+            // loop which reads installed.json through the non-validating ArrayLoader.
+            if (!self::isSafeBinPath($bin)) {
+                $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': the bin path contains invalid characters</warning>');
+                continue;
+            }
             $binPath = $installPath.'/'.$bin;
             if (!file_exists($binPath)) {
                 $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': file not found in package</warning>');
@@ -157,6 +164,19 @@ class BinaryInstaller
         }
 
         return 'php';
+    }
+
+    /**
+     * Checks that a bin path from a package can be embedded in the generated proxies
+     *
+     * These characters cannot occur in a legitimate bin and only serve to make the proxies harder
+     * to generate safely. Spaces, backslashes and single quotes are deliberately accepted, as
+     * published packages do use them. Only ever pass the package-relative bin path: the absolute
+     * one carries the user's own project path, which may well contain e.g. parentheses.
+     */
+    public static function isSafeBinPath(string $bin): bool
+    {
+        return !Preg::isMatch('{[*$`"&^|<>()%!;\x00-\x1f\x7f]}', $bin);
     }
 
     /**
