@@ -362,7 +362,7 @@ the package is downloaded:
 | --- | --- |
 | `%package%` | the package name, e.g. `acme/lib` |
 | `%version%` | the normalized version, e.g. `1.2.3.0` |
-| `%prettyVersion%` | the version as written, e.g. `1.2.3` |
+| `%prettyVersion%` | the version defined in the tag or composer.json, e.g. `v1.2.3` |
 | `%reference%` | the `reference` above |
 | `%type%` | the `type` above |
 
