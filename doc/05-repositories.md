@@ -649,174 +649,11 @@ for this server will be overwritten. To change this behavior by setting the
 }
 ```
 
-### Package
-
-If you want to use a project that does not support Composer through any of the
-means above, you still can define the package yourself by using a `package`
-repository.
-
-Basically, you define the same information that is included in the `composer`
-repository's `packages.json`, but only for a single package. Again, the
-minimum required fields are `name`, `version`, and either of `dist` or
-`source`.
-
-Here is an example for the smarty template engine:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "package",
-            "package": {
-                "name": "smarty/smarty",
-                "version": "3.1.7",
-                "dist": {
-                    "url": "https://www.smarty.net/files/Smarty-3.1.7.zip",
-                    "type": "zip"
-                },
-                "source": {
-                    "url": "http://smarty-php.googlecode.com/svn/",
-                    "type": "svn",
-                    "reference": "tags/Smarty_3_1_7/distribution/"
-                },
-                "autoload": {
-                    "classmap": ["libs/"]
-                }
-            }
-        }
-    ],
-    "require": {
-        "smarty/smarty": "3.1.*"
-    }
-}
-```
-
-Typically, you would leave the source part off, as you don't really need it.
-
-If a source key is included, the reference field should be a reference to the version that will be installed.
-Where the type field is `git`, this will the be the commit id, branch or tag name.
-
-> **Note**: It is not recommended to use a git branch name for the reference field. While this is valid since it is supported by `git checkout`,
-> branch names are mutable so cannot be locked.
-
-Where the type field is `svn`, the reference field should contain the reference that gets appended to the URL when running `svn co`.
-
-> **Note**: This repository type has a few limitations and should be avoided
-> whenever possible:
->
-> - Composer will not update the package unless you change the `version` field.
-> - Composer will not update the commit references, so if you use `master` as
->   reference you will have to delete the package to force an update, and will
->   have to deal with an unstable lock file.
-
-The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "package",
-            "package": [
-                {
-                    "name": "foo/bar",
-                    "version": "1.0.0",
-                    ...
-                },
-                {
-                    "name": "foo/bar",
-                    "version": "2.0.0",
-                    ...
-                }
-            ]
-        }
-    ]
-}
-```
-
-## Hosting your own
-
-While you will probably want to put your packages on packagist most of the
-time, there are some use cases for hosting your own repository.
-
-* **Private company packages:** If you are part of a company that uses Composer
-  for their packages internally, you might want to keep those packages private.
-
-* **Separate ecosystem:** If you have a project which has its own ecosystem,
-  and the packages aren't really reusable by the greater PHP community, you
-  might want to keep them separate to packagist. An example of this would be
-  WordPress plugins.
-
-For hosting your own packages, a native `composer` type of repository is
-recommended, which provides the best performance.
-
-There are a few tools that can help you create a `composer` repository.
-
-### Private Packagist
-
-[Private Packagist](https://packagist.com/) is a hosted or self-hosted
-application providing private package hosting as well as mirroring of
-GitHub, Packagist.org and other package repositories.
-
-Check out [Packagist.com](https://packagist.com/) for more information.
-
-### Satis
-
-Satis is a static `composer` repository generator. It is a bit like an ultra-
-lightweight, static file-based version of packagist.
-
-You give it a `composer.json` containing repositories, typically VCS and
-package repository definitions. It will fetch all the packages that are
-`require`d and dump a `packages.json` that is your `composer` repository.
-
-Check [the satis GitHub repository](https://github.com/composer/satis) and
-the [handling private packages article](articles/handling-private-packages.md) for more
-information.
-
-### Artifact
-
-There are some cases, when there is no ability to have one of the previously
-mentioned repository types online, even the VCS one. A typical example could be
-cross-organisation library exchange through build artifacts. Of course, most
-of the time these are private. To use these archives as-is, one can use a
-repository of type `artifact` with a folder containing ZIP or TAR archives of
-those private packages:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "artifact",
-            "url": "path/to/directory/with/zips/"
-        }
-    ],
-    "require": {
-        "private-vendor-one/core": "15.6.2",
-        "private-vendor-two/connectivity": "*",
-        "acme-corp/parser": "10.3.5"
-    }
-}
-```
-
-Each zip artifact is a ZIP archive with `composer.json` in root folder:
-
-```shell
-unzip -l acme-corp-parser-10.3.5.zip
-```
-```text
-composer.json
-...
-```
-
-If there are two archives with different versions of a package, they are both
-imported. When an archive with a newer version is added in the artifact folder
-and you run `update`, that version will be imported as well and Composer will
-update to the latest version.
-
 ### Path
 
-In addition to the artifact repository, you can use the path one, which allows
-you to depend on a local directory, either absolute or relative. This can be
-especially useful when dealing with monolithic repositories.
+The `path` repository allows you to depend on a local directory, either
+absolute or relative. This can be especially useful when dealing with
+monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
 ```text
@@ -933,6 +770,169 @@ The following modes exist:
     ]
 }
 ```
+
+### Package
+
+If you want to use a project that does not support Composer through any of the
+means above, you still can define the package yourself by using a `package`
+repository.
+
+Basically, you define the same information that is included in the `composer`
+repository's `packages.json`, but only for a single package. Again, the
+minimum required fields are `name`, `version`, and either of `dist` or
+`source`.
+
+Here is an example for the smarty template engine:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "smarty/smarty",
+                "version": "3.1.7",
+                "dist": {
+                    "url": "https://www.smarty.net/files/Smarty-3.1.7.zip",
+                    "type": "zip"
+                },
+                "source": {
+                    "url": "http://smarty-php.googlecode.com/svn/",
+                    "type": "svn",
+                    "reference": "tags/Smarty_3_1_7/distribution/"
+                },
+                "autoload": {
+                    "classmap": ["libs/"]
+                }
+            }
+        }
+    ],
+    "require": {
+        "smarty/smarty": "3.1.*"
+    }
+}
+```
+
+Typically, you would leave the source part off, as you don't really need it.
+
+If a source key is included, the reference field should be a reference to the version that will be installed.
+Where the type field is `git`, this will the be the commit id, branch or tag name.
+
+> **Note**: It is not recommended to use a git branch name for the reference field. While this is valid since it is supported by `git checkout`,
+> branch names are mutable so cannot be locked.
+
+Where the type field is `svn`, the reference field should contain the reference that gets appended to the URL when running `svn co`.
+
+> **Note**: This repository type has a few limitations and should be avoided
+> whenever possible:
+>
+> - Composer will not update the package unless you change the `version` field.
+> - Composer will not update the commit references, so if you use `master` as
+>   reference you will have to delete the package to force an update, and will
+>   have to deal with an unstable lock file.
+
+The `"package"` key in a `package` repository may be set to an array to define multiple versions of a package:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "foo/bar",
+                    "version": "1.0.0",
+                    ...
+                },
+                {
+                    "name": "foo/bar",
+                    "version": "2.0.0",
+                    ...
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Artifact
+
+There are some cases, when there is no ability to have one of the previously
+mentioned repository types online, even the VCS one. A typical example could be
+cross-organisation library exchange through build artifacts. Of course, most
+of the time these are private. To use these archives as-is, one can use a
+repository of type `artifact` with a folder containing ZIP or TAR archives of
+those private packages:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "artifact",
+            "url": "path/to/directory/with/zips/"
+        }
+    ],
+    "require": {
+        "private-vendor-one/core": "15.6.2",
+        "private-vendor-two/connectivity": "*",
+        "acme-corp/parser": "10.3.5"
+    }
+}
+```
+
+Each zip artifact is a ZIP archive with `composer.json` in root folder:
+
+```shell
+unzip -l acme-corp-parser-10.3.5.zip
+```
+```text
+composer.json
+...
+```
+
+If there are two archives with different versions of a package, they are both
+imported. When an archive with a newer version is added in the artifact folder
+and you run `update`, that version will be imported as well and Composer will
+update to the latest version.
+
+## Hosting your own
+
+While you will probably want to put your packages on packagist most of the
+time, there are some use cases for hosting your own repository.
+
+* **Private company packages:** If you are part of a company that uses Composer
+  for their packages internally, you might want to keep those packages private.
+
+* **Separate ecosystem:** If you have a project which has its own ecosystem,
+  and the packages aren't really reusable by the greater PHP community, you
+  might want to keep them separate to packagist. An example of this would be
+  WordPress plugins.
+
+For hosting your own packages, a native `composer` type of repository is
+recommended, which provides the best performance.
+
+There are a few tools that can help you create a `composer` repository.
+
+### Private Packagist
+
+[Private Packagist](https://packagist.com/) is a hosted or self-hosted
+application providing private package hosting as well as mirroring of
+GitHub, Packagist.org and other package repositories.
+
+Check out [Packagist.com](https://packagist.com/) for more information.
+
+### Satis
+
+Satis is a static `composer` repository generator. It is a bit like an ultra-
+lightweight, static file-based version of packagist.
+
+You give it a `composer.json` containing repositories, typically VCS and
+package repository definitions. It will fetch all the packages that are
+`require`d and dump a `packages.json` that is your `composer` repository.
+
+Check [the satis GitHub repository](https://github.com/composer/satis) and
+the [handling private packages article](articles/handling-private-packages.md) for more
+information.
 
 ## Disabling Packagist.org
 

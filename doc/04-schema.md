@@ -827,9 +827,16 @@ The following repository types are supported:
   using the `options` parameter.
 * **vcs:** The version control system repository can fetch packages from git,
   svn, fossil and hg repositories.
+* **path:** Loads a package from a local directory, given as an absolute or
+  relative path (wildcards are supported). Mostly useful for monolithic
+  repositories; the package is symlinked into `vendor` when possible, and
+  mirrored otherwise.
 * **package:** If you depend on a project that does not have any support for
   Composer whatsoever you can define the package inline using a `package`
   repository. You basically inline the `composer.json` object.
+* **artifact:** Loads packages from a local directory containing ZIP or TAR
+  archives, each with a `composer.json` in its root. Useful for exchanging
+  build artifacts when no repository can be hosted online.
 
 For more information on any of these, see [Repositories](05-repositories.md).
 
@@ -854,6 +861,10 @@ Example:
         {
             "type": "vcs",
             "url": "https://github.com/Seldaek/monolog"
+        },
+        {
+            "type": "path",
+            "url": "../packages/my-package"
         },
         {
             "type": "package",
