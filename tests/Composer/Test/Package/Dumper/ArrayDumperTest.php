@@ -102,6 +102,12 @@ class ArrayDumperTest extends TestCase
                 $datetime->format(DATE_RFC3339),
             ],
             [
+                'published-time',
+                $publishedDatetime = new \DateTime('2012-02-02'),
+                'PublishedDate',
+                $publishedDatetime->format(DATE_RFC3339),
+            ],
+            [
                 'authors',
                 ['Nils Adermann <naderman@naderman.de>', 'Jordi Boggiano <j.boggiano@seld.be>'],
             ],

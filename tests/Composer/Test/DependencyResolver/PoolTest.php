@@ -13,6 +13,7 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\Pool;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Test\TestCase;
 
 class PoolTest extends TestCase
@@ -55,6 +56,39 @@ class PoolTest extends TestCase
         $pool = $this->createPool();
 
         self::assertEquals([], $pool->whatProvides('foo'));
+    }
+
+    public function testGetCooldownInfoPicksChronologicallyEarliestAcrossOffsets(): void
+    {
+        // The two release-date strings sort differently lexically than chronologically
+        // because of their differing UTC offsets:
+        //   1.0.0 => 2026-01-12T01:00:00+02:00  (instant 2026-01-11T23:00:00Z, earlier)
+        //   2.0.0 => 2026-01-12T00:30:00+00:00  (instant 2026-01-12T00:30:00Z, later)
+        // Lexically "2026-01-12T00:30..." < "2026-01-12T01:00...", so a string compare
+        // would wrongly pick 2.0.0 as the soonest-available version.
+        $cooldownRemovedVersions = [
+            'vendor/pkg' => [
+                '1.0.0.0' => [
+                    'prettyVersion' => '1.0.0',
+                    'releaseDate' => '2026-01-12T01:00:00+02:00',
+                    'availableIn' => '5 days',
+                    'source' => 'time',
+                ],
+                '2.0.0.0' => [
+                    'prettyVersion' => '2.0.0',
+                    'releaseDate' => '2026-01-12T00:30:00+00:00',
+                    'availableIn' => '6 days',
+                    'source' => 'time',
+                ],
+            ],
+        ];
+
+        $pool = new Pool([], [], [], [], [], [], [], $cooldownRemovedVersions);
+
+        $info = $pool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('>=', '1.0.0.0'));
+
+        self::assertNotNull($info);
+        self::assertSame('1.0.0', $info['prettyVersion']);
     }
 
     /**

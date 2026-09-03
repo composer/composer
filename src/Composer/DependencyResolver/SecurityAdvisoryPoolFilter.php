@@ -35,15 +35,40 @@ class SecurityAdvisoryPoolFilter
     private $policyConfig;
     /** @var IOInterface */
     private $io;
+    /** @var bool */
+    private $resolveWithoutBlocking;
+    /** @var array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> */
+    private $advisoryMap = [];
 
+    /**
+     * @param bool $resolveWithoutBlocking When true, the advisory map is resolved even if
+     *                                     advisory blocking is disabled, so a downstream
+     *                                     consumer (the cooldown security-fix bypass) can
+     *                                     read it. No packages are removed in that case.
+     */
     public function __construct(
         Auditor $auditor,
         PolicyConfig $policyConfig,
-        IOInterface $io
+        IOInterface $io,
+        bool $resolveWithoutBlocking = false
     ) {
         $this->auditor = $auditor;
         $this->policyConfig = $policyConfig;
         $this->io = $io;
+        $this->resolveWithoutBlocking = $resolveWithoutBlocking;
+    }
+
+    /**
+     * Advisories resolved during the most recent filter() run.
+     *
+     * Exposed so the cooldown filter can let recent, non-vulnerable security
+     * fixes bypass the cooldown without re-fetching advisory data.
+     *
+     * @return array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>
+     */
+    public function getAdvisoryMap(): array
+    {
+        return $this->advisoryMap;
     }
 
     /**
@@ -54,7 +79,9 @@ class SecurityAdvisoryPoolFilter
         $advisories = $this->policyConfig->advisories;
         $abandoned = $this->policyConfig->abandoned;
 
-        if (!$advisories->block) {
+        // Resolve the advisory map when advisory blocking is on, or when a downstream
+        // consumer (the cooldown security-fix bypass) needs it even though blocking is off.
+        if (!$advisories->block && !$this->resolveWithoutBlocking) {
             return $pool;
         }
 
@@ -86,6 +113,12 @@ class SecurityAdvisoryPoolFilter
         }
 
         $advisoryMap = $this->auditor->processAdvisories($allAdvisories['advisories'], $ignoreListForBlocking, $advisories->getIgnoreSeverityForOperation('block'))['advisories'];
+        $this->advisoryMap = $advisoryMap;
+
+        // Blocking is off: we only resolved the map for the cooldown bypass, remove nothing.
+        if (!$advisories->block) {
+            return $pool;
+        }
 
         $ignoreAbandonedForBlocking = $abandoned->getFlatIgnoreForOperation('block');
 

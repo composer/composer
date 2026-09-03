@@ -159,6 +159,9 @@ class PoolBuilder
     /** @var ?FilterListPoolFilter */
     private $filterListPoolFilter;
 
+    /** @var ?CooldownPoolFilter */
+    private $cooldownPoolFilter;
+
     /**
      * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
      * @phpstan-param array<key-of<BasePackage::STABILITIES>, BasePackage::STABILITY_*> $acceptableStabilities
@@ -170,7 +173,7 @@ class PoolBuilder
      * @phpstan-param array<string, string> $rootReferences
      * @param array<string, ConstraintInterface> $temporaryConstraints Runtime temporary constraints that will be used to filter packages
      */
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $temporaryConstraints = [], ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null, ?FilterListPoolFilter $filterListPoolFilter = null)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $temporaryConstraints = [], ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null, ?FilterListPoolFilter $filterListPoolFilter = null, ?CooldownPoolFilter $cooldownPoolFilter = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
@@ -182,6 +185,7 @@ class PoolBuilder
         $this->temporaryConstraints = $temporaryConstraints;
         $this->securityAdvisoryPoolFilter = $securityAdvisoryPoolFilter;
         $this->filterListPoolFilter = $filterListPoolFilter;
+        $this->cooldownPoolFilter = $cooldownPoolFilter;
     }
 
     /**
@@ -358,6 +362,7 @@ class PoolBuilder
         // that were not vulnerable and now suddenly the vulnerable ones are removed and we are missing some versions to make it solvable
         $pool = $this->runSecurityAdvisoryFilter($pool, $repositories, $request);
         $pool = $this->runFilterListFilter($pool, $request);
+        $pool = $this->runCooldownFilter($pool, $request);
         $pool = $this->runOptimizer($request, $pool);
 
         Intervals::clear();
@@ -877,6 +882,40 @@ class PoolBuilder
             number_format($total),
             number_format($filtered),
             round(100 / $total * $filtered)
+        ), true, IOInterface::VERY_VERBOSE);
+
+        return $pool;
+    }
+
+    private function runCooldownFilter(Pool $pool, Request $request): Pool
+    {
+        if (null === $this->cooldownPoolFilter) {
+            return $pool;
+        }
+
+        $this->io->debug('Running cooldown pool filter.');
+
+        // Reuse the advisories already resolved by the security filter so recent
+        // security fixes can bypass the cooldown without a second lookup.
+        if (null !== $this->securityAdvisoryPoolFilter) {
+            $this->cooldownPoolFilter->setSecurityAdvisories($this->securityAdvisoryPoolFilter->getAdvisoryMap());
+        }
+
+        $before = microtime(true);
+        $total = \count($pool->getPackages());
+
+        $pool = $this->cooldownPoolFilter->filter($pool, $request);
+
+        $filtered = $total - \count($pool->getPackages());
+
+        if (0 === $filtered) {
+            return $pool;
+        }
+
+        $this->io->write(sprintf('Cooldown pool filter completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERY_VERBOSE);
+        $this->io->write(sprintf(
+            '<info>%d package version(s) withheld by the cooldown policy.</info>',
+            $filtered
         ), true, IOInterface::VERY_VERBOSE);
 
         return $pool;

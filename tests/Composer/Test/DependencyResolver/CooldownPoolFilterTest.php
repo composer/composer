@@ -1,0 +1,878 @@
+<?php declare(strict_types=1);
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Composer\Test\DependencyResolver;
+
+use Composer\Advisory\PartialSecurityAdvisory;
+use Composer\Advisory\SecurityAdvisory;
+use Composer\DependencyResolver\Pool;
+use Composer\Policy\CooldownPolicyConfig;
+use Composer\Policy\IgnorePackageRule;
+use Composer\Policy\ListPolicyConfig;
+use Composer\DependencyResolver\CooldownPoolFilter;
+use Composer\DependencyResolver\Request;
+use Composer\Package\Link;
+use Composer\Package\Package;
+use Composer\Package\RootPackage;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
+use Composer\Semver\Constraint\MultiConstraint;
+use Composer\Semver\VersionParser;
+use Composer\Test\TestCase;
+use DateTimeImmutable;
+
+class CooldownPoolFilterTest extends TestCase
+{
+    public function testFilterNewPackages(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $oldPackage = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $oldPackage->setReleaseDate(new DateTimeImmutable('2026-01-01 12:00:00'));
+
+        $newPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $newPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00')); // 1 day old
+
+        $pool = new Pool([$oldPackage, $newPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertSame([$oldPackage], $filteredPool->getPackages());
+        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
+    }
+
+    public function testAvailableInReportsTotalDaysForLongWaitsSpanningMultipleMonths(): void
+    {
+        // 60-day cooldown; released 1 day ago -> available in 59 days
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 60 * 24 * 3600);
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $package = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $package->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $pool = new Pool([$package]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0'));
+        self::assertNotNull($info);
+        self::assertSame('59 days', $info['availableIn']);
+    }
+
+    public function testPublishedDateTakesPrecedenceOverReleaseDate(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // Author-controlled `time` claims the version is old enough, but the
+        // server-set published date shows it is actually brand new -> withheld
+        $package = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $package->setReleaseDate(new DateTimeImmutable('2025-01-01 12:00:00'));
+        $package->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $pool = new Pool([$package]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        self::assertEmpty($filteredPool->getPackages());
+        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0'));
+        self::assertNotNull($info);
+        self::assertSame('published-time', $info['source']);
+    }
+
+    public function testFallsBackToReleaseDateWhenNoPublishedDate(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $package = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $package->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00')); // no published date
+
+        $pool = new Pool([$package]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        self::assertEmpty($filteredPool->getPackages());
+        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0'));
+        self::assertNotNull($info);
+        self::assertSame('time', $info['source']);
+    }
+
+    public function testIgnoredPackagesAreNotFiltered(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [
+            'internal/*' => [new IgnorePackageRule('internal/*', new MatchAllConstraint(), 'Internal packages')],
+        ], 7 * 24 * 3600);
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $newPackage = new Package('internal/pkg', '1.0.0.0', '1.0.0');
+        $newPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $pool = new Pool([$newPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertSame([$newPackage], $filteredPool->getPackages());
+        $this->assertFalse($filteredPool->isCooldownRemovedPackageVersion('internal/pkg', new Constraint('==', '1.0.0.0')));
+    }
+
+    public function testDevVersionsAreNotFiltered(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600);
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $devPackage = new Package('vendor/pkg', 'dev-main', 'dev-main');
+        $devPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $pool = new Pool([$devPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertSame([$devPackage], $filteredPool->getPackages());
+    }
+
+    public function testPackagesWithoutReleaseDateAreNotFiltered(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600);
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $package = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        // No release date set
+
+        $pool = new Pool([$package]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertSame([$package], $filteredPool->getPackages());
+    }
+
+    public function testDisabledConfigDoesNotFilter(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], null);
+        $filter = new CooldownPoolFilter($config);
+
+        $newPackage = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $newPackage->setReleaseDate(new DateTimeImmutable('now'));
+
+        $pool = new Pool([$newPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertSame([$newPackage], $filteredPool->getPackages());
+    }
+
+    public function testZeroConfigDoesNotFilter(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 0);
+        $filter = new CooldownPoolFilter($config);
+
+        $newPackage = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $newPackage->setReleaseDate(new DateTimeImmutable('now'));
+
+        $pool = new Pool([$newPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertSame([$newPackage], $filteredPool->getPackages());
+    }
+
+    public function testCooldownInfoIsStored(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $newPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $newPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $pool = new Pool([$newPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertEmpty($filteredPool->getPackages());
+
+        $releaseAgeInfo = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0'));
+        $this->assertNotNull($releaseAgeInfo);
+        $this->assertSame('2.0.0', $releaseAgeInfo['prettyVersion']);
+        $this->assertArrayHasKey('releaseDate', $releaseAgeInfo);
+        $this->assertArrayHasKey('availableIn', $releaseAgeInfo);
+    }
+
+    public function testOldEnoughPackagesAreKept(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 24 * 3600); // 1 day
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $oldEnoughPackage = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $oldEnoughPackage->setReleaseDate(new DateTimeImmutable('2026-01-13 12:00:00')); // 2 days old
+
+        $pool = new Pool([$oldEnoughPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertSame([$oldEnoughPackage], $filteredPool->getPackages());
+    }
+
+    public function testExactlyAtCutoffIsFiltered(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 24 * 3600); // 1 day
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // Package released exactly 24 hours ago should still be filtered (>= not >)
+        $exactCutoffPackage = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $exactCutoffPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $pool = new Pool([$exactCutoffPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Package at exact cutoff should be kept (it's exactly old enough)
+        $this->assertSame([$exactCutoffPackage], $filteredPool->getPackages());
+    }
+
+    public function testSecurityFixBypassesCooldownRequirement(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // Create a security advisory reported on Jan 10
+        $versionParser = new VersionParser();
+        $advisory = new SecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0'), // affects versions < 2.0.0
+            'Security vulnerability in vendor/pkg',
+            [['name' => 'packagist', 'remoteId' => 'ADVISORY-1']],
+            new DateTimeImmutable('2026-01-10 12:00:00'), // reported Jan 10
+            'CVE-2026-0001'
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // Package 2.0.0 released on Jan 12 (after advisory, not affected)
+        // This should bypass release age requirement as it's a security fix
+        $securityFixPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $securityFixPackage->setReleaseDate(new DateTimeImmutable('2026-01-12 12:00:00')); // 3 days old, would normally be filtered
+
+        $pool = new Pool([$securityFixPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Should NOT be filtered because it's a security fix
+        $this->assertSame([$securityFixPackage], $filteredPool->getPackages());
+    }
+
+    public function testOnlyOldestSecurityFixBypassesWhenReleasedInTheSameSecond(): void
+    {
+        // Two non-affected fixes match the same constraint part and share the same whole second
+        // but differ by a fraction. Only the genuinely oldest one may bypass the cooldown; the
+        // later sibling must stay withheld (regression test for the whole-second comparison bug).
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        $advisory = new SecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0'),
+            'Security vulnerability in vendor/pkg',
+            [['name' => 'packagist', 'remoteId' => 'ADVISORY-1']],
+            new DateTimeImmutable('2026-01-10 12:00:00'),
+            'CVE-2026-0001'
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        $oldestFix = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $oldestFix->setReleaseDate(new DateTimeImmutable('2026-01-12 12:00:00.000000'));
+
+        $laterFix = new Package('vendor/pkg', '2.0.1.0', '2.0.1');
+        $laterFix->setReleaseDate(new DateTimeImmutable('2026-01-12 12:00:00.500000'));
+
+        $pool = new Pool([$oldestFix, $laterFix]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Only the oldest fix bypasses; the same-second-but-later one stays held by the cooldown.
+        $this->assertSame([$oldestFix], $filteredPool->getPackages());
+    }
+
+    public function testSecurityFixBypassesCooldownWhenAdvisoryIsUnderReplacedName(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // Advisory is recorded under the original package name, not the fork's own name.
+        $versionParser = new VersionParser();
+        $advisory = new SecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0'),
+            'Security vulnerability in vendor/pkg',
+            [['name' => 'packagist', 'remoteId' => 'ADVISORY-1']],
+            new DateTimeImmutable('2026-01-10 12:00:00'),
+            'CVE-2026-0001'
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // The fork replaces vendor/pkg; its fresh release fixes the advisory.
+        $securityFixPackage = new Package('vendor/pkg-fork', '2.0.0.0', '2.0.0');
+        $securityFixPackage->setReplaces([
+            'vendor/pkg' => new Link('vendor/pkg-fork', 'vendor/pkg', new MatchAllConstraint(), Link::TYPE_REPLACE),
+        ]);
+        $securityFixPackage->setReleaseDate(new DateTimeImmutable('2026-01-12 12:00:00')); // within cooldown
+
+        $pool = new Pool([$securityFixPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // The advisory keyed under the replaced name must still grant the bypass.
+        $this->assertSame([$securityFixPackage], $filteredPool->getPackages());
+    }
+
+    public function testVulnerableVersionDoesNotBypassCooldownRequirement(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        $advisory = new SecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0'), // affects versions < 2.0.0
+            'Security vulnerability in vendor/pkg',
+            [['name' => 'packagist', 'remoteId' => 'ADVISORY-1']],
+            new DateTimeImmutable('2026-01-10 12:00:00'),
+            'CVE-2026-0001'
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // Package 1.9.0 is still affected by the advisory
+        $vulnerablePackage = new Package('vendor/pkg', '1.9.0.0', '1.9.0');
+        $vulnerablePackage->setReleaseDate(new DateTimeImmutable('2026-01-12 12:00:00'));
+
+        $pool = new Pool([$vulnerablePackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Should be filtered because it's still vulnerable (not a security fix)
+        $this->assertEmpty($filteredPool->getPackages());
+    }
+
+    public function testPackageReleasedBeforeAdvisoryDoesNotBypass(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        $advisory = new SecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0'),
+            'Security vulnerability',
+            [['name' => 'packagist', 'remoteId' => 'ADVISORY-1']],
+            new DateTimeImmutable('2026-01-12 12:00:00'), // reported Jan 12
+            'CVE-2026-0001'
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // Package released BEFORE the advisory was reported (Jan 10)
+        // Not a security fix - it existed before the vulnerability was known
+        $preAdvisoryPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $preAdvisoryPackage->setReleaseDate(new DateTimeImmutable('2026-01-10 12:00:00'));
+
+        $pool = new Pool([$preAdvisoryPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Should be filtered because it was released before the advisory
+        $this->assertEmpty($filteredPool->getPackages());
+    }
+
+    public function testPackageReleasedAfterBypassWindowDoesNotBypass(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days minimum age, 14 days bypass window
+        $now = new DateTimeImmutable('2026-02-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        $advisory = new SecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0'),
+            'Security vulnerability',
+            [['name' => 'packagist', 'remoteId' => 'ADVISORY-1']],
+            new DateTimeImmutable('2026-01-01 12:00:00'), // reported Jan 1
+            'CVE-2026-0001'
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // Package released on Feb 10 - way after the bypass window (14 days from Jan 1 = Jan 15)
+        $latePackage = new Package('vendor/pkg', '2.1.0.0', '2.1.0');
+        $latePackage->setReleaseDate(new DateTimeImmutable('2026-02-10 12:00:00'));
+
+        $pool = new Pool([$latePackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Should be filtered because it was released after the bypass window
+        $this->assertEmpty($filteredPool->getPackages());
+    }
+
+    public function testSecurityFixWithinBypassWindow(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days minimum age, 14 days bypass window
+        $now = new DateTimeImmutable('2026-01-20 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        $advisory = new SecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0'),
+            'Security vulnerability',
+            [['name' => 'packagist', 'remoteId' => 'ADVISORY-1']],
+            new DateTimeImmutable('2026-01-05 12:00:00'), // reported Jan 5
+            'CVE-2026-0001'
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // Package released on Jan 18 - within bypass window (14 days from Jan 5 = Jan 19)
+        $securityFixPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $securityFixPackage->setReleaseDate(new DateTimeImmutable('2026-01-18 12:00:00')); // 2 days old
+
+        $pool = new Pool([$securityFixPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Should NOT be filtered because it's within the bypass window
+        $this->assertSame([$securityFixPackage], $filteredPool->getPackages());
+    }
+
+    public function testPartialSecurityAdvisoryRecentVersionBypassesCooldown(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days minimum age, 14 days bypass window
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        // PartialSecurityAdvisory has no reportedAt date
+        $advisory = new PartialSecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0') // affects versions < 2.0.0
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // Package 2.0.0 released 2 days ago - within 2x bypass window from now (14 days)
+        // Not affected by advisory, should bypass release age requirement
+        $securityFixPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $securityFixPackage->setReleaseDate(new DateTimeImmutable('2026-01-13 12:00:00'));
+
+        $pool = new Pool([$securityFixPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Should NOT be filtered because it's a recent security fix
+        $this->assertSame([$securityFixPackage], $filteredPool->getPackages());
+    }
+
+    public function testPartialSecurityAdvisoryOldVersionDoesNotBypass(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days minimum age, 14 days bypass window
+        $now = new DateTimeImmutable('2026-02-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        // PartialSecurityAdvisory has no reportedAt date
+        $advisory = new PartialSecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0')
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // Package 2.0.0 released on Jan 1 - more than 14 days ago (outside bypass window from now)
+        // Even though not affected by advisory, it's too old to get the bypass
+        $oldPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $oldPackage->setReleaseDate(new DateTimeImmutable('2026-01-01 12:00:00'));
+
+        $pool = new Pool([$oldPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Package is old enough to pass the normal release age check (44 days old > 7 days)
+        // So it should be kept regardless of security bypass
+        $this->assertSame([$oldPackage], $filteredPool->getPackages());
+    }
+
+    public function testPartialSecurityAdvisoryVulnerableVersionDoesNotBypass(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        $advisory = new PartialSecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0')
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // Package 1.9.0 is still affected by the advisory
+        $vulnerablePackage = new Package('vendor/pkg', '1.9.0.0', '1.9.0');
+        $vulnerablePackage->setReleaseDate(new DateTimeImmutable('2026-01-13 12:00:00'));
+
+        $pool = new Pool([$vulnerablePackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Should be filtered because it's still vulnerable
+        $this->assertEmpty($filteredPool->getPackages());
+    }
+
+    public function testDeadlockScenarioWithPartialSecurityAdvisory(): void
+    {
+        // Verifies the following scenario:
+        // - Security advisory blocks all old versions (< 2.0.0)
+        // - Cooldown policy would block all new versions (>= 2.0.0)
+        // - Version 2.0.0 is a security fix => should be allowed
+
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        // PartialSecurityAdvisory (no reportedAt)
+        $advisory = new PartialSecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0') // affects versions < 2.0.0
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // Version 2.0.0 - the security fix, released 2 days ago (too new for normal cooldown)
+        $securityFixPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $securityFixPackage->setReleaseDate(new DateTimeImmutable('2026-01-13 12:00:00'));
+
+        $pool = new Pool([$securityFixPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Should NOT be filtered
+        $this->assertSame([$securityFixPackage], $filteredPool->getPackages());
+        $this->assertFalse($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
+    }
+
+    public function testOnlyOldestSecurityFixBypassesCooldown(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        $advisory = new PartialSecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0')
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // Multiple security fix versions - all newer than cooldown policy allows
+        $fix1 = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $fix1->setReleaseDate(new DateTimeImmutable('2026-01-10 12:00:00')); // Oldest fix
+
+        $fix2 = new Package('vendor/pkg', '2.0.1.0', '2.0.1');
+        $fix2->setReleaseDate(new DateTimeImmutable('2026-01-12 12:00:00'));
+
+        $fix3 = new Package('vendor/pkg', '2.1.0.0', '2.1.0');
+        $fix3->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00')); // Newest fix
+
+        $pool = new Pool([$fix1, $fix2, $fix3]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Only the oldest security fix should bypass
+        $this->assertCount(1, $filteredPool->getPackages());
+        $this->assertSame($fix1, $filteredPool->getPackages()[0]);
+    }
+
+    public function testOldestSecurityFixPerDisjunctiveConstraintPartBypassesCooldown(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+
+        // Two advisories affecting different major version ranges
+        $advisory3x = new PartialSecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-3X',
+            $versionParser->parseConstraints('>=3.0.0 <3.6.0')
+        );
+        $advisory4x = new PartialSecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-4X',
+            $versionParser->parseConstraints('>=4.0.0 <4.2.0')
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory3x, $advisory4x],
+        ]);
+
+        // Security fixes for 3.x branch
+        $fix3a = new Package('vendor/pkg', '3.6.0.0', '3.6.0');
+        $fix3a->setReleaseDate(new DateTimeImmutable('2026-01-10 12:00:00')); // Oldest 3.x fix
+
+        $fix3b = new Package('vendor/pkg', '3.6.1.0', '3.6.1');
+        $fix3b->setReleaseDate(new DateTimeImmutable('2026-01-12 12:00:00'));
+
+        // Security fixes for 4.x branch
+        $fix4a = new Package('vendor/pkg', '4.2.0.0', '4.2.0');
+        $fix4a->setReleaseDate(new DateTimeImmutable('2026-01-11 12:00:00')); // Oldest 4.x fix
+
+        $fix4b = new Package('vendor/pkg', '4.2.1.0', '4.2.1');
+        $fix4b->setReleaseDate(new DateTimeImmutable('2026-01-13 12:00:00'));
+
+        $pool = new Pool([$fix3a, $fix3b, $fix4a, $fix4b]);
+
+        // Create a disjunctive constraint: ^3.0 || ^4.0
+        $constraint = new MultiConstraint([
+            $versionParser->parseConstraints('^3.0'),
+            $versionParser->parseConstraints('^4.0'),
+        ], false); // false = disjunctive (OR)
+
+        $request = new Request();
+        $request->requireName('vendor/pkg', $constraint);
+
+        $filteredPool = $filter->filter($pool, $request);
+
+        // Should have oldest fix from each constraint part: 3.6.0 and 4.2.0
+        $this->assertCount(2, $filteredPool->getPackages());
+        $packageVersions = array_map(function ($p) { return $p->getPrettyVersion(); }, $filteredPool->getPackages());
+        $this->assertContains('3.6.0', $packageVersions);
+        $this->assertContains('4.2.0', $packageVersions);
+    }
+
+    public function testMultipleMinorVersionBranchesWithDisjunctiveConstraint(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+
+        // Advisories affecting different minor version ranges
+        $advisory35 = new PartialSecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-35',
+            $versionParser->parseConstraints('>=3.5.0 <3.5.18')
+        );
+        $advisory36 = new PartialSecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-36',
+            $versionParser->parseConstraints('>=3.6.0 <3.6.3')
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory35, $advisory36],
+        ]);
+
+        // Security fixes for 3.5.x branch
+        $fix35 = new Package('vendor/pkg', '3.5.18.0', '3.5.18');
+        $fix35->setReleaseDate(new DateTimeImmutable('2026-01-10 12:00:00'));
+
+        // Security fixes for 3.6.x branch
+        $fix36 = new Package('vendor/pkg', '3.6.3.0', '3.6.3');
+        $fix36->setReleaseDate(new DateTimeImmutable('2026-01-11 12:00:00'));
+
+        $pool = new Pool([$fix35, $fix36]);
+
+        // Create a disjunctive constraint: ^3.5.0 || ^3.6.0
+        $constraint = new MultiConstraint([
+            $versionParser->parseConstraints('^3.5.0'),
+            $versionParser->parseConstraints('^3.6.0'),
+        ], false);
+
+        $request = new Request();
+        $request->requireName('vendor/pkg', $constraint);
+
+        $filteredPool = $filter->filter($pool, $request);
+
+        // Should have oldest fix from each constraint part: 3.5.18 and 3.6.3
+        $this->assertCount(2, $filteredPool->getPackages());
+        $packageVersions = array_map(function ($p) { return $p->getPrettyVersion(); }, $filteredPool->getPackages());
+        $this->assertContains('3.5.18', $packageVersions);
+        $this->assertContains('3.6.3', $packageVersions);
+    }
+
+    public function testSecurityFixBypassWithNoConstraintInRequest(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $versionParser = new VersionParser();
+        $advisory = new PartialSecurityAdvisory(
+            'vendor/pkg',
+            'ADVISORY-1',
+            $versionParser->parseConstraints('<2.0.0')
+        );
+
+        $filter->setSecurityAdvisories([
+            'vendor/pkg' => [$advisory],
+        ]);
+
+        // Multiple security fix versions
+        $fix1 = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $fix1->setReleaseDate(new DateTimeImmutable('2026-01-10 12:00:00')); // Oldest
+
+        $fix2 = new Package('vendor/pkg', '2.1.0.0', '2.1.0');
+        $fix2->setReleaseDate(new DateTimeImmutable('2026-01-12 12:00:00'));
+
+        $fix3 = new Package('vendor/pkg', '3.0.0.0', '3.0.0');
+        $fix3->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $pool = new Pool([$fix1, $fix2, $fix3]);
+
+        // No constraint in request - all fixes treated as one group
+        $request = new Request();
+
+        $filteredPool = $filter->filter($pool, $request);
+
+        // Only the oldest should bypass (all treated as one group with MatchAllConstraint)
+        $this->assertCount(1, $filteredPool->getPackages());
+        $this->assertSame($fix1, $filteredPool->getPackages()[0]);
+    }
+
+    public function testRootPackageNotFiltered(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // Create a root package that would normally be filtered (too new)
+        $rootPackage = new RootPackage('my/project', '1.0.0.0', '1.0.0');
+        $rootPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00')); // 1 day old
+
+        $pool = new Pool([$rootPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Root packages should never be filtered
+        $this->assertSame([$rootPackage], $filteredPool->getPackages());
+    }
+
+    public function testPlatformPackagesNotFiltered(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // Create platform packages that would normally be filtered
+        $phpPackage = new Package('php', '8.3.0.0', '8.3.0');
+        $phpPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $extPackage = new Package('ext-json', '8.3.0.0', '8.3.0');
+        $extPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $libPackage = new Package('lib-openssl', '3.0.0.0', '3.0.0');
+        $libPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        $pool = new Pool([$phpPackage, $extPackage, $libPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Platform packages should never be filtered
+        $this->assertCount(3, $filteredPool->getPackages());
+        $this->assertContains($phpPackage, $filteredPool->getPackages());
+        $this->assertContains($extPackage, $filteredPool->getPackages());
+        $this->assertContains($libPackage, $filteredPool->getPackages());
+    }
+
+    public function testLockedPackagesNotFiltered(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // Create a package that would normally be filtered
+        $lockedPackage = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $lockedPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+
+        // Create request with the package as locked
+        $request = new Request();
+        $request->lockPackage($lockedPackage);
+
+        $pool = new Pool([$lockedPackage]);
+        $filteredPool = $filter->filter($pool, $request);
+
+        // Locked packages should never be filtered
+        $this->assertSame([$lockedPackage], $filteredPool->getPackages());
+    }
+
+    public function testPackageWithMultipleNamesTrackedCorrectly(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // Create a package with provides (will have multiple names)
+        $newPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $newPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+        $newPackage->setProvides([
+            'vendor/pkg-alias' => new \Composer\Package\Link(
+                'vendor/pkg',
+                'vendor/pkg-alias',
+                new Constraint('==', '2.0.0.0'),
+                \Composer\Package\Link::TYPE_PROVIDE,
+                '2.0.0'
+            ),
+        ]);
+
+        $pool = new Pool([$newPackage]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        // Package should be filtered
+        $this->assertEmpty($filteredPool->getPackages());
+
+        // Both the main name and the provided name should be tracked
+        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
+        // Note: getNames(false) returns the package's own names, not provides
+        // The provides are tracked separately, so we only check the main name here
+    }
+}

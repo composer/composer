@@ -60,6 +60,14 @@ class Auditor
     public const STATUS_OK = 0;
     public const STATUS_FAILED = 1;
 
+    /** @var CooldownAuditor */
+    private $cooldownAuditor;
+
+    public function __construct(?CooldownAuditor $cooldownAuditor = null)
+    {
+        $this->cooldownAuditor = $cooldownAuditor ?? new CooldownAuditor();
+    }
+
     /**
      * @param PolicyConfig $policyConfig Source of truth for ignore lists, severity filters, and per-list audit settings.
      * @param PackageInterface[] $packages
@@ -124,7 +132,16 @@ class Auditor
             }
         }
 
-        $auditResult = (0 < $affectedPackagesCount || 0 < $abandonedCount || 0 < $filteredCount) ? self::STATUS_FAILED : self::STATUS_OK;
+        $cooldownPackages = [];
+        $cooldownCount = 0;
+        if ($policyConfig->cooldown->audit !== ListPolicyConfig::AUDIT_IGNORE) {
+            $cooldownPackages = $this->cooldownAuditor->collect($packages, $policyConfig->cooldown);
+            if ($policyConfig->cooldown->audit === ListPolicyConfig::AUDIT_FAIL) {
+                $cooldownCount = count($cooldownPackages);
+            }
+        }
+
+        $auditResult = (0 < $affectedPackagesCount || 0 < $abandonedCount || 0 < $filteredCount || 0 < $cooldownCount) ? self::STATUS_FAILED : self::STATUS_OK;
 
         if (self::FORMAT_JSON === $format) {
             $json = ['advisories' => $advisories];
@@ -147,6 +164,7 @@ class Auditor
                     return $data;
                 }, $entries);
             }, $filteredPackages);
+            $json['cooldown'] = $cooldownPackages;
 
             $io->write(JsonFile::encode($json));
 
@@ -199,7 +217,37 @@ class Auditor
             }
         }
 
+        if (count($cooldownPackages) > 0) {
+            $plurality = count($cooldownPackages) === 1 ? '' : 's';
+            $punctuation = $format === self::FORMAT_SUMMARY ? '.' : ':';
+            $style = $cooldownCount > 0 ? 'error' : 'warning';
+
+            $io->writeError(sprintf('<%s>Found %d package%s within the cooldown configured in "policy.cooldown"%s</%s>', $style, count($cooldownPackages), $plurality, $punctuation, $style));
+            if ($format !== self::FORMAT_SUMMARY) {
+                $this->outputCooldownPackages($io, $cooldownPackages);
+            }
+        }
+
         return $auditResult;
+    }
+
+    /**
+     * @param array<string, array{prettyVersion: string, releaseDate: string, availableIn: string, source: string}> $cooldownPackages
+     */
+    private function outputCooldownPackages(IOInterface $io, array $cooldownPackages): void
+    {
+        foreach ($cooldownPackages as $name => $info) {
+            $io->writeError(sprintf(
+                '  - %s (%s) published %s, available in %s',
+                $name,
+                $info['prettyVersion'],
+                $info['releaseDate'],
+                $info['availableIn']
+            ));
+            if ($info['source'] === 'time') {
+                $io->writeError('    The cooldown used the package-supplied release date because the repository did not provide an authoritative publication timestamp.');
+            }
+        }
     }
 
     /**
