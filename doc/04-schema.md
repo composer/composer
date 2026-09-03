@@ -354,6 +354,36 @@ The same applies as for [source](04-schema.md#source): this is normally
 provided by the repository the package comes from, and written by hand only in
 a [`package` repository](05-repositories.md#package-1).
 
+The `url` may contain placeholders, which is what lets one URL serve every
+version of a package instead of one entry per version. They are expanded when
+the package is downloaded:
+
+| Placeholder | Replaced by |
+| --- | --- |
+| `%package%` | the package name, e.g. `acme/lib` |
+| `%version%` | the normalized version, e.g. `1.2.3.0` |
+| `%prettyVersion%` | the version as written, e.g. `1.2.3` |
+| `%reference%` | the `reference` above |
+| `%type%` | the `type` above |
+
+```json
+{
+    "dist": {
+        "type": "zip",
+        "url": "https://example.org/dist/%package%/%prettyVersion%.zip"
+    }
+}
+```
+
+Two of them are hashed rather than inserted as-is, so that they cannot produce
+a path segment or escape the URL: `%version%` is replaced by its MD5 hash when
+the version contains a `/`, as `dev-feature/x` does, and `%reference%` by its
+MD5 hash unless it is already hexadecimal. A branch or tag name given as the
+reference therefore appears hashed in the URL.
+
+Placeholders are expanded in `dist` only. A `source` url is used as it is, since
+the VCS it names is cloned once and then checked out at the reference.
+
 Optional.
 
 ### Package links
