@@ -306,6 +306,56 @@ An example:
 
 Optional.
 
+### source
+
+Where the package sources live, used when installing the package from source.
+
+`type`, `url` and `reference` are required, `mirrors` is optional.
+
+```json
+{
+    "source": {
+        "type": "git",
+        "url": "https://github.com/composer/composer.git",
+        "reference": "2.8.0"
+    }
+}
+```
+
+Where `type` is `git`, the reference is a commit id, branch or tag name. Where
+it is `svn`, it is the reference that gets appended to the URL when running
+`svn co`.
+
+You normally do not write this field yourself. The repository a package comes
+from provides it: Packagist and other `composer` repositories fill it in from
+the VCS they read the package from, and a VCS repository fills it in from the
+branch or tag it is reading. The place you do write it by hand is the
+definition of a [`package` repository](05-repositories.md#package-1).
+
+Optional.
+
+### dist
+
+Where the package archive lives, used when installing the package from dist.
+
+`type` and `url` are required, `reference`, `shasum` and `mirrors` are
+optional.
+
+```json
+{
+    "dist": {
+        "type": "zip",
+        "url": "https://www.smarty.net/files/Smarty-3.1.7.zip"
+    }
+}
+```
+
+The same applies as for [source](04-schema.md#source): this is normally
+provided by the repository the package comes from, and written by hand only in
+a [`package` repository](05-repositories.md#package-1).
+
+Optional.
+
 ### Package links
 
 All of the following take an object which maps package names to
@@ -931,6 +981,47 @@ through the use of scripts.
 
 See [Scripts](articles/scripts.md) for events details and examples.
 
+### scripts-descriptions <span>([root-only](04-schema.md#root-package))</span>
+
+Descriptions for the custom commands defined in `scripts`, shown by
+`composer list` and `composer run -l` instead of the default
+"Runs the ... script as defined in composer.json".
+
+```json
+{
+    "scripts-descriptions": {
+        "test": "Run all tests!"
+    }
+}
+```
+
+`composer validate` warns about a description given for a script that does
+not exist.
+
+See [Scripts](articles/scripts.md#custom-descriptions) for more details.
+
+Optional.
+
+### scripts-aliases <span>([root-only](04-schema.md#root-package))</span>
+
+Alternate names for the custom commands defined in `scripts`, as an array of
+strings per script. Available as of Composer 2.7.
+
+```json
+{
+    "scripts-aliases": {
+        "phpstan": ["stan", "analyze"]
+    }
+}
+```
+
+`composer validate` warns about aliases given for a script that does not
+exist.
+
+See [Scripts](articles/scripts.md#custom-aliases) for more details.
+
+Optional.
+
 ### extra
 
 Arbitrary extra data for consumption by `scripts`.
@@ -995,6 +1086,20 @@ The example will include `/dir/foo/bar/file`, `/foo/bar/baz`, `/file.php`,
 
 Optional.
 
+### php-ext
+
+Settings for a PHP extension package, read by
+[PIE](https://github.com/php/pie) rather than by Composer itself.
+
+It can only be set by packages whose [type](04-schema.md#type) is `php-ext` or
+`php-ext-zend`, the two types reserved for extensions written in C.
+`composer validate` reports an error on any other package.
+
+See [PIE for extension maintainers](https://github.com/php/pie/blob/HEAD/docs/extension-maintainers.md#the-php-ext-definition)
+for the settings it accepts.
+
+Optional.
+
 ### abandoned
 
 Indicates whether this package has been abandoned.
@@ -1027,6 +1132,19 @@ Top level key used as a place to store comments (it can be a string or array of 
 Defaults to empty.
 
 Optional.
+
+### default-branch
+
+Indicates whether this version is the default branch of the VCS repository the
+package was read from.
+
+This one is for Composer's own use, do not set it in `composer.json`. Composer
+discards whatever the file contains and sets it itself, to `true` on the branch
+that the repository reports as its default one and on nothing else. It ends up
+in the metadata that `composer` repositories serve, which is where you may see
+it.
+
+Defaults to `false`.
 
 ### non-feature-branches
 
