@@ -51,6 +51,61 @@ class SuggestsCommandTest extends TestCase
     }
 
     /**
+     * @dataProvider provideMissingPackageFilters
+     * @param list<string> $filters
+     */
+    public function testFailsWhenFilteringByNonInstalledPackages(array $filters, string $message): void
+    {
+        $this->initTempComposer();
+
+        $appTester = $this->getApplicationTester();
+
+        self::assertEquals(Command::FAILURE, $appTester->run(['command' => 'suggest', 'packages' => $filters], ['capture_stderr_separately' => true]));
+        self::assertSame('', $appTester->getDisplay(true));
+        self::assertSame($message, trim($appTester->getErrorOutput(true)));
+    }
+
+    public static function provideMissingPackageFilters(): \Generator
+    {
+        yield 'single' => [['Vendor/Not-Installed'], 'Package "Vendor/Not-Installed" is not installed.'];
+        yield 'multiple' => [['Vendor/Not-Installed', 'other/missing'], 'Packages "Vendor/Not-Installed", "other/missing" are not installed.'];
+    }
+
+    /**
+     * @dataProvider provideExcludedDevPackageFilters
+     * @param list<string> $filters
+     */
+    public function testFilteringByDevPackageWithNoDevReportsItAsExcluded(array $filters, string $message): void
+    {
+        $this->initTempComposer([
+            'require-dev' => [
+                'vendor/dev-package' => '^1',
+                'other/dev-package' => '^1',
+            ],
+        ]);
+
+        $devPackages = [self::getPackage('vendor/dev-package'), self::getPackage('other/dev-package')];
+        $this->createInstalledJson([], $devPackages);
+        $this->createComposerLock([], $devPackages);
+
+        $appTester = $this->getApplicationTester();
+
+        self::assertEquals(Command::FAILURE, $appTester->run(['command' => 'suggest', '--no-dev' => true, 'packages' => $filters], ['capture_stderr_separately' => true]));
+        self::assertSame('', $appTester->getDisplay(true));
+        self::assertSame($message, trim($appTester->getErrorOutput(true)));
+    }
+
+    public static function provideExcludedDevPackageFilters(): \Generator
+    {
+        yield 'single' => [['Vendor/Dev-Package'], 'Package "Vendor/Dev-Package" is excluded by --no-dev.'];
+        yield 'multiple' => [['Vendor/Dev-Package', 'other/dev-package'], 'Packages "Vendor/Dev-Package", "other/dev-package" are excluded by --no-dev.'];
+        yield 'missing and excluded' => [
+            ['missing/package', 'Vendor/Dev-Package'],
+            "Package \"missing/package\" is not installed.\nPackage \"Vendor/Dev-Package\" is excluded by --no-dev.",
+        ];
+    }
+
+    /**
      * @dataProvider provideSuggest
      * @param array<string, bool|string|array<int, string>> $command
      */
@@ -404,6 +459,13 @@ vendor4/dev-suggested is suggested by:
         yield 'without lockfile, show suggested for package' => [
             false,
             ['packages' => ['vendor2/package2']],
+            'vendor2/package2 suggests:
+ - vendor4/dev-suggested: helpful for vendor2/package2',
+        ];
+
+        yield 'with lockfile, show suggested for package case insensitively' => [
+            true,
+            ['packages' => ['Vendor2/Package2']],
             'vendor2/package2 suggests:
  - vendor4/dev-suggested: helpful for vendor2/package2',
         ];
