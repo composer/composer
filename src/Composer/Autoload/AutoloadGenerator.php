@@ -326,7 +326,14 @@ EOF;
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            $classMapGenerator->scanPaths($dir, $this->buildExclusionRegex($dir, $excluded));
+            // if the vendor dir is contained within a classmap dir being scanned we exclude it
+            $resolvedDir = $filesystem->normalizePath($filesystem->isAbsolutePath($dir) ? $dir : $basePath.'/'.$dir);
+            if (str_contains($vendorPath, $resolvedDir.'/')) {
+                $exclusionRegex = $this->buildExclusionRegex($dir, array_merge($excluded, [$vendorPath.'/']));
+            } else {
+                $exclusionRegex = $this->buildExclusionRegex($dir, $excluded);
+            }
+            $classMapGenerator->scanPaths($dir, $exclusionRegex);
         }
 
         if ($scanPsrPackages) {
