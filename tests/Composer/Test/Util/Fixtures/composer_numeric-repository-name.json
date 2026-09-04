@@ -1,0 +1,14 @@
+{
+    "repositories": [
+        {
+            "name": "1",
+            "type": "vcs",
+            "url": "https://example.org/one"
+        },
+        {
+            "name": "local",
+            "type": "path",
+            "url": "../local"
+        }
+    ]
+}
