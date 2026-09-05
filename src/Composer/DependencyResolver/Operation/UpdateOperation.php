@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver\Operation;
 
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 
@@ -72,17 +73,31 @@ class UpdateOperation extends SolverOperation implements OperationInterface
     {
         $fromVersion = $initialPackage->getFullPrettyVersion();
         $toVersion = $targetPackage->getFullPrettyVersion();
+        $isSameVersion = $fromVersion === $toVersion;
+        $updateDescription = '';
 
-        if ($fromVersion === $toVersion && $initialPackage->getSourceReference() !== $targetPackage->getSourceReference()) {
+        if ($isSameVersion && $initialPackage->getSourceReference() !== $targetPackage->getSourceReference()) {
             $fromVersion = $initialPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_SOURCE_REF);
             $toVersion = $targetPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_SOURCE_REF);
-        } elseif ($fromVersion === $toVersion && $initialPackage->getDistReference() !== $targetPackage->getDistReference()) {
+        } elseif ($isSameVersion && $initialPackage->getDistReference() !== $targetPackage->getDistReference()) {
             $fromVersion = $initialPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_DIST_REF);
             $toVersion = $targetPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_DIST_REF);
         }
 
+        if ($isSameVersion && self::hasAbandonedStateChanged($initialPackage, $targetPackage)) {
+            $updateDescription = ', abandoned state changed';
+        }
+
         $actionName = VersionParser::isUpgrade($initialPackage->getVersion(), $targetPackage->getVersion()) ? 'Upgrading' : 'Downgrading';
 
-        return $actionName.' <info>'.$initialPackage->getPrettyName().'</info> (<comment>'.$fromVersion.'</comment> => <comment>'.$toVersion.'</comment>)';
+        return $actionName.' <info>'.$initialPackage->getPrettyName().'</info> (<comment>'.$fromVersion.'</comment> => <comment>'.$toVersion.'</comment>'.$updateDescription.')';
+    }
+
+    public static function hasAbandonedStateChanged(PackageInterface $initialPackage, PackageInterface $targetPackage): bool
+    {
+        return $initialPackage instanceof CompletePackageInterface
+            && $targetPackage instanceof CompletePackageInterface
+            && ($initialPackage->isAbandoned() !== $targetPackage->isAbandoned()
+                || $initialPackage->getReplacementPackage() !== $targetPackage->getReplacementPackage());
     }
 }
