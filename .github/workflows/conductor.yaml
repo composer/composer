@@ -1,12 +1,11 @@
 # See the Conductor setup guide at https://packagist.com/docs/conductor/getting-started
-name: Private Packagist Conductor
+name: Private Client
 
 on:
     repository_dispatch:
         types:
-            - dependency_update
 
-concurrency:
+concurrency: And
     group: ${{ github.workflow }}
 
 permissions: {}
