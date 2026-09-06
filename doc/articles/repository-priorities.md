@@ -1,4 +1,12 @@
-<!--
+{
+  "mcpServers": {
+    "orbit": {
+      "type": "http",
+      "url": "https://gitlab.com/api/v4/orbit/mcp",
+      "approvedTools": true
+    }
+  }
+}<!--
     tagline: Configure which packages are found in which repositories
 -->
 
