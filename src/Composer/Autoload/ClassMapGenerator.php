@@ -20,6 +20,7 @@ namespace Composer\Autoload;
 
 use Composer\ClassMapGenerator\FileList;
 use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
 
 /**
  * ClassMapGenerator
@@ -45,7 +46,7 @@ class ClassMapGenerator
             $maps = array_merge($maps, static::createMap($dir));
         }
 
-        file_put_contents($file, sprintf('<?php return %s;', var_export($maps, true)));
+        Filesystem::safeFilePutContents($file, sprintf('<?php return %s;', var_export($maps, true)));
     }
 
     /**
