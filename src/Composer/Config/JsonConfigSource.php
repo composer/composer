@@ -395,7 +395,7 @@ class JsonConfigSource implements ConfigSourceInterface
                 throw new \RuntimeException(sprintf('The file "%s" is not readable.', $this->file->getPath()));
             }
 
-            $contents = file_get_contents($this->file->getPath());
+            $contents = (string) file_get_contents($this->file->getPath());
         } elseif ($this->authConfig) {
             $contents = "{\n}\n";
         } else {
@@ -419,7 +419,7 @@ class JsonConfigSource implements ConfigSourceInterface
 
         // try to update cleanly
         if (call_user_func_array([$manipulator, $method], $args)) {
-            file_put_contents($this->file->getPath(), $manipulator->getContents());
+            Filesystem::safeFilePutContents($this->file->getPath(), $manipulator->getContents());
         } else {
             // on failed clean update, call the fallback and rewrite the whole file
             $config = $this->file->read();
@@ -462,7 +462,7 @@ class JsonConfigSource implements ConfigSourceInterface
             $this->file->validateSchema(JsonFile::LAX_SCHEMA);
         } catch (JsonValidationException $e) {
             // restore contents to the original state
-            file_put_contents($this->file->getPath(), $contents);
+            Filesystem::safeFilePutContents($this->file->getPath(), $contents);
             throw new \RuntimeException('Failed to update composer.json with a valid format, reverting to the original content. Please report an issue to us with details (command you run and a copy of your composer.json). '.PHP_EOL.implode(PHP_EOL, $e->getErrors()), 0, $e);
         }
 

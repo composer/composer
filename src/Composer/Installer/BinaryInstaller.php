@@ -190,14 +190,14 @@ class BinaryInstaller
             }
         }
         if (!file_exists($link)) {
-            file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+            Filesystem::safeFilePutContents($link, $this->generateWindowsProxyCode($binPath, $link));
             Silencer::call('chmod', $link, 0777 & ~umask());
         }
     }
 
     protected function installUnixyProxyBinaries(string $binPath, string $link): void
     {
-        file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
+        Filesystem::safeFilePutContents($link, $this->generateUnixyProxyCode($binPath, $link));
         Silencer::call('chmod', $link, 0777 & ~umask());
     }
 
