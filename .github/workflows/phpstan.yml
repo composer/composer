@@ -70,6 +70,9 @@ jobs:
       - name: "Initialize PHPUnit sources"
         run: "vendor/bin/simple-phpunit --filter NO_TEST_JUST_AUTOLOAD_THANKS"
 
+      - name: "Init result-cache"
+        run: "mkdir -p ./tmp/phpstan"
+
       - name: "Restore PHPStan result cache"
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
