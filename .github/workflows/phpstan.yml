@@ -79,7 +79,7 @@ jobs:
             result-cache-v1-${{ matrix.php-version }}-
 
       - name: "Run PHPStan"
-        run: "composer phpstan"
+        run: "composer phpstan -- -vv"
 
       - name: "Save result cache"
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
