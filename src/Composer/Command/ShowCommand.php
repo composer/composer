@@ -948,7 +948,7 @@ EOT
             foreach ($autoloadConfig as $type => $autoloads) {
                 $io->write('<comment>' . $type . '</comment>');
 
-                if ($type === 'psr-0' || $type === 'psr-4') {
+                if ($type === 'psr-0' || $type === 'psr-4' || $type === 'moto') {
                     foreach ($autoloads as $name => $path) {
                         $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
                     }
@@ -1164,7 +1164,7 @@ EOT
             $autoload = [];
 
             foreach ($package->getAutoload() as $type => $autoloads) {
-                if ($type === 'psr-0' || $type === 'psr-4') {
+                if ($type === 'psr-0' || $type === 'psr-4' || $type === 'moto') {
                     $psr = [];
 
                     foreach ($autoloads as $name => $path) {
