@@ -81,6 +81,8 @@ jobs:
       - name: "Init result-cache" # can be removed with PHPStan 2.x
         run: "mkdir -p ./tmp/phpstan"
 
+      - run: "vendor/bin/phpstan dump-parameters --configuration=phpstan/config.neon"
+
       - name: "Run PHPStan"
         run: "composer phpstan -- -vv"
 
