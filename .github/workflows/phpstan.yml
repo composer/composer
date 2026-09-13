@@ -78,8 +78,6 @@ jobs:
           restore-keys: |
             result-cache-v1-${{ matrix.php-version }}-
 
-      - run: "vendor/bin/phpstan dump-parameters --configuration=phpstan/config.neon"
-
       - name: "Run PHPStan"
         run: "composer phpstan -- -vv"
 
