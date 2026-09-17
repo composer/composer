@@ -158,7 +158,9 @@ class AuthHelper
             $auth = null;
             if ($this->io->hasAuthentication($origin)) {
                 $auth = $this->io->getAuthentication($origin);
-                if (in_array($auth['password'], ['gitlab-ci-token', 'private-token', 'oauth2'], true)) {
+                if (in_array($auth['password'], ['gitlab-ci-token', 'private-token', 'oauth2'], true)
+                    || $auth['username'] === 'gitlab-ci-token'
+                ) {
                     throw new TransportException("Invalid credentials for '" . Url::sanitize($url) . "', aborting.", $statusCode);
                 }
             }
@@ -303,10 +305,11 @@ class AuthHelper
                     $authenticationDisplayMessage = 'Using GitHub token authentication';
                 }
             } elseif (
-                $auth['username'] === 'gitlab-ci-token'
+                ($auth['username'] === 'gitlab-ci-token' || $auth['password'] === 'gitlab-ci-token')
                 && in_array($origin, $this->config->get('gitlab-domains'), true)
             ) {
-                $headers[] = 'JOB-TOKEN: '.$auth['password'];
+                // the marker ends up in either slot depending on whether GitLab::authorizeOAuth normalized the credentials
+                $headers[] = 'JOB-TOKEN: '.($auth['password'] === 'gitlab-ci-token' ? $auth['username'] : $auth['password']);
                 $authenticationDisplayMessage = 'Using GitLab CI job token authentication';
             } elseif (
                 in_array($auth['password'], ['oauth2', 'private-token'], true)

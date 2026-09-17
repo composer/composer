@@ -112,37 +112,6 @@ class AuthHelperTest extends TestCase
         self::assertSame($expectedHeaders, $options['http']['header']);
     }
 
-    public function testAddAuthenticationHeaderWithGitlabOathToken(): void
-    {
-        $headers = [
-            'Accept-Encoding: gzip',
-            'Connection: close',
-        ];
-        $options = ['http' => ['header' => $headers]];
-        $origin = 'gitlab.com';
-        $url = 'https://api.gitlab.com/';
-        $auth = [
-            'username' => 'my_username',
-            'password' => 'oauth2',
-        ];
-
-        $this->expectsAuthentication($origin, $auth);
-
-        $this->config->expects($this->once())
-            ->method('get')
-            ->with('gitlab-domains')
-            ->willReturn([$origin]);
-
-        $this->io->expects($this->once())
-            ->method('writeError')
-            ->with('Using GitLab OAuth token authentication', true, IOInterface::DEBUG);
-
-        $expectedHeaders = array_merge($headers, ['Authorization: Bearer ' . $auth['username']]);
-        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
-
-        self::assertSame($expectedHeaders, $options['http']['header']);
-    }
-
     public function testAddAuthenticationOptionsForClientCertificate(): void
     {
         $options = [];
@@ -163,38 +132,28 @@ class AuthHelperTest extends TestCase
         self::assertSame($certificateConfiguration, $options['ssl']);
     }
 
-    public function testAddAuthenticationHeaderWithGitlabPrivateToken(): void
+    /**
+     * @return array<string, array{array{username: string, password: string}, string, string}>
+     */
+    public static function gitlabAuthenticationProvider(): array
     {
-        $headers = [
-            'Accept-Encoding: gzip',
-            'Connection: close',
+        return [
+            'oauth token' => [['username' => 'my_token', 'password' => 'oauth2'], 'Using GitLab OAuth token authentication', 'Authorization: Bearer my_token'],
+            'private token' => [['username' => 'my_token', 'password' => 'private-token'], 'Using GitLab private token authentication', 'PRIVATE-TOKEN: my_token'],
+            'CI job token' => [['username' => 'gitlab-ci-token', 'password' => 'my_token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token'],
+            // GitLab::authorizeOAuth swaps the slots, so both orderings must work
+            'CI job token, slots swapped' => [['username' => 'my_token', 'password' => 'gitlab-ci-token'], 'Using GitLab CI job token authentication', 'JOB-TOKEN: my_token'],
         ];
-        $options = ['http' => ['header' => $headers]];
-        $origin = 'gitlab.com';
-        $url = 'https://api.gitlab.com/';
-        $auth = [
-            'username' => 'my_username',
-            'password' => 'private-token',
-        ];
-
-        $this->expectsAuthentication($origin, $auth);
-
-        $this->config->expects($this->once())
-            ->method('get')
-            ->with('gitlab-domains')
-            ->willReturn([$origin]);
-
-        $this->io->expects($this->once())
-            ->method('writeError')
-            ->with('Using GitLab private token authentication', true, IOInterface::DEBUG);
-
-        $expectedHeaders = array_merge($headers, ['PRIVATE-TOKEN: ' . $auth['username']]);
-        $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
-
-        self::assertSame($expectedHeaders, $options['http']['header']);
     }
 
-    public function testAddAuthenticationHeaderWithGitlabCiJobToken(): void
+    /**
+     * @dataProvider gitlabAuthenticationProvider
+     *
+     * @param array<string, string> $auth
+     *
+     * @phpstan-param array{username: string, password: string} $auth
+     */
+    public function testAddAuthenticationHeaderWithGitlabToken(array $auth, string $expectedMessage, string $expectedHeader): void
     {
         $headers = [
             'Accept-Encoding: gzip',
@@ -203,10 +162,6 @@ class AuthHelperTest extends TestCase
         $options = ['http' => ['header' => $headers]];
         $origin = 'gitlab.com';
         $url = 'https://api.gitlab.com/';
-        $auth = [
-            'username' => 'gitlab-ci-token',
-            'password' => 'some-random-token',
-        ];
 
         $this->expectsAuthentication($origin, $auth);
 
@@ -217,9 +172,9 @@ class AuthHelperTest extends TestCase
 
         $this->io->expects($this->once())
             ->method('writeError')
-            ->with('Using GitLab CI job token authentication', true, IOInterface::DEBUG);
+            ->with($expectedMessage, true, IOInterface::DEBUG);
 
-        $expectedHeaders = array_merge($headers, ['JOB-TOKEN: ' . $auth['password']]);
+        $expectedHeaders = array_merge($headers, [$expectedHeader]);
         $options = $this->authHelper->addAuthenticationOptions($options, $origin, $url);
 
         self::assertSame($expectedHeaders, $options['http']['header']);
@@ -621,6 +576,42 @@ class AuthHelperTest extends TestCase
                 ['github-domains', 0, []],
                 ['gitlab-domains', 0, ['gitlab.com']],
                 ['gitlab-token', 0, ['gitlab.com' => ['username' => 'gitlab-user', 'token' => 'gitlab-password']]],
+            ]);
+
+        $this->authHelper->promptAuthIfNeeded('https://gitlab.com/acme/archive.zip', $origin, 404, 'GitLab requires authentication and it was not provided');
+    }
+
+    public function testPromptAuthIfNeededGitLabCiJobTokenAbortsImmediately(): void
+    {
+        self::expectException('Composer\Downloader\TransportException');
+        self::expectExceptionMessage("Invalid credentials for 'https://gitlab.com/acme/archive.zip', aborting.");
+
+        $origin = 'gitlab.com';
+
+        $this->io
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $this->io
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn([
+                'username' => 'gitlab-ci-token',
+                'password' => 'expired-job-token',
+            ]);
+
+        // a job token cannot be renewed, so we must abort before GitLab::authorizeOAuth swaps the slots
+        $this->io
+            ->expects($this->never())
+            ->method('setAuthentication');
+
+        $this->config
+            ->method('get')
+            ->willReturnMap([
+                ['github-domains', 0, []],
+                ['gitlab-domains', 0, ['gitlab.com']],
+                ['gitlab-token', 0, ['gitlab.com' => ['username' => 'gitlab-ci-token', 'token' => 'expired-job-token']]],
             ]);
 
         $this->authHelper->promptAuthIfNeeded('https://gitlab.com/acme/archive.zip', $origin, 404, 'GitLab requires authentication and it was not provided');
