@@ -154,7 +154,13 @@ class Url
      */
     public static function stripCredentials(string $url): string
     {
-        return Preg::replace('{://[^/\s?#]+@}', '://', $url);
+        return Preg::replaceCallback('{(?P<prefix>[a-z0-9][a-z0-9+.-]*://)(?P<user>[^:/\s?#]*)(?::(?P<password>[^\s/?#]+))?@}i', static function ($m): string {
+            if (($m['password'] ?? '') === '' && !Preg::isMatch('{^https?://$}i', $m['prefix'])) {
+                return $m['prefix'].$m['user'].'@';
+            }
+
+            return $m['prefix'];
+        }, $url);
     }
 
     /**
