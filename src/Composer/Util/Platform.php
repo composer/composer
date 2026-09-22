@@ -21,12 +21,45 @@ use Composer\Pcre\Preg;
  */
 class Platform
 {
+    /**
+     * Env vars which indicate that Composer is being run by an AI coding agent
+     *
+     * Copied from https://github.com/laravel/agent-detector. Thanks!
+     *
+     * @internal
+     */
+    public const CODING_AGENT_ENV_VARS = [
+        'AI_AGENT', // cross-agent convention, set to the agent name
+        'CURSOR_AGENT',
+        'GEMINI_CLI',
+        'CODEX_SANDBOX',
+        'CODEX_CI',
+        'CODEX_THREAD_ID',
+        'AUGMENT_AGENT',
+        'OPENCODE_CLIENT',
+        'OPENCODE',
+        'AMP_CURRENT_THREAD_ID',
+        'CLAUDECODE',
+        'CLAUDE_CODE',
+        'REPL_ID',
+        'COPILOT_MODEL',
+        'COPILOT_ALLOW_ALL',
+        'COPILOT_GITHUB_TOKEN',
+        'COPILOT_CLI',
+        'ANTIGRAVITY_AGENT',
+        'PI_CODING_AGENT',
+        'MATTERHORN_SESSION_ID',
+        'KIRO_AGENT_PATH',
+    ];
+
     /** @var ?bool */
     private static $isVirtualBoxGuest = null;
     /** @var ?bool */
     private static $isWindowsSubsystemForLinux = null;
     /** @var ?bool */
     private static $isDocker = null;
+    /** @var ?bool */
+    private static $isCodingAgent = null;
 
     /**
      * getcwd() equivalent which always returns a string
@@ -141,6 +174,10 @@ class Platform
     {
         putenv($name . '=' . $value);
         $_SERVER[$name] = $_ENV[$name] = $value;
+
+        if (in_array($name, self::CODING_AGENT_ENV_VARS, true)) {
+            self::$isCodingAgent = null;
+        }
     }
 
     /**
@@ -150,6 +187,10 @@ class Platform
     {
         putenv($name);
         unset($_SERVER[$name], $_ENV[$name]);
+
+        if (in_array($name, self::CODING_AGENT_ENV_VARS, true)) {
+            self::$isCodingAgent = null;
+        }
     }
 
     /**
@@ -232,6 +273,37 @@ class Platform
     public static function isWindows(): bool
     {
         return \defined('PHP_WINDOWS_VERSION_BUILD');
+    }
+
+    /**
+     * @return bool Whether Composer is being run by an AI coding agent rather than directly by a human
+     */
+    public static function isCodingAgent(): bool
+    {
+        // the cache is reset by putEnv/clearEnv when one of the CODING_AGENT_ENV_VARS is modified
+        if (null !== self::$isCodingAgent) {
+            return self::$isCodingAgent;
+        }
+
+        foreach (self::CODING_AGENT_ENV_VARS as $envVar) {
+            $value = self::getEnv($envVar);
+            if ($value !== false && $value !== '') {
+                self::$isCodingAgent = true;
+
+                return self::$isCodingAgent;
+            }
+        }
+
+        // devin does not expose an env var but mounts this directory, cannot check it if open_basedir is set
+        if (!(bool) ini_get('open_basedir') && file_exists('/opt/.devin')) {
+            self::$isCodingAgent = true;
+
+            return self::$isCodingAgent;
+        }
+
+        self::$isCodingAgent = false;
+
+        return self::$isCodingAgent;
     }
 
     public static function isDocker(): bool
