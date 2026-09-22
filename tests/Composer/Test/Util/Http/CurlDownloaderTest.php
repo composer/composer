@@ -148,7 +148,9 @@ class CurlDownloaderTest extends TestCase
         $this->scheduleRetry($downloader, $this->createJob(), 0.25);
 
         $method = new \ReflectionMethod($downloader, 'getSelectTimeout');
-        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
         $timeout = $method->invoke($downloader);
 
         self::assertIsFloat($timeout);
@@ -164,7 +166,9 @@ class CurlDownloaderTest extends TestCase
         usleep(1000);
 
         $method = new \ReflectionMethod($downloader, 'restartDueJobs');
-        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
         $method->invoke($downloader);
 
         self::assertCount(1, $this->readDelayedJobs($downloader), 'the retry which is not due yet must still be waiting');
@@ -228,7 +232,9 @@ class CurlDownloaderTest extends TestCase
     private function scheduleRetry(CurlDownloader $downloader, array $job, float $delay): void
     {
         $method = new \ReflectionMethod($downloader, 'restartJobWithDelay');
-        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
         $method->invoke($downloader, $job, $job['url'], $job['attributes'], $delay);
     }
 
@@ -240,7 +246,9 @@ class CurlDownloaderTest extends TestCase
     {
         $downloader = $this->createDownloader();
         $method = new \ReflectionMethod($downloader, 'isStatusCodeRetryNeeded');
-        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
 
         return $method->invoke($downloader, $job, $response);
     }
@@ -251,7 +259,9 @@ class CurlDownloaderTest extends TestCase
     private static function parseRetryAfter(Response $response)
     {
         $method = new \ReflectionMethod(CurlDownloader::class, 'getRetryAfterDelay');
-        (\PHP_VERSION_ID < 80100) and $method->setAccessible(true);
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
 
         return $method->invoke(null, $response);
     }
@@ -273,7 +283,9 @@ class CurlDownloaderTest extends TestCase
     private function readProperty(CurlDownloader $downloader, string $name)
     {
         $property = new \ReflectionProperty($downloader, $name);
-        (\PHP_VERSION_ID < 80100) and $property->setAccessible(true);
+        if (\PHP_VERSION_ID < 80100) {
+            $property->setAccessible(true);
+        }
 
         return $property->getValue($downloader);
     }
