@@ -31,7 +31,7 @@ use React\Promise\Promise;
  * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, storeAuth: 'prompt'|bool, ipResolve: 4|6|null}
  * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable, primaryIp: string}
  * @phpstan-type RetryAttributes array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries: int<1, max>, ipResolve?: 4|6}
- * @phpstan-type DelayedJob array{job: Job, url: non-empty-string, attributes: RetryAttributes, at: float}
+ * @phpstan-type DelayedJob array{job: Job, url: non-empty-string, attributes: RetryAttributes, at: float, retryAfter: bool}
  */
 class CurlDownloader
 {
@@ -64,6 +64,22 @@ class CurlDownloader
      * @var array<int, DelayedJob>
      */
     private $delayedJobs = [];
+    /**
+     * Origins which asked for requests to be retried later, keyed by origin, see announceRetryAfterWaits()
+     *
+     * An entry lives for as long as the origin has retries waiting on its Retry-After, so parallel
+     * requests which are all turned away at once are reported in one go instead of one by one.
+     * until is the latest point in time the origin asked to be left alone for, see getDueAt().
+     *
+     * @var array<string, array{statusCode: int, announced: bool, until: float}>
+     */
+    private $retryAfterOrigins = [];
+    /**
+     * Warnings which were already shown, keyed by origin and warning, see outputWarnings()
+     *
+     * @var array<string, true>
+     */
+    private $shownWarnings = [];
     /** @var IOInterface */
     private $io;
     /** @var Config */
@@ -471,8 +487,8 @@ class CurlDownloader
                 fclose($job['bodyHandle']);
 
                 $warningsOutput = false;
-                if ($response->getStatusCode() >= 300 && $response->getHeader('content-type') === 'application/json') {
-                    $warningsOutput = HttpDownloader::outputWarnings($this->io, $job['origin'], json_decode($response->getBody(), true));
+                if ($response->getStatusCode() >= 300 && self::isJsonResponse($response)) {
+                    $warningsOutput = $this->outputWarnings($job['origin'], json_decode($response->getBody(), true));
                 }
 
                 $result = $this->isAuthenticatedRetryNeeded($job, $response);
@@ -495,11 +511,19 @@ class CurlDownloader
                     $statusRetry = $this->isStatusCodeRetryNeeded($job, $response);
                     if ($statusRetry['retry']) {
                         $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to status code '. $statusCode . (null !== $statusRetry['delay'] ? ' in '.$statusRetry['delay'].'s as requested by Retry-After' : ''), true, IOInterface::DEBUG);
+                        if (null !== $statusRetry['delay']) {
+                            $until = microtime(true) + $statusRetry['delay'];
+                            if (!isset($this->retryAfterOrigins[$job['origin']])) {
+                                $this->retryAfterOrigins[$job['origin']] = ['statusCode' => $statusCode, 'announced' => false, 'until' => $until];
+                            } else {
+                                $this->retryAfterOrigins[$job['origin']]['until'] = max($this->retryAfterOrigins[$job['origin']]['until'], $until);
+                            }
+                        }
                         $this->restartJobWithDelay($job, $job['url'], ['retries' => $job['attributes']['retries'] + 1], $statusRetry['delay']);
                         continue;
                     }
 
-                    throw $this->failResponse($job, $response, $response->getStatusMessage(), $warningsOutput);
+                    throw $this->failResponse($job, $response, self::getStatusFailureMessage($response), $warningsOutput);
                 }
 
                 if ($job['attributes']['storeAuth'] !== false) {
@@ -528,6 +552,8 @@ class CurlDownloader
                 $this->rejectJob($job, $e);
             }
         }
+
+        $this->announceRetryAfterWaits();
 
         foreach ($this->jobs as $i => $curlHandle) {
             $curlHandle = $this->jobs[$i]['curlHandle'];
@@ -743,7 +769,7 @@ class CurlDownloader
     {
         $now = microtime(true);
         foreach ($this->delayedJobs as $i => $delayedJob) {
-            if ($delayedJob['at'] > $now) {
+            if ($this->getDueAt($delayedJob) > $now) {
                 continue;
             }
 
@@ -767,10 +793,23 @@ class CurlDownloader
         $now = microtime(true);
         foreach ($this->delayedJobs as $delayedJob) {
             // never sleep past the point where a delayed retry comes due
-            $timeout = min($timeout, max(0.0, $delayedJob['at'] - $now));
+            $timeout = min($timeout, max(0.0, $this->getDueAt($delayedJob) - $now));
         }
 
         return $timeout;
+    }
+
+    /**
+     * A Retry-After is sent in reply to one request but speaks for the whole origin, so a retry
+     * which was told to come back sooner than a later reply from the same origin asked for waits
+     * for that one too, rather than spending a retry on a request which is bound to be turned away
+     *
+     * @param  DelayedJob $delayedJob
+     * @return float      when the retry may be started, as a timestamp
+     */
+    private function getDueAt(array $delayedJob): float
+    {
+        return max($delayedJob['at'], $this->retryAfterOrigins[$delayedJob['job']['origin']]['until'] ?? 0.0);
     }
 
     /**
@@ -796,10 +835,11 @@ class CurlDownloader
      * @param non-empty-string $url
      *
      * @param  RetryAttributes $attributes
-     * @param  float|null      $delay      seconds to wait before retrying, null to use the default backoff
+     * @param  float|null      $delay      seconds to wait before retrying as requested by Retry-After, null to use the default backoff
      */
     private function restartJobWithDelay(array $job, string $url, array $attributes, ?float $delay = null): void
     {
+        $retryAfter = null !== $delay;
         if (null === $delay) {
             if ($attributes['retries'] >= 3) {
                 $delay = 0.5; // half a second delay for 3rd retry and beyond
@@ -810,7 +850,8 @@ class CurlDownloader
             }
         }
 
-        if ($delay <= 0.0) {
+        $now = microtime(true);
+        if ($delay <= 0.0 && ($this->retryAfterOrigins[$job['origin']]['until'] ?? 0.0) <= $now) {
             $this->restartJob($job, $url, $attributes);
 
             return;
@@ -818,7 +859,83 @@ class CurlDownloader
 
         // the retry is scheduled rather than slept through because tick() drives every parallel
         // transfer, so waiting here would stall all the other downloads which are in flight
-        $this->delayedJobs[] = ['job' => $job, 'url' => $url, 'attributes' => $attributes, 'at' => microtime(true) + $delay];
+        $this->delayedJobs[] = ['job' => $job, 'url' => $url, 'attributes' => $attributes, 'at' => $now + $delay, 'retryAfter' => $retryAfter];
+    }
+
+    /**
+     * Tells the user when an origin asked for requests to be retried later, once per origin
+     *
+     * The wait can last up to MAX_RETRY_AFTER seconds, which without a word would be hard to tell
+     * apart from a hang. Every request in flight to the origin tends to be turned away, so rather
+     * than a line per request, one line reports how many are waiting and until when, once none of
+     * them is in flight any more. The origin is announced again only once all its retries were
+     * started and one of them is turned away anew.
+     */
+    private function announceRetryAfterWaits(): void
+    {
+        $now = microtime(true);
+        foreach ($this->retryAfterOrigins as $origin => $retryAfterOrigin) {
+            $pending = 0;
+            $lastDue = $now;
+            foreach ($this->delayedJobs as $delayedJob) {
+                if ($delayedJob['retryAfter'] && $delayedJob['job']['origin'] === $origin) {
+                    $pending++;
+                    $lastDue = max($lastDue, $this->getDueAt($delayedJob));
+                }
+            }
+
+            if (0 === $pending) {
+                unset($this->retryAfterOrigins[$origin]);
+                continue;
+            }
+
+            if ($retryAfterOrigin['announced']) {
+                continue;
+            }
+
+            // parallel requests are turned away one after the other, so announcing on the first one
+            // would report a fraction of the wait. Holding off until none of the origin's requests
+            // is in flight any more means everything it was asked for is waiting, which is also
+            // the point from which nothing seems to happen.
+            foreach ($this->jobs as $activeJob) {
+                if ($activeJob['origin'] === $origin) {
+                    continue 2;
+                }
+            }
+
+            $reason = 429 === $retryAfterOrigin['statusCode'] ? 'is rate limiting requests' : 'responded with status code '.$retryAfterOrigin['statusCode'];
+            $this->io->writeError('<warning>'.$origin.' '.$reason.' ('.$pending.' pending), waiting '.(int) ceil($lastDue - $now).'s before retrying</warning>');
+            $this->retryAfterOrigins[$origin]['announced'] = true;
+        }
+    }
+
+    /**
+     * Shows the warnings of a response, unless the same origin already showed the same warnings
+     *
+     * Parallel requests which fail for the same reason, such as a rate limit, all carry the same
+     * warning, which is only worth reading once.
+     *
+     * @param  mixed $data the decoded response body
+     * @return bool  whether the warnings were shown, now or before
+     */
+    private function outputWarnings(string $origin, $data): bool
+    {
+        if (!is_array($data)) {
+            return false;
+        }
+
+        $key = $origin.':'.json_encode(array_intersect_key($data, array_flip(['warning', 'warning-versions', 'info', 'info-versions', 'warnings', 'infos'])));
+        if (isset($this->shownWarnings[$key])) {
+            return true;
+        }
+
+        if (!HttpDownloader::outputWarnings($this->io, $origin, $data)) {
+            return false;
+        }
+
+        $this->shownWarnings[$key] = true;
+
+        return true;
     }
 
     /**
@@ -832,11 +949,33 @@ class CurlDownloader
 
         $details = '';
         // skip dumping the raw JSON body when outputWarnings already presented it cleanly, to avoid duplicate/messy output
-        if (!$warningsOutput && in_array(strtolower((string) $response->getHeader('content-type')), ['application/json', 'application/json; charset=utf-8'], true)) {
+        if (!$warningsOutput && self::isJsonResponse($response)) {
             $details = ':'.PHP_EOL.substr($response->getBody(), 0, 200).(strlen($response->getBody()) > 200 ? '...' : '');
         }
 
         return new TransportException('The "'.Url::sanitize($job['url']).'" file could not be downloaded ('.$errorMessage.')' . $details, $response->getStatusCode());
+    }
+
+    /**
+     * Describes why a 4xx/5xx response failed the request
+     *
+     * A Retry-After which is longer than we wait for is spelled out, as it tells the user whether
+     * trying again straight away can help or whether to come back later.
+     */
+    private static function getStatusFailureMessage(Response $response): string
+    {
+        $message = (string) $response->getStatusMessage();
+        $retryAfter = self::getRetryAfterDelay($response);
+        if (null !== $retryAfter && $retryAfter > self::MAX_RETRY_AFTER) {
+            $message .= ', the server asked to retry in '.$retryAfter.'s which is longer than the '.self::MAX_RETRY_AFTER.'s Composer is willing to wait, try again later';
+        }
+
+        return $message;
+    }
+
+    private static function isJsonResponse(Response $response): bool
+    {
+        return in_array(strtolower((string) $response->getHeader('content-type')), ['application/json', 'application/json; charset=utf-8'], true);
     }
 
     /**

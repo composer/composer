@@ -298,6 +298,37 @@ described [above](#packages).
 These fields are optional. You probably don't need them for your own custom
 repository.
 
+#### Rate limiting and warnings
+
+A repository which needs to turn requests away for a while should respond with
+`429 Too Many Requests` and a `Retry-After` header, either as a number of
+seconds or as an HTTP date. When the interval is 60 seconds or less, Composer
+waits it out and retries the request, up to three times. The interval is taken
+to apply to the whole repository, so no retry to it is sent before the latest
+interval it asked for has passed. Requests to other repositories keep
+downloading in the meantime. A longer interval is not waited for, and the
+request fails with a message which says how long the repository asked to wait.
+A `429` without a `Retry-After` header is not retried.
+
+`Retry-After` is also honoured on the status codes Composer already retries,
+such as `503 Service Unavailable`. There, an interval longer than 60 seconds
+is ignored and Composer retries on its usual short backoff.
+
+To tell users why they are limited, and how to raise the limit, return a JSON
+body with a `warning` key and an `application/json` content type:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 30
+Content-Type: application/json
+
+{"warning": "Anonymous requests are limited to 100 per minute, authenticate to raise the limit"}
+```
+
+Composer shows the warning whether it then retries or fails. When many
+parallel requests are limited at once, the warning and the notice that
+Composer is waiting are each shown once per repository, not once per request.
+
 #### cURL or stream options
 
 The repository is accessed either using cURL (Composer 2 with ext-curl enabled)

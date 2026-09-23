@@ -3274,6 +3274,11 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Parameter \\$delayedJob of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:getDueAt\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:failResponse\\(\\) has invalid type CurlHandle\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
