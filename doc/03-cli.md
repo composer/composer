@@ -243,6 +243,9 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
   updates the allow-listed packages are always updated fully. Can also be set via
   the COMPOSER_MINIMAL_CHANGES=1 env var.
 * **--patch-only:** Only allow patch version updates for currently installed dependencies.
+* **--vulnerable-only:** Only update locked packages affected by known security advisories.
+  This requires a `composer.lock` file and cannot be combined with package arguments,
+  `--interactive`, `--root-reqs`, or `--lock`. `--no-dev` excludes development dependencies.
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
 * **--bump-after-update:** Runs `bump` after performing the update. Set to `dev` or `no-dev` to only bump those dependencies.
