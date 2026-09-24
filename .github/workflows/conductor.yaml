@@ -37,4 +37,4 @@ jobs:
 
             # See the Conductor GitHub Action at https://github.com/packagist/conductor-github-action
             - name: "Running Conductor"
-              uses: packagist/conductor-github-action@3513567296cf906ee3c97ba63df6f6d7ddcc55a5 # 1.6.1
+              uses: packagist/conductor-github-action@a20e46b1c1449a070539670a20087629b8eb0fd9 # 1.7.0
