@@ -728,7 +728,8 @@ class CurlDownloader
             $retryAfter = null;
         }
 
-        return ['retry' => true, 'delay' => null === $retryAfter ? null : (float) $retryAfter];
+        // a wait of 0s is no wait, so the usual backoff spaces such retries out instead
+        return ['retry' => true, 'delay' => null !== $retryAfter && $retryAfter > 0 ? (float) $retryAfter : null];
     }
 
     /**

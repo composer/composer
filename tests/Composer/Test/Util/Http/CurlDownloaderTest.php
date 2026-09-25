@@ -64,6 +64,14 @@ class CurlDownloaderTest extends TestCase
         );
     }
 
+    public function testZeroRetryAfterUsesTheDefaultBackoff(): void
+    {
+        self::assertSame(
+            ['retry' => true, 'delay' => null],
+            $this->decideRetry($this->createJob(), $this->createResponse(429, ['Retry-After: 0']))
+        );
+    }
+
     public function testRateLimitedResponseWithoutRetryAfterIsNotRetried(): void
     {
         self::assertSame(
