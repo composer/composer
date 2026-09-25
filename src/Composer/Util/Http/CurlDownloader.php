@@ -46,9 +46,7 @@ class CurlDownloader
     /**
      * Longest Retry-After interval which is waited out, in seconds
      *
-     * The interval is chosen by the server, so without a ceiling a remote could park an install
-     * for as long as it likes. A longer interval is ignored and the usual backoff is used instead,
-     * except on a status code which is only retryable because of the header.
+     * Without a ceiling a server could park an install for as long as it likes, see isStatusCodeRetryNeeded()
      */
     private const MAX_RETRY_AFTER = 60;
 
@@ -67,9 +65,7 @@ class CurlDownloader
     /**
      * Origins which asked for requests to be retried later, keyed by origin, see restartJobWithDelay()
      *
-     * An entry lives for as long as the origin has retries waiting on its Retry-After, so parallel
-     * requests which are all turned away at once are reported in one go instead of one by one.
-     * until is the latest point in time the origin asked to be left alone for, see getDueAt().
+     * until is the latest point in time the origin asked to be left alone for, see getDueAt()
      *
      * @var array<string, array{statusCode: int, announced: bool, until: float}>
      */
@@ -723,19 +719,15 @@ class CurlDownloader
             // codeload.github.com intermittently returns 400 on reused connections, retry those specifically, see #12958
             || ($statusCode === 400 && parse_url($job['url'], PHP_URL_HOST) === 'codeload.github.com');
 
-        // rate limited responses are only retried when the server said when to come back, as a
-        // window we know nothing about is better reported than guessed at with a short backoff
+        // a rate limit is only retried when the server said when to come back
         $retryableByHeader = $statusCode === 429 && null !== $retryAfter;
 
         if (!$retryableByStatus && !$retryableByHeader) {
             return $noRetry;
         }
 
-        // being asked to wait longer than we are prepared to hang around for means the interval is
-        // no use to us, as sleeping on it would leave the install looking hung for as long as the
-        // server likes. A response which is retryable on its status code alone falls back to the
-        // usual backoff, so the cap never turns a retry we would have made today into a failure;
-        // one which is only retryable because of the header has nothing left to go on and fails.
+        // an interval beyond the cap is not waited for: a status which is retryable anyway falls
+        // back to the usual backoff, a rate limit has nothing else to go on and fails
         if (null !== $retryAfter && $retryAfter > self::MAX_RETRY_AFTER) {
             if (!$retryableByStatus) {
                 return $noRetry;
@@ -749,11 +741,7 @@ class CurlDownloader
     }
 
     /**
-     * Reads the Retry-After header and turns it into a number of seconds to wait
-     *
-     * Both forms RFC 9110 allows are accepted, a delay in seconds and an HTTP-date. A value which
-     * cannot be understood is ignored rather than fatal, as a broken header is no reason to treat
-     * a response differently from one which carries no header at all.
+     * Reads the Retry-After header, in either of the forms RFC 9110 allows, as a number of seconds to wait
      *
      * @return int|null seconds to wait, or null if there is no usable Retry-After header
      */
@@ -797,8 +785,7 @@ class CurlDownloader
             try {
                 $this->restartJob($delayedJob['job'], $delayedJob['url'], $delayedJob['attributes']);
             } catch (\Exception $e) {
-                // initDownload() is called from tick()'s try/catch when a job is restarted right
-                // away, so a deferred restart has to reject the job itself
+                // an immediate restart is covered by tick()'s try/catch, a deferred one is not
                 $this->rejectJob($delayedJob['job'], $e);
             }
         }
@@ -820,9 +807,7 @@ class CurlDownloader
     }
 
     /**
-     * A Retry-After is sent in reply to one request but speaks for the whole origin, so a retry
-     * which was told to come back sooner than a later reply from the same origin asked for waits
-     * for that one too, rather than spending a retry on a request which is bound to be turned away
+     * A Retry-After speaks for the whole origin, so a retry also waits for a later hold the origin asked for
      *
      * @param  DelayedJob $delayedJob
      * @return float      when the retry may be started, as a timestamp
@@ -885,18 +870,14 @@ class CurlDownloader
             return;
         }
 
-        // the retry is scheduled rather than slept through because tick() drives every parallel
-        // transfer, so waiting here would stall all the other downloads which are in flight
+        // sleeping here would stall every other transfer tick() drives, so the retry is scheduled instead
         $this->delayedJobs[] = ['job' => $job, 'url' => $url, 'attributes' => $attributes, 'at' => $now + $delay];
     }
 
     /**
-     * Tells the user when an origin asked for requests to be retried later, once per origin
+     * Tells the user when an origin asked for requests to be retried later, once per origin and episode
      *
-     * The wait can last up to MAX_RETRY_AFTER seconds, which without a word would be hard to tell
-     * apart from a hang. Parallel requests to the origin tend to be turned away together, so one
-     * line reports how many are waiting and until when. The origin is announced again only once
-     * all its retries were started and one of them is turned away anew.
+     * The wait can last up to MAX_RETRY_AFTER seconds, which without a word would look like a hang
      */
     private function announceRetryAfterWaits(): void
     {
@@ -928,9 +909,6 @@ class CurlDownloader
 
     /**
      * Shows the warnings of a response, unless the same origin already showed the same warnings
-     *
-     * Parallel requests which fail for the same reason, such as a rate limit, all carry the same
-     * warning, which is only worth reading once.
      *
      * @param  mixed $data the decoded response body
      * @return bool  whether the warnings were shown, now or before

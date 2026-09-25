@@ -158,11 +158,7 @@ class CurlDownloaderTest extends TestCase
         $downloader = $this->createDownloader();
         $this->scheduleRetry($downloader, $this->createJob(), 0.25);
 
-        $method = new \ReflectionMethod($downloader, 'getSelectTimeout');
-        if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
-        }
-        $timeout = $method->invoke($downloader);
+        $timeout = self::callPrivate($downloader, 'getSelectTimeout');
 
         self::assertIsFloat($timeout);
         self::assertGreaterThan(0.0, $timeout);
@@ -176,11 +172,7 @@ class CurlDownloaderTest extends TestCase
         $this->scheduleRetry($downloader, $this->createJob(), 0.0001);
         usleep(1000);
 
-        $method = new \ReflectionMethod($downloader, 'restartDueJobs');
-        if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
-        }
-        $method->invoke($downloader);
+        self::callPrivate($downloader, 'restartDueJobs');
 
         self::assertCount(1, $this->readDelayedJobs($downloader), 'the retry which is not due yet must still be waiting');
 
@@ -204,11 +196,7 @@ class CurlDownloaderTest extends TestCase
         self::assertSame([], $this->readDelayedJobs($downloader));
 
         $this->letWaitsRunOut($downloader);
-        $method = new \ReflectionMethod($downloader, 'restartDueJobs');
-        if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
-        }
-        $method->invoke($downloader);
+        self::callPrivate($downloader, 'restartDueJobs');
         self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a cancelled request must not be sent again');
     }
 
@@ -223,11 +211,7 @@ class CurlDownloaderTest extends TestCase
         $this->scheduleRetry($downloader, $this->createJob(0, 'other.org'), 0.0001);
         usleep(1000);
 
-        $method = new \ReflectionMethod($downloader, 'restartDueJobs');
-        if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
-        }
-        $method->invoke($downloader);
+        self::callPrivate($downloader, 'restartDueJobs');
 
         $delayedJobs = $this->readDelayedJobs($downloader);
         self::assertCount(3, $delayedJobs, 'retries to example.org must wait for its deadline, whether or not they got a Retry-After');
@@ -298,11 +282,7 @@ class CurlDownloaderTest extends TestCase
 
         // the wait runs out and the retry is started, which ends the episode
         $this->letWaitsRunOut($downloader);
-        $method = new \ReflectionMethod($downloader, 'restartDueJobs');
-        if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
-        }
-        $method->invoke($downloader);
+        self::callPrivate($downloader, 'restartDueJobs');
         $this->announceRetryAfterWaits($downloader);
         $jobs = $this->readProperty($downloader, 'jobs');
         self::assertIsArray($jobs);
@@ -334,52 +314,37 @@ class CurlDownloaderTest extends TestCase
 
     public function testJsonResponseIsRecognisedWithCharset(): void
     {
-        $method = new \ReflectionMethod(CurlDownloader::class, 'isJsonResponse');
-        if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
-        }
-
-        self::assertTrue($method->invoke(null, $this->createResponse(429, ['Content-Type: application/json'])));
-        self::assertTrue($method->invoke(null, $this->createResponse(429, ['Content-Type: application/json; charset=utf-8'])));
-        self::assertTrue($method->invoke(null, $this->createResponse(429, ['Content-Type: Application/JSON; charset=UTF-8'])));
-        self::assertFalse($method->invoke(null, $this->createResponse(429, ['Content-Type: text/html'])));
-        self::assertFalse($method->invoke(null, $this->createResponse(429, [])));
+        self::assertTrue(self::callPrivate(CurlDownloader::class, 'isJsonResponse', $this->createResponse(429, ['Content-Type: application/json'])));
+        self::assertTrue(self::callPrivate(CurlDownloader::class, 'isJsonResponse', $this->createResponse(429, ['Content-Type: application/json; charset=utf-8'])));
+        self::assertTrue(self::callPrivate(CurlDownloader::class, 'isJsonResponse', $this->createResponse(429, ['Content-Type: Application/JSON; charset=UTF-8'])));
+        self::assertFalse(self::callPrivate(CurlDownloader::class, 'isJsonResponse', $this->createResponse(429, ['Content-Type: text/html'])));
+        self::assertFalse(self::callPrivate(CurlDownloader::class, 'isJsonResponse', $this->createResponse(429, [])));
     }
 
     public function testFailureReportsARetryAfterWhichWasNotWaitedOut(): void
     {
-        $method = new \ReflectionMethod(CurlDownloader::class, 'getStatusFailureMessage');
-        if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
-        }
-
         self::assertSame(
             'HTTP/1.1 429 Status, the server asked to retry in 3600s which is longer than the 60s Composer is willing to wait, try again later',
-            $method->invoke(null, $this->createResponse(429, ['Retry-After: 3600']))
+            self::callPrivate(CurlDownloader::class, 'getStatusFailureMessage', $this->createResponse(429, ['Retry-After: 3600']))
         );
 
         // an interval which was waited out, or no interval at all, has nothing to add
-        self::assertSame('HTTP/1.1 429 Status', $method->invoke(null, $this->createResponse(429, ['Retry-After: 5'])));
-        self::assertSame('HTTP/1.1 429 Status', $method->invoke(null, $this->createResponse(429, [])));
+        self::assertSame('HTTP/1.1 429 Status', self::callPrivate(CurlDownloader::class, 'getStatusFailureMessage', $this->createResponse(429, ['Retry-After: 5'])));
+        self::assertSame('HTTP/1.1 429 Status', self::callPrivate(CurlDownloader::class, 'getStatusFailureMessage', $this->createResponse(429, [])));
     }
 
     public function testRepeatedWarningsFromAnOriginAreShownOnce(): void
     {
         $io = new BufferIO();
         $downloader = $this->createDownloader($io);
-        $method = new \ReflectionMethod($downloader, 'outputWarnings');
-        if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
-        }
-
         $rateLimited = ['warning' => 'Rate limited', 'status' => 'error', 'path' => '/a'];
-        self::assertTrue($method->invoke($downloader, 'example.org', $rateLimited));
+        self::assertTrue(self::callPrivate($downloader, 'outputWarnings', 'example.org', $rateLimited));
         // the parts of the body which are not shown do not make a warning a different one
-        self::assertTrue($method->invoke($downloader, 'example.org', ['path' => '/b'] + $rateLimited));
-        self::assertTrue($method->invoke($downloader, 'other.org', $rateLimited));
-        self::assertTrue($method->invoke($downloader, 'example.org', ['warning' => 'Slow down']));
-        self::assertFalse($method->invoke($downloader, 'example.org', ['status' => 'error']));
-        self::assertFalse($method->invoke($downloader, 'example.org', null));
+        self::assertTrue(self::callPrivate($downloader, 'outputWarnings', 'example.org', ['path' => '/b'] + $rateLimited));
+        self::assertTrue(self::callPrivate($downloader, 'outputWarnings', 'other.org', $rateLimited));
+        self::assertTrue(self::callPrivate($downloader, 'outputWarnings', 'example.org', ['warning' => 'Slow down']));
+        self::assertFalse(self::callPrivate($downloader, 'outputWarnings', 'example.org', ['status' => 'error']));
+        self::assertFalse(self::callPrivate($downloader, 'outputWarnings', 'example.org', null));
 
         self::assertSame(
             '<warning>Warning from example.org: Rate limited</warning>'.PHP_EOL
@@ -439,20 +404,12 @@ class CurlDownloaderTest extends TestCase
      */
     private function scheduleRetry(CurlDownloader $downloader, array $job, ?float $delay, int $statusCode = 429): void
     {
-        $method = new \ReflectionMethod($downloader, 'restartJobWithDelay');
-        if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
-        }
-        $method->invoke($downloader, $job, $job['url'], $job['attributes'], $delay, $statusCode);
+        self::callPrivate($downloader, 'restartJobWithDelay', $job, $job['url'], $job['attributes'], $delay, $statusCode);
     }
 
     private function announceRetryAfterWaits(CurlDownloader $downloader): void
     {
-        $method = new \ReflectionMethod($downloader, 'announceRetryAfterWaits');
-        if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
-        }
-        $method->invoke($downloader);
+        self::callPrivate($downloader, 'announceRetryAfterWaits');
     }
 
     /**
@@ -461,13 +418,7 @@ class CurlDownloaderTest extends TestCase
      */
     private function decideRetry(array $job, Response $response)
     {
-        $downloader = $this->createDownloader();
-        $method = new \ReflectionMethod($downloader, 'isStatusCodeRetryNeeded');
-        if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
-        }
-
-        return $method->invoke($downloader, $job, $response);
+        return self::callPrivate($this->createDownloader(), 'isStatusCodeRetryNeeded', $job, $response);
     }
 
     /**
@@ -475,12 +426,22 @@ class CurlDownloaderTest extends TestCase
      */
     private static function parseRetryAfter(Response $response)
     {
-        $method = new \ReflectionMethod(CurlDownloader::class, 'getRetryAfterDelay');
+        return self::callPrivate(CurlDownloader::class, 'getRetryAfterDelay', $response);
+    }
+
+    /**
+     * @param  object|class-string $target
+     * @param  mixed               ...$args
+     * @return mixed
+     */
+    private static function callPrivate($target, string $method, ...$args)
+    {
+        $reflection = new \ReflectionMethod($target, $method);
         if (\PHP_VERSION_ID < 80100) {
-            $method->setAccessible(true);
+            $reflection->setAccessible(true);
         }
 
-        return $method->invoke(null, $response);
+        return $reflection->invoke(is_object($target) ? $target : null, ...$args);
     }
 
     /**
