@@ -866,10 +866,9 @@ class CurlDownloader
      * Tells the user when an origin asked for requests to be retried later, once per origin
      *
      * The wait can last up to MAX_RETRY_AFTER seconds, which without a word would be hard to tell
-     * apart from a hang. Every request in flight to the origin tends to be turned away, so rather
-     * than a line per request, one line reports how many are waiting and until when, once none of
-     * them is in flight any more. The origin is announced again only once all its retries were
-     * started and one of them is turned away anew.
+     * apart from a hang. Parallel requests to the origin tend to be turned away together, so one
+     * line reports how many are waiting and until when. The origin is announced again only once
+     * all its retries were started and one of them is turned away anew.
      */
     private function announceRetryAfterWaits(): void
     {
@@ -891,16 +890,6 @@ class CurlDownloader
 
             if ($retryAfterOrigin['announced']) {
                 continue;
-            }
-
-            // parallel requests are turned away one after the other, so announcing on the first one
-            // would report a fraction of the wait. Holding off until none of the origin's requests
-            // is in flight any more means everything it was asked for is waiting, which is also
-            // the point from which nothing seems to happen.
-            foreach ($this->jobs as $activeJob) {
-                if ($activeJob['origin'] === $origin) {
-                    continue 2;
-                }
             }
 
             $reason = 429 === $retryAfterOrigin['statusCode'] ? 'is rate limiting requests' : 'responded with status code '.$retryAfterOrigin['statusCode'];

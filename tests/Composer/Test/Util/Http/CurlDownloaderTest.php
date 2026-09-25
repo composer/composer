@@ -248,28 +248,17 @@ class CurlDownloaderTest extends TestCase
         );
     }
 
-    public function testRetryAfterWaitIsAnnouncedOnceNoRequestToTheOriginIsInFlight(): void
+    public function testRetryAfterWaitIsAnnouncedWhileRequestsToTheOriginAreStillInFlight(): void
     {
         $io = new BufferIO();
         $downloader = $this->createDownloader($io);
-        $jobs = new \ReflectionProperty($downloader, 'jobs');
-        if (\PHP_VERSION_ID < 80100) {
-            $jobs->setAccessible(true);
-        }
 
-        // the first of several parallel requests is turned away while the others are still in flight
-        $this->scheduleRetry($downloader, $this->createJob(), 5.0);
-        $jobs->setValue($downloader, [1 => ['origin' => 'example.org'], 2 => ['origin' => 'example.org'], 3 => ['origin' => 'other.org']]);
-        $this->announceRetryAfterWaits($downloader);
-        self::assertSame('', $io->getOutput());
-
-        // the others are turned away too, which leaves only requests to other origins in flight
-        $this->scheduleRetry($downloader, $this->createJob(), 10.0);
+        // a long transfer to the origin can outlast the whole wait, so the notice must not wait for it
         $this->scheduleRetry($downloader, $this->createJob(), 30.0);
-        $jobs->setValue($downloader, [3 => ['origin' => 'other.org']]);
+        $this->writeProperty($downloader, 'jobs', [1 => ['origin' => 'example.org']]);
         $this->announceRetryAfterWaits($downloader);
 
-        self::assertSame('<warning>example.org is rate limiting requests (3 pending), waiting 30s before retrying</warning>'.PHP_EOL, $io->getOutput());
+        self::assertSame('<warning>example.org is rate limiting requests (1 pending), waiting 30s before retrying</warning>'.PHP_EOL, $io->getOutput());
     }
 
     public function testRetryAfterWaitIsAnnouncedAgainOnceTheOriginTurnsRequestsAwayAnew(): void
@@ -487,5 +476,17 @@ class CurlDownloaderTest extends TestCase
         }
 
         return $property->getValue($downloader);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function writeProperty(CurlDownloader $downloader, string $name, $value): void
+    {
+        $property = new \ReflectionProperty($downloader, $name);
+        if (\PHP_VERSION_ID < 80100) {
+            $property->setAccessible(true);
+        }
+        $property->setValue($downloader, $value);
     }
 }
