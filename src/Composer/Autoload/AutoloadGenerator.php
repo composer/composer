@@ -363,10 +363,14 @@ EOF;
         }
 
         $classMap = $classMapGenerator->getClassMap();
+        // added before the ambiguity checks so that the cached result is reused by dump-autoload --strict-ambiguous
+        $classMap->addClass('Composer\InstalledVersions', $vendorPath . '/composer/InstalledVersions.php');
         if ($strictAmbiguous) {
             $ambiguousClasses = $classMap->getAmbiguousClasses(false);
+            $ambiguousFolders = $classMap->getAmbiguousFolders(false);
         } else {
             $ambiguousClasses = $classMap->getAmbiguousClasses();
+            $ambiguousFolders = $classMap->getAmbiguousFolders();
         }
         foreach ($ambiguousClasses as $className => $ambiguousPaths) {
             if (count($ambiguousPaths) > 1) {
@@ -381,7 +385,13 @@ EOF;
                 );
             }
         }
-        if (\count($ambiguousClasses) > 0) {
+        foreach ($ambiguousFolders as $ambiguousPaths) {
+            $this->io->writeError(
+                '<warning>Warning: Ambiguous path casing, "'. implode('", "', $ambiguousPaths) .'" only differ in casing'.
+                ' and merge into one on case-insensitive filesystems (e.g. Windows and macOS), which breaks autoloading there.</warning>'
+            );
+        }
+        if (\count($ambiguousClasses) > 0 || \count($ambiguousFolders) > 0) {
             $this->io->writeError('<info>To resolve ambiguity in classes not under your control you can ignore them by path using <href='.OutputFormatter::escape('https://getcomposer.org/doc/04-schema.md#exclude-files-from-classmaps').'>exclude-from-classmap</>');
         }
 
@@ -391,7 +401,6 @@ EOF;
             $this->io->writeError("<warning>$msg</warning>");
         }
 
-        $classMap->addClass('Composer\InstalledVersions', $vendorPath . '/composer/InstalledVersions.php');
         $classMap->sort();
 
         $classmapFile = <<<EOF
