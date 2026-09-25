@@ -384,7 +384,7 @@ includes:
 [4]: https://github.com/composer/composer/blob/main/src/Composer/Composer.php
 [5]: https://github.com/composer/composer/blob/main/src/Composer/IO/IOInterface.php
 [6]: https://github.com/composer/composer/blob/main/src/Composer/EventDispatcher/EventSubscriberInterface.php
-[7]: ../01-basic-usage.md#package-versions
+[7]: ../01-basic-usage.md#package-version-constraints
 [8]: https://github.com/composer/composer/blob/main/src/Composer/Plugin/Capable.php
 [9]: https://github.com/composer/composer/blob/main/src/Composer/Plugin/Capability/CommandProvider.php
 [10]: https://symfony.com/doc/current/components/console.html
