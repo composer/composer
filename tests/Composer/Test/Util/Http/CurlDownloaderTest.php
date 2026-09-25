@@ -265,11 +265,11 @@ class CurlDownloaderTest extends TestCase
     {
         $io = new BufferIO();
         $downloader = $this->createDownloader($io);
-        $this->scheduleRetry($downloader, $this->createJob(), 0.0001, 503);
+        $this->scheduleRetry($downloader, $this->createJob(), 1.0, 503);
         $this->announceRetryAfterWaits($downloader);
 
-        // the retry is started, which ends the wait
-        usleep(1000);
+        // the wait runs out and the retry is started, which ends the episode
+        $this->letWaitsRunOut($downloader);
         $method = new \ReflectionMethod($downloader, 'restartDueJobs');
         if (\PHP_VERSION_ID < 80100) {
             $method->setAccessible(true);
@@ -476,6 +476,25 @@ class CurlDownloaderTest extends TestCase
         }
 
         return $property->getValue($downloader);
+    }
+
+    /**
+     * Moves every delayed retry and origin hold into the past, as if their wait had run out
+     */
+    private function letWaitsRunOut(CurlDownloader $downloader): void
+    {
+        $delayedJobs = $this->readDelayedJobs($downloader);
+        foreach (array_keys($delayedJobs) as $i) {
+            $delayedJobs[$i]['at'] = 0.0;
+        }
+        $this->writeProperty($downloader, 'delayedJobs', $delayedJobs);
+
+        $origins = $this->readProperty($downloader, 'retryAfterOrigins');
+        self::assertIsArray($origins);
+        foreach (array_keys($origins) as $origin) {
+            $origins[$origin]['until'] = 0.0;
+        }
+        $this->writeProperty($downloader, 'retryAfterOrigins', $origins);
     }
 
     /**
