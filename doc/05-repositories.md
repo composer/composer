@@ -304,11 +304,11 @@ A repository which needs to turn requests away for a while should respond with
 `429 Too Many Requests` and a `Retry-After` header, either as a number of
 seconds or as an HTTP date. When the interval is 60 seconds or less, Composer
 waits it out and retries the request, up to three times. The interval is taken
-to apply to the whole repository, so no retry to it is sent before the latest
-interval it asked for has passed. Requests to other repositories keep
-downloading in the meantime. A longer interval is not waited for, and the
-request fails with a message which says how long the repository asked to wait.
-A `429` without a `Retry-After` header is not retried.
+to apply to the whole repository, so no further request to it, new or retried,
+is sent before the latest interval it asked for has passed. Requests to other
+repositories keep downloading in the meantime. A longer interval is not waited
+for, and the request fails with a message which says how long the repository
+asked to wait. A `429` without a `Retry-After` header is not retried.
 
 `Retry-After` is also honoured on the status codes Composer already retries,
 such as `503 Service Unavailable`. There, an interval longer than 60 seconds

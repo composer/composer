@@ -386,6 +386,14 @@ class CurlDownloader
         return count($this->delayedJobs);
     }
 
+    /**
+     * @return bool whether the origin asked for requests to be held back until later, see restartJobWithDelay()
+     */
+    public function isOriginOnHold(string $origin): bool
+    {
+        return ($this->retryAfterOrigins[$origin]['until'] ?? 0.0) > microtime(true);
+    }
+
     public function tick(): void
     {
         if (count($this->jobs) === 0 && count($this->delayedJobs) === 0) {
