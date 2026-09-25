@@ -994,6 +994,10 @@
                     "type": "boolean",
                     "description": "Always optimize when dumping the autoloader."
                 },
+                "strict-psr-autoloader": {
+                    "type": "boolean",
+                    "description": "Return a failed exit code (6) if PSR-4 or PSR-0 mapping error are present in the current project (dependencies excluded). Requires \"optimize-autoloader\" or \"classmap-authoritative\" to be enabled to work"
+                },
                 "prepend-autoloader": {
                     "type": "boolean",
                     "description": "If false, the composer autoloader will not be prepended to existing autoloaders, defaults to true."

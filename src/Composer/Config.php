@@ -62,6 +62,7 @@ class Config
         'autoloader-suffix' => null,
         'sort-packages' => false,
         'optimize-autoloader' => false,
+        'strict-psr-autoloader' => false,
         'classmap-authoritative' => false,
         'apcu-autoloader' => false,
         'prepend-autoloader' => true,
@@ -417,6 +418,7 @@ class Config
             case 'use-github-api':
             case 'lock':
             case 'source-fallback':
+            case 'strict-psr-autoloader':
                 // special case for secure-http
                 if ($key === 'secure-http' && $this->get('disable-tls') === true) {
                     return false;
