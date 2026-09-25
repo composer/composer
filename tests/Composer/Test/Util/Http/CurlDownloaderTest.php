@@ -184,6 +184,25 @@ class CurlDownloaderTest extends TestCase
         }
     }
 
+    public function testAbortedRequestIsNotRetried(): void
+    {
+        $downloader = $this->createDownloader();
+        $job = $this->createJob();
+        $this->scheduleRetry($downloader, $job, 30.0);
+
+        // a request is cancelled by the id of the handle it was first sent on
+        $downloader->abortRequest((int) $job['curlHandle']);
+        self::assertSame([], $this->readDelayedJobs($downloader));
+
+        $this->letWaitsRunOut($downloader);
+        $method = new \ReflectionMethod($downloader, 'restartDueJobs');
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
+        $method->invoke($downloader);
+        self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a cancelled request must not be sent again');
+    }
+
     public function testRetryWaitsForTheLatestRetryAfterOfItsOrigin(): void
     {
         $io = new BufferIO();
@@ -382,6 +401,7 @@ class CurlDownloaderTest extends TestCase
             'attributes' => ['retryAuthFailure' => false, 'redirects' => 0, 'retries' => $retries, 'storeAuth' => false, 'ipResolve' => null],
             'options' => [],
             'filename' => null,
+            'curlHandle' => curl_init(),
             'resolve' => static function (): void {
             },
             'reject' => static function (): void {

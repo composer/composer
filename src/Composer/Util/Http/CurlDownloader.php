@@ -366,6 +366,16 @@ class CurlDownloader
             }
             unset($this->jobs[$id]);
         }
+
+        // a retry waiting for its delay is not in flight but must not be started either
+        foreach ($this->delayedJobs as $i => $delayedJob) {
+            if ((int) $delayedJob['job']['curlHandle'] === $id) {
+                if (null !== $delayedJob['job']['filename']) {
+                    @unlink($delayedJob['job']['filename'].'~');
+                }
+                unset($this->delayedJobs[$i]);
+            }
+        }
     }
 
     public function tick(): void
