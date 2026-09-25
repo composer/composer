@@ -378,6 +378,14 @@ class CurlDownloader
         }
     }
 
+    /**
+     * @return int number of retries waiting for their delay, which hold no transfer open
+     */
+    public function countDelayedJobs(): int
+    {
+        return count($this->delayedJobs);
+    }
+
     public function tick(): void
     {
         if (count($this->jobs) === 0 && count($this->delayedJobs) === 0) {

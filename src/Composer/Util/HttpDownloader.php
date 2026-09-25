@@ -298,7 +298,7 @@ class HttpDownloader
         });
         $this->jobs[$job['id']] = &$job;
 
-        if ($this->runningJobs < $this->maxJobs) {
+        if ($this->hasFreeSlot()) {
             $this->startJob($job['id']);
         }
 
@@ -348,6 +348,14 @@ class HttpDownloader
         }
     }
 
+    private function hasFreeSlot(): bool
+    {
+        // a retry waiting for its Retry-After holds no transfer open, so its slot is free for another request meanwhile
+        $maxJobs = $this->maxJobs + (null !== $this->curl ? $this->curl->countDelayedJobs() : 0);
+
+        return $this->runningJobs < $maxJobs;
+    }
+
     private function markJobDone(): void
     {
         $this->runningJobs--;
@@ -383,11 +391,9 @@ class HttpDownloader
      */
     public function countActiveJobs(?int $index = null): int
     {
-        if ($this->runningJobs < $this->maxJobs) {
-            foreach ($this->jobs as $job) {
-                if ($job['status'] === self::STATUS_QUEUED && $this->runningJobs < $this->maxJobs) {
-                    $this->startJob($job['id']);
-                }
+        foreach ($this->jobs as $job) {
+            if ($job['status'] === self::STATUS_QUEUED && $this->hasFreeSlot()) {
+                $this->startJob($job['id']);
             }
         }
 
