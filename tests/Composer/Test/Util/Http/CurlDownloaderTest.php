@@ -163,7 +163,7 @@ class CurlDownloaderTest extends TestCase
     public function testDueRetryIsStartedWhileALaterOneKeepsWaiting(): void
     {
         $downloader = $this->createDownloader();
-        $this->scheduleRetry($downloader, $this->createJob(), 30.0);
+        $this->scheduleRetry($downloader, $this->createJob(0, 'other.org'), 30.0);
         $this->scheduleRetry($downloader, $this->createJob(), 0.0001);
         usleep(1000);
 
@@ -188,8 +188,8 @@ class CurlDownloaderTest extends TestCase
     {
         $io = new BufferIO();
         $downloader = $this->createDownloader($io);
-        // another request to example.org was told to come back in 30s, which holds for this one too
-        $this->startRetryAfterEpisode($downloader, 'example.org', 429, microtime(true) + 30);
+        // another request to example.org was told to come back in 30s, which holds for the next ones too
+        $this->scheduleRetry($downloader, $this->createJob(), 30.0);
         $this->scheduleRetry($downloader, $this->createJob(), 0.0001);
         $this->scheduleRetry($downloader, $this->createJob(3), null);
         $this->scheduleRetry($downloader, $this->createJob(0, 'other.org'), 0.0001);
@@ -202,7 +202,7 @@ class CurlDownloaderTest extends TestCase
         $method->invoke($downloader);
 
         $delayedJobs = $this->readDelayedJobs($downloader);
-        self::assertCount(2, $delayedJobs, 'retries to example.org must wait for its deadline, whether or not they got a Retry-After');
+        self::assertCount(3, $delayedJobs, 'retries to example.org must wait for its deadline, whether or not they got a Retry-After');
         foreach ($delayedJobs as $delayedJob) {
             self::assertSame('example.org', $delayedJob['job']['origin']);
         }
@@ -215,18 +215,18 @@ class CurlDownloaderTest extends TestCase
         }
 
         $this->announceRetryAfterWaits($downloader);
-        self::assertStringContainsString('(1 pending), waiting 30s before retrying', $io->getOutput());
+        self::assertStringContainsString('(2 pending), waiting 30s before retrying', $io->getOutput());
     }
 
     public function testFirstRetryToABlockedOriginIsNotStartedStraightAway(): void
     {
         $downloader = $this->createDownloader();
-        $this->startRetryAfterEpisode($downloader, 'example.org', 429, microtime(true) + 30);
+        $this->scheduleRetry($downloader, $this->createJob(), 30.0);
 
         // the first retry has no backoff of its own
         $this->scheduleRetry($downloader, $this->createJob(0), null);
 
-        self::assertCount(1, $this->readDelayedJobs($downloader));
+        self::assertCount(2, $this->readDelayedJobs($downloader));
         self::assertSame([], $this->readProperty($downloader, 'jobs'));
     }
 
@@ -234,7 +234,6 @@ class CurlDownloaderTest extends TestCase
     {
         $io = new BufferIO();
         $downloader = $this->createDownloader($io);
-        $this->startRetryAfterEpisode($downloader, 'example.org', 429);
         $this->scheduleRetry($downloader, $this->createJob(), 10.0);
         $this->scheduleRetry($downloader, $this->createJob(), 30.0);
         $this->scheduleRetry($downloader, $this->createJob(0, 'other.org'), 30.0);
@@ -242,7 +241,11 @@ class CurlDownloaderTest extends TestCase
         $this->announceRetryAfterWaits($downloader);
         $this->announceRetryAfterWaits($downloader);
 
-        self::assertSame('<warning>example.org is rate limiting requests (2 pending), waiting 30s before retrying</warning>'.PHP_EOL, $io->getOutput());
+        self::assertSame(
+            '<warning>example.org is rate limiting requests (2 pending), waiting 30s before retrying</warning>'.PHP_EOL
+            .'<warning>other.org is rate limiting requests (1 pending), waiting 30s before retrying</warning>'.PHP_EOL,
+            $io->getOutput()
+        );
     }
 
     public function testRetryAfterWaitIsAnnouncedOnceNoRequestToTheOriginIsInFlight(): void
@@ -255,7 +258,6 @@ class CurlDownloaderTest extends TestCase
         }
 
         // the first of several parallel requests is turned away while the others are still in flight
-        $this->startRetryAfterEpisode($downloader, 'example.org', 429);
         $this->scheduleRetry($downloader, $this->createJob(), 5.0);
         $jobs->setValue($downloader, [1 => ['origin' => 'example.org'], 2 => ['origin' => 'example.org'], 3 => ['origin' => 'other.org']]);
         $this->announceRetryAfterWaits($downloader);
@@ -274,8 +276,7 @@ class CurlDownloaderTest extends TestCase
     {
         $io = new BufferIO();
         $downloader = $this->createDownloader($io);
-        $this->startRetryAfterEpisode($downloader, 'example.org', 503);
-        $this->scheduleRetry($downloader, $this->createJob(), 0.0001);
+        $this->scheduleRetry($downloader, $this->createJob(), 0.0001, 503);
         $this->announceRetryAfterWaits($downloader);
 
         // the retry is started, which ends the wait
@@ -292,7 +293,6 @@ class CurlDownloaderTest extends TestCase
             $downloader->abortRequest((int) $id);
         }
 
-        $this->startRetryAfterEpisode($downloader, 'example.org', 429);
         $this->scheduleRetry($downloader, $this->createJob(1), 5.0);
         $this->announceRetryAfterWaits($downloader);
 
@@ -419,28 +419,13 @@ class CurlDownloaderTest extends TestCase
     /**
      * @param mixed[] $job
      */
-    private function scheduleRetry(CurlDownloader $downloader, array $job, ?float $delay): void
+    private function scheduleRetry(CurlDownloader $downloader, array $job, ?float $delay, int $statusCode = 429): void
     {
         $method = new \ReflectionMethod($downloader, 'restartJobWithDelay');
         if (\PHP_VERSION_ID < 80100) {
             $method->setAccessible(true);
         }
-        $method->invoke($downloader, $job, $job['url'], $job['attributes'], $delay);
-    }
-
-    /**
-     * Does what tick() does when a response asks for a retry later
-     */
-    private function startRetryAfterEpisode(CurlDownloader $downloader, string $origin, int $statusCode, float $until = 0.0): void
-    {
-        $property = new \ReflectionProperty($downloader, 'retryAfterOrigins');
-        if (\PHP_VERSION_ID < 80100) {
-            $property->setAccessible(true);
-        }
-        $origins = $property->getValue($downloader);
-        self::assertIsArray($origins);
-        $origins[$origin] = $origins[$origin] ?? ['statusCode' => $statusCode, 'announced' => false, 'until' => $until];
-        $property->setValue($downloader, $origins);
+        $method->invoke($downloader, $job, $job['url'], $job['attributes'], $delay, $statusCode);
     }
 
     private function announceRetryAfterWaits(CurlDownloader $downloader): void

@@ -65,7 +65,7 @@ class CurlDownloader
      */
     private $delayedJobs = [];
     /**
-     * Origins which asked for requests to be retried later, keyed by origin, see announceRetryAfterWaits()
+     * Origins which asked for requests to be retried later, keyed by origin, see restartJobWithDelay()
      *
      * An entry lives for as long as the origin has retries waiting on its Retry-After, so parallel
      * requests which are all turned away at once are reported in one go instead of one by one.
@@ -511,15 +511,7 @@ class CurlDownloader
                     $statusRetry = $this->isStatusCodeRetryNeeded($job, $response);
                     if ($statusRetry['retry']) {
                         $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to status code '. $statusCode . (null !== $statusRetry['delay'] ? ' in '.$statusRetry['delay'].'s as requested by Retry-After' : ''), true, IOInterface::DEBUG);
-                        if (null !== $statusRetry['delay']) {
-                            $until = microtime(true) + $statusRetry['delay'];
-                            if (!isset($this->retryAfterOrigins[$job['origin']])) {
-                                $this->retryAfterOrigins[$job['origin']] = ['statusCode' => $statusCode, 'announced' => false, 'until' => $until];
-                            } else {
-                                $this->retryAfterOrigins[$job['origin']]['until'] = max($this->retryAfterOrigins[$job['origin']]['until'], $until);
-                            }
-                        }
-                        $this->restartJobWithDelay($job, $job['url'], ['retries' => $job['attributes']['retries'] + 1], $statusRetry['delay']);
+                        $this->restartJobWithDelay($job, $job['url'], ['retries' => $job['attributes']['retries'] + 1], $statusRetry['delay'], $statusCode);
                         continue;
                     }
 
@@ -835,22 +827,30 @@ class CurlDownloader
      * @param non-empty-string $url
      *
      * @param  RetryAttributes $attributes
-     * @param  float|null      $delay      seconds to wait before retrying as requested by Retry-After, null to use the default backoff
+     * @param  float|null      $retryAfter seconds the response asked to wait before retrying, null to use the default backoff
+     * @param  int             $statusCode status code of the response which asked for the wait, only used with $retryAfter
      */
-    private function restartJobWithDelay(array $job, string $url, array $attributes, ?float $delay = null): void
+    private function restartJobWithDelay(array $job, string $url, array $attributes, ?float $retryAfter = null, int $statusCode = 0): void
     {
-        $retryAfter = null !== $delay;
-        if (null === $delay) {
-            if ($attributes['retries'] >= 3) {
-                $delay = 0.5; // half a second delay for 3rd retry and beyond
-            } elseif ($attributes['retries'] >= 2) {
-                $delay = 0.1; // 100ms delay for 2nd retry
+        $now = microtime(true);
+        if (null !== $retryAfter) {
+            $delay = $retryAfter;
+            $until = $now + $retryAfter;
+            $origin = $this->retryAfterOrigins[$job['origin']] ?? null;
+            // a hold which has already run out is over, so the origin is announced anew rather than extended
+            if (null === $origin || $origin['until'] <= $now) {
+                $this->retryAfterOrigins[$job['origin']] = ['statusCode' => $statusCode, 'announced' => false, 'until' => $until];
             } else {
-                $delay = 0.0; // no delay for the first retry
+                $this->retryAfterOrigins[$job['origin']]['until'] = max($origin['until'], $until);
             }
+        } elseif ($attributes['retries'] >= 3) {
+            $delay = 0.5; // half a second delay for 3rd retry and beyond
+        } elseif ($attributes['retries'] >= 2) {
+            $delay = 0.1; // 100ms delay for 2nd retry
+        } else {
+            $delay = 0.0; // no delay for the first retry
         }
 
-        $now = microtime(true);
         if ($delay <= 0.0 && ($this->retryAfterOrigins[$job['origin']]['until'] ?? 0.0) <= $now) {
             $this->restartJob($job, $url, $attributes);
 
@@ -859,7 +859,7 @@ class CurlDownloader
 
         // the retry is scheduled rather than slept through because tick() drives every parallel
         // transfer, so waiting here would stall all the other downloads which are in flight
-        $this->delayedJobs[] = ['job' => $job, 'url' => $url, 'attributes' => $attributes, 'at' => $now + $delay, 'retryAfter' => $retryAfter];
+        $this->delayedJobs[] = ['job' => $job, 'url' => $url, 'attributes' => $attributes, 'at' => $now + $delay, 'retryAfter' => null !== $retryAfter];
     }
 
     /**
