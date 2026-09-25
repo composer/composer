@@ -1,5 +1,5 @@
 --TEST--
-Install proceeds when a custom list has block:true but the default block-scope (update) does not include install
+Install blocked when a custom dependency policy uses block-scope: install
 --COMPOSER--
 {
     "repositories": [
@@ -17,11 +17,11 @@ Install proceeds when a custom list has block:true but the default block-scope (
                 }
             ],
             "filter": {
-                "test-list": [
+                "company-policy": [
                     {
                         "package": "acme/library",
                         "constraint": "*",
-                        "url": "https://example.org/test-list/acme/library",
+                        "url": "https://example.org/company-policy/acme/library",
                         "reason": "internal block",
                         "id": "ID-test"
                     }
@@ -31,8 +31,9 @@ Install proceeds when a custom list has block:true but the default block-scope (
     ],
     "config": {
         "policy": {
-            "test-list": {
-                "block": true
+            "company-policy": {
+                "block": true,
+                "block-scope": "install"
             }
         }
     },
@@ -65,5 +66,14 @@ install
     "platform-dev": {}
 }
 
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Your lock file does not contain a compatible set of packages. Please run composer update.
+
+  Problem 1
+    - Package acme/library 1.0 (in the lock file) was not loaded, because it was filtered by company-policy (see https://example.org/company-policy/acme/library) reason: internal block. To ignore filters for this package, add the package to the "policy.company-policy.ignore" config. To turn the feature off entirely, you can set "policy.company-policy.block" to false.
 --EXPECT--
-Installing acme/library (1.0)

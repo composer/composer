@@ -729,8 +729,13 @@
                                 "properties": {
                                     "block": {
                                         "type": "boolean",
-                                        "description": "When true (default), matched packages are blocked during update/require/remove.",
+                                        "description": "When true (default), matched packages are blocked. The 'block-scope' key controls which commands the blocking applies to.",
                                         "default": true
+                                    },
+                                    "block-scope": {
+                                        "enum": ["all", "update", "install"],
+                                        "description": "Controls which commands trigger blocking: all (both update/require/remove and install), update (default, only update/require/remove), or install (only install).",
+                                        "default": "update"
                                     },
                                     "audit": {
                                         "enum": ["ignore", "report", "fail"],
