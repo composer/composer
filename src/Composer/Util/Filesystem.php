@@ -918,10 +918,73 @@ class Filesystem
     {
         $currentContent = Silencer::call('file_get_contents', $path);
         if (false === $currentContent || $currentContent !== $content) {
-            return file_put_contents($path, $content);
+            return self::safeFilePutContents($path, $content);
         }
 
         return 0;
+    }
+
+    /**
+     * Writes a file by replacing it, instead of rewriting its content in place
+     *
+     * The content is written to a temporary file next to the target, which is then renamed onto it.
+     * Compared to a plain file_put_contents() this has two benefits:
+     *
+     * - the target path always points at a complete file, never at a truncated or half written one,
+     *   even if another process reads it while it is being written or if the write fails midway
+     * - the inode of the file being replaced is left untouched, so other paths sharing that inode
+     *   (e.g. when a project or vendor dir was duplicated with hardlinks by `cp -al`,
+     *   `rsync --link-dest` and similar setups) are not modified as a side effect
+     *
+     * If the temporary file cannot be created or renamed (e.g. in a read-only or otherwise
+     * restricted directory), this falls back to writing the target path directly.
+     *
+     * @return int|false the number of bytes written, or false on failure
+     */
+    public static function safeFilePutContents(string $path, string $content)
+    {
+        // stream wrappers (php://memory, ...) do not support the temp file + rename dance
+        if (Preg::isMatch('{^[a-z][a-z0-9.+-]*://}i', $path)) {
+            return file_put_contents($path, $content);
+        }
+
+        $resolvedPath = self::resolveSymlinkedFile($path);
+        if (null === $resolvedPath) {
+            return file_put_contents($path, $content);
+        }
+        $path = $resolvedPath;
+
+        // renaming onto a file only requires the dir to be writable, so make sure a read-only file
+        // still fails to be written as it did before, instead of being silently replaced. A false
+        // negative here (is_writable is unreliable on network mounts, see #8231) only means falling
+        // back to the direct write which is what we did before anyway.
+        if (file_exists($path) && !is_writable($path)) {
+            return file_put_contents($path, $content);
+        }
+
+        $tempPath = $path.'~'.bin2hex(random_bytes(5)).'.tmp';
+
+        // create the temp file with restrictive permissions before writing to it, so that its
+        // content is never exposed more widely than the file it replaces (e.g. for auth.json)
+        if (true !== Silencer::call('touch', $tempPath) || true !== Silencer::call('chmod', $tempPath, 0600)) {
+            Silencer::call('unlink', $tempPath);
+
+            return file_put_contents($path, $content);
+        }
+
+        $written = Silencer::call('file_put_contents', $tempPath, $content);
+        if ($written !== \strlen($content)) {
+            Silencer::call('unlink', $tempPath);
+
+            // let the direct write report the actual error (out of disk space, ...) as it used to
+            return file_put_contents($path, $content);
+        }
+
+        if (!self::replaceFile($tempPath, $path)) {
+            return file_put_contents($path, $content);
+        }
+
+        return $written;
     }
 
     /**
@@ -929,18 +992,83 @@ class Filesystem
      */
     public function safeCopy(string $source, string $target): void
     {
-        if (!file_exists($target) || !file_exists($source) || !$this->filesAreEqual($source, $target)) {
-            $sourceHandle = fopen($source, 'r');
-            assert($sourceHandle !== false, 'Could not open "'.$source.'" for reading.');
-            $targetHandle = fopen($target, 'w+');
-            assert($targetHandle !== false, 'Could not open "'.$target.'" for writing.');
-
-            stream_copy_to_stream($sourceHandle, $targetHandle);
-            fclose($sourceHandle);
-            fclose($targetHandle);
-
-            touch($target, (int) filemtime($source), (int) fileatime($source));
+        if (file_exists($target) && file_exists($source) && $this->filesAreEqual($source, $target)) {
+            return;
         }
+
+        $sourceHandle = fopen($source, 'r');
+        assert($sourceHandle !== false, 'Could not open "'.$source.'" for reading.');
+
+        // copy into a temp file which then replaces the target, so that the target's inode gets
+        // replaced instead of being rewritten in place, see safeFilePutContents()
+        $tempTarget = null;
+        $targetHandle = false;
+        $resolvedTarget = self::resolveSymlinkedFile($target);
+        if (null !== $resolvedTarget && (!file_exists($resolvedTarget) || is_writable($resolvedTarget))) {
+            $tempTarget = $resolvedTarget.'~'.bin2hex(random_bytes(5)).'.tmp';
+            $targetHandle = Silencer::call('fopen', $tempTarget, 'w+');
+        }
+        if (false === $targetHandle) {
+            $tempTarget = null;
+            $targetHandle = fopen($target, 'w+');
+        }
+        assert($targetHandle !== false, 'Could not open "'.$target.'" for writing.');
+
+        stream_copy_to_stream($sourceHandle, $targetHandle);
+        fclose($sourceHandle);
+        fclose($targetHandle);
+
+        if (null !== $tempTarget && null !== $resolvedTarget && !self::replaceFile($tempTarget, $resolvedTarget)) {
+            copy($source, $target);
+        }
+
+        touch($target, (int) filemtime($source), (int) fileatime($source));
+    }
+
+    /**
+     * Moves a freshly written temp file onto the path it should replace, carrying over
+     * the permissions (and ownership, where possible) of the file being replaced
+     */
+    private static function replaceFile(string $tempPath, string $path): bool
+    {
+        $stat = Silencer::call('stat', $path);
+        if (\is_array($stat)) {
+            Silencer::call('chmod', $tempPath, $stat['mode'] & 0777);
+
+            // only root can hand a file over to another user, for others this would fail anyway
+            if (\function_exists('posix_geteuid') && 0 === posix_geteuid()) {
+                Silencer::call('chown', $tempPath, $stat['uid']);
+                Silencer::call('chgrp', $tempPath, $stat['gid']);
+            }
+        } else {
+            Silencer::call('chmod', $tempPath, 0666 & ~umask());
+        }
+
+        // deliberately not going through this class' rename(), its fallbacks copy the file over the
+        // target which rewrites it in place, exactly what we are trying to avoid here. Callers fall
+        // back to a direct write instead, e.g. when rename fails with "Access denied" on Windows.
+        if (true !== Silencer::call('rename', $tempPath, $path)) {
+            Silencer::call('unlink', $tempPath);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the path a file should be written to, following symlinks so that they keep
+     * pointing at their target instead of being replaced, or null if it cannot be resolved
+     */
+    private static function resolveSymlinkedFile(string $path): ?string
+    {
+        if (!is_link($path)) {
+            return $path;
+        }
+
+        $resolved = realpath($path);
+
+        return false === $resolved ? null : $resolved;
     }
 
     /**

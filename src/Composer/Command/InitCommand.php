@@ -556,7 +556,7 @@ EOT
             }
         }
 
-        file_put_contents($ignoreFile, $contents . $vendor. "\n");
+        Filesystem::safeFilePutContents($ignoreFile, $contents . $vendor. "\n");
     }
 
     protected function isValidEmail(string $email): bool

@@ -27,6 +27,7 @@ use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Package\BasePackage;
 use Composer\Advisory\Auditor;
+use Composer\Util\Filesystem;
 
 /**
  * @author Pierre du Plessis <pdples@gmail.com>
@@ -140,7 +141,7 @@ EOT
         $jsonFile = new JsonFile($file);
         /** @var array{require?: array<string, string>, require-dev?: array<string, string>} $composer */
         $composer = $jsonFile->read();
-        $composerBackup = file_get_contents($jsonFile->getPath());
+        $composerBackup = (string) file_get_contents($jsonFile->getPath());
 
         $json = new JsonConfigSource($jsonFile);
 
@@ -299,7 +300,7 @@ EOT
         $status = $install->run();
         if ($status !== 0) {
             $io->writeError("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
-            file_put_contents($jsonFile->getPath(), $composerBackup);
+            Filesystem::safeFilePutContents($jsonFile->getPath(), $composerBackup);
         }
 
         if (!$dryRun) {
