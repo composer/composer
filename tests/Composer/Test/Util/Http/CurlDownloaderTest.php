@@ -215,7 +215,7 @@ class CurlDownloaderTest extends TestCase
         }
 
         $this->announceRetryAfterWaits($downloader);
-        self::assertStringContainsString('(2 pending), waiting 30s before retrying', $io->getOutput());
+        self::assertStringContainsString('(3 pending), waiting 30s before retrying', $io->getOutput());
     }
 
     public function testFirstRetryToABlockedOriginIsNotStartedStraightAway(): void

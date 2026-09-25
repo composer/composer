@@ -31,7 +31,7 @@ use React\Promise\Promise;
  * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, storeAuth: 'prompt'|bool, ipResolve: 4|6|null}
  * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable, primaryIp: string}
  * @phpstan-type RetryAttributes array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries: int<1, max>, ipResolve?: 4|6}
- * @phpstan-type DelayedJob array{job: Job, url: non-empty-string, attributes: RetryAttributes, at: float, retryAfter: bool}
+ * @phpstan-type DelayedJob array{job: Job, url: non-empty-string, attributes: RetryAttributes, at: float}
  */
 class CurlDownloader
 {
@@ -859,7 +859,7 @@ class CurlDownloader
 
         // the retry is scheduled rather than slept through because tick() drives every parallel
         // transfer, so waiting here would stall all the other downloads which are in flight
-        $this->delayedJobs[] = ['job' => $job, 'url' => $url, 'attributes' => $attributes, 'at' => $now + $delay, 'retryAfter' => null !== $retryAfter];
+        $this->delayedJobs[] = ['job' => $job, 'url' => $url, 'attributes' => $attributes, 'at' => $now + $delay];
     }
 
     /**
@@ -877,7 +877,7 @@ class CurlDownloader
             $pending = 0;
             $lastDue = $now;
             foreach ($this->delayedJobs as $delayedJob) {
-                if ($delayedJob['retryAfter'] && $delayedJob['job']['origin'] === $origin) {
+                if ($delayedJob['job']['origin'] === $origin) {
                     $pending++;
                     $lastDue = max($lastDue, $this->getDueAt($delayedJob));
                 }
