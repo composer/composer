@@ -30,6 +30,8 @@ use React\Promise\Promise;
  * @author Nicolas Grekas <p@tchwork.com>
  * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, storeAuth: 'prompt'|bool, ipResolve: 4|6|null}
  * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable, primaryIp: string}
+ * @phpstan-type RetryAttributes array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries: int<1, max>, ipResolve?: 4|6}
+ * @phpstan-type DelayedJob array{job: Job, url: non-empty-string, attributes: RetryAttributes, at: float}
  */
 class CurlDownloader
 {
@@ -41,12 +43,39 @@ class CurlDownloader
      */
     private const BAD_MULTIPLEXING_CURL_VERSIONS = ['7.87.0', '7.88.0', '7.88.1'];
 
+    /**
+     * Longest Retry-After interval which is waited out, in seconds
+     *
+     * Without a ceiling a server could park an install for as long as it likes, see isStatusCodeRetryNeeded()
+     */
+    private const MAX_RETRY_AFTER = 60;
+
     /** @var \CurlMultiHandle */
     private $multiHandle;
     /** @var \CurlShareHandle */
     private $shareHandle;
     /** @var Job[] */
     private $jobs = [];
+    /**
+     * Retries which are waiting for their delay to elapse, see restartJobWithDelay()
+     *
+     * @var array<int, DelayedJob>
+     */
+    private $delayedJobs = [];
+    /**
+     * Origins which asked for requests to be retried later, keyed by origin, see restartJobWithDelay()
+     *
+     * until is the latest point in time the origin asked to be left alone for, see getDueAt()
+     *
+     * @var array<string, array{statusCode: int, announced: bool, until: float}>
+     */
+    private $retryAfterOrigins = [];
+    /**
+     * Warnings which were already shown, keyed by origin and warning, see outputWarnings()
+     *
+     * @var array<string, true>
+     */
+    private $shownWarnings = [];
     /** @var IOInterface */
     private $io;
     /** @var Config */
@@ -333,17 +362,53 @@ class CurlDownloader
             }
             unset($this->jobs[$id]);
         }
+
+        // a retry waiting for its delay is not in flight but must not be started either
+        foreach ($this->delayedJobs as $i => $delayedJob) {
+            if ((int) $delayedJob['job']['curlHandle'] === $id) {
+                if (null !== $delayedJob['job']['filename']) {
+                    @unlink($delayedJob['job']['filename'].'~');
+                }
+                unset($this->delayedJobs[$i]);
+            }
+        }
+    }
+
+    /**
+     * @return int number of retries waiting for their delay, which hold no transfer open
+     */
+    public function countDelayedJobs(): int
+    {
+        return count($this->delayedJobs);
+    }
+
+    /**
+     * @return bool whether the origin asked for requests to be held back until later, see restartJobWithDelay()
+     */
+    public function isOriginOnHold(string $origin): bool
+    {
+        return ($this->retryAfterOrigins[$origin]['until'] ?? 0.0) > microtime(true);
     }
 
     public function tick(): void
     {
+        if (count($this->jobs) === 0 && count($this->delayedJobs) === 0) {
+            return;
+        }
+
+        $this->restartDueJobs();
+
         if (count($this->jobs) === 0) {
+            // only delayed retries are left, so there is no transfer this could hold up and the
+            // short sleep merely avoids spinning the CPU until the next one comes due
+            usleep(10000);
+
             return;
         }
 
         $active = true;
         $this->checkCurlResult(curl_multi_exec($this->multiHandle, $active));
-        if (-1 === curl_multi_select($this->multiHandle, $this->selectTimeout)) {
+        if (-1 === curl_multi_select($this->multiHandle, $this->getSelectTimeout())) {
             // sleep in case select returns -1 as it can happen on old php versions or some platforms where curl does not manage to do the select
             usleep(150);
         }
@@ -444,8 +509,8 @@ class CurlDownloader
                 fclose($job['bodyHandle']);
 
                 $warningsOutput = false;
-                if ($response->getStatusCode() >= 300 && $response->getHeader('content-type') === 'application/json') {
-                    $warningsOutput = HttpDownloader::outputWarnings($this->io, $job['origin'], json_decode($response->getBody(), true));
+                if ($response->getStatusCode() >= 300 && self::isJsonResponse($response)) {
+                    $warningsOutput = $this->outputWarnings($job['origin'], json_decode($response->getBody(), true));
                 }
 
                 $result = $this->isAuthenticatedRetryNeeded($job, $response);
@@ -465,20 +530,14 @@ class CurlDownloader
 
                 // fail 4xx and 5xx responses and capture the response
                 if ($statusCode >= 400 && $statusCode <= 599) {
-                    $retryableStatusCode = in_array($statusCode, [423, 425, 500, 502, 503, 504, 507, 510], true)
-                        // codeload.github.com intermittently returns 400 on reused connections, retry those specifically, see #12958
-                        || ($statusCode === 400 && parse_url($job['url'], PHP_URL_HOST) === 'codeload.github.com');
-                    if (
-                        (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')
-                        && $retryableStatusCode
-                        && $job['attributes']['retries'] < $this->maxRetries
-                    ) {
-                        $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to status code '. $statusCode, true, IOInterface::DEBUG);
-                        $this->restartJobWithDelay($job, $job['url'], ['retries' => $job['attributes']['retries'] + 1]);
+                    $statusRetry = $this->isStatusCodeRetryNeeded($job, $response);
+                    if ($statusRetry['retry']) {
+                        $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to status code '. $statusCode . (null !== $statusRetry['delay'] ? ' in '.$statusRetry['delay'].'s as requested by Retry-After' : ''), true, IOInterface::DEBUG);
+                        $this->restartJobWithDelay($job, $job['url'], ['retries' => $job['attributes']['retries'] + 1], $statusRetry['delay'], $statusCode);
                         continue;
                     }
 
-                    throw $this->failResponse($job, $response, $response->getStatusMessage(), $warningsOutput);
+                    throw $this->failResponse($job, $response, self::getStatusFailureMessage($response), $warningsOutput);
                 }
 
                 if ($job['attributes']['storeAuth'] !== false) {
@@ -507,6 +566,8 @@ class CurlDownloader
                 $this->rejectJob($job, $e);
             }
         }
+
+        $this->announceRetryAfterWaits();
 
         foreach ($this->jobs as $i => $curlHandle) {
             $curlHandle = $this->jobs[$i]['curlHandle'];
@@ -634,6 +695,129 @@ class CurlDownloader
     }
 
     /**
+     * Decides whether a 4xx/5xx response should be retried, and how long to wait beforehand
+     *
+     * @param  Job $job
+     * @return array{retry: bool, delay: float|null} delay is null when the default backoff applies
+     */
+    private function isStatusCodeRetryNeeded(array $job, Response $response): array
+    {
+        $noRetry = ['retry' => false, 'delay' => null];
+
+        if (isset($job['options']['http']['method']) && $job['options']['http']['method'] !== 'GET') {
+            return $noRetry;
+        }
+
+        if ($job['attributes']['retries'] >= $this->maxRetries) {
+            return $noRetry;
+        }
+
+        $statusCode = $response->getStatusCode();
+        $retryAfter = self::getRetryAfterDelay($response);
+
+        $retryableByStatus = in_array($statusCode, [423, 425, 500, 502, 503, 504, 507, 510], true)
+            // codeload.github.com intermittently returns 400 on reused connections, retry those specifically, see #12958
+            || ($statusCode === 400 && parse_url($job['url'], PHP_URL_HOST) === 'codeload.github.com');
+
+        // a rate limit is only retried when the server said when to come back
+        $retryableByHeader = $statusCode === 429 && null !== $retryAfter;
+
+        if (!$retryableByStatus && !$retryableByHeader) {
+            return $noRetry;
+        }
+
+        // an interval beyond the cap is not waited for: a status which is retryable anyway falls
+        // back to the usual backoff, a rate limit has nothing else to go on and fails
+        if (null !== $retryAfter && $retryAfter > self::MAX_RETRY_AFTER) {
+            if (!$retryableByStatus) {
+                return $noRetry;
+            }
+
+            $retryAfter = null;
+        }
+
+        // a wait of 0s is no wait, so the usual backoff spaces such retries out instead
+        return ['retry' => true, 'delay' => null !== $retryAfter && $retryAfter > 0 ? (float) $retryAfter : null];
+    }
+
+    /**
+     * Reads the Retry-After header, in either of the forms RFC 9110 allows, as a number of seconds to wait
+     *
+     * @return int|null seconds to wait, or null if there is no usable Retry-After header
+     */
+    private static function getRetryAfterDelay(Response $response): ?int
+    {
+        $retryAfter = $response->getHeader('retry-after');
+        if (null === $retryAfter) {
+            return null;
+        }
+
+        // more digits would overflow an int, and are no interval anyone can mean
+        if (Preg::isMatch('{^\d{1,9}$}', $retryAfter)) {
+            return (int) $retryAfter;
+        }
+
+        // the three date formats RFC 9110 requires recipients to accept, with the leading day name
+        // skipped as it is redundant and DateTime would otherwise move the date to match it
+        foreach (['!*, d M Y H:i:s \G\M\T', '!*, d-M-y H:i:s \G\M\T', '!* M j H:i:s Y'] as $format) {
+            $retryAt = \DateTime::createFromFormat($format, $retryAfter, new \DateTimeZone('UTC'));
+            if (false !== $retryAt) {
+                // a date which has already passed means the wait is over and we can retry straight away
+                return max(0, $retryAt->getTimestamp() - time());
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Starts the delayed retries whose delay has elapsed
+     */
+    private function restartDueJobs(): void
+    {
+        $now = microtime(true);
+        foreach ($this->delayedJobs as $i => $delayedJob) {
+            if ($this->getDueAt($delayedJob) > $now) {
+                continue;
+            }
+
+            unset($this->delayedJobs[$i]);
+            try {
+                $this->restartJob($delayedJob['job'], $delayedJob['url'], $delayedJob['attributes']);
+            } catch (\Exception $e) {
+                // an immediate restart is covered by tick()'s try/catch, a deferred one is not
+                $this->rejectJob($delayedJob['job'], $e);
+            }
+        }
+    }
+
+    /**
+     * @return float how long curl_multi_select may block for, in seconds
+     */
+    private function getSelectTimeout(): float
+    {
+        $timeout = $this->selectTimeout;
+        $now = microtime(true);
+        foreach ($this->delayedJobs as $delayedJob) {
+            // never sleep past the point where a delayed retry comes due
+            $timeout = min($timeout, max(0.0, $this->getDueAt($delayedJob) - $now));
+        }
+
+        return $timeout;
+    }
+
+    /**
+     * A Retry-After speaks for the whole origin, so a retry also waits for a later hold the origin asked for
+     *
+     * @param  DelayedJob $delayedJob
+     * @return float      when the retry may be started, as a timestamp
+     */
+    private function getDueAt(array $delayedJob): float
+    {
+        return max($delayedJob['at'], $this->retryAfterOrigins[$delayedJob['job']['origin']]['until'] ?? 0.0);
+    }
+
+    /**
      * @param  Job    $job
      * @param non-empty-string $url
      *
@@ -655,17 +839,98 @@ class CurlDownloader
      * @param  Job    $job
      * @param non-empty-string $url
      *
-     * @param  array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries: int<1, max>, ipResolve?: 4|6} $attributes
+     * @param  RetryAttributes $attributes
+     * @param  float|null      $retryAfter seconds the response asked to wait before retrying, null to use the default backoff
+     * @param  int             $statusCode status code of the response which asked for the wait, only used with $retryAfter
      */
-    private function restartJobWithDelay(array $job, string $url, array $attributes): void
+    private function restartJobWithDelay(array $job, string $url, array $attributes, ?float $retryAfter = null, int $statusCode = 0): void
     {
-        if ($attributes['retries'] >= 3) {
-            usleep(500000); // half a second delay for 3rd retry and beyond
+        $now = microtime(true);
+        if (null !== $retryAfter) {
+            $delay = $retryAfter;
+            $until = $now + $retryAfter;
+            $origin = $this->retryAfterOrigins[$job['origin']] ?? null;
+            // a hold which has already run out is over, so the origin is announced anew rather than extended
+            if (null === $origin || $origin['until'] <= $now) {
+                $this->retryAfterOrigins[$job['origin']] = ['statusCode' => $statusCode, 'announced' => false, 'until' => $until];
+            } else {
+                $this->retryAfterOrigins[$job['origin']]['until'] = max($origin['until'], $until);
+            }
+        } elseif ($attributes['retries'] >= 3) {
+            $delay = 0.5; // half a second delay for 3rd retry and beyond
         } elseif ($attributes['retries'] >= 2) {
-            usleep(100000); // 100ms delay for 2nd retry
-        } // no sleep for the first retry
+            $delay = 0.1; // 100ms delay for 2nd retry
+        } else {
+            $delay = 0.0; // no delay for the first retry
+        }
 
-        $this->restartJob($job, $url, $attributes);
+        if ($delay <= 0.0 && ($this->retryAfterOrigins[$job['origin']]['until'] ?? 0.0) <= $now) {
+            $this->restartJob($job, $url, $attributes);
+
+            return;
+        }
+
+        // sleeping here would stall every other transfer tick() drives, so the retry is scheduled instead
+        $this->delayedJobs[] = ['job' => $job, 'url' => $url, 'attributes' => $attributes, 'at' => $now + $delay];
+    }
+
+    /**
+     * Tells the user when an origin asked for requests to be retried later, once per origin and episode
+     *
+     * The wait can last up to MAX_RETRY_AFTER seconds, which without a word would look like a hang
+     */
+    private function announceRetryAfterWaits(): void
+    {
+        $now = microtime(true);
+        foreach ($this->retryAfterOrigins as $origin => $retryAfterOrigin) {
+            $pending = 0;
+            $lastDue = $now;
+            foreach ($this->delayedJobs as $delayedJob) {
+                if ($delayedJob['job']['origin'] === $origin) {
+                    $pending++;
+                    $lastDue = max($lastDue, $this->getDueAt($delayedJob));
+                }
+            }
+
+            if (0 === $pending) {
+                unset($this->retryAfterOrigins[$origin]);
+                continue;
+            }
+
+            if ($retryAfterOrigin['announced']) {
+                continue;
+            }
+
+            $reason = 429 === $retryAfterOrigin['statusCode'] ? 'is rate limiting requests' : 'responded with status code '.$retryAfterOrigin['statusCode'];
+            $this->io->writeError('<warning>'.$origin.' '.$reason.' ('.$pending.' pending), waiting '.(int) ceil($lastDue - $now).'s before retrying</warning>');
+            $this->retryAfterOrigins[$origin]['announced'] = true;
+        }
+    }
+
+    /**
+     * Shows the warnings of a response, unless the same origin already showed the same warnings
+     *
+     * @param  mixed $data the decoded response body
+     * @return bool  whether the warnings were shown, now or before
+     */
+    private function outputWarnings(string $origin, $data): bool
+    {
+        if (!is_array($data)) {
+            return false;
+        }
+
+        $key = $origin.':'.json_encode(array_intersect_key($data, array_flip(['warning', 'warning-versions', 'info', 'info-versions', 'warnings', 'infos'])));
+        if (isset($this->shownWarnings[$key])) {
+            return true;
+        }
+
+        if (!HttpDownloader::outputWarnings($this->io, $origin, $data)) {
+            return false;
+        }
+
+        $this->shownWarnings[$key] = true;
+
+        return true;
     }
 
     /**
@@ -679,11 +944,33 @@ class CurlDownloader
 
         $details = '';
         // skip dumping the raw JSON body when outputWarnings already presented it cleanly, to avoid duplicate/messy output
-        if (!$warningsOutput && in_array(strtolower((string) $response->getHeader('content-type')), ['application/json', 'application/json; charset=utf-8'], true)) {
+        if (!$warningsOutput && self::isJsonResponse($response)) {
             $details = ':'.PHP_EOL.substr($response->getBody(), 0, 200).(strlen($response->getBody()) > 200 ? '...' : '');
         }
 
         return new TransportException('The "'.Url::sanitize($job['url']).'" file could not be downloaded ('.$errorMessage.')' . $details, $response->getStatusCode());
+    }
+
+    /**
+     * Describes why a 4xx/5xx response failed the request
+     *
+     * A Retry-After which is longer than we wait for is spelled out, as it tells the user whether
+     * trying again straight away can help or whether to come back later.
+     */
+    private static function getStatusFailureMessage(Response $response): string
+    {
+        $message = (string) $response->getStatusMessage();
+        $retryAfter = self::getRetryAfterDelay($response);
+        if (null !== $retryAfter && $retryAfter > self::MAX_RETRY_AFTER) {
+            $message .= ', the server asked to retry in '.$retryAfter.'s which is longer than the '.self::MAX_RETRY_AFTER.'s Composer is willing to wait, try again later';
+        }
+
+        return $message;
+    }
+
+    private static function isJsonResponse(Response $response): bool
+    {
+        return in_array(strtolower((string) $response->getHeader('content-type')), ['application/json', 'application/json; charset=utf-8'], true);
     }
 
     /**

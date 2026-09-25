@@ -298,7 +298,7 @@ class HttpDownloader
         });
         $this->jobs[$job['id']] = &$job;
 
-        if ($this->runningJobs < $this->maxJobs) {
+        if ($this->canStartJob($job)) {
             $this->startJob($job['id']);
         }
 
@@ -348,6 +348,21 @@ class HttpDownloader
         }
     }
 
+    /**
+     * @param Job $job
+     */
+    private function canStartJob(array $job): bool
+    {
+        // a retry waiting for its Retry-After holds no transfer open, so its slot is free for another request meanwhile
+        $maxJobs = $this->maxJobs + (null !== $this->curl ? $this->curl->countDelayedJobs() : 0);
+        if ($this->runningJobs >= $maxJobs) {
+            return false;
+        }
+
+        // an origin which asked to be left alone gets no new request either, not just no retry
+        return null === $this->curl || !$this->curl->isOriginOnHold($job['origin']);
+    }
+
     private function markJobDone(): void
     {
         $this->runningJobs--;
@@ -383,11 +398,9 @@ class HttpDownloader
      */
     public function countActiveJobs(?int $index = null): int
     {
-        if ($this->runningJobs < $this->maxJobs) {
-            foreach ($this->jobs as $job) {
-                if ($job['status'] === self::STATUS_QUEUED && $this->runningJobs < $this->maxJobs) {
-                    $this->startJob($job['id']);
-                }
+        foreach ($this->jobs as $job) {
+            if ($job['status'] === self::STATUS_QUEUED && $this->canStartJob($job)) {
+                $this->startJob($job['id']);
             }
         }
 

@@ -3274,6 +3274,11 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Parameter \\$delayedJob of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:getDueAt\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:failResponse\\(\\) has invalid type CurlHandle\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -3289,6 +3294,11 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:isStatusCodeRetryNeeded\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:rejectJob\\(\\) has invalid type CurlHandle\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -3300,6 +3310,11 @@ parameters:
 
 		-
 			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:restartJobWithDelay\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$delayedJobs has unknown class CurlHandle as its type\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -3335,6 +3350,11 @@ parameters:
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Type alias DelayedJob contains unknown class CurlHandle\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 

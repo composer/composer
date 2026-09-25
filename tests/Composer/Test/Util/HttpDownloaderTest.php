@@ -13,6 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\IO\BufferIO;
+use Composer\Util\Http\CurlDownloader;
 use Composer\Util\HttpDownloader;
 use PHPUnit\Framework\TestCase;
 
@@ -72,6 +73,55 @@ class HttpDownloaderTest extends TestCase
         ]);
     }
 
+    public function testParkedRetriesDoNotHoldUpQueuedRequests(): void
+    {
+        if (!extension_loaded('curl')) {
+            self::markTestSkipped('curl extension is required');
+        }
+
+        $downloader = new HttpDownloader(new BufferIO(), $this->getConfigMock());
+        $downloader->enableAsync();
+        $this->setProperty($downloader, 'maxJobs', 1);
+
+        // only one request fits in the slot
+        $curl = $this->createCurlMock(0);
+        $curl->expects(self::once())->method('download');
+        $this->setProperty($downloader, 'curl', $curl);
+        $downloader->add('https://example.org/a');
+        $downloader->add('https://example.org/b');
+        $downloader->countActiveJobs();
+
+        // the first request is parked on a Retry-After, which frees its slot for the second one
+        $curl = $this->createCurlMock(1);
+        $curl->expects(self::once())->method('download');
+        $this->setProperty($downloader, 'curl', $curl);
+        $downloader->countActiveJobs();
+    }
+
+    public function testNoRequestIsStartedToAnOriginWhichAskedToBeLeftAlone(): void
+    {
+        if (!extension_loaded('curl')) {
+            self::markTestSkipped('curl extension is required');
+        }
+
+        $downloader = new HttpDownloader(new BufferIO(), $this->getConfigMock());
+        $downloader->enableAsync();
+
+        // the origin asked to be left alone, so only the request to the other one is sent
+        $curl = $this->createCurlMock(0, 'example.org');
+        $curl->expects(self::once())->method('download')->with(self::anything(), self::anything(), 'other.org', 'https://other.org/b');
+        $this->setProperty($downloader, 'curl', $curl);
+        $downloader->add('https://example.org/a');
+        $downloader->add('https://other.org/b');
+        $downloader->countActiveJobs();
+
+        // once the hold has run out the queued request is sent
+        $curl = $this->createCurlMock(0);
+        $curl->expects(self::once())->method('download')->with(self::anything(), self::anything(), 'example.org', 'https://example.org/a');
+        $this->setProperty($downloader, 'curl', $curl);
+        $downloader->countActiveJobs();
+    }
+
     public function testOutputWarnings(): void
     {
         $io = new BufferIO();
@@ -111,5 +161,31 @@ class HttpDownloaderTest extends TestCase
             'Info from $URL: visible info'.PHP_EOL,
             $io->getOutput()
         );
+    }
+
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&CurlDownloader
+     */
+    private function createCurlMock(int $delayedJobs, ?string $originOnHold = null)
+    {
+        $curl = $this->getMockBuilder(CurlDownloader::class)->disableOriginalConstructor()->getMock();
+        $curl->method('countDelayedJobs')->willReturn($delayedJobs);
+        $curl->method('isOriginOnHold')->willReturnCallback(static function (string $origin) use ($originOnHold): bool {
+            return $origin === $originOnHold;
+        });
+
+        return $curl;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function setProperty(HttpDownloader $downloader, string $name, $value): void
+    {
+        $property = new \ReflectionProperty($downloader, $name);
+        if (\PHP_VERSION_ID < 80100) {
+            $property->setAccessible(true);
+        }
+        $property->setValue($downloader, $value);
     }
 }
