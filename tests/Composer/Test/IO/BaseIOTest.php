@@ -14,6 +14,7 @@ namespace Composer\Test\IO;
 
 use Composer\Config;
 use Composer\IO\BufferIO;
+use Composer\Plugin\Capability\AuthenticationProvider;
 use Composer\Test\TestCase;
 
 class BaseIOTest extends TestCase
@@ -32,6 +33,65 @@ class BaseIOTest extends TestCase
         $auth = $io->getAuthentication('github.com');
         self::assertSame($token, $auth['username']);
         self::assertSame('x-oauth-basic', $auth['password']);
+    }
+
+    public function testAuthenticationProviderIsConsultedForUnknownOrigins(): void
+    {
+        $provider = $this->createMock(AuthenticationProvider::class);
+        $provider->expects(self::any())
+            ->method('getAuthentication')
+            ->willReturnCallback(static function (string $origin): ?array {
+                return $origin === 'example.org' ? ['username' => 'provider-user', 'password' => 'provider-pass'] : null;
+            });
+
+        $io = new BufferIO();
+        $io->setAuthenticationProviders([$provider]);
+
+        self::assertTrue($io->hasAuthentication('example.org'));
+        self::assertSame(['username' => 'provider-user', 'password' => 'provider-pass'], $io->getAuthentication('example.org'));
+
+        self::assertFalse($io->hasAuthentication('unknown.org'));
+        self::assertSame(['username' => null, 'password' => null], $io->getAuthentication('unknown.org'));
+    }
+
+    public function testLocalAuthenticationTakesPrecedenceOverAuthenticationProvider(): void
+    {
+        $provider = $this->createMock(AuthenticationProvider::class);
+        $provider->expects(self::any())
+            ->method('getAuthentication')
+            ->willReturn(['username' => 'provider-user', 'password' => 'provider-pass']);
+
+        $io = new BufferIO();
+        $io->setAuthentication('example.org', 'local-user', 'local-pass');
+        $io->setAuthenticationProviders([$provider]);
+
+        self::assertTrue($io->hasAuthentication('example.org'));
+        self::assertSame(['username' => 'local-user', 'password' => 'local-pass'], $io->getAuthentication('example.org'));
+    }
+
+    public function testFirstAuthenticationProviderWins(): void
+    {
+        $first = $this->createMock(AuthenticationProvider::class);
+        $first->expects(self::any())
+            ->method('getAuthentication')
+            ->willReturn(['username' => 'first', 'password' => 'one']);
+        $second = $this->createMock(AuthenticationProvider::class);
+        $second->expects(self::any())
+            ->method('getAuthentication')
+            ->willReturn(['username' => 'second', 'password' => 'two']);
+
+        $io = new BufferIO();
+        $io->setAuthenticationProviders([$first, $second]);
+
+        self::assertSame(['username' => 'first', 'password' => 'one'], $io->getAuthentication('example.org'));
+    }
+
+    public function testSetAuthenticationProvidersRejectsInvalidProviders(): void
+    {
+        $io = new BufferIO();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $io->setAuthenticationProviders([new \stdClass()]);
     }
 
     /** @return array<string, array{string}> */
