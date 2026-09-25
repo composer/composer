@@ -52,6 +52,7 @@ class CurlDownloaderTest extends TestCase
     public function testMalformedRetryAfterIsIgnored(): void
     {
         self::assertNull(self::parseRetryAfter($this->createResponse(429, ['Retry-After: not a date'])));
+        self::assertNull(self::parseRetryAfter($this->createResponse(429, ['Retry-After: 99999999999999999999'])));
         self::assertNull(self::parseRetryAfter($this->createResponse(429, ['Retry-After: '])));
         self::assertNull(self::parseRetryAfter($this->createResponse(429, [])));
     }

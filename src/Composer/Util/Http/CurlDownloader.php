@@ -748,7 +748,8 @@ class CurlDownloader
             return null;
         }
 
-        if (Preg::isMatch('{^\d+$}', $retryAfter)) {
+        // more digits would overflow an int, and are no interval anyone can mean
+        if (Preg::isMatch('{^\d{1,9}$}', $retryAfter)) {
             return (int) $retryAfter;
         }
 
