@@ -1466,7 +1466,7 @@ a security advisory that fix the vulnerability) automatically bypass the cooldow
 ### COMPOSER_POLICY_COOLDOWN_BLOCK
 
 If set to `1`, forces cooldown blocking on; if set to `0`, disables it. Overrides the
-[policy.cooldown.block](06-config.md#block-2) config option.
+[policy.cooldown.block](06-config.md#block-3) config option.
 
 ### COMPOSER_NO_DEV
 

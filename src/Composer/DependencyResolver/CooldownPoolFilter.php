@@ -45,7 +45,7 @@ class CooldownPoolFilter
     /** @var array<string, array<PartialSecurityAdvisory|SecurityAdvisory>> */
     private $securityAdvisories = [];
 
-    /** @var array<string, ?DateTimeInterface> */
+    /** @var array<int, ?DateTimeInterface> */
     private $effectiveDateCache = [];
 
     public function __construct(CooldownPolicyConfig $config, ?DateTimeImmutable $now = null)
@@ -148,7 +148,7 @@ class CooldownPoolFilter
      */
     private function effectiveDate(PackageInterface $package): ?DateTimeInterface
     {
-        $key = spl_object_hash($package);
+        $key = spl_object_id($package);
         if (!array_key_exists($key, $this->effectiveDateCache)) {
             $this->effectiveDateCache[$key] = $this->config->getEffectiveDate($package);
         }

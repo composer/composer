@@ -220,13 +220,13 @@ class CooldownPoolFilterTest extends TestCase
         $this->assertSame([$oldEnoughPackage], $filteredPool->getPackages());
     }
 
-    public function testExactlyAtCutoffIsFiltered(): void
+    public function testExactlyAtCutoffIsNotFiltered(): void
     {
         $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 24 * 3600); // 1 day
         $now = new DateTimeImmutable('2026-01-15 12:00:00');
         $filter = new CooldownPoolFilter($config, $now);
 
-        // Package released exactly 24 hours ago should still be filtered (>= not >)
+        // Package released exactly 24 hours ago is old enough and must be kept
         $exactCutoffPackage = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
         $exactCutoffPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
 
