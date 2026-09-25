@@ -363,6 +363,8 @@ EOF;
         }
 
         $classMap = $classMapGenerator->getClassMap();
+        // added before the ambiguity checks so that the cached result is reused by dump-autoload --strict-ambiguous
+        $classMap->addClass('Composer\InstalledVersions', $vendorPath . '/composer/InstalledVersions.php');
         if ($strictAmbiguous) {
             $ambiguousClasses = $classMap->getAmbiguousClasses(false);
             $ambiguousFolders = $classMap->getAmbiguousFolders(false);
@@ -383,10 +385,10 @@ EOF;
                 );
             }
         }
-        foreach ($ambiguousFolders as $ambiguousFolderSet) {
+        foreach ($ambiguousFolders as $ambiguousPaths) {
             $this->io->writeError(
-                '<warning>Warning: Ambiguous folder/file resolution'.
-                ' multiple folders/files ('. count($ambiguousFolderSet) .') map to the same case-insensitive path: "'. implode('", "', $ambiguousFolderSet) .'", this results in broken autoloading on case-insensitive filesystems.</warning>'
+                '<warning>Warning: Ambiguous path casing, "'. implode('", "', $ambiguousPaths) .'" only differ in casing'.
+                ' and merge into one on case-insensitive filesystems (e.g. Windows and macOS), which breaks autoloading there.</warning>'
             );
         }
         if (\count($ambiguousClasses) > 0 || \count($ambiguousFolders) > 0) {
@@ -399,7 +401,6 @@ EOF;
             $this->io->writeError("<warning>$msg</warning>");
         }
 
-        $classMap->addClass('Composer\InstalledVersions', $vendorPath . '/composer/InstalledVersions.php');
         $classMap->sort();
 
         $classmapFile = <<<EOF
