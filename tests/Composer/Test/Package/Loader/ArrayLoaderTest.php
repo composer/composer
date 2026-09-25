@@ -45,6 +45,56 @@ class ArrayLoaderTest extends TestCase
         self::assertEquals('== 1.2.3.4', (string) $replaces['foo']->getConstraint());
     }
 
+    public function testReleaseAndPublishedDates(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'time' => '2025-01-15T10:00:00+00:00',
+            'published-time' => '2026-05-19T20:20:25+00:00',
+        ]);
+
+        self::assertInstanceOf(\DateTimeInterface::class, $package->getReleaseDate());
+        self::assertSame('2025-01-15T10:00:00+00:00', $package->getReleaseDate()->format(\DateTimeInterface::ATOM));
+        self::assertInstanceOf(\DateTimeInterface::class, $package->getPublishedDate());
+        self::assertSame('2026-05-19T20:20:25+00:00', $package->getPublishedDate()->format(\DateTimeInterface::ATOM));
+    }
+
+    public function testPublishedTimeAbsentLeavesPublishedDateNull(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'time' => '2025-01-15T10:00:00+00:00',
+        ]);
+
+        self::assertNotNull($package->getReleaseDate());
+        self::assertNull($package->getPublishedDate());
+    }
+
+    public function testPublishedTimeFromUnixTimestamp(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'published-time' => '1747685025',
+        ]);
+
+        self::assertInstanceOf(\DateTimeInterface::class, $package->getPublishedDate());
+        self::assertSame(1747685025, $package->getPublishedDate()->getTimestamp());
+    }
+
+    public function testMalformedPublishedTimeIsIgnored(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'published-time' => 'not a date',
+        ]);
+
+        self::assertNull($package->getPublishedDate());
+    }
+
     public function testTypeDefault(): void
     {
         $config = [

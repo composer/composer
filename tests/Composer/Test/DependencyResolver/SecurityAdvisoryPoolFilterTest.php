@@ -22,6 +22,7 @@ use Composer\IO\NullIO;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Policy\AbandonedPolicyConfig;
+use Composer\Policy\CooldownPolicyConfig;
 use Composer\Policy\AdvisoriesPolicyConfig;
 use Composer\Policy\IgnoreIdRule;
 use Composer\Policy\IgnorePackageRule;
@@ -51,6 +52,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             new AdvisoriesPolicyConfig($advisoriesBlock, ListPolicyConfig::AUDIT_FAIL, $advisoriesIgnore, [], []),
             MalwarePolicyConfig::disabled(),
             new AbandonedPolicyConfig($abandonedBlock, ListPolicyConfig::AUDIT_FAIL, $abandonedIgnore),
+            CooldownPolicyConfig::disabled(),
             [],
             IgnoreUnreachable::default()
         );
@@ -99,6 +101,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             ),
             MalwarePolicyConfig::disabled(),
             new AbandonedPolicyConfig(true, ListPolicyConfig::AUDIT_FAIL, []),
+            CooldownPolicyConfig::disabled(),
             [],
             IgnoreUnreachable::default()
         );
@@ -140,6 +143,37 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
         $this->assertCount(0, $filteredPool->getAllAbandonedRemovedPackageVersions());
         $this->assertCount(0, $filteredPool->getAllSecurityRemovedPackageVersions());
+        // No blocking and no cooldown consumer: advisories are not even resolved.
+        $this->assertSame([], $filter->getAdvisoryMap());
+    }
+
+    public function testResolvesAdvisoryMapWithoutBlockingForCooldownBypass(): void
+    {
+        // policy.advisories.block is false, but the cooldown filter still needs the
+        // advisory map to let recent security fixes bypass the cooldown.
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(false), new NullIO(), true);
+
+        $repository = new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '>=1.0.0,<1.1.0')],
+            ],
+        ]);
+        $pool = new Pool([
+            $expectedPackage1 = new Package('acme/package', '1.0.0.0', '1.0'),
+            $expectedPackage2 = new Package('acme/package', '1.1.0.0', '1.1'),
+        ]);
+        $filteredPool = $filter->filter($pool, [$repository], new Request());
+
+        // Blocking is off, so the vulnerable version must stay in the pool.
+        $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
+        $this->assertCount(0, $filteredPool->getAllSecurityRemovedPackageVersions());
+        $this->assertCount(0, $filteredPool->getAllAbandonedRemovedPackageVersions());
+
+        // But the advisory map is resolved so the cooldown filter can consume it.
+        $advisoryMap = $filter->getAdvisoryMap();
+        $this->assertArrayHasKey('acme/package', $advisoryMap);
+        $this->assertCount(1, $advisoryMap['acme/package']);
     }
 
     public function testDontFilterPackagesWithAbandonedPackage(): void
@@ -236,6 +270,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
             new AdvisoriesPolicyConfig(true, ListPolicyConfig::AUDIT_FAIL, [], [], []),
             MalwarePolicyConfig::disabled(),
             new AbandonedPolicyConfig(true, ListPolicyConfig::AUDIT_FAIL, []),
+            CooldownPolicyConfig::disabled(),
             [],
             IgnoreUnreachable::none()
         );
