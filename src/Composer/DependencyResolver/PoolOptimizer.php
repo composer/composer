@@ -236,16 +236,18 @@ class PoolOptimizer
         foreach ($identicalDefinitionsPerPackage as $packageName => $constraintGroups) {
             foreach ($constraintGroups as $constraintGroup) {
                 foreach ($constraintGroup as $packageIds) {
+                    $versions = $this->getGroupVersions($pool, $packageIds);
+
                     // Only one package in this constraint group has the same requirements, we're not allowed to remove that package
                     if (1 === \count($packageIds)) {
-                        $this->keepPackageInGroup($pool->packageById($packageIds[0]), $pool, $packageName, $packageIds);
+                        $this->keepPackageInGroup($pool->packageById($packageIds[0]), $packageName, $versions);
                         continue;
                     }
 
                     // Otherwise we find out which one is the preferred package in this constraint group which is
                     // then not allowed to be removed either
                     foreach ($this->policy->selectPreferredPackages($pool, $packageIds) as $preferredLiteral) {
-                        $this->keepPackageInGroup($pool->literalToPackage($preferredLiteral), $pool, $packageName, $packageIds);
+                        $this->keepPackageInGroup($pool->literalToPackage($preferredLiteral), $packageName, $versions);
                     }
                 }
             }
@@ -303,19 +305,10 @@ class PoolOptimizer
     }
 
     /**
-     * @param list<int> $packageIds
+     * @param array<string, string> $versions
      */
-    private function keepPackageInGroup(BasePackage $package, Pool $pool, string $packageName, array $packageIds): void
+    private function keepPackageInGroup(BasePackage $package, string $packageName, array $versions): void
     {
-        $versions = [];
-        foreach ($packageIds as $packageId) {
-            $groupPackage = $pool->packageById($packageId);
-            if ($groupPackage instanceof AliasPackage && $groupPackage->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
-                $groupPackage = $groupPackage->getAliasOf();
-            }
-            $versions[$groupPackage->getVersion()] = $groupPackage->getPrettyVersion();
-        }
-
         // Always record versions even if already kept — the package may appear in
         // groups for multiple names (own name + replacement names)
         $this->recordRemovedVersionsForPackage($package, $packageName, $versions);
@@ -347,6 +340,24 @@ class PoolOptimizer
                 $this->recordRemovedVersionsForPackage($aliasPackage, $packageName, $versions);
             }
         }
+    }
+
+    /**
+     * @param list<int> $packageIds
+     * @return array<string, string>
+     */
+    private function getGroupVersions(Pool $pool, array $packageIds): array
+    {
+        $versions = [];
+        foreach ($packageIds as $packageId) {
+            $groupPackage = $pool->packageById($packageId);
+            if ($groupPackage instanceof AliasPackage && $groupPackage->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                $groupPackage = $groupPackage->getAliasOf();
+            }
+            $versions[$groupPackage->getVersion()] = $groupPackage->getPrettyVersion();
+        }
+
+        return $versions;
     }
 
     private function unmarkPackageForRemoval(BasePackage $package): void
