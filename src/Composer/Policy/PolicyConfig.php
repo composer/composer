@@ -164,6 +164,8 @@ class PolicyConfig
         $parser = new VersionParser();
 
         if ($policyRaw === false) {
+            CooldownPolicyConfig::assertEnvAgeNotSetWhileDisabled('"policy" is set to false');
+
             return new self(
                 false,
                 AdvisoriesPolicyConfig::disabled(),

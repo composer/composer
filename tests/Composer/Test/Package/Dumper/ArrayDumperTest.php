@@ -103,7 +103,7 @@ class ArrayDumperTest extends TestCase
             ],
             [
                 'published-time',
-                $publishedDatetime = new \DateTime('2012-02-02'),
+                $publishedDatetime = new \DateTimeImmutable('2012-02-02'),
                 'PublishedDate',
                 $publishedDatetime->format(DATE_RFC3339),
             ],

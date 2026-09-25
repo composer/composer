@@ -361,7 +361,7 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getReleaseDate();
     }
 
-    public function getPublishedDate(): ?\DateTimeInterface
+    public function getPublishedDate(): ?\DateTimeImmutable
     {
         return $this->aliasOf->getPublishedDate();
     }

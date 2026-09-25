@@ -191,8 +191,14 @@ class CooldownPolicyConfig extends ListPolicyConfig
     public static function fromRawConfig(array $policyConfig, VersionParser $parser): self
     {
         $cooldownConfig = $policyConfig['cooldown'] ?? [];
+        $envAge = self::getEnvAge();
+
+        // Like the other policies' env overrides, the env var re-enables an explicitly disabled policy
         if ($cooldownConfig === false) {
-            return self::disabled();
+            if ($envAge === false || $envAge === null) {
+                return self::disabled();
+            }
+            $cooldownConfig = [];
         }
 
         if (!is_array($cooldownConfig)) {
@@ -203,18 +209,8 @@ class CooldownPolicyConfig extends ListPolicyConfig
 
         // Environment variable overrides the configured duration but preserves
         // the block/audit/ignore settings from config
-        $envValue = Platform::getEnv('COMPOSER_POLICY_COOLDOWN_AGE');
-        if ($envValue !== false && $envValue !== '') {
-            try {
-                $age = self::parseDuration($envValue);
-            } catch (\RuntimeException $e) {
-                throw new \RuntimeException(
-                    "Invalid value for COMPOSER_POLICY_COOLDOWN_AGE: {$envValue}. "
-                    . "Use formats like '7 days', '24 hours', or an integer number of seconds.",
-                    0,
-                    $e
-                );
-            }
+        if ($envAge !== false) {
+            $age = $envAge;
         }
 
         return new self(
@@ -223,6 +219,45 @@ class CooldownPolicyConfig extends ListPolicyConfig
             IgnorePackageRule::parseIgnoreMap($cooldownConfig['ignore'] ?? [], $parser),
             $age
         );
+    }
+
+    /**
+     * @throws \RuntimeException when COMPOSER_POLICY_COOLDOWN_AGE requests a cooldown that cannot apply
+     */
+    public static function assertEnvAgeNotSetWhileDisabled(string $reason): void
+    {
+        $envAge = self::getEnvAge();
+        if ($envAge === false || $envAge === null) {
+            return;
+        }
+
+        throw new \RuntimeException(
+            "COMPOSER_POLICY_COOLDOWN_AGE is set but has no effect because {$reason}. "
+            . 'Enable the cooldown policy in your config or unset the environment variable.'
+        );
+    }
+
+    /**
+     * @return int|null|false the parsed age, or false when the environment variable is not set
+     * @throws \RuntimeException on an unparseable value
+     */
+    private static function getEnvAge()
+    {
+        $envValue = Platform::getEnv('COMPOSER_POLICY_COOLDOWN_AGE');
+        if ($envValue === false || $envValue === '') {
+            return false;
+        }
+
+        try {
+            return self::parseDuration($envValue);
+        } catch (\RuntimeException $e) {
+            throw new \RuntimeException(
+                "Invalid value for COMPOSER_POLICY_COOLDOWN_AGE: {$envValue}. "
+                . "Use formats like '7 days', '24 hours', or an integer number of seconds.",
+                0,
+                $e
+            );
+        }
     }
 
     public static function disabled(): self

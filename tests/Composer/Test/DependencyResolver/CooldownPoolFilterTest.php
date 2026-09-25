@@ -851,15 +851,14 @@ class CooldownPoolFilterTest extends TestCase
         $now = new DateTimeImmutable('2026-01-15 12:00:00');
         $filter = new CooldownPoolFilter($config, $now);
 
-        // Create a package with provides (will have multiple names)
         $newPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
         $newPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
-        $newPackage->setProvides([
-            'vendor/pkg-alias' => new \Composer\Package\Link(
+        $newPackage->setReplaces([
+            'vendor/replaced' => new \Composer\Package\Link(
                 'vendor/pkg',
-                'vendor/pkg-alias',
+                'vendor/replaced',
                 new Constraint('==', '2.0.0.0'),
-                \Composer\Package\Link::TYPE_PROVIDE,
+                \Composer\Package\Link::TYPE_REPLACE,
                 '2.0.0'
             ),
         ]);
@@ -867,12 +866,10 @@ class CooldownPoolFilterTest extends TestCase
         $pool = new Pool([$newPackage]);
         $filteredPool = $filter->filter($pool, new Request());
 
-        // Package should be filtered
         $this->assertEmpty($filteredPool->getPackages());
 
-        // Both the main name and the provided name should be tracked
+        // Replaced names are part of getNames(false), so a requirement on either name explains the cooldown
         $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
-        // Note: getNames(false) returns the package's own names, not provides
-        // The provides are tracked separately, so we only check the main name here
+        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/replaced', new Constraint('==', '2.0.0.0')));
     }
 }

@@ -220,6 +220,25 @@ class CooldownPolicyConfigTest extends TestCase
         CooldownPolicyConfig::fromRawConfig([], new VersionParser());
     }
 
+    public function testEnvAgeEnablesExplicitlyDisabledCooldown(): void
+    {
+        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_AGE', '2 days');
+
+        $cooldown = CooldownPolicyConfig::fromRawConfig(['cooldown' => false], new VersionParser());
+
+        self::assertSame(172800, $cooldown->age);
+        self::assertTrue($cooldown->block);
+    }
+
+    public function testZeroEnvAgeIsAllowedWhenCooldownDisabled(): void
+    {
+        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_AGE', '0');
+
+        $cooldown = CooldownPolicyConfig::fromRawConfig(['cooldown' => false], new VersionParser());
+
+        self::assertFalse($cooldown->hasCooldown());
+    }
+
     public function testWithBlockingDisabled(): void
     {
         $cooldown = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 604800);

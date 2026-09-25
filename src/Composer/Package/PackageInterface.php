@@ -235,7 +235,7 @@ interface PackageInterface
      * field), this is a server-set timestamp the package author cannot
      * influence, or null if the repository did not provide one.
      */
-    public function getPublishedDate(): ?\DateTimeInterface;
+    public function getPublishedDate(): ?\DateTimeImmutable;
 
     /**
      * Returns the stability of this package: one of (dev, alpha, beta, RC, stable)

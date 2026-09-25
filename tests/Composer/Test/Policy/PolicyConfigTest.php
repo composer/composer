@@ -30,6 +30,7 @@ class PolicyConfigTest extends TestCase
         Platform::clearEnv('COMPOSER_POLICY_ABANDONED_BLOCK');
         Platform::clearEnv('COMPOSER_SECURITY_BLOCKING_ABANDONED');
         Platform::clearEnv('COMPOSER_AUDIT_ABANDONED');
+        Platform::clearEnv('COMPOSER_POLICY_COOLDOWN_AGE');
 
         parent::tearDown();
     }
@@ -296,6 +297,18 @@ class PolicyConfigTest extends TestCase
         $policyConfig = PolicyConfig::fromConfig($config);
 
         $this->assertTrue($policyConfig->abandoned->block);
+    }
+
+    public function testCooldownEnvAgeThrowsWhenPolicyDisabled(): void
+    {
+        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_AGE', '2 days');
+
+        $config = new Config();
+        $config->merge(['config' => ['policy' => false]]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('COMPOSER_POLICY_COOLDOWN_AGE is set but has no effect because "policy" is set to false');
+        PolicyConfig::fromConfig($config);
     }
 
     public function testAbandonedLegacyEnvBlockOverridesWhenListExplicitlyDisabled(): void

@@ -913,11 +913,32 @@ class PoolBuilder
         }
 
         $this->io->write(sprintf('Cooldown pool filter completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERY_VERBOSE);
-        $this->io->write(sprintf(
-            '<info>%d package version(s) withheld by the cooldown policy.</info>',
-            $filtered
-        ), true, IOInterface::VERY_VERBOSE);
+        $this->io->writeError(sprintf(
+            '<warning>%d package version(s) withheld by the cooldown policy%s</warning>',
+            $filtered,
+            $this->io->isVeryVerbose() ? ':' : ' (run with -vv to list them).'
+        ));
+        $this->writeCooldownRemovedVersions($pool);
 
         return $pool;
+    }
+
+    private function writeCooldownRemovedVersions(Pool $pool): void
+    {
+        if (!$this->io->isVeryVerbose()) {
+            return;
+        }
+
+        foreach ($pool->getAllCooldownRemovedPackageVersions() as $packageName => $versions) {
+            foreach ($versions as $info) {
+                $this->io->writeError(sprintf(
+                    '  - %s (%s) published %s, available in %s',
+                    $packageName,
+                    $info['prettyVersion'],
+                    $info['releaseDate'],
+                    $info['availableIn']
+                ));
+            }
+        }
     }
 }

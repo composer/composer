@@ -257,7 +257,7 @@ class ArrayLoader implements LoaderInterface
             $publishedTime = Preg::isMatch('/^\d++$/D', $config['published-time']) ? '@'.$config['published-time'] : $config['published-time'];
 
             try {
-                $date = new \DateTime($publishedTime, new \DateTimeZone('UTC'));
+                $date = new \DateTimeImmutable($publishedTime, new \DateTimeZone('UTC'));
                 $package->setPublishedDate($date);
             } catch (\Exception $e) {
             }

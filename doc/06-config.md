@@ -514,7 +514,9 @@ optional version constraint, and package names support wildcards (e.g. `vendor/*
 #### Environment variables
 
 `COMPOSER_POLICY_COOLDOWN_AGE` overrides the configured `age` (the `ignore` rules from
-`composer.json` are still respected), and `COMPOSER_POLICY_COOLDOWN_BLOCK` overrides `block`:
+`composer.json` are still respected), and `COMPOSER_POLICY_COOLDOWN_BLOCK` overrides `block`.
+A non-zero `COMPOSER_POLICY_COOLDOWN_AGE` also enables the cooldown when `cooldown` is set to
+`false`, but causes an error when the whole `policy` config is set to `false`:
 
 ```bash
 # Disable the cooldown temporarily
