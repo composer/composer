@@ -294,6 +294,7 @@ EOT
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
             ->setTemporaryConstraints($temporaryConstraints)
+            ->setMinimumAge($this->getMinimumAge($input))
             ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
             ->setAuditConfig($this->createAuditConfig($input))
             ->setMinimalUpdate($minimalChanges)
@@ -365,7 +366,7 @@ EOT
         $io->writeError('<info>Loading packages that can be updated...</info>');
         $autocompleterValues = [];
         $installedPackages = $composer->getLocker()->isLocked() ? $composer->getLocker()->getLockedRepository(true)->getPackages() : $composer->getRepositoryManager()->getLocalRepository()->getPackages();
-        $versionSelector = $this->createVersionSelector($composer);
+        $versionSelector = $this->createVersionSelector($composer, $this->getMinimumAge($input));
         foreach ($installedPackages as $package) {
             if ($filter !== null && !Preg::isMatch($filter, $package->getName())) {
                 continue;
@@ -417,13 +418,13 @@ EOT
         throw new \RuntimeException('Installation aborted.');
     }
 
-    private function createVersionSelector(Composer $composer): VersionSelector
+    private function createVersionSelector(Composer $composer, int $minimumAge): VersionSelector
     {
         $repositorySet = new RepositorySet();
         $repositorySet->addRepository(new CompositeRepository(array_filter($composer->getRepositoryManager()->getRepositories(), static function (RepositoryInterface $repository) {
             return !$repository instanceof PlatformRepository;
         })));
 
-        return new VersionSelector($repositorySet);
+        return new VersionSelector($repositorySet, null, $minimumAge);
     }
 }

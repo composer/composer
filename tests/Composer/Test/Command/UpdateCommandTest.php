@@ -18,6 +18,64 @@ use Composer\Test\TestCase;
 
 class UpdateCommandTest extends TestCase
 {
+    public function testMinimumAgeSelectsAnOlderRelease(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'age/package', 'version' => '1.0.0', 'time' => '2000-01-01 00:00:00'],
+                        ['name' => 'age/package', 'version' => '1.1.0', 'time' => gmdate('Y-m-d H:i:s')],
+                    ],
+                ],
+            ],
+            'require' => [
+                'age/package' => '^1.0',
+            ],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--min-age' => '7']);
+
+        $display = $appTester->getDisplay(true);
+        self::assertStringContainsString('Locking age/package (1.0.0)', $display);
+        self::assertStringNotContainsString('Locking age/package (1.1.0)', $display);
+    }
+
+    public function testMinimumAgeMustBeANonNegativeInteger(): void
+    {
+        $this->initTempComposer();
+        $appTester = $this->getApplicationTester();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('--min-age must be a non-negative integer number of days.');
+        $appTester->run(['command' => 'update', '--dry-run' => true, '--no-audit' => true, '--min-age' => '-1']);
+    }
+
+    public function testMinimumAgeDoesNotBlockLockFileMetadataUpdates(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'age/package', 'version' => '1.0.0', 'time' => gmdate('Y-m-d H:i:s')],
+                    ],
+                ],
+            ],
+            'require' => [
+                'age/package' => '^1.0',
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('age/package', '1.0.0')]);
+
+        $appTester = $this->getApplicationTester();
+        $status = $appTester->run(['command' => 'update', '--lock' => true, '--dry-run' => true, '--no-audit' => true, '--no-install' => true, '--min-age' => '7']);
+
+        self::assertSame(0, $status, $appTester->getDisplay(true));
+    }
+
     /**
      * @dataProvider provideUpdates
      * @param array<mixed>   $composerJson

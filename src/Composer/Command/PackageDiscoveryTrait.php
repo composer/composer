@@ -301,7 +301,7 @@ trait PackageDiscoveryTrait
 
         // find the latest version allowed in this repo set
         $repoSet = $this->getRepositorySet($input);
-        $versionSelector = new VersionSelector($repoSet, $platformRepo);
+        $versionSelector = new VersionSelector($repoSet, $platformRepo, $this->getMinimumAge($input));
         $effectiveMinimumStability = $this->getMinimumStability($input);
 
         $package = $versionSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, 0, $this->getIO());

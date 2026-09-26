@@ -482,6 +482,7 @@ EOT
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
+            ->setMinimumAge($this->getMinimumAge($input))
             ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
             ->setAuditConfig($this->createAuditConfig($input))
             ->setMinimalUpdate($minimalChanges)

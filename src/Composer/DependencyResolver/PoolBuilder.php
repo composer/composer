@@ -159,6 +159,9 @@ class PoolBuilder
     /** @var ?FilterListPoolFilter */
     private $filterListPoolFilter;
 
+    /** @var ?MinimumAgePoolFilter */
+    private $minimumAgePoolFilter;
+
     /**
      * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
      * @phpstan-param array<key-of<BasePackage::STABILITIES>, BasePackage::STABILITY_*> $acceptableStabilities
@@ -170,7 +173,7 @@ class PoolBuilder
      * @phpstan-param array<string, string> $rootReferences
      * @param array<string, ConstraintInterface> $temporaryConstraints Runtime temporary constraints that will be used to filter packages
      */
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $temporaryConstraints = [], ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null, ?FilterListPoolFilter $filterListPoolFilter = null)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, ?EventDispatcher $eventDispatcher = null, ?PoolOptimizer $poolOptimizer = null, array $temporaryConstraints = [], ?SecurityAdvisoryPoolFilter $securityAdvisoryPoolFilter = null, ?FilterListPoolFilter $filterListPoolFilter = null, ?MinimumAgePoolFilter $minimumAgePoolFilter = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
@@ -182,6 +185,7 @@ class PoolBuilder
         $this->temporaryConstraints = $temporaryConstraints;
         $this->securityAdvisoryPoolFilter = $securityAdvisoryPoolFilter;
         $this->filterListPoolFilter = $filterListPoolFilter;
+        $this->minimumAgePoolFilter = $minimumAgePoolFilter;
     }
 
     /**
@@ -354,6 +358,7 @@ class PoolBuilder
 
         $this->io->debug('Built pool.');
 
+        $pool = $this->runMinimumAgeFilter($pool, $request);
         // filter vulnerable packages before optimizing the pool otherwise we may end up with inconsistent state where the optimizer took away versions
         // that were not vulnerable and now suddenly the vulnerable ones are removed and we are missing some versions to make it solvable
         $pool = $this->runSecurityAdvisoryFilter($pool, $repositories, $request);
@@ -363,6 +368,17 @@ class PoolBuilder
         Intervals::clear();
 
         return $pool;
+    }
+
+    private function runMinimumAgeFilter(Pool $pool, Request $request): Pool
+    {
+        if (null === $this->minimumAgePoolFilter) {
+            return $pool;
+        }
+
+        $this->io->debug('Running minimum age pool filter.');
+
+        return $this->minimumAgePoolFilter->filter($pool, $request);
     }
 
     private function markPackageNameForLoading(Request $request, string $name, ConstraintInterface $constraint): void

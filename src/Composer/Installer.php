@@ -25,6 +25,7 @@ use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\FilterListPoolFilter;
+use Composer\DependencyResolver\MinimumAgePoolFilter;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
@@ -178,6 +179,8 @@ class Installer
     protected $preferLowest = false;
     /** @var bool */
     protected $minimalUpdate = false;
+    /** @var int */
+    protected $minimumAge = 0;
     /** @var bool */
     protected $writeLock;
     /** @var bool */
@@ -531,7 +534,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_UPDATE), $this->createMinimumAgePoolFilter());
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
@@ -1167,6 +1170,15 @@ class Installer
         return null;
     }
 
+    private function createMinimumAgePoolFilter(): ?MinimumAgePoolFilter
+    {
+        if ($this->minimumAge === 0 || $this->updateMirrors) {
+            return null;
+        }
+
+        return new MinimumAgePoolFilter($this->minimumAge);
+    }
+
     /**
      * @param ListPolicyConfig::BLOCK_SCOPE_UPDATE|ListPolicyConfig::BLOCK_SCOPE_INSTALL $blockScope
      */
@@ -1530,6 +1542,20 @@ class Installer
     public function setPreferLowest(bool $preferLowest = true): self
     {
         $this->preferLowest = $preferLowest;
+
+        return $this;
+    }
+
+    /**
+     * Only consider package versions released at least this many days ago during dependency resolution.
+     */
+    public function setMinimumAge(int $minimumAge): self
+    {
+        if ($minimumAge < 0) {
+            throw new \InvalidArgumentException('The minimum package age must be zero or greater.');
+        }
+
+        $this->minimumAge = $minimumAge;
 
         return $this;
     }

@@ -40,6 +40,9 @@ class VersionSelector
     /** @var RepositorySet */
     private $repositorySet;
 
+    /** @var int */
+    private $minimumAge;
+
     /** @var array<string, ConstraintInterface[]> */
     private $platformConstraints = [];
 
@@ -49,9 +52,14 @@ class VersionSelector
     /**
      * @param PlatformRepository $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
      */
-    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null)
+    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null, int $minimumAge = 0)
     {
+        if ($minimumAge < 0) {
+            throw new \InvalidArgumentException('The minimum package age must be zero or greater.');
+        }
+
         $this->repositorySet = $repositorySet;
+        $this->minimumAge = $minimumAge;
         if ($platformRepo) {
             foreach ($platformRepo->getPackages() as $package) {
                 $this->platformConstraints[$package->getName()][] = new Constraint('==', $package->getVersion());
@@ -84,6 +92,12 @@ class VersionSelector
 
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
         $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint, $repoSetFlags);
+        if ($this->minimumAge > 0) {
+            $referenceTime = time();
+            $candidates = array_values(array_filter($candidates, function (PackageInterface $package) use ($referenceTime): bool {
+                return VersionAge::isOldEnough($package, $this->minimumAge, $referenceTime);
+            }));
+        }
 
         $minPriority = BasePackage::STABILITIES[$preferredStability];
         usort($candidates, static function (PackageInterface $a, PackageInterface $b) use ($minPriority) {

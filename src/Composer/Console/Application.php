@@ -774,6 +774,7 @@ class Application extends BaseApplication
         $definition->addOption(new InputOption('--no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'));
         $definition->addOption(new InputOption('--working-dir', '-d', InputOption::VALUE_REQUIRED, 'If specified, use the given directory as working directory.'));
         $definition->addOption(new InputOption('--no-cache', null, InputOption::VALUE_NONE, 'Prevent use of the cache'));
+        $definition->addOption(new InputOption('--min-age', null, InputOption::VALUE_REQUIRED, 'Only select package versions that were released at least this many days ago.'));
 
         return $definition;
     }

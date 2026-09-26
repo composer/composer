@@ -285,6 +285,7 @@ EOT
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setDryRun($dryRun)
+            ->setMinimumAge($this->getMinimumAge($input))
             ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
             ->setAuditConfig($this->createAuditConfig($input))
             ->setMinimalUpdate($minimalChanges)

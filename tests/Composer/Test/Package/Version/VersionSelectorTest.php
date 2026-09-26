@@ -51,6 +51,28 @@ class VersionSelectorTest extends TestCase
         self::assertSame($package2, $best, 'Latest version should be 1.2.2');
     }
 
+    public function testLatestVersionMatchingMinimumAgeIsReturned(): void
+    {
+        $packageName = 'foo/bar';
+
+        $oldPackage = self::getPackage($packageName, '1.2.1');
+        $oldPackage->setReleaseDate(new \DateTimeImmutable('-8 days'));
+        $recentPackage = self::getPackage($packageName, '1.2.2');
+        $recentPackage->setReleaseDate(new \DateTimeImmutable('-6 days'));
+        $undatedPackage = self::getPackage($packageName, '1.2.3');
+        $packages = [$oldPackage, $recentPackage, $undatedPackage];
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with($packageName, null)
+            ->will($this->returnValue($packages));
+
+        $versionSelector = new VersionSelector($repositorySet, null, 7);
+
+        self::assertSame($oldPackage, $versionSelector->findBestCandidate($packageName));
+    }
+
     public function testLatestVersionIsReturnedThatMatchesPhpRequirements(): void
     {
         $packageName = 'foo/bar';

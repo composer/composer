@@ -391,6 +391,24 @@ abstract class BaseCommand extends Command
         return PlatformRequirementFilterFactory::ignoreNothing();
     }
 
+    protected function getMinimumAge(InputInterface $input): int
+    {
+        if (!$input->hasOption('min-age')) {
+            return 0;
+        }
+
+        $minimumAge = $input->getOption('min-age');
+        if ($minimumAge === null) {
+            return 0;
+        }
+
+        if ((is_int($minimumAge) && $minimumAge >= 0) || (is_string($minimumAge) && ctype_digit($minimumAge))) {
+            return (int) $minimumAge;
+        }
+
+        throw new \InvalidArgumentException('--min-age must be a non-negative integer number of days.');
+    }
+
     /**
      * @param array<string> $requirements
      *
