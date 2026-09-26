@@ -101,6 +101,7 @@ class RequireCommand extends BaseCommand
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies (can also be set via the COMPOSER_PREFER_STABLE=1 env var).'),
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies (can also be set via the COMPOSER_PREFER_LOWEST=1 env var).'),
                 new InputOption('minimal-changes', 'm', InputOption::VALUE_NONE, 'During an update with -w/-W, only perform absolutely necessary changes to transitive dependencies (can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var).'),
+                new InputOption('feature', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Require a feature offered by one of the packages being required. Use "feature" when requiring a single package, or "vendor/package:feature" otherwise.', null, []),
                 new InputOption('sort-packages', null, InputOption::VALUE_NONE, 'Sorts packages when adding/updating a new dependency'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
@@ -311,6 +312,8 @@ EOT
             }
         }
 
+        $featureRequires = $this->parseFeatureOption($input->getOption('feature'), $requirements);
+
         $sortPackages = $input->getOption('sort-packages') || $composer->getConfig()->get('sort-packages');
 
         $this->firstRequire = $this->newlyCreated;
@@ -322,7 +325,7 @@ EOT
         }
 
         if (!$input->getOption('dry-run')) {
-            $this->updateFile($this->json, $requirements, $requireKey, $removeKey, $sortPackages);
+            $this->updateFile($this->json, $requirements, $requireKey, $removeKey, $sortPackages, $featureRequires);
         }
 
         $io->writeError('<info>'.$this->file.' has been '.($this->newlyCreated ? 'created' : 'updated').'</info>');
@@ -334,7 +337,7 @@ EOT
         $composer->getPluginManager()->deactivateInstalledPlugins();
 
         try {
-            $result = $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
+            $result = $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey, $featureRequires);
             if ($result === 0 && count($requirementsToGuess) > 0) {
                 $result = $this->updateRequirementsAfterResolution($requirementsToGuess, $requireKey, $removeKey, $sortPackages, $input->getOption('dry-run'), $input->getOption('fixed'));
             }
@@ -398,12 +401,13 @@ EOT
     }
 
     /**
-     * @param array<string, string> $requirements
+     * @param array<string, string>   $requirements
+     * @param array<string, string[]> $featureRequires
      * @param 'require'|'require-dev' $requireKey
      * @param 'require'|'require-dev' $removeKey
      * @throws \Exception
      */
-    private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, string $requireKey, string $removeKey): int
+    private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, string $requireKey, string $removeKey, array $featureRequires = []): int
     {
         // Update packages
         $this->resetComposer();
@@ -428,6 +432,14 @@ EOT
             }
             $rootPackage->setRequires($links['require']);
             $rootPackage->setDevRequires($links['require-dev']);
+
+            if (count($featureRequires) > 0 && $rootPackage instanceof BasePackage) {
+                $existing = $rootPackage->getFeatureRequires();
+                foreach ($featureRequires as $package => $features) {
+                    $existing[$package] = array_values(array_unique(array_merge($existing[$package] ?? [], $features)));
+                }
+                $rootPackage->setFeatureRequires($existing);
+            }
 
             // extract stability flags & references as they weren't present when loading the unmodified composer.json
             $references = $rootPackage->getReferences();
@@ -568,11 +580,57 @@ EOT
     }
 
     /**
-     * @param array<string, string> $new
+     * @param  string[]              $features
+     * @param  array<string, string> $requirements Packages being required, keyed by name
+     * @return array<string, string[]>
      */
-    private function updateFile(JsonFile $json, array $new, string $requireKey, string $removeKey, bool $sortPackages): void
+    private function parseFeatureOption(array $features, array $requirements): array
     {
-        if ($this->updateFileCleanly($json, $new, $requireKey, $removeKey, $sortPackages)) {
+        $featureRequires = [];
+
+        foreach ($features as $feature) {
+            if (str_contains($feature, ':')) {
+                [$package, $name] = explode(':', $feature, 2);
+                $package = strtolower($package);
+            } elseif (count($requirements) === 1) {
+                $package = (string) key($requirements);
+                $name = $feature;
+            } else {
+                throw new \InvalidArgumentException(sprintf(
+                    'Ambiguous --feature "%s": several packages are being required, so the feature must be given as "vendor/package:%s".',
+                    $feature,
+                    $feature
+                ));
+            }
+
+            if ($name === '') {
+                throw new \InvalidArgumentException(sprintf('Invalid --feature "%s": the feature name is missing.', $feature));
+            }
+
+            if (!isset($requirements[$package])) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Invalid --feature "%s": %s is not among the packages being required (%s).',
+                    $feature,
+                    $package,
+                    count($requirements) > 0 ? implode(', ', array_keys($requirements)) : 'none'
+                ));
+            }
+
+            if (!in_array($name, $featureRequires[$package] ?? [], true)) {
+                $featureRequires[$package][] = $name;
+            }
+        }
+
+        return $featureRequires;
+    }
+
+    /**
+     * @param array<string, string>   $new
+     * @param array<string, string[]> $featureRequires
+     */
+    private function updateFile(JsonFile $json, array $new, string $requireKey, string $removeKey, bool $sortPackages, array $featureRequires = []): void
+    {
+        if ($this->updateFileCleanly($json, $new, $requireKey, $removeKey, $sortPackages, $featureRequires)) {
             return;
         }
 
@@ -584,13 +642,20 @@ EOT
                 unset($composerDefinition[$removeKey]);
             }
         }
+        foreach ($featureRequires as $package => $features) {
+            $composerDefinition['require-features'][$package] = array_values(array_unique(array_merge(
+                $composerDefinition['require-features'][$package] ?? [],
+                $features
+            )));
+        }
         $this->json->write($composerDefinition);
     }
 
     /**
-     * @param array<string, string> $new
+     * @param array<string, string>   $new
+     * @param array<string, string[]> $featureRequires
      */
-    private function updateFileCleanly(JsonFile $json, array $new, string $requireKey, string $removeKey, bool $sortPackages): bool
+    private function updateFileCleanly(JsonFile $json, array $new, string $requireKey, string $removeKey, bool $sortPackages, array $featureRequires = []): bool
     {
         $contents = file_get_contents($json->getPath());
 
@@ -601,6 +666,14 @@ EOT
                 return false;
             }
             if (!$manipulator->removeSubNode($removeKey, $package)) {
+                return false;
+            }
+        }
+
+        $existing = $json->read()['require-features'] ?? [];
+        foreach ($featureRequires as $package => $features) {
+            $merged = array_values(array_unique(array_merge($existing[$package] ?? [], $features)));
+            if (!$manipulator->addSubNode('require-features', $package, $merged)) {
                 return false;
             }
         }

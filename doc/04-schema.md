@@ -581,6 +581,67 @@ Example:
 }
 ```
 
+### features
+
+Named groups of optional requirements that this package offers, and that are only
+installed when someone asks for them.
+
+Each key is a feature name. Each value accepts two optional keys: `description`,
+a free text shown by `composer show`, and `require`, an object using the same
+syntax as [`require`](04-schema.md#require).
+
+```json
+{
+    "features": {
+        "logging": {
+            "description": "Log every delivery attempt through a PSR-3 logger",
+            "require": {
+                "psr/log": "^3.0"
+            }
+        }
+    }
+}
+```
+
+Declaring a feature installs nothing by itself. Consumers enable it with
+[`require-features`](04-schema.md#require-features); the root package enables its
+own features with the `--self-feature` option of
+[`install`](03-cli.md#install-i) and [`update`](03-cli.md#update-u).
+
+Read more about it in the [features article](articles/features.md).
+
+Optional.
+
+### require-features
+
+Features that this package wants enabled on the packages it requires.
+
+Each key is a package name and each value is the list of features to enable on
+it. The package must also be required through [`require`](04-schema.md#require)
+or `require-dev`; a `require-features` entry for a
+package that nothing requires is reported and ignored.
+
+```json
+{
+    "require": {
+        "acme/mailer": "^2.0"
+    },
+    "require-features": {
+        "acme/mailer": ["logging"]
+    }
+}
+```
+
+A required feature also constrains version resolution: a version of `acme/mailer`
+that does not offer `logging` cannot be selected.
+
+`composer require acme/mailer --feature logging` writes this for you, and
+`composer remove acme/mailer` removes it again.
+
+Read more about it in the [features article](articles/features.md).
+
+Optional.
+
 ### autoload
 
 Autoload mapping for a PHP autoloader.

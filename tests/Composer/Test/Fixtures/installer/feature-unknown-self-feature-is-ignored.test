@@ -1,0 +1,63 @@
+--TEST--
+A --self-feature the root package does not declare is reported and left out of the lock file
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "b/b", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "features": {
+        "b": {
+            "require": {
+                "b/b": "1.0.0"
+            }
+        }
+    }
+}
+--RUN--
+update --self-feature typo --self-feature b
+--EXPECT-OUTPUT--
+<warning>Warning: The root package does not declare the feature typo, ignoring. Declared features: b</warning>
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 2 installs, 0 updates, 0 removals
+  - Locking a/a (1.0.0)
+  - Locking b/b (1.0.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
+Generating autoload files
+
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "1.0.0",
+            "type": "library"
+        },
+        {
+            "name": "b/b", "version": "1.0.0",
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {},
+    "self-features": ["b"]
+}
+--EXPECT--
+Installing a/a (1.0.0)
+Installing b/b (1.0.0)

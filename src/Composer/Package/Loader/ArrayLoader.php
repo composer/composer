@@ -69,6 +69,33 @@ class ArrayLoader implements LoaderInterface
             );
         }
 
+        $features = [];
+
+        if (isset($config['features']) && is_array($config['features'])) {
+            foreach ($config['features'] as $name => $feature) {
+                if (!is_string($name) || !is_array($feature)) {
+                    continue;
+                }
+
+                $features[$name] = ['require' => []];
+
+                if (isset($feature['description']) && is_string($feature['description'])) {
+                    $features[$name]['description'] = $feature['description'];
+                }
+
+                if (isset($feature['require']) && is_array($feature['require'])) {
+                    $features[$name]['require'] = $this->parseLinks(
+                        $package->getName(),
+                        $package->getPrettyVersion(),
+                        Link::TYPE_REQUIRE,
+                        $feature['require']
+                    );
+                }
+            }
+        }
+
+        $package->setFeatures($features);
+
         $package = $this->configureObject($package, $config);
 
         return $package;
@@ -252,6 +279,24 @@ class ArrayLoader implements LoaderInterface
 
         if (!empty($config['notification-url'])) {
             $package->setNotificationUrl($config['notification-url']);
+        }
+
+        if (isset($config['require-features']) && is_array($config['require-features'])) {
+            $featureRequires = [];
+
+            foreach ($config['require-features'] as $target => $featureNames) {
+                if (!is_string($target) || !is_array($featureNames)) {
+                    continue;
+                }
+
+                $featureNames = array_values(array_filter($featureNames, 'is_string'));
+
+                if (\count($featureNames) > 0) {
+                    $featureRequires[strtolower($target)] = $featureNames;
+                }
+            }
+
+            $package->setFeatureRequires($featureRequires);
         }
 
         if ($package instanceof CompletePackageInterface) {

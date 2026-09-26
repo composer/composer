@@ -41,6 +41,69 @@ class RequireCommandTest extends TestCase
         $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']]);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    private function featureRepoConfig(): array
+    {
+        return [
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'acme/mono', 'version' => '1.0.0', 'features' => ['handlers' => ['require' => ['acme/log' => '^1.0']]]],
+                        ['name' => 'acme/other', 'version' => '1.0.0', 'features' => ['cache' => ['require' => []]]],
+                        ['name' => 'acme/log', 'version' => '1.0.0'],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    public function testRequireFeatureShortFormWithASinglePackage(): void
+    {
+        $this->initTempComposer($this->featureRepoConfig());
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--no-audit' => true, '--no-install' => true, 'packages' => ['acme/mono:^1.0'], '--feature' => ['handlers']]);
+
+        $json = json_decode((string) file_get_contents('composer.json'), true);
+        self::assertSame(['acme/mono' => ['handlers']], $json['require-features']);
+    }
+
+    public function testRequireFeatureShortFormIsRejectedWithSeveralPackages(): void
+    {
+        $this->initTempComposer($this->featureRepoConfig());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Ambiguous --feature "cache": several packages are being required, so the feature must be given as "vendor/package:cache".');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--no-audit' => true, '--no-install' => true, 'packages' => ['acme/mono:^1.0', 'acme/other:^1.0'], '--feature' => ['cache']]);
+    }
+
+    public function testRequireFeatureQualifiedFormWithSeveralPackages(): void
+    {
+        $this->initTempComposer($this->featureRepoConfig());
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--no-audit' => true, '--no-install' => true, 'packages' => ['acme/mono:^1.0', 'acme/other:^1.0'], '--feature' => ['acme/mono:handlers', 'acme/other:cache']]);
+
+        $json = json_decode((string) file_get_contents('composer.json'), true);
+        self::assertSame(['acme/mono' => ['handlers'], 'acme/other' => ['cache']], $json['require-features']);
+    }
+
+    public function testRequireFeatureRejectsAPackageThatIsNotBeingRequired(): void
+    {
+        $this->initTempComposer($this->featureRepoConfig());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid --feature "acme/absent:x": acme/absent is not among the packages being required (acme/mono).');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--no-audit' => true, '--no-install' => true, 'packages' => ['acme/mono:^1.0'], '--feature' => ['acme/absent:x']]);
+    }
+
     public function testRequireThrowsOnUnquotedInlineAlias(): void
     {
         $this->expectException(InvalidArgumentException::class);

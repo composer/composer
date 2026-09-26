@@ -253,6 +253,34 @@ class InstalledVersions
     }
 
     /**
+     * Check if an installed package was installed with a given feature enabled
+     *
+     * For the root package this reports the features that were selected for the
+     * installation, e.g. via composer install --self-feature.
+     *
+     * @param  string $packageName
+     * @param  string $feature
+     *
+     * @return bool
+     */
+    public static function hasFeature($packageName, $feature)
+    {
+        foreach (self::getInstalled() as $installed) {
+            if (isset($installed['root']['name'], $installed['root']['features']) && $installed['root']['name'] === $packageName) {
+                if (in_array($feature, $installed['root']['features'], true)) {
+                    return true;
+                }
+            }
+
+            if (isset($installed['versions'][$packageName]['features']) && in_array($feature, $installed['versions'][$packageName]['features'], true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @return array
      * @psalm-return array{name: string, pretty_version: string, version: string, reference: string|null, type: string, install_path: string, aliases: string[], dev: bool}
      */

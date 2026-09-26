@@ -213,6 +213,7 @@ class InstalledVersionsTest extends TestCase
                 '1.10.x-dev',
             ],
             'dev' => true,
+            'features' => ['root-feat'],
         ], InstalledVersions::getRootPackage());
     }
 
@@ -292,5 +293,47 @@ class InstalledVersionsTest extends TestCase
         self::assertTrue(InstalledVersions::isInstalled('foo/bar'));
 
         $prop->setValue(null, []);
+    }
+
+    public function testHasFeature(): void
+    {
+        self::assertTrue(InstalledVersions::hasFeature('a/provider', 'foo'));
+        self::assertFalse(InstalledVersions::hasFeature('a/provider', 'bar'));
+        self::assertFalse(InstalledVersions::hasFeature('a/provider2', 'foo'));
+        self::assertFalse(InstalledVersions::hasFeature('not/installed', 'foo'));
+    }
+
+    public function testHasFeatureForRootPackage(): void
+    {
+        self::assertTrue(InstalledVersions::hasFeature('__root__', 'root-feat'));
+        self::assertFalse(InstalledVersions::hasFeature('__root__', 'other-feat'));
+    }
+
+    public function testHasFeatureLooksAtEveryInstalledPhp(): void
+    {
+        $prop = new \ReflectionProperty('Composer\\InstalledVersions', 'installedByVendor');
+        (\PHP_VERSION_ID < 80100) and $prop->setAccessible(true);
+        // first dataset knows the package but not the feature, the second one has it
+        $prop->setValue(null, [
+            '/foo/vendor' => [
+                'root' => ['name' => 'root/one'],
+                'versions' => ['a/provider' => ['dev_requirement' => false, 'features' => ['other']]],
+            ],
+            '/bar/vendor' => [
+                'root' => ['name' => 'root/two'],
+                'versions' => ['a/provider' => ['dev_requirement' => false, 'features' => ['wanted']]],
+            ],
+        ]);
+
+        $loaderProp = new \ReflectionProperty('Composer\\Autoload\\ClassLoader', 'registeredLoaders');
+        (\PHP_VERSION_ID < 80100) and $loaderProp->setAccessible(true);
+        $loaderProp->setValue(null, ['/foo/vendor' => new ClassLoader(), '/bar/vendor' => new ClassLoader()]);
+
+        self::assertTrue(InstalledVersions::hasFeature('a/provider', 'wanted'));
+        self::assertTrue(InstalledVersions::hasFeature('a/provider', 'other'));
+        self::assertFalse(InstalledVersions::hasFeature('a/provider', 'nope'));
+
+        $prop->setValue(null, []);
+        $loaderProp->setValue(null, self::$previousRegisteredLoaders);
     }
 }

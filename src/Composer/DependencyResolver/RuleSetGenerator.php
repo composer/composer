@@ -17,6 +17,7 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
+use Composer\Package\RootPackage;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -41,6 +42,49 @@ class RuleSetGenerator
         $this->policy = $policy;
         $this->pool = $pool;
         $this->rules = new RuleSet;
+    }
+
+    /**
+     * Creates the rules forbidding the versions of a package that do not offer a required feature
+     *
+     * Each such version gets its own unit rule (-A). A single (-A|-B|C) clause would instead be
+     * satisfied by picking A as soon as a second non-providing version B exists, which would let
+     * the solver install a version without the feature.
+     *
+     * @param  BasePackage[] $providers The providers of the package the feature is required from
+     * @param  string $feature The name of the required feature
+     * @param  string $packageName The name of the package where the feature is required
+     * @param  string[] $requiredBy A list of packages requiring the feature
+     *
+     * @return Rule[] The generated rules, empty if every provider offers the feature
+     */
+    protected function createRequireFeatureRules(array $providers, string $feature, string $packageName, array $requiredBy): array
+    {
+        $withoutFeature = [];
+        $isFeatureFound = false;
+
+        foreach ($providers as $provider) {
+            if (array_key_exists($feature, $provider->getFeatures())) {
+                $isFeatureFound = true;
+            } else {
+                $withoutFeature[] = $provider;
+            }
+        }
+
+        $reasonData = [
+            'feature' => $feature,
+            'packageName' => $packageName,
+            'requiredBy' => $requiredBy,
+            'found' => $isFeatureFound,
+        ];
+
+        $rules = [];
+
+        foreach ($withoutFeature as $provider) {
+            $rules[] = new GenericRule([-$provider->id], Rule::RULE_REQUIRE_FEATURE, $reasonData);
+        }
+
+        return $rules;
     }
 
     /**
@@ -207,6 +251,36 @@ class RuleSetGenerator
                     $workQueue->enqueue($require);
                 }
             }
+
+            // get required features for this package
+            $requiredFeatures = $this->pool->getRequiredFeatures()[$package->getName()]['merged'] ?? [];
+
+            foreach ($package->getFeatures() as $featureName => $feature) {
+                if (!in_array($featureName, $requiredFeatures, true)) {
+                    continue;
+                }
+
+                foreach ($feature['require'] ?? [] as $link) {
+                    $constraint = $link->getConstraint();
+                    if ($platformRequirementFilter->isIgnored($link->getTarget())) {
+                        continue;
+                    } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+                        $constraint = $platformRequirementFilter->filterConstraint($link->getTarget(), $constraint);
+                    }
+
+                    $possibleRequires = $this->pool->whatProvides($link->getTarget(), $constraint);
+
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, $possibleRequires, Rule::RULE_FEATURE_REQUIRES, [
+                        'feature' => $featureName,
+                        'link' => $link,
+                        'packageName' => $package->getName(),
+                    ]));
+
+                    foreach ($possibleRequires as $require) {
+                        $workQueue->enqueue($require);
+                    }
+                }
+            }
         }
     }
 
@@ -320,6 +394,32 @@ class RuleSetGenerator
         }
     }
 
+    protected function addRulesForFeatures(): void
+    {
+        foreach ($this->pool->getRequiredFeatures() as $packageName => $featuresRequired) {
+            foreach ($featuresRequired['merged'] as $feature) {
+                $requiredByPackages = [];
+
+                foreach ($featuresRequired['byPackage'] as $package => $packageFeatures) {
+                    if (in_array($feature, $packageFeatures, true)) {
+                        $requiredByPackages[] = $package;
+                    }
+                }
+
+                $rules = $this->createRequireFeatureRules(
+                    $this->pool->whatProvides($packageName),
+                    $feature,
+                    $packageName,
+                    $requiredByPackages
+                );
+
+                foreach ($rules as $rule) {
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $rule);
+                }
+            }
+        }
+    }
+
     public function getRulesFor(Request $request, ?PlatformRequirementFilterInterface $platformRequirementFilter = null): RuleSet
     {
         $platformRequirementFilter = $platformRequirementFilter ?? PlatformRequirementFilterFactory::ignoreNothing();
@@ -329,6 +429,8 @@ class RuleSetGenerator
         $this->addRulesForRootAliases($platformRequirementFilter);
 
         $this->addConflictRules($platformRequirementFilter);
+
+        $this->addRulesForFeatures();
 
         // Remove references to packages
         $this->addedMap = $this->addedPackagesByNames = [];

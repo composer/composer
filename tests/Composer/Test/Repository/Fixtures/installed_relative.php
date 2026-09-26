@@ -11,6 +11,7 @@
             '1.10.x-dev',
         ),
         'dev' => true,
+        'features' => array('root-feat'),
     ),
     'versions' => array(
         '__root__' => array(
@@ -34,6 +35,7 @@
             'install_path' => $dir . '/vendor/a/provider',
             'aliases' => array(),
             'dev_requirement' => false,
+            'features' => array('foo'),
         ),
         'a/provider2' => array(
             'pretty_version' => '1.2',

@@ -1,0 +1,36 @@
+--TEST--
+Installing a package that require a feature from another package only available on a specific version should install the version that provides the feature
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "features": { "b": { "require": { "b/b": "1.0.0" } } } },
+                { "name": "b/b", "version": "1.0.0" },
+                { "name": "b/b", "version": "2.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "^1.0",
+        "b/b": "^2.0"
+    },
+    "require-features": {
+        "a/a": ["b"]
+    }
+}
+--RUN--
+update
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires a/a ^1.0 -> satisfiable by a/a[1.0.0].
+    - a/a 1.0.0 requires b/b 1.0.0 (using feature "b") -> found b/b[1.0.0] but it conflicts with your root composer.json require (^2.0).
+--EXPECT--

@@ -1,0 +1,36 @@
+--TEST--
+require-features pointing at a package nothing requires is reported instead of silently ignored
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "y/unused", "version": "1.0.0", "features": { "x": { "require": { "c/c": "1.0.0" } } } },
+                { "name": "c/c", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0"
+    },
+    "require-features": {
+        "y/unused": ["x"]
+    }
+}
+--RUN--
+update
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+<warning>Warning: Root composer.json requires feature x of y/unused, but y/unused is not required by anything so this is ignored.</warning>
+Updating dependencies
+Lock file operations: 1 install, 0 updates, 0 removals
+  - Locking a/a (1.0.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 1 install, 0 updates, 0 removals
+Generating autoload files
+
+--EXPECT--
+Installing a/a (1.0.0)

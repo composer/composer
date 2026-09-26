@@ -23,6 +23,7 @@ use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
@@ -1389,6 +1390,27 @@ INITIALIZER;
                     $include[$target] = true;
                     if (isset($packages[$target])) {
                         $add($packages[$target]);
+                    }
+                }
+            }
+
+            $features = $package instanceof BasePackage ? $package->getFeatures() : [];
+
+            foreach ($features as $feature) {
+                if (!isset($feature['require'])) {
+                    continue;
+                }
+
+                foreach ($feature['require'] as $link) {
+                    $target = $link->getTarget();
+                    if (isset($replacedBy[$target])) {
+                        $target = $replacedBy[$target];
+                    }
+                    if (!isset($include[$target])) {
+                        $include[$target] = true;
+                        if (isset($packages[$target])) {
+                            $add($packages[$target]);
+                        }
                     }
                 }
             }
