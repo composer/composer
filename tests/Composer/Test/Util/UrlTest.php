@@ -206,6 +206,12 @@ class UrlTest extends TestCase
             ['https://example.org/repo.git', 'https://example.org/repo.git'],
             ['https://example.org/@scope/repo.git', 'https://example.org/@scope/repo.git'],
             ['git@example.org:acme/repo.git', 'git@example.org:acme/repo.git'],
+            // ssh login name is not a credential and must be preserved
+            ['ssh://git@example.org/repo.git', 'ssh://git@example.org/repo.git'],
+            ['ssh://gogs@git.int.example/group/pkg.git', 'ssh://gogs@git.int.example/group/pkg.git'],
+            ['ssh://git.int.example/group/pkg.git', 'ssh://gogs:secret@git.int.example/group/pkg.git'],
+            ['git+ssh://gogs@git.int.example/group/pkg.git', 'git+ssh://gogs@git.int.example/group/pkg.git'],
+            ['git+ssh://git.int.example/group/pkg.git', 'git+ssh://gogs:secret@git.int.example/group/pkg.git'],
         ];
     }
 }
