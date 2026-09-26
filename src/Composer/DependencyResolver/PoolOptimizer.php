@@ -199,28 +199,29 @@ class PoolOptimizer
                     continue;
                 }
 
+                $invariantHashParts = [];
+                if (\count($package->getReplaces()) > 0) {
+                    foreach ($package->getReplaces() as $link) {
+                        if (CompilingMatcher::match($link->getConstraint(), Constraint::OP_EQ, $package->getVersion())) {
+                            // Use the same hash part as the regular require hash because that's what the replacement does
+                            $invariantHashParts[] = 'require:' . (string) $link->getConstraint();
+                        }
+                    }
+                }
+
+                if (isset($this->conflictConstraintsPerPackage[$packageName])) {
+                    foreach ($this->conflictConstraintsPerPackage[$packageName] as $conflictConstraint) {
+                        if (CompilingMatcher::match($conflictConstraint, Constraint::OP_EQ, $package->getVersion())) {
+                            $invariantHashParts[] = 'conflict:' . (string) $conflictConstraint;
+                        }
+                    }
+                }
+
                 foreach ($this->requireConstraintsPerPackage[$packageName] as $requireConstraint) {
-                    $groupHashParts = [];
+                    $groupHashParts = $invariantHashParts;
 
                     if (CompilingMatcher::match($requireConstraint, Constraint::OP_EQ, $package->getVersion())) {
-                        $groupHashParts[] = 'require:' . (string) $requireConstraint;
-                    }
-
-                    if (\count($package->getReplaces()) > 0) {
-                        foreach ($package->getReplaces() as $link) {
-                            if (CompilingMatcher::match($link->getConstraint(), Constraint::OP_EQ, $package->getVersion())) {
-                                // Use the same hash part as the regular require hash because that's what the replacement does
-                                $groupHashParts[] = 'require:' . (string) $link->getConstraint();
-                            }
-                        }
-                    }
-
-                    if (isset($this->conflictConstraintsPerPackage[$packageName])) {
-                        foreach ($this->conflictConstraintsPerPackage[$packageName] as $conflictConstraint) {
-                            if (CompilingMatcher::match($conflictConstraint, Constraint::OP_EQ, $package->getVersion())) {
-                                $groupHashParts[] = 'conflict:' . (string) $conflictConstraint;
-                            }
-                        }
+                        array_unshift($groupHashParts, 'require:' . (string) $requireConstraint);
                     }
 
                     if (0 === \count($groupHashParts)) {
