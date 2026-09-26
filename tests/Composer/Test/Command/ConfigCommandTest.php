@@ -42,6 +42,21 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'scripts.test', 'setting-value' => ['foo bar']],
             ['scripts' => ['test' => 'foo bar']],
         ];
+        yield 'overwrite a repository addressed by numeric index in a list' => [
+            ['repositories' => [['type' => 'path', 'url' => '../'], ['type' => 'composer', 'url' => 'https://other.test']]],
+            ['setting-key' => 'repositories.0', 'setting-value' => ['composer', 'https://replaced.test']],
+            ['repositories' => [['type' => 'composer', 'url' => 'https://replaced.test'], ['type' => 'composer', 'url' => 'https://other.test'], ['packagist.org' => false]]],
+        ];
+        yield 'overwrite a repository addressed by numeric index in the middle of a list' => [
+            ['repositories' => [['type' => 'path', 'url' => '../a'], ['type' => 'path', 'url' => '../b'], ['type' => 'composer', 'url' => 'https://c.test']]],
+            ['setting-key' => 'repositories.1', 'setting-value' => ['composer', 'https://replaced.test']],
+            ['repositories' => [['type' => 'path', 'url' => '../a'], ['type' => 'composer', 'url' => 'https://replaced.test'], ['type' => 'composer', 'url' => 'https://c.test'], ['packagist.org' => false]]],
+        ];
+        yield 'unset a repository addressed by numeric index in a list' => [
+            ['repositories' => [['type' => 'path', 'url' => '../a'], ['type' => 'path', 'url' => '../b']]],
+            ['setting-key' => 'repositories.1', '--unset' => true],
+            ['repositories' => [['type' => 'path', 'url' => '../a'], ['packagist.org' => false]]],
+        ];
         yield 'unset scripts' => [
             ['scripts' => ['test' => 'foo bar', 'lala' => 'baz']],
             ['setting-key' => 'scripts.lala', '--unset' => true],
@@ -489,6 +504,39 @@ class ConfigCommandTest extends TestCase
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'config', '--file' => 'alt.composer.json', '--global' => true]);
+    }
+
+    public function testConfigThrowsWhenANamedRepositoryIsAddressedByPosition(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('The repository at position 0 is named "foo", address it by that name instead.');
+
+        $this->initTempComposer(['repositories' => [['name' => 'foo', 'type' => 'vcs', 'url' => 'https://example.org']]]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'repositories.0', 'setting-value' => ['vcs', 'https://other.org']]);
+    }
+
+    public function testConfigThrowsWhenUnsettingANamedRepositoryByPosition(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('The repository at position 0 is named "foo", address it by that name instead.');
+
+        $this->initTempComposer(['repositories' => [['name' => 'foo', 'type' => 'vcs', 'url' => 'https://example.org']]]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'repositories.0', '--unset' => true]);
+    }
+
+    public function testConfigThrowsForANumericRepositoryName(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('A repository name can not be numeric ("2")');
+
+        $this->initTempComposer(['repositories' => [['type' => 'path', 'url' => '../a'], ['type' => 'path', 'url' => '../b']]]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'config', 'setting-key' => 'repositories.1', 'setting-value' => ['{"name":"2","type":"vcs","url":"https://example.org"}']]);
     }
 
     public function testConfigThrowsForInvalidSeverity(): void

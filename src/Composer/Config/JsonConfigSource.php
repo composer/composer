@@ -105,14 +105,23 @@ class JsonConfigSource implements ConfigSourceInterface
                 return;
             }
 
-            if (is_array($repoConfig) && $repo !== '' && !isset($repoConfig['name'])) {
+            if (is_array($repoConfig) && $repo !== '' && !ctype_digit($repo)) {
                 $repoConfig = ['name' => $repo] + $repoConfig;
             }
 
-            // ensure uniqueness by removing any existing entries which use the same name
-            $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($repo) {
-                return !isset($val['name']) || $val['name'] !== $repo || $val !== [$repo => false];
-            }));
+            // ensure uniqueness by removing any existing entry which uses the same name or position
+            $index = JsonManipulator::findRepositoryKey($config['repositories'] ?? [], $repo);
+
+            if (is_int($index)) {
+                // a repository addressed by position is replaced in place, $append does not apply
+                if (ctype_digit($repo) && $index === (int) $repo) {
+                    array_splice($config['repositories'], $index, 1, [$repoConfig]);
+
+                    return;
+                }
+
+                array_splice($config['repositories'], $index, 1);
+            }
 
             if ($append) {
                 $config['repositories'][] = $repoConfig;
@@ -149,30 +158,21 @@ class JsonConfigSource implements ConfigSourceInterface
                 $config['repositories'] = $list;
             }
 
-            // ensure uniqueness by removing any existing entries which use the same name
-            $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($name) {
-                return !isset($val['name']) || $val['name'] !== $name || $val !== [$name => false];
-            }));
+            // the position is stated by $referenceName here, so $name only ever names the new
+            // repository and must not be resolved to a position of its own
+            $index = JsonManipulator::findRepositoryKey($config['repositories'] ?? [], $name, false);
 
-            $indexToInsert = null;
-
-            foreach ($config['repositories'] as $repositoryIndex => $repository) {
-                if (($repository['name'] ?? null) === $referenceName) {
-                    $indexToInsert = $repositoryIndex;
-                    break;
-                }
-
-                if ([$referenceName => false] === $repository) {
-                    $indexToInsert = $repositoryIndex;
-                    break;
-                }
+            if (is_int($index)) {
+                array_splice($config['repositories'], $index, 1);
             }
 
-            if ($indexToInsert === null) {
+            $indexToInsert = JsonManipulator::findRepositoryKey($config['repositories'] ?? [], $referenceName);
+
+            if (!is_int($indexToInsert)) {
                 throw new \RuntimeException(sprintf('The referenced repository "%s" does not exist.', $referenceName));
             }
 
-            if (is_array($repoConfig) && $name !== '' && !isset($repoConfig['name'])) {
+            if (is_array($repoConfig) && $name !== '' && !ctype_digit($name)) {
                 $repoConfig = ['name' => $name] + $repoConfig;
             }
 
@@ -186,18 +186,17 @@ class JsonConfigSource implements ConfigSourceInterface
     public function setRepositoryUrl(string $name, string $url): void
     {
         $this->manipulateJson('setRepositoryUrl', static function (&$config, $name, $url): void {
-            foreach ($config['repositories'] ?? [] as $index => $repository) {
-                if ($name === $index) {
-                    $config['repositories'][$index]['url'] = $url;
+            // object format keys are names, lists are matched by name or position
+            if (isset($config['repositories'][$name]) && !array_is_list($config['repositories'])) {
+                $config['repositories'][$name]['url'] = $url;
 
-                    return;
-                }
+                return;
+            }
 
-                if ($name === ($repository['name'] ?? null)) {
-                    $config['repositories'][$index]['url'] = $url;
+            $index = JsonManipulator::findRepositoryKey($config['repositories'] ?? [], $name);
 
-                    return;
-                }
+            if (is_int($index)) {
+                $config['repositories'][$index]['url'] = $url;
             }
         }, $name, $url);
     }
@@ -208,15 +207,17 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeRepository(string $name): void
     {
         $this->manipulateJson('removeRepository', static function (&$config, $repo): void {
-            if (isset($config['repositories'][$repo])) {
+            if (isset($config['repositories'][$repo]) && !array_is_list($config['repositories'])) {
                 unset($config['repositories'][$repo]);
             } else {
-                $config['repositories'] = array_values(array_filter($config['repositories'] ?? [], static function ($val) use ($repo) {
-                    return !isset($val['name']) || $val['name'] !== $repo || $val !== [$repo => false];
-                }));
+                $index = JsonManipulator::findRepositoryKey($config['repositories'] ?? [], $repo);
+
+                if (is_int($index)) {
+                    array_splice($config['repositories'], $index, 1);
+                }
             }
 
-            if ([] === $config['repositories']) {
+            if ([] === ($config['repositories'] ?? [])) {
                 unset($config['repositories']);
             }
         }, $name);

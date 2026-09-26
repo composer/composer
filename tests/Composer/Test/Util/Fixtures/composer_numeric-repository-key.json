@@ -1,0 +1,8 @@
+{
+    "repositories": {
+        "0": {
+            "type": "vcs",
+            "url": "https://example.org/zero"
+        }
+    }
+}

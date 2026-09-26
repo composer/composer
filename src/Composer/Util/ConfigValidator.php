@@ -142,6 +142,18 @@ class ConfigValidator
             );
         }
 
+        // a numeric name can not be told apart from a position when addressing a repository
+        if (isset($manifest['repositories']) && is_array($manifest['repositories'])) {
+            foreach ($manifest['repositories'] as $repository) {
+                if (is_array($repository) && isset($repository['name']) && is_string($repository['name']) && ctype_digit($repository['name'])) {
+                    $warnings[] = sprintf(
+                        'Repository name "%s" is numeric. Numbers address repositories by their position in the list, so a numeric name is ambiguous, rename it to something descriptive.',
+                        $repository['name']
+                    );
+                }
+            }
+        }
+
         if (!empty($manifest['type']) && $manifest['type'] === 'composer-installer') {
             $warnings[] = "The package type 'composer-installer' is deprecated. Please distribute your custom installers as plugins from now on. See https://getcomposer.org/doc/articles/plugins.md for plugin documentation.";
         }

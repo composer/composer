@@ -901,6 +901,22 @@ If your repository requires more configuration options, you can instead pass its
 php composer.phar config repositories.foo '{"type": "vcs", "url": "http://svn.example.org/my-project/", "trunk-path": "master"}'
 ```
 
+A numeric key addresses a repository by its position in the `repositories` array of the file being
+modified, replacing the entry at that position rather than adding a new one:
+
+```shell
+php composer.phar config repositories.0 vcs https://github.com/foo/bar
+```
+
+This is discouraged and warns, because positions shift as repositories are added or removed, and
+they do not match the numbers `composer repo list` displays once the global config defines
+repositories of its own. Addressing a repository which has a `name` by its position is an error —
+use the name. Give each repository a `name` and you never have to think about positions.
+
+For the same reason a repository `name` must not be numeric: a number always addresses a position,
+so a repository called `1` could not be told apart from the second entry in the list. `composer
+validate` warns about any that are already there.
+
 ### Modifying Extra Values
 
 In addition to modifying the config section, the `config` command also supports making
@@ -937,13 +953,17 @@ repo [options] enable packagist.org
 repo [options] disable packagist.org
 ```
 
+`[repo-name]` is the repository's `name`. A repository without one can be addressed by its position
+in the `repositories` array of the file being modified, but this is discouraged and warns — see
+[Modifying Repositories](#modifying-repositories).
+
 ### Options
 
 - **--global (-g):** to modify the global `$COMPOSER_HOME/config.json`.
 - **--file (-f):** to modify a specific file instead of composer.json.
 - **--append:** to add a repository with lower priority (by default repositories are prepended and have thus higher priority than existing ones).
 - **--before [name]:** to insert the new repository before an existing repository named `[name]`.
-- **--after [name]:** to insert the new repository after an existing repository named `[name]`. The `[name]` must match an existing repository name.
+- **--after [name]:** to insert the new repository after an existing repository named `[name]`. The `[name]` must match an existing repository name, or its position.
 
 ### Examples
 
