@@ -38,7 +38,7 @@ Always keep `composer.lock` in version control for applications and run `compose
 
 ## Cache keys
 
-A useful cache key separates incompatible environments while still allowing reuse after dependency changes. Include inputs that materially affect the cache or installed result, such as the operating system and PHP version when appropriate.
+A useful cache key separates incompatible environments while still allowing reuse after dependency changes. Downloaded archives do not depend on the PHP version, so jobs on the same operating system can usually share one download cache.
 
 For download caches, use a fallback key so a changed `composer.lock` can still reuse archives downloaded by earlier builds. For `vendor/` caches, be stricter and include the lock-file hash plus the install flags and anything else that changes the installed files.
 
@@ -56,15 +56,15 @@ For most workflows, [ramsey/composer-install](https://github.com/ramsey/composer
 - uses: ramsey/composer-install@v4
 ```
 
-If you need explicit control over the cache path or key, use `actions/cache` directly. The following example keeps Composer downloads in a workspace-relative directory and falls back to older caches for the same runner OS and PHP version:
+If you need explicit control over the cache path or key, use `actions/cache` directly. The following example keeps Composer downloads in a workspace-relative directory and falls back to older caches for the same runner OS:
 
 ```yaml
 - uses: actions/cache@v6
   with:
     path: .composer-cache
-    key: composer-${{ runner.os }}-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
+    key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
     restore-keys: |
-      composer-${{ runner.os }}-${{ matrix.php }}-
+      composer-${{ runner.os }}-
 
 - name: Install dependencies
   env:
