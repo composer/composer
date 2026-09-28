@@ -24,15 +24,30 @@ class PlatformTest extends TestCase
 {
     /** @var string|false */
     private $originalAllowUnsafePharMetadata;
+    /** @var array<string, string|false> */
+    private $originalCodingAgentEnv = [];
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->originalAllowUnsafePharMetadata = Platform::getEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
+
+        // make sure the tests are not affected by an agent running them
+        foreach (Platform::CODING_AGENT_ENV_VARS as $envVar) {
+            $this->originalCodingAgentEnv[$envVar] = Platform::getEnv($envVar);
+            Platform::clearEnv($envVar);
+        }
     }
 
     protected function tearDown(): void
     {
+        foreach ($this->originalCodingAgentEnv as $envVar => $value) {
+            if (false === $value) {
+                Platform::clearEnv($envVar);
+            } else {
+                Platform::putEnv($envVar, $value);
+            }
+        }
         Platform::clearEnv('COMPOSER_TEST_BOOL_ENV');
         if (false === $this->originalAllowUnsafePharMetadata) {
             Platform::clearEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
@@ -55,6 +70,42 @@ class PlatformTest extends TestCase
         // Compare 2 common tests for Windows to the built-in Windows test
         self::assertEquals(('\\' === DIRECTORY_SEPARATOR), Platform::isWindows());
         self::assertEquals(defined('PHP_WINDOWS_VERSION_MAJOR'), Platform::isWindows());
+    }
+
+    public function testIsCodingAgentWithoutAnyAgentEnvVar(): void
+    {
+        self::assertFalse(Platform::isCodingAgent());
+    }
+
+    /**
+     * @dataProvider provideCodingAgentEnvVars
+     */
+    public function testIsCodingAgentDetectsKnownEnvVars(string $envVar): void
+    {
+        Platform::putEnv($envVar, '1');
+
+        self::assertTrue(Platform::isCodingAgent());
+    }
+
+    public function testIsCodingAgentIgnoresEmptyEnvVar(): void
+    {
+        if (file_exists('/opt/.devin')) {
+            self::markTestSkipped('Tests are running inside Devin');
+        }
+
+        Platform::putEnv('CLAUDECODE', '');
+
+        self::assertFalse(Platform::isCodingAgent());
+    }
+
+    /**
+     * @return iterable<array{string}>
+     */
+    public static function provideCodingAgentEnvVars(): iterable
+    {
+        foreach (Platform::CODING_AGENT_ENV_VARS as $envVar) {
+            yield $envVar => [$envVar];
+        }
     }
 
     /**
