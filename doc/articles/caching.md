@@ -40,11 +40,21 @@ A useful cache key separates incompatible environments while still allowing reus
 
 For download caches, use a fallback key so a changed `composer.lock` can still reuse archives downloaded by earlier builds. For `vendor/` caches, be stricter and include the lock-file hash plus relevant platform inputs.
 
-If a CI provider allows untrusted pull requests to restore caches created by trusted branches, treat restored cache contents as untrusted input. Never cache secrets, and restrict cache writes from untrusted jobs according to your CI provider's security model.
+If a CI provider allows untrusted pull requests to store caches that may later be restored by trusted branches, treat those cache writes as a trust boundary. Never cache secrets, and restrict cache writes from untrusted jobs according to your CI provider's security model.
 
 ## GitHub Actions
 
-The following example keeps Composer downloads in a workspace-relative directory and falls back to older caches for the same runner OS and PHP version:
+For most workflows, [ramsey/composer-install](https://github.com/ramsey/composer-install) is the simplest option. It runs Composer and caches Composer's cache directory by default, so you usually do not need a separate caching step or a custom `COMPOSER_CACHE_DIR`:
+
+```yaml
+- uses: shivammathur/setup-php@v2
+  with:
+    php-version: ${{ matrix.php }}
+
+- uses: ramsey/composer-install@v4
+```
+
+If you need explicit control over the cache path or key, use `actions/cache` directly. The following example keeps Composer downloads in a workspace-relative directory and falls back to older caches for the same runner OS and PHP version:
 
 ```yaml
 - uses: actions/cache@v6
@@ -60,7 +70,7 @@ The following example keeps Composer downloads in a workspace-relative directory
   run: composer install --no-interaction --prefer-dist --no-progress
 ```
 
-When a workflow runs against untrusted contributions, follow GitHub Actions' cache-security guidance and avoid putting credentials or executable project state in the cache.
+When a workflow runs against untrusted contributions, follow GitHub Actions' cache-security guidance and avoid letting untrusted jobs write caches that trusted branches will later restore.
 
 ## GitLab CI/CD
 
@@ -158,6 +168,7 @@ A reliable cache has three properties: deleting it never breaks the build, resto
 - [Composer configuration: cache settings](../06-config.md#cache-dir)
 - [Composer CLI: `clear-cache`](../03-cli.md#clear-cache-clearcache-cc)
 - [GitHub Actions dependency caching](https://docs.github.com/actions/reference/workflows-and-actions/dependency-caching)
+- [ramsey/composer-install](https://github.com/ramsey/composer-install)
 - [GitLab CI/CD cache examples](https://docs.gitlab.com/ci/caching/examples/)
 - [Bitbucket Pipelines dependency caches](https://support.atlassian.com/bitbucket-cloud/docs/cache-dependencies/)
 - [CircleCI dependency caching](https://circleci.com/docs/guides/optimize/caching/)
