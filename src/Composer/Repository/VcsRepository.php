@@ -454,9 +454,6 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     }
 
     /**
-     * @return string|false
-     */
-    /**
      * Restricts the branches to the ones matching the "only-branches" repo config patterns, the default branch is always kept
      *
      * @param array<int|string, string> $branches
@@ -486,6 +483,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         return $branches;
     }
 
+    /**
+     * @return string|false
+     */
     private function validateBranch(string $branch)
     {
         try {
