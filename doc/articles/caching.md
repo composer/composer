@@ -40,17 +40,17 @@ Always keep `composer.lock` in version control for applications and run `compose
 
 ## Cache keys
 
-A useful cache key separates incompatible environments while still allowing reuse after dependency changes. Downloaded archives do not depend on the PHP version, so jobs on the same operating system can usually share one download cache.
+A useful cache key separates incompatible environments while still allowing reuse after dependency changes. Downloaded archives do not depend on the PHP version or the operating system, so all jobs can usually share one download cache.
 
 For download caches, use a fallback key so a changed `composer.lock` can still reuse archives downloaded by earlier builds. For `vendor/` caches, be stricter and include the lock-file hash, the install flags, the PHP version and the list of enabled PHP extensions, as `composer install` checks the platform requirements against them unless you use `--ignore-platform-reqs`.
 
 Libraries often do not commit `composer.lock` and run `composer update` in CI instead. A key based on the lock-file hash then never changes, so the cache is stored once and never refreshed. Key the cache on `composer.json` plus a value that changes on every run, and fall back to older entries by prefix. On GitHub Actions for example:
 
 ```yaml
-key: composer-${{ runner.os }}-${{ hashFiles('composer.json') }}-${{ github.run_id }}
+key: composer-${{ hashFiles('composer.json') }}-${{ github.run_id }}
 restore-keys: |
-  composer-${{ runner.os }}-${{ hashFiles('composer.json') }}-
-  composer-${{ runner.os }}-
+  composer-${{ hashFiles('composer.json') }}-
+  composer-
 ```
 
 If a CI provider allows untrusted pull requests to store caches that may later be restored by trusted branches, treat those cache writes as a trust boundary. Never cache secrets, and restrict cache writes from untrusted jobs according to your CI provider's security model.
@@ -67,7 +67,7 @@ For most workflows, [ramsey/composer-install](https://github.com/ramsey/composer
 - uses: ramsey/composer-install@v4
 ```
 
-If you need explicit control over the cache path or key, use `actions/cache` directly. The following example keeps Composer downloads in a workspace-relative directory and falls back to older caches for the same runner OS:
+If you need explicit control over the cache path or key, use `actions/cache` directly. The following example keeps Composer downloads in a workspace-relative directory and falls back to older caches when `composer.lock` changes:
 
 ```yaml
 jobs:
@@ -81,9 +81,9 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: .composer-cache
-          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          key: composer-${{ hashFiles('composer.lock') }}
           restore-keys: |
-            composer-${{ runner.os }}-
+            composer-
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
@@ -140,15 +140,15 @@ steps:
   - checkout
   - restore_cache:
       keys:
-        - composer-v1-{{ arch }}-{{ checksum "composer.lock" }}
-        - composer-v1-{{ arch }}-
+        - composer-v1-{{ checksum "composer.lock" }}
+        - composer-v1-
   - run:
       name: Install dependencies
       command: |
         export COMPOSER_CACHE_DIR="$PWD/.composer-cache"
         composer install --no-interaction --prefer-dist --no-progress
   - save_cache:
-      key: composer-v1-{{ arch }}-{{ checksum "composer.lock" }}
+      key: composer-v1-{{ checksum "composer.lock" }}
       paths:
         - .composer-cache
 ```
