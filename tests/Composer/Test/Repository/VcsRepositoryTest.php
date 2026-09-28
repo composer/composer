@@ -186,4 +186,37 @@ class VcsRepositoryTest extends TestCase
 
         self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
     }
+
+    public function testLoadVersionsWithOnlyBranchesFilter(): void
+    {
+        $expected = [
+            '0.6.0' => true,
+            '1.0.0' => true,
+            '1.1.x-dev' => true,
+            'dev-feature/a-1.0-B' => true,
+            'dev-master' => true,
+            '9999999-dev' => true, // alias of dev-master
+        ];
+
+        $config = new Config();
+        $config->merge([
+            'config' => [
+                'home' => self::$composerHome,
+            ],
+        ]);
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $repo = new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs', 'only-branches' => ['1.1.x', 'feature/*']], new NullIO, $config, $httpDownloader);
+        $packages = $repo->getPackages();
+        $dumper = new ArrayDumper();
+
+        foreach ($packages as $package) {
+            if (isset($expected[$package->getPrettyVersion()])) {
+                unset($expected[$package->getPrettyVersion()]);
+            } else {
+                $this->fail('Unexpected version '.$package->getPrettyVersion().' in '.json_encode($dumper->dump($package)));
+            }
+        }
+
+        self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
+    }
 }
