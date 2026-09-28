@@ -338,11 +338,20 @@ class StreamContextFactoryTest extends TestCase
 
     public function testUserAgentIncludesUnknownAgentWhenAgentCannotBeIdentified(): void
     {
-        Platform::putEnv('AI_AGENT', 'some agent/1.0');
+        Platform::putEnv('AI_AGENT', '1');
 
         $options = StreamContextFactory::initOptions('https://example.org', []);
 
         self::assertMatchesRegularExpression('{; agent:unknown[;)]}', $this->getUserAgent($options));
+    }
+
+    public function testUserAgentIncludesSanitizedUnknownAgentName(): void
+    {
+        Platform::putEnv('AI_AGENT', 'Some-Agent/1.0; (evil)');
+
+        $options = StreamContextFactory::initOptions('https://example.org', []);
+
+        self::assertMatchesRegularExpression('{; agent:some-agent[;)]}', $this->getUserAgent($options));
     }
 
     public function testUserAgentOmitsAgentFlagWhenRunByAHuman(): void

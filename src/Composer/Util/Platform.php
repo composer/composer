@@ -54,7 +54,7 @@ class Platform
     ];
 
     /**
-     * Known AI_AGENT values mapped to agent names, the value itself is never used as-is
+     * Known AI_AGENT values and aliases mapped to agent names
      *
      * Inspired by https://docs.rs/is-ai-agent
      */
@@ -76,8 +76,8 @@ class Platform
         'crush' => 'crush',
         'cursor' => 'cursor',
         'cursor-cli' => 'cursor-cli',
-        'deepseek-harness' => 'deepseek',
-        'dsh' => 'deepseek',
+        'deepseek-harness' => 'deepseek-harness',
+        'dsh' => 'deepseek-harness',
         'devin' => 'devin',
         'firebender' => 'firebender',
         'gemini' => 'gemini-cli',
@@ -352,7 +352,7 @@ class Platform
             return self::$aiAgent === false ? null : self::$aiAgent;
         }
 
-        // a known AI_AGENT name wins over other markers, an unknown one is only used as fallback
+        // a known AI_AGENT name wins over other markers, an unknown one (sanitized) is only used as fallback
         $fallback = false;
         $value = strtolower(trim((string) self::getEnv('AI_AGENT')));
         if (!in_array($value, ['', '0', 'false', 'no', 'off'], true)) {
@@ -365,7 +365,8 @@ class Platform
             if ($name !== null) {
                 return self::$aiAgent = $name;
             }
-            $fallback = 'unknown';
+            $value = substr(trim(Preg::replace('{[^a-z-]+}', '', $value), '-'), 0, 20);
+            $fallback = $value !== '' ? $value : 'unknown';
         }
 
         foreach (self::CODING_AGENT_ENV_VARS as $envVar => $name) {

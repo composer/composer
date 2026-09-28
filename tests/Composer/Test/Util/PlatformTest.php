@@ -149,7 +149,13 @@ class PlatformTest extends TestCase
         yield 'v-prefixed version' => ['goose v1.0', 'goose'];
         yield 'short name that looks like a version' => ['v0', 'v0'];
         yield 'bare true value' => ['1', 'unknown'];
-        yield 'unknown name is not passed through' => ['my-secret-agent', 'unknown'];
+        yield 'unknown name is preserved' => ['New-Agent', 'new-agent'];
+        yield 'unknown name is sanitized' => ['New_Agent2.0 (beta)', 'new'];
+        yield 'unknown name with version' => ['foo-bar-1.2.3', 'foo-bar'];
+        yield 'unknown name strips invalid chars' => ['foo.bar!', 'foobar'];
+        yield 'unknown name is truncated' => [str_repeat('a', 30), str_repeat('a', 20)];
+        yield 'unknown name with only invalid chars' => ['42!', 'unknown'];
+        yield 'long known name' => ['dsh', 'deepseek-harness'];
         yield 'falsy value' => ['false', null];
         yield 'off value' => ['OFF', null];
         yield 'zero value' => ['0', null];
@@ -170,6 +176,14 @@ class PlatformTest extends TestCase
         Platform::putEnv('AI_AGENT', 'whatever');
 
         self::assertSame('claude-code', Platform::getAiAgent());
+    }
+
+    public function testGetAiAgentNamesAreAtMost20Chars(): void
+    {
+        $names = array_merge(array_values(Platform::CODING_AGENT_ENV_VARS), array_values((new \ReflectionClassConstant(Platform::class, 'KNOWN_AI_AGENT_NAMES'))->getValue()));
+        foreach ($names as $name) {
+            self::assertMatchesRegularExpression('{^[a-z0-9-]{1,20}$}', $name);
+        }
     }
 
     /**
