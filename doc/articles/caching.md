@@ -6,7 +6,7 @@
 
 Caching can make repeated Composer installs much faster, especially in CI and container builds. A cache should remain an optimization though: a build must still be correct when the cache is empty.
 
-For most projects, cache Composer's download cache instead of `vendor/`. Composer can then reuse downloaded package archives while `composer install` still reconstructs `vendor/` from `composer.lock` for the current PHP version, extensions, Composer version, and platform.
+For most projects, cache Composer's download cache instead of `vendor/`. Composer can then reuse downloaded package archives while `composer install` still installs exactly what `composer.lock` specifies and checks it against the current PHP version and extensions.
 
 ## What to cache
 
@@ -28,9 +28,9 @@ Do not put credentials, `auth.json`, SSH keys, tokens, or other secrets in a sha
 
 ## Cache downloads, not installed dependencies
 
-Caching `vendor/` can be tempting because restoring it is fast, but it is also easier to make stale. Installed dependencies can vary with PHP versions, enabled extensions, operating systems, CPU architectures, Composer plugins, and install flags such as `--no-dev`.
+Caching `vendor/` can be tempting because restoring it is fast, but it is also easier to make stale. The installed files depend on more than `composer.lock`: install flags such as `--no-dev` or `--optimize-autoloader`, Composer plugins or scripts that generate files, and changes made inside `vendor/`, which `composer install` does not detect.
 
-A cached Composer download directory has a smaller correctness surface: after restoring it, Composer still reads `composer.lock`, resolves the current platform requirements, and performs the install. For this reason, caching the Composer cache is a good default. Cache `vendor/` only when you control all relevant platform inputs and include them in the cache key.
+A cached Composer download directory has a smaller correctness surface: after restoring it, Composer still reads `composer.lock`, checks the platform requirements, and installs every package into a fresh `vendor/`. For this reason, caching the Composer cache is a good default. Cache `vendor/` only when every job restoring it uses the same install flags and you include those in the cache key.
 
 Always keep `composer.lock` in version control for applications and run `composer install` in CI. A warm cache should save downloads, not replace dependency verification.
 
@@ -38,7 +38,7 @@ Always keep `composer.lock` in version control for applications and run `compose
 
 A useful cache key separates incompatible environments while still allowing reuse after dependency changes. Include inputs that materially affect the cache or installed result, such as the operating system and PHP version when appropriate.
 
-For download caches, use a fallback key so a changed `composer.lock` can still reuse archives downloaded by earlier builds. For `vendor/` caches, be stricter and include the lock-file hash plus relevant platform inputs.
+For download caches, use a fallback key so a changed `composer.lock` can still reuse archives downloaded by earlier builds. For `vendor/` caches, be stricter and include the lock-file hash plus the install flags and anything else that changes the installed files.
 
 If a CI provider allows untrusted pull requests to store caches that may later be restored by trusted branches, treat those cache writes as a trust boundary. Never cache secrets, and restrict cache writes from untrusted jobs according to your CI provider's security model.
 
@@ -159,7 +159,7 @@ composer config cache-dir --absolute
 composer clear-cache
 ```
 
-Also inspect the CI cache key and the environment that produced the entry. Common causes of stale installed-dependency caches include changes to PHP, extensions, operating system, architecture, Composer plugins, or install flags that were not represented in the key.
+Also inspect the CI cache key and the environment that produced the entry. Common causes of stale `vendor/` caches are install flags, Composer plugins or scripts that generate files, and files modified inside `vendor/`, when these are not represented in the key.
 
 A reliable cache has three properties: deleting it never breaks the build, restoring it never supplies secrets, and its key prevents incompatible build environments from sharing installed state.
 
