@@ -1280,6 +1280,9 @@ Directory Specifications](https://specifications.freedesktop.org/basedir-spec/ba
 it points to `$XDG_CACHE_HOME/composer`. On other \*nix systems and on macOS, it points to
 `$COMPOSER_HOME/cache`.
 
+See [Caching Composer dependencies](articles/caching.md) for how to cache it in CI
+and container builds.
+
 ### COMPOSER_CAFILE
 
 By setting this environmental value, you can set a path to a certificate bundle
