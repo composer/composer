@@ -31,7 +31,7 @@ class StreamContextFactoryTest extends TestCase
         Composer::setRunningOperation(null);
 
         // make sure the tests are not affected by an agent running them
-        foreach (Platform::CODING_AGENT_ENV_VARS as $envVar) {
+        foreach (array_merge(['AI_AGENT'], array_keys(Platform::CODING_AGENT_ENV_VARS)) as $envVar) {
             $this->originalCodingAgentEnv[$envVar] = Platform::getEnv($envVar);
             Platform::clearEnv($envVar);
         }
@@ -333,7 +333,25 @@ class StreamContextFactoryTest extends TestCase
 
         $options = StreamContextFactory::initOptions('https://example.org', []);
 
-        self::assertStringContainsString('; agent', $this->getUserAgent($options));
+        self::assertMatchesRegularExpression('{; agent:claude-code[;)]}', $this->getUserAgent($options));
+    }
+
+    public function testUserAgentIncludesUnknownAgentWhenAgentCannotBeIdentified(): void
+    {
+        Platform::putEnv('AI_AGENT', '1');
+
+        $options = StreamContextFactory::initOptions('https://example.org', []);
+
+        self::assertMatchesRegularExpression('{; agent:unknown[;)]}', $this->getUserAgent($options));
+    }
+
+    public function testUserAgentIncludesSanitizedUnknownAgentName(): void
+    {
+        Platform::putEnv('AI_AGENT', 'Some-Agent/1.0; (evil)');
+
+        $options = StreamContextFactory::initOptions('https://example.org', []);
+
+        self::assertMatchesRegularExpression('{; agent:some-agent[;)]}', $this->getUserAgent($options));
     }
 
     public function testUserAgentOmitsAgentFlagWhenRunByAHuman(): void
