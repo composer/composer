@@ -378,13 +378,20 @@ class Platform
             $name = self::KNOWN_AI_AGENT_NAMES[$value] ?? null;
             if ($name === null) {
                 // strip anything after a separator (e.g. "codex@1.2" or "claude-code v2") and a trailing version
-                $value = Preg::replace('{-?v?\d+(\.\d+)*$}', '', Preg::replace('{[\s@/_:].*$}s', '', $value));
-                $name = self::KNOWN_AI_AGENT_NAMES[$value] ?? null;
+                $stripVersion = static function (string $value): string {
+                    return Preg::replace('{-?v?\d+(\.\d+)*$}', '', $value);
+                };
+                $value = Preg::replace('{[\s@/:].*$}s', '', $value);
+                // also try the part before an underscore for values like "claude-code_2-1-201_agent"
+                $name = self::KNOWN_AI_AGENT_NAMES[$stripVersion(strtr($value, '_', '-'))]
+                    ?? self::KNOWN_AI_AGENT_NAMES[$stripVersion(explode('_', $value)[0])]
+                    ?? null;
+                $value = $stripVersion(strtr($value, '_', '-'));
             }
             if ($name !== null) {
                 return self::$aiAgent = $name;
             }
-            $value = substr(trim(Preg::replace('{[^a-z-]+}', '', $value), '-'), 0, 20);
+            $value = substr(trim(Preg::replace(['{[^a-z-]+}', '{-{2,}}'], ['', '-'], $value), '-'), 0, 20);
             $fallback = $value !== '' ? $value : 'unknown';
         }
 

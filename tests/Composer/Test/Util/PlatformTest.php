@@ -168,7 +168,10 @@ class PlatformTest extends TestCase
         yield 'short name that looks like a version' => ['v0', 'v0'];
         yield 'bare true value' => ['1', 'unknown'];
         yield 'unknown name is preserved' => ['New-Agent', 'new-agent'];
-        yield 'unknown name is sanitized' => ['New_Agent2.0 (beta)', 'new'];
+        yield 'unknown name is sanitized' => ['New_Agent2.0 (beta)', 'new-agent'];
+        yield 'underscore in known name' => ['roo_code', 'roo-code'];
+        yield 'underscore suffix after known name' => ['claude-code_2-1-201_agent', 'claude-code'];
+        yield 'repeated dashes are collapsed' => ['foo--9-bar', 'foo-bar'];
         yield 'unknown name with version' => ['foo-bar-1.2.3', 'foo-bar'];
         yield 'unknown name strips invalid chars' => ['foo.bar!', 'foobar'];
         yield 'unknown name is truncated' => [str_repeat('a', 30), str_repeat('a', 20)];
