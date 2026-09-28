@@ -59,18 +59,26 @@ For most workflows, [ramsey/composer-install](https://github.com/ramsey/composer
 If you need explicit control over the cache path or key, use `actions/cache` directly. The following example keeps Composer downloads in a workspace-relative directory and falls back to older caches for the same runner OS:
 
 ```yaml
-- uses: actions/cache@v6
-  with:
-    path: .composer-cache
-    key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
-    restore-keys: |
-      composer-${{ runner.os }}-
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      COMPOSER_CACHE_DIR: ${{ github.workspace }}/.composer-cache
+    steps:
+      - uses: actions/checkout@v7
 
-- name: Install dependencies
-  env:
-    COMPOSER_CACHE_DIR: ${{ github.workspace }}/.composer-cache
-  run: composer install --no-interaction --prefer-dist --no-progress
+      - uses: actions/cache@v6
+        with:
+          path: .composer-cache
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
 ```
+
+Setting `COMPOSER_CACHE_DIR` on the job rather than on a single step makes every Composer command in the job use the cached directory.
 
 When a workflow runs against untrusted contributions, follow GitHub Actions' cache-security guidance and avoid letting untrusted jobs write caches that trusted branches will later restore.
 
