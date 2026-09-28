@@ -124,6 +124,7 @@ final class StreamContextFactory
             if ($operation !== null && $operation !== $runningCommand) {
                 $runningCommand = $runningCommand !== null ? $runningCommand.','.$operation : $operation;
             }
+            $aiAgent = Platform::getAiAgent();
             $options['http']['header'][] = sprintf(
                 'User-Agent: Composer/%s (%s; %s; %s; %s%s%s%s%s)',
                 Composer::getVersion(),
@@ -133,7 +134,7 @@ final class StreamContextFactory
                 $httpVersion,
                 $platformPhpVersion ? '; Platform-PHP '.$platformPhpVersion : '',
                 Platform::getEnv('CI') ? '; CI' : '',
-                Platform::isCodingAgent() ? '; agent' : '',
+                $aiAgent !== null ? '; agent:'.$aiAgent : '',
                 $runningCommand !== null ? '; cmd:'.$runningCommand : ''
             );
         }

@@ -33,7 +33,7 @@ class PlatformTest extends TestCase
         $this->originalAllowUnsafePharMetadata = Platform::getEnv('COMPOSER_ALLOW_UNSAFE_PHAR_METADATA');
 
         // make sure the tests are not affected by an agent running them
-        foreach (Platform::CODING_AGENT_ENV_VARS as $envVar) {
+        foreach (array_merge(['AI_AGENT'], array_keys(Platform::CODING_AGENT_ENV_VARS)) as $envVar) {
             $this->originalCodingAgentEnv[$envVar] = Platform::getEnv($envVar);
             Platform::clearEnv($envVar);
         }
@@ -72,22 +72,36 @@ class PlatformTest extends TestCase
         self::assertEquals(defined('PHP_WINDOWS_VERSION_MAJOR'), Platform::isWindows());
     }
 
-    public function testIsCodingAgentWithoutAnyAgentEnvVar(): void
+    public function testGetAiAgentWithoutAnyAgentEnvVar(): void
     {
-        self::assertFalse(Platform::isCodingAgent());
+        if (file_exists('/opt/.devin')) {
+            self::markTestSkipped('Tests are running inside Devin');
+        }
+
+        self::assertNull(Platform::getAiAgent());
     }
 
     /**
      * @dataProvider provideCodingAgentEnvVars
      */
-    public function testIsCodingAgentDetectsKnownEnvVars(string $envVar): void
+    public function testGetAiAgentDetectsKnownEnvVars(string $envVar, string $expected): void
     {
         Platform::putEnv($envVar, '1');
 
-        self::assertTrue(Platform::isCodingAgent());
+        self::assertSame($expected, Platform::getAiAgent());
     }
 
-    public function testIsCodingAgentIgnoresEmptyEnvVar(): void
+    /**
+     * @return iterable<array{string, string}>
+     */
+    public static function provideCodingAgentEnvVars(): iterable
+    {
+        foreach (Platform::CODING_AGENT_ENV_VARS as $envVar => $name) {
+            yield $envVar => [$envVar, $name];
+        }
+    }
+
+    public function testGetAiAgentIgnoresEmptyEnvVar(): void
     {
         if (file_exists('/opt/.devin')) {
             self::markTestSkipped('Tests are running inside Devin');
@@ -95,17 +109,67 @@ class PlatformTest extends TestCase
 
         Platform::putEnv('CLAUDECODE', '');
 
-        self::assertFalse(Platform::isCodingAgent());
+        self::assertNull(Platform::getAiAgent());
+    }
+
+    public function testGetAiAgentPrefersAmpOverClaudeCode(): void
+    {
+        Platform::putEnv('CLAUDECODE', '1');
+        Platform::putEnv('AMP_CURRENT_THREAD_ID', 'T-123');
+
+        self::assertSame('amp', Platform::getAiAgent());
     }
 
     /**
-     * @return iterable<array{string}>
+     * @dataProvider provideAiAgentValues
      */
-    public static function provideCodingAgentEnvVars(): iterable
+    public function testGetAiAgentFromAiAgentEnvVar(string $value, ?string $expected): void
     {
-        foreach (Platform::CODING_AGENT_ENV_VARS as $envVar) {
-            yield $envVar => [$envVar];
+        if (file_exists('/opt/.devin')) {
+            self::markTestSkipped('Tests are running inside Devin');
         }
+
+        Platform::putEnv('AI_AGENT', $value);
+
+        self::assertSame($expected, Platform::getAiAgent());
+    }
+
+    /**
+     * @return iterable<string, array{string, ?string}>
+     */
+    public static function provideAiAgentValues(): iterable
+    {
+        yield 'known name' => ['claude-code', 'claude-code'];
+        yield 'alias and case' => [' Claude ', 'claude-code'];
+        yield 'exact name with underscores' => ['github_copilot_vscode_agent', 'github-copilot'];
+        yield 'at version' => ['codex@0.5.1', 'codex'];
+        yield 'space and version' => ['gemini-cli 1.2.3', 'gemini-cli'];
+        yield 'slash version' => ['cursor/2.0', 'cursor'];
+        yield 'dash version' => ['opencode-1.2', 'opencode'];
+        yield 'v-prefixed version' => ['goose v1.0', 'goose'];
+        yield 'short name that looks like a version' => ['v0', 'v0'];
+        yield 'bare true value' => ['1', 'unknown'];
+        yield 'unknown name is not passed through' => ['my-secret-agent', 'unknown'];
+        yield 'falsy value' => ['false', null];
+        yield 'off value' => ['OFF', null];
+        yield 'zero value' => ['0', null];
+        yield 'blank value' => ['  ', null];
+    }
+
+    public function testGetAiAgentKnownAiAgentNameWinsOverOtherMarkers(): void
+    {
+        Platform::putEnv('CLAUDECODE', '1');
+        Platform::putEnv('AI_AGENT', 'cursor');
+
+        self::assertSame('cursor', Platform::getAiAgent());
+    }
+
+    public function testGetAiAgentUnknownAiAgentNameFallsBackToOtherMarkers(): void
+    {
+        Platform::putEnv('CLAUDECODE', '1');
+        Platform::putEnv('AI_AGENT', 'whatever');
+
+        self::assertSame('claude-code', Platform::getAiAgent());
     }
 
     /**

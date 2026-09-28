@@ -22,34 +22,101 @@ use Composer\Pcre\Preg;
 class Platform
 {
     /**
-     * Env vars which indicate that Composer is being run by an AI coding agent
+     * Env vars which indicate that Composer is being run by an AI coding agent, mapped to the agent name
      *
-     * Copied from https://github.com/laravel/agent-detector. Thanks!
+     * Order matters as the first match wins. AI_AGENT is handled separately, see getAiAgent()
+     *
+     * Initially copied from https://github.com/laravel/agent-detector. Thanks!
      *
      * @internal
      */
     public const CODING_AGENT_ENV_VARS = [
-        'AI_AGENT', // cross-agent convention, set to the agent name
-        'CURSOR_AGENT',
-        'GEMINI_CLI',
-        'CODEX_SANDBOX',
-        'CODEX_CI',
-        'CODEX_THREAD_ID',
-        'AUGMENT_AGENT',
-        'OPENCODE_CLIENT',
-        'OPENCODE',
-        'AMP_CURRENT_THREAD_ID',
-        'CLAUDECODE',
-        'CLAUDE_CODE',
-        'REPL_ID',
-        'COPILOT_MODEL',
-        'COPILOT_ALLOW_ALL',
-        'COPILOT_GITHUB_TOKEN',
-        'COPILOT_CLI',
-        'ANTIGRAVITY_AGENT',
-        'PI_CODING_AGENT',
-        'MATTERHORN_SESSION_ID',
-        'KIRO_AGENT_PATH',
+        'AMP_CURRENT_THREAD_ID' => 'amp', // must precede CLAUDECODE as Amp sets it too
+        'CURSOR_AGENT' => 'cursor',
+        'GEMINI_CLI' => 'gemini-cli',
+        'CODEX_SANDBOX' => 'codex',
+        'CODEX_CI' => 'codex',
+        'CODEX_THREAD_ID' => 'codex',
+        'AUGMENT_AGENT' => 'augment',
+        'OPENCODE_CLIENT' => 'opencode',
+        'OPENCODE' => 'opencode',
+        'CLAUDECODE' => 'claude-code',
+        'CLAUDE_CODE' => 'claude-code',
+        'REPL_ID' => 'replit',
+        'COPILOT_MODEL' => 'github-copilot',
+        'COPILOT_ALLOW_ALL' => 'github-copilot',
+        'COPILOT_GITHUB_TOKEN' => 'github-copilot',
+        'COPILOT_CLI' => 'github-copilot',
+        'ANTIGRAVITY_AGENT' => 'antigravity',
+        'PI_CODING_AGENT' => 'pi',
+        'MATTERHORN_SESSION_ID' => 'junie',
+        'KIRO_AGENT_PATH' => 'kiro',
+    ];
+
+    /**
+     * Known AI_AGENT values mapped to agent names, the value itself is never used as-is
+     *
+     * Inspired by https://docs.rs/is-ai-agent
+     */
+    private const KNOWN_AI_AGENT_NAMES = [
+        'amp' => 'amp',
+        'amazonq' => 'amazon-q',
+        'amazon-q' => 'amazon-q',
+        'amazon-q-cli' => 'amazon-q',
+        'antigravity' => 'antigravity',
+        'augment' => 'augment',
+        'augment-cli' => 'augment',
+        'claude' => 'claude-code',
+        'claude-code' => 'claude-code',
+        'claudecode' => 'claude-code',
+        'cline' => 'cline',
+        'codebuddy' => 'codebuddy',
+        'codex' => 'codex',
+        'cowork' => 'claude-cowork',
+        'crush' => 'crush',
+        'cursor' => 'cursor',
+        'cursor-cli' => 'cursor-cli',
+        'deepseek-harness' => 'deepseek',
+        'dsh' => 'deepseek',
+        'devin' => 'devin',
+        'firebender' => 'firebender',
+        'gemini' => 'gemini-cli',
+        'gemini-cli' => 'gemini-cli',
+        'github-copilot' => 'github-copilot',
+        'github-copilot-cli' => 'github-copilot',
+        'github_copilot_vscode_agent' => 'github-copilot',
+        'github_copilot_app_agent' => 'github-copilot',
+        'goose' => 'goose',
+        'grok' => 'grok-cli',
+        'grok-cli' => 'grok-cli',
+        'grok-build' => 'grok-build',
+        'hermes' => 'hermes',
+        'hermes-agent' => 'hermes',
+        'iflow' => 'iflow-cli',
+        'iflow-cli' => 'iflow-cli',
+        'junie' => 'junie',
+        'kilo' => 'kilo-code',
+        'kilo-code' => 'kilo-code',
+        'kilocode' => 'kilo-code',
+        'kiro' => 'kiro',
+        'kiro-cli' => 'kiro',
+        'openclaw' => 'openclaw',
+        'opencode' => 'opencode',
+        'openhands' => 'openhands',
+        'pi' => 'pi',
+        'qwen' => 'qwen-code',
+        'qwen-code' => 'qwen-code',
+        'qwencode' => 'qwen-code',
+        'replit' => 'replit',
+        'roo' => 'roo-code',
+        'roo-code' => 'roo-code',
+        'roocode' => 'roo-code',
+        'trae' => 'trae',
+        'v0' => 'v0',
+        'vecli' => 'vecli',
+        'vtcode' => 'vtcode',
+        'warp' => 'warp',
+        'oz' => 'warp',
     ];
 
     /** @var ?bool */
@@ -58,8 +125,8 @@ class Platform
     private static $isWindowsSubsystemForLinux = null;
     /** @var ?bool */
     private static $isDocker = null;
-    /** @var ?bool */
-    private static $isCodingAgent = null;
+    /** @var non-empty-string|false|null */
+    private static $aiAgent = null;
 
     /**
      * getcwd() equivalent which always returns a string
@@ -175,8 +242,8 @@ class Platform
         putenv($name . '=' . $value);
         $_SERVER[$name] = $_ENV[$name] = $value;
 
-        if (in_array($name, self::CODING_AGENT_ENV_VARS, true)) {
-            self::$isCodingAgent = null;
+        if ($name === 'AI_AGENT' || isset(self::CODING_AGENT_ENV_VARS[$name])) {
+            self::$aiAgent = null;
         }
     }
 
@@ -188,8 +255,8 @@ class Platform
         putenv($name);
         unset($_SERVER[$name], $_ENV[$name]);
 
-        if (in_array($name, self::CODING_AGENT_ENV_VARS, true)) {
-            self::$isCodingAgent = null;
+        if ($name === 'AI_AGENT' || isset(self::CODING_AGENT_ENV_VARS[$name])) {
+            self::$aiAgent = null;
         }
     }
 
@@ -276,34 +343,46 @@ class Platform
     }
 
     /**
-     * @return bool Whether Composer is being run by an AI coding agent rather than directly by a human
+     * @return ?non-empty-string The name of the AI coding agent running Composer, 'unknown' if it cannot be identified, or null if run by a human
      */
-    public static function isCodingAgent(): bool
+    public static function getAiAgent(): ?string
     {
-        // the cache is reset by putEnv/clearEnv when one of the CODING_AGENT_ENV_VARS is modified
-        if (null !== self::$isCodingAgent) {
-            return self::$isCodingAgent;
+        // the cache is reset by putEnv/clearEnv when AI_AGENT or one of the CODING_AGENT_ENV_VARS is modified
+        if (null !== self::$aiAgent) {
+            return self::$aiAgent === false ? null : self::$aiAgent;
         }
 
-        foreach (self::CODING_AGENT_ENV_VARS as $envVar) {
+        // a known AI_AGENT name wins over other markers, an unknown one is only used as fallback
+        $fallback = false;
+        $value = strtolower(trim((string) self::getEnv('AI_AGENT')));
+        if (!in_array($value, ['', '0', 'false', 'no', 'off'], true)) {
+            $name = self::KNOWN_AI_AGENT_NAMES[$value] ?? null;
+            if ($name === null) {
+                // strip anything after a separator (e.g. "codex@1.2" or "claude-code v2") and a trailing version
+                $value = Preg::replace('{-?v?\d+(\.\d+)*$}', '', Preg::replace('{[\s@/_:].*$}s', '', $value));
+                $name = self::KNOWN_AI_AGENT_NAMES[$value] ?? null;
+            }
+            if ($name !== null) {
+                return self::$aiAgent = $name;
+            }
+            $fallback = 'unknown';
+        }
+
+        foreach (self::CODING_AGENT_ENV_VARS as $envVar => $name) {
             $value = self::getEnv($envVar);
             if ($value !== false && $value !== '') {
-                self::$isCodingAgent = true;
-
-                return self::$isCodingAgent;
+                return self::$aiAgent = $name;
             }
         }
 
         // devin does not expose an env var but mounts this directory, cannot check it if open_basedir is set
         if (!(bool) ini_get('open_basedir') && file_exists('/opt/.devin')) {
-            self::$isCodingAgent = true;
-
-            return self::$isCodingAgent;
+            return self::$aiAgent = 'devin';
         }
 
-        self::$isCodingAgent = false;
+        self::$aiAgent = $fallback;
 
-        return self::$isCodingAgent;
+        return $fallback === false ? null : $fallback;
     }
 
     public static function isDocker(): bool
