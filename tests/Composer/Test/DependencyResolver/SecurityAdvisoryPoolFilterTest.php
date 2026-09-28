@@ -246,6 +246,34 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filter->filter(new Pool([new Package('acme/package', '1.0.0.0', '1.0')]), [$unreachable], new Request());
     }
 
+    public function testDoesNotLoadAdvisoriesForDevPackages(): void
+    {
+        $repository = new class([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '>=2.0.0')],
+            ],
+        ]) extends PackageRepository {
+            /** @var list<string> */
+            public $requestedNames = [];
+
+            public function getSecurityAdvisories(array $packageConstraintMap, bool $allowPartialAdvisories = false): array
+            {
+                $this->requestedNames = array_merge($this->requestedNames, array_keys($packageConstraintMap));
+
+                return parent::getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories);
+            }
+        };
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
+        $filter->filter(new Pool([
+            new Package('acme/package', '1.0.0.0', '1.0'),
+            new Package('acme/path-package', 'dev-main', 'dev-main'),
+        ]), [$repository], new Request());
+
+        $this->assertSame(['acme/package'], $repository->requestedNames);
+    }
+
     /**
      * @return array<string, mixed>
      */

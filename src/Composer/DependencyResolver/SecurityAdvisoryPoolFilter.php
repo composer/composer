@@ -65,7 +65,7 @@ class SecurityAdvisoryPoolFilter
 
         $packagesForAdvisories = [];
         foreach ($pool->getPackages() as $package) {
-            if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
+            if (!$package instanceof RootPackageInterface && !$package->isDev() && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
                 $packagesForAdvisories[] = $package;
             }
         }
