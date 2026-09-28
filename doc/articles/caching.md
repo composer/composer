@@ -161,13 +161,20 @@ For Docker builds, BuildKit cache mounts let package downloads survive between b
 
 ```dockerfile
 # syntax=docker/dockerfile:1
-FROM composer:2 AS build
+FROM php:8.4-cli
+RUN apt-get update && apt-get install -y --no-install-recommends git unzip \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=composer/composer:2-bin /composer /usr/bin/composer
 WORKDIR /app
 COPY . .
 RUN --mount=type=cache,target=/tmp/composer-cache \
     COMPOSER_CACHE_DIR=/tmp/composer-cache \
     composer install --no-interaction --prefer-dist --no-progress
 ```
+
+Run the install in an image with the same PHP version and extensions as the one your application runs on, and [copy the Composer binary](../00-intro.md#docker-image) into it. The `composer` image ships the latest PHP with only a few extensions, so `composer install` would fail its platform checks for many projects, or build a `vendor/` meant for a different runtime.
+
+Exclude `vendor/` and any local Composer cache directory in `.dockerignore`, so `COPY . .` does not bring them into the build.
 
 For projects whose Composer scripts do not require the full application source, you can improve Docker layer reuse further by copying `composer.json` and `composer.lock` before the rest of the source. If scripts or plugins depend on application files, preserve the ordering your project requires rather than disabling them merely to make the cache hit.
 
