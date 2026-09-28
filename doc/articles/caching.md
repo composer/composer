@@ -116,7 +116,7 @@ If you want reuse across lock-file changes, use a broader key or list older keys
 
 ## Bitbucket Pipelines
 
-Bitbucket Pipelines provides a predefined `composer` cache for Composer's normal cache directory:
+Bitbucket Pipelines provides a predefined `composer` cache. It always caches `~/.composer/cache`, but Composer uses a different directory in many environments, for example `/tmp/cache` in the official `composer` Docker image or `~/.cache/composer` on systems following the XDG specification. Set `COMPOSER_CACHE_DIR` so both agree, otherwise the cache silently stays empty:
 
 ```yaml
 pipelines:
@@ -125,10 +125,11 @@ pipelines:
         caches:
           - composer
         script:
+          - export COMPOSER_CACHE_DIR="$HOME/.composer/cache"
           - composer install --no-interaction --prefer-dist --no-progress
 ```
 
-Use a custom cache definition instead when you need a different path or cache-key strategy.
+A predefined cache is not updated once stored and only expires after a week without use. Use a custom cache definition keyed on `composer.lock` when you want it refreshed on dependency changes, or when you need a different path.
 
 ## CircleCI
 
