@@ -18,6 +18,8 @@ composer config cache-dir --absolute
 
 The most reusable part is the package file cache (`cache-files-dir`), which stores downloaded dist archives. Composer also caches repository metadata and VCS clones. The default cache has built-in garbage collection: unused package files expire after six months and the files cache is limited to 300 MiB unless configured otherwise.
 
+The examples below cache the whole cache directory because that is the simplest setup. Jobs that only run `composer install` from a lock file mostly use the package file cache, so you can cache `cache-files-dir` alone to save cache storage. Jobs that run `composer update` also benefit from the repository metadata cache.
+
 In CI it is often convenient to set `COMPOSER_CACHE_DIR` to a path inside the workspace so the CI provider can cache one predictable directory:
 
 ```sh
