@@ -133,7 +133,7 @@ A predefined cache is not updated once stored and only expires after a week with
 
 ## CircleCI
 
-CircleCI cache keys are immutable, so restore before installing and save only after a successful install. Keeping the Composer cache in the workspace makes the cached path explicit:
+CircleCI caches are immutable: an entry saved under a key is never updated, so include the `composer.lock` checksum in the key to store a new entry when dependencies change. Restore before installing and save after the install. Keeping the Composer cache in the workspace makes the cached path explicit:
 
 ```yaml
 steps:
