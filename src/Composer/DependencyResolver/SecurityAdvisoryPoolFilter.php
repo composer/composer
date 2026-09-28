@@ -16,6 +16,7 @@ use Composer\Advisory\Auditor;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\IO\IOInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Policy\PolicyConfig;
@@ -66,7 +67,8 @@ class SecurityAdvisoryPoolFilter
         $packagesForAdvisories = [];
         foreach ($pool->getPackages() as $package) {
             if (!$package instanceof RootPackageInterface && !$package->isDev() && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
-                $packagesForAdvisories[] = $package;
+                // root aliases are skipped by the advisory lookup, so load advisories via the aliased package instead
+                $packagesForAdvisories[] = $package instanceof AliasPackage && $package->isRootPackageAlias() ? $package->getAliasOf() : $package;
             }
         }
 

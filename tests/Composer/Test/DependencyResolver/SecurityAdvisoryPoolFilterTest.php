@@ -19,6 +19,7 @@ use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\Downloader\TransportException;
 use Composer\IO\BufferIO;
 use Composer\IO\NullIO;
+use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Policy\AbandonedPolicyConfig;
@@ -272,6 +273,25 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         ]), [$repository], new Request());
 
         $this->assertSame(['acme/package'], $repository->requestedNames);
+    }
+
+    public function testFilterRootAliasOfDevPackageByAdvisories(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '*')],
+            ],
+        ]);
+
+        $devPackage = new CompletePackage('acme/package', 'dev-main', 'dev-main');
+        $aliasPackage = new CompleteAliasPackage($devPackage, '1.0.0.0', '1.0.0');
+        $aliasPackage->setRootPackageAlias(true);
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
+        $filteredPool = $filter->filter(new Pool([$devPackage, $aliasPackage]), [$repository], new Request());
+
+        $this->assertSame([$devPackage], $filteredPool->getPackages());
     }
 
     /**
