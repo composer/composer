@@ -44,6 +44,15 @@ A useful cache key separates incompatible environments while still allowing reus
 
 For download caches, use a fallback key so a changed `composer.lock` can still reuse archives downloaded by earlier builds. For `vendor/` caches, be stricter and include the lock-file hash plus the install flags and anything else that changes the installed files.
 
+Libraries often do not commit `composer.lock` and run `composer update` in CI instead. A key based on the lock-file hash then never changes, so the cache is stored once and never refreshed. Key the cache on `composer.json` plus a value that changes on every run, and fall back to older entries by prefix. On GitHub Actions for example:
+
+```yaml
+key: composer-${{ runner.os }}-${{ hashFiles('composer.json') }}-${{ github.run_id }}
+restore-keys: |
+  composer-${{ runner.os }}-${{ hashFiles('composer.json') }}-
+  composer-${{ runner.os }}-
+```
+
 If a CI provider allows untrusted pull requests to store caches that may later be restored by trusted branches, treat those cache writes as a trust boundary. Never cache secrets, and restrict cache writes from untrusted jobs according to your CI provider's security model.
 
 ## GitHub Actions
