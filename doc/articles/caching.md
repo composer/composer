@@ -34,7 +34,7 @@ Do not put credentials, `auth.json`, SSH keys, tokens, or other secrets in a sha
 
 Caching `vendor/` can be tempting because restoring it is fast, but it is also easier to make stale. The installed files depend on more than `composer.lock`: install flags such as `--no-dev` or `--optimize-autoloader`, Composer plugins or scripts that generate files, and changes made inside `vendor/`, which `composer install` does not detect.
 
-A cached Composer download directory has a smaller correctness surface: after restoring it, Composer still reads `composer.lock`, checks the platform requirements, and installs every package into a fresh `vendor/`. For this reason, caching the Composer cache is a good default. Cache `vendor/` only when every job restoring it uses the same install flags and you include those in the cache key.
+A cached Composer download directory has a smaller correctness surface: after restoring it, Composer still reads `composer.lock`, checks the platform requirements, and installs every package into a fresh `vendor/`. For this reason, caching the Composer cache is a good default. Cache `vendor/` only when every job restoring it uses the same install flags, PHP version and PHP extensions, and you include those in the cache key.
 
 Always keep `composer.lock` in version control for applications and run `composer install` in CI. A warm cache should save downloads, not replace dependency verification.
 
@@ -42,7 +42,7 @@ Always keep `composer.lock` in version control for applications and run `compose
 
 A useful cache key separates incompatible environments while still allowing reuse after dependency changes. Downloaded archives do not depend on the PHP version, so jobs on the same operating system can usually share one download cache.
 
-For download caches, use a fallback key so a changed `composer.lock` can still reuse archives downloaded by earlier builds. For `vendor/` caches, be stricter and include the lock-file hash plus the install flags and anything else that changes the installed files.
+For download caches, use a fallback key so a changed `composer.lock` can still reuse archives downloaded by earlier builds. For `vendor/` caches, be stricter and include the lock-file hash, the install flags, the PHP version and the list of enabled PHP extensions, as `composer install` checks the platform requirements against them unless you use `--ignore-platform-reqs`.
 
 Libraries often do not commit `composer.lock` and run `composer update` in CI instead. A key based on the lock-file hash then never changes, so the cache is stored once and never refreshed. Key the cache on `composer.json` plus a value that changes on every run, and fall back to older entries by prefix. On GitHub Actions for example:
 
