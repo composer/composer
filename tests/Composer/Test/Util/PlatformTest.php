@@ -113,10 +113,10 @@ class PlatformTest extends TestCase
     }
 
     /**
-     * @dataProvider provideAgentsSettingOtherAgentsEnvVars
+     * @dataProvider provideAiAgentPrecedence
      * @param array<non-empty-string, string> $env
      */
-    public function testGetAiAgentPrefersMoreSpecificAgent(array $env, string $expected): void
+    public function testGetAiAgentPrecedence(array $env, string $expected): void
     {
         foreach ($env as $name => $value) {
             Platform::putEnv($name, $value);
@@ -128,14 +128,52 @@ class PlatformTest extends TestCase
     /**
      * @return iterable<string, array{array<non-empty-string, string>, string}>
      */
-    public static function provideAgentsSettingOtherAgentsEnvVars(): iterable
+    public static function provideAiAgentPrecedence(): iterable
     {
-        yield 'amp' => [['CLAUDECODE' => '1', 'AMP_CURRENT_THREAD_ID' => 'T-123'], 'amp'];
-        yield 'codebuddy' => [['CLAUDECODE' => '1', 'CODEBUDDY' => '1'], 'codebuddy'];
-        yield 'cowork' => [['CLAUDECODE' => '1', 'CLAUDE_CODE_IS_COWORK' => '1'], 'cowork'];
-        yield 'qwen-code' => [['GEMINI_CLI' => '1', 'QWEN_CODE' => '1'], 'qwen-code'];
-        yield 'vecli' => [['GEMINI_CLI' => '1', 'VECLI_DIR' => '/tmp'], 'vecli'];
-        yield 'kilo-code' => [['OPENCODE' => '1', 'KILO' => '1'], 'kilo-code'];
+        // AI_AGENT
+        yield 'known AI_AGENT name wins over env vars' => [['CLAUDECODE' => '1', 'AI_AGENT' => 'cursor'], 'cursor'];
+        yield 'known AI_AGENT name after cleanup wins over env vars' => [['CLAUDECODE' => '1', 'AI_AGENT' => 'Codex@1.0'], 'codex'];
+        yield 'unknown AI_AGENT name loses to env vars' => [['CLAUDECODE' => '1', 'AI_AGENT' => 'whatever'], 'claude-code'];
+        yield 'bare true AI_AGENT loses to env vars' => [['CLAUDECODE' => '1', 'AI_AGENT' => '1'], 'claude-code'];
+        yield 'falsy AI_AGENT does not disable env vars' => [['CLAUDECODE' => '1', 'AI_AGENT' => 'false'], 'claude-code'];
+        yield 'blank AI_AGENT does not disable env vars' => [['CLAUDECODE' => '1', 'AI_AGENT' => ' '], 'claude-code'];
+
+        // env vars, first match in CODING_AGENT_ENV_VARS order wins
+        yield 'first matching env var wins' => [['CODEX_THREAD_ID' => 'abc', 'CURSOR_AGENT' => '1'], 'cursor'];
+        yield 'empty env var is skipped' => [['CURSOR_AGENT' => '', 'CODEX_THREAD_ID' => 'abc'], 'codex'];
+
+        // agents which set or inherit another agent's env vars
+        yield 'amp over claude-code' => [['CLAUDECODE' => '1', 'AMP_CURRENT_THREAD_ID' => 'T-123'], 'amp'];
+        yield 'codebuddy over claude-code' => [['CLAUDECODE' => '1', 'CODEBUDDY' => '1'], 'codebuddy'];
+        yield 'cowork over claude-code' => [['CLAUDECODE' => '1', 'CLAUDE_CODE_IS_COWORK' => '1'], 'cowork'];
+        yield 'qwen-code over gemini-cli' => [['GEMINI_CLI' => '1', 'QWEN_CODE' => '1'], 'qwen-code'];
+        yield 'vecli over gemini-cli' => [['GEMINI_CLI' => '1', 'VECLI_DIR' => '/tmp'], 'vecli'];
+        yield 'kilo-code over opencode' => [['OPENCODE' => '1', 'OPENCODE_CLIENT' => 'cli', 'KILO' => '1'], 'kilo-code'];
+        yield 'known AI_AGENT name still wins over forks' => [['GEMINI_CLI' => '1', 'QWEN_CODE' => '1', 'AI_AGENT' => 'gemini'], 'gemini-cli'];
+    }
+
+    public function testGetAiAgentUnknownAiAgentNameIsUsedWithoutOtherMarkers(): void
+    {
+        if (file_exists('/opt/.devin')) {
+            self::markTestSkipped('Tests are running inside Devin');
+        }
+
+        Platform::putEnv('AI_AGENT', 'whatever');
+
+        self::assertSame('whatever', Platform::getAiAgent());
+    }
+
+    public function testGetAiAgentCacheIsResetWhenEnvChanges(): void
+    {
+        Platform::putEnv('CLAUDECODE', '1');
+        self::assertSame('claude-code', Platform::getAiAgent());
+
+        Platform::putEnv('AI_AGENT', 'cursor');
+        self::assertSame('cursor', Platform::getAiAgent());
+
+        Platform::clearEnv('AI_AGENT');
+        Platform::putEnv('AMP_CURRENT_THREAD_ID', 'T-123');
+        self::assertSame('amp', Platform::getAiAgent());
     }
 
     /**
@@ -181,22 +219,6 @@ class PlatformTest extends TestCase
         yield 'off value' => ['OFF', null];
         yield 'zero value' => ['0', null];
         yield 'blank value' => ['  ', null];
-    }
-
-    public function testGetAiAgentKnownAiAgentNameWinsOverOtherMarkers(): void
-    {
-        Platform::putEnv('CLAUDECODE', '1');
-        Platform::putEnv('AI_AGENT', 'cursor');
-
-        self::assertSame('cursor', Platform::getAiAgent());
-    }
-
-    public function testGetAiAgentUnknownAiAgentNameFallsBackToOtherMarkers(): void
-    {
-        Platform::putEnv('CLAUDECODE', '1');
-        Platform::putEnv('AI_AGENT', 'whatever');
-
-        self::assertSame('claude-code', Platform::getAiAgent());
     }
 
     public function testGetAiAgentNamesAreAtMost20Chars(): void
