@@ -26,6 +26,8 @@ In CI it is often convenient to set `COMPOSER_CACHE_DIR` to a path inside the wo
 COMPOSER_CACHE_DIR="$PWD/.composer-cache" composer install --no-interaction --prefer-dist
 ```
 
+Add such a directory to `.gitignore`, and to `.dockerignore` if you build images from the same checkout, so it does not show up as an untracked change or end up in archives, build contexts and code-analysis runs.
+
 Do not put credentials, `auth.json`, SSH keys, tokens, or other secrets in a shared cache.
 
 ## Cache downloads, not installed dependencies
