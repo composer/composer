@@ -112,12 +112,30 @@ class PlatformTest extends TestCase
         self::assertNull(Platform::getAiAgent());
     }
 
-    public function testGetAiAgentPrefersAmpOverClaudeCode(): void
+    /**
+     * @dataProvider provideAgentsSettingOtherAgentsEnvVars
+     * @param array<non-empty-string, string> $env
+     */
+    public function testGetAiAgentPrefersMoreSpecificAgent(array $env, string $expected): void
     {
-        Platform::putEnv('CLAUDECODE', '1');
-        Platform::putEnv('AMP_CURRENT_THREAD_ID', 'T-123');
+        foreach ($env as $name => $value) {
+            Platform::putEnv($name, $value);
+        }
 
-        self::assertSame('amp', Platform::getAiAgent());
+        self::assertSame($expected, Platform::getAiAgent());
+    }
+
+    /**
+     * @return iterable<string, array{array<non-empty-string, string>, string}>
+     */
+    public static function provideAgentsSettingOtherAgentsEnvVars(): iterable
+    {
+        yield 'amp' => [['CLAUDECODE' => '1', 'AMP_CURRENT_THREAD_ID' => 'T-123'], 'amp'];
+        yield 'codebuddy' => [['CLAUDECODE' => '1', 'CODEBUDDY' => '1'], 'codebuddy'];
+        yield 'cowork' => [['CLAUDECODE' => '1', 'CLAUDE_CODE_IS_COWORK' => '1'], 'cowork'];
+        yield 'qwen-code' => [['GEMINI_CLI' => '1', 'QWEN_CODE' => '1'], 'qwen-code'];
+        yield 'vecli' => [['GEMINI_CLI' => '1', 'VECLI_DIR' => '/tmp'], 'vecli'];
+        yield 'kilo-code' => [['OPENCODE' => '1', 'KILO' => '1'], 'kilo-code'];
     }
 
     /**

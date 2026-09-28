@@ -31,17 +31,36 @@ class Platform
      * @internal
      */
     public const CODING_AGENT_ENV_VARS = [
-        'AMP_CURRENT_THREAD_ID' => 'amp', // must precede CLAUDECODE as Amp sets it too
+        // Amp, CodeBuddy and Cowork set/mirror Claude Code vars, so they must precede them
+        'AMP_CURRENT_THREAD_ID' => 'amp',
+        'CODEBUDDY' => 'codebuddy',
+        'CLAUDE_CODE_IS_COWORK' => 'cowork',
+        'CLAUDECODE' => 'claude-code',
+        'CLAUDE_CODE' => 'claude-code',
         'CURSOR_AGENT' => 'cursor',
+        'CURSOR_SANDBOX' => 'cursor-cli',
+        // Gemini CLI forks, must precede GEMINI_CLI
+        'QWEN_CODE' => 'qwen-code',
+        'VECLI_DIR' => 'vecli',
         'GEMINI_CLI' => 'gemini-cli',
         'CODEX_SANDBOX' => 'codex',
         'CODEX_CI' => 'codex',
         'CODEX_THREAD_ID' => 'codex',
         'AUGMENT_AGENT' => 'augment',
+        'KILO' => 'kilo-code', // must precede OPENCODE* as Kilo inherits them
         'OPENCODE_CLIENT' => 'opencode',
         'OPENCODE' => 'opencode',
-        'CLAUDECODE' => 'claude-code',
-        'CLAUDE_CODE' => 'claude-code',
+        'CLINE_ACTIVE' => 'cline',
+        'CLINE_TASK_ID' => 'cline',
+        'ROO_CODE_TASK_ID' => 'roo-code',
+        'CRUSH' => 'crush',
+        'IFLOW_CLI' => 'iflow-cli',
+        'TRAE_AI_SHELL_ID' => 'trae',
+        'GOOSE_TERMINAL' => 'goose',
+        'OZ_RUN_ID' => 'warp',
+        'FIREBENDER_TERMINAL' => 'firebender',
+        'GROK_SESSION_ID' => 'grok-build',
+        'JUNIE_SHIM_PATH' => 'junie',
         'REPL_ID' => 'replit',
         'COPILOT_MODEL' => 'github-copilot',
         'COPILOT_ALLOW_ALL' => 'github-copilot',
@@ -72,7 +91,7 @@ class Platform
         'cline' => 'cline',
         'codebuddy' => 'codebuddy',
         'codex' => 'codex',
-        'cowork' => 'claude-cowork',
+        'cowork' => 'cowork',
         'crush' => 'crush',
         'cursor' => 'cursor',
         'cursor-cli' => 'cursor-cli',
