@@ -174,6 +174,8 @@ RUN --mount=type=cache,target=/tmp/composer-cache \
 
 Run the install in an image with the same PHP version and extensions as the one your application runs on, and [copy the Composer binary](../00-intro.md#docker-image) into it. The `composer` image ships the latest PHP with only a few extensions, so `composer install` would fail its platform checks for many projects, or build a `vendor/` meant for a different runtime.
 
+Cache mounts are kept by the builder that ran the build. They are not part of exported build caches such as `--cache-to`, so on ephemeral CI runners they start empty every time unless you use a persistent builder or a tool that saves and restores them, like [buildkit-cache-dance](https://github.com/reproducible-containers/buildkit-cache-dance).
+
 Exclude `vendor/` and any local Composer cache directory in `.dockerignore`, so `COPY . .` does not bring them into the build.
 
 For projects whose Composer scripts do not require the full application source, you can improve Docker layer reuse further by copying `composer.json` and `composer.lock` before the rest of the source. If scripts or plugins depend on application files, preserve the ordering your project requires rather than disabling them merely to make the cache hit.
