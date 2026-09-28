@@ -108,12 +108,11 @@ default:
         - composer.lock
     paths:
       - .composer-cache/
-
-before_script:
-  - composer install --no-interaction --prefer-dist --no-progress
+  before_script:
+    - composer install --no-interaction --prefer-dist --no-progress
 ```
 
-If you want reuse across lock-file changes, use a broader key or GitLab's fallback-key facilities while keeping incompatible runner/platform variants separated.
+If you want reuse across lock-file changes, use a broader key or list older keys in `cache:fallback_keys`. Without a `composer.lock` the key falls back to `default` and never changes, see [Cache keys](#cache-keys) for an alternative.
 
 ## Bitbucket Pipelines
 
