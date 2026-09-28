@@ -161,18 +161,19 @@ For Docker builds, BuildKit cache mounts let package downloads survive between b
 
 ```dockerfile
 # syntax=docker/dockerfile:1
+FROM composer/composer:2-bin AS composer
 FROM php:8.4-cli
 RUN apt-get update && apt-get install -y --no-install-recommends git unzip \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=composer/composer:2-bin /composer /usr/bin/composer
 WORKDIR /app
 COPY . .
-RUN --mount=type=cache,target=/tmp/composer-cache \
+RUN --mount=type=bind,from=composer,source=/composer,target=/usr/bin/composer \
+    --mount=type=cache,target=/tmp/composer-cache \
     COMPOSER_CACHE_DIR=/tmp/composer-cache \
     composer install --no-interaction --prefer-dist --no-progress
 ```
 
-Run the install in an image with the same PHP version and extensions as the one your application runs on, and [copy the Composer binary](../00-intro.md#docker-image) into it. The `composer` image ships the latest PHP with only a few extensions, so `composer install` would fail its platform checks for many projects, or build a `vendor/` meant for a different runtime.
+Run the install in an image with the same PHP version and extensions as the one your application runs on, and mount the Composer binary into the install step from the [`composer/composer` image](../00-intro.md#docker-image). The `composer` image ships the latest PHP with only a few extensions, so `composer install` would fail its platform checks for many projects, or build a `vendor/` meant for a different runtime.
 
 Cache mounts are kept by the builder that ran the build. They are not part of exported build caches such as `--cache-to`, so on ephemeral CI runners they start empty every time unless you use a persistent builder or a tool that saves and restores them, like [buildkit-cache-dance](https://github.com/reproducible-containers/buildkit-cache-dance).
 
