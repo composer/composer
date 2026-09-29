@@ -69,12 +69,14 @@ class PoolTest extends TestCase
         $cooldownRemovedVersions = [
             'vendor/pkg' => [
                 '1.0.0.0' => [
+                    'name' => 'vendor/pkg',
                     'prettyVersion' => '1.0.0',
                     'releaseDate' => '2026-01-12T01:00:00+02:00',
                     'availableIn' => '5 days',
                     'source' => 'time',
                 ],
                 '2.0.0.0' => [
+                    'name' => 'vendor/pkg',
                     'prettyVersion' => '2.0.0',
                     'releaseDate' => '2026-01-12T00:30:00+00:00',
                     'availableIn' => '6 days',

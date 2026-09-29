@@ -15,11 +15,13 @@ namespace Composer\Test\DependencyResolver;
 use Composer\DependencyResolver\CooldownPoolFilter;
 use Composer\DependencyResolver\Request;
 use Composer\IO\BufferIO;
+use Composer\Package\Link;
 use Composer\Package\Package;
 use Composer\Policy\CooldownPolicyConfig;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositorySet;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 use DateTimeImmutable;
@@ -45,6 +47,9 @@ class PoolBuilderCooldownOutputTest extends TestCase
         $output = $io->getOutput();
         self::assertStringContainsString('1 package version(s) withheld by the cooldown policy:', $output);
         self::assertStringContainsString('  - vendor/pkg (2.0.0) published 2026-01-14T12:00:00+00:00', $output);
+        // the withheld version is recorded under the replaced name too, but listed once
+        self::assertSame(1, substr_count($output, '  - '));
+        self::assertStringNotContainsString('vendor/replaced', $output);
     }
 
     private function createPool(BufferIO $io): void
@@ -55,6 +60,7 @@ class PoolBuilderCooldownOutputTest extends TestCase
         $old->setReleaseDate(new DateTimeImmutable('2025-01-01 00:00:00+00:00'));
         $new = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
         $new->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00+00:00'));
+        $new->setReplaces(['vendor/replaced' => new Link('vendor/pkg', 'vendor/replaced', new Constraint('==', '2.0.0.0'), Link::TYPE_REPLACE, '2.0.0')]);
 
         $repositorySet = new RepositorySet();
         $repositorySet->addRepository(new ArrayRepository([$old, $new]));

@@ -94,6 +94,7 @@ class CooldownPoolFilter
             // Package is too new - filter it out and track for error messages
             foreach ($package->getNames(false) as $packageName) {
                 $cooldownRemovedVersions[$packageName][$package->getVersion()] = [
+                    'name' => $package->getName(),
                     'prettyVersion' => $package->getPrettyVersion(),
                     'releaseDate' => $releaseDate->format(DateTimeInterface::ATOM),
                     'availableIn' => $this->config->formatTimeUntilAvailable($releaseDate, $this->now),

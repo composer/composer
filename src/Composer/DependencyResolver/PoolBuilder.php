@@ -925,6 +925,11 @@ class PoolBuilder
 
         foreach ($pool->getAllCooldownRemovedPackageVersions() as $packageName => $versions) {
             foreach ($versions as $info) {
+                // Withheld versions are also recorded under replaced names for problem reporting, list each package once
+                if ($info['name'] !== $packageName) {
+                    continue;
+                }
+
                 $this->io->writeError(sprintf(
                     '  - %s (%s) published %s, available in %s',
                     $packageName,

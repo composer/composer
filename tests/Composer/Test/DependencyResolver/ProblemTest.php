@@ -68,6 +68,7 @@ class ProblemTest extends TestCase
             [    // cooldownRemovedVersions
                 'vendor/pkg' => [
                     '2.0.0.0' => [
+                        'name' => 'vendor/pkg',
                         'prettyVersion' => '2.0.0',
                         'releaseDate' => '2026-01-10T12:00:00+00:00',
                         'availableIn' => '5 days',
@@ -119,6 +120,7 @@ class ProblemTest extends TestCase
             [
                 'vendor/pkg' => [
                     '2.0.0.0' => [
+                        'name' => 'vendor/pkg',
                         'prettyVersion' => '2.0.0',
                         'releaseDate' => '2026-01-10T12:00:00+00:00',
                         'availableIn' => '5 days',

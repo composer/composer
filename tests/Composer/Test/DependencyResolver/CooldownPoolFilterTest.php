@@ -324,6 +324,10 @@ class CooldownPoolFilterTest extends TestCase
         // Replaced names are part of getNames(false), so a requirement on either name explains the cooldown
         $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
         $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/replaced', new Constraint('==', '2.0.0.0')));
+        // while the primary name is kept so output can list the package once
+        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/replaced', new Constraint('==', '2.0.0.0'));
+        $this->assertNotNull($info);
+        $this->assertSame('vendor/pkg', $info['name']);
     }
 
     public function testDevAliasIsKeptTogetherWithItsDevTarget(): void
