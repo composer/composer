@@ -63,7 +63,7 @@ class CooldownPoolFilter
             // Skip filtering for packages that should always be allowed through:
             // 1. Root packages
             // 2. Platform packages (php, ext-*, lib-*, etc.)
-            // 3. Already locked packages (installed)
+            // 3. Locked packages kept by a partial update
             // 4. Dev versions (mutable, no stable release date concept)
             // 5. Ignored packages (matching configured policy.cooldown.ignore rules)
             // 6. Packages without release date (conservative - don't block unverifiable)

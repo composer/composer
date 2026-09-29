@@ -463,7 +463,10 @@ takes effect once an age is set.
 The following are never withheld by the cooldown:
 
 - **Dev versions** (e.g. `dev-main`) — they represent mutable branch state
-- **Already locked packages** — packages in your `composer.lock` are not affected
+- **Locked packages that are not being updated** — a partial update (`composer update vendor/pkg`,
+  `composer require`) keeps the locked version of every other package. A full `composer update`
+  re-evaluates all versions, so a locked version still inside the cooldown can be replaced by an
+  older release
 - **Platform packages** — PHP, extensions and other platform requirements
 - **Packages without a publication date** — allowed through conservatively
 
