@@ -435,6 +435,24 @@ class VersionSelectorTest extends TestCase
         self::assertFalse($versionSelector->findBestCandidate('foo/bar'));
     }
 
+    public function testFirstClearingWithheldCandidateIsTheOldest(): void
+    {
+        $older = self::getPackage('foo/bar', '1.2.1');
+        $older->setPublishedDate(new \DateTimeImmutable('-5 days'));
+        $newer = self::getPackage('foo/bar', '1.2.2');
+        $newer->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$older, $newer]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+
+        self::assertFalse($versionSelector->findBestCandidate('foo/bar'));
+        $withheld = $versionSelector->getFirstClearingWithheldCandidate();
+        self::assertNotNull($withheld);
+        self::assertSame($older, $withheld['package']);
+    }
+
     public function testCooldownIsNotAppliedWhenBlockingIsDisabled(): void
     {
         $new = self::getPackage('foo/bar', '1.2.2');

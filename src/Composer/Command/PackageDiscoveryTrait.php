@@ -16,7 +16,6 @@ use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\IO\IOInterface;
-use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
@@ -350,10 +349,9 @@ trait PackageDiscoveryTrait
             }
 
             // Check whether the cooldown withheld every version
-            if ($cooldown !== null && false !== ($candidate = (new VersionSelector($repoSet, $platformRepo))->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter))) {
-                $target = $candidate instanceof AliasPackage ? $candidate->getAliasOf() : $candidate;
-                $releaseDate = $cooldown->getEffectiveDate($target);
-                $wait = $releaseDate !== null ? ' (the latest version '.$candidate->getPrettyVersion().' becomes available in '.$cooldown->formatTimeUntilAvailable($releaseDate, new \DateTimeImmutable()).')' : '';
+            if ($cooldown !== null && false !== (new VersionSelector($repoSet, $platformRepo))->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter)) {
+                $withheld = $versionSelector->getFirstClearingWithheldCandidate();
+                $wait = $withheld !== null ? ' (version '.$withheld['package']->getPrettyVersion().' becomes available in '.$cooldown->formatTimeUntilAvailable($withheld['releaseDate'], new \DateTimeImmutable()).')' : '';
 
                 throw new \InvalidArgumentException(sprintf(
                     'Could not find a version of package %s that has cleared the cooldown configured in "policy.cooldown"%s. To install it now, add the package to the "policy.cooldown.ignore" config, or run the command with COMPOSER_POLICY_COOLDOWN_AGE=0 for a one-off bypass.',

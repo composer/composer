@@ -50,6 +50,9 @@ class VersionSelector
     /** @var ?CooldownPolicyConfig */
     private $cooldown;
 
+    /** @var ?array{package: PackageInterface, releaseDate: \DateTimeInterface} */
+    private $firstClearingWithheldCandidate = null;
+
     /**
      * @param PlatformRepository   $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
      * @param CooldownPolicyConfig $cooldown     If passed in, versions still within the configured cooldown are skipped
@@ -118,6 +121,7 @@ class VersionSelector
             return version_compare($b->getVersion(), $a->getVersion());
         });
 
+        $this->firstClearingWithheldCandidate = null;
         if ($this->cooldown !== null && $this->cooldown->hasCooldown() && $this->cooldown->block) {
             $candidates = $this->filterCooldownCandidates($this->cooldown, $candidates, $io, $showWarnings);
         }
@@ -199,6 +203,16 @@ class VersionSelector
     }
 
     /**
+     * Returns the candidate withheld by the cooldown in the last findBestCandidate() call that becomes available first
+     *
+     * @return ?array{package: PackageInterface, releaseDate: \DateTimeInterface}
+     */
+    public function getFirstClearingWithheldCandidate(): ?array
+    {
+        return $this->firstClearingWithheldCandidate;
+    }
+
+    /**
      * Drops candidates still inside the cooldown so the selected version is one the solver will accept
      *
      * @param PackageInterface[] $candidates
@@ -225,6 +239,10 @@ class VersionSelector
             if ($releaseDate === null || !$cooldown->isWithinCooldown($releaseDate, $now)) {
                 $result[] = $pkg;
                 continue;
+            }
+
+            if ($this->firstClearingWithheldCandidate === null || $releaseDate < $this->firstClearingWithheldCandidate['releaseDate']) {
+                $this->firstClearingWithheldCandidate = ['package' => $pkg, 'releaseDate' => $releaseDate];
             }
 
             $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
