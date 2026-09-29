@@ -180,6 +180,8 @@ Exclude `vendor/` and any local Composer cache directory in `.dockerignore`, so 
 
 For projects whose Composer scripts do not require the full application source, you can improve Docker layer reuse further by copying `composer.json` and `composer.lock` before the rest of the source. If scripts or plugins depend on application files, preserve the ordering your project requires rather than disabling them merely to make the cache hit.
 
+Every `RUN` step that calls `composer`, for example a `composer dump-autoload` after copying the rest of the source, needs the same bind mount, as the binary is only available while it is mounted.
+
 ## Diagnosing cache problems
 
 When a cached build behaves differently from a cold build, first rerun it with an empty cache. Composer provides commands to inspect and clear its own cache:
