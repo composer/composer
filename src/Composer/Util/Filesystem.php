@@ -1007,14 +1007,11 @@ class Filesystem
 
         $stat = Silencer::call('stat', $path);
         if ($written && \is_array($stat)) {
-            // only root can hand the file over to another user
-            if (\function_exists('posix_geteuid') && 0 === posix_geteuid()) {
-                Silencer::call('chown', $tempPath, $stat['uid']);
-            }
-
-            // the renamed file would get our group, so only replace it if its group can be kept
+            // the renamed file would be ours, so only replace it if its owner and group can be kept
             $tempStat = fstat($handle);
-            $written = false !== $tempStat && ($stat['gid'] === $tempStat['gid'] || true === Silencer::call('chgrp', $tempPath, $stat['gid']));
+            $written = false !== $tempStat
+                && ($stat['uid'] === $tempStat['uid'] || true === Silencer::call('chown', $tempPath, $stat['uid']))
+                && ($stat['gid'] === $tempStat['gid'] || true === Silencer::call('chgrp', $tempPath, $stat['gid']));
         }
 
         $written = $written && $write($handle);
