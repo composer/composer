@@ -56,6 +56,7 @@ class PolicyConfig
     public const RESERVED_NAMES = [
         AdvisoriesPolicyConfig::NAME,
         AbandonedPolicyConfig::NAME,
+        CooldownPolicyConfig::NAME,
     ];
 
     public const BUILTIN_LIST_NAMES = [

@@ -62,6 +62,7 @@ class ComposerRepositoryFilterInformationTest extends TestCase
                 'advisories' => ['enabled' => true],
                 'company-policy' => ['enabled' => true],
                 'abandoned' => ['enabled' => true],
+                'cooldown' => ['enabled' => true],
             ],
         ]);
 
