@@ -1,0 +1,52 @@
+--TEST--
+Cooldown policy withholding the only version matching a requirement explains the wait and how to bypass it.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "1.1.0"
+    },
+    "config": {
+        "policy": {
+            "cooldown": {
+                "age": "1 week"
+            }
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0.0",
+                    "time": "2020-01-01T00:00:00+00:00",
+                    "source": { "reference": "1.0.0", "type": "git", "url": "" }
+                },
+                {
+                    "name": "acme/library",
+                    "version": "1.1.0",
+                    "published-time": "2999-01-01T00:00:00+00:00",
+                    "source": { "reference": "1.1.0", "type": "git", "url": "" }
+                }
+            ]
+        }
+    ]
+}
+--RUN--
+update -v
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+<warning>1 package version(s) withheld by the cooldown policy (run with -vv to list them).</warning>
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires acme/library 1.1.0 (exact version match: 1.1.0 or 1.1.0.0), found acme/library[1.1.0] but these were not loaded, because they have not yet cleared the cooldown configured in "policy.cooldown" (available in %s). To bypass the cooldown for this package, add it to the "policy.cooldown.ignore" config. To turn the feature off entirely, you can set "policy.cooldown.block" to false.
+
+--EXPECT--
