@@ -18,6 +18,7 @@ use Composer\Policy\IgnorePackageRule;
 use Composer\Policy\ListPolicyConfig;
 use Composer\DependencyResolver\CooldownPoolFilter;
 use Composer\DependencyResolver\Request;
+use Composer\Package\AliasPackage;
 use Composer\Package\Link;
 use Composer\Package\Package;
 use Composer\Package\RootPackage;
@@ -323,5 +324,41 @@ class CooldownPoolFilterTest extends TestCase
         // Replaced names are part of getNames(false), so a requirement on either name explains the cooldown
         $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
         $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/replaced', new Constraint('==', '2.0.0.0')));
+    }
+
+    public function testDevAliasIsKeptTogetherWithItsDevTarget(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // "dev-main as 1.0.0": the alias reports a stable version while the branch commit is recent
+        $branch = new Package('vendor/pkg', 'dev-main', 'dev-main');
+        $branch->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+        $alias = new AliasPackage($branch, '1.0.0.0', '1.0.0');
+
+        $pool = new Pool([$branch, $alias]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertSame([$branch, $alias], $filteredPool->getPackages());
+    }
+
+    public function testAliasOfWithheldVersionIsWithheldToo(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        // "2.0.0 as 2.0.x-dev": the alias is a dev version but requires the withheld base
+        $base = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $base->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+        $alias = new AliasPackage($base, '2.0.9999999.9999999-dev', '2.0.x-dev');
+
+        $pool = new Pool([$base, $alias]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertSame([], $filteredPool->getPackages());
+        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
+        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.9999999.9999999-dev')));
     }
 }

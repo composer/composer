@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Policy\CooldownPolicyConfig;
+use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\PlatformRepository;
@@ -60,6 +61,10 @@ class CooldownPoolFilter
         $cooldownRemovedVersions = [];
 
         foreach ($pool->getPackages() as $package) {
+            // An alias shares the release date of the package it aliases but reports its own
+            // stability, so decide on the aliased package to keep the pair consistent
+            $target = $package instanceof AliasPackage ? $package->getAliasOf() : $package;
+
             // Skip filtering for packages that should always be allowed through:
             // 1. Root packages
             // 2. Platform packages (php, ext-*, lib-*, etc.)
@@ -67,19 +72,20 @@ class CooldownPoolFilter
             // 4. Dev versions (mutable, no stable release date concept)
             // 5. Ignored packages (matching configured policy.cooldown.ignore rules)
             // 6. Packages without release date (conservative - don't block unverifiable)
-            if ($package instanceof RootPackageInterface
-                || PlatformRepository::isPlatformPackage($package->getName())
+            if ($target instanceof RootPackageInterface
+                || PlatformRepository::isPlatformPackage($target->getName())
                 || $request->isLockedPackage($package)
-                || $package->isDev()
-                || $this->config->isIgnored($package, 'block')
-                || $this->effectiveDate($package) === null
+                || $request->isLockedPackage($target)
+                || $target->isDev()
+                || $this->config->isIgnored($target, 'block')
+                || $this->effectiveDate($target) === null
             ) {
                 $packages[] = $package;
                 continue;
             }
 
             // Check if package is old enough
-            $releaseDate = $this->effectiveDate($package);
+            $releaseDate = $this->effectiveDate($target);
             if (!$this->config->isWithinCooldown($releaseDate, $this->now)) {
                 $packages[] = $package;
                 continue;
@@ -91,7 +97,7 @@ class CooldownPoolFilter
                     'prettyVersion' => $package->getPrettyVersion(),
                     'releaseDate' => $releaseDate->format(DateTimeInterface::ATOM),
                     'availableIn' => $this->config->formatTimeUntilAvailable($releaseDate, $this->now),
-                    'source' => $package->getPublishedDate() !== null ? 'published-time' : 'time',
+                    'source' => $target->getPublishedDate() !== null ? 'published-time' : 'time',
                 ];
             }
         }

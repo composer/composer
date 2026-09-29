@@ -1,0 +1,55 @@
+--TEST--
+Cooldown policy keeps an inline alias of a dev branch even though the branch commit is recent, as dev versions are never withheld.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "dev-main as 1.0.0",
+        "acme/other": "^1.0"
+    },
+    "config": {
+        "policy": {
+            "cooldown": {
+                "age": "1 week"
+            }
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "dev-main",
+                    "time": "2999-01-01T00:00:00+00:00",
+                    "source": { "reference": "1111111111111111111111111111111111111111", "type": "git", "url": "" }
+                },
+                {
+                    "name": "acme/other",
+                    "version": "1.0.0",
+                    "time": "2020-01-01T00:00:00+00:00",
+                    "require": { "acme/library": "^1.0" },
+                    "source": { "reference": "1.0.0", "type": "git", "url": "" }
+                }
+            ]
+        }
+    ]
+}
+--RUN--
+update
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 2 installs, 0 updates, 0 removals
+  - Locking acme/library (dev-main 1111111)
+  - Locking acme/other (1.0.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
+Generating autoload files
+--EXPECT--
+Installing acme/library (dev-main 1111111)
+Marking acme/library (1.0.0) as installed, alias of acme/library (dev-main 1111111)
+Installing acme/other (1.0.0)
