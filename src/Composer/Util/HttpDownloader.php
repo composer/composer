@@ -38,6 +38,13 @@ class HttpDownloader
     private const STATUS_FAILED = 4;
     private const STATUS_ABORTED = 5;
 
+    /**
+     * Warnings which were already shown, per IO, keyed by url and warning, see outputWarnings()
+     *
+     * @var ?\SplObjectStorage<IOInterface, array<string, true>>
+     */
+    private static $shownWarnings;
+
     /** @var IOInterface */
     private $io;
     /** @var Config */
@@ -450,14 +457,28 @@ class HttpDownloader
     }
 
     /**
+     * Shows the warnings/infos of a response, unless the same url already showed the same ones to this IO
+     *
      * @internal
      *
-     * @param  array{warning?: string, info?: string, warning-versions?: string, info-versions?: string, warnings?: array<array{versions: string, message: string}>, infos?: array<array{versions: string, message: string}>} $data
+     * @param  mixed $data the decoded response body, expected to be array{warning?: string, info?: string, warning-versions?: string, info-versions?: string, warnings?: array<array{versions: string, message: string}>, infos?: array<array{versions: string, message: string}>}
      *
-     * @return bool whether any warning/info was actually written to the output
+     * @return bool whether any warning/info was shown, now or before
      */
     public static function outputWarnings(IOInterface $io, string $url, $data): bool
     {
+        if (!is_array($data)) {
+            return false;
+        }
+
+        // the parts of the body which are not shown do not make a warning a different one
+        $shownKey = $url.':'.json_encode(array_intersect_key($data, array_flip(['warning', 'warning-versions', 'info', 'info-versions', 'warnings', 'infos'])));
+        $shownWarnings = self::$shownWarnings ?? self::$shownWarnings = new \SplObjectStorage();
+        $shown = $shownWarnings[$io] ?? [];
+        if (isset($shown[$shownKey])) {
+            return true;
+        }
+
         $wrote = false;
         $cleanMessage = static function ($msg) use ($io) {
             if (!$io->isDecorated()) {
@@ -504,6 +525,11 @@ class HttpDownloader
                 $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$cleanMessage($spec['message']).'</'.$type.'>');
                 $wrote = true;
             }
+        }
+
+        if ($wrote) {
+            $shown[$shownKey] = true;
+            $shownWarnings[$io] = $shown;
         }
 
         return $wrote;

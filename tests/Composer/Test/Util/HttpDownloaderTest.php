@@ -122,6 +122,31 @@ class HttpDownloaderTest extends TestCase
         $downloader->countActiveJobs();
     }
 
+    public function testRepeatedWarningsFromAnOriginAreShownOnce(): void
+    {
+        $io = new BufferIO();
+        $rateLimited = ['warning' => 'Rate limited', 'status' => 'error', 'path' => '/a'];
+        self::assertTrue(HttpDownloader::outputWarnings($io, 'example.org', $rateLimited));
+        // the parts of the body which are not shown do not make a warning a different one
+        self::assertTrue(HttpDownloader::outputWarnings($io, 'example.org', ['path' => '/b'] + $rateLimited));
+        self::assertTrue(HttpDownloader::outputWarnings($io, 'other.org', $rateLimited));
+        self::assertTrue(HttpDownloader::outputWarnings($io, 'example.org', ['warning' => 'Slow down']));
+        self::assertFalse(HttpDownloader::outputWarnings($io, 'example.org', ['status' => 'error']));
+        self::assertFalse(HttpDownloader::outputWarnings($io, 'example.org', null));
+
+        self::assertSame(
+            '<warning>Warning from example.org: Rate limited</warning>'.PHP_EOL
+            .'<warning>Warning from other.org: Rate limited</warning>'.PHP_EOL
+            .'<warning>Warning from example.org: Slow down</warning>'.PHP_EOL,
+            $io->getOutput()
+        );
+
+        // another IO has not shown anything yet
+        $otherIo = new BufferIO();
+        self::assertTrue(HttpDownloader::outputWarnings($otherIo, 'example.org', $rateLimited));
+        self::assertSame('<warning>Warning from example.org: Rate limited</warning>'.PHP_EOL, $otherIo->getOutput());
+    }
+
     public function testOutputWarnings(): void
     {
         $io = new BufferIO();
