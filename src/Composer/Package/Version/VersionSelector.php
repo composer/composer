@@ -215,8 +215,14 @@ class VersionSelector
         foreach ($candidates as $pkg) {
             // decide on the aliased package, as the pool filter does
             $target = $pkg instanceof AliasPackage ? $pkg->getAliasOf() : $pkg;
+            if ($target->isDev() || $cooldown->isIgnored($target, 'block')) {
+                $result[] = $pkg;
+                continue;
+            }
+
+            $cooldown->assertPublishedTimeProvided($target);
             $releaseDate = $cooldown->getEffectiveDate($target);
-            if ($target->isDev() || $releaseDate === null || $cooldown->isIgnored($target, 'block') || !$cooldown->isWithinCooldown($releaseDate, $now)) {
+            if ($releaseDate === null || !$cooldown->isWithinCooldown($releaseDate, $now)) {
                 $result[] = $pkg;
                 continue;
             }

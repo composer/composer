@@ -472,6 +472,26 @@ Set `filter` to an object listing advertised list names that should be skipped f
 The repo-level `filter` only narrows what this repository contributes; it cannot enable a list that is not
 configured globally under [`config.policy`](06-config.md#policy).
 
+#### require-published-time
+
+Defaults to `true`. When the [cooldown policy](06-config.md#cooldown) is active, Composer refuses to
+continue if a version from this repository carries no `published-time`, as the cooldown then cannot
+tell whether the version is new or old. Set it to `false` for repositories that cannot provide
+publication times, such as Satis-generated ones, to fall back to the `time` field of each package's
+`composer.json`. That field is set by the package author, so the protection is weaker.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packages.example.org",
+            "require-published-time": false
+        }
+    ]
+}
+```
+
 ### VCS
 
 VCS stands for version control system. This includes versioning systems like

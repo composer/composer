@@ -13,6 +13,11 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\Pool;
+use Composer\IO\NullIO;
+use Composer\Repository\ArrayRepository;
+use Composer\Repository\ComposerRepository;
+use Composer\Test\Mock\FactoryMock;
+use Composer\Util\HttpDownloader;
 use Composer\Policy\CooldownPolicyConfig;
 use Composer\Policy\IgnorePackageRule;
 use Composer\Policy\ListPolicyConfig;
@@ -364,5 +369,77 @@ class CooldownPoolFilterTest extends TestCase
         $this->assertSame([], $filteredPool->getPackages());
         $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
         $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.9999999.9999999-dev')));
+    }
+
+    public function testComposerRepositoryVersionWithoutPublishedTimeIsRejected(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $filter = new CooldownPoolFilter($config, new DateTimeImmutable('2026-01-15 12:00:00'));
+
+        // an old author-supplied time does not help, only the repository can vouch for the age
+        $package = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $package->setReleaseDate(new DateTimeImmutable('2020-01-01 00:00:00'));
+        $package->setRepository($this->createComposerRepository());
+
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('vendor/pkg 1.0.0 from composer repo (https://repo.example.org) has no published-time');
+        $filter->filter(new Pool([$package]), new Request());
+    }
+
+    public function testComposerRepositoryCanWaivePublishedTime(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $filter = new CooldownPoolFilter($config, new DateTimeImmutable('2026-01-15 12:00:00'));
+
+        $package = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $package->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+        $package->setRepository($this->createComposerRepository(false));
+
+        $filteredPool = $filter->filter(new Pool([$package]), new Request());
+
+        // falls back to the author-supplied time, and says so
+        self::assertSame([], $filteredPool->getPackages());
+        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '1.0.0.0'));
+        self::assertNotNull($info);
+        self::assertSame('time', $info['source']);
+    }
+
+    public function testOtherRepositoriesNeedNoPublishedTime(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $filter = new CooldownPoolFilter($config, new DateTimeImmutable('2026-01-15 12:00:00'));
+
+        $package = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
+        $package->setReleaseDate(new DateTimeImmutable('2020-01-01 00:00:00'));
+        (new ArrayRepository())->addPackage($package);
+
+        $filteredPool = $filter->filter(new Pool([$package]), new Request());
+
+        self::assertSame([$package], $filteredPool->getPackages());
+    }
+
+    public function testDevAndIgnoredVersionsFromComposerRepositoriesNeedNoPublishedTime(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [
+            'internal/*' => [new IgnorePackageRule('internal/*', new MatchAllConstraint(), 'Internal packages')],
+        ], 7 * 24 * 3600); // 7 days
+        $filter = new CooldownPoolFilter($config, new DateTimeImmutable('2026-01-15 12:00:00'));
+
+        $repository = $this->createComposerRepository();
+        $branch = new Package('vendor/pkg', 'dev-main', 'dev-main');
+        $branch->setRepository($repository);
+        $ignored = new Package('internal/pkg', '1.0.0.0', '1.0.0');
+        $ignored->setRepository($repository);
+
+        $filteredPool = $filter->filter(new Pool([$branch, $ignored]), new Request());
+
+        self::assertSame([$branch, $ignored], $filteredPool->getPackages());
+    }
+
+    private function createComposerRepository(bool $requirePublishedTime = true): ComposerRepository
+    {
+        $httpDownloader = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+
+        return new ComposerRepository(['url' => 'https://repo.example.org', 'require-published-time' => $requirePublishedTime], new NullIO(), FactoryMock::createConfig(), $httpDownloader);
     }
 }

@@ -443,10 +443,13 @@ The cooldown applies when resolving dependencies during `composer update`/`requi
 project version, so that the constraint they write can be resolved.
 
 The cooldown is measured against the publication time reported by the package repository
-(`published-time`, which Packagist provides), as package authors cannot influence it. When a
-repository does not provide it, and for packages from VCS, path or artifact repositories, Composer
-falls back to the `time` field of the package's `composer.json` and says so when it withholds a
-version.
+(`published-time`, which Packagist provides), as package authors cannot influence it. Composer
+repositories must provide it for every version Composer considers while a cooldown is active,
+otherwise the update fails and names the package that lacks it. Set
+[`require-published-time`](05-repositories.md#require-published-time) to `false` on a repository that
+cannot provide it to fall back to the `time` field of each package's `composer.json`. Packages from
+VCS, path or artifact repositories always use that fallback, and Composer says so when it withholds
+such a version.
 
 #### age
 
@@ -476,7 +479,9 @@ The following are never withheld by the cooldown:
   re-evaluates all versions, so a locked version still inside the cooldown can be replaced by an
   older release
 - **Platform packages** — PHP, extensions and other platform requirements
-- **Packages without a publication date** — allowed through conservatively
+- **Packages without a publication date** — versions with neither `published-time` nor `time` are
+  allowed through conservatively (a Composer repository that omits `published-time` fails the update
+  instead, see above)
 
 #### block
 

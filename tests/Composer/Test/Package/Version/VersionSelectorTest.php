@@ -14,6 +14,10 @@ namespace Composer\Test\Package\Version;
 
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\IO\BufferIO;
+use Composer\IO\NullIO;
+use Composer\Repository\ComposerRepository;
+use Composer\Test\Mock\FactoryMock;
+use Composer\Util\HttpDownloader;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\Package;
 use Composer\Package\Link;
@@ -460,5 +464,22 @@ class VersionSelectorTest extends TestCase
         return $this->getMockBuilder('Composer\Repository\RepositorySet')
             ->disableOriginalConstructor()
             ->getMock();
+    }
+
+    public function testComposerRepositoryVersionWithoutPublishedTimeIsRejected(): void
+    {
+        $pkg = self::getPackage('foo/bar', '1.2.2');
+        $pkg->setReleaseDate(new \DateTimeImmutable('-30 days'));
+        $httpDownloader = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $pkg->setRepository(new ComposerRepository(['url' => 'https://repo.example.org'], new NullIO(), FactoryMock::createConfig(), $httpDownloader));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$pkg]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('foo/bar 1.2.2 from composer repo (https://repo.example.org) has no published-time');
+        $versionSelector->findBestCandidate('foo/bar');
     }
 }

@@ -1334,6 +1334,7 @@
                     "additionalProperties": true
                 },
                 "allow_ssl_downgrade": { "type": "boolean" },
+                "require-published-time": { "type": "boolean", "description": "When the cooldown policy is active, refuse versions from this repository that carry no published-time. Defaults to true; set to false to fall back to the package-supplied time field." },
                 "force-lazy-providers": { "type": "boolean" },
                 "filter": {
                     "type": ["boolean", "object"],

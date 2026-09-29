@@ -14,6 +14,7 @@ namespace Composer\Policy;
 
 use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
+use Composer\Repository\ComposerRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\VersionParser;
 use Composer\Util\Platform;
@@ -94,6 +95,31 @@ class CooldownPolicyConfig extends ListPolicyConfig
     public function getEffectiveDate(PackageInterface $package): ?DateTimeInterface
     {
         return $package->getPublishedDate() ?? $package->getReleaseDate();
+    }
+
+    /**
+     * Refuses to apply the cooldown to a version whose Composer repository provides no publication
+     * date, as the cooldown then cannot tell whether the version is new or old.
+     *
+     * @throws \RuntimeException
+     */
+    public function assertPublishedTimeProvided(PackageInterface $package): void
+    {
+        if ($package->getPublishedDate() !== null) {
+            return;
+        }
+
+        $repository = $package->getRepository();
+        if (!$repository instanceof ComposerRepository || !$repository->requiresPublishedTime()) {
+            return;
+        }
+
+        throw new \RuntimeException(sprintf(
+            '%s %s from %s has no published-time, so the cooldown configured in "policy.cooldown" cannot tell whether it is new or old. Make sure the repository provides publication times (run "composer clear-cache" if it only recently started to), or set "require-published-time": false on that repository to fall back to the package-supplied "time" field, which offers weaker protection.',
+            $package->getPrettyName(),
+            $package->getPrettyVersion(),
+            $repository->getRepoName()
+        ));
     }
 
     /**

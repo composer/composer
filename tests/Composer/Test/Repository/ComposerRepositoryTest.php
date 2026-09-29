@@ -1109,4 +1109,16 @@ class ComposerRepositoryTest extends TestCase
             ],
         ];
     }
+
+    public function testRequirePublishedTimeOption(): void
+    {
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $config = FactoryMock::createConfig();
+
+        $repository = new ComposerRepository(['url' => 'https://example.org'], new NullIO, $config, $httpDownloader);
+        self::assertTrue($repository->requiresPublishedTime());
+
+        $repository = new ComposerRepository(['url' => 'https://example.org', 'require-published-time' => false], new NullIO, $config, $httpDownloader);
+        self::assertFalse($repository->requiresPublishedTime());
+    }
 }

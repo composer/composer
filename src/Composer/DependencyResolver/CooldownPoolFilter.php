@@ -71,15 +71,22 @@ class CooldownPoolFilter
             // 3. Locked packages kept by a partial update
             // 4. Dev versions (mutable, no stable release date concept)
             // 5. Ignored packages (matching configured policy.cooldown.ignore rules)
-            // 6. Packages without release date (conservative - don't block unverifiable)
             if ($target instanceof RootPackageInterface
                 || PlatformRepository::isPlatformPackage($target->getName())
                 || $request->isLockedPackage($package)
                 || $request->isLockedPackage($target)
                 || $target->isDev()
                 || $this->config->isIgnored($target, 'block')
-                || $this->effectiveDate($target) === null
             ) {
+                $packages[] = $package;
+                continue;
+            }
+
+            // A Composer repository has to vouch for the publication date, see the policy config
+            $this->config->assertPublishedTimeProvided($target);
+
+            // 6. Packages without release date (conservative - don't block unverifiable)
+            if ($this->effectiveDate($target) === null) {
                 $packages[] = $package;
                 continue;
             }
