@@ -161,13 +161,12 @@ For Docker builds, BuildKit cache mounts let package downloads survive between b
 
 ```dockerfile
 # syntax=docker/dockerfile:1
-FROM composer/composer:2-bin AS composer
 FROM php:8.4-cli
 RUN apt-get update && apt-get install -y --no-install-recommends git unzip \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY . .
-RUN --mount=type=bind,from=composer,source=/composer,target=/usr/bin/composer \
+RUN --mount=type=bind,from=composer/composer:2-bin,source=/composer,target=/usr/bin/composer \
     --mount=type=cache,target=/tmp/composer-cache \
     COMPOSER_CACHE_DIR=/tmp/composer-cache \
     composer install --no-interaction --prefer-dist --no-progress
