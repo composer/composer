@@ -252,6 +252,11 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.cooldown.age', 'setting-value' => ['604800']],
             ['config' => ['policy' => ['cooldown' => ['age' => 604800]]]],
         ];
+        yield 'set policy.cooldown.age normalizes case and whitespace' => [
+            [],
+            ['setting-key' => 'policy.cooldown.age', 'setting-value' => [' 7 DAYS ']],
+            ['config' => ['policy' => ['cooldown' => ['age' => '7 days']]]],
+        ];
         yield 'set policy.cooldown.age null disables' => [
             [],
             ['setting-key' => 'policy.cooldown.age', 'setting-value' => ['null']],

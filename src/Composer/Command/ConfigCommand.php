@@ -527,7 +527,7 @@ EOT
                         return null;
                     }
 
-                    return is_numeric($val) ? (int) $val : $val;
+                    return is_numeric($val) ? (int) $val : strtolower(trim($val));
                 },
             ],
             'policy.ignore-unreachable' => [$booleanValidator, $booleanNormalizer],
