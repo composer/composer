@@ -30,6 +30,74 @@ class ArrayLoaderTest extends TestCase
         $this->loader = new ArrayLoader(null);
     }
 
+    public function testLoadFeatures(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/a',
+            'version' => '1.0.0',
+            'features' => [
+                'logging' => ['description' => 'Adds logging', 'require' => ['PSR/Log' => '^3.0']],
+                'empty' => [],
+            ],
+            'require-features' => ['B/B' => ['fast']],
+        ]);
+
+        $features = $package->getFeatures();
+        self::assertSame('Adds logging', $features['logging']['description'] ?? null);
+        // link targets are lowercased like any other require
+        self::assertSame(['psr/log'], array_keys($features['logging']['require'] ?? []));
+        self::assertSame([], $features['empty']['require'] ?? null);
+        // and so is the package a feature is required from
+        self::assertSame(['b/b' => ['fast']], $package->getFeatureRequires());
+    }
+
+    /**
+     * @dataProvider provideMalformedFeatureConfigs
+     *
+     * @param mixed[] $config
+     */
+    public function testMalformedFeaturesAreIgnoredRatherThanFatal(array $config): void
+    {
+        // repository metadata is not schema-validated, so one bad package must not
+        // take the whole resolution down
+        $package = $this->loader->load(['name' => 'a/a', 'version' => '1.0.0'] + $config);
+
+        self::assertSame([], $package->getFeatures());
+        self::assertSame([], $package->getFeatureRequires());
+    }
+
+    /**
+     * @return array<string, array{mixed[]}>
+     */
+    public static function provideMalformedFeatureConfigs(): array
+    {
+        return [
+            'features is a string' => [['features' => 'oops']],
+            'features is a list' => [['features' => ['x']]],
+            'a feature is a string' => [['features' => ['x' => 'oops']]],
+            'require-features is a string' => [['require-features' => 'oops']],
+            'require-features entry is a string' => [['require-features' => ['b/b' => 'oops']]],
+            'require-features entry holds non-strings' => [['require-features' => ['b/b' => [123]]]],
+        ];
+    }
+
+    public function testMalformedFeatureRequireIsIgnored(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/a',
+            'version' => '1.0.0',
+            'features' => [
+                'x' => ['require' => 'oops'],
+                'y' => ['description' => 123, 'require' => ['b/b' => 456]],
+            ],
+        ]);
+
+        $features = $package->getFeatures();
+        self::assertSame([], $features['x']['require'] ?? null);
+        self::assertArrayNotHasKey('description', $features['y']);
+        self::assertSame([], $features['y']['require'] ?? null);
+    }
+
     public function testSelfVersion(): void
     {
         $config = [

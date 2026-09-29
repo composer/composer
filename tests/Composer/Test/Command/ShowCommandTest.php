@@ -606,6 +606,53 @@ OUTPUT;
         self::assertStringContainsString('You are using the option "ignore"', $appTester->getDisplay(true));
     }
 
+    public function testSelfShowsFeatures(): void
+    {
+        $this->initTempComposer([
+            'name' => 'vendor/package',
+            'version' => '1.2.3',
+            'features' => [
+                'logging' => ['description' => 'Structured logging', 'require' => ['psr/log' => '^3.0']],
+                'cache' => ['require' => ['psr/cache' => '^3.0']],
+            ],
+            'require-features' => ['some/dep' => ['fast', 'safe']],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--self' => true]);
+        $display = $appTester->getDisplay(true);
+
+        self::assertStringContainsString("features\nlogging Structured logging\n  psr/log ^3.0\ncache\n  psr/cache ^3.0\n", $display);
+        self::assertStringContainsString("requires features\nsome/dep fast, safe\n", $display);
+    }
+
+    public function testSelfShowsNoFeatureSectionWhenThereAreNone(): void
+    {
+        $this->initTempComposer(['name' => 'vendor/package', 'version' => '1.2.3']);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--self' => true]);
+
+        self::assertStringNotContainsString('features', $appTester->getDisplay(true));
+    }
+
+    public function testSelfShowsFeaturesAsJson(): void
+    {
+        $this->initTempComposer([
+            'name' => 'vendor/package',
+            'version' => '1.2.3',
+            'features' => ['logging' => ['description' => 'Structured logging', 'require' => ['psr/log' => '^3.0']]],
+            'require-features' => ['some/dep' => ['fast']],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', '--self' => true, '--format' => 'json']);
+        $json = json_decode($appTester->getDisplay(true), true);
+
+        self::assertSame(['logging' => ['description' => 'Structured logging', 'require' => ['psr/log' => '^3.0']]], $json['features']);
+        self::assertSame(['some/dep' => ['fast']], $json['require-features']);
+    }
+
     public function testSelfAndNameOnly(): void
     {
         $this->initTempComposer(['name' => 'vendor/package', 'version' => '1.2.3']);

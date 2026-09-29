@@ -62,6 +62,7 @@ class InstallCommand extends BaseCommand
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
+                new InputOption('self-feature', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Install a specific feature from the root package.', null, []),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Should not be provided, use composer require instead to add a given package to composer.json.'),
             ])
             ->setHelp(
@@ -143,6 +144,7 @@ EOT
             ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
             ->setAuditConfig($this->createAuditConfig($input))
             ->setErrorOnAudit($input->getOption('audit'))
+            ->setRootFeatures($input->getOption('self-feature'))
         ;
 
         if ($input->getOption('no-plugins')) {

@@ -873,6 +873,7 @@ EOT
         $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null);
         $this->printLinks($package, Link::TYPE_REQUIRE);
         $this->printLinks($package, Link::TYPE_DEV_REQUIRE, 'requires (dev)');
+        $this->printFeatures($package);
 
         if ($package->getSuggests()) {
             $io->write("\n<info>suggests</info>");
@@ -989,6 +990,32 @@ EOT
         $this->getIO()->write('<info>versions</info> : ' . $versions);
     }
 
+    protected function printFeatures(CompletePackageInterface $package): void
+    {
+        if (!$package instanceof BasePackage) {
+            return;
+        }
+
+        $io = $this->getIO();
+
+        if (\count($package->getFeatures()) > 0) {
+            $io->write("\n<info>features</info>");
+            foreach ($package->getFeatures() as $name => $feature) {
+                $io->write($name . (isset($feature['description']) ? ' <comment>' . $feature['description'] . '</comment>' : ''));
+                foreach ($feature['require'] ?? [] as $link) {
+                    $io->write('  ' . $link->getTarget() . ' <comment>' . $link->getPrettyConstraint() . '</comment>');
+                }
+            }
+        }
+
+        if (\count($package->getFeatureRequires()) > 0) {
+            $io->write("\n<info>requires features</info>");
+            foreach ($package->getFeatureRequires() as $target => $features) {
+                $io->write($target . ' <comment>' . implode(', ', $features) . '</comment>');
+            }
+        }
+    }
+
     /**
      * print link objects
      */
@@ -1096,6 +1123,31 @@ EOT
 
         if ($package->getSuggests()) {
             $json['suggests'] = $package->getSuggests();
+        }
+
+        if ($package instanceof BasePackage) {
+            $features = [];
+            foreach ($package->getFeatures() as $name => $feature) {
+                $features[$name] = [];
+                if (isset($feature['description'])) {
+                    $features[$name]['description'] = $feature['description'];
+                }
+                $requires = [];
+                foreach ($feature['require'] ?? [] as $link) {
+                    $requires[$link->getTarget()] = $link->getPrettyConstraint();
+                }
+                if (\count($requires) > 0) {
+                    $features[$name]['require'] = $requires;
+                }
+            }
+
+            if (\count($features) > 0) {
+                $json['features'] = $features;
+            }
+
+            if (\count($package->getFeatureRequires()) > 0) {
+                $json['require-features'] = $package->getFeatureRequires();
+            }
         }
 
         if ($package->getSupport()) {

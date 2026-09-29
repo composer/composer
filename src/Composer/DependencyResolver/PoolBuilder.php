@@ -19,6 +19,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\StabilityFilter;
 use Composer\Pcre\Preg;
 use Composer\Plugin\PluginEvents;
@@ -112,6 +113,14 @@ class PoolBuilder
     private $ignoredTypes = [];
     /** @var list<string>|null */
     private $allowedTypes = null;
+    /** @var array<string, array{merged: string[], byPackage: array<string, string[]>}> */
+    private $requiredFeatures = [];
+    /** @var array<string, int[]> */
+    private $packagesFeatures = [];
+    /** @var array<string, string[]> */
+    private $featuresToLoad = [];
+    /** @var array<int, array<string, true>> Package pool index => feature name => true */
+    private $featuresScanned = [];
 
     /**
      * If provided, only these package names are loaded
@@ -206,10 +215,17 @@ class PoolBuilder
 
     /**
      * @param RepositoryInterface[] $repositories
+     * @param string[] $selfFeatures
      */
-    public function buildPool(array $repositories, Request $request): Pool
+    public function buildPool(array $repositories, Request $request, array $selfFeatures = []): Pool
     {
         $this->restrictedPackagesList = $request->getRestrictedPackages() !== null ? array_flip($request->getRestrictedPackages()) : null;
+        $this->requiredFeatures["__root__"] = [
+            'merged' => $selfFeatures,
+            'byPackage' => [
+                '__root__' => $selfFeatures,
+            ],
+        ];
 
         if (\count($request->getUpdateAllowList()) > 0) {
             $this->updateAllowList = $request->getUpdateAllowList();
@@ -285,8 +301,15 @@ class PoolBuilder
             }
         }
 
-        while (\count($this->packagesToLoad) > 0) {
-            $this->loadPackagesMarkedForLoading($request, $repositories);
+        // first pass where we get all packages that need to be loaded without features
+        while (\count($this->packagesToLoad) > 0 || \count($this->featuresToLoad) > 0) {
+            if (\count($this->packagesToLoad) > 0) {
+                $this->loadPackagesMarkedForLoading($request, $repositories);
+            }
+
+            if (\count($this->featuresToLoad) > 0) {
+                $this->loadFeaturesMarkedForLoading($request);
+            }
         }
 
         if (\count($this->temporaryConstraints) > 0) {
@@ -340,7 +363,7 @@ class PoolBuilder
             $this->unacceptableFixedOrLockedPackages = $prePoolCreateEvent->getUnacceptableFixedPackages();
         }
 
-        $pool = new Pool($this->packages, $this->unacceptableFixedOrLockedPackages);
+        $pool = new Pool($this->packages, $this->unacceptableFixedOrLockedPackages, [], [], [], [], [], $this->requiredFeatures);
 
         $this->aliasMap = [];
         $this->packagesToLoad = [];
@@ -351,6 +374,10 @@ class PoolBuilder
         $this->maxExtendedReqs = [];
         $this->skippedLoad = [];
         $this->indexCounter = 0;
+        $this->requiredFeatures = [];
+        $this->packagesFeatures = [];
+        $this->featuresToLoad = [];
+        $this->featuresScanned = [];
 
         $this->io->debug('Built pool.');
 
@@ -469,6 +496,71 @@ class PoolBuilder
         }
     }
 
+    private function loadFeaturesMarkedForLoading(Request $request): void
+    {
+        foreach ($this->featuresToLoad as $packageName => $features) {
+            if (!isset($this->packagesFeatures[$packageName])) {
+                if (\count($this->packagesToLoad) === 0) {
+                    // nothing pulled this package into the pool, so require-features points at a package
+                    // that is not required at all; drop it to avoid looping forever, but say so as it is
+                    // otherwise completely silent
+                    $this->warnAboutUnrequiredFeatureTarget($packageName, $features);
+                    unset($this->featuresToLoad[$packageName]);
+                }
+
+                // otherwise skip it and wait for the package to be loaded
+                continue;
+            }
+
+            // we iterate over all versions of the package that are in the pool so far
+            foreach ($this->packagesFeatures[$packageName] as $packageIndex) {
+                $packageFeatures = $this->packages[$packageIndex]->getFeatures();
+
+                foreach ($features as $feature) {
+                    if (isset($this->featuresScanned[$packageIndex][$feature])) {
+                        continue;
+                    }
+
+                    // can happen if a bad feature is provided, or a version did not have this feature yet (or it
+                    // has been removed); we let the solver throw an error in the case of a bad feature
+                    if (!isset($packageFeatures[$feature])) {
+                        continue;
+                    }
+
+                    $this->featuresScanned[$packageIndex][$feature] = true;
+
+                    foreach ($packageFeatures[$feature]['require'] ?? [] as $link) {
+                        // go through the regular path so platform requires, locked packages and constraint
+                        // widening are handled exactly like a normal require
+                        $this->markPackageNameForLoading($request, $link->getTarget(), $link->getConstraint());
+                    }
+                }
+            }
+
+            unset($this->featuresToLoad[$packageName]);
+        }
+    }
+
+    /**
+     * @param string[] $features
+     */
+    private function warnAboutUnrequiredFeatureTarget(string $packageName, array $features): void
+    {
+        $requiredBy = array_keys($this->requiredFeatures[$packageName]['byPackage'] ?? []);
+        $requiredBy = array_map(static function (string $name): string {
+            return $name === '__root__' ? 'Root composer.json' : $name;
+        }, $requiredBy);
+
+        $this->io->writeError(sprintf(
+            '<warning>Warning: %s requires feature%s %s of %s, but %s is not required by anything so this is ignored.</warning>',
+            \count($requiredBy) > 0 ? implode(', ', $requiredBy) : 'A package',
+            \count($features) > 1 ? 's' : '',
+            implode(', ', $features),
+            $packageName,
+            $packageName
+        ));
+    }
+
     /**
      * @param RepositoryInterface[] $repositories
      */
@@ -476,6 +568,12 @@ class PoolBuilder
     {
         $index = $this->indexCounter++;
         $this->packages[$index] = $package;
+        $this->packagesFeatures[$package->getName()][] = $index;
+
+        // a version loaded after its features were already scanned still needs its feature requires pulled in
+        if (\count($this->requiredFeatures[$package->getName()]['merged'] ?? []) > 0) {
+            $this->featuresToLoad[$package->getName()] = $this->requiredFeatures[$package->getName()]['merged'];
+        }
 
         if ($package instanceof AliasPackage) {
             $this->aliasMap[spl_object_id($package->getAliasOf())][$index] = $package;
@@ -515,6 +613,26 @@ class PoolBuilder
             $newIndex = $this->indexCounter++;
             $this->packages[$newIndex] = $aliasPackage;
             $this->aliasMap[spl_object_id($aliasPackage->getAliasOf())][$newIndex] = $aliasPackage;
+        }
+
+        // Here we load the required feature of the package and building our global list of features
+        foreach ($package->getFeatureRequires() as $packageName => $features) {
+            if (!isset($this->requiredFeatures[$packageName])) {
+                $this->requiredFeatures[$packageName] = [
+                    'merged' => [],
+                    'byPackage' => [],
+                ];
+            }
+
+            // We merge all features that may be required by different packages
+            // Meaning a feature can be added by multiple packages and we take the combination of all required features
+            $this->requiredFeatures[$packageName]['merged'] = array_values(array_unique(array_merge($this->requiredFeatures[$packageName]['merged'], $features)));
+            $source = $package instanceof RootPackageInterface ? '__root__' : $package->getName();
+            $this->requiredFeatures[$packageName]['byPackage'][$source] = $features;
+
+            if (\count($this->requiredFeatures[$packageName]['merged']) > 0) {
+                $this->featuresToLoad[$packageName] = $this->requiredFeatures[$packageName]['merged'];
+            }
         }
 
         foreach ($package->getRequires() as $link) {

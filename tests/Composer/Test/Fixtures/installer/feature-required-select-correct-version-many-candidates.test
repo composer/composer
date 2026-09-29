@@ -1,0 +1,27 @@
+--TEST--
+A required feature must be honoured even when several versions of the package do not provide it
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "features": { "c": { "require": { "c/c": "1.0.0" } } } },
+                { "name": "a/a", "version": "2.0.0" },
+                { "name": "a/a", "version": "3.0.0" },
+                { "name": "c/c", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "^1.0 | ^2.0 | ^3.0"
+    },
+    "require-features": {
+        "a/a": ["c"]
+    }
+}
+--RUN--
+update
+--EXPECT--
+Installing a/a (1.0.0)
+Installing c/c (1.0.0)

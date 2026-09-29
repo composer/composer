@@ -88,6 +88,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
                 new InputOption('bump-after-update', null, InputOption::VALUE_OPTIONAL, 'Runs bump after performing the update.', false, ['dev', 'no-dev', 'all']),
+                new InputOption('self-feature', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Install a specific feature from the root package.', null, []),
             ])
             ->setHelp(
                 <<<EOT
@@ -297,6 +298,7 @@ EOT
             ->setPolicyConfig($this->createPolicyConfig($composer->getConfig(), $input))
             ->setAuditConfig($this->createAuditConfig($input))
             ->setMinimalUpdate($minimalChanges)
+            ->setRootFeatures($input->getOption('self-feature'))
         ;
 
         if ($input->getOption('no-plugins')) {
