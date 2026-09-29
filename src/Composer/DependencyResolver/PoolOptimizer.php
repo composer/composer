@@ -374,9 +374,11 @@ class PoolOptimizer
             return;
         }
 
-        foreach ($versions as $version => $prettyVersion) {
-            $this->removedVersionsByPackage[spl_object_id($package)][$version] = $prettyVersion;
-        }
+        // array_replace rather than += so the last pretty version wins, like a per-key assignment would
+        $id = spl_object_id($package);
+        $this->removedVersionsByPackage[$id] = isset($this->removedVersionsByPackage[$id])
+            ? array_replace($this->removedVersionsByPackage[$id], $versions)
+            : $versions;
     }
 
     /**
