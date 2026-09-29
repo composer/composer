@@ -425,7 +425,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     }
 
     /**
-     * @param array{name?: string, dist?: array{type: string, url: string, reference: string, shasum: string}, source?: array{type: string, url: string, reference: string}} $data
+     * @param array{name?: string, published-time?: string, dist?: array{type: string, url: string, reference: string, shasum: string}, source?: array{type: string, url: string, reference: string}} $data
      *
      * @return array{name: string|null, dist: array{type: string, url: string, reference: string, shasum: string}|null, source: array{type: string, url: string, reference: string}}
      */
@@ -436,6 +436,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         // will still be installable using that new name without requiring re-tagging
         $dataPackageName = $data['name'] ?? null;
         $data['name'] = $this->packageName ?: $dataPackageName;
+
+        // only a Composer repository can vouch for a publication date, the package's own composer.json cannot
+        unset($data['published-time']);
 
         if (!isset($data['dist'])) {
             $data['dist'] = $driver->getDist($identifier);

@@ -173,6 +173,8 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
             $json = file_get_contents($composerFilePath);
             $package = JsonFile::parseJson($json, $composerFilePath);
+            // only a Composer repository can vouch for a publication date, the package's own composer.json cannot
+            unset($package['published-time']);
             $package['dist'] = [
                 'type' => 'path',
                 'url' => $url,

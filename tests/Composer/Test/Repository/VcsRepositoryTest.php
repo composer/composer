@@ -100,6 +100,8 @@ class VcsRepositoryTest extends TestCase
         // add version to composer.json
         $exec('git checkout master');
         $composer['version'] = '1.0.0';
+        // must be ignored, only Composer repositories can provide it
+        $composer['published-time'] = '2020-01-01T00:00:00+00:00';
         file_put_contents('composer.json', json_encode($composer));
         $exec('git add composer.json');
         $exec('git commit -m addversion');
@@ -176,6 +178,7 @@ class VcsRepositoryTest extends TestCase
         foreach ($packages as $package) {
             if (isset($expected[$package->getPrettyVersion()])) {
                 unset($expected[$package->getPrettyVersion()]);
+                self::assertNull($package->getPublishedDate(), 'published-time from composer.json must not be trusted for '.$package->getPrettyVersion());
             } else {
                 $this->fail('Unexpected version '.$package->getPrettyVersion().' in '.json_encode($dumper->dump($package)));
             }

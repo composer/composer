@@ -440,6 +440,12 @@ versions are identified and removed within hours or days of being published.
 
 The cooldown applies during `composer update`/`require` only.
 
+The cooldown is measured against the publication time reported by the package repository
+(`published-time`, which Packagist provides), as package authors cannot influence it. When a
+repository does not provide it, and for packages from VCS, path or artifact repositories, Composer
+falls back to the `time` field of the package's `composer.json` and says so when it withholds a
+version.
+
 #### age
 
 A duration string in the form `"<number> <unit>"` where the unit is one of `second`, `minute`,
