@@ -172,7 +172,7 @@ RUN --mount=type=bind,from=composer/composer:2-bin,source=/composer,target=/usr/
     composer install --no-interaction --prefer-dist --no-progress
 ```
 
-Run the install in an image with the same PHP version and extensions as the one your application runs on, and mount the Composer binary into the install step from the [`composer/composer:2-bin` image](../00-intro.md#docker-image), so Composer does not end up in the final image. The `composer` image ships the latest PHP with only a few extensions, so `composer install` would fail its platform checks for many projects, or build a `vendor/` meant for a different runtime.
+Run the install in an image with the same PHP version and extensions as the one your application runs on, and mount the Composer binary into the install step from the [`composer/composer:2-bin` image](../00-intro.md#docker-image), so Composer does not end up in the final image. The full `composer` and `composer/composer` images ship the latest PHP with only a few extensions, so `composer install` would fail its platform checks for many projects, or build a `vendor/` meant for a different runtime.
 
 Cache mounts are kept by the builder that ran the build. They are not part of exported build caches such as `--cache-to`, so on ephemeral CI runners they start empty every time unless you use a persistent builder or a tool that saves and restores them, like [buildkit-cache-dance](https://github.com/reproducible-containers/buildkit-cache-dance).
 
