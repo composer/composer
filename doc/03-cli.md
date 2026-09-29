@@ -1456,11 +1456,11 @@ If set to `1`, enables blocking of abandoned packages during dependency resoluti
 
 ### COMPOSER_POLICY_COOLDOWN_AGE
 
-If set to a duration string (e.g., `"7 days"`, `"24 hours"`) or an integer (seconds),
-enables the cooldown policy. Package versions newer than the specified age will be
-withheld during `composer update`/`require`. Set to `0` to disable. This overrides only
-the `age` value from [policy.cooldown](06-config.md#cooldown) - any `ignore` rules
-configured in composer.json are still respected.
+If set to a value accepted by [policy.cooldown.age](06-config.md#age), such as `"7 days"`,
+`"24 hours"` or an integer number of seconds, enables the cooldown policy. Package versions
+newer than that age are withheld during `composer update`/`require`. Set to `0` to disable.
+This overrides only the `age` value from [policy.cooldown](06-config.md#cooldown); any `ignore`
+rules configured in composer.json are still respected.
 
 ### COMPOSER_POLICY_COOLDOWN_BLOCK
 

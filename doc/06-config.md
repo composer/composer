@@ -438,14 +438,14 @@ chain attacks. By introducing a waiting period before a new version becomes inst
 the risk of pulling in a release that was compromised shortly after publication — many malicious
 versions are identified and removed within hours or days of being published.
 
-The cooldown applies when resolving dependencies during `composer update`/`require`. `composer require`,
+The cooldown policy applies when resolving dependencies during `composer update`/`require`. `composer require`,
 `init` and `create-project` also skip withheld versions when picking a version constraint or the
 project version, so that the constraint they write can be resolved.
 
-The cooldown is measured against the publication time reported by the package repository
-(`published-time`, which Packagist provides), as package authors cannot influence it. Composer
-repositories must provide it for every version Composer considers while a cooldown is active,
-otherwise the update fails and names the package that lacks it. Set
+The cooldown period is measured from the publication time reported by the package repository
+(`published-time`, which Packagist.org provides), as package authors cannot influence it. Composer
+repositories must provide it for every version Composer considers while a cooldown period is
+configured, otherwise the command errors out and names the package that lacks it. Set
 [`require-published-time`](05-repositories.md#require-published-time) to `false` on a repository that
 cannot provide it to fall back to the `time` field of each package's `composer.json`. Packages from
 VCS, path or artifact repositories always use that fallback, and Composer says so when it withholds
@@ -456,7 +456,7 @@ such a version.
 A duration string in the form `"<number> <unit>"` where the unit is one of `second`, `minute`,
 `hour`, `day` or `week` (singular or plural — e.g. `"7 days"`, `"24 hours"`, `"30 minutes"`,
 `"1 week"`), an integer number of seconds, or `null` to disable. Relative phrases such as
-`"tomorrow"` or `"next week"` are rejected. Defaults to `null` (no cooldown). The cooldown only
+`"tomorrow"` or `"next week"` are rejected. Defaults to `null` (no cooldown period). The policy only
 takes effect once an age is set.
 
 ```json
@@ -471,26 +471,28 @@ takes effect once an age is set.
 }
 ```
 
-The following are never withheld by the cooldown:
+The following are never withheld by the cooldown policy:
 
 - **Dev versions** (e.g. `dev-main`) — they represent mutable branch state
 - **Locked packages that are not being updated** — a partial update (`composer update vendor/pkg`,
   `composer require`) keeps the locked version of every other package. A full `composer update`
-  re-evaluates all versions, so a locked version still inside the cooldown can be replaced by an
-  older release
+  re-evaluates all versions, so a locked version still inside the cooldown period will be replaced by
+  an older release, or the update fails if no other version satisfies the requirements
 - **Platform packages** — PHP, extensions and other platform requirements
-- **Packages without a publication date** — versions with neither `published-time` nor `time` are
-  allowed through conservatively (a Composer repository that omits `published-time` fails the update
-  instead, see above)
+- **Packages without any publication date** — for example a version defined inline in a
+  [`package` repository](05-repositories.md#package-1) without a `time` field, or a path repository
+  whose `composer.json` has none. Composer cannot tell how old such a version is and lets it through
+  rather than blocking it forever. A Composer repository that omits `published-time` errors out
+  instead, see above
 
 #### block
 
-Defaults to `true`. When `true`, versions still within the cooldown cannot be installed during
-`update`/`require`. Set to `false` to keep the cooldown out of blocking entirely.
+Defaults to `true`. When `true`, versions still within the cooldown period cannot be installed during
+`update`/`require`. Set to `false` to skip blocking for a cooldown period entirely.
 
 #### ignore
 
-Packages listed under `ignore` bypass the cooldown. This uses the same
+Packages listed under `ignore` bypass the cooldown policy. This uses the same
 [ignore format](#ignore-format) as the other policies, so each entry may carry a reason and an
 optional version constraint, and package names support wildcards (e.g. `vendor/*`).
 
@@ -514,11 +516,11 @@ optional version constraint, and package names support wildcards (e.g. `vendor/*
 
 `COMPOSER_POLICY_COOLDOWN_AGE` overrides the configured `age` (the `ignore` rules from
 `composer.json` are still respected), and `COMPOSER_POLICY_COOLDOWN_BLOCK` overrides `block`.
-A non-zero `COMPOSER_POLICY_COOLDOWN_AGE` also enables the cooldown when `cooldown` is set to
+A non-zero `COMPOSER_POLICY_COOLDOWN_AGE` also enables the cooldown policy when `cooldown` is set to
 `false`, but causes an error when the whole `policy` config is set to `false`:
 
 ```bash
-# Disable the cooldown temporarily
+# Disable the cooldown policy temporarily
 COMPOSER_POLICY_COOLDOWN_AGE=0 composer update
 
 # Set a specific duration
