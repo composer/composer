@@ -182,7 +182,7 @@ class JsonFile
     {
         $currentContent = @file_get_contents($path);
         if (false === $currentContent || $currentContent !== $content) {
-            return file_put_contents($path, $content);
+            return Filesystem::safeFilePutContents($path, $content);
         }
 
         return 0;
