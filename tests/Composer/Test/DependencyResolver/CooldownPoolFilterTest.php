@@ -307,11 +307,11 @@ class CooldownPoolFilterTest extends TestCase
         $newPackage = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
         $newPackage->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
         $newPackage->setReplaces([
-            'vendor/replaced' => new \Composer\Package\Link(
+            'vendor/replaced' => new Link(
                 'vendor/pkg',
                 'vendor/replaced',
                 new Constraint('==', '2.0.0.0'),
-                \Composer\Package\Link::TYPE_REPLACE,
+                Link::TYPE_REPLACE,
                 '2.0.0'
             ),
         ]);
