@@ -164,9 +164,8 @@ class PolicyConfig
         $auditRaw = $config->get('audit');
         $parser = new VersionParser();
 
+        // The global kill switch wins over COMPOSER_POLICY_COOLDOWN_AGE, so it can be set globally in CI
         if ($policyRaw === false) {
-            CooldownPolicyConfig::assertEnvAgeNotSetWhileDisabled('"policy" is set to false');
-
             return new self(
                 false,
                 AdvisoriesPolicyConfig::disabled(),

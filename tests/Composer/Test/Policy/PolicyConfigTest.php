@@ -299,16 +299,15 @@ class PolicyConfigTest extends TestCase
         $this->assertTrue($policyConfig->abandoned->block);
     }
 
-    public function testCooldownEnvAgeThrowsWhenPolicyDisabled(): void
+    public function testCooldownEnvAgeIgnoredWhenPolicyDisabled(): void
     {
         Platform::putEnv('COMPOSER_POLICY_COOLDOWN_AGE', '2 days');
 
         $config = new Config();
         $config->merge(['config' => ['policy' => false]]);
+        $policyConfig = PolicyConfig::fromConfig($config);
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('COMPOSER_POLICY_COOLDOWN_AGE is set but has no effect because "policy" is set to false');
-        PolicyConfig::fromConfig($config);
+        $this->assertFalse($policyConfig->cooldown->hasCooldown());
     }
 
     public function testAbandonedLegacyEnvBlockOverridesWhenListExplicitlyDisabled(): void

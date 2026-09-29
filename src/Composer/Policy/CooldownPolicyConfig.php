@@ -248,22 +248,6 @@ class CooldownPolicyConfig extends ListPolicyConfig
     }
 
     /**
-     * @throws \RuntimeException when COMPOSER_POLICY_COOLDOWN_AGE requests a cooldown that cannot apply
-     */
-    public static function assertEnvAgeNotSetWhileDisabled(string $reason): void
-    {
-        $envAge = self::getEnvAge();
-        if ($envAge === false || $envAge === null) {
-            return;
-        }
-
-        throw new \RuntimeException(
-            "COMPOSER_POLICY_COOLDOWN_AGE is set but has no effect because {$reason}. "
-            . 'Enable the cooldown policy in your config or unset the environment variable.'
-        );
-    }
-
-    /**
      * @return int|null|false the parsed age, or false when the environment variable is not set
      * @throws \RuntimeException on an unparseable value
      */
