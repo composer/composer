@@ -1003,22 +1003,25 @@ class Filesystem
         }
 
         // restrict permissions before writing as the content may be sensitive, e.g. auth.json
-        $written = true === Silencer::call('chmod', $tempPath, 0600) && $write($handle);
+        $written = true === Silencer::call('chmod', $tempPath, 0600);
+
+        $stat = Silencer::call('stat', $path);
+        if ($written && \is_array($stat)) {
+            // only root can hand the file over to another user
+            if (\function_exists('posix_geteuid') && 0 === posix_geteuid()) {
+                Silencer::call('chown', $tempPath, $stat['uid']);
+            }
+
+            // the renamed file would get our group, so only replace it if its group can be kept
+            $tempStat = fstat($handle);
+            $written = false !== $tempStat && ($stat['gid'] === $tempStat['gid'] || true === Silencer::call('chgrp', $tempPath, $stat['gid']));
+        }
+
+        $written = $written && $write($handle);
         $written = fclose($handle) && $written;
 
         if ($written) {
-            $stat = Silencer::call('stat', $path);
-            if (\is_array($stat)) {
-                Silencer::call('chmod', $tempPath, $stat['mode'] & 0777);
-
-                // only root can hand the file over to another user
-                if (\function_exists('posix_geteuid') && 0 === posix_geteuid()) {
-                    Silencer::call('chown', $tempPath, $stat['uid']);
-                    Silencer::call('chgrp', $tempPath, $stat['gid']);
-                }
-            } else {
-                Silencer::call('chmod', $tempPath, 0666 & ~umask());
-            }
+            Silencer::call('chmod', $tempPath, \is_array($stat) ? $stat['mode'] & 0777 : 0666 & ~umask());
 
             // not using Filesystem::rename() as its fallbacks copy onto the target, rewriting it in place
             if (true === Silencer::call('rename', $tempPath, $path)) {

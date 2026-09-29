@@ -427,6 +427,32 @@ class FilesystemTest extends TestCase
         self::assertSame('640', decoct(fileperms($file) & 0777));
     }
 
+    public function testSafeFilePutContentsPreservesGroup(): void
+    {
+        if (Platform::isWindows() || !\function_exists('posix_getgroups')) {
+            $this->markTestSkipped('Requires POSIX groups');
+        }
+
+        $groups = posix_getgroups();
+        $groups = false === $groups ? [] : array_values(array_diff($groups, [posix_getegid()]));
+        if ([] === $groups) {
+            $this->markTestSkipped('Requires the current user to be in a secondary group');
+        }
+
+        $this->fs->ensureDirectoryExists($this->workingDir);
+        $file = $this->workingDir.'/file';
+        file_put_contents($file, 'original');
+        if (!@chgrp($file, $groups[0])) {
+            $this->markTestSkipped('Could not change the file group');
+        }
+
+        Filesystem::safeFilePutContents($file, 'new');
+
+        clearstatcache();
+        self::assertSame('new', file_get_contents($file));
+        self::assertSame($groups[0], filegroup($file));
+    }
+
     public function testSafeFilePutContentsWritesThroughSymlinks(): void
     {
         $this->fs->ensureDirectoryExists($this->workingDir);
