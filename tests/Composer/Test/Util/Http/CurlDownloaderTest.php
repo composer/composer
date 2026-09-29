@@ -333,27 +333,6 @@ class CurlDownloaderTest extends TestCase
         self::assertSame('HTTP/1.1 429 Status', self::callPrivate(CurlDownloader::class, 'getStatusFailureMessage', $this->createResponse(429, [])));
     }
 
-    public function testRepeatedWarningsFromAnOriginAreShownOnce(): void
-    {
-        $io = new BufferIO();
-        $downloader = $this->createDownloader($io);
-        $rateLimited = ['warning' => 'Rate limited', 'status' => 'error', 'path' => '/a'];
-        self::assertTrue(self::callPrivate($downloader, 'outputWarnings', 'example.org', $rateLimited));
-        // the parts of the body which are not shown do not make a warning a different one
-        self::assertTrue(self::callPrivate($downloader, 'outputWarnings', 'example.org', ['path' => '/b'] + $rateLimited));
-        self::assertTrue(self::callPrivate($downloader, 'outputWarnings', 'other.org', $rateLimited));
-        self::assertTrue(self::callPrivate($downloader, 'outputWarnings', 'example.org', ['warning' => 'Slow down']));
-        self::assertFalse(self::callPrivate($downloader, 'outputWarnings', 'example.org', ['status' => 'error']));
-        self::assertFalse(self::callPrivate($downloader, 'outputWarnings', 'example.org', null));
-
-        self::assertSame(
-            '<warning>Warning from example.org: Rate limited</warning>'.PHP_EOL
-            .'<warning>Warning from other.org: Rate limited</warning>'.PHP_EOL
-            .'<warning>Warning from example.org: Slow down</warning>'.PHP_EOL,
-            $io->getOutput()
-        );
-    }
-
     /**
      * @param list<string> $headers
      */

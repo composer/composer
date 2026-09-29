@@ -70,12 +70,6 @@ class CurlDownloader
      * @var array<string, array{statusCode: int, announced: bool, until: float}>
      */
     private $retryAfterOrigins = [];
-    /**
-     * Warnings which were already shown, keyed by origin and warning, see outputWarnings()
-     *
-     * @var array<string, true>
-     */
-    private $shownWarnings = [];
     /** @var IOInterface */
     private $io;
     /** @var Config */
@@ -510,7 +504,7 @@ class CurlDownloader
 
                 $warningsOutput = false;
                 if ($response->getStatusCode() >= 300 && self::isJsonResponse($response)) {
-                    $warningsOutput = $this->outputWarnings($job['origin'], json_decode($response->getBody(), true));
+                    $warningsOutput = HttpDownloader::outputWarnings($this->io, $job['origin'], json_decode($response->getBody(), true));
                 }
 
                 $result = $this->isAuthenticatedRetryNeeded($job, $response);
@@ -905,32 +899,6 @@ class CurlDownloader
             $this->io->writeError('<warning>'.$origin.' '.$reason.' ('.$pending.' pending), waiting '.(int) ceil($lastDue - $now).'s before retrying</warning>');
             $this->retryAfterOrigins[$origin]['announced'] = true;
         }
-    }
-
-    /**
-     * Shows the warnings of a response, unless the same origin already showed the same warnings
-     *
-     * @param  mixed $data the decoded response body
-     * @return bool  whether the warnings were shown, now or before
-     */
-    private function outputWarnings(string $origin, $data): bool
-    {
-        if (!is_array($data)) {
-            return false;
-        }
-
-        $key = $origin.':'.json_encode(array_intersect_key($data, array_flip(['warning', 'warning-versions', 'info', 'info-versions', 'warnings', 'infos'])));
-        if (isset($this->shownWarnings[$key])) {
-            return true;
-        }
-
-        if (!HttpDownloader::outputWarnings($this->io, $origin, $data)) {
-            return false;
-        }
-
-        $this->shownWarnings[$key] = true;
-
-        return true;
     }
 
     /**
