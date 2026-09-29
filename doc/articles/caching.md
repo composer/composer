@@ -39,7 +39,7 @@ Many CI providers can only save directories inside the job's working directory, 
 COMPOSER_CACHE_DIR="$PWD/.composer-cache" composer install --no-interaction --prefer-dist
 ```
 
-Add such a cache directory inside your project to `.gitignore`, and to `.dockerignore` if you build images from the same checkout, so it does not show up as an untracked change or end up in archives, Docker build contexts and code-analysis runs.
+Add such a cache directory inside your project to `.gitignore`, and to `.dockerignore` if you build images from the same checkout, so it does not show up as an untracked change or ends up in archives, Docker build contexts and code-analysis runs.
 
 A CI cache is usually shared between jobs, and often between branches, so do not add credentials, `auth.json`, SSH keys, tokens, or other secrets to the paths it saves. In particular, persist the Composer cache directory rather than the whole [`COMPOSER_HOME`](../03-cli.md#composer-home) directory, which can contain `auth.json`.
 
