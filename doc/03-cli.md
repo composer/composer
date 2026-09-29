@@ -1460,8 +1460,7 @@ If set to a duration string (e.g., `"7 days"`, `"24 hours"`) or an integer (seco
 enables the cooldown policy. Package versions newer than the specified age will be
 withheld during `composer update`/`require`. Set to `0` to disable. This overrides only
 the `age` value from [policy.cooldown](06-config.md#cooldown) - any `ignore` rules
-configured in composer.json are still respected. Security fixes (versions released after
-a security advisory that fix the vulnerability) automatically bypass the cooldown.
+configured in composer.json are still respected.
 
 ### COMPOSER_POLICY_COOLDOWN_BLOCK
 

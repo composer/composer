@@ -895,12 +895,6 @@ class PoolBuilder
 
         $this->io->debug('Running cooldown pool filter.');
 
-        // Reuse the advisories already resolved by the security filter so recent
-        // security fixes can bypass the cooldown without a second lookup.
-        if (null !== $this->securityAdvisoryPoolFilter) {
-            $this->cooldownPoolFilter->setSecurityAdvisories($this->securityAdvisoryPoolFilter->getAdvisoryMap());
-        }
-
         $before = microtime(true);
         $total = \count($pool->getPackages());
 

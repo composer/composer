@@ -1157,20 +1157,11 @@ class Installer
     {
         $policyConfig = $this->getPolicyConfig();
 
-        if (!$policyConfig->enabled || $this->updateMirrors) {
-            return null;
+        if ($policyConfig->enabled && $policyConfig->advisories->shouldBlock('update') && !$this->updateMirrors) {
+            return new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig, $this->io);
         }
 
-        $advisoriesBlock = $policyConfig->advisories->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE);
-        // The cooldown filter needs the advisory map for its security-fix bypass, so the
-        // filter must run (to resolve advisories) even when advisory blocking is disabled.
-        $cooldownBlock = $policyConfig->cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE);
-
-        if (!$advisoriesBlock && !$cooldownBlock) {
-            return null;
-        }
-
-        return new SecurityAdvisoryPoolFilter(new Auditor(), $policyConfig, $this->io, !$advisoriesBlock && $cooldownBlock);
+        return null;
     }
 
     /**

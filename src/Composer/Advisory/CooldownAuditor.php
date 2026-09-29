@@ -24,8 +24,7 @@ use DateTimeInterface;
  * configured cooldown age, for `composer audit`.
  *
  * This is the audit-time counterpart to {@see \Composer\DependencyResolver\CooldownPoolFilter}.
- * Unlike the block path it operates on a flat package list with no resolver request, so the
- * security-fix bypass does not apply — audit surfaces every version within the cooldown.
+ * It operates on a flat package list with no resolver request.
  *
  * @internal
  * @final
