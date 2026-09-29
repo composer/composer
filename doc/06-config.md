@@ -438,7 +438,9 @@ chain attacks. By introducing a waiting period before a new version becomes inst
 the risk of pulling in a release that was compromised shortly after publication — many malicious
 versions are identified and removed within hours or days of being published.
 
-The cooldown applies during `composer update`/`require` only.
+The cooldown applies when resolving dependencies during `composer update`/`require`. `composer require`,
+`init` and `create-project` also skip withheld versions when picking a version constraint or the
+project version, so that the constraint they write can be resolved.
 
 The cooldown is measured against the publication time reported by the package repository
 (`published-time`, which Packagist provides), as package authors cannot influence it. When a

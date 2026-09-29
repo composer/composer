@@ -24,6 +24,7 @@ use Composer\Composer;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Pcre\Preg;
+use Composer\Policy\CooldownPolicyConfig;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
@@ -46,12 +47,17 @@ class VersionSelector
     /** @var VersionParser */
     private $parser;
 
+    /** @var ?CooldownPolicyConfig */
+    private $cooldown;
+
     /**
-     * @param PlatformRepository $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
+     * @param PlatformRepository   $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
+     * @param CooldownPolicyConfig $cooldown     If passed in, versions still within the configured cooldown are skipped
      */
-    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null)
+    public function __construct(RepositorySet $repositorySet, ?PlatformRepository $platformRepo = null, ?CooldownPolicyConfig $cooldown = null)
     {
         $this->repositorySet = $repositorySet;
+        $this->cooldown = $cooldown;
         if ($platformRepo) {
             foreach ($platformRepo->getPackages() as $package) {
                 $this->platformConstraints[$package->getName()][] = new Constraint('==', $package->getVersion());
@@ -111,6 +117,10 @@ class VersionSelector
             // select highest version of the two
             return version_compare($b->getVersion(), $a->getVersion());
         });
+
+        if ($this->cooldown !== null && $this->cooldown->hasCooldown() && $this->cooldown->block) {
+            $candidates = $this->filterCooldownCandidates($this->cooldown, $candidates, $io, $showWarnings);
+        }
 
         if (count($this->platformConstraints) > 0 && !($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter)) {
             /** @var array<string, true> $alreadyWarnedNames */
@@ -186,6 +196,43 @@ class VersionSelector
         }
 
         return $package;
+    }
+
+    /**
+     * Drops candidates still inside the cooldown so the selected version is one the solver will accept
+     *
+     * @param PackageInterface[] $candidates
+     * @param callable(PackageInterface):bool|bool $showWarnings
+     * @return PackageInterface[]
+     */
+    private function filterCooldownCandidates(CooldownPolicyConfig $cooldown, array $candidates, ?IOInterface $io, $showWarnings): array
+    {
+        $now = new \DateTimeImmutable();
+        /** @var array<string, true> $alreadySeenNames */
+        $alreadySeenNames = [];
+        $result = [];
+
+        foreach ($candidates as $pkg) {
+            // decide on the aliased package, as the pool filter does
+            $target = $pkg instanceof AliasPackage ? $pkg->getAliasOf() : $pkg;
+            $releaseDate = $cooldown->getEffectiveDate($target);
+            if ($target->isDev() || $releaseDate === null || $cooldown->isIgnored($target, 'block') || !$cooldown->isWithinCooldown($releaseDate, $now)) {
+                $result[] = $pkg;
+                continue;
+            }
+
+            $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
+            $alreadySeenNames[$pkg->getName()] = true;
+            if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
+                $io->writeError(
+                    '<warning>Cannot use '.$pkg->getPrettyName().($isLatestVersion ? "'s latest version" : '').' '.$pkg->getPrettyVersion().' as it is still within the cooldown configured in "policy.cooldown" (available in '.$cooldown->formatTimeUntilAvailable($releaseDate, $now).').</>',
+                    true,
+                    $isLatestVersion ? IOInterface::NORMAL : IOInterface::VERBOSE
+                );
+            }
+        }
+
+        return $result;
     }
 
     /**

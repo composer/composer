@@ -16,12 +16,15 @@ use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\IO\IOInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
+use Composer\Policy\CooldownPolicyConfig;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
@@ -283,6 +286,22 @@ trait PackageDiscoveryTrait
     }
 
     /**
+     * The cooldown to apply while picking a version, or null when it would not block the resulting update
+     */
+    private function getCooldownPolicyConfig(InputInterface $input): ?CooldownPolicyConfig
+    {
+        $composer = $this->tryComposer();
+        $config = $composer !== null ? $composer->getConfig() : Factory::createConfig($this->getIO());
+        $policyConfig = $this->createPolicyConfig($config, $input);
+
+        if ($policyConfig->enabled && $policyConfig->cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE)) {
+            return $policyConfig->cooldown;
+        }
+
+        return null;
+    }
+
+    /**
      * Given a package name, this determines the best version to use in the require key.
      *
      * This returns a version with the ~ operator prefixed when possible.
@@ -301,7 +320,8 @@ trait PackageDiscoveryTrait
 
         // find the latest version allowed in this repo set
         $repoSet = $this->getRepositorySet($input);
-        $versionSelector = new VersionSelector($repoSet, $platformRepo);
+        $cooldown = $this->getCooldownPolicyConfig($input);
+        $versionSelector = new VersionSelector($repoSet, $platformRepo, $cooldown);
         $effectiveMinimumStability = $this->getMinimumStability($input);
 
         $package = $versionSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, 0, $this->getIO());
@@ -327,6 +347,19 @@ trait PackageDiscoveryTrait
                 }
 
                 return [$name, $constraint];
+            }
+
+            // Check whether the cooldown withheld every version
+            if ($cooldown !== null && false !== ($candidate = (new VersionSelector($repoSet, $platformRepo))->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter))) {
+                $target = $candidate instanceof AliasPackage ? $candidate->getAliasOf() : $candidate;
+                $releaseDate = $cooldown->getEffectiveDate($target);
+                $wait = $releaseDate !== null ? ' (the latest version '.$candidate->getPrettyVersion().' becomes available in '.$cooldown->formatTimeUntilAvailable($releaseDate, new \DateTimeImmutable()).')' : '';
+
+                throw new \InvalidArgumentException(sprintf(
+                    'Could not find a version of package %s that has cleared the cooldown configured in "policy.cooldown"%s. To install it now, add the package to the "policy.cooldown.ignore" config, or run the command with COMPOSER_POLICY_COOLDOWN_AGE=0 for a one-off bypass.',
+                    $name,
+                    $wait
+                ));
             }
 
             // Check whether the package requirements were the problem

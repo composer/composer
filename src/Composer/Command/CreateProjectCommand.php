@@ -26,6 +26,7 @@ use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
 use Composer\Pcre\Preg;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Plugin\PluginBlockedException;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
@@ -442,14 +443,20 @@ EOT
         $platformOverrides = $config->get('platform');
         $platformRepo = new PlatformRepository([], $platformOverrides);
 
+        $policyConfig = $this->createPolicyConfig($config, $input);
+        $cooldown = $policyConfig->enabled && $policyConfig->cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE) ? $policyConfig->cooldown : null;
+
         // find the latest version if there are multiple
-        $versionSelector = new VersionSelector($repositorySet, $platformRepo);
+        $versionSelector = new VersionSelector($repositorySet, $platformRepo, $cooldown);
         $package = $versionSelector->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter, 0, $io);
 
         if (!$package) {
             $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
             if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && $versionSelector->findBestCandidate($name, $packageVersion, $stability, PlatformRequirementFilterFactory::ignoreAll())) {
                 throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
+            }
+            if ($cooldown !== null && false !== (new VersionSelector($repositorySet, $platformRepo))->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter)) {
+                throw new \InvalidArgumentException($errorMessage .' that has cleared the cooldown configured in "policy.cooldown". To install it now, add the package to the "policy.cooldown.ignore" config, or run the command with COMPOSER_POLICY_COOLDOWN_AGE=0 for a one-off bypass.');
             }
 
             throw new \InvalidArgumentException($errorMessage .'.');

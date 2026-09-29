@@ -20,6 +20,10 @@ use Composer\Package\Link;
 use Composer\Package\AliasPackage;
 use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
+use Composer\Policy\CooldownPolicyConfig;
+use Composer\Policy\IgnorePackageRule;
+use Composer\Policy\ListPolicyConfig;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 use Symfony\Component\Console\Output\StreamOutput;
 
@@ -371,6 +375,81 @@ class VersionSelectorTest extends TestCase
             // ext versioned individually
             ['3.0.5', '^3.0', null, 'ext-xdebug'],
         ];
+    }
+
+    public function testLatestVersionWithinCooldownIsSkipped(): void
+    {
+        $old = self::getPackage('foo/bar', '1.2.1');
+        $old->setReleaseDate(new \DateTimeImmutable('-30 days'));
+        $new = self::getPackage('foo/bar', '1.2.2');
+        $new->setPublishedDate(new \DateTimeImmutable('-23 hours'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with('foo/bar', null)
+            ->will($this->returnValue([$old, $new]));
+
+        $io = new BufferIO();
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+        $best = $versionSelector->findBestCandidate('foo/bar', null, 'stable', null, 0, $io);
+
+        self::assertSame($old, $best);
+        self::assertStringContainsString('Cannot use foo/bar\'s latest version 1.2.2 as it is still within the cooldown configured in "policy.cooldown" (available in 6 days).', $io->getOutput());
+    }
+
+    public function testDevAndIgnoredVersionsAreNotSubjectToCooldown(): void
+    {
+        $dev = self::getPackage('foo/bar', 'dev-main');
+        $dev->setReleaseDate(new \DateTimeImmutable('-1 hour'));
+        $ignored = self::getPackage('foo/baz', '2.0.0');
+        $ignored->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->willReturnMap([
+            ['foo/bar', null, 0, [$dev]],
+            ['foo/baz', null, 0, [$ignored]],
+        ]);
+
+        $cooldown = self::cooldown(7 * 24 * 3600, true, ['foo/baz' => [new IgnorePackageRule('foo/baz', new MatchAllConstraint(), 'trusted')]]);
+        $versionSelector = new VersionSelector($repositorySet, null, $cooldown);
+
+        self::assertSame($dev, $versionSelector->findBestCandidate('foo/bar', null, 'dev'));
+        self::assertSame($ignored, $versionSelector->findBestCandidate('foo/baz'));
+    }
+
+    public function testAllVersionsWithinCooldownYieldNoCandidate(): void
+    {
+        $new = self::getPackage('foo/bar', '1.2.2');
+        $new->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$new]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+
+        self::assertFalse($versionSelector->findBestCandidate('foo/bar'));
+    }
+
+    public function testCooldownIsNotAppliedWhenBlockingIsDisabled(): void
+    {
+        $new = self::getPackage('foo/bar', '1.2.2');
+        $new->setPublishedDate(new \DateTimeImmutable('-1 hour'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$new]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600, false));
+
+        self::assertSame($new, $versionSelector->findBestCandidate('foo/bar'));
+    }
+
+    /**
+     * @param array<string, list<IgnorePackageRule>> $ignore
+     */
+    private static function cooldown(int $age, bool $block = true, array $ignore = []): CooldownPolicyConfig
+    {
+        return new CooldownPolicyConfig($block, ListPolicyConfig::AUDIT_IGNORE, $ignore, $age);
     }
 
     /**
