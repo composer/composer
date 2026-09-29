@@ -138,10 +138,9 @@ class CooldownPolicyConfig extends ListPolicyConfig
         $packageConstraint = new Constraint('==', $package->getVersion());
         foreach ($ignore as $rules) {
             foreach ($rules as $rule) {
-                foreach ($package->getNames(false) as $name) {
-                    if (Preg::isMatch($rule->packageNameRegex, $name) && $rule->constraint->matches($packageConstraint)) {
-                        return true;
-                    }
+                // only the package's own name, so declaring a replace of an ignored name cannot skip the cooldown
+                if (Preg::isMatch($rule->packageNameRegex, $package->getName()) && $rule->constraint->matches($packageConstraint)) {
+                    return true;
                 }
             }
         }

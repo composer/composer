@@ -128,6 +128,25 @@ class CooldownPoolFilterTest extends TestCase
         $this->assertFalse($filteredPool->isCooldownRemovedPackageVersion('internal/pkg', new Constraint('==', '1.0.0.0')));
     }
 
+    public function testIgnoreRuleDoesNotApplyToPackagesReplacingTheIgnoredName(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [
+            'internal/*' => [new IgnorePackageRule('internal/*', new MatchAllConstraint(), 'Internal packages')],
+        ], 7 * 24 * 3600);
+        $now = new DateTimeImmutable('2026-01-15 12:00:00');
+        $filter = new CooldownPoolFilter($config, $now);
+
+        $replacer = new Package('evil/pkg', '2.0.0.0', '2.0.0');
+        $replacer->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+        $replacer->setReplaces(['internal/pkg' => new Link('evil/pkg', 'internal/pkg', new MatchAllConstraint(), Link::TYPE_REPLACE, '*')]);
+
+        $pool = new Pool([$replacer]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertSame([], $filteredPool->getPackages());
+        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('evil/pkg', new Constraint('==', '2.0.0.0')));
+    }
+
     public function testDevVersionsAreNotFiltered(): void
     {
         $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600);
