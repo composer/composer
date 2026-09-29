@@ -12,6 +12,7 @@
 
 namespace Composer\Test\DependencyResolver;
 
+use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\DependencyResolver\GenericRule;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Problem;
@@ -145,5 +146,56 @@ class ProblemTest extends TestCase
         self::assertStringContainsString('cleared the cooldown', $message);
         // fell back to the author-controlled `time` field -> caveat is shown
         self::assertStringContainsString('package-supplied release date', $message);
+    }
+
+    public function testGetMissingPackageReasonPointsAtCooldownWithheldFixNextToAdvisories(): void
+    {
+        $vulnerable = self::getPackage('vendor/pkg', '1.0.0');
+        $fix = self::getPackage('vendor/pkg', '1.0.1');
+        $advisory = new PartialSecurityAdvisory('vendor/pkg', 'PKSA-1234-abcd-1234', new Constraint('<', '1.0.1.0'));
+
+        $pool = new Pool(
+            [],
+            [],
+            ['vendor/pkg' => ['1.0.0.0' => '1.0.0', '1.0.1.0' => '1.0.1']],
+            [],
+            ['vendor/pkg' => ['1.0.0.0' => [$advisory]]],
+            [],
+            [],
+            [
+                'vendor/pkg' => [
+                    '1.0.1.0' => [
+                        'name' => 'vendor/pkg',
+                        'prettyVersion' => '1.0.1',
+                        'releaseDate' => '2026-01-10T12:00:00+00:00',
+                        'availableIn' => '5 days',
+                        'source' => 'published-time',
+                    ],
+                ],
+            ]
+        );
+
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository(new ArrayRepository([$vulnerable, $fix]));
+
+        $constraint = new MultiConstraint([
+            new Constraint('>=', '1.0.0.0'),
+            new Constraint('<', '2.0.0.0'),
+        ], true);
+
+        $message = implode('', Problem::getMissingPackageReason(
+            $repositorySet,
+            new Request(),
+            $pool,
+            false,
+            'vendor/pkg',
+            $constraint
+        ));
+
+        self::assertStringContainsString('affected by security advisories', $message);
+        self::assertStringContainsString('PKSA-1234-abcd-1234', $message);
+        self::assertStringContainsString('Version 1.0.1 matching the constraint was withheld by the cooldown configured in "policy.cooldown" (available in 5 days).', $message);
+        self::assertStringContainsString('"policy.cooldown.ignore"', $message);
+        self::assertStringContainsString('COMPOSER_POLICY_COOLDOWN_AGE=0', $message);
     }
 }
