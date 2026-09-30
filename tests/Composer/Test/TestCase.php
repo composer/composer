@@ -27,7 +27,7 @@ use Composer\Test\Mock\HttpDownloaderMock;
 use Composer\Test\Mock\IOMock;
 use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Util\Filesystem;
-use Composer\Util\HttpDownloader;
+use Composer\Util\Http\ResponseWarnings;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Tester\ApplicationTester;
@@ -75,7 +75,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-        HttpDownloader::resetShownWarnings();
+        ResponseWarnings::reset();
         foreach ($this->httpDownloaderMocks as $mock) {
             $mock->assertComplete();
         }

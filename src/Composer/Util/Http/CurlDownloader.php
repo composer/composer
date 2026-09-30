@@ -21,7 +21,6 @@ use Composer\Util\Platform;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
-use Composer\Util\HttpDownloader;
 use React\Promise\Promise;
 
 /**
@@ -504,7 +503,7 @@ class CurlDownloader
 
                 $warningsOutput = false;
                 if ($response->getStatusCode() >= 300 && self::isJsonResponse($response)) {
-                    $warningsOutput = HttpDownloader::outputWarnings($this->io, $job['origin'], json_decode($response->getBody(), true));
+                    $warningsOutput = ResponseWarnings::output($this->io, $job['origin'], json_decode($response->getBody(), true));
                 }
 
                 $result = $this->isAuthenticatedRetryNeeded($job, $response);
@@ -911,7 +910,7 @@ class CurlDownloader
         }
 
         $details = '';
-        // skip dumping the raw JSON body when outputWarnings already presented it cleanly, to avoid duplicate/messy output
+        // skip dumping the raw JSON body when ResponseWarnings::output() already presented it cleanly, to avoid duplicate/messy output
         if (!$warningsOutput && self::isJsonResponse($response)) {
             $details = ':'.PHP_EOL.substr($response->getBody(), 0, 200).(strlen($response->getBody()) > 200 ? '...' : '');
         }
