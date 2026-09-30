@@ -16,6 +16,7 @@ use Composer\Advisory\Auditor;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\IO\IOInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Policy\PolicyConfig;
@@ -65,6 +66,7 @@ class SecurityAdvisoryPoolFilter
 
         $packagesForAdvisories = [];
         foreach ($pool->getPackages() as $package) {
+            $package = self::getAdvisoryTarget($package);
             if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
                 $packagesForAdvisories[] = $package;
             }
@@ -121,7 +123,9 @@ class SecurityAdvisoryPoolFilter
      */
     private function getMatchingAdvisories(PackageInterface $package, array $advisoryMap): array
     {
-        if ($package->isDev()) {
+        $package = self::getAdvisoryTarget($package);
+
+        if (RepositorySet::isUnversionedBranch($package)) {
             return [];
         }
 
@@ -140,5 +144,17 @@ class SecurityAdvisoryPoolFilter
         }
 
         return $matchingAdvisories;
+    }
+
+    /**
+     * A root alias version is chosen by the root package author and says nothing about the actual code, so advisories are checked against the aliased package
+     */
+    private static function getAdvisoryTarget(PackageInterface $package): PackageInterface
+    {
+        if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+            return $package->getAliasOf();
+        }
+
+        return $package;
     }
 }

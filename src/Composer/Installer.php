@@ -450,10 +450,11 @@ class Installer
 
         if ($auditConfig->audit) {
             if ($this->update && !$this->install) {
-                $packages = $lockedRepository->getCanonicalPackages();
+                // aliases are included as a branch alias version can match advisories which the dev-* branch cannot
+                $packages = $lockedRepository->getPackages();
                 $target = 'locked';
             } else {
-                $packages = $localRepo->getCanonicalPackages();
+                $packages = $localRepo->getPackages();
                 $target = 'installed';
             }
             if (count($packages) > 0) {
