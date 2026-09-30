@@ -184,6 +184,7 @@ EOT
     public function installProject(IOInterface $io, Config $config, InputInterface $input, ?string $packageName = null, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $noInstall = false, ?PlatformRequirementFilterInterface $platformRequirementFilter = null, bool $secureHttp = true, bool $addRepository = false, array $requiredPackages = []): int
     {
         $oldCwd = Platform::getCwd();
+        $minimumAge = $this->getMinimumAge($input);
 
         if ($repositories !== null && !is_array($repositories)) {
             $repositories = (array) $repositories;
@@ -273,6 +274,7 @@ EOT
                 ->setOptimizeAutoloader($config->get('optimize-autoloader'))
                 ->setClassMapAuthoritative($config->get('classmap-authoritative'))
                 ->setApcuAutoloader($config->get('apcu-autoloader'))
+                ->setMinimumAge($minimumAge)
                 ->setPolicyConfig($this->createPolicyConfig($config, $input))
                 ->setAuditConfig($this->createAuditConfig($input));
 
@@ -443,7 +445,7 @@ EOT
         $platformRepo = new PlatformRepository([], $platformOverrides);
 
         // find the latest version if there are multiple
-        $versionSelector = new VersionSelector($repositorySet, $platformRepo);
+        $versionSelector = new VersionSelector($repositorySet, $platformRepo, $this->getMinimumAge($input));
         $package = $versionSelector->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter, 0, $io);
 
         if (!$package) {

@@ -36,6 +36,7 @@ The following options are available with every command:
 * **--no-cache:** Disables the use of the cache directory. Same as setting the COMPOSER_CACHE_DIR
   env var to /dev/null (or NUL on Windows).
 * **--working-dir (-d):** If specified, use the given directory as working directory.
+* **--min-age:** Only select package versions at least this many days ago.
 * **--profile:** Display timing and memory usage information
 * **--ansi:** Force ANSI output.
 * **--no-ansi:** Disable ANSI output.
