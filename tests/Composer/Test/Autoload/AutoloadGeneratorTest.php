@@ -803,6 +803,44 @@ EOF;
         );
     }
 
+    public function testRootScanExcludesVendorDirWithRegexCharsInPath(): void
+    {
+        $workingDir = $this->workingDir.'/c++ (x86) [x]';
+        $this->vendorDir = $workingDir.'/vendor';
+        $this->fs->ensureDirectoryExists($workingDir);
+        chdir($workingDir);
+
+        $package = new RootPackage('root/a', '1.0', '1.0');
+        $package->setAutoload([
+            'classmap' => ['.'],
+            'psr-4' => ['' => '.'],
+        ]);
+        $package->setRequires([
+            'b/b' => new Link('a', 'b/b', new MatchAllConstraint()),
+        ]);
+
+        $vendorPackage = new Package('b/b', '1.0', '1.0');
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue([$vendorPackage]));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
+        file_put_contents($workingDir.'/RootClass.php', '<?php class RootClass {}');
+        file_put_contents($this->vendorDir.'/b/b/src/VendorClass.php', '<?php class VendorClass {}');
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_regexchars');
+
+        self::assertEquals(
+            [
+                'Composer\\InstalledVersions' => $this->vendorDir.'/composer/InstalledVersions.php',
+                'RootClass' => $workingDir.'/RootClass.php',
+            ],
+            include $this->vendorDir.'/composer/autoload_classmap.php'
+        );
+    }
+
     public function testVendorsClassMapAutoloadingWithTargetDir(): void
     {
         $package = new RootPackage('root/a', '1.0', '1.0');

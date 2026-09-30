@@ -326,14 +326,7 @@ EOF;
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            // if the vendor dir is contained within a classmap dir being scanned we exclude it
-            $resolvedDir = $filesystem->normalizePath($filesystem->isAbsolutePath($dir) ? $dir : $basePath.'/'.$dir);
-            if (str_contains($vendorPath, $resolvedDir.'/')) {
-                $exclusionRegex = $this->buildExclusionRegex($dir, array_merge($excluded, [$vendorPath.'/']));
-            } else {
-                $exclusionRegex = $this->buildExclusionRegex($dir, $excluded);
-            }
-            $classMapGenerator->scanPaths($dir, $exclusionRegex);
+            $classMapGenerator->scanPaths($dir, $this->buildExclusionRegexWithVendorDir($dir, $excluded, $vendorPath));
         }
 
         if ($scanPsrPackages) {
@@ -356,14 +349,7 @@ EOF;
                             continue;
                         }
 
-                        // if the vendor dir is contained within a psr-0/psr-4 dir being scanned we exclude it
-                        if (str_contains($vendorPath, $dir.'/')) {
-                            $exclusionRegex = $this->buildExclusionRegex($dir, array_merge($excluded, [$vendorPath.'/']));
-                        } else {
-                            $exclusionRegex = $this->buildExclusionRegex($dir, $excluded);
-                        }
-
-                        $classMapGenerator->scanPaths($dir, $exclusionRegex, $group['type'], $namespace);
+                        $classMapGenerator->scanPaths($dir, $this->buildExclusionRegexWithVendorDir($dir, $excluded, $vendorPath), $group['type'], $namespace);
                     }
                 }
             }
@@ -483,6 +469,25 @@ EOF;
         }
 
         return $classMap;
+    }
+
+    /**
+     * Same as buildExclusionRegex, but also excludes the vendor dir if $dir contains it
+     *
+     * @param array<string> $excluded
+     * @return non-empty-string|null
+     */
+    private function buildExclusionRegexWithVendorDir(string $dir, array $excluded, ?string $vendorPath): ?string
+    {
+        if (null !== $vendorPath) {
+            $fs = new Filesystem();
+            $resolvedDir = $fs->normalizePath($fs->isAbsolutePath($dir) ? $dir : realpath(Platform::getCwd()).'/'.$dir);
+            if (str_starts_with($vendorPath, $resolvedDir.'/')) {
+                $excluded[] = preg_quote($vendorPath.'/');
+            }
+        }
+
+        return $this->buildExclusionRegex($dir, $excluded);
     }
 
     /**
