@@ -160,9 +160,9 @@ always allowed regardless of this setting.
 Unified dependency policy configuration. Controls Composer behavior for dependencies with security
 advisories, flagged as malware, abandoned packages, and custom dependency policies. Audit reports
 can be generated with `composer audit`; blocking prevents insecure or otherwise flagged package
-versions from being installed during `composer update`, `require`, or `remove`. The malware policy
-and custom dependency policies can additionally block during a `composer install` via their
-[`block-scope`](#block-scope) setting.
+versions from being installed during `composer update`, `require`, or `remove`. The [malware](#block-scope)
+policy and [custom dependency policies](#block-scope-1) can additionally block during a
+`composer install` via their `block-scope` setting.
 
 Set to `false` to disable all dependency policy enforcement:
 
@@ -479,31 +479,6 @@ versions, supplied by one or more sources (advertised by package repositories or
 Source URLs must use `https://`. `http://` and other schemes are rejected both at
 schema validation time (`composer validate`) and at config load time.
 
-#### block-scope
-
-Defaults to `update`. Controls which commands trigger blocking for this custom policy:
-
-- `all` — block during both `update`/`require`/`remove` and `install`
-- `update` — block only during `update`/`require`/`remove`
-- `install` — block only during `install`
-
-Unlike the [`malware`](#malware) policy (which defaults to `all`), custom dependency policies
-default to `update`, so they only block during `composer install` when you opt in with
-`block-scope` set to `install` or `all`. This is useful for enforcing a policy in environments
-where only `composer install` runs, such as CI or deployment.
-
-```json
-{
-    "config": {
-        "policy": {
-            "my-policy": {
-                "block-scope": "all"
-            }
-        }
-    }
-}
-```
-
 A `url` source is queried the same way as a repository's [`api-url`](05-repositories.md#filter):
 Composer sends a POST request with the relevant package PURLs and the custom dependency policy name,
 and expects the matching filter entries back. The request is not cached client-side because each
@@ -560,6 +535,31 @@ The following names are reserved for future built-in dependency policies and can
 dependency policy names: `package`, `packages`, `license`, `licence`, `licenses`, `licences`, `support`,
 `maintenance`, `security`, `minimum-release-age`. Composer rejects any colliding key both at
 schema validation time (`composer validate`) and at config load time.
+
+#### block-scope
+
+Defaults to `update`. Controls which commands trigger blocking for this custom policy:
+
+- `all` — block during both `update`/`require`/`remove` and `install`
+- `update` — block only during `update`/`require`/`remove`
+- `install` — block only during `install`
+
+Unlike the [`malware`](#malware) policy (which defaults to `all`), custom dependency policies
+default to `update`, so they only block during `composer install` when you opt in with
+`block-scope` set to `install` or `all`. This is useful for enforcing a policy in environments
+where only `composer install` runs, such as CI or deployment.
+
+```json
+{
+    "config": {
+        "policy": {
+            "my-policy": {
+                "block-scope": "all"
+            }
+        }
+    }
+}
+```
 
 ### ignore format
 
