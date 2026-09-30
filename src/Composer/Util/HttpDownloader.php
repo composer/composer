@@ -472,7 +472,17 @@ class HttpDownloader
         }
 
         // the parts of the body which are not shown do not make a warning a different one
-        $shownKey = $url.':'.json_encode(array_intersect_key($data, array_flip(['warning', 'warning-versions', 'info', 'info-versions', 'warnings', 'infos'])));
+        // key by host so callers passing an origin or a repository url share the same entry, see Url::getOrigin
+        $host = (string) parse_url($url, PHP_URL_HOST);
+        if ($host === '') {
+            $host = $url;
+        } elseif (is_int($port = parse_url($url, PHP_URL_PORT))) {
+            $host .= ':'.$port;
+        }
+        if ($host === 'repo.packagist.org') {
+            $host = 'packagist.org';
+        }
+        $shownKey = $host.':'.json_encode(array_intersect_key($data, array_flip(['warning', 'warning-versions', 'info', 'info-versions', 'warnings', 'infos'])));
         if (isset(self::$shownWarnings[$shownKey])) {
             return true;
         }

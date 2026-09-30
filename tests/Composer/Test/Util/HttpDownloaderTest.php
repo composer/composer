@@ -129,7 +129,12 @@ class HttpDownloaderTest extends TestCase
         self::assertTrue(HttpDownloader::outputWarnings($io, 'example.org', $rateLimited));
         // the parts of the body which are not shown do not make a warning a different one
         self::assertTrue(HttpDownloader::outputWarnings($io, 'example.org', ['path' => '/b'] + $rateLimited));
+        // repository urls on the same host share the origin's entry
+        self::assertTrue(HttpDownloader::outputWarnings($io, 'https://example.org/org-a', $rateLimited));
         self::assertTrue(HttpDownloader::outputWarnings($io, 'other.org', $rateLimited));
+        self::assertTrue(HttpDownloader::outputWarnings($io, 'https://other.org:8443', $rateLimited));
+        self::assertTrue(HttpDownloader::outputWarnings($io, 'packagist.org', $rateLimited));
+        self::assertTrue(HttpDownloader::outputWarnings($io, 'https://repo.packagist.org', $rateLimited));
         self::assertTrue(HttpDownloader::outputWarnings($io, 'example.org', ['warning' => 'Slow down']));
         self::assertFalse(HttpDownloader::outputWarnings($io, 'example.org', ['status' => 'error']));
         self::assertFalse(HttpDownloader::outputWarnings($io, 'example.org', null));
@@ -137,6 +142,8 @@ class HttpDownloaderTest extends TestCase
         self::assertSame(
             '<warning>Warning from example.org: Rate limited</warning>'.PHP_EOL
             .'<warning>Warning from other.org: Rate limited</warning>'.PHP_EOL
+            .'<warning>Warning from https://other.org:8443: Rate limited</warning>'.PHP_EOL
+            .'<warning>Warning from packagist.org: Rate limited</warning>'.PHP_EOL
             .'<warning>Warning from example.org: Slow down</warning>'.PHP_EOL,
             $io->getOutput()
         );
