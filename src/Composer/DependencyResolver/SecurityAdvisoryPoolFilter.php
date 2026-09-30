@@ -66,9 +66,9 @@ class SecurityAdvisoryPoolFilter
 
         $packagesForAdvisories = [];
         foreach ($pool->getPackages() as $package) {
+            $package = self::getAdvisoryTarget($package);
             if (!$package instanceof RootPackageInterface && !str_starts_with($package->getVersion(), 'dev-') && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
-                // root aliases are skipped by the advisory lookup, so load advisories via the aliased package instead
-                $packagesForAdvisories[] = $package instanceof AliasPackage && $package->isRootPackageAlias() ? $package->getAliasOf() : $package;
+                $packagesForAdvisories[] = $package;
             }
         }
 
@@ -123,6 +123,8 @@ class SecurityAdvisoryPoolFilter
      */
     private function getMatchingAdvisories(PackageInterface $package, array $advisoryMap): array
     {
+        $package = self::getAdvisoryTarget($package);
+
         // dev-* branches have no version ordering so ranges cannot meaningfully match them, unlike numeric branches such as 3.3.x-dev
         if (str_starts_with($package->getVersion(), 'dev-')) {
             return [];
@@ -143,5 +145,17 @@ class SecurityAdvisoryPoolFilter
         }
 
         return $matchingAdvisories;
+    }
+
+    /**
+     * A root alias version is chosen by the root package author and says nothing about the actual code, so advisories are checked against the aliased package
+     */
+    private static function getAdvisoryTarget(PackageInterface $package): PackageInterface
+    {
+        if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+            return $package->getAliasOf();
+        }
+
+        return $package;
     }
 }
