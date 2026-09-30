@@ -662,12 +662,17 @@ EOF;
                 $excluded = $autoloads['exclude-from-classmap'];
             }
 
+            $vendorPath = null;
+            if (null !== $vendorDir && false !== ($realVendorDir = realpath($vendorDir))) {
+                $vendorPath = (new Filesystem())->normalizePath($realVendorDir);
+            }
+
             $classMapGenerator = new ClassMapGenerator(['php', 'inc', 'hh']);
             $classMapGenerator->avoidDuplicateScans();
 
             foreach ($autoloads['classmap'] as $dir) {
                 try {
-                    $classMapGenerator->scanPaths($dir, $this->buildExclusionRegex($dir, $excluded));
+                    $classMapGenerator->scanPaths($dir, $this->buildExclusionRegexWithVendorDir($dir, $excluded, $vendorPath));
                 } catch (\RuntimeException $e) {
                     $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
                 }

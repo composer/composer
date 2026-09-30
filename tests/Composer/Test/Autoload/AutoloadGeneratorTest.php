@@ -841,6 +841,18 @@ EOF;
         );
     }
 
+    public function testCreateLoaderExcludesVendorDirFromRootClassMap(): void
+    {
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b/src');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/src');
+        file_put_contents($this->workingDir.'/src/RootClass.php', '<?php class RootClass {}');
+        file_put_contents($this->vendorDir.'/b/b/src/VendorClass.php', '<?php class VendorClass {}');
+
+        $loader = $this->generator->createLoader(['classmap' => ['.']], $this->config->get('vendor-dir'));
+
+        self::assertEquals(['RootClass' => $this->workingDir.'/src/RootClass.php'], $loader->getClassMap());
+    }
+
     public function testVendorsClassMapAutoloadingWithTargetDir(): void
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
