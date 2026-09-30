@@ -205,8 +205,8 @@ of `3.3.x-dev`, an advisory affecting `<3.5` blocks requiring `^3.3`, but requir
 explicitly still works. The audit still reports it though, as the installed code matches the
 advisory through its branch alias.
 
-For advisory authors, this means an advisory cannot target a `dev-*` branch directly, not even with
-`*` as affected versions. To cover one, the affected versions must include its branch alias, like
+For advisory authors, this means an advisory cannot target a named branch with a `dev-*` version directly, not even with
+`*` listed as the affected versions. To cover one, the affected versions must include its branch alias, like
 `3.3.x-dev` above.
 
 #### audit
