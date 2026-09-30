@@ -19,7 +19,6 @@ use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
-use Composer\Package\Version\VersionParser;
 use Composer\Policy\PolicyConfig;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
@@ -68,7 +67,7 @@ class SecurityAdvisoryPoolFilter
         $packagesForAdvisories = [];
         foreach ($pool->getPackages() as $package) {
             $package = self::getAdvisoryTarget($package);
-            if (!$package instanceof RootPackageInterface && !self::isUnversionedBranch($package) && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
+            if (!$package instanceof RootPackageInterface && !PlatformRepository::isPlatformPackage($package->getName()) && !$request->isLockedPackage($package)) {
                 $packagesForAdvisories[] = $package;
             }
         }
@@ -126,7 +125,7 @@ class SecurityAdvisoryPoolFilter
     {
         $package = self::getAdvisoryTarget($package);
 
-        if (self::isUnversionedBranch($package)) {
+        if (RepositorySet::isUnversionedBranch($package)) {
             return [];
         }
 
@@ -157,13 +156,5 @@ class SecurityAdvisoryPoolFilter
         }
 
         return $package;
-    }
-
-    /**
-     * dev-* branches and the default branch alias have no version ordering, so ranges cannot meaningfully match them, unlike numeric branches such as 3.3.x-dev
-     */
-    private static function isUnversionedBranch(PackageInterface $package): bool
-    {
-        return str_starts_with($package->getVersion(), 'dev-') || $package->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS;
     }
 }
