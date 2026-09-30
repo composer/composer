@@ -176,6 +176,8 @@ class UrlTest extends TestCase
             ['https://use***:***@example.org/repo.git', 'https://user@corp.example:realtoken@example.org/repo.git'],
             // empty user slot, e.g. https://:TOKEN@host
             ['https://:***@example.org/', 'https://:realtoken@example.org/'],
+            // empty password slot, e.g. https://TOKEN:@host
+            ['https://ghp***@github.com/acme/repo', 'https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB:@github.com/acme/repo'],
             // schemes containing + . -
             ['git+ssh://foo:***@example.org/repo.git', 'git+ssh://foo:bar@example.org/repo.git'],
             ['svn+ssh://foo:***@example.org/repo', 'svn+ssh://foo:bar@example.org/repo'],
@@ -202,10 +204,20 @@ class UrlTest extends TestCase
             ['https://example.org/repo.git', 'https://user:pa@ss@example.org/repo.git'],
             ['https://example.org:8080/repo.git', 'https://user:pass@example.org:8080/repo.git'],
             ['https://example.org/repo.git?ref=a@b', 'https://user:pass@example.org/repo.git?ref=a@b'],
+            // token in the user slot with an empty password, as Git::runCommands() builds for token-only http-basic auth
+            ['https://github.com/acme/repo.git', 'https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB:@github.com/acme/repo.git'],
+            ['https://example.org/repo.git', 'https://:@example.org/repo.git'],
             // nothing to strip
             ['https://example.org/repo.git', 'https://example.org/repo.git'],
             ['https://example.org/@scope/repo.git', 'https://example.org/@scope/repo.git'],
             ['git@example.org:acme/repo.git', 'git@example.org:acme/repo.git'],
+            // ssh login name is not a credential and must be preserved
+            ['ssh://git@example.org/repo.git', 'ssh://git@example.org/repo.git'],
+            ['ssh://gogs@git.int.example/group/pkg.git', 'ssh://gogs@git.int.example/group/pkg.git'],
+            ['ssh://git.int.example/group/pkg.git', 'ssh://gogs:secret@git.int.example/group/pkg.git'],
+            ['ssh://gogs@git.int.example/group/pkg.git', 'ssh://gogs:@git.int.example/group/pkg.git'],
+            ['git+ssh://gogs@git.int.example/group/pkg.git', 'git+ssh://gogs@git.int.example/group/pkg.git'],
+            ['git+ssh://git.int.example/group/pkg.git', 'git+ssh://gogs:secret@git.int.example/group/pkg.git'],
         ];
     }
 }
