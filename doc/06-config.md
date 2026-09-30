@@ -198,9 +198,9 @@ cannot be installed during `update`/`require`/`remove` unless the advisory or pa
 }
 ```
 
-Advisories are matched against version numbers, so `dev-*` branches like `dev-main` are never
-blocked, even when required through an inline alias like `dev-main as 1.0.0`. Numeric branches like
-`3.3.x-dev` and branch aliases are matched normally. For example if `dev-main` has a branch alias
+Advisories are matched against version numbers, so `dev-*` versions from branch names like `dev-main` are never
+blocked, even when required through an inline alias like `dev-main as 1.0.0`. Numeric branch names, which are turned into numbered dev versions like
+`3.3.x-dev`, and numeric branch aliases are matched normally. For example if `dev-main` has a branch alias
 of `3.3.x-dev`, an advisory affecting `<3.5` blocks requiring `^3.3`, but requiring `dev-main`
 explicitly still works. The audit still reports it though, as the installed code matches the
 advisory through its branch alias.
