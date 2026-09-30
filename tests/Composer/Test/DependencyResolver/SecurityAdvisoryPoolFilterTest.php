@@ -308,11 +308,14 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
         $devPackage = new CompletePackage('acme/package', 'dev-main', 'dev-main');
         $branchAlias = new CompleteAliasPackage($devPackage, '3.3.9999999.9999999-dev', '3.3.x-dev');
+        // requiring the branch explicitly opts out of advisories, even if the root alias version itself would match
+        $rootAlias = new CompleteAliasPackage($devPackage, '3.3.0.0', '3.3.0');
+        $rootAlias->setRootPackageAlias(true);
 
         $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
-        $filteredPool = $filter->filter(new Pool([$devPackage, $branchAlias]), [$repository], new Request());
+        $filteredPool = $filter->filter(new Pool([$devPackage, $branchAlias, $rootAlias]), [$repository], new Request());
 
-        $this->assertSame([$devPackage], $filteredPool->getPackages());
+        $this->assertSame([$devPackage, $rootAlias], $filteredPool->getPackages());
         $this->assertTrue($filteredPool->isSecurityRemovedPackageVersion('acme/package', new Constraint('==', '3.3.9999999.9999999-dev')));
     }
 
