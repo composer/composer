@@ -132,11 +132,22 @@ class CustomListPolicyConfig extends ListPolicyConfig
             }
         }
 
+        // Reject unknown values: the global config's schema check only warns, and a typo would silently disable blocking
+        $blockScope = $listConfig['block-scope'] ?? self::BLOCK_SCOPE_UPDATE;
+        if (!in_array($blockScope, self::AVAILABLE_BLOCK_SCOPES, true)) {
+            throw new \UnexpectedValueException(sprintf(
+                'Invalid block-scope for policy list "%s": expected one of "%s", got %s.',
+                $listName,
+                implode('", "', self::AVAILABLE_BLOCK_SCOPES),
+                json_encode($blockScope)
+            ));
+        }
+
         return new self(
             $listName,
             (bool) ($listConfig['block'] ?? true),
             $listConfig['audit'] ?? self::AUDIT_FAIL,
-            $listConfig['block-scope'] ?? self::BLOCK_SCOPE_UPDATE,
+            $blockScope,
             IgnorePackageRule::parseIgnoreMap($listConfig['ignore'] ?? [], $parser),
             $sources
         );

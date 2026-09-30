@@ -115,4 +115,25 @@ class CustomListPolicyConfigTest extends TestCase
             new VersionParser()
         );
     }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function invalidBlockScopeProvider(): iterable
+    {
+        yield 'typo' => ['installs'];
+        yield 'bool' => [true];
+    }
+
+    /**
+     * @dataProvider invalidBlockScopeProvider
+     * @param mixed $blockScope
+     */
+    public function testFromRawConfigRejectsInvalidBlockScope($blockScope): void
+    {
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('Invalid block-scope for policy list "company-policy"');
+
+        CustomListPolicyConfig::fromRawConfig('company-policy', ['block-scope' => $blockScope], new VersionParser());
+    }
 }
