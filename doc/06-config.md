@@ -198,6 +198,17 @@ cannot be installed during `update`/`require`/`remove` unless the advisory or pa
 }
 ```
 
+Advisories are matched against version numbers, so `dev-*` branches like `dev-main` are never
+blocked, even when required through an inline alias like `dev-main as 1.0.0`. Numeric branches like
+`3.3.x-dev` and branch aliases are matched normally. For example if `dev-main` has a branch alias
+of `3.3.x-dev`, an advisory affecting `<3.5` blocks requiring `^3.3`, but requiring `dev-main`
+explicitly still works. The audit still reports it though, as the installed code matches the
+advisory through its branch alias.
+
+For advisory authors, this means an advisory cannot target a `dev-*` branch directly, not even with
+`*` as affected versions. To cover one, the affected versions must include its branch alias, like
+`3.3.x-dev` above.
+
 #### audit
 
 Defaults to `fail`. How `composer audit` treats packages with security advisories.
