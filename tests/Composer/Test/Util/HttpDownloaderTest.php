@@ -141,8 +141,11 @@ class HttpDownloaderTest extends TestCase
             $io->getOutput()
         );
 
-        // another IO has not shown anything yet
+        // another IO does not show them again, until the state is reset
         $otherIo = new BufferIO();
+        self::assertTrue(HttpDownloader::outputWarnings($otherIo, 'example.org', $rateLimited));
+        self::assertSame('', $otherIo->getOutput());
+        HttpDownloader::resetShownWarnings();
         self::assertTrue(HttpDownloader::outputWarnings($otherIo, 'example.org', $rateLimited));
         self::assertSame('<warning>Warning from example.org: Rate limited</warning>'.PHP_EOL, $otherIo->getOutput());
     }

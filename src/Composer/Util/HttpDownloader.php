@@ -39,11 +39,11 @@ class HttpDownloader
     private const STATUS_ABORTED = 5;
 
     /**
-     * Warnings which were already shown, per IO, keyed by url and warning, see outputWarnings()
+     * Warnings which were already shown, keyed by url and warning, see outputWarnings()
      *
-     * @var ?\SplObjectStorage<IOInterface, array<string, true>>
+     * @var array<string, true>
      */
-    private static $shownWarnings;
+    private static $shownWarnings = [];
 
     /** @var IOInterface */
     private $io;
@@ -457,7 +457,7 @@ class HttpDownloader
     }
 
     /**
-     * Shows the warnings/infos of a response, unless the same url already showed the same ones to this IO
+     * Shows the warnings/infos of a response, unless the same url already showed the same ones
      *
      * @internal
      *
@@ -473,9 +473,7 @@ class HttpDownloader
 
         // the parts of the body which are not shown do not make a warning a different one
         $shownKey = $url.':'.json_encode(array_intersect_key($data, array_flip(['warning', 'warning-versions', 'info', 'info-versions', 'warnings', 'infos'])));
-        $shownWarnings = self::$shownWarnings ?? self::$shownWarnings = new \SplObjectStorage();
-        $shown = $shownWarnings[$io] ?? [];
-        if (isset($shown[$shownKey])) {
+        if (isset(self::$shownWarnings[$shownKey])) {
             return true;
         }
 
@@ -528,11 +526,18 @@ class HttpDownloader
         }
 
         if ($wrote) {
-            $shown[$shownKey] = true;
-            $shownWarnings[$io] = $shown;
+            self::$shownWarnings[$shownKey] = true;
         }
 
         return $wrote;
+    }
+
+    /**
+     * Forgets which warnings were shown, so long-running processes can show them again in their next job
+     */
+    public static function resetShownWarnings(): void
+    {
+        self::$shownWarnings = [];
     }
 
     /**
