@@ -296,6 +296,25 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $this->assertTrue($filteredPool->isSecurityRemovedPackageVersion('acme/package', new Constraint('==', '3.3.9999999.9999999-dev')));
     }
 
+    public function testFilterBranchAliasOfDevPackageByAdvisories(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '<3.5')],
+            ],
+        ]);
+
+        $devPackage = new CompletePackage('acme/package', 'dev-main', 'dev-main');
+        $branchAlias = new CompleteAliasPackage($devPackage, '3.3.9999999.9999999-dev', '3.3.x-dev');
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
+        $filteredPool = $filter->filter(new Pool([$devPackage, $branchAlias]), [$repository], new Request());
+
+        $this->assertSame([$devPackage], $filteredPool->getPackages());
+        $this->assertTrue($filteredPool->isSecurityRemovedPackageVersion('acme/package', new Constraint('==', '3.3.9999999.9999999-dev')));
+    }
+
     public function testRootAliasOfDevPackageIsNotFilteredByAliasVersion(): void
     {
         $repository = new PackageRepository([
