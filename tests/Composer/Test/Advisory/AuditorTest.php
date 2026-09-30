@@ -17,6 +17,7 @@ use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\FilterListEntry;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\IO\BufferIO;
+use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
@@ -31,8 +32,10 @@ use Composer\Policy\IgnoreUnreachable;
 use Composer\Policy\MalwarePolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Repository\ComposerRepository;
+use Composer\Repository\PackageRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 use Composer\Advisory\Auditor;
 use DateTimeImmutable;
@@ -853,6 +856,43 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
         self::assertIsString($entry['constraint']);
     }
 
+    public function testAuditWithFilterReportsAliasedPackageOnce(): void
+    {
+        $matchingEntry = new FilterListEntry(
+            'vendor/package',
+            new MatchAllConstraint(),
+            'test-list',
+            'https://example.com/filtered',
+            'Some reason',
+            'ID-test'
+        );
+
+        $providerSet = $this->getMockBuilder(FilterListProviderSet::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getMatchingFilterLists'])
+            ->getMock();
+
+        $providerSet->method('getMatchingFilterLists')
+            ->willReturn(['filter' => ['test-list' => [$matchingEntry]], 'unreachableRepos' => []]);
+
+        $package = new CompletePackage('vendor/package', 'dev-main', 'dev-main');
+        $branchAlias = new CompleteAliasPackage($package, '9.1.9999999.9999999-dev', '9.1.x-dev');
+
+        $auditor = new Auditor();
+        $auditor->audit(
+            $io = new BufferIO(),
+            $this->getRepoSet(),
+            $this->createPolicyConfig(ListPolicyConfig::AUDIT_IGNORE, false, ListPolicyConfig::AUDIT_FAIL),
+            [$package, $branchAlias],
+            Auditor::FORMAT_JSON,
+            true,
+            $providerSet
+        );
+
+        $json = json_decode($io->getOutput(), true);
+        self::assertCount(1, $json['filter']['vendor/package']);
+    }
+
     public function testAuditWithFilterAndVulnerabilities(): void
     {
         $matchingEntry = new FilterListEntry(
@@ -895,6 +935,51 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
         self::assertStringContainsString('Found 2 security vulnerability advisories affecting 1 package:', $output);
         self::assertStringContainsString('Found 1 package matching filters:', $output);
         self::assertStringContainsString('vendor1/package2 matched dependency policy "test-list". Reason: internal', $output);
+    }
+
+    public function testAuditSkipsDevBranchesButMatchesTheirBranchAliases(): void
+    {
+        $advisory = static function (string $packageName, string $id, string $affectedVersions): array {
+            return [
+                'advisoryId' => $id,
+                'packageName' => $packageName,
+                'remoteId' => $id,
+                'title' => 'advisory',
+                'link' => null,
+                'cve' => null,
+                'affectedVersions' => $affectedVersions,
+                'source' => 'test',
+                'reportedAt' => '2024-04-31 12:37:47',
+                'composerRepository' => 'Package Repository',
+                'severity' => 'high',
+                'sources' => [['name' => 'test', 'remoteId' => $id]],
+            ];
+        };
+        $repoSet = new RepositorySet();
+        $repoSet->addRepository(new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/dev-only' => [$advisory('acme/dev-only', 'ID-DEV', '*')],
+                'acme/aliased' => [$advisory('acme/aliased', 'ID-ALIAS', '<3.5')],
+            ],
+        ]));
+
+        $devOnly = new CompletePackage('acme/dev-only', 'dev-main', 'dev-main');
+        $aliased = new CompletePackage('acme/aliased', 'dev-main', 'dev-main');
+        $aliased->setAbandoned(true);
+        $branchAlias = new CompleteAliasPackage($aliased, '3.3.9999999.9999999-dev', '3.3.x-dev');
+
+        $auditor = new Auditor();
+        $result = $auditor->audit($io = new BufferIO(), $repoSet, $this->createPolicyConfig(ListPolicyConfig::AUDIT_FAIL), [$devOnly, $aliased, $branchAlias], Auditor::FORMAT_JSON, false);
+
+        self::assertSame(Auditor::STATUS_FAILED, $result);
+        $json = json_decode($io->getOutput(), true);
+        self::assertSame(['acme/aliased'], array_keys($json['advisories']));
+        self::assertSame('ID-ALIAS', $json['advisories']['acme/aliased'][0]['advisoryId']);
+        self::assertSame(['acme/aliased' => null], $json['abandoned']);
+
+        $auditor->audit($io = new BufferIO(), $repoSet, $this->createPolicyConfig(ListPolicyConfig::AUDIT_FAIL), [$devOnly, $aliased, $branchAlias], Auditor::FORMAT_PLAIN, false);
+        self::assertStringContainsString('Found 1 abandoned package:', $io->getOutput());
     }
 
     /**
