@@ -270,9 +270,30 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filter->filter(new Pool([
             new Package('acme/package', '1.0.0.0', '1.0'),
             new Package('acme/path-package', 'dev-main', 'dev-main'),
+            new Package('acme/branch-package', '3.3.9999999.9999999-dev', '3.3.x-dev'),
         ]), [$repository], new Request());
 
-        $this->assertSame(['acme/package'], $repository->requestedNames);
+        $this->assertSame(['acme/package', 'acme/branch-package'], $repository->requestedNames);
+    }
+
+    public function testFilterNumericDevBranchByAdvisories(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '<3.5')],
+            ],
+        ]);
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
+        $filteredPool = $filter->filter(new Pool([
+            new Package('acme/package', '3.3.9999999.9999999-dev', '3.3.x-dev'),
+            new Package('acme/package', '3.6.9999999.9999999-dev', '3.6.x-dev'),
+        ]), [$repository], new Request());
+
+        $this->assertCount(1, $filteredPool->getPackages());
+        $this->assertSame('3.6.x-dev', $filteredPool->getPackages()[0]->getPrettyVersion());
+        $this->assertTrue($filteredPool->isSecurityRemovedPackageVersion('acme/package', new Constraint('==', '3.3.9999999.9999999-dev')));
     }
 
     public function testFilterRootAliasOfDevPackageByAdvisories(): void
