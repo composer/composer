@@ -22,6 +22,7 @@ use Composer\IO\NullIO;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
+use Composer\Package\Version\VersionParser;
 use Composer\Policy\AbandonedPolicyConfig;
 use Composer\Policy\AdvisoriesPolicyConfig;
 use Composer\Policy\IgnoreIdRule;
@@ -313,6 +314,24 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
         $this->assertSame([$devPackage], $filteredPool->getPackages());
         $this->assertTrue($filteredPool->isSecurityRemovedPackageVersion('acme/package', new Constraint('==', '3.3.9999999.9999999-dev')));
+    }
+
+    public function testDefaultBranchAliasIsNotFilteredByAdvisories(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '>=2.0')],
+            ],
+        ]);
+
+        $devPackage = new CompletePackage('acme/package', 'dev-main', 'dev-main');
+        $defaultBranchAlias = new CompleteAliasPackage($devPackage, VersionParser::DEFAULT_BRANCH_ALIAS, VersionParser::DEFAULT_BRANCH_ALIAS);
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
+        $filteredPool = $filter->filter(new Pool([$devPackage, $defaultBranchAlias]), [$repository], new Request());
+
+        $this->assertSame([$devPackage, $defaultBranchAlias], $filteredPool->getPackages());
     }
 
     public function testRootAliasOfDevPackageIsNotFilteredByAliasVersion(): void
