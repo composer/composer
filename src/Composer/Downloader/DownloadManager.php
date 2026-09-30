@@ -38,10 +38,6 @@ class DownloadManager
     private $filesystem;
     /** @var array<string, DownloaderInterface> */
     private $downloaders = [];
-    /** @var bool */
-    private $sourceFallback = false;
-    /** @var bool */
-    private $sourceFallbackDeprecationWarned = false;
 
     /**
      * Initializes download manager.
@@ -89,22 +85,6 @@ class DownloadManager
     public function setPreferences(array $preferences): self
     {
         $this->packagePreferences = $preferences;
-
-        return $this;
-    }
-
-    /**
-     * Allow fallback to alternative sources when download fails.
-     */
-    public function setSourceFallback(bool $sourceFallback): self
-    {
-        if ($sourceFallback && !$this->sourceFallbackDeprecationWarned) {
-            $this->io->writeError('<warning>The source-fallback option is deprecated and will be removed in Composer 2.11 as automatic fallback between dist and source has security implications.</warning>');
-            $this->io->writeError('<warning>If you have a legitimate use case and do not want us to remove it in 2.11, please open an issue at https://github.com/composer/composer/issues to let us know.</warning>');
-            $this->sourceFallbackDeprecationWarned = true;
-        }
-
-        $this->sourceFallback = $sourceFallback;
 
         return $this;
     }
@@ -218,20 +198,16 @@ class DownloadManager
             $handleError = function ($e) use ($sources, $source, $package, $io, $download) {
                 if ($e instanceof \RuntimeException && !$e instanceof IrrecoverableDownloadException) {
                     $nextSource = $sources[0] ?? null;
-                    // Only fallback from dist to source is gated by the sourceFallback flag, as it can
-                    // silently switch to less-trusted code or cause other issues where people rely on dists.
+                    // Only fallback from dist to source is risky as it can silently switch to less-trusted
+                    // code or cause other issues where people rely on dists.
                     // Falling back the other way around (source -> dist) is always allowed.
-                    $blocked = $nextSource === 'source' && !$this->sourceFallback;
-                    if ($nextSource === null || $blocked) {
-                        if ($blocked) {
-                            $io->writeError(
-                                '    <warning>Failed to download '.
-                                $package->getPrettyName().
-                                ' from ' . $source . ': '.
-                                $e->getMessage().'</warning>'
-                            );
-                            $io->writeError('    <warning>Source fallback is disabled. Not trying alternative sources.</warning>');
-                        }
+                    if ($nextSource !== 'dist') {
+                        $io->writeError(
+                            '    <warning>Failed to download '.
+                            $package->getPrettyName().
+                            ' from ' . $source . ': '.
+                            $e->getMessage().'</warning>'
+                        );
                         throw $e;
                     }
 
