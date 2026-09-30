@@ -21,7 +21,6 @@ use Composer\Util\Platform;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
-use Composer\Util\HttpDownloader;
 use React\Promise\Promise;
 
 /**
@@ -70,12 +69,6 @@ class CurlDownloader
      * @var array<string, array{statusCode: int, announced: bool, until: float}>
      */
     private $retryAfterOrigins = [];
-    /**
-     * Warnings which were already shown, keyed by origin and warning, see outputWarnings()
-     *
-     * @var array<string, true>
-     */
-    private $shownWarnings = [];
     /** @var IOInterface */
     private $io;
     /** @var Config */
@@ -510,7 +503,7 @@ class CurlDownloader
 
                 $warningsOutput = false;
                 if ($response->getStatusCode() >= 300 && self::isJsonResponse($response)) {
-                    $warningsOutput = $this->outputWarnings($job['origin'], json_decode($response->getBody(), true));
+                    $warningsOutput = ResponseWarnings::output($this->io, $job['origin'], json_decode($response->getBody(), true));
                 }
 
                 $result = $this->isAuthenticatedRetryNeeded($job, $response);
@@ -908,32 +901,6 @@ class CurlDownloader
     }
 
     /**
-     * Shows the warnings of a response, unless the same origin already showed the same warnings
-     *
-     * @param  mixed $data the decoded response body
-     * @return bool  whether the warnings were shown, now or before
-     */
-    private function outputWarnings(string $origin, $data): bool
-    {
-        if (!is_array($data)) {
-            return false;
-        }
-
-        $key = $origin.':'.json_encode(array_intersect_key($data, array_flip(['warning', 'warning-versions', 'info', 'info-versions', 'warnings', 'infos'])));
-        if (isset($this->shownWarnings[$key])) {
-            return true;
-        }
-
-        if (!HttpDownloader::outputWarnings($this->io, $origin, $data)) {
-            return false;
-        }
-
-        $this->shownWarnings[$key] = true;
-
-        return true;
-    }
-
-    /**
      * @param  Job                $job
      */
     private function failResponse(array $job, Response $response, string $errorMessage, bool $warningsOutput = false): TransportException
@@ -943,7 +910,7 @@ class CurlDownloader
         }
 
         $details = '';
-        // skip dumping the raw JSON body when outputWarnings already presented it cleanly, to avoid duplicate/messy output
+        // skip dumping the raw JSON body when ResponseWarnings::output() already presented it cleanly, to avoid duplicate/messy output
         if (!$warningsOutput && self::isJsonResponse($response)) {
             $details = ':'.PHP_EOL.substr($response->getBody(), 0, 200).(strlen($response->getBody()) > 200 ? '...' : '');
         }

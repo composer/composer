@@ -20,6 +20,7 @@ use Composer\Downloader\TransportException;
 use Composer\Pcre\Preg;
 use Composer\Util\Http\Response;
 use Composer\Util\Http\ProxyManager;
+use Composer\Util\Http\ResponseWarnings;
 
 /**
  * @internal
@@ -309,7 +310,7 @@ class RemoteFilesystem
             if (!empty($http_response_header[0])) {
                 $statusCode = self::findStatusCode($http_response_header);
                 if ($statusCode >= 300 && Response::findHeaderValue($http_response_header, 'content-type') === 'application/json') {
-                    HttpDownloader::outputWarnings($this->io, $originUrl, json_decode($result, true));
+                    ResponseWarnings::output($this->io, $originUrl, json_decode($result, true));
                 }
 
                 if (in_array($statusCode, [401, 403]) && $retryAuthFailure) {

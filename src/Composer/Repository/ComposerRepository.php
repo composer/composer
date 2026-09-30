@@ -42,6 +42,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Http\Response;
+use Composer\Util\Http\ResponseWarnings;
 use Composer\MetadataMinifier\MetadataMinifier;
 use Composer\Util\Url;
 use React\Promise\PromiseInterface;
@@ -527,7 +528,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $url .= '?filter='.urlencode($packageFilter);
             $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
-            HttpDownloader::outputWarnings($this->io, $this->url, $result);
+            ResponseWarnings::output($this->io, $this->url, $result);
 
             return $result['packageNames'];
         }
@@ -542,7 +543,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
-        HttpDownloader::outputWarnings($this->io, $this->url, $result);
+        ResponseWarnings::output($this->io, $this->url, $result);
 
         if (!$this->cache->isReadOnly()) {
             $this->cache->write($cacheKey, implode("\n", $result['packageNames']));
@@ -631,7 +632,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $search = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
-            HttpDownloader::outputWarnings($this->io, $this->url, $search);
+            ResponseWarnings::output($this->io, $this->url, $search);
 
             if (empty($search['results'])) {
                 return [];
@@ -668,7 +669,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $url = $this->listUrl . '?vendor='.urlencode($match['vendor']).'&filter='.urlencode($match['query'].'*');
                 $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
-                HttpDownloader::outputWarnings($this->io, $this->url, $result);
+                ResponseWarnings::output($this->io, $this->url, $result);
 
                 $results = [];
                 foreach ($result['packageNames'] as $name) {
@@ -802,7 +803,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $warnedAboutUnrequestedNames = false;
             foreach ($responses as $advisoryData) {
                 if (!$repoWarningsShown) {
-                    HttpDownloader::outputWarnings($this->io, $this->url, $advisoryData);
+                    ResponseWarnings::output($this->io, $this->url, $advisoryData);
                     $repoWarningsShown = true;
                 }
 
@@ -872,7 +873,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $configuredLists
             );
             $decoded = $response->decodeJson();
-            HttpDownloader::outputWarnings($this->io, $this->url, $decoded);
+            ResponseWarnings::output($this->io, $this->url, $decoded);
             if (!isset($decoded['filter']) || !is_array($decoded['filter'])) {
                 throw new TransportException('Filter api-url '.$this->filterConfig->apiUrl.' returned an unexpected response for '.$this->getRepoName(), 0);
             }
@@ -1049,7 +1050,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 throw $e;
             }
 
-            HttpDownloader::outputWarnings($this->io, $this->url, $apiResult);
+            ResponseWarnings::output($this->io, $this->url, $apiResult);
 
             foreach ($apiResult['providers'] as $provider) {
                 $result[$provider['name']] = $provider;
@@ -1814,7 +1815,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 $data = $response->decodeJson();
-                HttpDownloader::outputWarnings($this->io, $this->url, $data);
+                ResponseWarnings::output($this->io, $this->url, $data);
 
                 if ($cacheKey && !$this->cache->isReadOnly()) {
                     if ($storeLastModifiedTime) {
@@ -1899,7 +1900,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $data = $response->decodeJson();
-            HttpDownloader::outputWarnings($this->io, $this->url, $data);
+            ResponseWarnings::output($this->io, $this->url, $data);
 
             $lastModifiedDate = $response->getHeader('last-modified');
             $response->collect();
@@ -1998,7 +1999,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $data = $response->decodeJson();
-            HttpDownloader::outputWarnings($io, $url, $data);
+            ResponseWarnings::output($io, $url, $data);
 
             $lastModifiedDate = $response->getHeader('last-modified');
             $response->collect();

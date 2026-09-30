@@ -122,47 +122,6 @@ class HttpDownloaderTest extends TestCase
         $downloader->countActiveJobs();
     }
 
-    public function testOutputWarnings(): void
-    {
-        $io = new BufferIO();
-        self::assertFalse(HttpDownloader::outputWarnings($io, '$URL', []));
-        self::assertSame('', $io->getOutput());
-
-        // warning/info keys present but filtered out by version constraints => nothing written
-        self::assertFalse(HttpDownloader::outputWarnings($io, '$URL', [
-            'warning' => 'old warning msg',
-            'warning-versions' => '<2.0',
-            'warnings' => [
-                ['message' => 'should not appear', 'versions' => '<2.2'],
-            ],
-        ]));
-        self::assertSame('', $io->getOutput());
-
-        self::assertTrue(HttpDownloader::outputWarnings($io, '$URL', [
-            'warning' => 'old warning msg',
-            'warning-versions' => '>=2.0',
-            'info' => 'old info msg',
-            'info-versions' => '>=2.0',
-            'warnings' => [
-                ['message' => 'should not appear', 'versions' => '<2.2'],
-                ['message' => 'visible warning', 'versions' => '>=2.2-dev'],
-            ],
-            'infos' => [
-                ['message' => 'should not appear', 'versions' => '<2.2'],
-                ['message' => 'visible info', 'versions' => '>=2.2-dev'],
-            ],
-        ]));
-
-        // the <info> tag are consumed by the OutputFormatter, but not <warning> as that is not a default output format
-        self::assertSame(
-            '<warning>Warning from $URL: old warning msg</warning>'.PHP_EOL.
-            'Info from $URL: old info msg'.PHP_EOL.
-            '<warning>Warning from $URL: visible warning</warning>'.PHP_EOL.
-            'Info from $URL: visible info'.PHP_EOL,
-            $io->getOutput()
-        );
-    }
-
     /**
      * @return \PHPUnit\Framework\MockObject\MockObject&CurlDownloader
      */
