@@ -937,13 +937,6 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
         self::assertStringContainsString('vendor1/package2 matched dependency policy "test-list". Reason: internal', $output);
     }
 
-    /**
-     * @param Auditor::ABANDONED_* $abandoned
-     * @param ListPolicyConfig::AUDIT_*|null $filteredAudit
-     * @param array<string, string|null> $ignoreAdvisories Mixed flat map of advisory IDs and package names => reason.
-     * @param list<string> $ignoreSeverities
-     * @param array<string, string|null> $ignoreAbandoned Package name => reason; package name may be a wildcard pattern.
-     */
     public function testAuditSkipsDevBranchesButMatchesTheirBranchAliases(): void
     {
         $advisory = static function (string $packageName, string $id, string $affectedVersions): array {
@@ -989,6 +982,13 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
         self::assertStringContainsString('Found 1 abandoned package:', $io->getOutput());
     }
 
+    /**
+     * @param Auditor::ABANDONED_* $abandoned
+     * @param ListPolicyConfig::AUDIT_*|null $filteredAudit
+     * @param array<string, string|null> $ignoreAdvisories Mixed flat map of advisory IDs and package names => reason.
+     * @param list<string> $ignoreSeverities
+     * @param array<string, string|null> $ignoreAbandoned Package name => reason; package name may be a wildcard pattern.
+     */
     private function createPolicyConfig(
         string $abandoned = ListPolicyConfig::AUDIT_IGNORE,
         bool $ignoreUnreachableAudit = false,
