@@ -110,14 +110,14 @@ resolution.
 * **--download-only:** Download only, do not install packages.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader
-  generation skips the `autoload-dev` rules. Also see [COMPOSER_NO_DEV](#composer-no-dev).
+  generation skips the `autoload-dev` rules. Also see [COMPOSER_NO_DEV](#composer_no_dev).
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--audit:** Run an audit after installation is complete.
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
-* **--no-blocking:** Disables all policy based dependency blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
+* **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer_no_security_blocking).
+* **--no-blocking:** Disables all policy based dependency blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer_no_blocking).
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -198,12 +198,12 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
   Passing this flag will override the config value.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
-* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules. Also see [COMPOSER_NO_DEV](#composer-no-dev).
+* **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules. Also see [COMPOSER_NO_DEV](#composer_no_dev).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
-* **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
+* **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer_no_audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
-* **--no-blocking:** Disables all policy based dependency blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
+* **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer_no_security_blocking).
+* **--no-blocking:** Disables all policy based dependency blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer_no_blocking).
 * **--lock:** Overwrites the lock file hash to suppress warning about the lock file being out of
   date without updating package versions. Package metadata like mirrors and URLs are updated if
   they changed.
@@ -296,11 +296,11 @@ If you do not want to install the new dependencies immediately you can call it w
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
-* **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
+* **--no-audit:** Does not run the audit steps after updating the composer.lock file. Also see [COMPOSER_NO_AUDIT](#composer_no_audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
-* **--no-blocking:** Disables all policy blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
-* **--update-no-dev:** Run the dependency update with the `--no-dev` option. Also see [COMPOSER_NO_DEV](#composer-no-dev).
+* **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer_no_security_blocking).
+* **--no-blocking:** Disables all policy blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer_no_blocking).
+* **--update-no-dev:** Run the dependency update with the `--no-dev` option. Also see [COMPOSER_NO_DEV](#composer_no_dev).
 * **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements. Can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var.
 * **--update-with-all-dependencies (-W):** Also update dependencies of the newly required packages, including those that are root requirements. Can also be set via the COMPOSER_WITH_ALL_DEPENDENCIES=1 env var.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
@@ -348,11 +348,11 @@ uninstalled.
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
-* **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
+* **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer_no_audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
-* **--no-blocking:** Disables all policy based dependency blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
-* **--update-no-dev:** Run the dependency update with the --no-dev option. Also see [COMPOSER_NO_DEV](#composer-no-dev).
+* **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer_no_security_blocking).
+* **--no-blocking:** Disables all policy based dependency blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer_no_blocking).
+* **--update-no-dev:** Run the dependency update with the --no-dev option. Also see [COMPOSER_NO_DEV](#composer_no_dev).
 * **--update-with-dependencies (-w):** Also update dependencies of the removed packages. Can also be set via the COMPOSER_WITH_DEPENDENCIES=1 env var.
   (Deprecated, is now default behavior)
 * **--update-with-all-dependencies (-W):** Allows all inherited dependencies to be updated,
@@ -460,7 +460,7 @@ platform dependencies.
 ## global
 
 The global command allows you to run other commands like `install`, `remove`, `require`
-or `update` as if you were running them from the [COMPOSER_HOME](#composer-home)
+or `update` as if you were running them from the [COMPOSER_HOME](#composer_home)
 directory.
 
 This is merely a helper to manage a project stored in a central location that
@@ -1048,10 +1048,10 @@ By default the command checks for the packages on packagist.org.
   mode.
 * **--remove-vcs:** Force-remove the VCS metadata without prompting.
 * **--no-install:** Disables installation of the vendors.
-* **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer-no-audit).
+* **--no-audit:** Does not run the audit steps after installation is complete. Also see [COMPOSER_NO_AUDIT](#composer_no_audit).
 * **--audit-format:** Audit output format. Must be "table", "plain", "json", or "summary" (default).
-* **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer-no-security-blocking).
-* **--no-blocking:** Disables all policy blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer-no-blocking).
+* **--no-security-blocking:** DEPRECATED, use `--no-blocking` instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. Also see [COMPOSER_NO_SECURITY_BLOCKING](#composer_no_security_blocking).
+* **--no-blocking:** Disables all policy blocking during this command, including the cooldown period. Also see [COMPOSER_NO_BLOCKING](#composer_no_blocking).
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
@@ -1442,7 +1442,7 @@ If set to `1`, it is the equivalent of passing the `--no-blocking` option to a `
 
 ### COMPOSER_NO_SECURITY_BLOCKING
 
-DEPRECATED, use [COMPOSER_NO_BLOCKING](#composer-no-blocking) instead.
+DEPRECATED, use [COMPOSER_NO_BLOCKING](#composer_no_blocking) instead.
 
 If set to `1`, it is the equivalent of passing the `--no-security-blocking` option to a `require`, `update`, `remove`, `install`, or `create-project` command. This allows installing packages with security advisories, that are abandoned or that are still in the cooldown period. It overrides the config option [policy.advisories.block](06-config.md#block).
 
@@ -1458,11 +1458,11 @@ If set to `1`, enables blocking of packages flagged as malware during dependency
 
 If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `policy.abandoned.block` to `true`). If set to `0`, disables blocking.
 
-Value takes precedence over the value of the legacy variable [COMPOSER_SECURITY_BLOCKING_ABANDONED](#composer-security-blocking-abandoned) when it's set to a different value.
+Value takes precedence over the value of the legacy variable [COMPOSER_SECURITY_BLOCKING_ABANDONED](#composer_security_blocking_abandoned) when it's set to a different value.
 
 ### COMPOSER_SECURITY_BLOCKING_ABANDONED
 
-DEPRECATED, use [COMPOSER_POLICY_ABANDONED_BLOCK](#composer-policy-abandoned-block) instead.
+DEPRECATED, use [COMPOSER_POLICY_ABANDONED_BLOCK](#composer_policy_abandoned_block) instead.
 
 If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `audit.block-abandoned` config to `true`). If set to `0`, disables blocking of abandoned packages. It overrides the config option [audit.block-abandoned](06-config.md#block-abandoned).
 
