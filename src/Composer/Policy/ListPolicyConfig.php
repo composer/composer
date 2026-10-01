@@ -48,6 +48,12 @@ abstract class ListPolicyConfig
     public const BLOCK_SCOPE_INSTALL = 'install';
     public const BLOCK_SCOPE_ALL = 'all';
 
+    public const AVAILABLE_BLOCK_SCOPES = [
+        self::BLOCK_SCOPE_UPDATE,
+        self::BLOCK_SCOPE_INSTALL,
+        self::BLOCK_SCOPE_ALL,
+    ];
+
     /** @var string List name */
     public $name;
 
