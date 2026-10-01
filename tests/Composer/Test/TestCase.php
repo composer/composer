@@ -91,10 +91,25 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             $this->prevCwd = null;
             Platform::clearEnv('COMPOSER_HOME');
             Platform::clearEnv('COMPOSER_DISABLE_XDEBUG_WARN');
+            Platform::clearEnv('COMPOSER_ROOT_VERSION');
         }
         $fs = new Filesystem();
         foreach ($this->tempComposerDirs as $dir) {
-            $fs->removeDirectory($dir);
+            self::removeTestDirectory($fs, $dir);
+        }
+    }
+
+    /**
+     * Removes a directory in-process, avoiding the rm/rmdir subprocess spawned by
+     * Filesystem::removeDirectory, which is expensive on Windows
+     */
+    private static function removeTestDirectory(Filesystem $fs, string $directory): void
+    {
+        try {
+            $fs->removeDirectoryPhp($directory);
+        } catch (\RuntimeException $e) {
+            // e.g. symlinked directories within the tree, let the shell handle these
+            $fs->removeDirectory($directory);
         }
     }
 
@@ -137,6 +152,9 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
         Platform::putEnv('COMPOSER_HOME', $dir.'/composer-home');
         Platform::putEnv('COMPOSER_DISABLE_XDEBUG_WARN', '1');
+        // skip root version guessing, the temp dir is not a VCS checkout so it would spawn
+        // several git/hg/fossil/svn processes per Composer instance only to fail (very slow on Windows)
+        Platform::putEnv('COMPOSER_ROOT_VERSION', RootPackage::DEFAULT_PRETTY_VERSION);
 
         if ($composerJson === []) {
             $composerJson = new \stdClass;
@@ -327,7 +345,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         $fs = new Filesystem();
 
         if (is_dir($directory)) {
-            $fs->removeDirectory($directory);
+            self::removeTestDirectory($fs, $directory);
         }
 
         mkdir($directory, 0777, true);

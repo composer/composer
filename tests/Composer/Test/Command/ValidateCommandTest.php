@@ -25,6 +25,8 @@ class ValidateCommandTest extends TestCase
     public function testValidate(array $composerJson, array $command, string $expected): void
     {
         $this->initTempComposer($composerJson);
+        // let version guessing run so the root version warning is covered
+        Platform::clearEnv('COMPOSER_ROOT_VERSION');
 
         $appTester = $this->getApplicationTester();
         $appTester->run(array_merge(['command' => 'validate'], $command));
@@ -47,6 +49,7 @@ class ValidateCommandTest extends TestCase
     public function testWithComposerLock(): void
     {
         $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
+        Platform::clearEnv('COMPOSER_ROOT_VERSION');
         $this->createComposerLock();
 
         $appTester = $this->getApplicationTester();
