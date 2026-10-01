@@ -199,6 +199,34 @@ class ProblemTest extends TestCase
         self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days)\n      Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the \"policy.advisories.ignore-id\" config or add the package to \"policy.advisories.ignore\". To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set \"policy.advisories.block\" or \"policy.cooldown.block\" to false.", $message);
     }
 
+    public function testGetMissingPackageReasonKeepsOneSentenceWhenOnlyTheCooldownWithheldVersions(): void
+    {
+        $cooldownInfo = static function (string $version, string $availableIn): array {
+            return ['name' => 'vendor/pkg', 'prettyVersion' => $version, 'releaseDate' => '2026-01-10T12:00:00+00:00', 'availableIn' => $availableIn, 'source' => 'published-time'];
+        };
+        $pool = new Pool([], [], [], [], [], [], [], [
+            'vendor/pkg' => [
+                '1.0.1.0' => $cooldownInfo('1.0.1', '1 day'),
+                '1.0.2.0' => $cooldownInfo('1.0.2', '3 days'),
+            ],
+        ]);
+
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository(new ArrayRepository([self::getPackage('vendor/pkg', '1.0.1'), self::getPackage('vendor/pkg', '1.0.2')]));
+
+        $message = implode('', Problem::getMissingPackageReason(
+            $repositorySet,
+            new Request(),
+            $pool,
+            false,
+            'vendor/pkg',
+            new Constraint('>=', '1.0.0.0')
+        ));
+
+        self::assertStringContainsString('found vendor/pkg[1.0.1, 1.0.2] but these were not loaded, because they are still in the cooldown period', $message);
+        self::assertStringNotContainsString("\n      - ", $message);
+    }
+
     public function testGetMissingPackageReasonListsFilterListAndCooldownRemovalsSeparately(): void
     {
         $flagged = self::getPackage('vendor/pkg', '1.0.0');
