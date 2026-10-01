@@ -124,7 +124,7 @@ resolution.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--strict-psr-autoloader:** Return a failed exit code (6) if PSR-4 or PSR-0 mapping errors
-  are present in the current project (dependencies excluded). Requires `--optimize-autoloader` to work.
+  are present in the current project (dependencies excluded). Requires `--optimize-autoloader` or `--classmap-authoritative` to work.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu-autoloader`.
@@ -219,7 +219,7 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--strict-psr-autoloader:** Return a failed exit code (6) if PSR-4 or PSR-0 mapping errors
-  are present in the current project (dependencies excluded). Requires `--optimize-autoloader` to work.
+  are present in the current project (dependencies excluded). Requires `--optimize-autoloader` or `--classmap-authoritative` to work.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu-autoloader`.
@@ -1102,7 +1102,8 @@ performance.
 * **--strict-psr:** Return a failed exit code (1) if PSR-4 or PSR-0 mapping errors
   are present in the current project (dependencies excluded). Requires `--optimize` to work.
 * **--strict-ambiguous:** Return a failed exit code (2) if the same class is found
-  in multiple files. Requires `--optimize` to work.
+  in multiple files. It also checks if files or folders exist with different case variants that
+  cause issues on case-insensitive filesystems. Requires `--optimize` to work.
 
 ## clear-cache / clearcache / cc
 
@@ -1240,6 +1241,14 @@ If set to 1, this env disables the warning about running commands as root/super 
 It also disables automatic clearing of sudo sessions, so you should really only set this
 if you use Composer as a super user at all times like in docker containers.
 
+### COMPOSER_ALLOW_UNSAFE_PHAR_METADATA
+
+This env var only has an effect on PHP versions before 8.0. On those versions Composer
+refuses to read or extract `tar`/`phar` dist archives, because parsing such an archive
+is not safe to do with untrusted input on PHP < 8.0. The recommended fix is to upgrade
+to PHP 8.0 or newer. If you cannot upgrade and accept the risk, set this to 1 to allow
+Composer to process these archives anyway. PHP 8.0+ is unaffected and ignores this setting.
+
 ### COMPOSER_ALLOW_XDEBUG
 
 If set to 1, this env allows running Composer when the Xdebug extension is enabled, without restarting PHP without it.
@@ -1271,6 +1280,9 @@ On \*nix systems that follow the [XDG Base
 Directory Specifications](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html),
 it points to `$XDG_CACHE_HOME/composer`. On other \*nix systems and on macOS, it points to
 `$COMPOSER_HOME/cache`.
+
+See [Caching Composer dependencies](articles/caching.md) for how to cache it in CI
+and container builds.
 
 ### COMPOSER_CAFILE
 

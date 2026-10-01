@@ -102,6 +102,8 @@ EOT
         class_exists('Composer\Util\Platform');
         class_exists('Composer\Downloader\FilesystemException');
         class_exists('Composer\Console\GithubActionError');
+        class_exists('Symfony\Component\Console\Helper\Helper');
+        class_exists('Symfony\Component\String\UnicodeString');
 
         $config = Factory::createConfig();
 

@@ -258,6 +258,12 @@ class Filesystem
             }
 
             if (!@mkdir($directory, 0777, true)) {
+                // maybe another process created it since we checked above?
+                clearstatcache();
+                if (is_dir($directory)) {
+                    return;
+                }
+
                 $e = new \RuntimeException($directory.' does not exist and could not be created: '.(error_get_last()['message'] ?? ''));
 
                 // in pathological cases with paths like path/to/broken-symlink/../foo is_dir will fail to detect path/to/foo
@@ -912,10 +918,28 @@ class Filesystem
     {
         $currentContent = Silencer::call('file_get_contents', $path);
         if (false === $currentContent || $currentContent !== $content) {
-            return file_put_contents($path, $content);
+            return self::safeFilePutContents($path, $content);
         }
 
         return 0;
+    }
+
+    /**
+     * Writes a file by renaming a temp file onto it, instead of rewriting it in place
+     *
+     * This way readers never see a half-written file, and paths hardlinked to the previous inode
+     * (e.g. a vendor dir copied with `cp -al`) keep their content. Falls back to a direct write
+     * when the file cannot be replaced.
+     *
+     * @return int|false
+     */
+    public static function safeFilePutContents(string $path, string $content)
+    {
+        $replaced = self::replaceFile($path, static function ($handle) use ($content): bool {
+            return \strlen($content) === fwrite($handle, $content);
+        });
+
+        return $replaced ? \strlen($content) : file_put_contents($path, $content);
     }
 
     /**
@@ -923,18 +947,88 @@ class Filesystem
      */
     public function safeCopy(string $source, string $target): void
     {
-        if (!file_exists($target) || !file_exists($source) || !$this->filesAreEqual($source, $target)) {
-            $sourceHandle = fopen($source, 'r');
-            assert($sourceHandle !== false, 'Could not open "'.$source.'" for reading.');
+        if (file_exists($target) && file_exists($source) && $this->filesAreEqual($source, $target)) {
+            return;
+        }
+
+        $sourceHandle = fopen($source, 'r');
+        assert($sourceHandle !== false, 'Could not open "'.$source.'" for reading.');
+
+        $replaced = self::replaceFile($target, static function ($targetHandle) use ($sourceHandle): bool {
+            return false !== stream_copy_to_stream($sourceHandle, $targetHandle);
+        });
+
+        if (!$replaced) {
+            rewind($sourceHandle);
             $targetHandle = fopen($target, 'w+');
             assert($targetHandle !== false, 'Could not open "'.$target.'" for writing.');
-
             stream_copy_to_stream($sourceHandle, $targetHandle);
-            fclose($sourceHandle);
             fclose($targetHandle);
-
-            touch($target, (int) filemtime($source), (int) fileatime($source));
         }
+        fclose($sourceHandle);
+
+        touch($target, (int) filemtime($source), (int) fileatime($source));
+    }
+
+    /**
+     * Fills a temp file using $write and renames it onto $path, or returns false if $path should be written directly
+     *
+     * @param callable(resource): bool $write
+     */
+    private static function replaceFile(string $path, callable $write): bool
+    {
+        // stream wrappers (php://memory, ...) do not support renaming
+        if (false !== strpos($path, '://')) {
+            return false;
+        }
+
+        // write through symlinks instead of replacing them
+        if (is_link($path)) {
+            $path = realpath($path);
+            if (false === $path) {
+                return false;
+            }
+        }
+
+        // rename() only needs the dir to be writable, so read-only files are left to the direct write which fails as before,
+        // and so are is_writable false negatives, see https://github.com/composer/composer/issues/8231
+        if (file_exists($path) && !is_writable($path)) {
+            return false;
+        }
+
+        $tempPath = $path.'~'.bin2hex(random_bytes(5)).'.tmp';
+        $handle = Silencer::call('fopen', $tempPath, 'x');
+        if (false === $handle) {
+            return false;
+        }
+
+        // restrict permissions before writing as the content may be sensitive, e.g. auth.json
+        $written = true === Silencer::call('chmod', $tempPath, 0600);
+
+        $stat = Silencer::call('stat', $path);
+        if ($written && \is_array($stat)) {
+            // the renamed file would be ours, so only replace it if its owner and group can be kept
+            $tempStat = fstat($handle);
+            $written = false !== $tempStat
+                && ($stat['uid'] === $tempStat['uid'] || true === Silencer::call('chown', $tempPath, $stat['uid']))
+                && ($stat['gid'] === $tempStat['gid'] || true === Silencer::call('chgrp', $tempPath, $stat['gid']));
+        }
+
+        $written = $written && $write($handle);
+        $written = fclose($handle) && $written;
+
+        if ($written) {
+            Silencer::call('chmod', $tempPath, \is_array($stat) ? $stat['mode'] & 0777 : 0666 & ~umask());
+
+            // not using Filesystem::rename() as its fallbacks copy onto the target, rewriting it in place
+            if (true === Silencer::call('rename', $tempPath, $path)) {
+                return true;
+            }
+        }
+
+        Silencer::call('unlink', $tempPath);
+
+        return false;
     }
 
     /**

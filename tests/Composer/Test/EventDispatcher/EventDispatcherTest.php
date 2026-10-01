@@ -645,6 +645,53 @@ class EventDispatcherTest extends TestCase
         $this->assertFalse($dispatcher->hasEventListeners($event));
     }
 
+    public function testDispatcherSkipsEmptyStringScript(): void
+    {
+        $process = $this->getProcessExecutorMock();
+        $process->expects([
+            'echo BEFORE',
+            'echo AFTER',
+        ], true);
+
+        $composer = new Composer();
+        $config = new Config();
+        $composer->setConfig($config);
+
+        $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
+        $package->method('getBinaries')->willReturn(['hello', 'world']);
+        $composer->setPackage($package);
+
+        $composer->setRepositoryManager($rm = new RepositoryManager(new NullIO(), $config, new HttpDownloaderMock()));
+        $rm->setLocalRepository(new InstalledArrayRepository([]));
+        $composer->setAutoloadGenerator(new AutoloadGenerator(new EventDispatcher($composer, new NullIO())));
+        $composer->setInstallationManager(new InstallationManagerMock());
+
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs([
+                $composer,
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ])
+            ->onlyMethods(['getListeners'])
+            ->getMock();
+
+        $listeners = [
+            'echo BEFORE',
+            '',
+            'echo AFTER',
+        ];
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listeners));
+
+        $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
+
+        $expected = '> post-install-cmd: echo BEFORE' . PHP_EOL .
+            '> post-install-cmd: echo AFTER' . PHP_EOL;
+        self::assertEquals($expected, $io->getOutput());
+    }
+
     public static function call(): void
     {
         throw new \RuntimeException();

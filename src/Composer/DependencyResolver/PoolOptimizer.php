@@ -59,7 +59,7 @@ class PoolOptimizer
     private $aliasesPerPackage = [];
 
     /**
-     * @var array<string, array<string, string>>
+     * @var array<int, array<string, string>>
      */
     private $removedVersionsByPackage = [];
 
@@ -194,40 +194,42 @@ class PoolOptimizer
 
             $dependencyHash = $this->calculateDependencyHash($package);
 
+            $replaceHashParts = [];
+            foreach ($package->getReplaces() as $link) {
+                if (CompilingMatcher::match($link->getConstraint(), Constraint::OP_EQ, $package->getVersion())) {
+                    // Use the same hash part as the regular require hash because that's what the replacement does
+                    $replaceHashParts[] = 'require:' . (string) $link->getConstraint();
+                }
+            }
+
             foreach ($package->getNames(false) as $packageName) {
                 if (!isset($this->requireConstraintsPerPackage[$packageName])) {
                     continue;
                 }
 
+                $invariantHashParts = $replaceHashParts;
+                if (isset($this->conflictConstraintsPerPackage[$packageName])) {
+                    foreach ($this->conflictConstraintsPerPackage[$packageName] as $conflictConstraint) {
+                        if (CompilingMatcher::match($conflictConstraint, Constraint::OP_EQ, $package->getVersion())) {
+                            $invariantHashParts[] = 'conflict:' . (string) $conflictConstraint;
+                        }
+                    }
+                }
+
+                $invariantHash = implode('', $invariantHashParts);
+                $addedToInvariantGroup = false;
                 foreach ($this->requireConstraintsPerPackage[$packageName] as $requireConstraint) {
-                    $groupHashParts = [];
-
                     if (CompilingMatcher::match($requireConstraint, Constraint::OP_EQ, $package->getVersion())) {
-                        $groupHashParts[] = 'require:' . (string) $requireConstraint;
-                    }
-
-                    if (\count($package->getReplaces()) > 0) {
-                        foreach ($package->getReplaces() as $link) {
-                            if (CompilingMatcher::match($link->getConstraint(), Constraint::OP_EQ, $package->getVersion())) {
-                                // Use the same hash part as the regular require hash because that's what the replacement does
-                                $groupHashParts[] = 'require:' . (string) $link->getConstraint();
-                            }
+                        $groupHash = 'require:' . (string) $requireConstraint . $invariantHash;
+                    } else {
+                        // Every non-matching constraint yields the same hash, only add the package to it once
+                        if ($addedToInvariantGroup || '' === $invariantHash) {
+                            continue;
                         }
+                        $addedToInvariantGroup = true;
+                        $groupHash = $invariantHash;
                     }
 
-                    if (isset($this->conflictConstraintsPerPackage[$packageName])) {
-                        foreach ($this->conflictConstraintsPerPackage[$packageName] as $conflictConstraint) {
-                            if (CompilingMatcher::match($conflictConstraint, Constraint::OP_EQ, $package->getVersion())) {
-                                $groupHashParts[] = 'conflict:' . (string) $conflictConstraint;
-                            }
-                        }
-                    }
-
-                    if (0 === \count($groupHashParts)) {
-                        continue;
-                    }
-
-                    $groupHash = implode('', $groupHashParts);
                     $identicalDefinitionsPerPackage[$packageName][$groupHash][$dependencyHash][] = $package->id;
                 }
             }
@@ -236,16 +238,18 @@ class PoolOptimizer
         foreach ($identicalDefinitionsPerPackage as $packageName => $constraintGroups) {
             foreach ($constraintGroups as $constraintGroup) {
                 foreach ($constraintGroup as $packageIds) {
+                    $versions = $this->getGroupVersions($pool, $packageIds);
+
                     // Only one package in this constraint group has the same requirements, we're not allowed to remove that package
                     if (1 === \count($packageIds)) {
-                        $this->keepPackageInGroup($pool->packageById($packageIds[0]), $pool, $packageName, $packageIds);
+                        $this->keepPackageInGroup($pool->packageById($packageIds[0]), $packageName, $versions);
                         continue;
                     }
 
                     // Otherwise we find out which one is the preferred package in this constraint group which is
                     // then not allowed to be removed either
                     foreach ($this->policy->selectPreferredPackages($pool, $packageIds) as $preferredLiteral) {
-                        $this->keepPackageInGroup($pool->literalToPackage($preferredLiteral), $pool, $packageName, $packageIds);
+                        $this->keepPackageInGroup($pool->literalToPackage($preferredLiteral), $packageName, $versions);
                     }
                 }
             }
@@ -303,19 +307,10 @@ class PoolOptimizer
     }
 
     /**
-     * @param list<int> $packageIds
+     * @param array<string, string> $versions
      */
-    private function keepPackageInGroup(BasePackage $package, Pool $pool, string $packageName, array $packageIds): void
+    private function keepPackageInGroup(BasePackage $package, string $packageName, array $versions): void
     {
-        $versions = [];
-        foreach ($packageIds as $packageId) {
-            $groupPackage = $pool->packageById($packageId);
-            if ($groupPackage instanceof AliasPackage && $groupPackage->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
-                $groupPackage = $groupPackage->getAliasOf();
-            }
-            $versions[$groupPackage->getVersion()] = $groupPackage->getPrettyVersion();
-        }
-
         // Always record versions even if already kept — the package may appear in
         // groups for multiple names (own name + replacement names)
         $this->recordRemovedVersionsForPackage($package, $packageName, $versions);
@@ -349,6 +344,24 @@ class PoolOptimizer
         }
     }
 
+    /**
+     * @param list<int> $packageIds
+     * @return array<string, string>
+     */
+    private function getGroupVersions(Pool $pool, array $packageIds): array
+    {
+        $versions = [];
+        foreach ($packageIds as $packageId) {
+            $groupPackage = $pool->packageById($packageId);
+            if ($groupPackage instanceof AliasPackage && $groupPackage->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                $groupPackage = $groupPackage->getAliasOf();
+            }
+            $versions[$groupPackage->getVersion()] = $groupPackage->getPrettyVersion();
+        }
+
+        return $versions;
+    }
+
     private function unmarkPackageForRemoval(BasePackage $package): void
     {
         unset($this->packagesToRemove[$package->id]);
@@ -363,9 +376,11 @@ class PoolOptimizer
             return;
         }
 
-        foreach ($versions as $version => $prettyVersion) {
-            $this->removedVersionsByPackage[spl_object_hash($package)][$version] = $prettyVersion;
-        }
+        // array_replace rather than += so the last pretty version wins, like a per-key assignment would
+        $id = spl_object_id($package);
+        $this->removedVersionsByPackage[$id] = isset($this->removedVersionsByPackage[$id])
+            ? array_replace($this->removedVersionsByPackage[$id], $versions)
+            : $versions;
     }
 
     /**

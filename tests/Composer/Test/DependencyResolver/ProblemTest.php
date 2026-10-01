@@ -37,7 +37,8 @@ class ProblemTest extends TestCase
             'malware',
             'https://example.org/malware/vendor-malware',
             'looks suspicious',
-            'PKG-1'
+            'PKG-1',
+            'aikido'
         );
         $pool = new Pool([], [], [], [], [], [], [
             'vendor/malware' => ['1.0.0.0' => [$entry]],
@@ -47,7 +48,7 @@ class ProblemTest extends TestCase
 
         self::assertSame('- Package vendor/malware 1.0.0 (in the lock file) ', $prefix);
 
-        self::assertStringContainsString('flagged as malware', $suffix);
+        self::assertStringContainsString('flagged as malware reported by aikido', $suffix);
         self::assertStringContainsString('https://example.org/malware/vendor-malware', $suffix);
         self::assertStringContainsString('reason: looks suspicious', $suffix);
         self::assertStringContainsString('"policy.malware.ignore"', $suffix);

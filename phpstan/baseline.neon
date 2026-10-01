@@ -1506,27 +1506,12 @@ parameters:
 			path: ../src/Composer/Installer/BinaryInstaller.php
 
 		-
-			message: "#^Parameter \\#1 \\$binPath of method Composer\\\\Installer\\\\BinaryInstaller\\:\\:installFullBinaries\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/BinaryInstaller.php
-
-		-
-			message: "#^Parameter \\#1 \\$binPath of method Composer\\\\Installer\\\\BinaryInstaller\\:\\:installUnixyProxyBinaries\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/BinaryInstaller.php
-
-		-
 			message: "#^Parameter \\#1 \\$fp of function fclose expects resource, resource\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/BinaryInstaller.php
 
 		-
 			message: "#^Parameter \\#1 \\$fp of function fgets expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/BinaryInstaller.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of function realpath expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/BinaryInstaller.php
 
@@ -3274,6 +3259,11 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Parameter \\$delayedJob of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:getDueAt\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:failResponse\\(\\) has invalid type CurlHandle\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -3289,6 +3279,11 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:isStatusCodeRetryNeeded\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:rejectJob\\(\\) has invalid type CurlHandle\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -3300,6 +3295,11 @@ parameters:
 
 		-
 			message: "#^Parameter \\$job of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:restartJobWithDelay\\(\\) has invalid type CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$delayedJobs has unknown class CurlHandle as its type\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -3339,6 +3339,11 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Type alias DelayedJob contains unknown class CurlHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Type alias Job contains unknown class CurlHandle\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -3352,6 +3357,11 @@ parameters:
 			message: "#^Constant CURLOPT_PROXY_CAPATH not found\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/RequestProxy.php
+
+		-
+			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
+			count: 3
+			path: ../src/Composer/Util/Http/ResponseWarnings.php
 
 		-
 			message: "#^Cannot call method abortRequest\\(\\) on Composer\\\\Util\\\\Http\\\\CurlDownloader\\|null\\.$#"
@@ -3385,7 +3395,7 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 4
+			count: 1
 			path: ../src/Composer/Util/HttpDownloader.php
 
 		-
@@ -3859,6 +3869,11 @@ parameters:
 			path: ../tests/Composer/Test/Command/InitCommandTest.php
 
 		-
+			message: "#^Only booleans are allowed in and, null given on the right side\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Console/ApplicationTest.php
+
+		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Config/JsonConfigSourceTest.php
@@ -3965,7 +3980,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in and, null given on the right side\\.$#"
-			count: 3
+			count: 4
 			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
 
 		-
@@ -4053,7 +4068,7 @@ parameters:
 
 		-
 			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:ensureDirectoryExistsAndClear\\(\\)\\.$#"
-			count: 3
+			count: 5
 			path: ../tests/Composer/Test/Installer/BinaryInstallerTest.php
 
 		-

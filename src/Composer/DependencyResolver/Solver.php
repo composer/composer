@@ -50,7 +50,7 @@ class Solver
     protected $problems = [];
     /** @var array<Rule[]> */
     protected $learnedPool = [];
-    /** @var array<string, int> */
+    /** @var array<int, int> */
     protected $learnedWhy = [];
 
     /** @var bool */
@@ -340,7 +340,7 @@ class Solver
 
             $this->rules->add($newRule, RuleSet::TYPE_LEARNED);
 
-            $this->learnedWhy[spl_object_hash($newRule)] = $why;
+            $this->learnedWhy[spl_object_id($newRule)] = $why;
 
             $ruleNode = new RuleWatchNode($newRule);
             $ruleNode->watch2OnHighest($this->decisions);
@@ -518,11 +518,11 @@ class Solver
     }
 
     /**
-     * @param array<string, true> $ruleSeen
+     * @param array<int, true> $ruleSeen
      */
     private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen): void
     {
-        $why = spl_object_hash($conflictRule);
+        $why = spl_object_id($conflictRule);
         $ruleSeen[$why] = true;
 
         if ($conflictRule->getType() === RuleSet::TYPE_LEARNED) {
@@ -530,7 +530,7 @@ class Solver
             $problemRules = $this->learnedPool[$learnedWhy];
 
             foreach ($problemRules as $problemRule) {
-                if (!isset($ruleSeen[spl_object_hash($problemRule)])) {
+                if (!isset($ruleSeen[spl_object_id($problemRule)])) {
                     $this->analyzeUnsolvableRule($problem, $problemRule, $ruleSeen);
                 }
             }

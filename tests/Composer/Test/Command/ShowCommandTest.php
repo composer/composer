@@ -880,6 +880,89 @@ OUTPUT;
     ]
 }',
         ];
+        yield 'package with json format includes installed version of requirements' => [
+            static function () {
+                $pgk = static::getPackage('vendor/package', '1.0.0');
+                $pgk->setRequires(['vendor/required-package' => new Link(
+                    'vendor/package',
+                    'vendor/required-package',
+                    static::getVersionConstraint('>=', '1.0.0'),
+                    Link::TYPE_REQUIRE,
+                    '^1.0'
+                )]);
+
+                $required = static::getPackage('vendor/required-package', '1.2.0');
+                $required->setRequires(['vendor/sub-dependency' => new Link(
+                    'vendor/required-package',
+                    'vendor/sub-dependency',
+                    static::getVersionConstraint('>=', '2.0.0'),
+                    Link::TYPE_REQUIRE,
+                    '^2.0'
+                )]);
+
+                $subDependency = static::getPackage('vendor/sub-dependency', '2.5.0');
+
+                return [$pgk, $required, $subDependency];
+            },
+            ['--format' => 'json'],
+            '{
+    "installed": [
+        {
+            "name": "vendor/package",
+            "version": "1.0.0",
+            "description": null,
+            "requires": [
+                {
+                    "name": "vendor/required-package",
+                    "version": "^1.0",
+                    "installed": "1.2.0",
+                    "requires": [
+                        {
+                            "name": "vendor/sub-dependency",
+                            "version": "^2.0",
+                            "installed": "2.5.0"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}',
+        ];
+        yield 'package with json format reports installed version of a provided requirement' => [
+            static function () {
+                $pgk = static::getPackage('vendor/package', '1.0.0');
+                $pgk->setRequires(['vendor/virtual' => new Link(
+                    'vendor/package',
+                    'vendor/virtual',
+                    static::getVersionConstraint('>=', '1.0.0'),
+                    Link::TYPE_REQUIRE,
+                    '^1.0'
+                )]);
+
+                $provider = static::getPackage('vendor/provider', '3.0.0');
+                static::configureLinks($provider, ['provide' => ['vendor/virtual' => '^1.0']]);
+
+                return [$pgk, $provider];
+            },
+            ['--format' => 'json'],
+            '{
+    "installed": [
+        {
+            "name": "vendor/package",
+            "version": "1.0.0",
+            "description": null,
+            "requires": [
+                {
+                    "name": "vendor/virtual",
+                    "version": "^1.0",
+                    "installed": "3.0.0"
+                }
+            ]
+        }
+    ]
+}',
+        ];
     }
 
     public function testNameOnlyPrintsNoTrailingWhitespace(): void

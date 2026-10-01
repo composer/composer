@@ -32,6 +32,7 @@ use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\StabilityFilter;
+use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
 
@@ -257,6 +258,9 @@ class RepositorySet
             if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
                 continue;
             }
+            if (self::isUnversionedBranch($package)) {
+                continue;
+            }
             // key by version so duplicate versions collapse and the resulting OR constraint stays flat
             // (nesting one MultiConstraint per version produces trees deep enough to blow the stack, see composer/semver#177)
             $constraintsByName[$package->getName()][$package->getVersion()] = new Constraint('=', $package->getVersion());
@@ -437,5 +441,15 @@ class RepositorySet
         }
 
         return $normalizedAliases;
+    }
+
+    /**
+     * dev-* branches and the default branch alias have no version ordering, so advisory ranges cannot meaningfully match them, unlike numeric branches such as 3.3.x-dev
+     *
+     * @internal
+     */
+    public static function isUnversionedBranch(PackageInterface $package): bool
+    {
+        return str_starts_with($package->getVersion(), 'dev-') || $package->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS;
     }
 }

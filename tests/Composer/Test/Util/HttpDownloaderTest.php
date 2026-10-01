@@ -13,6 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\IO\BufferIO;
+use Composer\Util\Http\CurlDownloader;
 use Composer\Util\HttpDownloader;
 use PHPUnit\Framework\TestCase;
 
@@ -72,44 +73,78 @@ class HttpDownloaderTest extends TestCase
         ]);
     }
 
-    public function testOutputWarnings(): void
+    public function testParkedRetriesDoNotHoldUpQueuedRequests(): void
     {
-        $io = new BufferIO();
-        self::assertFalse(HttpDownloader::outputWarnings($io, '$URL', []));
-        self::assertSame('', $io->getOutput());
+        if (!extension_loaded('curl')) {
+            self::markTestSkipped('curl extension is required');
+        }
 
-        // warning/info keys present but filtered out by version constraints => nothing written
-        self::assertFalse(HttpDownloader::outputWarnings($io, '$URL', [
-            'warning' => 'old warning msg',
-            'warning-versions' => '<2.0',
-            'warnings' => [
-                ['message' => 'should not appear', 'versions' => '<2.2'],
-            ],
-        ]));
-        self::assertSame('', $io->getOutput());
+        $downloader = new HttpDownloader(new BufferIO(), $this->getConfigMock());
+        $downloader->enableAsync();
+        $this->setProperty($downloader, 'maxJobs', 1);
 
-        self::assertTrue(HttpDownloader::outputWarnings($io, '$URL', [
-            'warning' => 'old warning msg',
-            'warning-versions' => '>=2.0',
-            'info' => 'old info msg',
-            'info-versions' => '>=2.0',
-            'warnings' => [
-                ['message' => 'should not appear', 'versions' => '<2.2'],
-                ['message' => 'visible warning', 'versions' => '>=2.2-dev'],
-            ],
-            'infos' => [
-                ['message' => 'should not appear', 'versions' => '<2.2'],
-                ['message' => 'visible info', 'versions' => '>=2.2-dev'],
-            ],
-        ]));
+        // only one request fits in the slot
+        $curl = $this->createCurlMock(0);
+        $curl->expects(self::once())->method('download');
+        $this->setProperty($downloader, 'curl', $curl);
+        $downloader->add('https://example.org/a');
+        $downloader->add('https://example.org/b');
+        $downloader->countActiveJobs();
 
-        // the <info> tag are consumed by the OutputFormatter, but not <warning> as that is not a default output format
-        self::assertSame(
-            '<warning>Warning from $URL: old warning msg</warning>'.PHP_EOL.
-            'Info from $URL: old info msg'.PHP_EOL.
-            '<warning>Warning from $URL: visible warning</warning>'.PHP_EOL.
-            'Info from $URL: visible info'.PHP_EOL,
-            $io->getOutput()
-        );
+        // the first request is parked on a Retry-After, which frees its slot for the second one
+        $curl = $this->createCurlMock(1);
+        $curl->expects(self::once())->method('download');
+        $this->setProperty($downloader, 'curl', $curl);
+        $downloader->countActiveJobs();
+    }
+
+    public function testNoRequestIsStartedToAnOriginWhichAskedToBeLeftAlone(): void
+    {
+        if (!extension_loaded('curl')) {
+            self::markTestSkipped('curl extension is required');
+        }
+
+        $downloader = new HttpDownloader(new BufferIO(), $this->getConfigMock());
+        $downloader->enableAsync();
+
+        // the origin asked to be left alone, so only the request to the other one is sent
+        $curl = $this->createCurlMock(0, 'example.org');
+        $curl->expects(self::once())->method('download')->with(self::anything(), self::anything(), 'other.org', 'https://other.org/b');
+        $this->setProperty($downloader, 'curl', $curl);
+        $downloader->add('https://example.org/a');
+        $downloader->add('https://other.org/b');
+        $downloader->countActiveJobs();
+
+        // once the hold has run out the queued request is sent
+        $curl = $this->createCurlMock(0);
+        $curl->expects(self::once())->method('download')->with(self::anything(), self::anything(), 'example.org', 'https://example.org/a');
+        $this->setProperty($downloader, 'curl', $curl);
+        $downloader->countActiveJobs();
+    }
+
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&CurlDownloader
+     */
+    private function createCurlMock(int $delayedJobs, ?string $originOnHold = null)
+    {
+        $curl = $this->getMockBuilder(CurlDownloader::class)->disableOriginalConstructor()->getMock();
+        $curl->method('countDelayedJobs')->willReturn($delayedJobs);
+        $curl->method('isOriginOnHold')->willReturnCallback(static function (string $origin) use ($originOnHold): bool {
+            return $origin === $originOnHold;
+        });
+
+        return $curl;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function setProperty(HttpDownloader $downloader, string $name, $value): void
+    {
+        $property = new \ReflectionProperty($downloader, $name);
+        if (\PHP_VERSION_ID < 80100) {
+            $property->setAccessible(true);
+        }
+        $property->setValue($downloader, $value);
     }
 }

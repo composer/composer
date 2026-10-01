@@ -18,6 +18,7 @@ use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
@@ -100,7 +101,11 @@ class Auditor
         if ($policyConfig->abandoned->audit === ListPolicyConfig::AUDIT_IGNORE) {
             $abandonedPackages = [];
         } else {
-            $abandonedPackages = $this->filterAbandonedPackages($packages, $policyConfig->abandoned->getFlatIgnoreForOperation('audit'));
+            // abandonment is per package, so aliases would only report it twice
+            $canonicalPackages = array_filter($packages, static function (PackageInterface $package): bool {
+                return !$package instanceof AliasPackage;
+            });
+            $abandonedPackages = $this->filterAbandonedPackages($canonicalPackages, $policyConfig->abandoned->getFlatIgnoreForOperation('audit'));
             if ($policyConfig->abandoned->audit === ListPolicyConfig::AUDIT_FAIL) {
                 $abandonedCount = count($abandonedPackages);
             }
@@ -123,6 +128,10 @@ class Auditor
             foreach ($packages as $package) {
                 $matchingEntries = $filterAuditor->getMatchingAuditEntries($package, $filterResult['filter'], $policyConfig);
                 foreach ($matchingEntries as $entry) {
+                    // an alias can match the same entry as the package it aliases
+                    if (in_array($entry, $filteredPackages[$package->getName()] ?? [], true)) {
+                        continue;
+                    }
                     $filteredPackages[$package->getName()][] = $entry;
 
                     if (isset($failingListNames[$entry->listName])) {
@@ -570,6 +579,9 @@ class Auditor
                     }
                     if ($entry->url !== null) {
                         $parts[] = 'URL: ' . $entry->url;
+                    }
+                    if ($entry->source !== null) {
+                        $parts[] = 'Source: ' . $entry->source;
                     }
                     $io->write(implode('. ', $parts) . '.');
                 }

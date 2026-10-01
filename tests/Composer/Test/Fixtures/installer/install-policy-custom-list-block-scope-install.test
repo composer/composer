@@ -1,0 +1,79 @@
+--TEST--
+Install blocked when a custom dependency policy uses block-scope: install
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0",
+                    "dist": {
+                        "type": "zip",
+                        "url": "http://www.example.com/dist.zip",
+                        "reference": "459720ff3b74ee0c0d159277c6f2f5df89d8a4f6"
+                    }
+                }
+            ],
+            "filter": {
+                "company-policy": [
+                    {
+                        "package": "acme/library",
+                        "constraint": "*",
+                        "url": "https://example.org/company-policy/acme/library",
+                        "reason": "internal block",
+                        "id": "ID-test"
+                    }
+                ]
+            }
+        }
+    ],
+    "config": {
+        "policy": {
+            "company-policy": {
+                "block": true,
+                "block-scope": "install"
+            }
+        }
+    },
+    "require": {
+        "acme/library": "1.0"
+    }
+}
+--RUN--
+install
+
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "acme/library",
+            "version": "1.0",
+            "dist": {
+                "type": "zip",
+                "url": "http://www.example.com/dist.zip",
+                "reference": "459720ff3b74ee0c0d159277c6f2f5df89d8a4f6"
+            },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
+Your lock file does not contain a compatible set of packages. Please run composer update.
+
+  Problem 1
+    - Package acme/library 1.0 (in the lock file) was not loaded, because it was filtered by company-policy (see https://example.org/company-policy/acme/library) reason: internal block. To ignore filters for this package, add the package to the "policy.company-policy.ignore" config. To turn the feature off entirely, you can set "policy.company-policy.block" to false.
+--EXPECT--

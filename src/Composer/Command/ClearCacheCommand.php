@@ -67,6 +67,13 @@ EOT
                 continue;
             }
 
+            // check before realpath() as e.g. "nul" does not resolve on Windows
+            if (!Cache::isUsable($cachePath)) {
+                $io->writeError("<info>Cache is not enabled ($key): $cachePath</info>");
+
+                continue;
+            }
+
             $cachePath = realpath($cachePath);
             if (!$cachePath) {
                 $io->writeError("<info>Cache directory does not exist ($key): $cachePath</info>");

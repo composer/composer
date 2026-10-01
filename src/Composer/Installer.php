@@ -286,6 +286,10 @@ class Installer
             $this->update = true;
         }
 
+        // surface the actual install/update operation in telemetry, even when the outer command is a
+        // plugin/script or a command like require/remove that runs the installer (see StreamContextFactory)
+        Composer::setRunningOperation($this->update ? 'update' : 'install');
+
         if ($this->dryRun) {
             $this->verbose = true;
             $this->runScripts = false;
@@ -447,10 +451,11 @@ class Installer
 
         if ($auditConfig->audit) {
             if ($this->update && !$this->install) {
-                $packages = $lockedRepository->getCanonicalPackages();
+                // aliases are included as a branch alias version can match advisories which the dev-* branch cannot
+                $packages = $lockedRepository->getPackages();
                 $target = 'locked';
             } else {
-                $packages = $localRepo->getCanonicalPackages();
+                $packages = $localRepo->getPackages();
                 $target = 'installed';
             }
             if (count($packages) > 0) {

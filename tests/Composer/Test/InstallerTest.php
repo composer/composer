@@ -182,13 +182,13 @@ class InstallerTest extends TestCase
         // when A requires B and B requires A, and A is a non-published root package
         // the install of B should succeed
 
-        $a = self::getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
+        $a = self::getPackage('a/a', '1.0.0', 'Composer\Package\RootPackage');
         $a->setRequires([
-            'b' => new Link('A', 'B', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'b/b' => new Link('a/a', 'b/b', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
-        $b = self::getPackage('B', '1.0.0');
+        $b = self::getPackage('b/b', '1.0.0');
         $b->setRequires([
-            'a' => new Link('B', 'A', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'a/a' => new Link('b/b', 'a/a', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
 
         $cases[] = [
@@ -202,13 +202,13 @@ class InstallerTest extends TestCase
         // #480: when A requires B and B requires A, and A is a published root package
         // only B should be installed, as A is the root
 
-        $a = self::getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
+        $a = self::getPackage('a/a', '1.0.0', 'Composer\Package\RootPackage');
         $a->setRequires([
-            'b' => new Link('A', 'B', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'b/b' => new Link('a/a', 'b/b', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
-        $b = self::getPackage('B', '1.0.0');
+        $b = self::getPackage('b/b', '1.0.0');
         $b->setRequires([
-            'a' => new Link('B', 'A', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
+            'a/a' => new Link('b/b', 'a/a', $v = self::getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ]);
 
         $cases[] = [

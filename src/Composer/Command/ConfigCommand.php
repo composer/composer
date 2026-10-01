@@ -328,6 +328,9 @@ EOT
         $auditValidator = static function ($val): bool {
             return in_array($val, [ListPolicyConfig::AUDIT_IGNORE, ListPolicyConfig::AUDIT_REPORT, ListPolicyConfig::AUDIT_FAIL], true);
         };
+        $blockScopeValidator = static function ($val): bool {
+            return in_array($val, ListPolicyConfig::AVAILABLE_BLOCK_SCOPES, true);
+        };
         $keepAsIsNormalizer = static function ($val) {
             return $val;
         };
@@ -428,6 +431,7 @@ EOT
             }],
             'sort-packages' => [$booleanValidator, $booleanNormalizer],
             'optimize-autoloader' => [$booleanValidator, $booleanNormalizer],
+            'strict-psr-autoloader' => [$booleanValidator, $booleanNormalizer],
             'classmap-authoritative' => [$booleanValidator, $booleanNormalizer],
             'apcu-autoloader' => [$booleanValidator, $booleanNormalizer],
             'prepend-autoloader' => [$booleanValidator, $booleanNormalizer],
@@ -498,12 +502,7 @@ EOT
             'policy.advisories.block' => [$booleanValidator, $booleanNormalizer],
             'policy.advisories.audit' => [$auditValidator, $keepAsIsNormalizer],
             'policy.malware.block' => [$booleanValidator, $booleanNormalizer],
-            'policy.malware.block-scope' => [
-                static function ($val): bool {
-                    return in_array($val, ['all', 'update', 'install'], true);
-                },
-                $keepAsIsNormalizer,
-            ],
+            'policy.malware.block-scope' => [$blockScopeValidator, $keepAsIsNormalizer],
             'policy.malware.audit' => [$auditValidator, $keepAsIsNormalizer],
             'policy.abandoned.block' => [$booleanValidator, $booleanNormalizer],
             'policy.abandoned.audit' => [$auditValidator, $keepAsIsNormalizer],
@@ -728,8 +727,8 @@ EOT
             return 0;
         }
 
-        // handle custom policy lists: policy.<name>.block / policy.<name>.audit
-        if (Preg::isMatch('/^policy\.([^.]+)\.(block|audit)$/', $settingKey, $matches)
+        // handle custom policy lists: policy.<name>.block / policy.<name>.block-scope / policy.<name>.audit
+        if (Preg::isMatch('/^policy\.([^.]+)\.(block|block-scope|audit)$/', $settingKey, $matches)
             && !in_array($matches[1], $nonCustomPolicyKeys, true)
         ) {
             $reservedError = PolicyConfig::getFutureReservedListNameError($matches[1]);
@@ -741,6 +740,11 @@ EOT
                     throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, expected a boolean', $values[0], $settingKey));
                 }
                 $this->configSource->addConfigSetting($settingKey, $booleanNormalizer($values[0]));
+            } elseif ($matches[2] === 'block-scope') {
+                if (!$blockScopeValidator($values[0])) {
+                    throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, must be one of: all, update, install', $values[0], $settingKey));
+                }
+                $this->configSource->addConfigSetting($settingKey, $values[0]);
             } else {
                 if (!$auditValidator($values[0])) {
                     throw new \RuntimeException(sprintf('"%s" is an invalid value for %s, must be one of: ignore, report, fail', $values[0], $settingKey));

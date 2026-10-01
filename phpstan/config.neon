@@ -15,6 +15,8 @@ includes:
 parameters:
     level: 8
 
+    tmpDir: tmp # required in PHPStan 1.x for result-cache in CI
+
     excludePaths:
        - '../tests/Composer/Test/Fixtures/*'
        - '../tests/Composer/Test/Autoload/Fixtures/*'

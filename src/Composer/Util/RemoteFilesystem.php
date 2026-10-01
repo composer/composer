@@ -20,6 +20,7 @@ use Composer\Downloader\TransportException;
 use Composer\Pcre\Preg;
 use Composer\Util\Http\Response;
 use Composer\Util\Http\ProxyManager;
+use Composer\Util\Http\ResponseWarnings;
 
 /**
  * @internal
@@ -309,7 +310,7 @@ class RemoteFilesystem
             if (!empty($http_response_header[0])) {
                 $statusCode = self::findStatusCode($http_response_header);
                 if ($statusCode >= 300 && Response::findHeaderValue($http_response_header, 'content-type') === 'application/json') {
-                    HttpDownloader::outputWarnings($this->io, $originUrl, json_decode($result, true));
+                    ResponseWarnings::output($this->io, $originUrl, json_decode($result, true));
                 }
 
                 if (in_array($statusCode, [401, 403]) && $retryAuthFailure) {
@@ -320,7 +321,7 @@ class RemoteFilesystem
             $contentLength = !empty($http_response_header[0]) ? Response::findHeaderValue($http_response_header, 'content-length') : null;
             if ($contentLength && Platform::strlen($result) < $contentLength) {
                 // alas, this is not possible via the stream callback because STREAM_NOTIFY_COMPLETED is documented, but not implemented anywhere in PHP
-                $e = new TransportException('Content-Length mismatch, received '.Platform::strlen($result).' bytes out of the expected '.$contentLength);
+                $e = new TransportException('Content-Length mismatch, received '.Platform::strlen($result).' bytes out of the expected '.$contentLength.' for '.Url::sanitize($fileUrl));
                 $e->setHeaders($http_response_header);
                 $e->setStatusCode(self::findStatusCode($http_response_header));
                 try {
@@ -537,7 +538,7 @@ class RemoteFilesystem
         }
 
         if ($result !== false && $maxFileSize !== null && Platform::strlen($result) >= $maxFileSize) {
-            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($result) . ' of allowed ' .  $maxFileSize . ' bytes');
+            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($result) . ' of allowed ' .  $maxFileSize . ' bytes for ' . Url::sanitize($fileUrl));
         }
 
         // https://www.php.net/manual/en/reserved.variables.httpresponseheader.php
@@ -684,6 +685,10 @@ class RemoteFilesystem
         }
 
         if (!empty($targetUrl)) {
+            if (!Url::isAllowedRedirect($targetUrl)) {
+                throw new TransportException('Could not follow the redirect to "'.Url::sanitize($targetUrl).'" because only http and https redirects are supported.');
+            }
+
             $this->redirects++;
 
             $this->io->writeError('', true, IOInterface::DEBUG);

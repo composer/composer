@@ -77,10 +77,11 @@ EOT
 
         $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
+        $strictPsr = $input->getOption('strict-psr') || $config->get('strict-psr-autoloader');
         $apcuPrefix = $input->getOption('apcu-prefix');
         $apcu = $apcuPrefix !== null || $input->getOption('apcu') || $config->get('apcu-autoloader');
 
-        if ($input->getOption('strict-psr') && !$optimize && !$authoritative) {
+        if ($strictPsr && !$optimize && !$authoritative) {
             throw new \InvalidArgumentException('--strict-psr mode only works with optimized autoloader, use --optimize or --classmap-authoritative if you want a strict return value.');
         }
         if ($input->getOption('strict-ambiguous') && !$optimize && !$authoritative) {
@@ -133,11 +134,11 @@ EOT
             $this->getIO()->write('<info>Generated autoload files</info>');
         }
 
-        if ($missingDependencies || ($input->getOption('strict-psr') && count($classMap->getPsrViolations()) > 0)) {
+        if ($missingDependencies || ($strictPsr && count($classMap->getPsrViolations()) > 0)) {
             return 1;
         }
 
-        if ($input->getOption('strict-ambiguous') && count($classMap->getAmbiguousClasses(false)) > 0) {
+        if ($input->getOption('strict-ambiguous') && (count($classMap->getAmbiguousClasses(false)) > 0 || count($classMap->getAmbiguousFolders(false)) > 0)) {
             return 2;
         }
 

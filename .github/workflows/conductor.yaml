@@ -19,7 +19,7 @@ jobs:
             contents: write # for conductor-github-action to push dependency update branches
 
         steps:
-            - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: true
 
@@ -29,7 +29,7 @@ jobs:
             # install/update, such as Node.js or a database,
             # must be set up here too.
             - name: Install PHP
-              uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
+              uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
               with:
                   php-version: "latest"
                   coverage: "none"
@@ -37,4 +37,4 @@ jobs:
 
             # See the Conductor GitHub Action at https://github.com/packagist/conductor-github-action
             - name: "Running Conductor"
-              uses: packagist/conductor-github-action@3513567296cf906ee3c97ba63df6f6d7ddcc55a5 # 1.6.1
+              uses: packagist/conductor-github-action@a20e46b1c1449a070539670a20087629b8eb0fd9 # 1.7.0

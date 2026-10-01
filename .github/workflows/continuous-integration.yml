@@ -37,6 +37,7 @@ jobs:
           - "8.2"
           - "8.3"
           - "8.4"
+          - "8.5"
         dependencies: [locked]
         os: [ubuntu-latest]
         experimental: [false]
@@ -49,33 +50,33 @@ jobs:
             dependencies: lowest
             os: ubuntu-latest
             experimental: false
-          - php-version: "8.4"
+          - php-version: "8.5"
             dependencies: highest
             os: ubuntu-latest
             experimental: false
-          - php-version: "8.4"
+          - php-version: "8.5"
             os: windows-latest
             dependencies: locked
             experimental: false
-          - php-version: "8.4"
+          - php-version: "8.5"
             os: macos-latest
             dependencies: locked
             experimental: false
-          - php-version: "8.5"
+          - php-version: "8.6"
             dependencies: lowest-ignore
             os: ubuntu-latest
             experimental: true
-          - php-version: "8.5"
+          - php-version: "8.6"
             dependencies: highest-ignore
             os: ubuntu-latest
             experimental: true
 
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           coverage: "none"
           extensions: "intl, zip"
@@ -144,11 +145,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           coverage: "none"
           extensions: "intl, zip"

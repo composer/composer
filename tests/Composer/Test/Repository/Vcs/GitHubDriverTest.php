@@ -532,6 +532,58 @@ FUNDING;
         self::assertEquals($sha, $source['reference']);
     }
 
+    public function testRateLimitIsReportedWhenTheCloneFallbackFails(): void
+    {
+        $repoUrl = 'https://github.com/composer/packagist';
+        $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
+
+        $messages = [];
+
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io->expects($this->any())
+            ->method('isInteractive')
+            ->will($this->returnValue(false));
+        $io->expects($this->atLeastOnce())
+            ->method('writeError')
+            ->willReturnCallback(static function (...$args) use (&$messages): void {
+                $messages[] = $args[0];
+            });
+
+        $httpDownloader = $this->getHttpDownloaderMock($io, $this->config);
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => $repoApiUrl,
+                    'status' => 403,
+                    'headers' => ['x-ratelimit-limit: 60', 'x-ratelimit-remaining: 0', 'x-ratelimit-reset: 1788500000'],
+                ],
+            ],
+            true
+        );
+
+        $fs = new Filesystem();
+        $fs->removeDirectory(sys_get_temp_dir() . '/composer-test');
+        $this->config->merge(['config' => ['cache-vcs-dir' => sys_get_temp_dir() . '/composer-test/cache']]);
+
+        // no token to be found, and the clone the driver falls back to fails as it would
+        // without an SSH key registered on GitHub
+        $process = $this->getProcessExecutorMock();
+        $process->expects([], false, ['return' => 1]);
+
+        $gitHubDriver = new GitHubDriver(['url' => $repoUrl], $io, $this->config, $httpDownloader, $process);
+
+        try {
+            $gitHubDriver->initialize();
+            self::fail('The failing clone fallback should have thrown.');
+        } catch (\RuntimeException $e) {
+        }
+
+        self::assertContains(
+            '<error>GitHub API limit exhausted. Failed to get metadata for the '.$repoUrl.' repository, try running in interactive mode so that you can enter your GitHub credentials to increase the API limit</error>',
+            $messages
+        );
+    }
+
     /**
      * @dataProvider invalidUrlProvider
      */

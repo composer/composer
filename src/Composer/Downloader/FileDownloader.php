@@ -26,6 +26,8 @@ use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PostFileDownloadEvent;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Installer\BinaryInstaller;
+use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Http\Response;
 use Composer\Util\Platform;
@@ -154,6 +156,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $this->filesystem->ensureDirectoryExists(dirname($fileName));
 
         $accept = null;
+        /** @var (callable(\Throwable): mixed)|null $reject */
         $reject = null;
         $download = function () use ($output, $cacheKeyGenerator, $package, $fileName, &$urls, &$accept, &$reject) {
             $url = reset($urls);
@@ -222,7 +225,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             });
         };
 
-        $accept = function (Response $response) use ($package, $fileName, &$urls): string {
+        $accept = function (Response $response) use ($package, $fileName, &$urls, &$reject, &$retries) {
             $url = reset($urls);
             $cacheKey = $url['cacheKey'];
             $fileSize = @filesize($fileName);
@@ -233,6 +236,21 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
             if (Platform::getEnv('GITHUB_ACTIONS') !== false && Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING') === false) {
                 FileDownloader::$responseHeaders[$package->getName()] = $response->getHeaders();
+            }
+
+            try {
+                $this->validateDownloadedFile($package, $fileName);
+            } catch (TransportException $e) {
+                // a broken file from a local source will not get better by downloading it again
+                if (!Preg::isMatch('{^https?://}i', $url['processed'])) {
+                    $retries = 0;
+                } elseif ($retries > 0) {
+                    $this->io->writeError('    <warning>'.$e->getMessage().', retrying</warning>');
+                }
+                $response->collect();
+                assert($reject !== null);
+
+                return $reject($e);
             }
 
             if ($this->cache !== null && !$this->cache->isReadOnly()) {
@@ -364,9 +382,16 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         // Single files can not have a mode set like files in archives
         // so we make sure if the file is a binary that it is executable
         foreach ($package->getBinaries() as $bin) {
-            if (file_exists($path . '/' . $bin) && !is_executable($path . '/' . $bin)) {
-                Silencer::call('chmod', $path . '/' . $bin, 0777 & ~umask());
+            $binPath = $path . '/' . $bin;
+            if (!file_exists($binPath) || is_executable($binPath)) {
+                continue;
             }
+            // a bin resolving outside of the package would let it chmod an arbitrary host file, this
+            // is reported by BinaryInstaller later in the same install (GHSA-96h3-5x6v-m776)
+            if (!BinaryInstaller::isBinPathInsidePackage($path, $binPath)) {
+                continue;
+            }
+            Silencer::call('chmod', $binPath, 0777 & ~umask());
         }
 
         return \React\Promise\resolve(null);
@@ -378,6 +403,17 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     protected function getDistPath(PackageInterface $package, int $component): string
     {
         return pathinfo((string) parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), $component);
+    }
+
+    /**
+     * Checks that a downloaded file is usable, e.g. not truncated, before it is written to the cache
+     *
+     * Throwing a TransportException makes the file get downloaded again
+     *
+     * @throws TransportException
+     */
+    protected function validateDownloadedFile(PackageInterface $package, string $fileName): void
+    {
     }
 
     protected function clearLastCacheWrite(PackageInterface $package): void
@@ -448,7 +484,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $extension = $package->getDistType();
         }
 
-        return rtrim($this->config->get('vendor-dir') . '/composer/tmp-' . hash('md5', $package . spl_object_hash($package)) . '.' . $extension, '.');
+        return rtrim($this->config->get('vendor-dir') . '/composer/tmp-' . hash('md5', $package . spl_object_id($package)) . '.' . $extension, '.');
     }
 
     /**

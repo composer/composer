@@ -12,7 +12,11 @@
 
 namespace Composer\Package\Loader;
 
+use Composer\Exception\SecurityException;
+use Composer\Installer\BinaryInstaller;
 use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Version\VersionParser;
@@ -20,6 +24,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\MatchNoneConstraint;
 use Composer\Semver\Intervals;
 use Composer\Spdx\SpdxLicenses;
+use Composer\Util\Perforce;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -113,6 +118,19 @@ class ValidatingArrayLoader implements LoaderInterface
                 $this->validateString('bin');
             } else {
                 $this->validateFlatArray('bin');
+            }
+            if (isset($this->config['bin']) && is_string($this->config['bin'])) {
+                if (null !== $error = self::findBinError($this->config['bin'])) {
+                    $this->errors[] = 'bin : invalid value ('.$this->config['bin'].'), '.$error;
+                    unset($this->config['bin']);
+                }
+            } elseif (isset($this->config['bin']) && is_array($this->config['bin'])) {
+                foreach ($this->config['bin'] as $key => $bin) {
+                    if (is_string($bin) && null !== $error = self::findBinError($bin)) {
+                        $this->errors[] = 'bin.'.$key.' : invalid value ('.$bin.'), '.$error;
+                        unset($this->config['bin'][$key]);
+                    }
+                }
             }
         }
 
@@ -533,6 +551,14 @@ class ValidatingArrayLoader implements LoaderInterface
                 if (isset($this->config[$srcType]['url']) && Preg::isMatch('{^\s*-}', (string) $this->config[$srcType]['url'])) {
                     $this->errors[] = $srcType . '.url : must not start with a "-", "'.$this->config[$srcType]['url'].'" given';
                 }
+                // a perforce url is passed to the p4 client as P4PORT, where rsh:/jsh: endpoints
+                // mean "run this command locally" (GHSA-rvx4-ffvw-m9q3)
+                if ($srcType === 'source' && ($this->config[$srcType]['type'] ?? null) === 'perforce'
+                    && isset($this->config[$srcType]['url']) && is_string($this->config[$srcType]['url'])
+                    && !Perforce::isValidPort($this->config[$srcType]['url'])
+                ) {
+                    $this->errors[] = $srcType . '.url : invalid Perforce port ("'.$this->config[$srcType]['url'].'"), it must be of the form [tcp|ssl:][host:]port';
+                }
             }
         }
 
@@ -639,6 +665,83 @@ class ValidatingArrayLoader implements LoaderInterface
             $suggestName = strtolower($suggestName);
 
             return $name.' is invalid, it should not contain uppercase characters. We suggest using '.$suggestName.' instead.';
+        }
+
+        return null;
+    }
+
+    /**
+     * Re-applies the security-sensitive subset of the load() validation to a resolved package
+     * which may have been loaded via the non-validating ArrayLoader, before it is written to or
+     * installed from the lock file. This guards against malicious package names and source/dist
+     * URLs or references that could be interpreted as command-line options (argument injection)
+     * by the VCS/download tooling.
+     *
+     * @throws SecurityException
+     */
+    public static function validatePackage(PackageInterface $package): void
+    {
+        // The root package's name/metadata is locally controlled and already validated by
+        // RootPackageLoader (and its "__root__" placeholder name would be a false positive here).
+        // RootPackageInterface covers both RootPackage and RootAliasPackage.
+        if ($package instanceof RootPackageInterface) {
+            return;
+        }
+
+        // getName() is already lowercased, so the uppercase style branch never fires and only
+        // structural/security failures throw. Platform packages return null here.
+        if (null !== ($err = self::hasPackageNamingError($package->getName()))) {
+            throw new SecurityException('Invalid package found during dependency resolution, aborting: '.$err);
+        }
+
+        // A url or reference starting with a "-" may be misinterpreted as a command-line option
+        // by the VCS/download tooling, same protection as the source/dist checks done in load().
+        $sourceDist = [
+            'source.url' => $package->getSourceUrl(),
+            'source.reference' => $package->getSourceReference(),
+            'dist.url' => $package->getDistUrl(),
+            'dist.reference' => $package->getDistReference(),
+        ];
+        foreach ($sourceDist as $field => $value) {
+            if ($value !== null && Preg::isMatch('{^\s*-}', $value)) {
+                throw new SecurityException($package->getName().' has an invalid '.$field.', it must not start with a "-": '.$value);
+            }
+        }
+
+        // A perforce source.url ends up as the p4 client's P4PORT, and a "rsh:"/"jsh:" endpoint
+        // there makes the client execute the rest of the value as a local command instead of
+        // connecting to a server (GHSA-rvx4-ffvw-m9q3), so only accept network endpoints.
+        $sourceUrl = $package->getSourceUrl();
+        if ($package->getSourceType() === 'perforce' && $sourceUrl !== null && !Perforce::isValidPort($sourceUrl)) {
+            throw new SecurityException($package->getName().' has an invalid source.url, it must be a Perforce port of the form [tcp|ssl:][host:]port: '.$sourceUrl);
+        }
+
+        // Bin paths are resolved relative to the package install dir and then chmod'd (and
+        // proxied) by BinaryInstaller. A ".." segment escapes that directory and lets a
+        // dependency chmod/point at an arbitrary host file (GHSA-gjfg-22fp-rrxx), so reject it.
+        foreach ($package->getBinaries() as $bin) {
+            if (Preg::isMatch('{(?:^|[\\\\/])\.\.(?:[\\\\/]|$)}', $bin)) {
+                throw new SecurityException($package->getName().' has an invalid bin '.$bin.', it must not contain ".." path segments');
+            }
+        }
+    }
+
+    /**
+     * Validates a bin path, returning the reason it is unacceptable or null if it is fine
+     *
+     * A ".." segment escapes the package install directory and lets the package chmod/point at an
+     * arbitrary host file during install (GHSA-gjfg-22fp-rrxx). The character check is the same one
+     * BinaryInstaller applies before generating a proxy, done here as well so that packagist.org
+     * and composer validate flag such a bin at the source.
+     */
+    private static function findBinError(string $bin): ?string
+    {
+        if (Preg::isMatch('{(?:^|[\\\\/])\.\.(?:[\\\\/]|$)}', $bin)) {
+            return 'must not contain a ".." path component';
+        }
+
+        if (!BinaryInstaller::isSafeBinPath($bin)) {
+            return 'must not contain any of the characters *$`"&^|<>()%!; nor control characters';
         }
 
         return null;

@@ -663,27 +663,26 @@ class ConfigTest extends TestCase
         self::assertEquals(true, $config->get('allow-plugins'));
     }
 
-    public function testSourceFallbackDefaultsToFalse(): void
+    public function testStrictPsrAutoloaderDefaultsToFalse(): void
     {
         $config = new Config(false);
-        self::assertFalse($config->get('source-fallback'));
+        self::assertFalse($config->get('strict-psr-autoloader'));
     }
 
-    public function testSourceFallbackCanBeDisabled(): void
+    public function testStrictPsrAutoloaderCanBeDisabled(): void
     {
         $config = new Config(false);
-        $config->merge(['config' => ['source-fallback' => false]]);
-        self::assertFalse($config->get('source-fallback'));
+        $config->merge(['config' => ['strict-psr-autoloader' => false]]);
+        self::assertFalse($config->get('strict-psr-autoloader'));
     }
 
-    public function testSourceFallbackCanBeSetFromString(): void
+    public function testStrictPsrAutoloaderCanBeSetFromString(): void
     {
         $config = new Config(false);
-        $config->merge(['config' => ['source-fallback' => 'false']]);
-        self::assertFalse($config->get('source-fallback'));
+        $config->merge(['config' => ['strict-psr-autoloader' => 'false']]);
+        self::assertFalse($config->get('strict-psr-autoloader'));
 
-        $config->merge(['config' => ['source-fallback' => 'true']]);
-        self::assertTrue($config->get('source-fallback'));
+        $config->merge(['config' => ['strict-psr-autoloader' => 'true']]);
+        self::assertTrue($config->get('strict-psr-autoloader'));
     }
-
 }

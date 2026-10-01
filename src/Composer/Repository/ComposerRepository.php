@@ -42,6 +42,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Http\Response;
+use Composer\Util\Http\ResponseWarnings;
 use Composer\MetadataMinifier\MetadataMinifier;
 use Composer\Util\Url;
 use React\Promise\PromiseInterface;
@@ -51,6 +52,14 @@ use React\Promise\PromiseInterface;
  */
 class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
 {
+    /**
+     * Package names per security-advisories API request
+     *
+     * Each name costs one form input var, and PHP silently truncates $_POST past
+     * max_input_vars (1000 by default), which would drop advisories without any error.
+     */
+    private const ADVISORY_API_BATCH_SIZE = 500;
+
     /**
      * @var mixed[]
      * @phpstan-var array{url: string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool, 'require-published-time'?: bool}
@@ -532,7 +541,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $url .= '?filter='.urlencode($packageFilter);
             $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
-            HttpDownloader::outputWarnings($this->io, $this->url, $result);
+            ResponseWarnings::output($this->io, $this->url, $result);
 
             return $result['packageNames'];
         }
@@ -547,7 +556,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
-        HttpDownloader::outputWarnings($this->io, $this->url, $result);
+        ResponseWarnings::output($this->io, $this->url, $result);
 
         if (!$this->cache->isReadOnly()) {
             $this->cache->write($cacheKey, implode("\n", $result['packageNames']));
@@ -586,9 +595,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $namesFound[$name] = true;
 
                     if (!$constraint || $constraint->matches(new Constraint('==', $candidate->getVersion()))) {
-                        $matches[spl_object_hash($candidate)] = $candidate;
-                        if ($candidate instanceof AliasPackage && !isset($matches[spl_object_hash($candidate->getAliasOf())])) {
-                            $matches[spl_object_hash($candidate->getAliasOf())] = $candidate->getAliasOf();
+                        $matches[spl_object_id($candidate)] = $candidate;
+                        if ($candidate instanceof AliasPackage && !isset($matches[spl_object_id($candidate->getAliasOf())])) {
+                            $matches[spl_object_id($candidate->getAliasOf())] = $candidate->getAliasOf();
                         }
                     }
                 }
@@ -596,8 +605,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 // add aliases of matched packages even if they did not match the constraint
                 foreach ($candidates as $candidate) {
                     if ($candidate instanceof AliasPackage) {
-                        if (isset($matches[spl_object_hash($candidate->getAliasOf())])) {
-                            $matches[spl_object_hash($candidate)] = $candidate;
+                        if (isset($matches[spl_object_id($candidate->getAliasOf())])) {
+                            $matches[spl_object_id($candidate)] = $candidate;
                         }
                     }
                 }
@@ -636,7 +645,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $search = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
-            HttpDownloader::outputWarnings($this->io, $this->url, $search);
+            ResponseWarnings::output($this->io, $this->url, $search);
 
             if (empty($search['results'])) {
                 return [];
@@ -673,7 +682,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $url = $this->listUrl . '?vendor='.urlencode($match['vendor']).'&filter='.urlencode($match['query'].'*');
                 $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
-                HttpDownloader::outputWarnings($this->io, $this->url, $result);
+                ResponseWarnings::output($this->io, $this->url, $result);
 
                 $results = [];
                 foreach ($result['packageNames'] as $name) {
@@ -788,30 +797,52 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
             $options['http']['header'][] = 'Content-type: application/x-www-form-urlencoded';
             $options['http']['timeout'] = 10;
-            $options['http']['content'] = http_build_query(['packages' => array_keys($packageConstraintMap)]);
 
-            $response = $this->httpDownloader->get($apiUrl, $options);
-            $warned = false;
-            $advisoryData = $response->decodeJson();
-            HttpDownloader::outputWarnings($this->io, $this->url, $advisoryData);
-            /** @var string $name */
-            foreach ($advisoryData['advisories'] as $name => $list) {
-                if (!isset($packageConstraintMap[$name])) {
-                    if (!$warned) {
-                        $this->io->writeError('<warning>'.$this->getRepoName().' returned names which were not requested in response to the security-advisories API. '.$name.' was not requested but is present in the response. Requested names were: '.implode(', ', array_keys($packageConstraintMap)).'</warning>');
-                        $warned = true;
+            $responses = [];
+            $promises = [];
+            foreach (array_chunk(array_keys($packageConstraintMap), self::ADVISORY_API_BATCH_SIZE) as $batchIndex => $batch) {
+                $batchOptions = $options;
+                $batchOptions['http']['content'] = http_build_query(['packages' => $batch]);
+
+                $promises[] = $this->httpDownloader->add($apiUrl, $batchOptions)
+                    ->then(static function (Response $response) use (&$responses, $batchIndex): void {
+                        $responses[$batchIndex] = $response->decodeJson();
+                    });
+            }
+            $this->loop->wait($promises);
+            ksort($responses);
+
+            $repoWarningsShown = false;
+            $warnedAboutUnrequestedNames = false;
+            foreach ($responses as $advisoryData) {
+                if (!$repoWarningsShown) {
+                    ResponseWarnings::output($this->io, $this->url, $advisoryData);
+                    $repoWarningsShown = true;
+                }
+
+                /** @var string $name */
+                foreach ($advisoryData['advisories'] as $name => $list) {
+                    if (!isset($packageConstraintMap[$name])) {
+                        if (!$warnedAboutUnrequestedNames) {
+                            $requested = array_keys($packageConstraintMap);
+                            $requestedList = count($requested) > 20
+                                ? implode(', ', array_slice($requested, 0, 20)).' and '.(count($requested) - 20).' more'
+                                : implode(', ', $requested);
+                            $this->io->writeError('<warning>'.$this->getRepoName().' returned names which were not requested in response to the security-advisories API. '.$name.' was not requested but is present in the response. Requested names were: '.$requestedList.'</warning>');
+                            $warnedAboutUnrequestedNames = true;
+                        }
+                        continue;
                     }
-                    continue;
+                    if (count($list) > 0) {
+                        $advisories[$name] = array_values(array_filter(array_map(
+                            static function ($data) use ($name, $create) {
+                                return $create($data, $name);
+                            },
+                            $list
+                        )));
+                    }
+                    $namesFound[$name] = true;
                 }
-                if (count($list) > 0) {
-                    $advisories[$name] = array_values(array_filter(array_map(
-                        static function ($data) use ($name, $create) {
-                            return $create($data, $name);
-                        },
-                        $list
-                    )));
-                }
-                $namesFound[$name] = true;
             }
         }
 
@@ -855,7 +886,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $configuredLists
             );
             $decoded = $response->decodeJson();
-            HttpDownloader::outputWarnings($this->io, $this->url, $decoded);
+            ResponseWarnings::output($this->io, $this->url, $decoded);
             if (!isset($decoded['filter']) || !is_array($decoded['filter'])) {
                 throw new TransportException('Filter api-url '.$this->filterConfig->apiUrl.' returned an unexpected response for '.$this->getRepoName(), 0);
             }
@@ -924,7 +955,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private function getFilterApiClient(): FilterListApiClient
     {
         if ($this->filterApiClient === null) {
-            $this->filterApiClient = new FilterListApiClient($this->httpDownloader);
+            $this->filterApiClient = new FilterListApiClient($this->httpDownloader, $this->options);
         }
 
         return $this->filterApiClient;
@@ -1032,7 +1063,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 throw $e;
             }
 
-            HttpDownloader::outputWarnings($this->io, $this->url, $apiResult);
+            ResponseWarnings::output($this->io, $this->url, $apiResult);
 
             foreach ($apiResult['providers'] as $provider) {
                 $result[$provider['name']] = $provider;
@@ -1288,7 +1319,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @phpstan-param array<string, BasePackage::STABILITY_*>|null $stabilityFlags
      * @param array<string, array<string, PackageInterface>> $alreadyLoaded
      *
-     * @return array{namesFound: array<string, true>, packages: array<string, BasePackage>}
+     * @return array{namesFound: array<string, true>, packages: array<int, BasePackage>}
      */
     private function loadAsyncPackages(array $packageNames, ?array $acceptableStabilities = null, ?array $stabilityFlags = null, array $alreadyLoaded = []): array
     {
@@ -1358,11 +1389,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $loadedPackages = $this->createPackages($versionsToLoad, $packagesSource);
                     foreach ($loadedPackages as $package) {
                         $package->setRepository($this);
-                        $packages[spl_object_hash($package)] = $package;
+                        $packages[spl_object_id($package)] = $package;
 
-                        if ($package instanceof AliasPackage && !isset($packages[spl_object_hash($package->getAliasOf())])) {
+                        if ($package instanceof AliasPackage && !isset($packages[spl_object_id($package->getAliasOf())])) {
                             $package->getAliasOf()->setRepository($this);
-                            $packages[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
+                            $packages[spl_object_id($package->getAliasOf())] = $package->getAliasOf();
                         }
                     }
                 });
@@ -1788,7 +1819,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     }
 
                     // TODO use scarier wording once we know for sure it doesn't do false positives anymore
-                    throw new RepositorySecurityException('The contents of '.$filename.' do not match its signature. This could indicate a man-in-the-middle attack or e.g. antivirus software corrupting files. Try running composer again and report this if you think it is a mistake.');
+                    throw new RepositorySecurityException('The contents of '.Url::sanitize($filename).' do not match its signature. This could indicate a man-in-the-middle attack or e.g. antivirus software corrupting files. Try running composer again and report this if you think it is a mistake.');
                 }
 
                 if ($this->eventDispatcher) {
@@ -1797,7 +1828,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 $data = $response->decodeJson();
-                HttpDownloader::outputWarnings($this->io, $this->url, $data);
+                ResponseWarnings::output($this->io, $this->url, $data);
 
                 if ($cacheKey && !$this->cache->isReadOnly()) {
                     if ($storeLastModifiedTime) {
@@ -1882,7 +1913,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $data = $response->decodeJson();
-            HttpDownloader::outputWarnings($this->io, $this->url, $data);
+            ResponseWarnings::output($this->io, $this->url, $data);
 
             $lastModifiedDate = $response->getHeader('last-modified');
             $response->collect();
@@ -1981,7 +2012,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $data = $response->decodeJson();
-            HttpDownloader::outputWarnings($io, $url, $data);
+            ResponseWarnings::output($io, $url, $data);
 
             $lastModifiedDate = $response->getHeader('last-modified');
             $response->collect();

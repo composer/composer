@@ -17,7 +17,6 @@ use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
-use Composer\Util\ProcessExecutor;
 use Composer\Util\Silencer;
 
 /**
@@ -29,6 +28,9 @@ use Composer\Util\Silencer;
  */
 class BinaryInstaller
 {
+    /** characters that cannot be embedded safely in the generated proxies */
+    private const UNSAFE_PROXY_CHARS = '{[*$`"&^|<>()%!;\x00-\x1f\x7f]}';
+
     /** @var string */
     protected $binDir;
     /** @var string */
@@ -59,6 +61,13 @@ class BinaryInstaller
         Platform::workaroundFilesystemIssues();
 
         foreach ($binaries as $bin) {
+            // ValidatingArrayLoader rejects these at publish time, but bins reach here from sources
+            // it never sees, e.g. path repositories, custom installers, or the ensureBinariesPresence()
+            // loop which reads installed.json through the non-validating ArrayLoader.
+            if (!self::isSafeBinPath($bin)) {
+                $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': the bin path contains invalid characters</warning>');
+                continue;
+            }
             $binPath = $installPath.'/'.$bin;
             if (!file_exists($binPath)) {
                 $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': file not found in package</warning>');
@@ -68,12 +77,23 @@ class BinaryInstaller
                 $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': found a directory at that path</warning>');
                 continue;
             }
+            // A malicious package can pass the ".." bin metadata check yet ship the bin as a symlink
+            // pointing outside the package (e.g. to ../../../victim.sh), following it here would let
+            // the package chmod/proxy an arbitrary host file (GHSA-96h3-5x6v-m776).
+            if (!self::isBinPathInsidePackage($installPath, $binPath)) {
+                $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': the bin resolves to a path outside of the package directory</warning>');
+                continue;
+            }
             if (!$this->filesystem->isAbsolutePath($binPath)) {
                 // in case a custom installer returned a relative path for the
                 // $package, we can now safely turn it into a absolute path (as we
                 // already checked the binary's existence). The following helpers
                 // will require absolute paths to work properly.
                 $binPath = realpath($binPath);
+                if (false === $binPath) {
+                    $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': the bin path could not be resolved</warning>');
+                    continue;
+                }
             }
             $this->initializeBinDir();
             $link = $this->binDir.'/'.basename($bin);
@@ -96,6 +116,10 @@ class BinaryInstaller
             }
 
             if ($binCompat === "full") {
+                if (!self::isRepresentableInBatchProxy($binPath) || !self::isRepresentableInBatchProxy($this->binDir)) {
+                    $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': the path contains a double quote or line break, which cannot be used in a Windows bin proxy</warning>');
+                    continue;
+                }
                 $this->installFullBinaries($binPath, $link, $bin, $package);
             } else {
                 $this->installUnixyProxyBinaries($binPath, $link);
@@ -137,11 +161,115 @@ class BinaryInstaller
         $handle = fopen($bin, 'r');
         $line = fgets($handle);
         fclose($handle);
-        if (Preg::isMatchStrictGroups('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', (string) $line, $match)) {
-            return trim($match[1]);
+        // trailing whitespace covers the CR of a bin using CRLF line endings, leading whitespace is
+        // left alone as the kernel only honors a "#!" at the very first byte of the file
+        $shebang = rtrim((string) $line, " \t\r\n");
+
+        return self::shebangCaller($shebang) ?? 'php';
+    }
+
+    /**
+     * Returns the command a shebang line invokes, incl. its arguments, or null if it cannot be used
+     *
+     * The shebang comes from the very bin the proxies run, so its arguments are carried along as is.
+     * Only characters which would break the command line of the .bat proxy are refused.
+     */
+    private static function shebangCaller(string $shebang): ?string
+    {
+        if (!Preg::isMatchStrictGroups('{^#!(?:/[a-zA-Z0-9_.+-]+)*/([a-zA-Z0-9_.+][a-zA-Z0-9_.+-]*(?:[ \t].*)?)$}', $shebang, $match)
+            || Preg::isMatch(self::UNSAFE_PROXY_CHARS, $match[1])
+        ) {
+            return null;
         }
 
-        return 'php';
+        // "env" is transparent, the interpreter is then its first argument, or the first one after
+        // the -S which makes env split a multi-word shebang
+        $caller = Preg::replace('{^env[ \t]+(?:-S[ \t]*)?}', '', $match[1]);
+        if ($caller === '' || $caller === 'env') {
+            return null;
+        }
+
+        // other env options, e.g. "env -i bash", need env itself to run
+        return $caller[0] === '-' ? 'env '.$caller : $caller;
+    }
+
+    /**
+     * Checks whether a shebang caller runs a php binary, e.g. "php", "php8.2" or "php -d x=1"
+     */
+    private static function isPhpInterpreter(string $caller): bool
+    {
+        return Preg::isMatch('{^php[0-9.]*(?:[ \t]|$)}', $caller);
+    }
+
+    /**
+     * Checks that a bin path from a package can be embedded in the generated proxies
+     *
+     * These characters cannot occur in a legitimate bin and only serve to make the proxies harder
+     * to generate safely. Spaces, backslashes and single quotes are deliberately accepted, as
+     * published packages do use them. Only ever pass the package-relative bin path: the absolute
+     * one carries the user's own project path, which may well contain e.g. parentheses.
+     *
+     * @internal
+     */
+    public static function isSafeBinPath(string $bin): bool
+    {
+        return !Preg::isMatch(self::UNSAFE_PROXY_CHARS, $bin);
+    }
+
+    /**
+     * Quotes a string so a POSIX shell reads it as a single literal word
+     *
+     * ProcessExecutor::escape() cannot be used here as it switches to cmd.exe rules when Composer
+     * itself runs on Windows, while this proxy is always read by sh, incl. on Windows for Cygwin.
+     */
+    private static function escapeShellArg(string $arg): string
+    {
+        return "'".str_replace("'", "'\\''", $arg)."'";
+    }
+
+    /**
+     * Escapes a value for a `SET "VAR=<value>"` statement of a generated .bat proxy
+     *
+     * Quoting the assignment makes cmd.exe read & | < > ^ ( ) literally, and ! is inert thanks to
+     * the proxy's DISABLEDELAYEDEXPANSION. Percent expansion runs before quotes are applied though,
+     * so those must be doubled -- %% collapses back to one % in a batch file, which is what this
+     * generates, unlike on a command line.
+     */
+    private static function escapeBatchSetValue(string $value): string
+    {
+        return str_replace('%', '%%', $value);
+    }
+
+    /**
+     * Checks that a path can be represented in a .bat proxy at all
+     *
+     * A double quote would end the SET "..." quoting, a line break would start a new batch line, and
+     * cmd.exe stops reading a batch file at a 0x1A. None can be escaped, and stripping them could
+     * point the proxy at a different existing file, so such bins are skipped instead.
+     */
+    private static function isRepresentableInBatchProxy(string $path): bool
+    {
+        return !Preg::isMatch('{["\r\n\x1a]}', $path);
+    }
+
+    /**
+     * Checks that a bin file resolves to a path inside the package's own install directory
+     *
+     * A bin escaping the package, either via ".." metadata or by being a symlink pointing out of it,
+     * would let the package chmod/proxy an arbitrary host file, see GHSA-gjfg-22fp-rrxx and
+     * GHSA-96h3-5x6v-m776.
+     */
+    public static function isBinPathInsidePackage(string $installPath, string $binPath): bool
+    {
+        $realBinPath = realpath($binPath);
+        $realInstallPath = realpath($installPath);
+
+        // fail closed if either path cannot be resolved
+        if (false === $realBinPath || false === $realInstallPath) {
+            return false;
+        }
+
+        return strpos($realBinPath, $realInstallPath.DIRECTORY_SEPARATOR) === 0;
     }
 
     /**
@@ -163,14 +291,14 @@ class BinaryInstaller
             }
         }
         if (!file_exists($link)) {
-            file_put_contents($link, $this->generateWindowsProxyCode($binPath, $link));
+            Filesystem::safeFilePutContents($link, $this->generateWindowsProxyCode($binPath, $link));
             Silencer::call('chmod', $link, 0777 & ~umask());
         }
     }
 
     protected function installUnixyProxyBinaries(string $binPath, string $link): void
     {
-        file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
+        Filesystem::safeFilePutContents($link, $this->generateUnixyProxyCode($binPath, $link));
         Silencer::call('chmod', $link, 0777 & ~umask());
     }
 
@@ -182,24 +310,21 @@ class BinaryInstaller
 
     protected function generateWindowsProxyCode(string $bin, string $link): string
     {
-        $binPath = $this->filesystem->findShortestPath($link, $bin);
         $caller = self::determineBinaryCaller($bin);
 
         // if the target is a php file, we run the unixy proxy file
         // to ensure that _composer_autoload_path gets defined, instead
         // of running the binary directly
-        if ($caller === 'php') {
-            return "@ECHO OFF\r\n".
-                "setlocal DISABLEDELAYEDEXPANSION\r\n".
-                "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape(basename($link, '.bat')), '"\'')."\r\n".
-                "SET COMPOSER_RUNTIME_BIN_DIR=%~dp0\r\n".
-                "{$caller} \"%BIN_TARGET%\" %*\r\n";
-        }
+        $target = self::isPhpInterpreter($caller)
+            ? basename($link, '.bat')
+            : $this->filesystem->findShortestPath($link, $bin);
 
+        // quoting the SET statements keeps cmd.exe from acting on & | < > ^ ( ) in either the
+        // package's bin path or the user's own project path
         return "@ECHO OFF\r\n".
             "setlocal DISABLEDELAYEDEXPANSION\r\n".
-            "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape($binPath), '"\'')."\r\n".
-            "SET COMPOSER_RUNTIME_BIN_DIR=%~dp0\r\n".
+            "SET \"BIN_TARGET=%~dp0/".self::escapeBatchSetValue($target)."\"\r\n".
+            "SET \"COMPOSER_RUNTIME_BIN_DIR=%~dp0\"\r\n".
             "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 
@@ -207,16 +332,22 @@ class BinaryInstaller
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
 
-        $binDir = ProcessExecutor::escape(dirname($binPath));
-        $binFile = basename($binPath);
+        $binDir = self::escapeShellArg(dirname($binPath));
+        $binFile = self::escapeShellArg(basename($binPath));
 
         $binContents = (string) file_get_contents($bin, false, null, 0, 500);
         // For php files, we generate a PHP proxy instead of a shell one,
         // which allows calling the proxy with a custom php process
         if (Preg::isMatch('{^(#!.*\r?\n)?[\r\n\t ]*<\?php}', $binContents, $match)) {
-            // carry over the existing shebang if present, otherwise add our own
-            $proxyCode = $match[1] === null ? '#!/usr/bin/env php' : trim($match[1]);
+            // carry over the existing shebang if present and safe to embed, otherwise add our own.
+            // Only a php one is kept as the proxy body below is PHP.
+            $shebang = $match[1] === null ? '' : rtrim($match[1], " \t\r\n");
+            $caller = self::shebangCaller($shebang);
+            $proxyCode = $caller !== null && self::isPhpInterpreter($caller) ? $shebang : '#!/usr/bin/env php';
             $binPathExported = $this->filesystem->findShortestPathCode($link, $bin, false, true);
+            // a package controls every segment of its bin paths, and a "*/" in the path below would
+            // close the docblock it goes into and have the rest of it parsed as PHP code
+            $binPathComment = str_replace('*/', '* /', str_replace(["\r", "\n"], ' ', $binPath));
             $streamProxyCode = $streamHint = '';
             $globalsCode = '$GLOBALS[\'_composer_bin_dir\'] = __DIR__;'."\n";
             $phpunitHack1 = $phpunitHack2 = '';
@@ -352,7 +483,7 @@ STREAMPROXY;
 /**
  * Proxy PHP file generated by Composer
  *
- * This file includes the referenced bin path ($binPath)
+ * This file includes the referenced bin path ($binPathComment)
  *$streamHint
  * @generated
  */
@@ -398,12 +529,12 @@ export COMPOSER_RUNTIME_BIN_DIR="\$(cd "\${self%[/\\\\]*}" > /dev/null; pwd)"
 bashSource="\$BASH_SOURCE"
 if [ -n "\$bashSource" ]; then
     if [ "\$bashSource" != "\$0" ]; then
-        source "\${dir}/$binFile" "\$@"
+        source "\${dir}/"$binFile "\$@"
         return
     fi
 fi
 
-exec "\${dir}/$binFile" "\$@"
+exec "\${dir}/"$binFile "\$@"
 
 PROXY;
     }

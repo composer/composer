@@ -306,6 +306,86 @@ An example:
 
 Optional.
 
+### source
+
+Where the package sources live, used when installing the package from source.
+
+`type`, `url` and `reference` are required, `mirrors` is optional.
+
+```json
+{
+    "source": {
+        "type": "git",
+        "url": "https://github.com/composer/composer.git",
+        "reference": "2.8.0"
+    }
+}
+```
+
+Where `type` is `git`, the reference is a commit id, branch or tag name. Where
+it is `svn`, it is the reference that gets appended to the URL when running
+`svn co`.
+
+You normally do not write this field yourself. The repository a package comes
+from provides it: Packagist and other `composer` repositories fill it in from
+the VCS they read the package from, and a VCS repository fills it in from the
+branch or tag it is reading. The place you do write it by hand is the
+definition of a [`package` repository](05-repositories.md#package-1).
+
+Optional.
+
+### dist
+
+Where the package archive lives, used when installing the package from dist.
+
+`type` and `url` are required, `reference`, `shasum` and `mirrors` are
+optional.
+
+```json
+{
+    "dist": {
+        "type": "zip",
+        "url": "https://www.smarty.net/files/Smarty-3.1.7.zip"
+    }
+}
+```
+
+The same applies as for [source](04-schema.md#source): this is normally
+provided by the repository the package comes from, and written by hand only in
+a [`package` repository](05-repositories.md#package-1).
+
+The `url` may contain placeholders, which is what lets one URL serve every
+version of a package instead of one entry per version. They are expanded when
+the package is downloaded:
+
+| Placeholder | Replaced by |
+| --- | --- |
+| `%package%` | the package name, e.g. `acme/lib` |
+| `%version%` | the normalized version, e.g. `1.2.3.0` |
+| `%prettyVersion%` | the version defined in the tag or composer.json, e.g. `v1.2.3` |
+| `%reference%` | the `reference` above |
+| `%type%` | the `type` above |
+
+```json
+{
+    "dist": {
+        "type": "zip",
+        "url": "https://example.org/dist/%package%/%prettyVersion%.zip"
+    }
+}
+```
+
+Two of them are hashed rather than inserted as-is, so that they cannot produce
+a path segment or escape the URL: `%version%` is replaced by its MD5 hash when
+the version contains a `/`, as `dev-feature/x` does, and `%reference%` by its
+MD5 hash unless it is already hexadecimal. A branch or tag name given as the
+reference therefore appears hashed in the URL.
+
+Placeholders are expanded in `dist` only. A `source` url is used as it is, since
+the VCS it names is cloned once and then checked out at the reference.
+
+Optional.
+
 ### Package links
 
 All of the following take an object which maps package names to
@@ -378,12 +458,23 @@ Example:
 }
 ```
 
-> **Note:** This feature has severe technical limitations, as the
-> composer.json metadata will still be read from the branch name you specify
-> before the hash. You should therefore only use this as a temporary solution
-> during development to remediate transient issues, until you can switch to
-> tagged releases. The Composer team does not actively support this feature
-> and will not accept bug reports related to it.
+> **Note:** This feature has severe technical limitations. The reference only
+> changes which commit gets checked out; it is applied at install time as a
+> low-level override that the dependency solver never sees. As a result:
+>
+> - The package's `composer.json` metadata (its own `require` entries, autoload
+>   rules, and so on) is read from the branch you name, at its current state,
+>   not from the commit you pinned. The dependencies Composer resolves can
+>   therefore differ from those declared at that commit.
+> - The override is only reliable for source installs. A dist install can only
+>   honor the reference when the dist is fetched from a source that can build an
+>   archive for an arbitrary commit (e.g. GitHub); otherwise the pinned commit
+>   is ignored when downloading the files.
+>
+> You should therefore only use this as a temporary solution during development
+> to remediate transient issues, until you can switch to tagged releases. The
+> Composer team does not actively support this feature and will not accept bug
+> reports related to it.
 
 It is also possible to inline-alias a package constraint so that it matches
 a constraint that it otherwise would not. For more information [see the
@@ -816,9 +907,16 @@ The following repository types are supported:
   using the `options` parameter.
 * **vcs:** The version control system repository can fetch packages from git,
   svn, fossil and hg repositories.
+* **path:** Loads a package from a local directory, given as an absolute or
+  relative path (wildcards are supported). Mostly useful for monolithic
+  repositories; the package is symlinked into `vendor` when possible, and
+  mirrored otherwise.
 * **package:** If you depend on a project that does not have any support for
   Composer whatsoever you can define the package inline using a `package`
   repository. You basically inline the `composer.json` object.
+* **artifact:** Loads packages from a local directory containing ZIP or TAR
+  archives, each with a `composer.json` in its root. Useful for exchanging
+  build artifacts when no repository can be hosted online.
 
 For more information on any of these, see [Repositories](05-repositories.md).
 
@@ -843,6 +941,10 @@ Example:
         {
             "type": "vcs",
             "url": "https://github.com/Seldaek/monolog"
+        },
+        {
+            "type": "path",
+            "url": "../packages/my-package"
         },
         {
             "type": "package",
@@ -909,6 +1011,47 @@ through the use of scripts.
 
 See [Scripts](articles/scripts.md) for events details and examples.
 
+### scripts-descriptions <span>([root-only](04-schema.md#root-package))</span>
+
+Descriptions for the custom commands defined in `scripts`, shown by
+`composer list` and `composer run -l` instead of the default
+"Runs the ... script as defined in composer.json".
+
+```json
+{
+    "scripts-descriptions": {
+        "test": "Run all tests!"
+    }
+}
+```
+
+`composer validate` warns about a description given for a script that does
+not exist.
+
+See [Scripts](articles/scripts.md#custom-descriptions) for more details.
+
+Optional.
+
+### scripts-aliases <span>([root-only](04-schema.md#root-package))</span>
+
+Alternate names for the custom commands defined in `scripts`, as an array of
+strings per script. Available as of Composer 2.7.
+
+```json
+{
+    "scripts-aliases": {
+        "phpstan": ["stan", "analyze"]
+    }
+}
+```
+
+`composer validate` warns about aliases given for a script that does not
+exist.
+
+See [Scripts](articles/scripts.md#custom-aliases) for more details.
+
+Optional.
+
 ### extra
 
 Arbitrary extra data for consumption by `scripts`.
@@ -926,6 +1069,11 @@ Optional.
 
 A set of files that should be treated as binaries and made available
 into the `bin-dir` (from config).
+
+Each entry is a path relative to the package root. It must not contain a `..` segment, nor any of
+the characters ``*$`"&^|<>()%!;`` or control characters: those cannot be represented safely in the
+proxy files Composer generates in the `bin-dir`. Wildcards are not expanded, a `bin/*` entry is
+simply a file that does not exist.
 
 See [Vendor Binaries](articles/vendor-binaries.md) for more details.
 
@@ -973,6 +1121,20 @@ The example will include `/dir/foo/bar/file`, `/foo/bar/baz`, `/file.php`,
 
 Optional.
 
+### php-ext
+
+Settings for a PHP extension package, read by
+[PIE](https://github.com/php/pie) rather than by Composer itself.
+
+It can only be set by packages whose [type](04-schema.md#type) is `php-ext` or
+`php-ext-zend`, the two types reserved for extensions written in C.
+`composer validate` reports an error on any other package.
+
+See [PIE for extension maintainers](https://github.com/php/pie/blob/HEAD/docs/extension-maintainers.md#the-php-ext-definition)
+for the settings it accepts.
+
+Optional.
+
 ### abandoned
 
 Indicates whether this package has been abandoned.
@@ -1005,6 +1167,19 @@ Top level key used as a place to store comments (it can be a string or array of 
 Defaults to empty.
 
 Optional.
+
+### default-branch
+
+Indicates whether this version is the default branch of the VCS repository the
+package was read from.
+
+This one is for Composer's own use, do not set it in `composer.json`. Composer
+discards whatever the file contains and sets it itself, to `true` on the branch
+that the repository reports as its default one and on nothing else. It ends up
+in the metadata that `composer` repositories serve, which is where you may see
+it.
+
+Defaults to `false`.
 
 ### non-feature-branches
 

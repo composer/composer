@@ -326,7 +326,7 @@ EOF;
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            $classMapGenerator->scanPaths($dir, $this->buildExclusionRegex($dir, $excluded));
+            $classMapGenerator->scanPaths($dir, $this->buildExclusionRegexWithVendorDir($dir, $excluded, $vendorPath));
         }
 
         if ($scanPsrPackages) {
@@ -349,24 +349,21 @@ EOF;
                             continue;
                         }
 
-                        // if the vendor dir is contained within a psr-0/psr-4 dir being scanned we exclude it
-                        if (str_contains($vendorPath, $dir.'/')) {
-                            $exclusionRegex = $this->buildExclusionRegex($dir, array_merge($excluded, [$vendorPath.'/']));
-                        } else {
-                            $exclusionRegex = $this->buildExclusionRegex($dir, $excluded);
-                        }
-
-                        $classMapGenerator->scanPaths($dir, $exclusionRegex, $group['type'], $namespace);
+                        $classMapGenerator->scanPaths($dir, $this->buildExclusionRegexWithVendorDir($dir, $excluded, $vendorPath), $group['type'], $namespace);
                     }
                 }
             }
         }
 
         $classMap = $classMapGenerator->getClassMap();
+        // added before the ambiguity checks so that the cached result is reused by dump-autoload --strict-ambiguous
+        $classMap->addClass('Composer\InstalledVersions', $vendorPath . '/composer/InstalledVersions.php');
         if ($strictAmbiguous) {
             $ambiguousClasses = $classMap->getAmbiguousClasses(false);
+            $ambiguousFolders = $classMap->getAmbiguousFolders(false);
         } else {
             $ambiguousClasses = $classMap->getAmbiguousClasses();
+            $ambiguousFolders = $classMap->getAmbiguousFolders();
         }
         foreach ($ambiguousClasses as $className => $ambiguousPaths) {
             if (count($ambiguousPaths) > 1) {
@@ -381,7 +378,13 @@ EOF;
                 );
             }
         }
-        if (\count($ambiguousClasses) > 0) {
+        foreach ($ambiguousFolders as $ambiguousPaths) {
+            $this->io->writeError(
+                '<warning>Warning: Ambiguous path casing, "'. implode('", "', $ambiguousPaths) .'" only differ in casing'.
+                ' and merge into one on case-insensitive filesystems (e.g. Windows and macOS), which breaks autoloading there.</warning>'
+            );
+        }
+        if (\count($ambiguousClasses) > 0 || \count($ambiguousFolders) > 0) {
             $this->io->writeError('<info>To resolve ambiguity in classes not under your control you can ignore them by path using <href='.OutputFormatter::escape('https://getcomposer.org/doc/04-schema.md#exclude-files-from-classmaps').'>exclude-from-classmap</>');
         }
 
@@ -391,7 +394,6 @@ EOF;
             $this->io->writeError("<warning>$msg</warning>");
         }
 
-        $classMap->addClass('Composer\InstalledVersions', $vendorPath . '/composer/InstalledVersions.php');
         $classMap->sort();
 
         $classmapFile = <<<EOF
@@ -426,7 +428,10 @@ EOF;
             }
 
             if (null === $suffix) {
-                $suffix = $locker !== null && $locker->isLocked() ? $locker->getLockData()['content-hash'] : bin2hex(random_bytes(16));
+                // a lock file with an unresolved merge conflict has its content-hash replaced by a
+                // human readable message, which would end up inside the autoloader class names
+                $contentHash = $locker !== null && $locker->isLocked() ? $locker->getLockData()['content-hash'] : null;
+                $suffix = is_string($contentHash) && Preg::isMatch('{^[a-f0-9]+$}', $contentHash) ? $contentHash : bin2hex(random_bytes(16));
             }
         }
 
@@ -476,6 +481,25 @@ EOF;
         }
 
         return $classMap;
+    }
+
+    /**
+     * Same as buildExclusionRegex, but also excludes the vendor dir if $dir contains it
+     *
+     * @param array<string> $excluded
+     * @return non-empty-string|null
+     */
+    private function buildExclusionRegexWithVendorDir(string $dir, array $excluded, ?string $vendorPath): ?string
+    {
+        if (null !== $vendorPath) {
+            $fs = new Filesystem();
+            $resolvedDir = $fs->normalizePath($fs->isAbsolutePath($dir) ? $dir : realpath(Platform::getCwd()).'/'.$dir);
+            if (str_starts_with($vendorPath, $resolvedDir.'/')) {
+                $excluded[] = preg_quote($vendorPath.'/');
+            }
+        }
+
+        return $this->buildExclusionRegex($dir, $excluded);
     }
 
     /**
@@ -650,12 +674,17 @@ EOF;
                 $excluded = $autoloads['exclude-from-classmap'];
             }
 
+            $vendorPath = null;
+            if (null !== $vendorDir && false !== ($realVendorDir = realpath($vendorDir))) {
+                $vendorPath = (new Filesystem())->normalizePath($realVendorDir);
+            }
+
             $classMapGenerator = new ClassMapGenerator(['php', 'inc', 'hh']);
             $classMapGenerator->avoidDuplicateScans();
 
             foreach ($autoloads['classmap'] as $dir) {
                 try {
-                    $classMapGenerator->scanPaths($dir, $this->buildExclusionRegex($dir, $excluded));
+                    $classMapGenerator->scanPaths($dir, $this->buildExclusionRegexWithVendorDir($dir, $excluded, $vendorPath));
                 } catch (\RuntimeException $e) {
                     $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
                 }

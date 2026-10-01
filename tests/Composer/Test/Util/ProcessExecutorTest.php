@@ -81,8 +81,10 @@ class ProcessExecutorTest extends TestCase
         return [
             ['echo https://foo:bar@example.org/', 'echo https://foo:***@example.org/'],
             ['echo http://foo@example.org', 'echo http://foo@example.org'],
-            ['echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://***:***@github.com/'],
-            ['echo http://github_pat_1234567890abcdefghijkl_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW:x-oauth-token@github.com/', 'echo http://***:***@github.com/'],
+            ['echo http://abcdef1234567890234578:x-oauth-token@github.com/', 'echo http://abc***:***@github.com/'],
+            ['echo http://github_pat_1234567890abcdefghijkl_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW:x-oauth-token@github.com/', 'echo http://git***:***@github.com/'],
+            ['echo http://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB@github.com/', 'echo http://ghp***@github.com/'],
+            ['echo http://abcdef1234567890234578@github.com/', 'echo http://abc***@github.com/'],
             ["svn ls --verbose --non-interactive  --username 'foo' --password 'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"],
             ["svn ls --verbose --non-interactive  --username 'foo' --password 'bar \'bar'  'https://foo.example.org/svn/'", "svn ls --verbose --non-interactive  --username 'foo' --password '***'  'https://foo.example.org/svn/'"],
         ];

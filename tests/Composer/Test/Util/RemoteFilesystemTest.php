@@ -240,6 +240,37 @@ class RemoteFilesystemTest extends TestCase
     }
 
     /**
+     * @dataProvider provideDisallowedRedirectSchemes
+     */
+    public function testRedirectToDisallowedSchemeIsRejected(string $location): void
+    {
+        self::expectException('Composer\Downloader\TransportException');
+        self::expectExceptionMessage('only http and https redirects are supported');
+
+        $fs = $this->getRemoteFilesystemWithMockedMethods(['getRemoteContents']);
+        $fs->expects($this->once())->method('getRemoteContents')
+            ->willReturnCallback(static function ($originUrl, $fileUrl, $ctx, &$http_response_header) use ($location): string {
+                $http_response_header = ['HTTP/1.1 302 Found', 'Location: '.$location];
+
+                return '';
+            });
+
+        $fs->getContents('http://example.org', 'http://example.org/packages.json', false);
+    }
+
+    /**
+     * @return string[][]
+     */
+    public static function provideDisallowedRedirectSchemes(): array
+    {
+        return [
+            ['file://localhost/etc/passwd'],
+            ['phar://archive.phar/file'],
+            ['data://text/plain;base64,Zm9v'],
+        ];
+    }
+
+    /**
      * @group TLS
      */
     public function testGetOptionsForUrlCreatesSecureTlsDefaults(): void

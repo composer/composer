@@ -1309,6 +1309,11 @@ EOT
                 'version' => $require->getPrettyConstraint(),
             ];
 
+            $installedVersion = $this->getInstalledVersion($installedRepo, $requireName);
+            if (null !== $installedVersion) {
+                $treeChildDesc['installed'] = $installedVersion;
+            }
+
             $deepChildren = $this->addTree($requireName, $require, $installedRepo, $remoteRepos, $packagesInTree);
 
             if ($deepChildren) {
@@ -1415,6 +1420,11 @@ EOT
                     'version' => $require->getPrettyConstraint(),
                 ];
 
+                $installedVersion = $this->getInstalledVersion($installedRepo, $requireName);
+                if (null !== $installedVersion) {
+                    $treeChildDesc['installed'] = $installedVersion;
+                }
+
                 if (!in_array($requireName, $currentTree, true)) {
                     $currentTree[] = $requireName;
                     $deepChildren = $this->addTree($requireName, $require, $installedRepo, $remoteRepos, $currentTree);
@@ -1428,6 +1438,24 @@ EOT
         }
 
         return $children;
+    }
+
+    /**
+     * Returns the pretty version of the installed package matching the given
+     * name (honoring replace/provide), or null if it is not installed.
+     */
+    private function getInstalledVersion(InstalledRepository $installedRepo, string $name): ?string
+    {
+        foreach ($installedRepo->findPackagesWithReplacersAndProviders($name) as $package) {
+            // resolve aliases to report the actually installed version rather than the alias version
+            while ($package instanceof AliasPackage) {
+                $package = $package->getAliasOf();
+            }
+
+            return $package->getPrettyVersion();
+        }
+
+        return null;
     }
 
     private function updateStatusToVersionStyle(string $updateStatus): string

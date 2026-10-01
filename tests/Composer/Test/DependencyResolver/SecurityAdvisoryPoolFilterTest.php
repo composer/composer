@@ -19,8 +19,10 @@ use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
 use Composer\Downloader\TransportException;
 use Composer\IO\BufferIO;
 use Composer\IO\NullIO;
+use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
+use Composer\Package\Version\VersionParser;
 use Composer\Policy\AbandonedPolicyConfig;
 use Composer\Policy\CooldownPolicyConfig;
 use Composer\Policy\AdvisoriesPolicyConfig;
@@ -248,6 +250,140 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
         $this->expectException(TransportException::class);
         $filter->filter(new Pool([new Package('acme/package', '1.0.0.0', '1.0')]), [$unreachable], new Request());
+    }
+
+    public function testDoesNotLoadAdvisoriesForDevPackages(): void
+    {
+        $repository = new class([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '>=2.0.0')],
+            ],
+        ]) extends PackageRepository {
+            /** @var list<string> */
+            public $requestedNames = [];
+
+            public function getSecurityAdvisories(array $packageConstraintMap, bool $allowPartialAdvisories = false): array
+            {
+                $this->requestedNames = array_merge($this->requestedNames, array_keys($packageConstraintMap));
+
+                return parent::getSecurityAdvisories($packageConstraintMap, $allowPartialAdvisories);
+            }
+        };
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
+        $filter->filter(new Pool([
+            new Package('acme/package', '1.0.0.0', '1.0'),
+            new Package('acme/path-package', 'dev-main', 'dev-main'),
+            new Package('acme/branch-package', '3.3.9999999.9999999-dev', '3.3.x-dev'),
+        ]), [$repository], new Request());
+
+        $this->assertSame(['acme/package', 'acme/branch-package'], $repository->requestedNames);
+    }
+
+    public function testFilterNumericDevBranchByAdvisories(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '<3.5')],
+            ],
+        ]);
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
+        $filteredPool = $filter->filter(new Pool([
+            new Package('acme/package', '3.3.9999999.9999999-dev', '3.3.x-dev'),
+            new Package('acme/package', '3.6.9999999.9999999-dev', '3.6.x-dev'),
+        ]), [$repository], new Request());
+
+        $this->assertCount(1, $filteredPool->getPackages());
+        $this->assertSame('3.6.x-dev', $filteredPool->getPackages()[0]->getPrettyVersion());
+        $this->assertTrue($filteredPool->isSecurityRemovedPackageVersion('acme/package', new Constraint('==', '3.3.9999999.9999999-dev')));
+    }
+
+    public function testFilterBranchAliasOfDevPackageByAdvisories(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '<3.5')],
+            ],
+        ]);
+
+        $devPackage = new CompletePackage('acme/package', 'dev-main', 'dev-main');
+        $branchAlias = new CompleteAliasPackage($devPackage, '3.3.9999999.9999999-dev', '3.3.x-dev');
+        // requiring the branch explicitly opts out of advisories, even if the root alias version itself would match
+        $rootAlias = new CompleteAliasPackage($devPackage, '3.3.0.0', '3.3.0');
+        $rootAlias->setRootPackageAlias(true);
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
+        $filteredPool = $filter->filter(new Pool([$devPackage, $branchAlias, $rootAlias]), [$repository], new Request());
+
+        $this->assertSame([$devPackage, $rootAlias], $filteredPool->getPackages());
+        $this->assertTrue($filteredPool->isSecurityRemovedPackageVersion('acme/package', new Constraint('==', '3.3.9999999.9999999-dev')));
+    }
+
+    public function testDefaultBranchAliasIsNotFilteredByAdvisories(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '>=2.0')],
+            ],
+        ]);
+
+        $devPackage = new CompletePackage('acme/package', 'dev-main', 'dev-main');
+        $defaultBranchAlias = new CompleteAliasPackage($devPackage, VersionParser::DEFAULT_BRANCH_ALIAS, VersionParser::DEFAULT_BRANCH_ALIAS);
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
+        $filteredPool = $filter->filter(new Pool([$devPackage, $defaultBranchAlias]), [$repository], new Request());
+
+        $this->assertSame([$devPackage, $defaultBranchAlias], $filteredPool->getPackages());
+    }
+
+    public function testRootAliasOfDevPackageIsNotFilteredByAliasVersion(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '*')],
+            ],
+        ]);
+
+        $devPackage = new CompletePackage('acme/package', 'dev-main', 'dev-main');
+        $aliasPackage = new CompleteAliasPackage($devPackage, '1.0.0.0', '1.0.0');
+        $aliasPackage->setRootPackageAlias(true);
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
+        $filteredPool = $filter->filter(new Pool([$devPackage, $aliasPackage]), [$repository], new Request());
+
+        $this->assertSame([$devPackage, $aliasPackage], $filteredPool->getPackages());
+    }
+
+    public function testFilterRootAliasByAliasedPackageVersion(): void
+    {
+        $repository = new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/package' => [$this->generateSecurityAdvisory('acme/package', 'CVE-2024-1234', '<3.5')],
+                'acme/other' => [$this->generateSecurityAdvisory('acme/other', 'CVE-2024-1235', '<3.5')],
+            ],
+        ]);
+
+        // vulnerable code aliased to a safe version is still filtered
+        $vulnerable = new CompletePackage('acme/package', '3.3.9999999.9999999-dev', '3.3.x-dev');
+        $vulnerableAlias = new CompleteAliasPackage($vulnerable, '3.9.0.0', '3.9.0');
+        $vulnerableAlias->setRootPackageAlias(true);
+
+        // safe code aliased to a vulnerable version is kept
+        $safe = new CompletePackage('acme/other', '3.6.9999999.9999999-dev', '3.6.x-dev');
+        $safeAlias = new CompleteAliasPackage($safe, '3.0.0.0', '3.0.0');
+        $safeAlias->setRootPackageAlias(true);
+
+        $filter = new SecurityAdvisoryPoolFilter(new Auditor(), self::policyConfig(), new NullIO());
+        $filteredPool = $filter->filter(new Pool([$vulnerable, $vulnerableAlias, $safe, $safeAlias]), [$repository], new Request());
+
+        $this->assertSame([$safe, $safeAlias], $filteredPool->getPackages());
     }
 
     /**

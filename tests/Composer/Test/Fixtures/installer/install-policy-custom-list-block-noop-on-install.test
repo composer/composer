@@ -1,5 +1,5 @@
 --TEST--
-Install proceeds when a non-malware list has block:true (custom lists do not opt into install-time blocking)
+Install proceeds when a custom list has block:true but the default block-scope (update) does not include install
 --COMPOSER--
 {
     "repositories": [

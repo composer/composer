@@ -23,9 +23,11 @@
     ],
     "require": {
         "php": "^7.2.5 || ^8.0",
+        "ext-filter": "*",
+        "ext-hash": "*",
         "ext-json": "*",
         "composer/ca-bundle": "^1.5",
-        "composer/class-map-generator": "^1.4.0",
+        "composer/class-map-generator": "^1.8.0",
         "composer/metadata-minifier": "^1.0",
         "composer/semver": "^3.3",
         "composer/spdx-licenses": "^1.5.7",
@@ -48,7 +50,7 @@
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^6.4.25 || ^7.3.3 || ^8.0",
-        "phpstan/phpstan": "^1.11.8",
+        "phpstan/phpstan": "1.12.33",
         "phpstan/phpstan-phpunit": "^1.4.0",
         "phpstan/phpstan-deprecation-rules": "^1.2.0",
         "phpstan/phpstan-strict-rules": "^1.6.0",
@@ -68,7 +70,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.10-dev"
+            "dev-main": "2.11-dev"
         },
         "phpstan": {
             "includes": [

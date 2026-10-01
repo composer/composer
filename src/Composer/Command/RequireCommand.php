@@ -149,7 +149,7 @@ EOT
         }
 
         if (filesize($this->file) === 0) {
-            file_put_contents($this->file, "{\n}\n");
+            Filesystem::safeFilePutContents($this->file, "{\n}\n");
         }
 
         $this->json = new JsonFile($this->file);
@@ -607,7 +607,7 @@ EOT
 
         $manipulator->removeMainKeyIfEmpty($removeKey);
 
-        file_put_contents($json->getPath(), $manipulator->getContents());
+        Filesystem::safeFilePutContents($json->getPath(), $manipulator->getContents());
 
         return true;
     }
@@ -632,9 +632,9 @@ EOT
                 $msg = ' and '.$this->lock.' to their ';
             }
             $io->writeError("\n".'<error>Installation failed, reverting '.$this->file.$msg.'original content.</error>');
-            file_put_contents($this->json->getPath(), $this->composerBackup);
+            Filesystem::safeFilePutContents($this->json->getPath(), $this->composerBackup);
             if ($this->lockBackup) {
-                file_put_contents($this->lock, $this->lockBackup);
+                Filesystem::safeFilePutContents($this->lock, $this->lockBackup);
             }
         }
     }

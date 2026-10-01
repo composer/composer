@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Exception\SecurityException;
 use Composer\Json\JsonFile;
 use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Util\Perforce;
@@ -588,6 +589,80 @@ class PerforceTest extends TestCase
 
         $result = $this->perforce->checkServerExists('perforce.does.exist:port', $this->processExecutor);
         self::assertTrue($result);
+    }
+
+    public function testCheckServerExistsRejectsCommandExecutingPort(): void
+    {
+        // no process must be started at all for a rsh:/jsh: endpoint, as the p4 client would
+        // execute it instead of connecting to a server
+        $this->processExecutor->expects([], true);
+
+        self::assertFalse(Perforce::checkServerExists('rsh:touch /tmp/pwned', $this->processExecutor));
+    }
+
+    /**
+     * @dataProvider provideValidPorts
+     */
+    public function testIsValidPortAcceptsNetworkEndpoints(string $port): void
+    {
+        self::assertTrue(Perforce::isValidPort($port));
+    }
+
+    /**
+     * @return array<array{string}>
+     */
+    public static function provideValidPorts(): array
+    {
+        return [
+            ['1666'],
+            ['perforce'],
+            ['p4.example.org:1666'],
+            ['perforce.does.exist:port'],
+            ['tcp:p4.example.org:1666'],
+            ['tcp4:p4.example.org:1666'],
+            ['ssl:p4.example.org:1666'],
+            ['SSL:p4.example.org:1666'],
+            ['ssl64:[2001:db8::1]:1666'],
+            ['tcp6:[::1]:1666'],
+        ];
+    }
+
+    /**
+     * @dataProvider provideInvalidPorts
+     */
+    public function testIsValidPortRejectsNonNetworkEndpoints(string $port): void
+    {
+        self::assertFalse(Perforce::isValidPort($port));
+    }
+
+    /**
+     * @return array<array{string}>
+     */
+    public static function provideInvalidPorts(): array
+    {
+        return [
+            // rsh:/jsh: make the p4 client run the rest of the value as a local command
+            ['rsh:/tmp/evil.sh'],
+            ['rsh:evil'],
+            ['RSH:evil'],
+            [' rsh:evil'],
+            ['jsh:evil'],
+            ['JsH:evil'],
+            ['rsh :evil'],
+            // not valid endpoints either way
+            ['tcp:p4.example.org:1666; touch /tmp/pwned'],
+            ['https://example.org/vendor/pkg.git'],
+            ['-p1666'],
+            [''],
+        ];
+    }
+
+    public function testCreatingPerforceWithCommandExecutingPortThrows(): void
+    {
+        self::expectException(SecurityException::class);
+        self::expectExceptionMessage('Invalid Perforce port (rsh:touch /tmp/pwned)');
+
+        new Perforce($this->repoConfig, 'rsh:touch /tmp/pwned', self::TEST_PATH, $this->processExecutor, false, $this->io);
     }
 
     /**

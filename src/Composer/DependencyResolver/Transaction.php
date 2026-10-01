@@ -38,7 +38,7 @@ class Transaction
 
     /**
      * Package set resulting from this transaction
-     * @var array<string, PackageInterface>
+     * @var array<int, PackageInterface>
      */
     protected $resultPackageMap;
 
@@ -87,7 +87,7 @@ class Transaction
 
         $this->resultPackageMap = [];
         foreach ($resultPackages as $package) {
-            $this->resultPackageMap[spl_object_hash($package)] = $package;
+            $this->resultPackageMap[spl_object_id($package)] = $package;
             foreach ($package->getNames() as $name) {
                 $this->resultPackagesByName[$name][] = $package;
             }
@@ -128,12 +128,12 @@ class Transaction
         while (\count($stack) > 0) {
             $package = array_pop($stack);
 
-            if (isset($processed[spl_object_hash($package)])) {
+            if (isset($processed[spl_object_id($package)])) {
                 continue;
             }
 
-            if (!isset($visited[spl_object_hash($package)])) {
-                $visited[spl_object_hash($package)] = true;
+            if (!isset($visited[spl_object_id($package)])) {
+                $visited[spl_object_id($package)] = true;
 
                 $stack[] = $package;
                 if ($package instanceof AliasPackage) {
@@ -147,8 +147,8 @@ class Transaction
                         }
                     }
                 }
-            } elseif (!isset($processed[spl_object_hash($package)])) {
-                $processed[spl_object_hash($package)] = true;
+            } elseif (!isset($processed[spl_object_id($package)])) {
+                $processed[spl_object_id($package)] = true;
 
                 if ($package instanceof AliasPackage) {
                     $aliasKey = $package->getName().'::'.$package->getVersion();
@@ -225,7 +225,7 @@ class Transaction
      * These serve as a starting point to enumerate packages in a topological order despite potential cycles.
      * If there are packages with a cycle on the top level the package with the lowest name gets picked
      *
-     * @return array<string, PackageInterface>
+     * @return array<int, PackageInterface>
      */
     protected function getRootPackages(): array
     {
@@ -241,7 +241,7 @@ class Transaction
 
                 foreach ($possibleRequires as $require) {
                     if ($require !== $package) {
-                        unset($roots[spl_object_hash($require)]);
+                        unset($roots[spl_object_id($require)]);
                     }
                 }
             }

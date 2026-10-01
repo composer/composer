@@ -296,23 +296,40 @@ class GitTest extends TestCase
         ];
     }
 
-    public function testSyncMirrorSanitizesUrlAfterInitialClone(): void
+    /**
+     * @dataProvider credentialUrlProvider
+     */
+    public function testSyncMirrorSanitizesUrlAfterInitialClone(string $url): void
     {
         $nonExistentDir = sys_get_temp_dir() . '/composer-test-nonexistent-' . bin2hex(random_bytes(8));
 
         $this->mockSyncMirrorConfig();
 
         $this->process->expects([
-            ['cmd' => ['git', 'clone', '--mirror', '--', 'https://user:secret@example.com/repo.git', $nonExistentDir], 'return' => 0],
+            ['cmd' => ['git', 'clone', '--mirror', '--', $url, $nonExistentDir], 'return' => 0],
             ['cmd' => ['git', 'remote', '-v'], 'return' => 0],
             ['cmd' => ['git', 'remote', 'set-url', 'origin', '--', 'https://example.com/repo.git'], 'return' => 0],
         ], true);
 
         $this->fs->method('removeDirectory')->willReturn(true);
 
-        $result = $this->git->syncMirror('https://user:secret@example.com/repo.git', $nonExistentDir);
+        $result = $this->git->syncMirror($url, $nonExistentDir);
 
         self::assertTrue($result);
+    }
+
+    /**
+     * @return array<array{string}>
+     */
+    public static function credentialUrlProvider(): array
+    {
+        return [
+            ['https://user:secret@example.com/repo.git'],
+            // a bare token in the user slot has no colon to key off
+            ['https://ghp_1234567890abcdefghijklmnopqrstuvwxyzAB@example.com/repo.git'],
+            // a password containing @ must not leave its tail behind
+            ['https://user:sec@ret@example.com/repo.git'],
+        ];
     }
 
     public function testSyncMirrorSanitizesUrlEvenAfterFailedUpdate(): void

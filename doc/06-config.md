@@ -160,8 +160,9 @@ always allowed regardless of this setting.
 Unified dependency policy configuration. Controls Composer behavior for dependencies with security
 advisories, flagged as malware, abandoned packages, and custom dependency policies. Audit reports
 can be generated with `composer audit`; blocking prevents insecure or otherwise flagged package
-versions from being installed during `composer update`, `require`, or `remove` and malware also
-during a `composer install`.
+versions from being installed during `composer update`, `require`, or `remove`. The [malware](#block-scope)
+policy and [custom dependency policies](#block-scope-1) can additionally block during a
+`composer install` via their `block-scope` setting.
 
 Set to `false` to disable all dependency policy enforcement:
 
@@ -197,6 +198,17 @@ cannot be installed during `update`/`require`/`remove` unless the advisory or pa
     }
 }
 ```
+
+Advisories are matched against version numbers, so `dev-*` versions from branch names like `dev-main` are never
+blocked, even when required through an inline alias like `dev-main as 1.0.0`. Numeric branch names, which are turned into numbered dev versions like
+`3.3.x-dev`, and numeric branch aliases are matched normally. For example if `dev-main` has a branch alias
+of `3.3.x-dev`, an advisory affecting `<3.5` blocks requiring `^3.3`, but requiring `dev-main`
+explicitly still works. The audit still reports it though, as the installed code matches the
+advisory through its branch alias.
+
+For advisory authors, this means an advisory cannot target a named branch with a `dev-*` version directly, not even with
+`*` listed as the affected versions. To cover one, the affected versions must include its branch alias, like
+`3.3.x-dev` above.
 
 #### audit
 
@@ -574,6 +586,54 @@ versions, supplied by one or more sources (advertised by package repositories or
 Source URLs must use `https://`. `http://` and other schemes are rejected both at
 schema validation time (`composer validate`) and at config load time.
 
+A `url` source is queried the same way as a repository's [`api-url`](05-repositories.md#filter):
+Composer sends a POST request with the relevant package PURLs and the custom dependency policy name,
+and expects the matching filter entries back. The request is not cached client-side because each
+request body is different. Implementors should be aware that large amounts (a few hundred would be
+normal) of package names can be submitted. The submitted PURLs are the full set of candidate package
+names gathered *before* dependency resolution, so they identify packages by name only (no version
+constraints yet), and not every submitted package will necessarily be selected by the resolver
+afterwards.
+
+The endpoint receives a JSON body of the form:
+
+```json
+{
+    "packages": ["pkg://composer/vendor/package", "pkg://composer/other/package"],
+    "lists": ["my-policy"]
+}
+```
+
+The request body reuses the wire format of a Composer repository's [`api-url`](05-repositories.md#filter).
+There, a single endpoint can serve several named filter lists (for example `malware` and
+`typosquatting`), so `lists` is an array naming which of them Composer wants, and the response is a
+`filter` object keyed by list name. A custom dependency policy has no such multiplexing: its `url`
+source exists only to serve that one policy. Composer therefore always sends the policy name as the
+sole element of `lists` (so the array carries exactly one value here), and the endpoint should treat
+any list name it receives as referring to that policy.
+
+The endpoint must return JSON of the form:
+
+```json
+{
+    "filter": [
+        {
+            "package": "vendor/package",
+            "constraint": ">=1.0.0,<1.2.0",
+            "url": "https://example.org/filters/123",
+            "reason": "Assessed and rejected.",
+            "id": "PKFE-xxxx-xxxx-xxxx"
+        }
+    ]
+}
+```
+
+Because the `url` source only ever serves this one policy, the response drops the per-list keying used
+by a repository's `api-url` (where `filter` is an object mapping each requested list name to its
+entries). Here `filter` is instead a flat array of entries that all belong to this policy. The
+`package` and `constraint` fields are required on each entry; `url`, `reason`, and `id` are optional.
+Entries whose package does not match a package in the request are ignored.
+
 Custom dependency policy names must not conflict with the reserved names `advisories`, `malware`, or
 `abandoned`, and must not start with `ignore` (the only `ignore`-prefixed key allowed at this
 level is the documented `ignore-unreachable` setting).
@@ -582,6 +642,31 @@ The following names are reserved for future built-in dependency policies and can
 dependency policy names: `package`, `packages`, `license`, `licence`, `licenses`, `licences`, `support`,
 `maintenance`, `security`, `minimum-release-age`. Composer rejects any colliding key both at
 schema validation time (`composer validate`) and at config load time.
+
+#### block-scope
+
+Defaults to `update`. Controls which commands trigger blocking for this custom policy:
+
+- `all` — block during both `update`/`require`/`remove` and `install`
+- `update` — block only during `update`/`require`/`remove`
+- `install` — block only during `install`
+
+Unlike the [`malware`](#malware) policy (which defaults to `all`), custom dependency policies
+default to `update`, so they only block during `composer install` when you opt in with
+`block-scope` set to `install` or `all`. This is useful for enforcing a policy in environments
+where only `composer install` runs, such as CI or deployment.
+
+```json
+{
+    "config": {
+        "policy": {
+            "my-policy": {
+                "block-scope": "all"
+            }
+        }
+    }
+}
+```
 
 ### ignore format
 
@@ -1022,6 +1107,9 @@ string, or array with username and token. For example using `{"gitlab.com":
 private repositories on gitlab. Using `{"gitlab.com": {"username": "gitlabuser",
  "token": "privatetoken"}}` will use both username and token for gitlab deploy
 token functionality (https://docs.gitlab.com/ee/user/project/deploy_tokens/)
+Using `gitlab-ci-token` as the username instead stores a
+[GitLab CI job token](https://docs.gitlab.com/ci/jobs/ci_job_token/), which Composer sends as a
+`JOB-TOKEN` header, and which requires GitLab 19.3 or newer to download dist archives.
 Please note: If the package is not hosted at
 gitlab.com the domain names must be also specified with the
 [`gitlab-domains`](06-config.md#gitlab-domains) option. The token must have
@@ -1035,7 +1123,7 @@ value of the package metadata. One of `git` or `http`. (`https` is treated
 as a synonym for `http`.) Helpful when working with projects referencing
 private repositories which will later be cloned in GitLab CI jobs with a
 [GitLab CI_JOB_TOKEN](https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference)
-using HTTP basic auth. By default, Composer will generate a git-over-SSH
+using HTTP basic auth for the clone. By default, Composer will generate a git-over-SSH
 URL for private repositories and HTTP(S) only for public.
 
 ## forgejo-domains
@@ -1156,7 +1244,8 @@ Defaults to `C:\Users\<user>\AppData\Local\Composer` on Windows,
 `/Users/<user>/Library/Caches/composer` on macOS, `$XDG_CACHE_HOME/composer`
 on unix systems that follow the XDG Base Directory Specifications, and
 `$COMPOSER_HOME/cache` on other unix systems. Stores all the caches used by
-Composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
+Composer. See also [COMPOSER_HOME](03-cli.md#composer-home), and
+[Caching Composer dependencies](articles/caching.md) for caching it in CI.
 
 ## cache-files-dir
 
@@ -1216,6 +1305,13 @@ otherwise, a random suffix will be generated.
 ## optimize-autoloader
 
 Defaults to `false`. If `true`, always optimize when dumping the autoloader.
+
+## strict-psr-autoloader
+
+Defaults to `false`. If `true`, `install` and `update` return a failed exit code (6),
+and `dump-autoload` returns a failed exit code (1), if PSR-4 or PSR-0 mapping errors
+are present in the current project (dependencies excluded). Requires `optimize-autoloader`
+or `classmap-authoritative` to be enabled to work.
 
 ## sort-packages
 

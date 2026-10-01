@@ -18,9 +18,7 @@ use Composer\Downloader\TransportException;
 use Composer\Pcre\Preg;
 use Composer\Util\Http\Response;
 use Composer\Util\Http\CurlDownloader;
-use Composer\Composer;
-use Composer\Package\Version\VersionParser;
-use Composer\Semver\Constraint\Constraint;
+use Composer\Util\Http\ResponseWarnings;
 use Composer\Exception\IrrecoverableDownloadException;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
@@ -298,7 +296,7 @@ class HttpDownloader
         });
         $this->jobs[$job['id']] = &$job;
 
-        if ($this->runningJobs < $this->maxJobs) {
+        if ($this->canStartJob($job)) {
             $this->startJob($job['id']);
         }
 
@@ -348,6 +346,21 @@ class HttpDownloader
         }
     }
 
+    /**
+     * @param Job $job
+     */
+    private function canStartJob(array $job): bool
+    {
+        // a retry waiting for its Retry-After holds no transfer open, so its slot is free for another request meanwhile
+        $maxJobs = $this->maxJobs + (null !== $this->curl ? $this->curl->countDelayedJobs() : 0);
+        if ($this->runningJobs >= $maxJobs) {
+            return false;
+        }
+
+        // an origin which asked to be left alone gets no new request either, not just no retry
+        return null === $this->curl || !$this->curl->isOriginOnHold($job['origin']);
+    }
+
     private function markJobDone(): void
     {
         $this->runningJobs--;
@@ -383,11 +396,9 @@ class HttpDownloader
      */
     public function countActiveJobs(?int $index = null): int
     {
-        if ($this->runningJobs < $this->maxJobs) {
-            foreach ($this->jobs as $job) {
-                if ($job['status'] === self::STATUS_QUEUED && $this->runningJobs < $this->maxJobs) {
-                    $this->startJob($job['id']);
-                }
+        foreach ($this->jobs as $job) {
+            if ($job['status'] === self::STATUS_QUEUED && $this->canStartJob($job)) {
+                $this->startJob($job['id']);
             }
         }
 
@@ -438,62 +449,13 @@ class HttpDownloader
 
     /**
      * @internal
+     * @deprecated use ResponseWarnings::output() instead
      *
-     * @param  array{warning?: string, info?: string, warning-versions?: string, info-versions?: string, warnings?: array<array{versions: string, message: string}>, infos?: array<array{versions: string, message: string}>} $data
-     *
-     * @return bool whether any warning/info was actually written to the output
+     * @param  mixed $data
      */
     public static function outputWarnings(IOInterface $io, string $url, $data): bool
     {
-        $wrote = false;
-        $cleanMessage = static function ($msg) use ($io) {
-            if (!$io->isDecorated()) {
-                $msg = Preg::replace('{'.chr(27).'\\[[;\d]*m}u', '', $msg);
-            }
-
-            return $msg;
-        };
-
-        // legacy warning/info keys
-        foreach (['warning', 'info'] as $type) {
-            if (empty($data[$type])) {
-                continue;
-            }
-
-            if (!empty($data[$type . '-versions'])) {
-                $versionParser = new VersionParser();
-                $constraint = $versionParser->parseConstraints($data[$type . '-versions']);
-                $composer = new Constraint('==', $versionParser->normalize(Composer::getVersion()));
-                if (!$constraint->matches($composer)) {
-                    continue;
-                }
-            }
-
-            $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$cleanMessage($data[$type]).'</'.$type.'>');
-            $wrote = true;
-        }
-
-        // modern Composer 2.2+ format with support for multiple warning/info messages
-        foreach (['warnings', 'infos'] as $key) {
-            if (empty($data[$key])) {
-                continue;
-            }
-
-            $versionParser = new VersionParser();
-            foreach ($data[$key] as $spec) {
-                $type = substr($key, 0, -1);
-                $constraint = $versionParser->parseConstraints($spec['versions']);
-                $composer = new Constraint('==', $versionParser->normalize(Composer::getVersion()));
-                if (!$constraint->matches($composer)) {
-                    continue;
-                }
-
-                $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$cleanMessage($spec['message']).'</'.$type.'>');
-                $wrote = true;
-            }
-        }
-
-        return $wrote;
+        return ResponseWarnings::output($io, $url, $data);
     }
 
     /**
