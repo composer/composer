@@ -26,7 +26,6 @@ use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
 use Composer\Pcre\Preg;
-use Composer\Policy\ListPolicyConfig;
 use Composer\Plugin\PluginBlockedException;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
@@ -443,8 +442,7 @@ EOT
         $platformOverrides = $config->get('platform');
         $platformRepo = new PlatformRepository([], $platformOverrides);
 
-        $policyConfig = $this->createPolicyConfig($config, $input);
-        $cooldown = $policyConfig->enabled && $policyConfig->cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE) ? $policyConfig->cooldown : null;
+        $cooldown = $this->getBlockingCooldownPolicy($config, $input);
 
         // find the latest version if there are multiple
         $versionSelector = new VersionSelector($repositorySet, $platformRepo, $cooldown);

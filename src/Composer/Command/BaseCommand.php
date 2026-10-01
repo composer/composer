@@ -27,6 +27,8 @@ use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
 use Composer\Advisory\Auditor;
 use Composer\Advisory\AuditConfig;
+use Composer\Policy\CooldownPolicyConfig;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Completion\CompletionInput;
@@ -490,6 +492,21 @@ abstract class BaseCommand extends Command
         }
 
         return $policyConfig;
+    }
+
+    /**
+     * The cooldown policy that would block during an update, to apply when picking versions, or null when none applies.
+     *
+     * @internal
+     */
+    protected function getBlockingCooldownPolicy(Config $config, ?InputInterface $input): ?CooldownPolicyConfig
+    {
+        $policyConfig = $this->createPolicyConfig($config, $input);
+        if ($policyConfig->enabled && $policyConfig->cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE)) {
+            return $policyConfig->cooldown;
+        }
+
+        return null;
     }
 
     /**

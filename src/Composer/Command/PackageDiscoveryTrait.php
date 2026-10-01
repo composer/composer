@@ -23,7 +23,6 @@ use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Policy\CooldownPolicyConfig;
-use Composer\Policy\ListPolicyConfig;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
@@ -291,13 +290,8 @@ trait PackageDiscoveryTrait
     {
         $composer = $this->tryComposer();
         $config = $composer !== null ? $composer->getConfig() : Factory::createConfig($this->getIO());
-        $policyConfig = $this->createPolicyConfig($config, $input);
 
-        if ($policyConfig->enabled && $policyConfig->cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE)) {
-            return $policyConfig->cooldown;
-        }
-
-        return null;
+        return $this->getBlockingCooldownPolicy($config, $input);
     }
 
     /**
