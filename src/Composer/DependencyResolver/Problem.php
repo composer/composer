@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
@@ -385,10 +386,12 @@ class Problem
             }
 
             if ($pool->isSecurityRemovedPackageVersion($packageName, $constraint)) {
-                $advisories = $repositorySet->getMatchingSecurityAdvisories($packages, false, true);
+                // partial advisories are enough to name the blocking advisories: a repository
+                // may only ship them in its package metadata, without an api-url to load them in full
+                $advisories = $repositorySet->getMatchingSecurityAdvisories($packages, true, true);
                 if (isset($advisories['advisories'][$packageName]) && \count($advisories['advisories'][$packageName]) > 0) {
-                    $advisoriesList = array_map(static function (SecurityAdvisory $advisory): string {
-                        if ($advisory->link !== null && $advisory->link !== '') {
+                    $advisoriesList = array_map(static function (PartialSecurityAdvisory $advisory): string {
+                        if ($advisory instanceof SecurityAdvisory && $advisory->link !== null && $advisory->link !== '') {
                             return '<href='.OutputFormatter::escape($advisory->link).'>'.$advisory->advisoryId.'</>';
                         }
 
@@ -398,7 +401,7 @@ class Problem
 
                         return $advisory->advisoryId;
                     }, $advisories['advisories'][$packageName]);
-                    $advisoryIds = array_map(static function (SecurityAdvisory $advisory): string {
+                    $advisoryIds = array_map(static function (PartialSecurityAdvisory $advisory): string {
                         return $advisory->advisoryId;
                     }, $advisories['advisories'][$packageName]);
                 } else {
