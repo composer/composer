@@ -805,8 +805,8 @@ EOF;
 
     public function testRootScanExcludesVendorDirWithRegexCharsInPath(): void
     {
-        $workingDir = $this->workingDir.'/c++ (x86) [x]';
-        $this->vendorDir = $workingDir.'/vendor';
+        $workingDir = $this->workingDir.DIRECTORY_SEPARATOR.'c++ (x86) [x]';
+        $this->vendorDir = $workingDir.DIRECTORY_SEPARATOR.'vendor';
         $this->fs->ensureDirectoryExists($workingDir);
         chdir($workingDir);
 
@@ -850,7 +850,7 @@ EOF;
 
         $loader = $this->generator->createLoader(['classmap' => ['.']], $this->config->get('vendor-dir'));
 
-        self::assertEquals(['RootClass' => $this->workingDir.'/src/RootClass.php'], $loader->getClassMap());
+        self::assertEquals(['RootClass' => $this->fs->normalizePath($this->workingDir.'/src/RootClass.php')], $loader->getClassMap());
     }
 
     public function testVendorsClassMapAutoloadingWithTargetDir(): void
