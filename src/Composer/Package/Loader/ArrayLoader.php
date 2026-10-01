@@ -243,7 +243,7 @@ class ArrayLoader implements LoaderInterface
         // repositories may send timestamps as JSON numbers, which must not crash the loader
         if (!empty($config['time']) && (is_int($config['time']) || is_string($config['time']))) {
             $time = (string) $config['time'];
-            $time = Preg::isMatch('/^\d++$/D', $time) ? '@'.$time : $time;
+            $time = ctype_digit($time) ? '@'.$time : $time;
 
             try {
                 $date = new \DateTime($time, new \DateTimeZone('UTC'));
@@ -257,7 +257,7 @@ class ArrayLoader implements LoaderInterface
         // cooldown policy when present
         if (isset($config['published-time']) && (is_int($config['published-time']) || (is_string($config['published-time']) && '' !== $config['published-time']))) {
             $publishedTime = (string) $config['published-time'];
-            $publishedTime = Preg::isMatch('/^\d++$/D', $publishedTime) ? '@'.$publishedTime : $publishedTime;
+            $publishedTime = ctype_digit($publishedTime) ? '@'.$publishedTime : $publishedTime;
 
             try {
                 $date = new \DateTimeImmutable($publishedTime, new \DateTimeZone('UTC'));
