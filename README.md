@@ -98,6 +98,7 @@ Thank you to our sponsors for supporting the ongoing development and maintenance
     <a href="https://tideways.com/?utm_source=composer"><img src="https://packagist.org/img/sponsors/tideways-dark.svg" alt="Tideways" height="60" hspace="15"></a>
     <a href="https://datadog.com/?utm_source=composer"><img src="https://packagist.org/img/sponsors/datadog-dark.svg" alt="Datadog" height="60" hspace="15"></a>
     <a href="https://www.algolia.com/?utm_source=composer"><img src="https://packagist.org/img/sponsors/algolia-dark.svg" alt="Algolia" height="60" hspace="15"></a>
+    <a href="https://sentry.io/?utm_source=composer"><img src="https://packagist.org/img/sponsors/sentry-dark.svg" alt="Sentry" height="60" hspace="15"></a>
 </p>
 
 License
