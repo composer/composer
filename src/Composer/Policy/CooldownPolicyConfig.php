@@ -309,16 +309,14 @@ class CooldownPolicyConfig extends ListPolicyConfig
             return $duration;
         }
 
-        $trimmed = trim($duration);
-
         // A plain integer is interpreted as a number of seconds.
-        if (Preg::isMatch('/^\d+$/D', $trimmed)) {
-            return (int) $trimmed;
+        if (Preg::isMatch('/^\d+$/D', $duration)) {
+            return (int) $duration;
         }
 
         // Reject any other numeric value (negative or fractional) with a clear message.
-        if (is_numeric($trimmed)) {
-            if ((float) $trimmed < 0) {
+        if (is_numeric($duration)) {
+            if ((float) $duration < 0) {
                 throw new \RuntimeException("Invalid policy.cooldown.period: duration cannot be negative ({$duration}).");
             }
 
@@ -334,7 +332,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
             'week' => 604800,
         ];
 
-        if (Preg::isMatchStrictGroups('/^(\d+)\s*(second|minute|hour|day|week)s?$/', $trimmed, $matches)) {
+        if (Preg::isMatchStrictGroups('/^(\d+)\s*(second|minute|hour|day|week)s?$/D', $duration, $matches)) {
             return (int) $matches[1] * $units[$matches[2]];
         }
 
