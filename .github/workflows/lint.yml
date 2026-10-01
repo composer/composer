@@ -1,7 +1,12 @@
 name: "PHP Lint"
 
 on:
-  workflow_dispatch:
+  push:
+    paths-ignore:
+      - 'doc/**'
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
