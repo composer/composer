@@ -486,6 +486,16 @@ class ValidatingArrayLoaderTest extends TestCase
             [
                 [
                     'name' => 'foo/bar',
+                    'bin' => ['bin/foo', 'bin/32 bit/foo.exe', 'src\foo', "bin/it's", "a*/ namespace Injected; /* x/bin", "bin/\x01foo"],
+                ],
+                [
+                    'bin.4 : invalid value (a*/ namespace Injected; /* x/bin), must not contain any of the characters *$`"&^|<>()%!; nor control characters',
+                    'bin.5 : invalid value (bin/'."\x01".'foo), must not contain any of the characters *$`"&^|<>()%!; nor control characters',
+                ],
+            ],
+            [
+                [
+                    'name' => 'foo/bar',
                     'source' => ['url' => 1],
                     'dist' => ['url' => null],
                 ],
