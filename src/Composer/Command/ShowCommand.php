@@ -598,32 +598,24 @@ EOT
                                 $packageViewData['release-date'] = '';
                             }
                         }
-                        if ($writeLatest && $withheld !== null) {
-                            // nothing newer is installable, show the release that is waiting for the cooldown period to end
-                            $packageViewData['latest'] = $withheld['package']->getFullPrettyVersion();
+                        // once nothing newer is installable, the release waiting for the cooldown period to end takes the slot
+                        $shownPackage = $withheld !== null ? $withheld['package'] : $latestPackage;
+                        if ($writeLatest && $shownPackage !== null) {
+                            $packageViewData['latest'] = $shownPackage->getFullPrettyVersion();
                             if ($format === 'text') {
                                 $packageViewData['latest'] = ltrim($packageViewData['latest'], 'v');
                             }
-                            $packageViewData['latest-status'] = 'cooldown';
-                            $packageViewData['latest-release-date'] = $withheld['package']->getReleaseDate() !== null ? $withheld['package']->getReleaseDate()->format(DateTimeInterface::ATOM) : '';
-                            $packageViewData['cooldown-available-in'] = $withheld['availableIn'];
-                            if ($format === 'text') {
-                                $packageViewData['latest'] .= ' ('.$packageViewData['cooldown-available-in'].' left)';
-                            }
-                            $latestLength = max($latestLength, strlen($packageViewData['latest']));
-                        } elseif ($writeLatest && $latestPackage) {
-                            $packageViewData['latest'] = $latestPackage->getFullPrettyVersion();
-                            if ($format === 'text') {
-                                $packageViewData['latest'] = ltrim($packageViewData['latest'], 'v');
-                            }
-                            $packageViewData['latest-status'] = $this->getUpdateStatus($latestPackage, $package);
-                            $latestLength = max($latestLength, strlen($packageViewData['latest']));
-
-                            if ($latestPackage->getReleaseDate() !== null) {
-                                $packageViewData['latest-release-date'] = $latestPackage->getReleaseDate()->format(DateTimeInterface::ATOM);
+                            $packageViewData['latest-release-date'] = $shownPackage->getReleaseDate() !== null ? $shownPackage->getReleaseDate()->format(DateTimeInterface::ATOM) : '';
+                            if ($withheld !== null) {
+                                $packageViewData['latest-status'] = 'cooldown';
+                                $packageViewData['cooldown-available-in'] = $withheld['availableIn'];
+                                if ($format === 'text') {
+                                    $packageViewData['latest'] .= ' ('.$withheld['availableIn'].' left)';
+                                }
                             } else {
-                                $packageViewData['latest-release-date'] = '';
+                                $packageViewData['latest-status'] = $this->getUpdateStatus($shownPackage, $package);
                             }
+                            $latestLength = max($latestLength, strlen($packageViewData['latest']));
                         } elseif ($writeLatest) {
                             $packageViewData['latest'] = '[none matched]';
                             $packageViewData['latest-status'] = 'up-to-date';
