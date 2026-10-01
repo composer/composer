@@ -29,6 +29,7 @@ use Composer\Policy\IgnorePackageRule;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 
 class VersionSelectorTest extends TestCase
@@ -400,6 +401,27 @@ class VersionSelectorTest extends TestCase
 
         self::assertSame($old, $best);
         self::assertStringContainsString('Cannot use foo/bar\'s latest version 1.2.2 as it is still in the cooldown period configured in "policy.cooldown" (available in 6 days).', $io->getOutput());
+    }
+
+    public function testWithheldVersionBelowTheSelectedOneIsNotReported(): void
+    {
+        $major = self::getPackage('foo/bar', '2.0.0');
+        $major->setReleaseDate(new \DateTimeImmutable('-30 days'));
+        $backport = self::getPackage('foo/bar', '1.9.5');
+        $backport->setPublishedDate(new \DateTimeImmutable('-23 hours'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with('foo/bar', null)
+            ->will($this->returnValue([$backport, $major]));
+
+        $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE);
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+        $best = $versionSelector->findBestCandidate('foo/bar', null, 'stable', null, 0, $io);
+
+        self::assertSame($major, $best);
+        self::assertSame('', $io->getOutput());
     }
 
     public function testDevAndIgnoredVersionsAreNotSubjectToCooldown(): void

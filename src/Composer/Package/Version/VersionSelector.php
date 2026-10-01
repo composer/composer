@@ -224,6 +224,8 @@ class VersionSelector
         $now = new \DateTimeImmutable();
         /** @var array<string, true> $alreadySeenNames */
         $alreadySeenNames = [];
+        /** @var array<string, true> $acceptedNames */
+        $acceptedNames = [];
         $result = [];
 
         foreach ($candidates as $pkg) {
@@ -231,6 +233,7 @@ class VersionSelector
             $target = $pkg instanceof AliasPackage ? $pkg->getAliasOf() : $pkg;
             if ($target->isDev() || $cooldown->isIgnored($target, 'block')) {
                 $result[] = $pkg;
+                $acceptedNames[$pkg->getName()] = true;
                 continue;
             }
 
@@ -238,11 +241,17 @@ class VersionSelector
             $releaseDate = $cooldown->getEffectiveDate($target);
             if ($releaseDate === null || !$cooldown->isWithinCooldown($releaseDate, $now)) {
                 $result[] = $pkg;
+                $acceptedNames[$pkg->getName()] = true;
                 continue;
             }
 
             if ($this->firstClearingWithheldCandidate === null || $releaseDate < $this->firstClearingWithheldCandidate['releaseDate']) {
                 $this->firstClearingWithheldCandidate = ['package' => $pkg, 'releaseDate' => $releaseDate];
+            }
+
+            // ranked below a usable candidate (e.g. an LTS backport), so withholding it does not affect the pick
+            if (isset($acceptedNames[$pkg->getName()])) {
+                continue;
             }
 
             $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
