@@ -29,12 +29,19 @@ use Composer\Pcre\Preg;
  */
 class ArrayLoader implements LoaderInterface
 {
+    /** config key => [Link::TYPE_*, setter], matching BasePackage::$supportedLinkTypes */
+    private const LINK_TYPES = [
+        'require' => [Link::TYPE_REQUIRE, 'setRequires'],
+        'conflict' => [Link::TYPE_CONFLICT, 'setConflicts'],
+        'provide' => [Link::TYPE_PROVIDE, 'setProvides'],
+        'replace' => [Link::TYPE_REPLACE, 'setReplaces'],
+        'require-dev' => [Link::TYPE_DEV_REQUIRE, 'setDevRequires'],
+    ];
+
     /** @var VersionParser */
     protected $versionParser;
     /** @var bool */
     protected $loadOptions;
-    /** @var ?array<string, string> */
-    private static $linkSetters;
 
     public function __construct(?VersionParser $parser = null, bool $loadOptions = false)
     {
@@ -56,16 +63,15 @@ class ArrayLoader implements LoaderInterface
 
         $package = $this->createObject($config, $class);
 
-        foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
+        foreach (self::LINK_TYPES as $type => [$linkType, $method]) {
             if (!isset($config[$type]) || !is_array($config[$type])) {
                 continue;
             }
-            $method = self::getLinkSetters()[$type];
             $package->{$method}(
                 $this->parseLinks(
                     $package->getName(),
                     $package->getPrettyVersion(),
-                    $opts['method'],
+                    $linkType,
                     $config[$type]
                 )
             );
@@ -336,12 +342,9 @@ class ArrayLoader implements LoaderInterface
     {
         $name = $package->getName();
         $prettyVersion = $package->getPrettyVersion();
-        $linkSetters = self::getLinkSetters();
 
-        foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
+        foreach (self::LINK_TYPES as $type => [$linkType, $method]) {
             if (isset($config[$type])) {
-                $method = $linkSetters[$type];
-
                 $links = [];
                 foreach ($config[$type] as $prettyTarget => $constraint) {
                     $target = strtolower($prettyTarget);
@@ -352,10 +355,10 @@ class ArrayLoader implements LoaderInterface
                     }
 
                     if ($constraint === 'self.version') {
-                        $links[$target] = $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint);
+                        $links[$target] = $this->createLink($name, $prettyVersion, $linkType, $target, $constraint);
                     } else {
                         if (!isset($linkCache[$name][$type][$target][$constraint])) {
-                            $linkCache[$name][$type][$target][$constraint] = [$target, $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint)];
+                            $linkCache[$name][$type][$target][$constraint] = [$target, $this->createLink($name, $prettyVersion, $linkType, $target, $constraint)];
                         }
 
                         [$target, $link] = $linkCache[$name][$type][$target][$constraint];
@@ -366,21 +369,6 @@ class ArrayLoader implements LoaderInterface
                 $package->{$method}($links);
             }
         }
-    }
-
-    /**
-     * @return array<string, string> link type => setter method name
-     */
-    private static function getLinkSetters(): array
-    {
-        if (null === self::$linkSetters) {
-            self::$linkSetters = [];
-            foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
-                self::$linkSetters[$type] = 'set'.ucfirst($opts['method']);
-            }
-        }
-
-        return self::$linkSetters;
     }
 
     /**
