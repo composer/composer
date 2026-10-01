@@ -434,14 +434,13 @@ class BinaryInstallerTest extends TestCase
         return [
             'env php' => ["#!/usr/bin/env php\n<?php", 'php'],
             'sh' => ["#!/bin/sh\n", 'sh'],
-            // arguments are never carried into the command position of the .bat proxy
-            'sh with argument' => ["#!/bin/sh -e\n", 'sh'],
-            'php with options' => ["#!/usr/bin/env php -d memory_limit=-1\n", 'php'],
+            'sh with argument' => ["#!/bin/sh -e\n", 'sh -e'],
+            'php with options' => ["#!/usr/bin/env php -d memory_limit=-1\n", 'php -d memory_limit=-1'],
             'versioned interpreter' => ["#!/usr/bin/php7.4\n", 'php7.4'],
             'env with split string' => ["#!/usr/bin/env -S php -d x=1\n", 'php'],
-            // -r/-c would make the interpreter read the bin path following it as code
-            'php with -r' => ["#!/usr/bin/php -r\n", 'php'],
-            'sh with -c' => ["#!/bin/sh -c\n", 'sh'],
+            'php with -r' => ["#!/usr/bin/php -r\n", 'php -r'],
+            'sh with -c' => ["#!/bin/sh -c\n", 'sh -c'],
+            'cmd metacharacters in an argument' => ["#!/bin/sh -e & calc.exe\n", 'php'],
             'crlf line ending' => ["#!/usr/bin/env php\r\n<?php", 'php'],
             'trailing whitespace' => ["#!/usr/bin/env php  \n", 'php'],
             // the kernel only honors a "#!" at the very first byte, so this file has no shebang

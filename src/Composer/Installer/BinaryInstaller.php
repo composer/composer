@@ -28,6 +28,9 @@ use Composer\Util\Silencer;
  */
 class BinaryInstaller
 {
+    /** characters that cannot be embedded safely in the generated proxies */
+    private const UNSAFE_PROXY_CHARS = '{[*$`"&^|<>()%!;\x00-\x1f\x7f]}';
+
     /** @var string */
     protected $binDir;
     /** @var string */
@@ -162,40 +165,40 @@ class BinaryInstaller
         // left alone as the kernel only honors a "#!" at the very first byte of the file
         $shebang = rtrim((string) $line, " \t\r\n");
 
-        return self::shebangInterpreter($shebang) ?? 'php';
+        return self::shebangCaller($shebang) ?? 'php';
     }
 
     /**
-     * Returns the interpreter a shebang line invokes, or null if it is not one we are willing to use
+     * Returns the command a shebang line invokes, incl. its arguments, or null if it cannot be used
      *
-     * The shebang comes from the package and is interpolated into the generated proxies, both as the
-     * command of the .bat one and verbatim above the "<?php" of the unixy one. Its arguments are
-     * dropped rather than carried along: in the command position of the .bat proxy "php -r" or
-     * "sh -c" would make the interpreter read the bin path following it as code.
+     * The shebang comes from the very bin the proxies run, so its arguments are carried along as is.
+     * Only characters which would break the command line of the .bat proxy are refused.
      */
-    private static function shebangInterpreter(string $shebang): ?string
+    private static function shebangCaller(string $shebang): ?string
     {
-        // "env" is transparent, the interpreter is then its first argument
-        if (!Preg::isMatchStrictGroups('{^#!(?:/[a-zA-Z0-9_.+-]+)*/env[ \t]+([a-zA-Z0-9_.+][a-zA-Z0-9_.+-]*)(?:[ \t]|$)}', $shebang, $match)
-            && !Preg::isMatchStrictGroups('{^#!(?:/[a-zA-Z0-9_.+-]+)*/([a-zA-Z0-9_.+][a-zA-Z0-9_.+-]*)(?:[ \t]|$)}', $shebang, $match)
+        if (!Preg::isMatchStrictGroups('{^#!(?:/[a-zA-Z0-9_.+-]+)*/([a-zA-Z0-9_.+][a-zA-Z0-9_.+-]*(?:[ \t].*)?)$}', $shebang, $match)
+            || Preg::isMatch(self::UNSAFE_PROXY_CHARS, $match[1])
         ) {
             return null;
         }
 
+        // "env" is transparent, the interpreter is then its first argument
+        $caller = Preg::replace('{^env[ \t]+}', '', $match[1]);
+
         // an env we could not see through, e.g. "env -S php -d x=1", leaves the interpreter unknown
-        if ($match[1] === 'env') {
+        if ($caller === 'env' || $caller[0] === '-') {
             return null;
         }
 
-        return $match[1];
+        return $caller;
     }
 
     /**
-     * Checks whether a shebang interpreter is a php binary, e.g. "php", "php8" or "php8.2"
+     * Checks whether a shebang caller runs a php binary, e.g. "php", "php8.2" or "php -d x=1"
      */
-    private static function isPhpInterpreter(string $interpreter): bool
+    private static function isPhpInterpreter(string $caller): bool
     {
-        return Preg::isMatch('{^php[0-9.]*$}', $interpreter);
+        return Preg::isMatch('{^php[0-9.]*(?:[ \t]|$)}', $caller);
     }
 
     /**
@@ -208,7 +211,7 @@ class BinaryInstaller
      */
     public static function isSafeBinPath(string $bin): bool
     {
-        return !Preg::isMatch('{[*$`"&^|<>()%!;\x00-\x1f\x7f]}', $bin);
+        return !Preg::isMatch(self::UNSAFE_PROXY_CHARS, $bin);
     }
 
     /**
@@ -351,7 +354,7 @@ class BinaryInstaller
             // other interpreter would be handed the proxy's own path, e.g. "#!/bin/sh -c" turning
             // that path into a shell command string.
             $shebang = $match[1] === null ? '' : rtrim($match[1], " \t\r\n");
-            $interpreter = self::shebangInterpreter($shebang);
+            $interpreter = self::shebangCaller($shebang);
             $proxyCode = self::isSafeShebang($shebang) && $interpreter !== null && self::isPhpInterpreter($interpreter)
                 ? $shebang
                 : '#!/usr/bin/env php';
