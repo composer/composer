@@ -1033,7 +1033,8 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         $json = json_decode($appTester->getDisplay(true), true);
         self::assertSame('2.0.0', $json['installed'][0]['latest']);
         self::assertSame('cooldown', $json['installed'][0]['latest-status']);
-        self::assertSame('2999-01-01T00:00:00+00:00', $json['installed'][0]['latest-release-date']);
+        // the release date stays the package-supplied one, which this fixture does not set
+        self::assertSame('', $json['installed'][0]['latest-release-date']);
         self::assertArrayHasKey('cooldown-available-in', $json['installed'][0]);
 
         // overriding the period shows the newest release regardless of the policy

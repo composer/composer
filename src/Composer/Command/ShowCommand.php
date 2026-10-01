@@ -537,7 +537,7 @@ EOT
                 if ($input->getOption('sort-by-age')) {
                     usort($packages[$type], static function ($a, $b) {
                         if (is_object($a) && is_object($b)) {
-                            return self::getEffectiveReleaseDate($a) <=> self::getEffectiveReleaseDate($b);
+                            return $a->getReleaseDate() <=> $b->getReleaseDate();
                         }
 
                         return 0;
@@ -583,14 +583,13 @@ EOT
                             $versionLength = max($versionLength, strlen($packageViewData['version']));
                         }
                         if ($writeReleaseDate) {
-                            $releaseDate = self::getEffectiveReleaseDate($package);
-                            if ($releaseDate !== null) {
-                                $packageViewData['release-age'] = str_replace(' ago', ' old', $this->getRelativeTime($releaseDate));
+                            if ($package->getReleaseDate() !== null) {
+                                $packageViewData['release-age'] = str_replace(' ago', ' old', $this->getRelativeTime($package->getReleaseDate()));
                                 if (!str_contains($packageViewData['release-age'], ' old')) {
                                     $packageViewData['release-age'] = 'from '.$packageViewData['release-age'];
                                 }
                                 $releaseDateLength = max($releaseDateLength, strlen($packageViewData['release-age']));
-                                $packageViewData['release-date'] = $releaseDate->format(DateTimeInterface::ATOM);
+                                $packageViewData['release-date'] = $package->getReleaseDate()->format(DateTimeInterface::ATOM);
                             } else {
                                 $packageViewData['release-age'] = '';
                                 $packageViewData['release-date'] = '';
@@ -603,7 +602,7 @@ EOT
                                 $packageViewData['latest'] = ltrim($packageViewData['latest'], 'v');
                             }
                             $packageViewData['latest-status'] = 'cooldown';
-                            $packageViewData['latest-release-date'] = $withheld['releaseDate']->format(DateTimeInterface::ATOM);
+                            $packageViewData['latest-release-date'] = $withheld['package']->getReleaseDate() !== null ? $withheld['package']->getReleaseDate()->format(DateTimeInterface::ATOM) : '';
                             $packageViewData['cooldown-available-in'] = $withheld['availableIn'];
                             if ($format === 'text') {
                                 $packageViewData['latest'] .= ' ('.$packageViewData['cooldown-available-in'].' left)';
@@ -617,9 +616,8 @@ EOT
                             $packageViewData['latest-status'] = $this->getUpdateStatus($latestPackage, $package);
                             $latestLength = max($latestLength, strlen($packageViewData['latest']));
 
-                            $latestReleaseDate = self::getEffectiveReleaseDate($latestPackage);
-                            if ($latestReleaseDate !== null) {
-                                $packageViewData['latest-release-date'] = $latestReleaseDate->format(DateTimeInterface::ATOM);
+                            if ($latestPackage->getReleaseDate() !== null) {
+                                $packageViewData['latest-release-date'] = $latestPackage->getReleaseDate()->format(DateTimeInterface::ATOM);
                             } else {
                                 $packageViewData['latest-release-date'] = '';
                             }
@@ -1704,15 +1702,6 @@ EOT
         }
 
         return null;
-    }
-
-    /**
-     * The repository-provided publication date when there is one, as the cooldown policy relies on
-     * it, else the package-supplied release date
-     */
-    private static function getEffectiveReleaseDate(PackageInterface $package): ?DateTimeInterface
-    {
-        return $package->getPublishedDate() ?? $package->getReleaseDate();
     }
 
     private function getRepositorySet(Composer $composer): RepositorySet
