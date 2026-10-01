@@ -324,6 +324,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         if ($hasRootIdentifierComposerJson && isset($branches[$driver->getRootIdentifier()])) {
             $branches = [$driver->getRootIdentifier() => $branches[$driver->getRootIdentifier()]] + $branches;
         }
+        $branches = $this->filterBranches($branches, $driver->getRootIdentifier());
 
         foreach ($branches as $branch => $identifier) {
             $branch = (string) $branch;
@@ -450,6 +451,36 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         return $data;
+    }
+
+    /**
+     * Restricts the branches to the ones matching the "only-branches" repo config patterns, the default branch is always kept
+     *
+     * @param array<int|string, string> $branches
+     * @return array<int|string, string>
+     */
+    private function filterBranches(array $branches, string $rootIdentifier): array
+    {
+        if (!isset($this->repoConfig['only-branches']) || !is_array($this->repoConfig['only-branches'])) {
+            return $branches;
+        }
+
+        $patterns = array_map(static function ($pattern): string {
+            return str_replace('\\*', '.*', preg_quote((string) $pattern, '{'));
+        }, $this->repoConfig['only-branches']);
+        $regex = '{^(?:'.implode('|', $patterns).')$}';
+
+        foreach ($branches as $branch => $identifier) {
+            $branch = (string) $branch;
+            if ($branch !== $rootIdentifier && !Preg::isMatch($regex, $branch)) {
+                if ($this->isVeryVerbose) {
+                    $this->io->writeError('<warning>Skipped branch '.$branch.', not matching the only-branches filter</warning>');
+                }
+                unset($branches[$branch]);
+            }
+        }
+
+        return $branches;
     }
 
     /**
