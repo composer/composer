@@ -14,6 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\Config;
 use Composer\DependencyResolver\FilterListPoolFilter;
+use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\Downloader\TransportException;
@@ -58,8 +59,8 @@ class FilterListPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
-        $this->assertTrue($filteredPool->isFilterListRemovedPackageVersion('acme/package', new Constraint('==', '1.0.0.0')));
-        $this->assertCount(1, $filteredPool->getAllFilterListRemovedPackageVersions());
+        $this->assertSame(PolicyRemovalReason::FILTER_LIST, self::getRemovalType($filteredPool, 'acme/package', '1.0.0.0'));
+        $this->assertCount(1, self::getRemovals($filteredPool, PolicyRemovalReason::FILTER_LIST));
     }
 
     /**
@@ -82,7 +83,7 @@ class FilterListPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
-        $this->assertCount(0, $filteredPool->getAllFilterListRemovedPackageVersions());
+        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::FILTER_LIST));
     }
 
     public static function unfilteredProvider(): array
@@ -117,7 +118,7 @@ class FilterListPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([$expectedPackage], $filteredPool->getPackages());
-        $this->assertCount(1, $filteredPool->getAllFilterListRemovedPackageVersions());
+        $this->assertCount(1, self::getRemovals($filteredPool, PolicyRemovalReason::FILTER_LIST));
     }
 
     public function testFilterWithAdditionalSources(): void
@@ -153,8 +154,8 @@ class FilterListPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
-        $this->assertTrue($filteredPool->isFilterListRemovedPackageVersion('acme/package', new Constraint('==', '3.0.0.0')));
-        $this->assertCount(1, $filteredPool->getAllFilterListRemovedPackageVersions());
+        $this->assertSame(PolicyRemovalReason::FILTER_LIST, self::getRemovalType($filteredPool, 'acme/package', '3.0.0.0'));
+        $this->assertCount(1, self::getRemovals($filteredPool, PolicyRemovalReason::FILTER_LIST));
     }
 
     public function testInstallScopeFiltersLockedPackagesAgainstMalwareList(): void
@@ -185,14 +186,14 @@ class FilterListPoolFilterTest extends TestCase
         $installFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_INSTALL, [$repository], new NullIO());
         $installPool = $installFilter->filter(new Pool([$package]), $request);
         self::assertSame([], $installPool->getPackages(), 'install-scope filter must include locked packages');
-        self::assertTrue($installPool->isFilterListRemovedPackageVersion('acme/locked', new Constraint('==', '1.0.0.0')));
+        self::assertSame(PolicyRemovalReason::FILTER_LIST, self::getRemovalType($installPool, 'acme/locked', '1.0.0.0'));
 
         // Update scope: locked packages are checked against install-scope filter lists too,
         // so a malware-flagged locked package is still removed from the pool.
         $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository], new NullIO());
         $updatePool = $updateFilter->filter(new Pool([$package]), $request);
         self::assertSame([], $updatePool->getPackages(), 'update-scope filter must apply install-scope rules to locked packages');
-        self::assertTrue($updatePool->isFilterListRemovedPackageVersion('acme/locked', new Constraint('==', '1.0.0.0')));
+        self::assertSame(PolicyRemovalReason::FILTER_LIST, self::getRemovalType($updatePool, 'acme/locked', '1.0.0.0'));
     }
 
     public function testUpdateScopeAppliesInstallScopeToPackagesInLockedRepository(): void
@@ -229,7 +230,7 @@ class FilterListPoolFilterTest extends TestCase
         $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository], new NullIO());
         $updatePool = $updateFilter->filter(new Pool([$poolPackage]), $request);
         self::assertSame([], $updatePool->getPackages(), 'packages from the locked repo must be checked against install-scope filter lists');
-        self::assertTrue($updatePool->isFilterListRemovedPackageVersion('acme/mirrored', new Constraint('==', '1.0.0.0')));
+        self::assertSame(PolicyRemovalReason::FILTER_LIST, self::getRemovalType($updatePool, 'acme/mirrored', '1.0.0.0'));
     }
 
     public function testUpdateScopeIgnoresInstallOnlyListsForNonLockedPackages(): void
@@ -261,7 +262,7 @@ class FilterListPoolFilterTest extends TestCase
         $updateFilter = new FilterListPoolFilter($policyConfig, new FilterListAuditor(), $this->httpDownloaderMock, ListPolicyConfig::BLOCK_SCOPE_UPDATE, [$repository], new NullIO());
         $updatePool = $updateFilter->filter(new Pool([$package]), $request);
         self::assertSame([$package], $updatePool->getPackages(), 'install-only lists must not block non-locked packages during update scope');
-        self::assertCount(0, $updatePool->getAllFilterListRemovedPackageVersions());
+        self::assertCount(0, self::getRemovals($updatePool, PolicyRemovalReason::FILTER_LIST));
     }
 
     public function testWarnsWhenUnreachableSourcesAreIgnored(): void
@@ -346,5 +347,29 @@ class FilterListPoolFilterTest extends TestCase
                 ],
             ],
         ]);
+    }
+
+    private static function getRemovalType(Pool $pool, string $packageName, string $version): ?string
+    {
+        $reason = $pool->getPolicyRemovalReason($packageName, $version);
+
+        return $reason !== null ? $reason->getType() : null;
+    }
+
+    /**
+     * @return list<string> "name version" of every version the given policy removed
+     */
+    private static function getRemovals(Pool $pool, string $type): array
+    {
+        $removals = [];
+        foreach ($pool->getAllPolicyRemovedVersions() as $packageName => $versions) {
+            foreach ($versions as $version => $reason) {
+                if ($reason->getType() === $type) {
+                    $removals[] = $packageName.' '.$version;
+                }
+            }
+        }
+
+        return $removals;
     }
 }

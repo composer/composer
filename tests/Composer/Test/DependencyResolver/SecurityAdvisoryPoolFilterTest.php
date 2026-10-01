@@ -13,6 +13,7 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\Advisory\Auditor;
+use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\SecurityAdvisoryPoolFilter;
@@ -33,7 +34,6 @@ use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\MalwarePolicyConfig;
 use Composer\Policy\PolicyConfig;
 use Composer\Repository\PackageRepository;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 
@@ -81,13 +81,14 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, [$repository], new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
-        $this->assertTrue($filteredPool->isSecurityRemovedPackageVersion('acme/package', new Constraint('==', '1.0.0.0')));
-        $this->assertCount(0, $filteredPool->getAllAbandonedRemovedPackageVersions());
+        $this->assertSame(PolicyRemovalReason::ADVISORIES, self::getRemovalType($filteredPool, 'acme/package', '1.0.0.0'));
+        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ABANDONED));
 
-        $advisoryMap = $filteredPool->getAllSecurityRemovedPackageVersions();
-        $this->assertArrayHasKey('acme/package', $advisoryMap);
-        $this->assertArrayHasKey('1.0.0.0', $advisoryMap['acme/package']);
-        $this->assertSame([$advisory1['advisoryId'], $advisory2['advisoryId']], $filteredPool->getSecurityAdvisoryIdentifiersForPackageVersion('acme/package', new Constraint('==', '1.0.0.0')));
+        $reason = $filteredPool->getPolicyRemovalReason('acme/package', '1.0.0.0');
+        $this->assertNotNull($reason);
+        $this->assertSame([$advisory1['advisoryId'], $advisory2['advisoryId']], array_map(static function ($advisory): string {
+            return $advisory->advisoryId;
+        }, $reason->getAdvisories()));
     }
 
     public function testDontFilterPackagesByIgnoredAdvisories(): void
@@ -122,8 +123,8 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, [$repository], new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
-        $this->assertCount(0, $filteredPool->getAllAbandonedRemovedPackageVersions());
-        $this->assertCount(0, $filteredPool->getAllSecurityRemovedPackageVersions());
+        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ABANDONED));
+        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ADVISORIES));
     }
 
     public function testDontFilterPackagesWithBlockInsecureDisabled(): void
@@ -143,8 +144,8 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, [$repository], new Request());
 
         $this->assertSame([$expectedPackage1, $expectedPackage2], $filteredPool->getPackages());
-        $this->assertCount(0, $filteredPool->getAllAbandonedRemovedPackageVersions());
-        $this->assertCount(0, $filteredPool->getAllSecurityRemovedPackageVersions());
+        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ABANDONED));
+        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ADVISORIES));
     }
 
     public function testDontFilterPackagesWithAbandonedPackage(): void
@@ -172,8 +173,8 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, [], new Request());
 
         $this->assertSame([$expectedPackage, $ignoreAbandonedPackage], $filteredPool->getPackages());
-        $this->assertCount(1, $filteredPool->getAllAbandonedRemovedPackageVersions());
-        $this->assertCount(0, $filteredPool->getAllSecurityRemovedPackageVersions());
+        $this->assertCount(1, self::getRemovals($filteredPool, PolicyRemovalReason::ABANDONED));
+        $this->assertCount(0, self::getRemovals($filteredPool, PolicyRemovalReason::ADVISORIES));
     }
 
     public function testWarnsWhenUnreachableRepositoriesAreIgnored(): void
@@ -298,7 +299,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
 
         $this->assertCount(1, $filteredPool->getPackages());
         $this->assertSame('3.6.x-dev', $filteredPool->getPackages()[0]->getPrettyVersion());
-        $this->assertTrue($filteredPool->isSecurityRemovedPackageVersion('acme/package', new Constraint('==', '3.3.9999999.9999999-dev')));
+        $this->assertSame(PolicyRemovalReason::ADVISORIES, self::getRemovalType($filteredPool, 'acme/package', '3.3.9999999.9999999-dev'));
     }
 
     public function testFilterBranchAliasOfDevPackageByAdvisories(): void
@@ -320,7 +321,7 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
         $filteredPool = $filter->filter(new Pool([$devPackage, $branchAlias, $rootAlias]), [$repository], new Request());
 
         $this->assertSame([$devPackage, $rootAlias], $filteredPool->getPackages());
-        $this->assertTrue($filteredPool->isSecurityRemovedPackageVersion('acme/package', new Constraint('==', '3.3.9999999.9999999-dev')));
+        $this->assertSame(PolicyRemovalReason::ADVISORIES, self::getRemovalType($filteredPool, 'acme/package', '3.3.9999999.9999999-dev'));
     }
 
     public function testDefaultBranchAliasIsNotFilteredByAdvisories(): void
@@ -410,5 +411,29 @@ class SecurityAdvisoryPoolFilterTest extends TestCase
                 ],
             ],
         ];
+    }
+
+    private static function getRemovalType(Pool $pool, string $packageName, string $version): ?string
+    {
+        $reason = $pool->getPolicyRemovalReason($packageName, $version);
+
+        return $reason !== null ? $reason->getType() : null;
+    }
+
+    /**
+     * @return list<string> "name version" of every version the given policy removed
+     */
+    private static function getRemovals(Pool $pool, string $type): array
+    {
+        $removals = [];
+        foreach ($pool->getAllPolicyRemovedVersions() as $packageName => $versions) {
+            foreach ($versions as $version => $reason) {
+                if ($reason->getType() === $type) {
+                    $removals[] = $packageName.' '.$version;
+                }
+            }
+        }
+
+        return $removals;
     }
 }

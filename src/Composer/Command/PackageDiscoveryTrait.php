@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
@@ -357,7 +358,7 @@ trait PackageDiscoveryTrait
                 $wait = $withheld !== null ? ' (version '.$withheld['package']->getPrettyVersion().' becomes available in '.$cooldown->formatTimeUntilAvailable($withheld['releaseDate'], new \DateTimeImmutable()).')' : '';
 
                 throw new \InvalidArgumentException(sprintf(
-                    'All versions of package %s are still in the cooldown period configured in "policy.cooldown"%s. To install one now, add the package to the "policy.cooldown.ignore" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.',
+                    'All versions of package %s are still in the cooldown period configured in "policy.cooldown"%s. '.PolicyRemovalReason::COOLDOWN_REMEDY,
                     $name,
                     $wait
                 ));

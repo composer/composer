@@ -32,6 +32,7 @@ use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
+use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\DependencyResolver\Pool;
 
 class SolverTest extends TestCase
@@ -1045,14 +1046,14 @@ class SolverTest extends TestCase
     public function testSolveSurfacesFilterListRemovedLockedPackagesAsProblems(): void
     {
         $package = self::getPackage('vendor/malware', '1.0.0');
-        $pool = new Pool([], [], [], [], [], [], [
-            'vendor/malware' => ['1.0.0.0' => [
+        $pool = new Pool([], [], [], [], [
+            'vendor/malware' => ['1.0.0.0' => PolicyRemovalReason::filterList('vendor/malware', '1.0.0', [
                 new FilterListEntry(
                     'vendor/malware',
                     new MatchAllConstraint(),
                     'malware'
                 ),
-            ]],
+            ])],
         ]);
 
         $request = new Request($this->repoLocked);

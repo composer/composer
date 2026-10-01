@@ -12,6 +12,7 @@
 
 namespace Composer\Test\DependencyResolver;
 
+use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\DependencyResolver\Pool;
 use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
@@ -50,7 +51,7 @@ class CooldownPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([$oldPackage], $filteredPool->getPackages());
-        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
+        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
     }
 
     public function testAvailableInReportsTotalDaysForLongWaitsSpanningMultipleMonths(): void
@@ -66,7 +67,7 @@ class CooldownPoolFilterTest extends TestCase
         $pool = new Pool([$package]);
         $filteredPool = $filter->filter($pool, new Request());
 
-        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0'));
+        $info = self::getCooldownInfo($filteredPool, 'vendor/pkg', '2.0.0.0');
         self::assertNotNull($info);
         self::assertSame('59 days', $info['availableIn']);
     }
@@ -87,7 +88,7 @@ class CooldownPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         self::assertEmpty($filteredPool->getPackages());
-        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0'));
+        $info = self::getCooldownInfo($filteredPool, 'vendor/pkg', '2.0.0.0');
         self::assertNotNull($info);
         self::assertSame('published-time', $info['source']);
     }
@@ -105,7 +106,7 @@ class CooldownPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         self::assertEmpty($filteredPool->getPackages());
-        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0'));
+        $info = self::getCooldownInfo($filteredPool, 'vendor/pkg', '2.0.0.0');
         self::assertNotNull($info);
         self::assertSame('time', $info['source']);
     }
@@ -125,7 +126,7 @@ class CooldownPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([$newPackage], $filteredPool->getPackages());
-        $this->assertFalse($filteredPool->isCooldownRemovedPackageVersion('internal/pkg', new Constraint('==', '1.0.0.0')));
+        $this->assertNull(self::getRemovalType($filteredPool, 'internal/pkg', '1.0.0.0'));
     }
 
     public function testIgnoreRuleDoesNotApplyToPackagesReplacingTheIgnoredName(): void
@@ -144,7 +145,7 @@ class CooldownPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([], $filteredPool->getPackages());
-        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('evil/pkg', new Constraint('==', '2.0.0.0')));
+        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'evil/pkg', '2.0.0.0'));
     }
 
     public function testDevVersionsAreNotFiltered(): void
@@ -219,9 +220,9 @@ class CooldownPoolFilterTest extends TestCase
 
         $this->assertEmpty($filteredPool->getPackages());
 
-        $releaseAgeInfo = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0'));
+        $releaseAgeInfo = self::getCooldownInfo($filteredPool, 'vendor/pkg', '2.0.0.0');
         $this->assertNotNull($releaseAgeInfo);
-        $this->assertSame('2.0.0', $releaseAgeInfo['prettyVersion']);
+        $this->assertSame('2.0.0', $filteredPool->getPolicyRemovedVersions('vendor/pkg')['2.0.0.0']->getPrettyVersion());
         $this->assertArrayHasKey('releaseDate', $releaseAgeInfo);
         $this->assertArrayHasKey('availableIn', $releaseAgeInfo);
     }
@@ -346,12 +347,12 @@ class CooldownPoolFilterTest extends TestCase
         $this->assertEmpty($filteredPool->getPackages());
 
         // Replaced names are part of getNames(false), so a requirement on either name explains the cooldown
-        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
-        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/replaced', new Constraint('==', '2.0.0.0')));
+        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
+        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/replaced', '2.0.0.0'));
         // while the primary name is kept so output can list the package once
-        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/replaced', new Constraint('==', '2.0.0.0'));
+        $info = self::getCooldownInfo($filteredPool, 'vendor/replaced', '2.0.0.0');
         $this->assertNotNull($info);
-        $this->assertSame('vendor/pkg', $info['name']);
+        $this->assertSame('vendor/pkg', $filteredPool->getPolicyRemovedVersions('vendor/replaced')['2.0.0.0']->getPackageName());
     }
 
     public function testDevAliasIsKeptTogetherWithItsDevTarget(): void
@@ -386,8 +387,8 @@ class CooldownPoolFilterTest extends TestCase
         $filteredPool = $filter->filter($pool, new Request());
 
         $this->assertSame([], $filteredPool->getPackages());
-        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.0.0')));
-        $this->assertTrue($filteredPool->isCooldownRemovedPackageVersion('vendor/pkg', new Constraint('==', '2.0.9999999.9999999-dev')));
+        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
+        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.9999999.9999999-dev'));
     }
 
     public function testComposerRepositoryVersionWithoutPublishedTimeIsRejected(): void
@@ -418,7 +419,7 @@ class CooldownPoolFilterTest extends TestCase
 
         // falls back to the author-supplied time, and says so
         self::assertSame([], $filteredPool->getPackages());
-        $info = $filteredPool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('==', '1.0.0.0'));
+        $info = self::getCooldownInfo($filteredPool, 'vendor/pkg', '1.0.0.0');
         self::assertNotNull($info);
         self::assertSame('time', $info['source']);
     }
@@ -488,5 +489,22 @@ class CooldownPoolFilterTest extends TestCase
             $repoA->getRepoName() => ['vendor/a (1.0.0)'],
             $repoB->getRepoName() => ['vendor/b (1.0.0)'],
         ], $filter->getUnverifiedVersions());
+    }
+
+    /**
+     * @return array{releaseDate: string, availableIn: string, source: string}|null
+     */
+    private static function getCooldownInfo(Pool $pool, string $packageName, string $version): ?array
+    {
+        $reason = $pool->getPolicyRemovalReason($packageName, $version);
+
+        return $reason !== null ? $reason->getCooldownInfo() : null;
+    }
+
+    private static function getRemovalType(Pool $pool, string $packageName, string $version): ?string
+    {
+        $reason = $pool->getPolicyRemovalReason($packageName, $version);
+
+        return $reason !== null ? $reason->getType() : null;
     }
 }

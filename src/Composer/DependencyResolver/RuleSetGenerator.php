@@ -17,7 +17,6 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
-use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -261,7 +260,8 @@ class RuleSetGenerator
             // stale positive id from any prior Pool it was part of (Pool only
             // re-assigns ids for packages it actually contains, so removed
             // entries keep their previous id).
-            if ($request->isLockedPackage($package) && $this->pool->isFilterListRemovedPackageVersion($package->getName(), new Constraint(Constraint::STR_OP_EQ, $package->getVersion()))) {
+            $policyRemoval = $request->isLockedPackage($package) ? $this->pool->getPolicyRemovalReason($package->getName(), $package->getVersion()) : null;
+            if ($policyRemoval !== null && $policyRemoval->getType() === PolicyRemovalReason::FILTER_LIST) {
                 continue;
             }
 

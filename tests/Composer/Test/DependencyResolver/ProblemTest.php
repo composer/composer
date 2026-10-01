@@ -14,6 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\DependencyResolver\GenericRule;
+use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Problem;
 use Composer\DependencyResolver\Request;
@@ -40,8 +41,8 @@ class ProblemTest extends TestCase
             'PKG-1',
             'aikido'
         );
-        $pool = new Pool([], [], [], [], [], [], [
-            'vendor/malware' => ['1.0.0.0' => [$entry]],
+        $pool = new Pool([], [], [], [], [
+            'vendor/malware' => ['1.0.0.0' => PolicyRemovalReason::filterList('vendor/malware', '1.0.0', [$entry])],
         ]);
 
         [$prefix, $suffix] = Problem::getMissingLockedPackageReason($pool, $package);
@@ -64,18 +65,9 @@ class ProblemTest extends TestCase
             [],  // unacceptableFixedOrLockedPackages
             ['vendor/pkg' => ['2.0.0.0' => '2.0.0']],  // removedVersions
             [],  // removedVersionsByPackage
-            [],  // securityRemovedVersions
-            [],  // abandonedRemovedVersions
-            [],  // filterListRemovedVersions
-            [    // cooldownRemovedVersions
+            [    // policyRemovedVersions
                 'vendor/pkg' => [
-                    '2.0.0.0' => [
-                        'name' => 'vendor/pkg',
-                        'prettyVersion' => '2.0.0',
-                        'releaseDate' => '2026-01-10T12:00:00+00:00',
-                        'availableIn' => '5 days',
-                        'source' => 'published-time',
-                    ],
+                    '2.0.0.0' => PolicyRemovalReason::cooldown('vendor/pkg', '2.0.0', '2026-01-10T12:00:00+00:00', '5 days', 'published-time'),
                 ],
             ]
         );
@@ -116,18 +108,9 @@ class ProblemTest extends TestCase
             [],
             ['vendor/pkg' => ['2.0.0.0' => '2.0.0']],
             [],
-            [],
-            [],
-            [],
             [
                 'vendor/pkg' => [
-                    '2.0.0.0' => [
-                        'name' => 'vendor/pkg',
-                        'prettyVersion' => '2.0.0',
-                        'releaseDate' => '2026-01-10T12:00:00+00:00',
-                        'availableIn' => '5 days',
-                        'source' => 'time',
-                    ],
+                    '2.0.0.0' => PolicyRemovalReason::cooldown('vendor/pkg', '2.0.0', '2026-01-10T12:00:00+00:00', '5 days', 'time'),
                 ],
             ]
         );
@@ -160,18 +143,10 @@ class ProblemTest extends TestCase
             [],
             [],
             [],
-            ['vendor/pkg' => ['1.0.0.0' => [$advisory]]],
-            [],
-            [],
             [
                 'vendor/pkg' => [
-                    '1.0.1.0' => [
-                        'name' => 'vendor/pkg',
-                        'prettyVersion' => '1.0.1',
-                        'releaseDate' => '2026-01-10T12:00:00+00:00',
-                        'availableIn' => '5 days',
-                        'source' => 'published-time',
-                    ],
+                    '1.0.0.0' => PolicyRemovalReason::advisories('vendor/pkg', '1.0.0', [$advisory]),
+                    '1.0.1.0' => PolicyRemovalReason::cooldown('vendor/pkg', '1.0.1', '2026-01-10T12:00:00+00:00', '5 days', 'published-time'),
                 ],
             ]
         );
@@ -196,18 +171,15 @@ class ProblemTest extends TestCase
         // each version gets its own line with the policy that removed it, and the remedies follow once
         self::assertStringContainsString("found vendor/pkg[1.0.0, 1.0.1] but these were not loaded, because:\n      - 1.0.0: affected by security advisories (\"", $message);
         self::assertStringContainsString('PKSA-1234-abcd-1234', $message);
-        self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days)\n      Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the \"policy.advisories.ignore-id\" config or add the package to \"policy.advisories.ignore\". To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set \"policy.advisories.block\" or \"policy.cooldown.block\" to false.", $message);
+        self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days)\n      Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the \"policy.advisories.ignore-id\" config or add the package to \"policy.advisories.ignore\". To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set \"policy.advisories.block\" or \"policy.cooldown.block\" to false.", $message);
     }
 
     public function testGetMissingPackageReasonKeepsOneSentenceWhenOnlyTheCooldownWithheldVersions(): void
     {
-        $cooldownInfo = static function (string $version, string $availableIn): array {
-            return ['name' => 'vendor/pkg', 'prettyVersion' => $version, 'releaseDate' => '2026-01-10T12:00:00+00:00', 'availableIn' => $availableIn, 'source' => 'published-time'];
-        };
-        $pool = new Pool([], [], [], [], [], [], [], [
+        $pool = new Pool([], [], [], [], [
             'vendor/pkg' => [
-                '1.0.1.0' => $cooldownInfo('1.0.1', '1 day'),
-                '1.0.2.0' => $cooldownInfo('1.0.2', '3 days'),
+                '1.0.1.0' => PolicyRemovalReason::cooldown('vendor/pkg', '1.0.1', '2026-01-10T12:00:00+00:00', '1 day', 'published-time'),
+                '1.0.2.0' => PolicyRemovalReason::cooldown('vendor/pkg', '1.0.2', '2026-01-12T12:00:00+00:00', '3 days', 'published-time'),
             ],
         ]);
 
@@ -223,7 +195,8 @@ class ProblemTest extends TestCase
             new Constraint('>=', '1.0.0.0')
         ));
 
-        self::assertStringContainsString('found vendor/pkg[1.0.1, 1.0.2] but these were not loaded, because they are still in the cooldown period', $message);
+        // the sentence points at the version that becomes available soonest
+        self::assertStringContainsString('found vendor/pkg[1.0.1, 1.0.2] but these were not loaded, because they are still in the cooldown period configured in "policy.cooldown" (available in 1 day).', $message);
         self::assertStringNotContainsString("\n      - ", $message);
     }
 
@@ -245,18 +218,10 @@ class ProblemTest extends TestCase
             [],
             [],
             [],
-            [],
-            [],
-            ['vendor/pkg' => ['1.0.0.0' => [$entry]]],
             [
                 'vendor/pkg' => [
-                    '1.0.1.0' => [
-                        'name' => 'vendor/pkg',
-                        'prettyVersion' => '1.0.1',
-                        'releaseDate' => '2026-01-10T12:00:00+00:00',
-                        'availableIn' => '5 days',
-                        'source' => 'time',
-                    ],
+                    '1.0.0.0' => PolicyRemovalReason::filterList('vendor/pkg', '1.0.0', [$entry]),
+                    '1.0.1.0' => PolicyRemovalReason::cooldown('vendor/pkg', '1.0.1', '2026-01-10T12:00:00+00:00', '5 days', 'time'),
                 ],
             ]
         );
@@ -275,6 +240,6 @@ class ProblemTest extends TestCase
 
         self::assertStringContainsString("found vendor/pkg[1.0.0, 1.0.1] but these were not loaded, because:\n      - 1.0.0: flagged as malware", $message);
         self::assertStringContainsString('reason: looks suspicious', $message);
-        self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days, based on the package-supplied time field as the repository provides no published-time)\n      To ignore filters for this package, add the package to the \"policy.malware.ignore\" config. To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set \"policy.malware.block\" or \"policy.cooldown.block\" to false.", $message);
+        self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days, based on the package-supplied time field as the repository provides no published-time)\n      To ignore filters for this package, add the package to the \"policy.malware.ignore\" config. To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set \"policy.malware.block\" or \"policy.cooldown.block\" to false.", $message);
     }
 }

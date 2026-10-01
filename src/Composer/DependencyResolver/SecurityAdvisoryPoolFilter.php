@@ -92,12 +92,11 @@ class SecurityAdvisoryPoolFilter
         $ignoreAbandonedForBlocking = $abandoned->getFlatIgnoreForOperation('block');
 
         $packages = [];
-        $securityRemovedVersions = [];
-        $abandonedRemovedVersions = [];
+        $policyRemovedVersions = $pool->getAllPolicyRemovedVersions();
         foreach ($pool->getPackages() as $package) {
             if ($abandoned->block && count($this->auditor->filterAbandonedPackages([$package], $ignoreAbandonedForBlocking)) !== 0) {
                 foreach ($package->getNames(false) as $packageName) {
-                    $abandonedRemovedVersions[$packageName][$package->getVersion()] = $package->getPrettyVersion();
+                    $policyRemovedVersions[$packageName][$package->getVersion()] = PolicyRemovalReason::abandoned($package->getName(), $package->getPrettyVersion());
                 }
                 continue;
             }
@@ -105,7 +104,7 @@ class SecurityAdvisoryPoolFilter
             $matchingAdvisories = $this->getMatchingAdvisories($package, $advisoryMap);
             if (count($matchingAdvisories) > 0) {
                 foreach ($package->getNames(false) as $packageName) {
-                    $securityRemovedVersions[$packageName][$package->getVersion()] = $matchingAdvisories;
+                    $policyRemovedVersions[$packageName][$package->getVersion()] = PolicyRemovalReason::advisories($package->getName(), $package->getPrettyVersion(), $matchingAdvisories);
                 }
 
                 continue;
@@ -114,7 +113,7 @@ class SecurityAdvisoryPoolFilter
             $packages[] = $package;
         }
 
-        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $pool->getAllRemovedVersions(), $pool->getAllRemovedVersionsByPackage(), $securityRemovedVersions, $abandonedRemovedVersions);
+        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $pool->getAllRemovedVersions(), $pool->getAllRemovedVersionsByPackage(), $policyRemovedVersions);
     }
 
     /**

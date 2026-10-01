@@ -12,6 +12,7 @@
 
 namespace Composer\Test\DependencyResolver;
 
+use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\DependencyResolver\Pool;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Test\TestCase;
@@ -58,39 +59,21 @@ class PoolTest extends TestCase
         self::assertEquals([], $pool->whatProvides('foo'));
     }
 
-    public function testGetCooldownInfoPicksChronologicallyEarliestAcrossOffsets(): void
+    public function testGetPolicyRemovedVersionsFiltersByConstraintInVersionOrder(): void
     {
-        // The two release-date strings sort differently lexically than chronologically
-        // because of their differing UTC offsets:
-        //   1.0.0 => 2026-01-12T01:00:00+02:00  (instant 2026-01-11T23:00:00Z, earlier)
-        //   2.0.0 => 2026-01-12T00:30:00+00:00  (instant 2026-01-12T00:30:00Z, later)
-        // Lexically "2026-01-12T00:30..." < "2026-01-12T01:00...", so a string compare
-        // would wrongly pick 2.0.0 as the soonest-available version.
-        $cooldownRemovedVersions = [
+        $pool = new Pool([], [], [], [], [
             'vendor/pkg' => [
-                '1.0.0.0' => [
-                    'name' => 'vendor/pkg',
-                    'prettyVersion' => '1.0.0',
-                    'releaseDate' => '2026-01-12T01:00:00+02:00',
-                    'availableIn' => '5 days',
-                    'source' => 'time',
-                ],
-                '2.0.0.0' => [
-                    'name' => 'vendor/pkg',
-                    'prettyVersion' => '2.0.0',
-                    'releaseDate' => '2026-01-12T00:30:00+00:00',
-                    'availableIn' => '6 days',
-                    'source' => 'time',
-                ],
+                '2.0.0.0' => $v2 = PolicyRemovalReason::abandoned('vendor/pkg', '2.0.0'),
+                '1.0.0.0' => $v1 = PolicyRemovalReason::abandoned('vendor/pkg', '1.0.0'),
+                '3.0.0.0' => PolicyRemovalReason::abandoned('vendor/pkg', '3.0.0'),
             ],
-        ];
+        ]);
 
-        $pool = new Pool([], [], [], [], [], [], [], $cooldownRemovedVersions);
-
-        $info = $pool->getCooldownInfoForPackageVersion('vendor/pkg', new Constraint('>=', '1.0.0.0'));
-
-        self::assertNotNull($info);
-        self::assertSame('1.0.0', $info['prettyVersion']);
+        self::assertSame(['1.0.0.0' => $v1, '2.0.0.0' => $v2], $pool->getPolicyRemovedVersions('vendor/pkg', new Constraint('<', '3.0.0.0')));
+        self::assertCount(3, $pool->getPolicyRemovedVersions('vendor/pkg'));
+        self::assertSame([], $pool->getPolicyRemovedVersions('vendor/other'));
+        self::assertSame($v2, $pool->getPolicyRemovalReason('vendor/pkg', '2.0.0.0'));
+        self::assertNull($pool->getPolicyRemovalReason('vendor/pkg', '4.0.0.0'));
     }
 
     /**
