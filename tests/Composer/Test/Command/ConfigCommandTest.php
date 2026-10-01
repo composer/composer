@@ -252,9 +252,9 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.cooldown.period', 'setting-value' => ['604800']],
             ['config' => ['policy' => ['cooldown' => ['period' => 604800]]]],
         ];
-        yield 'set policy.cooldown.period normalizes case and whitespace' => [
+        yield 'set policy.cooldown.period trims whitespace' => [
             [],
-            ['setting-key' => 'policy.cooldown.period', 'setting-value' => [' 7 DAYS ']],
+            ['setting-key' => 'policy.cooldown.period', 'setting-value' => [' 7 days ']],
             ['config' => ['policy' => ['cooldown' => ['period' => '7 days']]]],
         ];
         yield 'set policy.cooldown.period null disables' => [

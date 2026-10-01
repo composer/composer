@@ -466,7 +466,7 @@ such a version.
 #### period
 
 A duration string in the form `"<number> <unit>"` where the unit is one of `second`, `minute`,
-`hour`, `day` or `week` (singular or plural — e.g. `"7 days"`, `"24 hours"`, `"30 minutes"`,
+`hour`, `day` or `week` (lowercase, singular or plural — e.g. `"7 days"`, `"24 hours"`, `"30 minutes"`,
 `"1 week"`), an integer number of seconds, or `null` to disable. Relative phrases such as
 `"tomorrow"` or `"next week"` are rejected. Defaults to `null` (no cooldown period). The policy only
 takes effect once a period is set.

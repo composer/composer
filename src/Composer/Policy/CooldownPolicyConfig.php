@@ -284,8 +284,8 @@ class CooldownPolicyConfig extends ListPolicyConfig
      *
      * Accepts an integer number of seconds, an integer string, or an explicit
      * unit duration such as "7 days", "24 hours", "30 minutes", "90 seconds" or
-     * "1 week" (the unit may be singular or plural). null, an empty string, and 0
-     * all mean "no cooldown".
+     * "1 week" (the unit must be lowercase and may be singular or plural).
+     * null, an empty string, and 0 all mean "no cooldown".
      *
      * Relative phrases such as "tomorrow" or "next week" are intentionally
      * rejected: they would resolve to surprising values (and some to 0, which
@@ -334,8 +334,8 @@ class CooldownPolicyConfig extends ListPolicyConfig
             'week' => 604800,
         ];
 
-        if (Preg::isMatchStrictGroups('/^(\d+)\s*(second|minute|hour|day|week)s?$/i', $trimmed, $matches)) {
-            return (int) $matches[1] * $units[strtolower($matches[2])];
+        if (Preg::isMatchStrictGroups('/^(\d+)\s*(second|minute|hour|day|week)s?$/', $trimmed, $matches)) {
+            return (int) $matches[1] * $units[$matches[2]];
         }
 
         throw new \RuntimeException("Invalid policy.cooldown.period format: {$duration}. Use an integer number of seconds or a duration like '7 days', '24 hours', '30 minutes' or '1 week'.");

@@ -383,7 +383,7 @@ class Problem
             // When several policies removed different versions, one sentence would attribute every reason to
             // every version, so list the versions with their own reason instead
             $policyReasons = self::getPolicyRemovalReasons($pool, $packageName, $packages);
-            if (\count($policyReasons) > 1) {
+            if (\count(array_unique(array_column($policyReasons, 'policy'))) > 1) {
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because:'.self::formatPolicyRemovalReasons($policyReasons)];
             }
 
@@ -772,7 +772,7 @@ class Problem
      * order, so that versions removed for different reasons can each be explained
      *
      * @param  BasePackage[] $packages
-     * @return array<string, array{versions: list<string>, remedy: string, off: string}> reason text => details
+     * @return array<string, array{policy: string, versions: list<string>, remedy: string, off: string}> reason text => details
      */
     private static function getPolicyRemovalReasons(Pool $pool, string $packageName, array $packages): array
     {
@@ -787,15 +787,18 @@ class Problem
         foreach ($packages as $package) {
             $version = new Constraint('==', $package->getVersion());
             if ($pool->isAbandonedRemovedPackageVersion($packageName, $version)) {
+                $policy = 'abandoned';
                 $reason = 'abandoned';
                 $remedy = '';
                 $off = '"policy.abandoned.block"';
             } elseif ($pool->isSecurityRemovedPackageVersion($packageName, $version)) {
+                $policy = 'advisories';
                 $advisoryIds = $pool->getSecurityAdvisoryIdentifiersForPackageVersion($packageName, $version);
                 $reason = 'affected by security advisories ("' . implode('", "', self::formatAdvisoryIdentifiers($advisoryIds)) . '")';
                 $remedy = trim(self::getAdvisoryDetailsHint($advisoryIds)) . ' To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore".';
                 $off = '"policy.advisories.block"';
             } elseif ($pool->isFilterListRemovedPackageVersion($packageName, $version)) {
+                $policy = 'filter-lists';
                 $filters = $pool->getFilterListEntryForPackageVersion($packageName, $version);
                 $reason = implode(', ', $filters);
                 $remedy = 'To ignore filters for this package, add the package to the ' . implode(' and ', array_map(static function (string $listName): string {
@@ -805,6 +808,7 @@ class Problem
                     return '"policy.' . $listName . '.block"';
                 }, array_keys($filters)));
             } elseif ($pool->isCooldownRemovedPackageVersion($packageName, $version)) {
+                $policy = 'cooldown';
                 $cooldownInfo = $pool->getCooldownInfoForPackageVersion($packageName, $version);
                 $availableIn = '';
                 if ($cooldownInfo !== null) {
@@ -819,7 +823,7 @@ class Problem
             }
 
             if (!isset($reasons[$reason])) {
-                $reasons[$reason] = ['versions' => [], 'remedy' => $remedy, 'off' => $off];
+                $reasons[$reason] = ['policy' => $policy, 'versions' => [], 'remedy' => $remedy, 'off' => $off];
             }
             if (!in_array($package->getPrettyVersion(), $reasons[$reason]['versions'], true)) {
                 $reasons[$reason]['versions'][] = $package->getPrettyVersion();
@@ -830,7 +834,7 @@ class Problem
     }
 
     /**
-     * @param array<string, array{versions: list<string>, remedy: string, off: string}> $reasons
+     * @param array<string, array{policy: string, versions: list<string>, remedy: string, off: string}> $reasons
      */
     private static function formatPolicyRemovalReasons(array $reasons): string
     {
