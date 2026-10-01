@@ -85,6 +85,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies (can also be set via the COMPOSER_PREFER_LOWEST=1 env var).'),
                 new InputOption('minimal-changes', 'm', InputOption::VALUE_NONE, 'Only perform absolutely necessary changes to dependencies. If packages cannot be kept at their currently locked version they are updated. For partial updates the allow-listed packages are always updated fully. (can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var).'),
                 new InputOption('patch-only', null, InputOption::VALUE_NONE, 'Only allow patch version updates for currently installed dependencies.'),
+                new InputOption('vulnerable-only', null, InputOption::VALUE_NONE, 'Restricts the update to locked packages affected by security advisories.'),
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
                 new InputOption('bump-after-update', null, InputOption::VALUE_OPTIONAL, 'Runs bump after performing the update.', false, ['dev', 'no-dev', 'all']),
@@ -140,6 +141,35 @@ EOT
         }
 
         $packages = $input->getArgument('packages');
+
+        if ($input->getOption('vulnerable-only')) {
+            if (count($packages) > 0) {
+                throw new \InvalidArgumentException('--vulnerable-only cannot be combined with package arguments.');
+            }
+            if ($input->getOption('interactive') || $input->getOption('root-reqs') || $input->getOption('lock')) {
+                throw new \InvalidArgumentException('--vulnerable-only cannot be combined with --interactive, --root-reqs or --lock.');
+            }
+            if (!$composer->getLocker()->isLocked()) {
+                throw new \UnexpectedValueException('A valid composer.lock file is required to run this command with --vulnerable-only.');
+            }
+
+            $repositorySet = new RepositorySet();
+            foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
+                $repositorySet->addRepository($repository);
+            }
+
+            $lockedPackages = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'))->getPackages();
+            $packages = array_keys($repositorySet->getMatchingSecurityAdvisories($lockedPackages, true)['advisories']);
+
+            if (count($packages) === 0) {
+                $io->writeError('<info>No packages with known security vulnerabilities found in composer.lock.</info>');
+
+                return self::SUCCESS;
+            }
+
+            $io->writeError('<info>Updating vulnerable packages: '.implode(', ', $packages).'</info>');
+        }
+
         $reqs = $this->formatRequirements($input->getOption('with'));
 
         // extract --with shorthands from the allowlist
