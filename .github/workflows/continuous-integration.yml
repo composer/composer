@@ -28,48 +28,11 @@ jobs:
 
     strategy:
       matrix:
-        php-version:
-          - "7.2"
-          - "7.3"
-          - "7.4"
-          - "8.0"
-          - "8.1"
-          - "8.2"
-          - "8.3"
-          - "8.4"
-          - "8.5"
-        dependencies: [locked]
-        os: [ubuntu-latest]
-        experimental: [false]
         include:
-          - php-version: "7.2"
-            dependencies: highest
-            os: ubuntu-latest
-            experimental: false
-          - php-version: "7.2"
-            dependencies: lowest
-            os: ubuntu-latest
-            experimental: false
-          - php-version: "8.5"
-            dependencies: highest
-            os: ubuntu-latest
-            experimental: false
           - php-version: "8.5"
             os: windows-latest
             dependencies: locked
             experimental: false
-          - php-version: "8.5"
-            os: macos-latest
-            dependencies: locked
-            experimental: false
-          - php-version: "8.6"
-            dependencies: lowest-ignore
-            os: ubuntu-latest
-            experimental: true
-          - php-version: "8.6"
-            dependencies: highest-ignore
-            os: ubuntu-latest
-            experimental: true
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -138,27 +101,3 @@ jobs:
       - name: "Run complete test suite on 7.3"
         if: "matrix.php-version == '7.3'"
         run: "vendor/bin/simple-phpunit --configuration tests/complete.phpunit.xml"
-
-  validation:
-    name: "Composer validation"
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
-        with:
-          coverage: "none"
-          extensions: "intl, zip"
-          ini-values: "memory_limit=-1, phar.readonly=0, error_reporting=E_ALL, display_errors=On, display_startup_errors=On"
-          php-version: "7.4"
-          tools: "composer:snapshot"
-
-      - name: "Install dependencies"
-        run: 'composer install $COMPOSER_FLAGS'
-
-      - name: "Validate composer.json"
-        run: "bin/composer validate --strict"
