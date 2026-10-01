@@ -208,6 +208,8 @@ class BinaryInstaller
      * to generate safely. Spaces, backslashes and single quotes are deliberately accepted, as
      * published packages do use them. Only ever pass the package-relative bin path: the absolute
      * one carries the user's own project path, which may well contain e.g. parentheses.
+     *
+     * @internal
      */
     public static function isSafeBinPath(string $bin): bool
     {
