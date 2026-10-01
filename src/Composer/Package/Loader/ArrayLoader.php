@@ -33,6 +33,8 @@ class ArrayLoader implements LoaderInterface
     protected $versionParser;
     /** @var bool */
     protected $loadOptions;
+    /** @var ?array<string, string> */
+    private static $linkSetters;
 
     public function __construct(?VersionParser $parser = null, bool $loadOptions = false)
     {
@@ -58,7 +60,7 @@ class ArrayLoader implements LoaderInterface
             if (!isset($config[$type]) || !is_array($config[$type])) {
                 continue;
             }
-            $method = 'set'.ucfirst($opts['method']);
+            $method = self::getLinkSetters()[$type];
             $package->{$method}(
                 $this->parseLinks(
                     $package->getName(),
@@ -242,28 +244,14 @@ class ArrayLoader implements LoaderInterface
 
         // repositories may send timestamps as JSON numbers, which must not crash the loader
         if (!empty($config['time']) && (is_int($config['time']) || is_string($config['time']))) {
-            $time = (string) $config['time'];
-            $time = ctype_digit($time) ? '@'.$time : $time;
-
-            try {
-                $date = new \DateTime($time, new \DateTimeZone('UTC'));
-                $package->setReleaseDate($date);
-            } catch (\Exception $e) {
-            }
+            $package->setReleaseDateString((string) $config['time']);
         }
 
         // Server-set publication timestamp, owned by the repository and not
         // overridable by the package author (unlike `time`). Preferred by the
         // cooldown policy when present
         if (isset($config['published-time']) && (is_int($config['published-time']) || (is_string($config['published-time']) && '' !== $config['published-time']))) {
-            $publishedTime = (string) $config['published-time'];
-            $publishedTime = ctype_digit($publishedTime) ? '@'.$publishedTime : $publishedTime;
-
-            try {
-                $date = new \DateTimeImmutable($publishedTime, new \DateTimeZone('UTC'));
-                $package->setPublishedDate($date);
-            } catch (\Exception $e) {
-            }
+            $package->setPublishedDateString((string) $config['published-time']);
         }
 
         if (!empty($config['notification-url'])) {
@@ -348,10 +336,11 @@ class ArrayLoader implements LoaderInterface
     {
         $name = $package->getName();
         $prettyVersion = $package->getPrettyVersion();
+        $linkSetters = self::getLinkSetters();
 
         foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
             if (isset($config[$type])) {
-                $method = 'set'.ucfirst($opts['method']);
+                $method = $linkSetters[$type];
 
                 $links = [];
                 foreach ($config[$type] as $prettyTarget => $constraint) {
@@ -377,6 +366,21 @@ class ArrayLoader implements LoaderInterface
                 $package->{$method}($links);
             }
         }
+    }
+
+    /**
+     * @return array<string, string> link type => setter method name
+     */
+    private static function getLinkSetters(): array
+    {
+        if (null === self::$linkSetters) {
+            self::$linkSetters = [];
+            foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
+                self::$linkSetters[$type] = 'set'.ucfirst($opts['method']);
+            }
+        }
+
+        return self::$linkSetters;
     }
 
     /**

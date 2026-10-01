@@ -59,6 +59,12 @@ class Package extends BasePackage
     protected $releaseDate;
     /** @var ?\DateTimeImmutable */
     protected $publishedDate;
+    /** @var ?string unparsed `time`, parsed on first getReleaseDate() call */
+    private $releaseDateRaw;
+    /** @var ?string unparsed `published-time`, parsed on first getPublishedDate() call */
+    private $publishedDateRaw;
+    /** @var ?\DateTimeZone */
+    private static $utc;
     /** @var mixed[] */
     protected $extra = [];
     /** @var string[] */
@@ -387,6 +393,18 @@ class Package extends BasePackage
     public function setReleaseDate(?\DateTimeInterface $releaseDate): void
     {
         $this->releaseDate = $releaseDate;
+        $this->releaseDateRaw = null;
+    }
+
+    /**
+     * Sets the release date from a raw string, parsed lazily as most loaded packages never need it
+     *
+     * @internal
+     */
+    public function setReleaseDateString(string $releaseDate): void
+    {
+        $this->releaseDate = null;
+        $this->releaseDateRaw = $releaseDate;
     }
 
     /**
@@ -394,12 +412,32 @@ class Package extends BasePackage
      */
     public function getReleaseDate(): ?\DateTimeInterface
     {
+        if (null !== $this->releaseDateRaw) {
+            try {
+                $this->releaseDate = new \DateTime(self::prepareDateString($this->releaseDateRaw), self::getUtc());
+            } catch (\Exception $e) {
+            }
+            $this->releaseDateRaw = null;
+        }
+
         return $this->releaseDate;
     }
 
     public function setPublishedDate(?\DateTimeImmutable $publishedDate): void
     {
         $this->publishedDate = $publishedDate;
+        $this->publishedDateRaw = null;
+    }
+
+    /**
+     * Sets the published date from a raw string, parsed lazily as most loaded packages never need it
+     *
+     * @internal
+     */
+    public function setPublishedDateString(string $publishedDate): void
+    {
+        $this->publishedDate = null;
+        $this->publishedDateRaw = $publishedDate;
     }
 
     /**
@@ -407,7 +445,25 @@ class Package extends BasePackage
      */
     public function getPublishedDate(): ?\DateTimeImmutable
     {
+        if (null !== $this->publishedDateRaw) {
+            try {
+                $this->publishedDate = new \DateTimeImmutable(self::prepareDateString($this->publishedDateRaw), self::getUtc());
+            } catch (\Exception $e) {
+            }
+            $this->publishedDateRaw = null;
+        }
+
         return $this->publishedDate;
+    }
+
+    private static function prepareDateString(string $date): string
+    {
+        return ctype_digit($date) ? '@'.$date : $date;
+    }
+
+    private static function getUtc(): \DateTimeZone
+    {
+        return self::$utc ?? self::$utc = new \DateTimeZone('UTC');
     }
 
     /**
