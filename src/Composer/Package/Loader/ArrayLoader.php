@@ -253,8 +253,10 @@ class ArrayLoader implements LoaderInterface
         // Server-set publication timestamp, owned by the repository and not
         // overridable by the package author (unlike `time`). Preferred by the
         // cooldown policy when present
-        if (isset($config['published-time']) && '' !== $config['published-time']) {
-            $publishedTime = Preg::isMatch('/^\d++$/D', $config['published-time']) ? '@'.$config['published-time'] : $config['published-time'];
+        // repository-supplied, so a JSON number must not crash the loader
+        if (isset($config['published-time']) && (is_int($config['published-time']) || (is_string($config['published-time']) && '' !== $config['published-time']))) {
+            $publishedTime = (string) $config['published-time'];
+            $publishedTime = Preg::isMatch('/^\d++$/D', $publishedTime) ? '@'.$publishedTime : $publishedTime;
 
             try {
                 $date = new \DateTimeImmutable($publishedTime, new \DateTimeZone('UTC'));

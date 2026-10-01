@@ -84,6 +84,16 @@ class ArrayLoaderTest extends TestCase
         self::assertSame(1747685025, $package->getPublishedDate()->getTimestamp());
     }
 
+    public function testPublishedTimeFromNonStringValues(): void
+    {
+        $package = $this->loader->load(['name' => 'a/b', 'version' => '1.0', 'published-time' => 1747685025]);
+        self::assertInstanceOf(\DateTimeInterface::class, $package->getPublishedDate());
+        self::assertSame(1747685025, $package->getPublishedDate()->getTimestamp());
+
+        $package = $this->loader->load(['name' => 'a/b', 'version' => '1.0', 'published-time' => ['2026-05-19']]);
+        self::assertNull($package->getPublishedDate());
+    }
+
     public function testMalformedPublishedTimeIsIgnored(): void
     {
         $package = $this->loader->load([
