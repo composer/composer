@@ -52,9 +52,7 @@ class CooldownPolicyConfigTest extends TestCase
         self::assertSame(604800, CooldownPolicyConfig::parseDuration('7 days'));
         self::assertSame(604800, CooldownPolicyConfig::parseDuration('1 week'));
         self::assertSame(1209600, CooldownPolicyConfig::parseDuration('2 weeks'));
-        // unit matching is case-insensitive and tolerant of surrounding/no whitespace
         self::assertSame(604800, CooldownPolicyConfig::parseDuration('1week'));
-        self::assertSame(7200, CooldownPolicyConfig::parseDuration('  2 hours  '));
     }
 
     public function testParseDurationInvalidFormatThrows(): void
@@ -84,6 +82,9 @@ class CooldownPolicyConfigTest extends TestCase
         yield 'fractional seconds' => ['1.5'];
         yield 'capitalized unit' => ['7 Days'];
         yield 'uppercase unit' => ['1 WEEK'];
+        yield 'surrounding whitespace' => ['  2 hours  '];
+        yield 'whitespace only' => ['   '];
+        yield 'trailing newline' => ["7 days\n"];
     }
 
     /**

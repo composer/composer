@@ -257,11 +257,11 @@ class ComposerSchemaTest extends TestCase
     public function cooldownPeriodProvider(): iterable
     {
         yield 'unit duration' => ['7 days', true];
-        yield 'surrounding whitespace' => [' 7 days ', true];
         yield 'plain seconds' => ['3600', true];
         yield 'empty string' => ['', true];
-        yield 'whitespace only, rejected by the parser' => ['   ', false];
-        yield 'uppercase unit, rejected by the parser' => ['7 Days', false];
+        yield 'whitespace only' => ['   ', false];
+        yield 'surrounding whitespace' => [' 7 days ', false];
+        yield 'uppercase unit' => ['7 Days', false];
     }
 
     /**
