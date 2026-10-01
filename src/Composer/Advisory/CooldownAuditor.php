@@ -12,6 +12,7 @@
 
 namespace Composer\Advisory;
 
+use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Policy\CooldownPolicyConfig;
@@ -52,6 +53,11 @@ class CooldownAuditor
 
         $result = [];
         foreach ($packages as $package) {
+            // Decide on the aliased package, as the block path does
+            if ($package instanceof AliasPackage) {
+                $package = $package->getAliasOf();
+            }
+
             // Mirror the block path's skips: root, platform, dev, ignored, and
             // versions without a verifiable publication date.
             if ($package instanceof RootPackageInterface

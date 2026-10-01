@@ -16,6 +16,7 @@ use Composer\Advisory\CooldownAuditor;
 use Composer\Policy\CooldownPolicyConfig;
 use Composer\Policy\IgnorePackageRule;
 use Composer\Policy\ListPolicyConfig;
+use Composer\Package\AliasPackage;
 use Composer\Package\Package;
 use Composer\Package\RootPackage;
 use Composer\Semver\Constraint\MatchAllConstraint;
@@ -115,6 +116,22 @@ class CooldownAuditorTest extends TestCase
         $result = $this->auditor()->collect([$package], $this->cooldown(ListPolicyConfig::AUDIT_REPORT, 604800, $ignore));
 
         self::assertArrayHasKey('vendor/pkg', $result);
+    }
+
+    public function testResolvesAliasesToAliasedPackage(): void
+    {
+        $dev = new Package('vendor/dev', 'dev-main', 'dev-main');
+        $dev->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+        $stable = $this->package('vendor/stable', '1.2.0', '2026-01-14 12:00:00');
+
+        $result = $this->auditor()->collect([
+            new AliasPackage($dev, '1.0.0.0', '1.0.0'),
+            new AliasPackage($stable, '1.0.0.0', '1.0.0'),
+        ], $this->cooldown());
+
+        self::assertArrayNotHasKey('vendor/dev', $result);
+        self::assertArrayHasKey('vendor/stable', $result);
+        self::assertSame('1.2.0', $result['vendor/stable']['prettyVersion']);
     }
 
     public function testReturnsEmptyWhenNoCooldownConfigured(): void
