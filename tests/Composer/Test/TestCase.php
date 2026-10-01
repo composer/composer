@@ -93,9 +93,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             Platform::clearEnv('COMPOSER_DISABLE_XDEBUG_WARN');
             Platform::clearEnv('COMPOSER_ROOT_VERSION');
         }
-        $fs = new Filesystem();
         foreach ($this->tempComposerDirs as $dir) {
-            self::removeTestDirectory($fs, $dir);
+            self::removeTestDirectory($dir);
         }
     }
 
@@ -103,8 +102,10 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * Removes a directory in-process, avoiding the rm/rmdir subprocess spawned by
      * Filesystem::removeDirectory, which is expensive on Windows
      */
-    private static function removeTestDirectory(Filesystem $fs, string $directory): void
+    protected static function removeTestDirectory(string $directory): void
     {
+        $fs = new Filesystem();
+
         try {
             $fs->removeDirectoryPhp($directory);
         } catch (\RuntimeException $e) {
@@ -342,10 +343,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     protected static function ensureDirectoryExistsAndClear(string $directory): void
     {
-        $fs = new Filesystem();
-
         if (is_dir($directory)) {
-            self::removeTestDirectory($fs, $directory);
+            self::removeTestDirectory($directory);
         }
 
         mkdir($directory, 0777, true);
