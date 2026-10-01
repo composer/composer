@@ -505,6 +505,7 @@ EOT
                 $nameLength = $versionLength = $latestLength = $releaseDateLength = 0;
 
                 foreach ($latestLookups[$type] ?? [] as $package) {
+                    unset($withheldPackages[$package->getPrettyName()]);
                     $found = $this->findLatestPackage($package, $composer, $platformRepo, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter, $cooldown);
                     if ($found['latest'] !== null) {
                         $latestPackages[$package->getPrettyName()] = $found['latest'];
