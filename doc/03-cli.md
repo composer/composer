@@ -584,7 +584,7 @@ php composer.phar show monolog/monolog 1.0.2
 * **--minor-only (-m):** Use with --latest or --outdated. Only shows packages that have minor SemVer-compatible updates.
 * **--patch-only:** Use with --latest or --outdated. Only shows packages that have patch-level SemVer-compatible updates.
 * **--sort-by-age (-A):** Displays the installed version's age, and sorts packages oldest first. Use with the --latest or --outdated option.
-* **--cooldown-period:** Overrides the configured [policy.cooldown.period](06-config.md#period) while looking up latest versions, `0` disables the cooldown policy for this run. Use with the --latest or --outdated option.
+* **--cooldown-period:** Overrides the configured [policy.cooldown.period](06-config.md#period) while looking up latest versions, even when the policy is disabled or not blocking; `0` disables it for this run. Use with the --latest or --outdated option.
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 * **--strict:** Return a non-zero exit code when there are outdated packages.
 * **--format (-f):** Lets you pick between text (default) or json output format.
@@ -614,7 +614,8 @@ The color coding is as such:
 
 When a cooldown period is configured, the latest version shown is the newest one the cooldown policy
 allows installing, so the output matches what `composer update` would do. A release still in the
-cooldown period is only shown once you are on the newest installable version.
+cooldown period is only shown once you are on the newest installable version, and when several are
+waiting, the one that becomes installable first.
 
 ### Options
 
@@ -626,7 +627,7 @@ cooldown period is only shown once you are on the newest installable version.
 * **--minor-only (-m):** Only shows packages that have minor SemVer-compatible updates.
 * **--patch-only (-p):** Only shows packages that have patch-level SemVer-compatible updates.
 * **--sort-by-age (-A):** Displays the installed version's age, and sorts packages oldest first.
-* **--cooldown-period:** Overrides the configured [policy.cooldown.period](06-config.md#period), `0` shows the newest releases regardless of the cooldown policy.
+* **--cooldown-period:** Overrides the configured [policy.cooldown.period](06-config.md#period), even when the policy is disabled or not blocking; `0` shows the newest releases regardless of the cooldown policy.
 * **--format (-f):** Lets you pick between text (default) or json output format.
 * **--no-dev:** Do not show outdated dev dependencies.
 * **--locked:** Shows updates for packages from the lock file, regardless of what is currently in vendor dir.
