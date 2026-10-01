@@ -1044,9 +1044,6 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         self::assertStringNotContainsString('cooldown period', $display);
     }
 
-    /**
-     * @param array<string, string> $versions version => published-time
-     */
     public function testOutdatedIgnoresWithheldBackportsOlderThanTheInstalledVersion(): void
     {
         $this->initProjectWithCooldownPeriod('2.0.0', [
@@ -1061,6 +1058,24 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         self::assertMatchesRegularExpression('{^vendor/package 2\.0\.0 c 2\.0\.1 \(\d+ days?(?: \d+ hours?)? left\)}m', $appTester->getDisplay(true));
     }
 
+    public function testOutdatedTreatsAnInstalledVersionStillInTheCooldownPeriodAsUpToDate(): void
+    {
+        $this->initProjectWithCooldownPeriod('1.1.0', [
+            '1.0.0' => '2020-01-01T00:00:00+00:00',
+            '1.1.0' => '2999-01-01T00:00:00+00:00',
+        ]);
+
+        // the selector cannot offer 1.1.0, but falling back to 1.0.0 would be a downgrade, not an update
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true]));
+        $display = $appTester->getDisplay(true);
+        self::assertStringNotContainsString('1.0.0', $display);
+        self::assertStringNotContainsString('[none matched]', $display);
+    }
+
+    /**
+     * @param array<string, string> $versions version => published-time
+     */
     private function initProjectWithCooldownPeriod(string $installedVersion, array $versions = ['1.0.0' => '2020-01-01T00:00:00+00:00', '1.1.0' => '2020-02-01T00:00:00+00:00', '2.0.0' => '2999-01-01T00:00:00+00:00']): void
     {
         $packages = [];

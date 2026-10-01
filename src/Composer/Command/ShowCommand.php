@@ -1620,15 +1620,20 @@ EOT
             $candidate = $candidate->getAliasOf();
         }
 
-        // the first release to clear the cooldown period among those newer than the installed version,
-        // a withheld backport to an older branch is no update
+        $latest = $candidate !== false ? $candidate : null;
         $withheld = null;
         if ($cooldown !== null && !str_starts_with($package->getVersion(), 'dev-')) {
+            $installedIsWithheld = false;
             foreach ($versionSelector->getWithheldCandidates() as $withheldCandidate) {
                 $withheldPackage = $withheldCandidate['package'];
                 while ($withheldPackage instanceof AliasPackage) {
                     $withheldPackage = $withheldPackage->getAliasOf();
                 }
+                if ($withheldPackage->getVersion() === $package->getVersion()) {
+                    $installedIsWithheld = true;
+                }
+                // the first release to clear the cooldown period among those newer than the installed version,
+                // a withheld backport to an older branch is no update
                 if (!version_compare($withheldPackage->getVersion(), $package->getVersion(), '>')) {
                     continue;
                 }
@@ -1636,10 +1641,16 @@ EOT
                     $withheld = ['package' => $withheldPackage, 'releaseDate' => $withheldCandidate['releaseDate']];
                 }
             }
+
+            // the installed version is itself still in the cooldown period, e.g. the period was configured after
+            // installing it, so the older releases the selector fell back to are no update either
+            if ($installedIsWithheld && ($latest === null || version_compare($latest->getVersion(), $package->getVersion(), '<'))) {
+                $latest = $package;
+            }
         }
 
         return [
-            'latest' => $candidate !== false ? $candidate : null,
+            'latest' => $latest,
             'withheld' => $withheld,
         ];
     }
