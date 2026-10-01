@@ -1073,6 +1073,22 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         self::assertStringNotContainsString('[none matched]', $display);
     }
 
+    public function testShowingASinglePackageMentionsAReleaseStillInTheCooldownPeriod(): void
+    {
+        $this->initProjectWithCooldownPeriod('1.1.0');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'vendor/package', '--latest' => true]);
+        self::assertMatchesRegularExpression('{^latest   : 2\.0\.0 \(still in the cooldown period, \d+ days?(?: \d+ hours?)? left\)$}m', $appTester->getDisplay(true));
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'vendor/package', '--latest' => true, '--format' => 'json']);
+        $json = json_decode($appTester->getDisplay(true), true);
+        self::assertSame('2.0.0', $json['latest']);
+        self::assertSame('cooldown', $json['latest-status']);
+        self::assertArrayHasKey('cooldown-available-in', $json);
+    }
+
     /**
      * @param array<string, string> $versions version => published-time
      */
