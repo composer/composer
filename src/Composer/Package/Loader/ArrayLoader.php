@@ -240,8 +240,10 @@ class ArrayLoader implements LoaderInterface
             $package->setPhpExt($config['php-ext']);
         }
 
-        if (!empty($config['time'])) {
-            $time = Preg::isMatch('/^\d++$/D', $config['time']) ? '@'.$config['time'] : $config['time'];
+        // repositories may send timestamps as JSON numbers, which must not crash the loader
+        if (!empty($config['time']) && (is_int($config['time']) || is_string($config['time']))) {
+            $time = (string) $config['time'];
+            $time = Preg::isMatch('/^\d++$/D', $time) ? '@'.$time : $time;
 
             try {
                 $date = new \DateTime($time, new \DateTimeZone('UTC'));
@@ -253,7 +255,6 @@ class ArrayLoader implements LoaderInterface
         // Server-set publication timestamp, owned by the repository and not
         // overridable by the package author (unlike `time`). Preferred by the
         // cooldown policy when present
-        // repository-supplied, so a JSON number must not crash the loader
         if (isset($config['published-time']) && (is_int($config['published-time']) || (is_string($config['published-time']) && '' !== $config['published-time']))) {
             $publishedTime = (string) $config['published-time'];
             $publishedTime = Preg::isMatch('/^\d++$/D', $publishedTime) ? '@'.$publishedTime : $publishedTime;
