@@ -14,7 +14,7 @@ namespace Composer\Command;
 
 use Composer\Cache;
 use Composer\Composer;
-use Composer\Factory;
+use Composer\Config;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
@@ -27,7 +27,6 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Policy\CooldownPolicyConfig;
-use Composer\Policy\ListPolicyConfig;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -194,7 +193,6 @@ EOT
         }
 
         $platformReqFilter = $this->getPlatformRequirementFilter($input);
-        $cooldown = $input->getOption('latest') || $input->getOption('outdated') ? $this->getCooldownPolicyConfig($input) : null;
 
         // init repos
         $platformOverrides = [];
@@ -293,6 +291,11 @@ EOT
         if ($input->getOption('latest') && null === $composer) {
             $io->writeError('No composer.json found in the current directory, disabling "latest" option');
             $input->setOption('latest', false);
+        }
+
+        $cooldown = null;
+        if ($input->getOption('latest') && $composer !== null) {
+            $cooldown = $this->getCooldownPolicyConfig($composer->getConfig(), $input);
         }
 
         $packageFilter = $input->getArgument('package');
@@ -1679,12 +1682,8 @@ EOT
      * The cooldown policy to apply while looking up latest versions, so that the result matches what
      * update would install, or null when no cooldown period applies
      */
-    private function getCooldownPolicyConfig(InputInterface $input): ?CooldownPolicyConfig
+    private function getCooldownPolicyConfig(Config $config, InputInterface $input): ?CooldownPolicyConfig
     {
-        $composer = $this->tryComposer();
-        $config = $composer !== null ? $composer->getConfig() : Factory::createConfig($this->getIO());
-        $policyConfig = $this->createPolicyConfig($config, $input);
-
         $override = $input->getOption('cooldown-period');
         if ($override !== null) {
             try {
@@ -1692,16 +1691,14 @@ EOT
             } catch (\RuntimeException $e) {
                 throw new \InvalidArgumentException('Invalid --cooldown-period value "'.$override.'", use an integer number of seconds or a duration like "7 days".', 0, $e);
             }
-            $cooldown = new CooldownPolicyConfig(true, $policyConfig->cooldown->audit, $policyConfig->cooldown->ignore, $period);
+            // an explicit period simulates an enabled, blocking policy whatever the configuration says
+            $configured = $this->createPolicyConfig($config, $input)->cooldown;
+            $cooldown = new CooldownPolicyConfig(true, $configured->audit, $configured->ignore, $period);
 
             return $cooldown->hasCooldown() ? $cooldown : null;
         }
 
-        if ($policyConfig->enabled && $policyConfig->cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE)) {
-            return $policyConfig->cooldown;
-        }
-
-        return null;
+        return $this->getBlockingCooldownPolicy($config, $input);
     }
 
     private function getRepositorySet(Composer $composer): RepositorySet
