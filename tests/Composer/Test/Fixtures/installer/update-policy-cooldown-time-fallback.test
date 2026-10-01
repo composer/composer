@@ -1,5 +1,5 @@
 --TEST--
-Cooldown policy falls back to the package-supplied time when the repository provides no published-time, and says so.
+Cooldown policy falls back to the package-supplied time when a Composer repository exempted via require-published-time provides no published-time, and says so.
 --COMPOSER--
 {
     "name": "acme/project",
@@ -16,15 +16,9 @@ Cooldown policy falls back to the package-supplied time when the repository prov
     },
     "repositories": [
         {
-            "type": "package",
-            "package": [
-                {
-                    "name": "acme/library",
-                    "version": "1.1.0",
-                    "time": "2999-01-01T00:00:00+00:00",
-                    "source": { "reference": "1.1.0", "type": "git", "url": "" }
-                }
-            ]
+            "type": "composer",
+            "url": "file://update-policy-cooldown-composer-repo",
+            "require-published-time": false
         }
     ]
 }
@@ -36,7 +30,7 @@ update -v
 
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-<warning>The publication date of 1 package version(s) from package repo (defining 1 package) could not be verified, the cooldown policy relied on the time field set by the package authors (run with -vv to list them).</warning>
+<warning>The publication date of 1 package version(s) from composer repo (%s) could not be verified, the cooldown policy relied on the time field set by the package authors (run with -vv to list them).</warning>
 <warning>1 package version(s) withheld by the cooldown policy (run with -vv to list them).</warning>
 Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
