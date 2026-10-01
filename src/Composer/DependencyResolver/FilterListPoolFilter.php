@@ -105,7 +105,7 @@ class FilterListPoolFilter
         $lockedNameVersionMap = $checkLockedAgainstInstall ? $this->buildLockedNameVersionMap($request) : [];
 
         $packages = [];
-        $filterListRemovedVersions = [];
+        $policyRemovedVersions = $pool->getAllPolicyRemovedVersions();
         foreach ($pool->getPackages() as $package) {
             if (!self::isFilterable($package)) {
                 $packages[] = $package;
@@ -129,9 +129,7 @@ class FilterListPoolFilter
             }
 
             if (count($matchingEntries) > 0) {
-                foreach ($package->getNames(false) as $packageName) {
-                    $filterListRemovedVersions[$packageName][$package->getVersion()] = $matchingEntries;
-                }
+                Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::filterList($package->getName(), $package->getPrettyVersion(), $matchingEntries));
 
                 continue;
             }
@@ -139,7 +137,7 @@ class FilterListPoolFilter
             $packages[] = $package;
         }
 
-        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $pool->getAllRemovedVersions(), $pool->getAllRemovedVersionsByPackage(), $pool->getAllSecurityRemovedPackageVersions(), $pool->getAllAbandonedRemovedPackageVersions(), $filterListRemovedVersions);
+        return new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $pool->getAllRemovedVersions(), $pool->getAllRemovedVersionsByPackage(), $policyRemovedVersions);
     }
 
     /**

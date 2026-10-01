@@ -924,17 +924,18 @@ class PoolBuilder
             return;
         }
 
-        foreach ($pool->getAllCooldownRemovedPackageVersions() as $packageName => $versions) {
-            foreach ($versions as $info) {
+        foreach ($pool->getAllPolicyRemovedVersions() as $packageName => $versions) {
+            foreach ($versions as $reason) {
+                $info = $reason->getCooldownInfo();
                 // Withheld versions are also recorded under replaced names for problem reporting, list each package once
-                if ($info['name'] !== $packageName) {
+                if ($info === null || $reason->getPackageName() !== $packageName) {
                     continue;
                 }
 
                 $this->io->writeError(sprintf(
                     '  - %s (%s) published %s, available in %s',
                     $packageName,
-                    $info['prettyVersion'],
+                    $reason->getPrettyVersion(),
                     $info['releaseDate'],
                     $info['availableIn']
                 ));

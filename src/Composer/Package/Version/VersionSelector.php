@@ -25,6 +25,7 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Pcre\Preg;
 use Composer\Policy\CooldownPolicyConfig;
+use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
@@ -257,8 +258,15 @@ class VersionSelector
             $isLatestVersion = !isset($alreadySeenNames[$pkg->getName()]);
             $alreadySeenNames[$pkg->getName()] = true;
             if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
+                $reason = PolicyRemovalReason::cooldown(
+                    $pkg->getName(),
+                    $pkg->getPrettyVersion(),
+                    $releaseDate->format(\DateTimeInterface::ATOM),
+                    $cooldown->formatTimeUntilAvailable($releaseDate, $now),
+                    $target->getPublishedDate() !== null ? 'published-time' : 'time'
+                );
                 $io->writeError(
-                    '<warning>Cannot use '.$pkg->getPrettyName().($isLatestVersion ? "'s latest version" : '').' '.$pkg->getPrettyVersion().' as it is still in the cooldown period configured in "policy.cooldown" (available in '.$cooldown->formatTimeUntilAvailable($releaseDate, $now).').</>',
+                    '<warning>Cannot use '.$pkg->getPrettyName().($isLatestVersion ? "'s latest version" : '').' '.$pkg->getPrettyVersion().' as it '.$reason->getVerb(false).' '.$reason->getDescription().'.</>',
                     true,
                     $isLatestVersion ? IOInterface::NORMAL : IOInterface::VERBOSE
                 );

@@ -23,6 +23,7 @@ use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
 use Composer\Pcre\Preg;
@@ -456,7 +457,7 @@ EOT
                 throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
             }
             if ($cooldown !== null && false !== (new VersionSelector($repositorySet, $platformRepo))->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter)) {
-                throw new \InvalidArgumentException($errorMessage .' that is past the cooldown period configured in "policy.cooldown". To install it now, add the package to the "policy.cooldown.ignore" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.');
+                throw new \InvalidArgumentException($errorMessage .' that is past the cooldown period configured in "policy.cooldown". '.PolicyRemovalReason::COOLDOWN_REMEDY);
             }
 
             throw new \InvalidArgumentException($errorMessage .'.');

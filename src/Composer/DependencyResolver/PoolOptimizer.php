@@ -173,7 +173,7 @@ class PoolOptimizer
             }
         }
 
-        $optimizedPool = new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $removedVersions, $this->removedVersionsByPackage, $pool->getAllSecurityRemovedPackageVersions(), $pool->getAllAbandonedRemovedPackageVersions(), $pool->getAllFilterListRemovedPackageVersions(), $pool->getAllCooldownRemovedPackageVersions());
+        $optimizedPool = new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $removedVersions, $this->removedVersionsByPackage, $pool->getAllPolicyRemovedVersions());
 
         return $optimizedPool;
     }

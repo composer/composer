@@ -76,6 +76,6 @@ Your requirements could not be resolved to an installable set of packages.
     - Root composer.json requires acme/library ^1.0, found acme/library[1.0.0, 1.0.1] but these were not loaded, because:
       - 1.0.0: affected by security advisories ("PKSA-1234-abcd-1234")
       - 1.0.1: still in the cooldown period configured in "policy.cooldown" (available in %s)
-      Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To exempt the package from the cooldown policy, add it to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set "policy.advisories.block" or "policy.cooldown.block" to false.
+      Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To exempt the package from the cooldown policy, add it to the "policy.cooldown.ignore" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set "policy.advisories.block" or "policy.cooldown.block" to false.
 
 --EXPECT--

@@ -17,7 +17,6 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
-use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -186,8 +185,8 @@ class Solver
     protected function checkForFilterListRemovedLockedPackages(Request $request): void
     {
         foreach ($request->getLockedPackages() as $package) {
-            $constraint = new Constraint(Constraint::STR_OP_EQ, $package->getVersion());
-            if (!$this->pool->isFilterListRemovedPackageVersion($package->getName(), $constraint)) {
+            $reason = $this->pool->getPolicyRemovalReason($package->getName(), $package->getVersion());
+            if ($reason === null || $reason->getType() !== PolicyRemovalReason::FILTER_LIST) {
                 continue;
             }
 

@@ -62,7 +62,7 @@ class CooldownPoolFilter
         $this->unverifiedVersions = [];
 
         $packages = [];
-        $cooldownRemovedVersions = [];
+        $policyRemovedVersions = $pool->getAllPolicyRemovedVersions();
 
         foreach ($pool->getPackages() as $package) {
             // An alias shares the release date of the package it aliases but reports its own
@@ -108,15 +108,13 @@ class CooldownPoolFilter
             }
 
             // Package is too new - filter it out and track for error messages
-            foreach ($package->getNames(false) as $packageName) {
-                $cooldownRemovedVersions[$packageName][$package->getVersion()] = [
-                    'name' => $package->getName(),
-                    'prettyVersion' => $package->getPrettyVersion(),
-                    'releaseDate' => $releaseDate->format(DateTimeInterface::ATOM),
-                    'availableIn' => $this->config->formatTimeUntilAvailable($releaseDate, $this->now),
-                    'source' => $target->getPublishedDate() !== null ? 'published-time' : 'time',
-                ];
-            }
+            Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::cooldown(
+                $package->getName(),
+                $package->getPrettyVersion(),
+                $releaseDate->format(DateTimeInterface::ATOM),
+                $this->config->formatTimeUntilAvailable($releaseDate, $this->now),
+                $target->getPublishedDate() !== null ? 'published-time' : 'time'
+            ));
         }
 
         return new Pool(
@@ -124,10 +122,7 @@ class CooldownPoolFilter
             $pool->getUnacceptableFixedOrLockedPackages(),
             $pool->getAllRemovedVersions(),
             $pool->getAllRemovedVersionsByPackage(),
-            $pool->getAllSecurityRemovedPackageVersions(),
-            $pool->getAllAbandonedRemovedPackageVersions(),
-            $pool->getAllFilterListRemovedPackageVersions(),
-            $cooldownRemovedVersions
+            $policyRemovedVersions
         );
     }
 
