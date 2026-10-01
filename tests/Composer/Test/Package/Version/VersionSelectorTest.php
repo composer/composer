@@ -488,6 +488,25 @@ class VersionSelectorTest extends TestCase
         self::assertSame($new, $versionSelector->findBestCandidate('foo/bar'));
     }
 
+    public function testEveryWithheldCandidateIsReported(): void
+    {
+        $old = self::getPackage('foo/bar', '1.2.1');
+        $old->setPublishedDate(new \DateTimeImmutable('-30 days'));
+        $recent = self::getPackage('foo/bar', '1.2.2');
+        $recent->setPublishedDate(new \DateTimeImmutable('-2 days'));
+        $newest = self::getPackage('foo/bar', '1.3.0');
+        $newest->setPublishedDate(new \DateTimeImmutable('-1 day'));
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->method('findPackages')->will($this->returnValue([$old, $recent, $newest]));
+
+        $versionSelector = new VersionSelector($repositorySet, null, self::cooldown(7 * 24 * 3600));
+
+        self::assertSame($old, $versionSelector->findBestCandidate('foo/bar'));
+        self::assertSame([$newest, $recent], array_column($versionSelector->getWithheldCandidates(), 'package'));
+        self::assertSame($recent, $versionSelector->getFirstClearingWithheldCandidate()['package'] ?? null);
+    }
+
     /**
      * @param array<string, list<IgnorePackageRule>> $ignore
      */

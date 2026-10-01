@@ -514,7 +514,6 @@ EOT
                     if (
                         $found['withheld'] !== null
                         && ($found['latest'] === null || $found['latest']->getFullPrettyVersion() === $package->getFullPrettyVersion())
-                        && version_compare($found['withheld']['package']->getVersion(), $package->getVersion(), '>')
                     ) {
                         $withheldPackages[$package->getPrettyName()] = $found['withheld'];
                     }
@@ -1621,9 +1620,27 @@ EOT
             $candidate = $candidate->getAliasOf();
         }
 
+        // the first release to clear the cooldown period among those newer than the installed version,
+        // a withheld backport to an older branch is no update
+        $withheld = null;
+        if ($cooldown !== null && !str_starts_with($package->getVersion(), 'dev-')) {
+            foreach ($versionSelector->getWithheldCandidates() as $withheldCandidate) {
+                $withheldPackage = $withheldCandidate['package'];
+                while ($withheldPackage instanceof AliasPackage) {
+                    $withheldPackage = $withheldPackage->getAliasOf();
+                }
+                if (!version_compare($withheldPackage->getVersion(), $package->getVersion(), '>')) {
+                    continue;
+                }
+                if ($withheld === null || $withheldCandidate['releaseDate'] < $withheld['releaseDate']) {
+                    $withheld = ['package' => $withheldPackage, 'releaseDate' => $withheldCandidate['releaseDate']];
+                }
+            }
+        }
+
         return [
             'latest' => $candidate !== false ? $candidate : null,
-            'withheld' => $cooldown !== null ? $versionSelector->getFirstClearingWithheldCandidate() : null,
+            'withheld' => $withheld,
         ];
     }
 
