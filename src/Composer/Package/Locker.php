@@ -498,15 +498,19 @@ class Locker
             $spec = $this->dumper->dump($package);
             unset($spec['version_normalized']);
 
-            // always move time to the end of the package definition
+            // always move time and published-time to the end of the package definition
             $time = $spec['time'] ?? null;
-            unset($spec['time']);
+            $publishedTime = $spec['published-time'] ?? null;
+            unset($spec['time'], $spec['published-time']);
             if ($package->isDev() && $package->getInstallationSource() === 'source') {
                 // use the exact commit time of the current reference if it's a dev package
                 $time = $this->getPackageTime($package) ?: $time;
             }
             if (null !== $time) {
                 $spec['time'] = $time;
+            }
+            if (null !== $publishedTime) {
+                $spec['published-time'] = $publishedTime;
             }
 
             unset($spec['installation-source']);

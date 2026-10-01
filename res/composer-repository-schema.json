@@ -194,7 +194,11 @@
                 "replace": { "type": "object" },
                 "conflict": { "type": "object" },
                 "provide": { "type": "object" },
-                "time": { "type": "string" }
+                "time": { "type": "string" },
+                "published-time": {
+                    "type": "string",
+                    "description": "Repository-set publication timestamp (UTC, ISO 8601 / RFC 3339). Unlike 'time' this is owned by the repository and not influenced by the package author; it is preferred by the cooldown policy when present."
+                }
             },
             "additionalProperties": true
         },

@@ -692,6 +692,39 @@
                                 }
                             ]
                         },
+                        "cooldown": {
+                            "oneOf": [
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "object",
+                                    "description": "Configuration for the cooldown policy, which withholds package versions published more recently than the configured period during update/require.",
+                                    "properties": {
+                                        "period": {
+                                            "description": "Cooldown duration as a string in the form \"<number> <unit>\" where unit is second, minute, hour, day or week (e.g. \"7 days\", \"24 hours\", \"30 minutes\", \"1 week\"), an integer number of seconds, or null to disable. Relative phrases like \"tomorrow\" are not accepted. Defaults to null (no cooldown).",
+                                            "anyOf": [
+                                                { "type": "string", "pattern": "^\\s*(\\d+\\s*(second|minute|hour|day|week)s?|\\d+)?\\s*$" },
+                                                { "type": "integer", "minimum": 0 },
+                                                { "type": "null" }
+                                            ]
+                                        },
+                                        "block": {
+                                            "type": "boolean",
+                                            "description": "When true, versions still in the cooldown period cannot be installed during update/require. Defaults to true (only takes effect once a period is set).",
+                                            "default": true
+                                        },
+                                        "audit": {
+                                            "enum": ["ignore", "report", "fail"],
+                                            "description": "How composer audit treats versions still in the cooldown period. Defaults to ignore.",
+                                            "default": "ignore"
+                                        },
+                                        "ignore": { "$ref": "#/definitions/policy-ignore" }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            ]
+                        },
                         "ignore-unreachable": {
                             "description": "Controls for which operations unreachable repositories and policy sources are silently ignored. Defaults to [\"update\", \"install\"]. Set to true to ignore for all operations, false for none.",
                             "oneOf": [
@@ -1310,6 +1343,7 @@
                     "additionalProperties": true
                 },
                 "allow_ssl_downgrade": { "type": "boolean" },
+                "require-published-time": { "type": "boolean", "description": "When the cooldown policy is active, refuse versions from this repository that carry no published-time. Defaults to true; set to false to fall back to the package-supplied time field." },
                 "force-lazy-providers": { "type": "boolean" },
                 "filter": {
                     "type": ["boolean", "object"],

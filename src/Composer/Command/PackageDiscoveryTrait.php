@@ -22,6 +22,8 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
+use Composer\Policy\CooldownPolicyConfig;
+use Composer\Policy\ListPolicyConfig;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
@@ -283,6 +285,22 @@ trait PackageDiscoveryTrait
     }
 
     /**
+     * The cooldown to apply while picking a version, or null when it would not block the resulting update
+     */
+    private function getCooldownPolicyConfig(InputInterface $input): ?CooldownPolicyConfig
+    {
+        $composer = $this->tryComposer();
+        $config = $composer !== null ? $composer->getConfig() : Factory::createConfig($this->getIO());
+        $policyConfig = $this->createPolicyConfig($config, $input);
+
+        if ($policyConfig->enabled && $policyConfig->cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE)) {
+            return $policyConfig->cooldown;
+        }
+
+        return null;
+    }
+
+    /**
      * Given a package name, this determines the best version to use in the require key.
      *
      * This returns a version with the ~ operator prefixed when possible.
@@ -301,7 +319,8 @@ trait PackageDiscoveryTrait
 
         // find the latest version allowed in this repo set
         $repoSet = $this->getRepositorySet($input);
-        $versionSelector = new VersionSelector($repoSet, $platformRepo);
+        $cooldown = $this->getCooldownPolicyConfig($input);
+        $versionSelector = new VersionSelector($repoSet, $platformRepo, $cooldown);
         $effectiveMinimumStability = $this->getMinimumStability($input);
 
         $package = $versionSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, 0, $this->getIO());
@@ -329,17 +348,32 @@ trait PackageDiscoveryTrait
                 return [$name, $constraint];
             }
 
+            // The diagnostics below ask what would match with a constraint relaxed, which the cooldown must not hide
+            $unfilteredSelector = new VersionSelector($repoSet, $platformRepo);
+
+            // Check whether the cooldown withheld every version
+            if ($cooldown !== null && false !== $unfilteredSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter)) {
+                $withheld = $versionSelector->getFirstClearingWithheldCandidate();
+                $wait = $withheld !== null ? ' (version '.$withheld['package']->getPrettyVersion().' becomes available in '.$cooldown->formatTimeUntilAvailable($withheld['releaseDate'], new \DateTimeImmutable()).')' : '';
+
+                throw new \InvalidArgumentException(sprintf(
+                    'All versions of package %s are still in the cooldown period configured in "policy.cooldown"%s. To install one now, add the package to the "policy.cooldown.ignore" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.',
+                    $name,
+                    $wait
+                ));
+            }
+
             // Check whether the package requirements were the problem
-            if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && false !== ($candidate = $versionSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll()))) {
+            if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && false !== ($candidate = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll()))) {
                 throw new \InvalidArgumentException(sprintf(
                     'Package %s has requirements incompatible with your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
                     $name
                 ));
             }
             // Check whether the minimum stability was the problem but the package exists
-            if (false !== ($package = $versionSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
+            if (false !== ($package = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
                 // we must first verify if a valid package would be found in a lower priority repository
-                if (false !== ($allReposPackage = $versionSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_SHADOWED_REPOSITORIES))) {
+                if (false !== ($allReposPackage = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_SHADOWED_REPOSITORIES))) {
                     throw new \InvalidArgumentException(
                         'Package '.$name.' exists in '.$allReposPackage->getRepository()->getRepoName().' and '.$package->getRepository()->getRepoName().' which has a higher repository priority. The packages from the higher priority repository do not match your minimum-stability and are therefore not installable. That repository is canonical so the lower priority repo\'s packages are not installable. See https://getcomposer.org/repoprio for details and assistance.'
                     );
@@ -352,9 +386,9 @@ trait PackageDiscoveryTrait
                 ));
             }
             // Check whether the PHP version was the problem for all versions
-            if (!$platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter && false !== ($candidate = $versionSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll(), RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
+            if (!$platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter && false !== ($candidate = $unfilteredSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll(), RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
                 $additional = '';
-                if (false === $versionSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll())) {
+                if (false === $unfilteredSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilterFactory::ignoreAll())) {
                     $additional = PHP_EOL.PHP_EOL.'Additionally, the package was only found with a stability of "'.$candidate->getStability().'" while your minimum stability is "'.$effectiveMinimumStability.'".';
                 }
 

@@ -62,7 +62,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     /**
      * @var mixed[]
-     * @phpstan-var array{url: string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool}
+     * @phpstan-var array{url: string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool, 'require-published-time'?: bool}
      */
     private $repoConfig;
     /** @var mixed[] */
@@ -105,6 +105,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $loader;
     /** @var bool */
     private $allowSslDowngrade = false;
+    /** @var bool */
+    private $requirePublishedTime = true;
     /** @var ?EventDispatcher */
     private $eventDispatcher;
     /** @var ?array<string, list<array{url: non-empty-string, preferred: bool}>> */
@@ -165,7 +167,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     /**
      * @param array<string, mixed> $repoConfig
-     * @phpstan-param array{url: non-empty-string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool} $repoConfig
+     * @phpstan-param array{url: non-empty-string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool, 'require-published-time'?: bool} $repoConfig
      */
     public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, ?EventDispatcher $eventDispatcher = null)
     {
@@ -198,6 +200,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
         if (isset($repoConfig['allow_ssl_downgrade']) && true === $repoConfig['allow_ssl_downgrade']) {
             $this->allowSslDowngrade = true;
+        }
+        if (isset($repoConfig['require-published-time']) && false === $repoConfig['require-published-time']) {
+            $this->requirePublishedTime = false;
         }
 
         $this->options = $repoConfig['options'];
@@ -258,6 +263,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         return $parsed;
+    }
+
+    /**
+     * Whether the cooldown policy must refuse versions from this repository that carry no published-time
+     */
+    public function requiresPublishedTime(): bool
+    {
+        return $this->requirePublishedTime;
     }
 
     public function getRepoName()

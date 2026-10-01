@@ -1,0 +1,123 @@
+--TEST--
+Partial update keeps a locked package that is not part of the update allow list even though its locked version is still inside the cooldown window.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/library": "^1.0",
+        "acme/other": "^1.0"
+    },
+    "config": {
+        "policy": {
+            "cooldown": {
+                "period": "1 week"
+            }
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "acme/library",
+                    "version": "1.0.0",
+                    "published-time": "2020-01-01T00:00:00+00:00",
+                    "source": { "reference": "1.0.0", "type": "git", "url": "" }
+                },
+                {
+                    "name": "acme/library",
+                    "version": "1.1.0",
+                    "published-time": "2999-01-01T00:00:00+00:00",
+                    "source": { "reference": "1.1.0", "type": "git", "url": "" }
+                },
+                {
+                    "name": "acme/other",
+                    "version": "1.0.0",
+                    "published-time": "2020-01-01T00:00:00+00:00",
+                    "source": { "reference": "1.0.0", "type": "git", "url": "" }
+                },
+                {
+                    "name": "acme/other",
+                    "version": "1.1.0",
+                    "published-time": "2020-02-01T00:00:00+00:00",
+                    "source": { "reference": "1.1.0", "type": "git", "url": "" }
+                }
+            ]
+        }
+    ]
+}
+--INSTALLED--
+[
+    {
+        "name": "acme/library",
+        "version": "1.1.0",
+        "published-time": "2999-01-01T00:00:00+00:00",
+        "source": { "reference": "1.1.0", "type": "git", "url": "" }
+    },
+    {
+        "name": "acme/other",
+        "version": "1.0.0",
+        "published-time": "2020-01-01T00:00:00+00:00",
+        "source": { "reference": "1.0.0", "type": "git", "url": "" }
+    }
+]
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "acme/library",
+            "version": "1.1.0",
+            "published-time": "2999-01-01T00:00:00+00:00",
+            "source": { "reference": "1.1.0", "type": "git", "url": "" },
+            "type": "library"
+        },
+        {
+            "name": "acme/other",
+            "version": "1.0.0",
+            "published-time": "2020-01-01T00:00:00+00:00",
+            "source": { "reference": "1.0.0", "type": "git", "url": "" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--RUN--
+update acme/other
+
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "acme/library",
+            "version": "1.1.0",
+            "published-time": "2999-01-01T00:00:00+00:00",
+            "source": { "reference": "1.1.0", "type": "git", "url": "" },
+            "type": "library"
+        },
+        {
+            "name": "acme/other",
+            "version": "1.1.0",
+            "source": { "reference": "1.1.0", "type": "git", "url": "" },
+            "type": "library",
+            "published-time": "2020-02-01T00:00:00+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--EXPECT--
+Upgrading acme/other (1.0.0 => 1.1.0)

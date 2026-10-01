@@ -41,6 +41,9 @@ class PolicyConfig
     /** @var ListPolicyConfig */
     public $abandoned;
 
+    /** @var CooldownPolicyConfig */
+    public $cooldown;
+
     /** @var array<string, CustomListPolicyConfig> Custom named lists */
     public $customLists;
 
@@ -53,12 +56,14 @@ class PolicyConfig
     public const RESERVED_NAMES = [
         AdvisoriesPolicyConfig::NAME,
         AbandonedPolicyConfig::NAME,
+        CooldownPolicyConfig::NAME,
     ];
 
     public const BUILTIN_LIST_NAMES = [
         AdvisoriesPolicyConfig::NAME,
         AbandonedPolicyConfig::NAME,
         MalwarePolicyConfig::NAME,
+        CooldownPolicyConfig::NAME,
     ];
 
     /**
@@ -90,6 +95,7 @@ class PolicyConfig
         AdvisoriesPolicyConfig $advisories,
         MalwarePolicyConfig $malware,
         ListPolicyConfig $abandoned,
+        CooldownPolicyConfig $cooldown,
         array $customLists,
         IgnoreUnreachable $ignoreUnreachable
     ) {
@@ -97,6 +103,7 @@ class PolicyConfig
         $this->advisories = $advisories;
         $this->malware = $malware;
         $this->abandoned = $abandoned;
+        $this->cooldown = $cooldown;
         $this->customLists = $customLists;
         $this->ignoreUnreachable = $ignoreUnreachable;
     }
@@ -157,12 +164,14 @@ class PolicyConfig
         $auditRaw = $config->get('audit');
         $parser = new VersionParser();
 
+        // The global kill switch wins over COMPOSER_POLICY_COOLDOWN_PERIOD, so it can be set globally in CI
         if ($policyRaw === false) {
             return new self(
                 false,
                 AdvisoriesPolicyConfig::disabled(),
                 MalwarePolicyConfig::disabled(),
                 AbandonedPolicyConfig::disabled(),
+                CooldownPolicyConfig::disabled(),
                 [],
                 IgnoreUnreachable::all()
             );
@@ -174,6 +183,7 @@ class PolicyConfig
         $advisories = AdvisoriesPolicyConfig::fromRawConfig($policyConfig, $auditConfig, $parser);
         $malware = MalwarePolicyConfig::fromRawConfig($policyConfig, $parser);
         $abandoned = AbandonedPolicyConfig::fromRawConfig($policyConfig, $auditConfig, $parser);
+        $cooldown = CooldownPolicyConfig::fromRawConfig($policyConfig, $parser);
 
         $customLists = [];
         foreach ($policyConfig as $listName => $listConfig) {
@@ -242,11 +252,22 @@ class PolicyConfig
             );
         }
 
+        $cooldownBlockOverride = Platform::getBoolEnv('COMPOSER_POLICY_COOLDOWN_BLOCK');
+        if (null !== $cooldownBlockOverride) {
+            $cooldown = new CooldownPolicyConfig(
+                $cooldownBlockOverride,
+                $cooldown->audit,
+                $cooldown->ignore,
+                $cooldown->period
+            );
+        }
+
         return new self(
             true,
             $advisories,
             $malware,
             $abandoned,
+            $cooldown,
             $customLists,
             $ignoreUnreachable
         );
@@ -263,6 +284,7 @@ class PolicyConfig
             'advisories' => $this->advisories,
             'malware' => $this->malware,
             'abandoned' => $this->abandoned,
+            'cooldown' => $this->cooldown,
         ], $this->customLists);
     }
 
@@ -327,7 +349,10 @@ class PolicyConfig
     private function filterableLists(): array
     {
         $allLists = $this->getAllLists();
-        unset($allLists['abandoned'], $allLists['advisories']);
+        // `advisories` and `abandoned` are surfaced via SecurityAdvisoryPoolFilter;
+        // `cooldown` has its own dedicated CooldownPoolFilter (it is time-based and
+        // has no URL sources to fetch), so it is likewise excluded here.
+        unset($allLists['abandoned'], $allLists['advisories'], $allLists['cooldown']);
 
         return $allLists;
     }
@@ -359,6 +384,7 @@ class PolicyConfig
             $this->advisories->withBlockingDisabled(),
             $this->malware->withBlockingDisabled(),
             $this->abandoned->withBlockingDisabled(),
+            $this->cooldown->withBlockingDisabled(),
             $customLists,
             $this->ignoreUnreachable
         );
@@ -376,6 +402,7 @@ class PolicyConfig
             $this->advisories,
             $this->malware,
             $this->abandoned,
+            $this->cooldown,
             $this->customLists,
             $this->ignoreUnreachable->with(...$scopes)
         );
@@ -391,6 +418,7 @@ class PolicyConfig
             $this->advisories->withIgnoreSeverity($severities),
             $this->malware,
             $this->abandoned,
+            $this->cooldown,
             $this->customLists,
             $this->ignoreUnreachable
         );
@@ -409,6 +437,7 @@ class PolicyConfig
             $this->advisories,
             $this->malware,
             $this->abandoned->withAudit($abandoned !== null ? $abandoned : $this->abandoned->audit),
+            $this->cooldown,
             $this->customLists,
             $this->ignoreUnreachable
         );

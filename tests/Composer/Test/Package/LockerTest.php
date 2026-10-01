@@ -267,4 +267,30 @@ class LockerTest extends TestCase
 
         return JsonFile::encode($data, 0);
     }
+
+    public function testSetLockDataMovesTimestampsToTheEnd(): void
+    {
+        $json = $this->createJsonFileMock();
+        $inst = $this->createInstallationManagerMock();
+
+        $locker = new Locker(new NullIO, $json, $inst, $this->getJsonContent());
+
+        $package = self::getPackage('pkg1', '1.0.0');
+        $package->setReleaseDate(new \DateTimeImmutable('2026-01-01T00:00:00+00:00'));
+        $package->setPublishedDate(new \DateTimeImmutable('2026-01-02T00:00:00+00:00'));
+
+        $written = null;
+        $json
+            ->expects($this->once())
+            ->method('write')
+            ->willReturnCallback(static function (array $data) use (&$written): void {
+                $written = $data;
+            });
+
+        $locker->setLockData([$package], [], [], [], [], 'dev', [], false, false, []);
+
+        self::assertNotNull($written);
+        self::assertSame(['name', 'version', 'type', 'time', 'published-time'], array_keys($written['packages'][0]));
+        self::assertSame('2026-01-02T00:00:00+00:00', $written['packages'][0]['published-time']);
+    }
 }

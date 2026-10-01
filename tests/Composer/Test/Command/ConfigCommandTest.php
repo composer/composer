@@ -242,6 +242,31 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.abandoned.audit', 'setting-value' => ['fail']],
             ['config' => ['policy' => ['abandoned' => ['audit' => 'fail']]]],
         ];
+        yield 'set policy.cooldown.period duration string' => [
+            [],
+            ['setting-key' => 'policy.cooldown.period', 'setting-value' => ['7 days']],
+            ['config' => ['policy' => ['cooldown' => ['period' => '7 days']]]],
+        ];
+        yield 'set policy.cooldown.period integer seconds' => [
+            [],
+            ['setting-key' => 'policy.cooldown.period', 'setting-value' => ['604800']],
+            ['config' => ['policy' => ['cooldown' => ['period' => 604800]]]],
+        ];
+        yield 'set policy.cooldown.period normalizes case and whitespace' => [
+            [],
+            ['setting-key' => 'policy.cooldown.period', 'setting-value' => [' 7 DAYS ']],
+            ['config' => ['policy' => ['cooldown' => ['period' => '7 days']]]],
+        ];
+        yield 'set policy.cooldown.period null disables' => [
+            [],
+            ['setting-key' => 'policy.cooldown.period', 'setting-value' => ['null']],
+            ['config' => ['policy' => ['cooldown' => ['period' => null]]]],
+        ];
+        yield 'set policy.cooldown.block false' => [
+            [],
+            ['setting-key' => 'policy.cooldown.block', 'setting-value' => ['false']],
+            ['config' => ['policy' => ['cooldown' => ['block' => false]]]],
+        ];
         yield 'set policy.ignore-unreachable bool true' => [
             [],
             ['setting-key' => 'policy.ignore-unreachable', 'setting-value' => ['true']],
