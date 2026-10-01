@@ -380,12 +380,18 @@ class Problem
                 }
             }
 
+            // When several policies removed different versions, one sentence would attribute every reason to
+            // every version, so list the versions with their own reason instead
+            $policyReasons = self::getPolicyRemovalReasons($pool, $packageName, $packages);
+            if (\count($policyReasons) > 1) {
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because:'.self::formatPolicyRemovalReasons($policyReasons)];
+            }
+
             if ($pool->isAbandonedRemovedPackageVersion($packageName, $constraint)) {
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are abandoned and you configured "policy.abandoned.block" to true.'];
             }
 
             if ($pool->isSecurityRemovedPackageVersion($packageName, $constraint)) {
-                [$packages, $cooldownHint] = self::splitOffCooldownWithheld($pool, $packages, $packageName, $constraint);
                 $advisories = $repositorySet->getMatchingSecurityAdvisories($packages, false, true);
                 if (isset($advisories['advisories'][$packageName]) && \count($advisories['advisories'][$packageName]) > 0) {
                     $advisoriesList = array_map(static function (SecurityAdvisory $advisory): string {
@@ -404,32 +410,15 @@ class Problem
                     }, $advisories['advisories'][$packageName]);
                 } else {
                     $advisoryIds = $pool->getSecurityAdvisoryIdentifiersForPackageVersion($packageName, $constraint);
-                    $advisoriesList = array_map(static function (string $advisoryId): string {
-                        if (str_starts_with($advisoryId, 'PKSA-')) {
-                            return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisoryId).'>'.$advisoryId.'</>';
-                        }
-
-                        return $advisoryId;
-                    }, $advisoryIds);
+                    $advisoriesList = self::formatAdvisoryIdentifiers($advisoryIds);
                 }
 
-                $hasPackagistAdvisories = true;
-                foreach ($advisoryIds as $advisoryId) {
-                    if (!str_starts_with($advisoryId, 'PKSA-')) {
-                        $hasPackagistAdvisories = false;
-                        break;
-                    }
-                }
+                $advisoryDetailsHint = self::getAdvisoryDetailsHint($advisoryIds);
 
-                $advisoryDetailsHint = $hasPackagistAdvisories
-                    ? ' Go to https://packagist.org/security-advisories/ to find advisory details.'
-                    : ' Review the advisory details above for more information.';
-
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are affected by security advisories ("' . implode('", "', $advisoriesList). '").'.$advisoryDetailsHint.' To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To turn the feature off entirely, you can set "policy.advisories.block" to false.'.$cooldownHint];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are affected by security advisories ("' . implode('", "', $advisoriesList). '").'.$advisoryDetailsHint.' To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To turn the feature off entirely, you can set "policy.advisories.block" to false.'];
             }
 
             if ($pool->isFilterListRemovedPackageVersion($packageName, $constraint)) {
-                [$packages, $cooldownHint] = self::splitOffCooldownWithheld($pool, $packages, $packageName, $constraint);
                 $filters = $pool->getFilterListEntryForPackageVersion($packageName, $constraint);
                 $ignorePaths = implode(' and ', array_map(static function (string $listName): string {
                     return '"policy.' . $listName . '.ignore"';
@@ -439,7 +428,7 @@ class Problem
                     return '"policy.' . $listName . '.block"';
                 }, array_keys($filters)));
 
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the ' . $ignorePaths . ' config. To turn the feature off entirely, you can set ' . $offPaths . ' to false.'.$cooldownHint];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they were ' . implode(', ', $filters). '. To ignore filters for this package, add the package to the ' . $ignorePaths . ' config. To turn the feature off entirely, you can set ' . $offPaths . ' to false.'];
             }
 
             if ($pool->isCooldownRemovedPackageVersion($packageName, $constraint)) {
@@ -779,51 +768,114 @@ class Problem
     }
 
     /**
-     * Removes the versions the cooldown policy withheld from a list another policy is about to explain,
-     * so that explanation only names the versions it removed itself, and builds the hint for the rest
+     * Groups the versions that dependency policies removed from the pool by their reason, in version
+     * order, so that versions removed for different reasons can each be explained
      *
      * @param  BasePackage[] $packages
-     * @return array{BasePackage[], string}
+     * @return array<string, array{versions: list<string>, remedy: string, off: string}> reason text => details
      */
-    private static function splitOffCooldownWithheld(Pool $pool, array $packages, string $packageName, ?ConstraintInterface $constraint): array
+    private static function getPolicyRemovalReasons(Pool $pool, string $packageName, array $packages): array
     {
-        if ($constraint === null || !$pool->isCooldownRemovedPackageVersion($packageName, $constraint)) {
-            return [$packages, ''];
-        }
-
-        $remaining = array_values(array_filter($packages, static function (BasePackage $package) use ($pool): bool {
-            return !$pool->isCooldownRemovedPackageVersion($package->getName(), new Constraint('==', $package->getVersion()));
+        $packages = array_values(array_filter($packages, static function (BasePackage $package): bool {
+            return !$package instanceof AliasPackage;
         }));
+        usort($packages, static function (BasePackage $a, BasePackage $b): int {
+            return version_compare($a->getVersion(), $b->getVersion());
+        });
 
-        return [\count($remaining) > 0 ? $remaining : $packages, self::getCooldownWithheldHint($pool, $packageName, $constraint)];
-    }
+        $reasons = [];
+        foreach ($packages as $package) {
+            $version = new Constraint('==', $package->getVersion());
+            if ($pool->isAbandonedRemovedPackageVersion($packageName, $version)) {
+                $reason = 'abandoned';
+                $remedy = '';
+                $off = '"policy.abandoned.block"';
+            } elseif ($pool->isSecurityRemovedPackageVersion($packageName, $version)) {
+                $advisoryIds = $pool->getSecurityAdvisoryIdentifiersForPackageVersion($packageName, $version);
+                $reason = 'affected by security advisories ("' . implode('", "', self::formatAdvisoryIdentifiers($advisoryIds)) . '")';
+                $remedy = trim(self::getAdvisoryDetailsHint($advisoryIds)) . ' To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore".';
+                $off = '"policy.advisories.block"';
+            } elseif ($pool->isFilterListRemovedPackageVersion($packageName, $version)) {
+                $filters = $pool->getFilterListEntryForPackageVersion($packageName, $version);
+                $reason = implode(', ', $filters);
+                $remedy = 'To ignore filters for this package, add the package to the ' . implode(' and ', array_map(static function (string $listName): string {
+                    return '"policy.' . $listName . '.ignore"';
+                }, array_keys($filters))) . ' config.';
+                $off = implode(' and ', array_map(static function (string $listName): string {
+                    return '"policy.' . $listName . '.block"';
+                }, array_keys($filters)));
+            } elseif ($pool->isCooldownRemovedPackageVersion($packageName, $version)) {
+                $cooldownInfo = $pool->getCooldownInfoForPackageVersion($packageName, $version);
+                $availableIn = '';
+                if ($cooldownInfo !== null) {
+                    $source = $cooldownInfo['source'] === 'time' ? ', based on the package-supplied time field as the repository provides no published-time' : '';
+                    $availableIn = ' (available in ' . $cooldownInfo['availableIn'] . $source . ')';
+                }
+                $reason = 'still in the cooldown period configured in "policy.cooldown"' . $availableIn;
+                $remedy = 'To exempt the package from the cooldown policy, add it to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.';
+                $off = '"policy.cooldown.block"';
+            } else {
+                continue;
+            }
 
-    /**
-     * Points at versions the cooldown policy withheld when another policy explains the failure, so
-     * users learn that a fix exists and how to get it without waiting for the period to end
-     */
-    private static function getCooldownWithheldHint(Pool $pool, string $packageName, ?ConstraintInterface $constraint): string
-    {
-        if ($constraint === null) {
-            return '';
-        }
-
-        $info = $pool->getCooldownInfoForPackageVersion($packageName, $constraint);
-        if ($info === null) {
-            return '';
-        }
-
-        $withheld = [];
-        foreach ($pool->getAllCooldownRemovedPackageVersions()[$packageName] ?? [] as $version => $versionInfo) {
-            if ($constraint->matches(new Constraint('==', $version))) {
-                $withheld[] = $versionInfo['prettyVersion'];
+            if (!isset($reasons[$reason])) {
+                $reasons[$reason] = ['versions' => [], 'remedy' => $remedy, 'off' => $off];
+            }
+            if (!in_array($package->getPrettyVersion(), $reasons[$reason]['versions'], true)) {
+                $reasons[$reason]['versions'][] = $package->getPrettyVersion();
             }
         }
 
-        if (\count($withheld) === 1) {
-            return ' Version '.$withheld[0].' also matches the constraint but is still in the cooldown period configured in "policy.cooldown" (available in '.$info['availableIn'].'). To install it now, add the package to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.';
+        return $reasons;
+    }
+
+    /**
+     * @param array<string, array{versions: list<string>, remedy: string, off: string}> $reasons
+     */
+    private static function formatPolicyRemovalReasons(array $reasons): string
+    {
+        $lines = [];
+        $remedies = [];
+        $offSwitches = [];
+        foreach ($reasons as $reason => $details) {
+            $lines[] = implode(', ', $details['versions']) . ': ' . $reason;
+            if ($details['remedy'] !== '') {
+                $remedies[$details['remedy']] = true;
+            }
+            $offSwitches[$details['off']] = true;
         }
 
-        return ' Versions '.implode(', ', $withheld).' also match the constraint but are still in the cooldown period configured in "policy.cooldown" (the earliest becomes available in '.$info['availableIn'].'). To install one of them now, add the package to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.';
+        $remedies['To turn a policy off entirely, you can set ' . implode(' or ', array_keys($offSwitches)) . ' to false.'] = true;
+
+        return "\n      - " . implode("\n      - ", $lines) . "\n      " . implode(' ', array_keys($remedies));
+    }
+
+    /**
+     * @param  string[] $advisoryIds
+     * @return string[] identifiers linked to their advisory page where one is known
+     */
+    private static function formatAdvisoryIdentifiers(array $advisoryIds): array
+    {
+        return array_map(static function (string $advisoryId): string {
+            if (str_starts_with($advisoryId, 'PKSA-')) {
+                return '<href='.OutputFormatter::escape('https://packagist.org/security-advisories/'.$advisoryId).'>'.$advisoryId.'</>';
+            }
+
+            return $advisoryId;
+        }, $advisoryIds);
+    }
+
+    /**
+     * @param string[] $advisoryIds
+     */
+    private static function getAdvisoryDetailsHint(array $advisoryIds): string
+    {
+        foreach ($advisoryIds as $advisoryId) {
+            if (!str_starts_with($advisoryId, 'PKSA-')) {
+                return ' Review the advisory details above for more information.';
+            }
+        }
+
+        return ' Go to https://packagist.org/security-advisories/ to find advisory details.';
     }
 }

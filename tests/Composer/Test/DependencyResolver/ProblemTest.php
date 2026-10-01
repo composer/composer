@@ -193,13 +193,60 @@ class ProblemTest extends TestCase
             $constraint
         ));
 
-        // only the vulnerable version is listed as blocked by the advisory
-        self::assertStringContainsString('found vendor/pkg[1.0.0] but', $message);
-        self::assertStringNotContainsString('[1.0.0, 1.0.1]', $message);
-        self::assertStringContainsString('affected by security advisories', $message);
+        // each version gets its own line with the policy that removed it, and the remedies follow once
+        self::assertStringContainsString("found vendor/pkg[1.0.0, 1.0.1] but these were not loaded, because:\n      - 1.0.0: affected by security advisories (\"", $message);
         self::assertStringContainsString('PKSA-1234-abcd-1234', $message);
-        self::assertStringContainsString('Version 1.0.1 also matches the constraint but is still in the cooldown period configured in "policy.cooldown" (available in 5 days).', $message);
-        self::assertStringContainsString('"policy.cooldown.ignore"', $message);
-        self::assertStringContainsString('COMPOSER_POLICY_COOLDOWN_PERIOD=0', $message);
+        self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days)\n      Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the \"policy.advisories.ignore-id\" config or add the package to \"policy.advisories.ignore\". To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set \"policy.advisories.block\" or \"policy.cooldown.block\" to false.", $message);
+    }
+
+    public function testGetMissingPackageReasonListsFilterListAndCooldownRemovalsSeparately(): void
+    {
+        $flagged = self::getPackage('vendor/pkg', '1.0.0');
+        $withheld = self::getPackage('vendor/pkg', '1.0.1');
+        $entry = new FilterListEntry(
+            'vendor/pkg',
+            new MatchAllConstraint(),
+            'malware',
+            'https://example.org/malware/vendor-pkg',
+            'looks suspicious',
+            'PKG-1'
+        );
+
+        $pool = new Pool(
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            ['vendor/pkg' => ['1.0.0.0' => [$entry]]],
+            [
+                'vendor/pkg' => [
+                    '1.0.1.0' => [
+                        'name' => 'vendor/pkg',
+                        'prettyVersion' => '1.0.1',
+                        'releaseDate' => '2026-01-10T12:00:00+00:00',
+                        'availableIn' => '5 days',
+                        'source' => 'time',
+                    ],
+                ],
+            ]
+        );
+
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository(new ArrayRepository([$flagged, $withheld]));
+
+        $message = implode('', Problem::getMissingPackageReason(
+            $repositorySet,
+            new Request(),
+            $pool,
+            false,
+            'vendor/pkg',
+            new MultiConstraint([new Constraint('>=', '1.0.0.0'), new Constraint('<', '2.0.0.0')], true)
+        ));
+
+        self::assertStringContainsString("found vendor/pkg[1.0.0, 1.0.1] but these were not loaded, because:\n      - 1.0.0: flagged as malware", $message);
+        self::assertStringContainsString('reason: looks suspicious', $message);
+        self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days, based on the package-supplied time field as the repository provides no published-time)\n      To ignore filters for this package, add the package to the \"policy.malware.ignore\" config. To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set \"policy.malware.block\" or \"policy.cooldown.block\" to false.", $message);
     }
 }
