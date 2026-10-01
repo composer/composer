@@ -19,6 +19,7 @@ class ClearCacheCommandTest extends TestCase
 {
     public function tearDown(): void
     {
+        parent::tearDown();
         // --no-cache triggers the env to change so make sure the env is cleaned up after these tests run
         Platform::clearEnv('COMPOSER_CACHE_DIR');
     }
