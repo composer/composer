@@ -407,7 +407,7 @@ All links are optional fields.
 `require` and `require-dev` additionally support _stability flags_ ([root-only](04-schema.md#root-package)).
 They take the form "_constraint_@_stability flag_".
 These allow you to further restrict or expand the stability of a package beyond
-the scope of the [minimum-stability](#minimum-stability-root-only) setting. You can apply
+the scope of the [minimum-stability](#schema-minimum-stability) setting. You can apply
 them to a constraint, or apply them to an empty _constraint_ if you want to
 allow unstable packages of a dependency for example.
 
@@ -862,6 +862,8 @@ To do that, `autoload` and `target-dir` are defined as follows:
 ```
 
 Optional.
+
+<a id="schema-minimum-stability"></a>
 
 ### minimum-stability <span>([root-only](04-schema.md#root-package))</span>
 
