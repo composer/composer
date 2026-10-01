@@ -1044,17 +1044,35 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         self::assertStringNotContainsString('cooldown period', $display);
     }
 
-    private function initProjectWithCooldownPeriod(string $installedVersion): void
+    /**
+     * @param array<string, string> $versions version => published-time
+     */
+    public function testOutdatedIgnoresWithheldBackportsOlderThanTheInstalledVersion(): void
     {
+        $this->initProjectWithCooldownPeriod('2.0.0', [
+            '1.9.5' => '2999-01-01T00:00:00+00:00',
+            '2.0.0' => '2020-01-01T00:00:00+00:00',
+            '2.0.1' => '2999-06-01T00:00:00+00:00',
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true]));
+        // the backport clears first but is older than what is installed, so the newer release is the one shown
+        self::assertMatchesRegularExpression('{^vendor/package 2\.0\.0 c 2\.0\.1 \(\d+ days?(?: \d+ hours?)? left\)}m', $appTester->getDisplay(true));
+    }
+
+    private function initProjectWithCooldownPeriod(string $installedVersion, array $versions = ['1.0.0' => '2020-01-01T00:00:00+00:00', '1.1.0' => '2020-02-01T00:00:00+00:00', '2.0.0' => '2999-01-01T00:00:00+00:00']): void
+    {
+        $packages = [];
+        foreach ($versions as $version => $publishedTime) {
+            $packages[] = ['name' => 'vendor/package', 'description' => 'generic description', 'version' => $version, 'published-time' => $publishedTime];
+        }
+
         $this->initTempComposer([
             'repositories' => [
                 'packages' => [
                     'type' => 'package',
-                    'package' => [
-                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.0.0', 'published-time' => '2020-01-01T00:00:00+00:00'],
-                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '1.1.0', 'published-time' => '2020-02-01T00:00:00+00:00'],
-                        ['name' => 'vendor/package', 'description' => 'generic description', 'version' => '2.0.0', 'published-time' => '2999-01-01T00:00:00+00:00'],
-                    ],
+                    'package' => $packages,
                 ],
             ],
             'require' => ['vendor/package' => '*'],
