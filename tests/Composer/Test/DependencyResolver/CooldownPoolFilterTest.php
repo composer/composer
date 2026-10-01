@@ -461,4 +461,32 @@ class CooldownPoolFilterTest extends TestCase
 
         return new ComposerRepository(['url' => 'https://repo.example.org', 'require-published-time' => $requirePublishedTime], new NullIO(), FactoryMock::createConfig(), $httpDownloader);
     }
+
+    public function testUnverifiedVersionsAreGroupedByRepository(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $filter = new CooldownPoolFilter($config, new DateTimeImmutable('2026-01-15 12:00:00'));
+
+        $repoA = new ArrayRepository();
+        $timeOnly = new Package('vendor/a', '1.0.0.0', '1.0.0');
+        $timeOnly->setReleaseDate(new DateTimeImmutable('2020-01-01 00:00:00'));
+        $repoA->addPackage($timeOnly);
+
+        $repoB = new ArrayRepository();
+        $noDate = new Package('vendor/b', '1.0.0.0', '1.0.0');
+        $repoB->addPackage($noDate);
+        $verified = new Package('vendor/c', '1.0.0.0', '1.0.0');
+        $verified->setPublishedDate(new DateTimeImmutable('2020-01-01 00:00:00'));
+        $repoB->addPackage($verified);
+        $branch = new Package('vendor/d', 'dev-main', 'dev-main');
+        $repoB->addPackage($branch);
+
+        $filter->filter(new Pool([$timeOnly, $noDate, $verified, $branch]), new Request());
+
+        // dev versions and versions with a repository-provided date are not listed
+        self::assertSame([
+            $repoA->getRepoName() => ['vendor/a (1.0.0)'],
+            $repoB->getRepoName() => ['vendor/b (1.0.0)'],
+        ], $filter->getUnverifiedVersions());
+    }
 }

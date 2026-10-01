@@ -52,15 +52,49 @@ class PoolBuilderCooldownOutputTest extends TestCase
         self::assertStringNotContainsString('vendor/replaced', $output);
     }
 
-    private function createPool(BufferIO $io): void
+    public function testNoWarningWhenTheRepositoryProvidesPublishedTime(): void
+    {
+        $io = new BufferIO('', OutputInterface::VERBOSITY_NORMAL);
+        $this->createPool($io);
+
+        self::assertStringNotContainsString('could not be verified', $io->getOutput());
+    }
+
+    public function testUnverifiedPublicationDatesAreReportedPerRepository(): void
+    {
+        $io = new BufferIO('', OutputInterface::VERBOSITY_NORMAL);
+        $this->createPool($io, false);
+
+        $output = $io->getOutput();
+        self::assertStringContainsString('The publication date of 2 package version(s) from array repo (defining 2 packages) could not be verified, the cooldown policy relied on the time field set by the package authors (run with -vv to list them).', $output);
+        self::assertStringNotContainsString('  - vendor/pkg (1.0.0)', $output);
+    }
+
+    public function testUnverifiedPublicationDatesListedAtVeryVerbose(): void
+    {
+        $io = new BufferIO('', OutputInterface::VERBOSITY_VERY_VERBOSE);
+        $this->createPool($io, false);
+
+        $output = $io->getOutput();
+        self::assertStringContainsString('could not be verified, the cooldown policy relied on the time field set by the package authors:', $output);
+        self::assertStringContainsString('  - vendor/pkg (1.0.0)', $output);
+        self::assertStringContainsString('  - vendor/pkg (2.0.0)', $output);
+    }
+
+    private function createPool(BufferIO $io, bool $publishedTimeProvided = true): void
     {
         $now = new DateTimeImmutable('2026-01-15 12:00:00+00:00');
 
         $old = new Package('vendor/pkg', '1.0.0.0', '1.0.0');
-        $old->setReleaseDate(new DateTimeImmutable('2025-01-01 00:00:00+00:00'));
         $new = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
-        $new->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00+00:00'));
         $new->setReplaces(['vendor/replaced' => new Link('vendor/pkg', 'vendor/replaced', new Constraint('==', '2.0.0.0'), Link::TYPE_REPLACE, '2.0.0')]);
+        if ($publishedTimeProvided) {
+            $old->setPublishedDate(new DateTimeImmutable('2025-01-01 00:00:00+00:00'));
+            $new->setPublishedDate(new DateTimeImmutable('2026-01-14 12:00:00+00:00'));
+        } else {
+            $old->setReleaseDate(new DateTimeImmutable('2025-01-01 00:00:00+00:00'));
+            $new->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00+00:00'));
+        }
 
         $repositorySet = new RepositorySet();
         $repositorySet->addRepository(new ArrayRepository([$old, $new]));

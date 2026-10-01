@@ -21,7 +21,7 @@ Cooldown policy withholds a version published inside the cooldown window and res
                 {
                     "name": "acme/library",
                     "version": "1.0.0",
-                    "time": "2020-01-01T00:00:00+00:00",
+                    "published-time": "2020-01-01T00:00:00+00:00",
                     "source": { "reference": "1.0.0", "type": "git", "url": "" }
                 },
                 {

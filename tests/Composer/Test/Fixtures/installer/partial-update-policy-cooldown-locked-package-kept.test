@@ -22,7 +22,7 @@ Partial update keeps a locked package that is not part of the update allow list 
                 {
                     "name": "acme/library",
                     "version": "1.0.0",
-                    "time": "2020-01-01T00:00:00+00:00",
+                    "published-time": "2020-01-01T00:00:00+00:00",
                     "source": { "reference": "1.0.0", "type": "git", "url": "" }
                 },
                 {
@@ -34,13 +34,13 @@ Partial update keeps a locked package that is not part of the update allow list 
                 {
                     "name": "acme/other",
                     "version": "1.0.0",
-                    "time": "2020-01-01T00:00:00+00:00",
+                    "published-time": "2020-01-01T00:00:00+00:00",
                     "source": { "reference": "1.0.0", "type": "git", "url": "" }
                 },
                 {
                     "name": "acme/other",
                     "version": "1.1.0",
-                    "time": "2020-02-01T00:00:00+00:00",
+                    "published-time": "2020-02-01T00:00:00+00:00",
                     "source": { "reference": "1.1.0", "type": "git", "url": "" }
                 }
             ]
@@ -58,7 +58,7 @@ Partial update keeps a locked package that is not part of the update allow list 
     {
         "name": "acme/other",
         "version": "1.0.0",
-        "time": "2020-01-01T00:00:00+00:00",
+        "published-time": "2020-01-01T00:00:00+00:00",
         "source": { "reference": "1.0.0", "type": "git", "url": "" }
     }
 ]
@@ -75,7 +75,7 @@ Partial update keeps a locked package that is not part of the update allow list 
         {
             "name": "acme/other",
             "version": "1.0.0",
-            "time": "2020-01-01T00:00:00+00:00",
+            "published-time": "2020-01-01T00:00:00+00:00",
             "source": { "reference": "1.0.0", "type": "git", "url": "" },
             "type": "library"
         }
@@ -107,7 +107,7 @@ update acme/other
             "version": "1.1.0",
             "source": { "reference": "1.1.0", "type": "git", "url": "" },
             "type": "library",
-            "time": "2020-02-01T00:00:00+00:00"
+            "published-time": "2020-02-01T00:00:00+00:00"
         }
     ],
     "packages-dev": [],

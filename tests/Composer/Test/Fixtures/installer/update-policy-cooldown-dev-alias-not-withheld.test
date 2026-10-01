@@ -28,7 +28,7 @@ Cooldown policy keeps an inline alias of a dev branch even though the branch com
                 {
                     "name": "acme/other",
                     "version": "1.0.0",
-                    "time": "2020-01-01T00:00:00+00:00",
+                    "published-time": "2020-01-01T00:00:00+00:00",
                     "require": { "acme/library": "^1.0" },
                     "source": { "reference": "1.0.0", "type": "git", "url": "" }
                 }

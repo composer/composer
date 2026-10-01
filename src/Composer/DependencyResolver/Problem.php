@@ -444,14 +444,14 @@ class Problem
 
             if ($pool->isCooldownRemovedPackageVersion($packageName, $constraint)) {
                 $cooldownInfo = $pool->getCooldownInfoForPackageVersion($packageName, $constraint);
-                $availableIn = $cooldownInfo !== null ? ' (available in ' . $cooldownInfo['availableIn'] . ')' : '';
-                // When the cooldown fell back to the author-controlled `time` field, flag that the
-                // timestamp is not authoritative, so that users know the protection is weaker for this package
-                $sourceHint = ($cooldownInfo !== null && $cooldownInfo['source'] === 'time')
-                    ? ' The cooldown policy relied on the package-supplied time field because the repository provides no published-time.'
-                    : '';
+                $availableIn = '';
+                if ($cooldownInfo !== null) {
+                    // When the policy had to rely on the author-controlled `time` field, say so, as the protection is weaker
+                    $source = $cooldownInfo['source'] === 'time' ? ', based on the package-supplied time field as the repository provides no published-time' : '';
+                    $availableIn = ' (available in ' . $cooldownInfo['availableIn'] . $source . ')';
+                }
 
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are still in the cooldown period configured in "policy.cooldown"' . $availableIn . '.' . $sourceHint . ' To exempt this package from the cooldown policy, add it to the "policy.cooldown.ignore" config. To turn the feature off entirely, you can set "policy.cooldown.block" to false.'];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are still in the cooldown period configured in "policy.cooldown"' . $availableIn . '. To exempt this package from the cooldown policy, add it to the "policy.cooldown.ignore" config. To turn the feature off entirely, you can set "policy.cooldown.block" to false.'];
             }
 
             if (!array_any($packages, static function ($p): bool {

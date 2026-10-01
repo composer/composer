@@ -899,6 +899,7 @@ class PoolBuilder
         $total = \count($pool->getPackages());
 
         $pool = $this->cooldownPoolFilter->filter($pool, $request);
+        $this->writeCooldownUnverifiedVersions($this->cooldownPoolFilter);
 
         $filtered = $total - \count($pool->getPackages());
 
@@ -937,6 +938,24 @@ class PoolBuilder
                     $info['releaseDate'],
                     $info['availableIn']
                 ));
+            }
+        }
+    }
+
+    private function writeCooldownUnverifiedVersions(CooldownPoolFilter $filter): void
+    {
+        foreach ($filter->getUnverifiedVersions() as $repoName => $versions) {
+            $this->io->writeError(sprintf(
+                '<warning>The publication date of %d package version(s) from %s could not be verified, the cooldown policy relied on the time field set by the package authors%s</warning>',
+                \count($versions),
+                $repoName,
+                $this->io->isVeryVerbose() ? ':' : ' (run with -vv to list them).'
+            ));
+
+            if ($this->io->isVeryVerbose()) {
+                foreach ($versions as $version) {
+                    $this->io->writeError('  - '.$version);
+                }
             }
         }
     }

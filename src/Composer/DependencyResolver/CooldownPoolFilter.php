@@ -40,6 +40,9 @@ class CooldownPoolFilter
     /** @var array<int, ?DateTimeInterface> */
     private $effectiveDateCache = [];
 
+    /** @var array<string, list<string>> Repository name => "name (version)" of versions judged without a repository-provided publication date */
+    private $unverifiedVersions = [];
+
     public function __construct(CooldownPolicyConfig $config, ?DateTimeImmutable $now = null)
     {
         $this->config = $config;
@@ -56,6 +59,7 @@ class CooldownPoolFilter
         }
 
         $this->effectiveDateCache = [];
+        $this->unverifiedVersions = [];
 
         $packages = [];
         $cooldownRemovedVersions = [];
@@ -84,6 +88,11 @@ class CooldownPoolFilter
 
             // A Composer repository has to vouch for the publication date, see the policy config
             $this->config->assertPublishedTimeProvided($target);
+
+            // Nothing vouches for the date of this version, keep track so the user learns the protection is weaker
+            if ($target->getPublishedDate() === null && !$package instanceof AliasPackage && $target->getRepository() !== null) {
+                $this->unverifiedVersions[$target->getRepository()->getRepoName()][] = $package->getPrettyName().' ('.$package->getPrettyVersion().')';
+            }
 
             // 6. Packages without release date (conservative - don't block unverifiable)
             if ($this->effectiveDate($target) === null) {
@@ -120,6 +129,17 @@ class CooldownPoolFilter
             $pool->getAllFilterListRemovedPackageVersions(),
             $cooldownRemovedVersions
         );
+    }
+
+    /**
+     * Versions the last filter() run had to judge by the package-supplied time field, or by no date at
+     * all, grouped by the name of the repository they came from
+     *
+     * @return array<string, list<string>>
+     */
+    public function getUnverifiedVersions(): array
+    {
+        return $this->unverifiedVersions;
     }
 
     /**
