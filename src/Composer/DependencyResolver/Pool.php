@@ -133,6 +133,22 @@ class Pool implements \Countable
     }
 
     /**
+     * Records a removal under every name of the package, but a replacer never hides the removal of the package itself
+     *
+     * @internal
+     * @param array<string, array<string, PolicyRemovalReason>> $policyRemovedVersions
+     */
+    public static function recordPolicyRemoval(array &$policyRemovedVersions, BasePackage $package, PolicyRemovalReason $reason): void
+    {
+        foreach ($package->getNames(false) as $name) {
+            $existing = $policyRemovedVersions[$name][$package->getVersion()] ?? null;
+            if ($existing === null || ($existing->getPackageName() !== $name && $package->getName() === $name)) {
+                $policyRemovedVersions[$name][$package->getVersion()] = $reason;
+            }
+        }
+    }
+
+    /**
      * @return array<string, array<string, PolicyRemovalReason>>
      */
     public function getAllPolicyRemovedVersions(): array

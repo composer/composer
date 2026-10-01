@@ -129,9 +129,7 @@ class FilterListPoolFilter
             }
 
             if (count($matchingEntries) > 0) {
-                foreach ($package->getNames(false) as $packageName) {
-                    $policyRemovedVersions[$packageName][$package->getVersion()] = PolicyRemovalReason::filterList($package->getName(), $package->getPrettyVersion(), $matchingEntries);
-                }
+                Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::filterList($package->getName(), $package->getPrettyVersion(), $matchingEntries));
 
                 continue;
             }

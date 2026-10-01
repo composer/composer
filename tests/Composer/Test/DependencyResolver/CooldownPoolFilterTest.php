@@ -14,6 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\PolicyRemovalReason;
 use Composer\DependencyResolver\Pool;
+use Composer\FilterList\FilterListEntry;
 use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\ComposerRepository;
@@ -353,6 +354,29 @@ class CooldownPoolFilterTest extends TestCase
         $info = self::getCooldownInfo($filteredPool, 'vendor/replaced', '2.0.0.0');
         $this->assertNotNull($info);
         $this->assertSame('vendor/pkg', $filteredPool->getPolicyRemovedVersions('vendor/replaced')['2.0.0.0']->getPackageName());
+    }
+
+    public function testReplacerDoesNotHideTheReasonOfThePackageItReplaces(): void
+    {
+        $config = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 7 * 24 * 3600); // 7 days
+        $filter = new CooldownPoolFilter($config, new DateTimeImmutable('2026-01-15 12:00:00'));
+
+        $replacer = new Package('vendor/pkg', '2.0.0.0', '2.0.0');
+        $replacer->setReleaseDate(new DateTimeImmutable('2026-01-14 12:00:00'));
+        $replacer->setReplaces([
+            'vendor/replaced' => new Link('vendor/pkg', 'vendor/replaced', new Constraint('==', '2.0.0.0'), Link::TYPE_REPLACE, '2.0.0'),
+        ]);
+
+        // an earlier filter removed vendor/replaced 2.0.0 itself
+        $pool = new Pool([$replacer], [], [], [], [
+            'vendor/replaced' => ['2.0.0.0' => PolicyRemovalReason::filterList('vendor/replaced', '2.0.0', [
+                new FilterListEntry('vendor/replaced', new MatchAllConstraint(), 'malware'),
+            ])],
+        ]);
+        $filteredPool = $filter->filter($pool, new Request());
+
+        $this->assertSame(PolicyRemovalReason::COOLDOWN, self::getRemovalType($filteredPool, 'vendor/pkg', '2.0.0.0'));
+        $this->assertSame(PolicyRemovalReason::FILTER_LIST, self::getRemovalType($filteredPool, 'vendor/replaced', '2.0.0.0'));
     }
 
     public function testDevAliasIsKeptTogetherWithItsDevTarget(): void

@@ -108,15 +108,13 @@ class CooldownPoolFilter
             }
 
             // Package is too new - filter it out and track for error messages
-            foreach ($package->getNames(false) as $packageName) {
-                $policyRemovedVersions[$packageName][$package->getVersion()] = PolicyRemovalReason::cooldown(
-                    $package->getName(),
-                    $package->getPrettyVersion(),
-                    $releaseDate->format(DateTimeInterface::ATOM),
-                    $this->config->formatTimeUntilAvailable($releaseDate, $this->now),
-                    $target->getPublishedDate() !== null ? 'published-time' : 'time'
-                );
-            }
+            Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::cooldown(
+                $package->getName(),
+                $package->getPrettyVersion(),
+                $releaseDate->format(DateTimeInterface::ATOM),
+                $this->config->formatTimeUntilAvailable($releaseDate, $this->now),
+                $target->getPublishedDate() !== null ? 'published-time' : 'time'
+            ));
         }
 
         return new Pool(
