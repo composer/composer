@@ -273,6 +273,23 @@ class BinaryInstallerTest extends TestCase
         self::assertStringEndsWith("php \"%BIN_TARGET%\" %*\r\n", $bat);
     }
 
+    public function testWindowsProxyRunsAnEnvSplitShebangWithItsInterpreter(): void
+    {
+        $installPath = $this->vendorDir.'/foo/bar';
+        self::ensureDirectoryExistsAndClear($installPath);
+        file_put_contents($installPath.'/binary', "#!/usr/bin/env -S bash -e\necho 'success'");
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'full', $this->fs);
+        $method = new \ReflectionMethod($installer, 'generateWindowsProxyCode');
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
+        $bat = $method->invoke($installer, $installPath.'/binary', $this->binDir.'/binary.bat');
+
+        self::assertStringContainsString("SET \"BIN_TARGET=%~dp0/../vendor/foo/bar/binary\"\r\n", $bat);
+        self::assertStringEndsWith("bash -e \"%BIN_TARGET%\" %*\r\n", $bat);
+    }
+
     /**
      * @dataProvider phpShebangProvider
      */
@@ -437,7 +454,10 @@ class BinaryInstallerTest extends TestCase
             'sh with argument' => ["#!/bin/sh -e\n", 'sh -e'],
             'php with options' => ["#!/usr/bin/env php -d memory_limit=-1\n", 'php -d memory_limit=-1'],
             'versioned interpreter' => ["#!/usr/bin/php7.4\n", 'php7.4'],
-            'env with split string' => ["#!/usr/bin/env -S php -d x=1\n", 'php'],
+            'env with split string' => ["#!/usr/bin/env -S php -d x=1\n", 'php -d x=1'],
+            'env with split string and no space' => ["#!/usr/bin/env -Sbash -e\n", 'bash -e'],
+            'env with other options' => ["#!/usr/bin/env -i bash -e\n", 'env -i bash -e'],
+            'bare env' => ["#!/usr/bin/env\n", 'php'],
             'php with -r' => ["#!/usr/bin/php -r\n", 'php -r'],
             'sh with -c' => ["#!/bin/sh -c\n", 'sh -c'],
             'cmd metacharacters in an argument' => ["#!/bin/sh -e & calc.exe\n", 'php'],

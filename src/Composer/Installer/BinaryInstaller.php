@@ -182,15 +182,15 @@ class BinaryInstaller
             return null;
         }
 
-        // "env" is transparent, the interpreter is then its first argument
-        $caller = Preg::replace('{^env[ \t]+}', '', $match[1]);
-
-        // an env we could not see through, e.g. "env -S php -d x=1", leaves the interpreter unknown
-        if ($caller === 'env' || $caller[0] === '-') {
+        // "env" is transparent, the interpreter is then its first argument, or the first one after
+        // the -S which makes env split a multi-word shebang
+        $caller = Preg::replace('{^env[ \t]+(?:-S[ \t]*)?}', '', $match[1]);
+        if ($caller === '' || $caller === 'env') {
             return null;
         }
 
-        return $caller;
+        // other env options, e.g. "env -i bash", need env itself to run
+        return $caller[0] === '-' ? 'env '.$caller : $caller;
     }
 
     /**
