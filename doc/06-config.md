@@ -451,20 +451,20 @@ cannot provide it to fall back to the `time` field of each package's `composer.j
 VCS, path or artifact repositories always use that fallback, and Composer says so when it withholds
 such a version.
 
-#### age
+#### period
 
 A duration string in the form `"<number> <unit>"` where the unit is one of `second`, `minute`,
 `hour`, `day` or `week` (singular or plural — e.g. `"7 days"`, `"24 hours"`, `"30 minutes"`,
 `"1 week"`), an integer number of seconds, or `null` to disable. Relative phrases such as
 `"tomorrow"` or `"next week"` are rejected. Defaults to `null` (no cooldown period). The policy only
-takes effect once an age is set.
+takes effect once a period is set.
 
 ```json
 {
     "config": {
         "policy": {
             "cooldown": {
-                "age": "7 days"
+                "period": "7 days"
             }
         }
     }
@@ -501,7 +501,7 @@ optional version constraint, and package names support wildcards (e.g. `vendor/*
     "config": {
         "policy": {
             "cooldown": {
-                "age": "7 days",
+                "period": "7 days",
                 "ignore": {
                     "mycompany/*": "We trust the code in our own packages",
                     "symfony/security-bundle": "Security fixes need to be applied immediately"
@@ -514,17 +514,17 @@ optional version constraint, and package names support wildcards (e.g. `vendor/*
 
 #### Environment variables
 
-`COMPOSER_POLICY_COOLDOWN_AGE` overrides the configured `age` (the `ignore` rules from
+`COMPOSER_POLICY_COOLDOWN_PERIOD` overrides the configured `period` (the `ignore` rules from
 `composer.json` are still respected), and `COMPOSER_POLICY_COOLDOWN_BLOCK` overrides `block`.
-A non-zero `COMPOSER_POLICY_COOLDOWN_AGE` also enables the cooldown policy when `cooldown` is set to
+A non-zero `COMPOSER_POLICY_COOLDOWN_PERIOD` also enables the cooldown policy when `cooldown` is set to
 `false`, but is ignored when the whole `policy` config is set to `false`:
 
 ```bash
 # Disable the cooldown policy temporarily
-COMPOSER_POLICY_COOLDOWN_AGE=0 composer update
+COMPOSER_POLICY_COOLDOWN_PERIOD=0 composer update
 
 # Set a specific duration
-COMPOSER_POLICY_COOLDOWN_AGE="24 hours" composer update
+COMPOSER_POLICY_COOLDOWN_PERIOD="24 hours" composer update
 ```
 
 ### ignore-unreachable

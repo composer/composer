@@ -10,7 +10,7 @@ Cooldown policy falls back to the package-supplied time when the repository prov
     "config": {
         "policy": {
             "cooldown": {
-                "age": "1 week"
+                "period": "1 week"
             }
         }
     },

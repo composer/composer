@@ -799,9 +799,9 @@ class Problem
         }
 
         if (\count($withheld) === 1) {
-            return ' Version '.$withheld[0].' matching the constraint was withheld by the cooldown configured in "policy.cooldown" (available in '.$info['availableIn'].'). To install it now, add the package to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_AGE=0 for a one-off bypass.';
+            return ' Version '.$withheld[0].' matching the constraint was withheld by the cooldown configured in "policy.cooldown" (available in '.$info['availableIn'].'). To install it now, add the package to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.';
         }
 
-        return ' Versions '.implode(', ', $withheld).' matching the constraint were withheld by the cooldown configured in "policy.cooldown" (the earliest becomes available in '.$info['availableIn'].'). To install one of them now, add the package to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_AGE=0 for a one-off bypass.';
+        return ' Versions '.implode(', ', $withheld).' matching the constraint were withheld by the cooldown configured in "policy.cooldown" (the earliest becomes available in '.$info['availableIn'].'). To install one of them now, add the package to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.';
     }
 }

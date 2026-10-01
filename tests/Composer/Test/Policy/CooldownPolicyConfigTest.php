@@ -25,7 +25,7 @@ class CooldownPolicyConfigTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-        Platform::clearEnv('COMPOSER_POLICY_COOLDOWN_AGE');
+        Platform::clearEnv('COMPOSER_POLICY_COOLDOWN_PERIOD');
     }
 
     public function testParseDurationNull(): void
@@ -61,7 +61,7 @@ class CooldownPolicyConfigTest extends TestCase
     public function testParseDurationInvalidFormatThrows(): void
     {
         self::expectException(\RuntimeException::class);
-        self::expectExceptionMessage('Invalid policy.cooldown.age format');
+        self::expectExceptionMessage('Invalid policy.cooldown.period format');
         CooldownPolicyConfig::parseDuration('not a duration');
     }
 
@@ -91,7 +91,7 @@ class CooldownPolicyConfigTest extends TestCase
     public function testParseDurationInvalidFormatProviderThrows(string $duration): void
     {
         self::expectException(\RuntimeException::class);
-        self::expectExceptionMessage('Invalid policy.cooldown.age format');
+        self::expectExceptionMessage('Invalid policy.cooldown.period format');
         CooldownPolicyConfig::parseDuration($duration);
     }
 
@@ -134,9 +134,9 @@ class CooldownPolicyConfigTest extends TestCase
     {
         $cooldown = CooldownPolicyConfig::fromRawConfig($policyConfig, new VersionParser());
 
-        self::assertNull($cooldown->age);
+        self::assertNull($cooldown->period);
         self::assertFalse($cooldown->hasCooldown());
-        // block defaults to true, but with no age configured the policy is inert
+        // block defaults to true, but with no period configured the policy is inert
         self::assertFalse($cooldown->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
     }
 
@@ -144,7 +144,7 @@ class CooldownPolicyConfigTest extends TestCase
     {
         $rawConfig = [
             'cooldown' => [
-                'age' => '7 days',
+                'period' => '7 days',
                 'block' => true,
                 'audit' => 'report',
                 'ignore' => [
@@ -165,9 +165,9 @@ class CooldownPolicyConfigTest extends TestCase
 
     public function testIntegerAge(): void
     {
-        $cooldown = CooldownPolicyConfig::fromRawConfig(['cooldown' => ['age' => 3600]], new VersionParser());
+        $cooldown = CooldownPolicyConfig::fromRawConfig(['cooldown' => ['period' => 3600]], new VersionParser());
 
-        self::assertSame(3600, $cooldown->age);
+        self::assertSame(3600, $cooldown->period);
         self::assertTrue($cooldown->hasCooldown());
     }
 
@@ -187,52 +187,52 @@ class CooldownPolicyConfigTest extends TestCase
 
     public function testEnvOverridesAge(): void
     {
-        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_AGE', '2 days');
+        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_PERIOD', '2 days');
 
         $cooldown = CooldownPolicyConfig::fromRawConfig([
-            'cooldown' => ['age' => '7 days', 'ignore' => ['acme/pkg' => 'reason']],
+            'cooldown' => ['period' => '7 days', 'ignore' => ['acme/pkg' => 'reason']],
         ], new VersionParser());
 
-        self::assertSame(172800, $cooldown->age);
+        self::assertSame(172800, $cooldown->period);
         // env overrides the duration but preserves the configured ignore rules
         self::assertArrayHasKey('acme/pkg', $cooldown->ignore);
     }
 
     public function testEnvDisablesCooldown(): void
     {
-        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_AGE', '0');
+        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_PERIOD', '0');
 
         $cooldown = CooldownPolicyConfig::fromRawConfig([
-            'cooldown' => ['age' => '7 days'],
+            'cooldown' => ['period' => '7 days'],
         ], new VersionParser());
 
-        self::assertNull($cooldown->age);
+        self::assertNull($cooldown->period);
         self::assertFalse($cooldown->hasCooldown());
     }
 
     public function testInvalidEnvValueThrowsWithEnvName(): void
     {
-        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_AGE', 'not a duration');
+        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_PERIOD', 'not a duration');
 
         // the error must name the env var the user set, not the config key
         self::expectException(\RuntimeException::class);
-        self::expectExceptionMessage('Invalid value for COMPOSER_POLICY_COOLDOWN_AGE');
+        self::expectExceptionMessage('Invalid value for COMPOSER_POLICY_COOLDOWN_PERIOD');
         CooldownPolicyConfig::fromRawConfig([], new VersionParser());
     }
 
     public function testEnvAgeEnablesExplicitlyDisabledCooldown(): void
     {
-        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_AGE', '2 days');
+        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_PERIOD', '2 days');
 
         $cooldown = CooldownPolicyConfig::fromRawConfig(['cooldown' => false], new VersionParser());
 
-        self::assertSame(172800, $cooldown->age);
+        self::assertSame(172800, $cooldown->period);
         self::assertTrue($cooldown->block);
     }
 
     public function testZeroEnvAgeIsAllowedWhenCooldownDisabled(): void
     {
-        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_AGE', '0');
+        Platform::putEnv('COMPOSER_POLICY_COOLDOWN_PERIOD', '0');
 
         $cooldown = CooldownPolicyConfig::fromRawConfig(['cooldown' => false], new VersionParser());
 
@@ -245,6 +245,6 @@ class CooldownPolicyConfigTest extends TestCase
         $disabled = $cooldown->withBlockingDisabled();
 
         self::assertFalse($disabled->block);
-        self::assertSame(604800, $disabled->age);
+        self::assertSame(604800, $disabled->period);
     }
 }

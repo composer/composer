@@ -699,9 +699,9 @@
                                 },
                                 {
                                     "type": "object",
-                                    "description": "Configuration for the cooldown policy, which withholds package versions published more recently than the configured age during update/require.",
+                                    "description": "Configuration for the cooldown policy, which withholds package versions published more recently than the configured period during update/require.",
                                     "properties": {
-                                        "age": {
+                                        "period": {
                                             "description": "Cooldown duration as a string in the form \"<number> <unit>\" where unit is second, minute, hour, day or week (e.g. \"7 days\", \"24 hours\", \"30 minutes\", \"1 week\"), an integer number of seconds, or null to disable. Relative phrases like \"tomorrow\" are not accepted. Defaults to null (no cooldown).",
                                             "anyOf": [
                                                 { "type": "string", "pattern": "^\\s*(\\d+\\s*(second|minute|hour|day|week)s?|\\d+)?\\s*$" },

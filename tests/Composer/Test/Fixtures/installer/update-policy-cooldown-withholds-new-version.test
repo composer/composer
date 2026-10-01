@@ -10,7 +10,7 @@ Cooldown policy withholds a version published inside the cooldown window and res
     "config": {
         "policy": {
             "cooldown": {
-                "age": "1 week"
+                "period": "1 week"
             }
         }
     },

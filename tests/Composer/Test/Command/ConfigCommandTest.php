@@ -242,25 +242,25 @@ class ConfigCommandTest extends TestCase
             ['setting-key' => 'policy.abandoned.audit', 'setting-value' => ['fail']],
             ['config' => ['policy' => ['abandoned' => ['audit' => 'fail']]]],
         ];
-        yield 'set policy.cooldown.age duration string' => [
+        yield 'set policy.cooldown.period duration string' => [
             [],
-            ['setting-key' => 'policy.cooldown.age', 'setting-value' => ['7 days']],
-            ['config' => ['policy' => ['cooldown' => ['age' => '7 days']]]],
+            ['setting-key' => 'policy.cooldown.period', 'setting-value' => ['7 days']],
+            ['config' => ['policy' => ['cooldown' => ['period' => '7 days']]]],
         ];
-        yield 'set policy.cooldown.age integer seconds' => [
+        yield 'set policy.cooldown.period integer seconds' => [
             [],
-            ['setting-key' => 'policy.cooldown.age', 'setting-value' => ['604800']],
-            ['config' => ['policy' => ['cooldown' => ['age' => 604800]]]],
+            ['setting-key' => 'policy.cooldown.period', 'setting-value' => ['604800']],
+            ['config' => ['policy' => ['cooldown' => ['period' => 604800]]]],
         ];
-        yield 'set policy.cooldown.age normalizes case and whitespace' => [
+        yield 'set policy.cooldown.period normalizes case and whitespace' => [
             [],
-            ['setting-key' => 'policy.cooldown.age', 'setting-value' => [' 7 DAYS ']],
-            ['config' => ['policy' => ['cooldown' => ['age' => '7 days']]]],
+            ['setting-key' => 'policy.cooldown.period', 'setting-value' => [' 7 DAYS ']],
+            ['config' => ['policy' => ['cooldown' => ['period' => '7 days']]]],
         ];
-        yield 'set policy.cooldown.age null disables' => [
+        yield 'set policy.cooldown.period null disables' => [
             [],
-            ['setting-key' => 'policy.cooldown.age', 'setting-value' => ['null']],
-            ['config' => ['policy' => ['cooldown' => ['age' => null]]]],
+            ['setting-key' => 'policy.cooldown.period', 'setting-value' => ['null']],
+            ['config' => ['policy' => ['cooldown' => ['period' => null]]]],
         ];
         yield 'set policy.cooldown.block false' => [
             [],

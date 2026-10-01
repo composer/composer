@@ -509,7 +509,7 @@ EOT
             'policy.abandoned.audit' => [$auditValidator, $keepAsIsNormalizer],
             'policy.cooldown.block' => [$booleanValidator, $booleanNormalizer],
             'policy.cooldown.audit' => [$auditValidator, $keepAsIsNormalizer],
-            'policy.cooldown.age' => [
+            'policy.cooldown.period' => [
                 static function ($val): bool {
                     if ($val === 'null' || $val === '') {
                         return true;

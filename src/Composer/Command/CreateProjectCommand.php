@@ -456,7 +456,7 @@ EOT
                 throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
             }
             if ($cooldown !== null && false !== (new VersionSelector($repositorySet, $platformRepo))->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter)) {
-                throw new \InvalidArgumentException($errorMessage .' that has cleared the cooldown configured in "policy.cooldown". To install it now, add the package to the "policy.cooldown.ignore" config, or run the command with COMPOSER_POLICY_COOLDOWN_AGE=0 for a one-off bypass.');
+                throw new \InvalidArgumentException($errorMessage .' that has cleared the cooldown configured in "policy.cooldown". To install it now, add the package to the "policy.cooldown.ignore" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.');
             }
 
             throw new \InvalidArgumentException($errorMessage .'.');

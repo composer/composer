@@ -469,9 +469,9 @@ class VersionSelectorTest extends TestCase
     /**
      * @param array<string, list<IgnorePackageRule>> $ignore
      */
-    private static function cooldown(int $age, bool $block = true, array $ignore = []): CooldownPolicyConfig
+    private static function cooldown(int $period, bool $block = true, array $ignore = []): CooldownPolicyConfig
     {
-        return new CooldownPolicyConfig($block, ListPolicyConfig::AUDIT_IGNORE, $ignore, $age);
+        return new CooldownPolicyConfig($block, ListPolicyConfig::AUDIT_IGNORE, $ignore, $period);
     }
 
     /**

@@ -44,10 +44,10 @@ class CooldownAuditorTest extends TestCase
      * @param ListPolicyConfig::AUDIT_* $audit
      * @param array<string, list<IgnorePackageRule>> $ignore
      */
-    private function cooldown(string $audit = ListPolicyConfig::AUDIT_REPORT, ?int $age = 604800, array $ignore = []): CooldownPolicyConfig
+    private function cooldown(string $audit = ListPolicyConfig::AUDIT_REPORT, ?int $period = 604800, array $ignore = []): CooldownPolicyConfig
     {
         // 604800 = 7 days
-        return new CooldownPolicyConfig(true, $audit, $ignore, $age);
+        return new CooldownPolicyConfig(true, $audit, $ignore, $period);
     }
 
     private function auditor(): CooldownAuditor

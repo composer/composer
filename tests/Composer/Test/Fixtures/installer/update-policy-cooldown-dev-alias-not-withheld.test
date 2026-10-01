@@ -11,7 +11,7 @@ Cooldown policy keeps an inline alias of a dev branch even though the branch com
     "config": {
         "policy": {
             "cooldown": {
-                "age": "1 week"
+                "period": "1 week"
             }
         }
     },

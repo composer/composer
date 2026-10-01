@@ -196,6 +196,6 @@ class ProblemTest extends TestCase
         self::assertStringContainsString('PKSA-1234-abcd-1234', $message);
         self::assertStringContainsString('Version 1.0.1 matching the constraint was withheld by the cooldown configured in "policy.cooldown" (available in 5 days).', $message);
         self::assertStringContainsString('"policy.cooldown.ignore"', $message);
-        self::assertStringContainsString('COMPOSER_POLICY_COOLDOWN_AGE=0', $message);
+        self::assertStringContainsString('COMPOSER_POLICY_COOLDOWN_PERIOD=0', $message);
     }
 }

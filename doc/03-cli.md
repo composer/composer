@@ -1454,12 +1454,12 @@ DEPRECATED, use [COMPOSER_POLICY_ABANDONED_BLOCK](#composer-policy-abandoned-blo
 
 If set to `1`, enables blocking of abandoned packages during dependency resolution (equivalent to setting `audit.block-abandoned` config to `true`). If set to `0`, disables blocking of abandoned packages. It overrides the config option [audit.block-abandoned](06-config.md#block-abandoned).
 
-### COMPOSER_POLICY_COOLDOWN_AGE
+### COMPOSER_POLICY_COOLDOWN_PERIOD
 
-If set to a value accepted by [policy.cooldown.age](06-config.md#age), such as `"7 days"`,
+If set to a value accepted by [policy.cooldown.period](06-config.md#period), such as `"7 days"`,
 `"24 hours"` or an integer number of seconds, enables the cooldown policy. Package versions
-newer than that age are withheld during `composer update`/`require`. Set to `0` to disable.
-This overrides only the `age` value from [policy.cooldown](06-config.md#cooldown); any `ignore`
+published within that period are withheld during `composer update`/`require`. Set to `0` to disable.
+This overrides only the `period` value from [policy.cooldown](06-config.md#cooldown); any `ignore`
 rules configured in composer.json are still respected.
 
 ### COMPOSER_POLICY_COOLDOWN_BLOCK

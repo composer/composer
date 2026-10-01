@@ -21,7 +21,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 
 /**
- * Withholds package versions published more recently than the configured cooldown age.
+ * Withholds package versions published more recently than the configured cooldown period.
  *
  * Unlike the list-based policies (advisories/malware/custom lists) this filter is purely
  * time-based and has no remote sources to fetch, so it is wired as a dedicated pool filter
@@ -124,7 +124,7 @@ class CooldownPoolFilter
 
     /**
      * Resolve a package's effective date once per filter() run and reuse it across the
-     * skip and age checks.
+     * skip and cooldown checks.
      */
     private function effectiveDate(PackageInterface $package): ?DateTimeInterface
     {

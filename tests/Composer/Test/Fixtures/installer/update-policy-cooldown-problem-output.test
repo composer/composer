@@ -10,7 +10,7 @@ Cooldown policy withholding the only version matching a requirement explains the
     "config": {
         "policy": {
             "cooldown": {
-                "age": "1 week"
+                "period": "1 week"
             }
         }
     },

@@ -11,7 +11,7 @@ Partial update keeps a locked package that is not part of the update allow list 
     "config": {
         "policy": {
             "cooldown": {
-                "age": "1 week"
+                "period": "1 week"
             }
         }
     },

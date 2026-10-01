@@ -21,7 +21,7 @@ use DateTimeInterface;
 
 /**
  * Reports installed/locked package versions whose publication is still within the
- * configured cooldown age, for `composer audit`.
+ * configured cooldown period, for `composer audit`.
  *
  * This is the audit-time counterpart to {@see \Composer\DependencyResolver\CooldownPoolFilter}.
  * It operates on a flat package list with no resolver request.

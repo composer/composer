@@ -25,9 +25,9 @@ use DateTimeInterface;
  * Configuration for the cooldown policy.
  *
  * A cooldown withholds package versions whose publication is more recent than
- * the configured `age` during update/require, to reduce exposure to a
+ * the configured `period` during update/require, to reduce exposure to a
  * compromised-maintainer release. On top of the shared list skeleton
- * (block/audit/ignore), it carries the cooldown duration in `age`.
+ * (block/audit/ignore), it carries the cooldown duration in `period`.
  *
  * @internal
  * @final
@@ -42,7 +42,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
      *
      * @var int|null
      */
-    public $age;
+    public $period;
 
     /**
      * @param array<string, list<IgnorePackageRule>> $ignore
@@ -52,7 +52,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
         bool $block,
         string $audit,
         array $ignore,
-        ?int $age
+        ?int $period
     ) {
         parent::__construct(
             self::NAME,
@@ -61,7 +61,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
             $ignore
         );
 
-        $this->age = $age;
+        $this->period = $period;
     }
 
     /**
@@ -70,7 +70,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
      */
     public function hasCooldown(): bool
     {
-        return $this->age !== null && $this->age > 0;
+        return $this->period !== null && $this->period > 0;
     }
 
     /**
@@ -159,7 +159,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
         }
 
         $cutoffDate = (new DateTimeImmutable($now->format(DateTimeInterface::ATOM)))
-            ->modify("-{$this->age} seconds");
+            ->modify("-{$this->period} seconds");
 
         return $effectiveDate > $cutoffDate;
     }
@@ -170,7 +170,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
     public function formatTimeUntilAvailable(DateTimeInterface $effectiveDate, DateTimeImmutable $now): string
     {
         $availableAt = (new DateTimeImmutable($effectiveDate->format(DateTimeInterface::ATOM)))
-            ->modify("+{$this->age} seconds");
+            ->modify("+{$this->period} seconds");
         $diff = $now->diff($availableAt);
         $days = (int) $diff->days;
 
@@ -196,7 +196,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
             false,
             $this->audit,
             $this->ignore,
-            $this->age
+            $this->period
         );
     }
 
@@ -206,7 +206,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
             $this->block,
             $audit,
             $this->ignore,
-            $this->age
+            $this->period
         );
     }
 
@@ -216,11 +216,11 @@ class CooldownPolicyConfig extends ListPolicyConfig
     public static function fromRawConfig(array $policyConfig, VersionParser $parser): self
     {
         $cooldownConfig = $policyConfig['cooldown'] ?? [];
-        $envAge = self::getEnvAge();
+        $envPeriod = self::getEnvPeriod();
 
         // Like the other policies' env overrides, the env var re-enables an explicitly disabled policy
         if ($cooldownConfig === false) {
-            if ($envAge === false || $envAge === null) {
+            if ($envPeriod === false || $envPeriod === null) {
                 return self::disabled();
             }
             $cooldownConfig = [];
@@ -230,29 +230,29 @@ class CooldownPolicyConfig extends ListPolicyConfig
             $cooldownConfig = [];
         }
 
-        $age = self::parseDuration($cooldownConfig['age'] ?? null);
+        $period = self::parseDuration($cooldownConfig['period'] ?? null);
 
         // Environment variable overrides the configured duration but preserves
         // the block/audit/ignore settings from config
-        if ($envAge !== false) {
-            $age = $envAge;
+        if ($envPeriod !== false) {
+            $period = $envPeriod;
         }
 
         return new self(
             (bool) ($cooldownConfig['block'] ?? true),
             $cooldownConfig['audit'] ?? self::AUDIT_IGNORE,
             IgnorePackageRule::parseIgnoreMap($cooldownConfig['ignore'] ?? [], $parser),
-            $age
+            $period
         );
     }
 
     /**
-     * @return int|null|false the parsed age, or false when the environment variable is not set
+     * @return int|null|false the parsed period, or false when the environment variable is not set
      * @throws \RuntimeException on an unparseable value
      */
-    private static function getEnvAge()
+    private static function getEnvPeriod()
     {
-        $envValue = Platform::getEnv('COMPOSER_POLICY_COOLDOWN_AGE');
+        $envValue = Platform::getEnv('COMPOSER_POLICY_COOLDOWN_PERIOD');
         if ($envValue === false || $envValue === '') {
             return false;
         }
@@ -261,7 +261,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
             return self::parseDuration($envValue);
         } catch (\RuntimeException $e) {
             throw new \RuntimeException(
-                "Invalid value for COMPOSER_POLICY_COOLDOWN_AGE: {$envValue}. "
+                "Invalid value for COMPOSER_POLICY_COOLDOWN_PERIOD: {$envValue}. "
                 . "Use formats like '7 days', '24 hours', or an integer number of seconds.",
                 0,
                 $e
@@ -303,7 +303,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
 
         if (is_int($duration)) {
             if ($duration < 0) {
-                throw new \RuntimeException("Invalid policy.cooldown.age: duration cannot be negative ({$duration}).");
+                throw new \RuntimeException("Invalid policy.cooldown.period: duration cannot be negative ({$duration}).");
             }
 
             return $duration;
@@ -319,10 +319,10 @@ class CooldownPolicyConfig extends ListPolicyConfig
         // Reject any other numeric value (negative or fractional) with a clear message.
         if (is_numeric($trimmed)) {
             if ((float) $trimmed < 0) {
-                throw new \RuntimeException("Invalid policy.cooldown.age: duration cannot be negative ({$duration}).");
+                throw new \RuntimeException("Invalid policy.cooldown.period: duration cannot be negative ({$duration}).");
             }
 
-            throw new \RuntimeException("Invalid policy.cooldown.age format: {$duration}. Use an integer number of seconds or a duration like '7 days', '24 hours', '30 minutes' or '1 week'.");
+            throw new \RuntimeException("Invalid policy.cooldown.period format: {$duration}. Use an integer number of seconds or a duration like '7 days', '24 hours', '30 minutes' or '1 week'.");
         }
 
         // Otherwise only explicit unit durations are accepted.
@@ -338,6 +338,6 @@ class CooldownPolicyConfig extends ListPolicyConfig
             return (int) $matches[1] * $units[strtolower($matches[2])];
         }
 
-        throw new \RuntimeException("Invalid policy.cooldown.age format: {$duration}. Use an integer number of seconds or a duration like '7 days', '24 hours', '30 minutes' or '1 week'.");
+        throw new \RuntimeException("Invalid policy.cooldown.period format: {$duration}. Use an integer number of seconds or a duration like '7 days', '24 hours', '30 minutes' or '1 week'.");
     }
 }
