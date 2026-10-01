@@ -274,14 +274,12 @@ class CurlDownloader
 
         $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
 
-        if (0 === strpos($url, 'https://')) {
-            $willUseProxy = $proxy->getStatus() !== '' && !$proxy->isExcludedByNoProxy();
-
-            if (!$willUseProxy && \defined('CURL_VERSION_HTTP3') && \defined('CURL_HTTP_VERSION_3') && (CURL_VERSION_HTTP3 & $features) !== 0) {
-                curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_3);
-            } elseif (\defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features) !== 0) {
-                curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
-            }
+        // HTTP/3 is deliberately not requested: packagist.org, GitHub, GitLab and Bitbucket do not support it yet, and
+        // CURL_HTTP_VERSION_3 makes curl wait for a QUIC handshake before falling back to TCP on every new connection.
+        // Worth revisiting once HTTP/3 is more widespread, ideally via CURLOPT_ALTSVC so only advertising hosts use it,
+        // see https://github.com/composer/composer/issues/12987
+        if (0 === strpos($url, 'https://') && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features) !== 0) {
+            curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
         }
 
         // curl 8.7.0 - 8.7.1 has a bug whereas automatic accept-encoding header results in an error when reading the response
