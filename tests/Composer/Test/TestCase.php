@@ -106,10 +106,14 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         $fs = new Filesystem();
 
-        try {
-            $fs->removeDirectoryPhp($directory);
-        } catch (\RuntimeException $e) {
-            // e.g. symlinked directories within the tree, let the shell handle these
+        if ('\\' === DIRECTORY_SEPARATOR) {
+            try {
+                $fs->removeDirectoryPhp($directory);
+            } catch (\RuntimeException $e) {
+                // e.g. symlinked directories within the tree, let the shell handle these
+                $fs->removeDirectory($directory);
+            }
+        } else {
             $fs->removeDirectory($directory);
         }
     }
