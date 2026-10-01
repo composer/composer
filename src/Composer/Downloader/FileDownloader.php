@@ -158,9 +158,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $accept = null;
         /** @var (callable(\Throwable): mixed)|null $reject */
         $reject = null;
-        // cache entries which failed validation, as a read-only cache cannot remove them
-        $invalidCacheKeys = [];
-        $download = function () use ($output, $cacheKeyGenerator, $package, $fileName, &$urls, &$accept, &$reject, &$invalidCacheKeys) {
+        $download = function () use ($output, $cacheKeyGenerator, $package, $fileName, &$urls, &$accept, &$reject) {
             $url = reset($urls);
             $index = key($urls);
 
@@ -181,20 +179,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $cacheKey = $url['cacheKey'];
 
             // use from cache if it is present and has a valid checksum or we have no checksum to check against
-            $fromCache = false;
-            if ($this->cache !== null && !isset($invalidCacheKeys[$cacheKey]) && ($checksum === null || $checksum === '' || $checksum === $this->cache->sha1($cacheKey)) && $this->cache->copyTo($cacheKey, $fileName)) {
-                try {
-                    $this->validateDownloadedFile($package, $fileName);
-                    $fromCache = true;
-                } catch (TransportException $e) {
-                    $this->io->writeError('    <warning>Discarding invalid cached archive for '.$package->getName().': '.$e->getMessage().'</warning>');
-                    $this->cache->remove($cacheKey);
-                    $this->filesystem->unlink($fileName);
-                    $invalidCacheKeys[$cacheKey] = true;
-                }
-            }
-
-            if ($fromCache && $this->cache !== null) {
+            if ($this->cache !== null && ($checksum === null || $checksum === '' || $checksum === $this->cache->sha1($cacheKey)) && $this->cache->copyTo($cacheKey, $fileName)) {
                 if ($output) {
                     $this->io->writeError("  - Loading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>) from cache", true, IOInterface::VERY_VERBOSE);
                 }
@@ -421,7 +406,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * Checks that a downloaded (or cached) file is usable, e.g. not truncated
+     * Checks that a downloaded file is usable, e.g. not truncated, before it is written to the cache
      *
      * Throwing a TransportException makes the file get downloaded again
      *

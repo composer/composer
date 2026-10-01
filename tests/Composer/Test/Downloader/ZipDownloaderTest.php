@@ -120,10 +120,21 @@ class ZipDownloaderTest extends TestCase
             ['text' => '{Downloading test/pkg}', 'regex' => true],
         ], true);
 
+        // only the valid archive from the retry must end up in the cache
+        $cache = $this->getMockBuilder('Composer\Cache')->disableOriginalConstructor()->getMock();
+        $cache->method('copyTo')->willReturn(false);
+        $cache->expects($this->once())
+            ->method('copyFrom')
+            ->willReturnCallback(static function ($key, $source) use ($validZip): bool {
+                self::assertSame($validZip, file_get_contents($source));
+
+                return true;
+            });
+
         $attempts = 0;
         $downloader = $this->getDownloaderWithFakeDownloads(static function () use ($validZip, &$attempts): string {
             return ++$attempts === 1 ? substr($validZip, 0, 400) : $validZip;
-        }, null, $io);
+        }, $io, $cache);
 
         $loop = new Loop($this->httpDownloader);
         $loop->wait([$downloader->download($this->getZipPackage(), $this->testDir.'/pkg')]);
@@ -152,60 +163,6 @@ class ZipDownloaderTest extends TestCase
         self::assertSame(4, $attempts);
     }
 
-    public function testTruncatedCachedFileIsDiscarded(): void
-    {
-        $validZip = (string) file_get_contents(__DIR__.'/../Util/Fixtures/Zip/multiple.zip');
-
-        $cache = $this->getMockBuilder('Composer\Cache')->disableOriginalConstructor()->getMock();
-        $cache->expects($this->once())
-            ->method('copyTo')
-            ->willReturnCallback(static function ($key, $target) use ($validZip): bool {
-                return false !== file_put_contents($target, substr($validZip, 0, 400));
-            });
-        $cache->expects($this->once())->method('remove');
-        $cache->expects($this->once())->method('copyFrom');
-        $io = $this->getIOMock();
-        $io->expects([
-            ['text' => '{Discarding invalid cached archive for test/pkg: .* is truncated or corrupt}', 'regex' => true],
-            ['text' => '{Downloading test/pkg}', 'regex' => true],
-        ], true);
-
-        $attempts = 0;
-        $downloader = $this->getDownloaderWithFakeDownloads(static function () use ($validZip, &$attempts): string {
-            $attempts++;
-
-            return $validZip;
-        }, $cache, $io);
-
-        $loop = new Loop($this->httpDownloader);
-        $loop->wait([$downloader->download($this->getZipPackage(), $this->testDir.'/pkg')]);
-
-        self::assertSame(1, $attempts);
-    }
-
-    public function testTruncatedReadOnlyCachedFileIsOnlyLoadedOnce(): void
-    {
-        $validZip = (string) file_get_contents(__DIR__.'/../Util/Fixtures/Zip/multiple.zip');
-
-        $cache = $this->getMockBuilder('Composer\Cache')->disableOriginalConstructor()->getMock();
-        $cache->method('isReadOnly')->willReturn(true);
-        $cache->expects($this->once())
-            ->method('copyTo')
-            ->willReturnCallback(static function ($key, $target) use ($validZip): bool {
-                return false !== file_put_contents($target, substr($validZip, 0, 400));
-            });
-
-        $attempts = 0;
-        $downloader = $this->getDownloaderWithFakeDownloads(static function () use ($validZip, &$attempts): string {
-            return ++$attempts === 1 ? substr($validZip, 0, 400) : $validZip;
-        }, $cache);
-
-        $loop = new Loop($this->httpDownloader);
-        $loop->wait([$downloader->download($this->getZipPackage(), $this->testDir.'/pkg')]);
-
-        self::assertSame(2, $attempts);
-    }
-
     private function getZipPackage(): \Composer\Package\Package
     {
         $package = self::getPackage('test/pkg', '1.0.0');
@@ -218,7 +175,7 @@ class ZipDownloaderTest extends TestCase
     /**
      * @param callable(): string $contents returns the file content for each download attempt
      */
-    private function getDownloaderWithFakeDownloads(callable $contents, ?\Composer\Cache $cache = null, ?\Composer\IO\IOInterface $io = null): ZipDownloader
+    private function getDownloaderWithFakeDownloads(callable $contents, ?\Composer\IO\IOInterface $io = null, ?\Composer\Cache $cache = null): ZipDownloader
     {
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
         $httpDownloader->expects($this->any())
