@@ -101,6 +101,23 @@ class ZipDownloader extends ArchiveDownloader
     }
 
     /**
+     * @inheritDoc
+     */
+    protected function validateDownloadedFile(PackageInterface $package, string $fileName): void
+    {
+        $size = @filesize($fileName);
+        if (false === $size) {
+            return;
+        }
+
+        // the end of central directory record is 22 bytes followed by an up to 64KiB comment, a truncated download lacks it
+        $tail = @file_get_contents($fileName, false, null, max(0, $size - 22 - 65535));
+        if (false !== $tail && !str_contains($tail, "PK\x05\x06")) {
+            throw new TransportException('The downloaded archive for '.$package->getName().' is truncated or corrupt, zip end of central directory not found (file size: '.$size.' bytes)', 0);
+        }
+    }
+
+    /**
      * extract $file to $path with "unzip" command
      *
      * @param  string           $file File to extract

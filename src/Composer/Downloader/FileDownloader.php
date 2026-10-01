@@ -27,6 +27,7 @@ use Composer\Plugin\PostFileDownloadEvent;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\BinaryInstaller;
+use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Http\Response;
 use Composer\Util\Platform;
@@ -155,6 +156,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $this->filesystem->ensureDirectoryExists(dirname($fileName));
 
         $accept = null;
+        /** @var (callable(\Throwable): mixed)|null $reject */
         $reject = null;
         $download = function () use ($output, $cacheKeyGenerator, $package, $fileName, &$urls, &$accept, &$reject) {
             $url = reset($urls);
@@ -223,7 +225,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             });
         };
 
-        $accept = function (Response $response) use ($package, $fileName, &$urls): string {
+        $accept = function (Response $response) use ($package, $fileName, &$urls, &$reject, &$retries) {
             $url = reset($urls);
             $cacheKey = $url['cacheKey'];
             $fileSize = @filesize($fileName);
@@ -234,6 +236,21 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
             if (Platform::getEnv('GITHUB_ACTIONS') !== false && Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING') === false) {
                 FileDownloader::$responseHeaders[$package->getName()] = $response->getHeaders();
+            }
+
+            try {
+                $this->validateDownloadedFile($package, $fileName);
+            } catch (TransportException $e) {
+                // a broken file from a local source will not get better by downloading it again
+                if (!Preg::isMatch('{^https?://}i', $url['processed'])) {
+                    $retries = 0;
+                } elseif ($retries > 0) {
+                    $this->io->writeError('    <warning>'.$e->getMessage().', retrying</warning>');
+                }
+                $response->collect();
+                assert($reject !== null);
+
+                return $reject($e);
             }
 
             if ($this->cache !== null && !$this->cache->isReadOnly()) {
@@ -386,6 +403,17 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     protected function getDistPath(PackageInterface $package, int $component): string
     {
         return pathinfo((string) parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), $component);
+    }
+
+    /**
+     * Checks that a downloaded file is usable, e.g. not truncated, before it is written to the cache
+     *
+     * Throwing a TransportException makes the file get downloaded again
+     *
+     * @throws TransportException
+     */
+    protected function validateDownloadedFile(PackageInterface $package, string $fileName): void
+    {
     }
 
     protected function clearLastCacheWrite(PackageInterface $package): void
