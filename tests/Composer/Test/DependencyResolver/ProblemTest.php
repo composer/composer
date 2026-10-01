@@ -157,7 +157,7 @@ class ProblemTest extends TestCase
         $pool = new Pool(
             [],
             [],
-            ['vendor/pkg' => ['1.0.0.0' => '1.0.0', '1.0.1.0' => '1.0.1']],
+            [],
             [],
             ['vendor/pkg' => ['1.0.0.0' => [$advisory]]],
             [],
@@ -192,9 +192,12 @@ class ProblemTest extends TestCase
             $constraint
         ));
 
+        // only the vulnerable version is listed as blocked by the advisory
+        self::assertStringContainsString('found vendor/pkg[1.0.0] but', $message);
+        self::assertStringNotContainsString('[1.0.0, 1.0.1]', $message);
         self::assertStringContainsString('affected by security advisories', $message);
         self::assertStringContainsString('PKSA-1234-abcd-1234', $message);
-        self::assertStringContainsString('Version 1.0.1 matching the constraint is still in the cooldown period configured in "policy.cooldown" (available in 5 days).', $message);
+        self::assertStringContainsString('Version 1.0.1 also matches the constraint but is still in the cooldown period configured in "policy.cooldown" (available in 5 days).', $message);
         self::assertStringContainsString('"policy.cooldown.ignore"', $message);
         self::assertStringContainsString('COMPOSER_POLICY_COOLDOWN_PERIOD=0', $message);
     }
