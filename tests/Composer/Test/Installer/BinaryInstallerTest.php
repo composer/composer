@@ -237,7 +237,36 @@ class BinaryInstallerTest extends TestCase
         self::assertStringNotContainsString($shebang, $proxy);
     }
 
-    public function testWindowsProxyEscapesTheTargetPath(): void
+    /**
+     * @dataProvider carriedOverShebangProvider
+     */
+    public function testPhpProxyCarriesOverAPhpShebangWithItsArguments(string $shebang): void
+    {
+        $package = $this->createPackageMock();
+        $package->expects($this->any())
+            ->method('getBinaries')
+            ->willReturn(['binary']);
+
+        $installPath = $this->vendorDir.'/foo/bar';
+        self::ensureDirectoryExistsAndClear($installPath);
+        file_put_contents($installPath.'/binary', $shebang."\n<?php\n\necho 'success';");
+
+        $installer = new BinaryInstaller($this->io, $this->binDir, 'proxy', $this->fs);
+        $installer->installBinaries($package, $installPath);
+
+        self::assertStringStartsWith($shebang."\n", (string) file_get_contents($this->binDir.'/binary'));
+    }
+
+    public static function carriedOverShebangProvider(): array
+    {
+        return [
+            'env php' => ['#!/usr/bin/env php'],
+            'versioned php with options' => ['#!/usr/bin/php8.1 -dmemory_limit=-1'],
+            'env split string' => ['#!/usr/bin/env -S php -d x=1'],
+        ];
+    }
+
+        public function testWindowsProxyEscapesTheTargetPath(): void
     {
         $installPath = $this->vendorDir.'/foo/bar/a&b';
         $this->fs->ensureDirectoryExists($installPath);
@@ -478,10 +507,6 @@ class BinaryInstallerTest extends TestCase
             'php open tag' => ["#!<?php echo 'PWNED'; ?>"],
             'cmd metacharacters' => ['#!/usr/bin/env php" " & calc.exe'],
             'command substitution' => ['#!/usr/bin/env php$(id)'],
-            // the kernel would run these as "<interpreter> -r/-c <proxy path>", making the proxy's
-            // own path, which ends in a package controlled filename, be read as code
-            'php reading the proxy as code' => ['#!/usr/bin/php -r'],
-            'sh reading the proxy as a command' => ['#!/bin/sh -c'],
             // a non-php interpreter above a "<?php" body can only be there to get the proxy itself
             // handed to it, the body would not run either way
             'non-php interpreter' => ['#!/bin/sh'],

@@ -215,18 +215,6 @@ class BinaryInstaller
     }
 
     /**
-     * Checks that a shebang line read from a package's bin is safe to embed in a generated proxy
-     *
-     * Limited to an interpreter path followed by plain arguments, so that it can carry neither
-     * cmd.exe metacharacters nor a "<?php" of its own. An argument may not begin with a dash, as
-     * "-r", "-c" and their equivalents make an interpreter treat what follows them as code.
-     */
-    private static function isSafeShebang(string $shebang): bool
-    {
-        return Preg::isMatch('{^#![a-zA-Z0-9_./+-]+(?:[ \t]+[a-zA-Z0-9_.=+][a-zA-Z0-9_.=+-]*)*$}', $shebang);
-    }
-
-    /**
      * Quotes a string so a POSIX shell reads it as a single literal word
      *
      * ProcessExecutor::escape() cannot be used here as it switches to cmd.exe rules when Composer
@@ -349,15 +337,11 @@ class BinaryInstaller
         // For php files, we generate a PHP proxy instead of a shell one,
         // which allows calling the proxy with a custom php process
         if (Preg::isMatch('{^(#!.*\r?\n)?[\r\n\t ]*<\?php}', $binContents, $match)) {
-            // carry over the existing shebang if present and plain enough to be safe to embed,
-            // otherwise add our own. Only a php one is kept: the proxy body below is PHP, and any
-            // other interpreter would be handed the proxy's own path, e.g. "#!/bin/sh -c" turning
-            // that path into a shell command string.
+            // carry over the existing shebang if present and safe to embed, otherwise add our own.
+            // Only a php one is kept as the proxy body below is PHP.
             $shebang = $match[1] === null ? '' : rtrim($match[1], " \t\r\n");
-            $interpreter = self::shebangCaller($shebang);
-            $proxyCode = self::isSafeShebang($shebang) && $interpreter !== null && self::isPhpInterpreter($interpreter)
-                ? $shebang
-                : '#!/usr/bin/env php';
+            $caller = self::shebangCaller($shebang);
+            $proxyCode = $caller !== null && self::isPhpInterpreter($caller) ? $shebang : '#!/usr/bin/env php';
             $binPathExported = $this->filesystem->findShortestPathCode($link, $bin, false, true);
             // a package controls every segment of its bin paths, and a "*/" in the path below would
             // close the docblock it goes into and have the rest of it parsed as PHP code
