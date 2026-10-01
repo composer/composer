@@ -115,7 +115,7 @@ class CooldownPolicyConfig extends ListPolicyConfig
         }
 
         throw new \RuntimeException(sprintf(
-            '%s %s from %s has no published-time, so the cooldown configured in "policy.cooldown" cannot tell whether it is new or old. Make sure the repository provides publication times (run "composer clear-cache" if it only recently started to), or set "require-published-time": false on that repository to fall back to the package-supplied "time" field, which offers weaker protection.',
+            '%s %s from %s has no published-time, so the cooldown policy configured in "policy.cooldown" cannot tell whether it is new or old. Make sure the repository provides publication times (run "composer clear-cache" if it only recently started to), or set "require-published-time": false on that repository to fall back to the package-supplied "time" field, which offers weaker protection.',
             $package->getPrettyName(),
             $package->getPrettyVersion(),
             $repository->getRepoName()

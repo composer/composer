@@ -249,7 +249,7 @@ class VersionSelector
             $alreadySeenNames[$pkg->getName()] = true;
             if ($io !== null && ($showWarnings === true || (is_callable($showWarnings) && $showWarnings($pkg)))) {
                 $io->writeError(
-                    '<warning>Cannot use '.$pkg->getPrettyName().($isLatestVersion ? "'s latest version" : '').' '.$pkg->getPrettyVersion().' as it is still within the cooldown configured in "policy.cooldown" (available in '.$cooldown->formatTimeUntilAvailable($releaseDate, $now).').</>',
+                    '<warning>Cannot use '.$pkg->getPrettyName().($isLatestVersion ? "'s latest version" : '').' '.$pkg->getPrettyVersion().' as it is still in the cooldown period configured in "policy.cooldown" (available in '.$cooldown->formatTimeUntilAvailable($releaseDate, $now).').</>',
                     true,
                     $isLatestVersion ? IOInterface::NORMAL : IOInterface::VERBOSE
                 );

@@ -910,7 +910,7 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
             false
         );
         self::assertSame(Auditor::STATUS_OK, $result);
-        self::assertStringContainsString('within the cooldown', $io->getOutput());
+        self::assertStringContainsString('still in the cooldown period', $io->getOutput());
 
         // ignore -> not evaluated at all
         $result = (new Auditor(new CooldownAuditor($now)))->audit(
@@ -922,7 +922,7 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
             false
         );
         self::assertSame(Auditor::STATUS_OK, $result);
-        self::assertStringNotContainsString('within the cooldown', $io->getOutput());
+        self::assertStringNotContainsString('still in the cooldown period', $io->getOutput());
     }
 
     /**

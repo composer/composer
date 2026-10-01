@@ -711,12 +711,12 @@
                                         },
                                         "block": {
                                             "type": "boolean",
-                                            "description": "When true, versions still within the cooldown cannot be installed during update/require. Defaults to true (only takes effect once age is set).",
+                                            "description": "When true, versions still in the cooldown period cannot be installed during update/require. Defaults to true (only takes effect once a period is set).",
                                             "default": true
                                         },
                                         "audit": {
                                             "enum": ["ignore", "report", "fail"],
-                                            "description": "How composer audit treats versions within the cooldown. Defaults to ignore.",
+                                            "description": "How composer audit treats versions still in the cooldown period. Defaults to ignore.",
                                             "default": "ignore"
                                         },
                                         "ignore": { "$ref": "#/definitions/policy-ignore" }

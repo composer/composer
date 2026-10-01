@@ -399,7 +399,7 @@ class VersionSelectorTest extends TestCase
         $best = $versionSelector->findBestCandidate('foo/bar', null, 'stable', null, 0, $io);
 
         self::assertSame($old, $best);
-        self::assertStringContainsString('Cannot use foo/bar\'s latest version 1.2.2 as it is still within the cooldown configured in "policy.cooldown" (available in 6 days).', $io->getOutput());
+        self::assertStringContainsString('Cannot use foo/bar\'s latest version 1.2.2 as it is still in the cooldown period configured in "policy.cooldown" (available in 6 days).', $io->getOutput());
     }
 
     public function testDevAndIgnoredVersionsAreNotSubjectToCooldown(): void

@@ -41,6 +41,6 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - Root composer.json requires acme/library 1.1.0 (exact version match: 1.1.0 or 1.1.0.0), found acme/library[1.1.0] but these were not loaded, because they have not yet cleared the cooldown configured in "policy.cooldown" (available in %s). The cooldown used the package-supplied release date because the repository did not provide an authoritative publication timestamp. To bypass the cooldown for this package, add it to the "policy.cooldown.ignore" config. To turn the feature off entirely, you can set "policy.cooldown.block" to false.
+    - Root composer.json requires acme/library 1.1.0 (exact version match: 1.1.0 or 1.1.0.0), found acme/library[1.1.0] but these were not loaded, because they are still in the cooldown period configured in "policy.cooldown" (available in %s). The cooldown policy relied on the package-supplied time field because the repository provides no published-time. To exempt this package from the cooldown policy, add it to the "policy.cooldown.ignore" config. To turn the feature off entirely, you can set "policy.cooldown.block" to false.
 
 --EXPECT--

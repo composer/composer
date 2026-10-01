@@ -222,7 +222,7 @@ class Auditor
             $punctuation = $format === self::FORMAT_SUMMARY ? '.' : ':';
             $style = $cooldownCount > 0 ? 'error' : 'warning';
 
-            $io->write(sprintf('<%s>Found %d package%s within the cooldown configured in "policy.cooldown"%s</%s>', $style, count($cooldownPackages), $plurality, $punctuation, $style));
+            $io->write(sprintf('<%s>Found %d package%s still in the cooldown period configured in "policy.cooldown"%s</%s>', $style, count($cooldownPackages), $plurality, $punctuation, $style));
             if ($format !== self::FORMAT_SUMMARY) {
                 $this->outputCooldownPackages($io, $cooldownPackages);
             }
@@ -245,7 +245,7 @@ class Auditor
                 $info['availableIn']
             ));
             if ($info['source'] === 'time') {
-                $io->write('    The cooldown used the package-supplied release date because the repository did not provide an authoritative publication timestamp.');
+                $io->write('    The cooldown policy relied on the package-supplied time field because the repository provides no published-time.');
             }
         }
     }

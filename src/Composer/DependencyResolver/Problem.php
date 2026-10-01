@@ -446,10 +446,10 @@ class Problem
                 // When the cooldown fell back to the author-controlled `time` field, flag that the
                 // timestamp is not authoritative, so that users know the protection is weaker for this package
                 $sourceHint = ($cooldownInfo !== null && $cooldownInfo['source'] === 'time')
-                    ? ' The cooldown used the package-supplied release date because the repository did not provide an authoritative publication timestamp.'
+                    ? ' The cooldown policy relied on the package-supplied time field because the repository provides no published-time.'
                     : '';
 
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they have not yet cleared the cooldown configured in "policy.cooldown"' . $availableIn . '.' . $sourceHint . ' To bypass the cooldown for this package, add it to the "policy.cooldown.ignore" config. To turn the feature off entirely, you can set "policy.cooldown.block" to false.'];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they are still in the cooldown period configured in "policy.cooldown"' . $availableIn . '.' . $sourceHint . ' To exempt this package from the cooldown policy, add it to the "policy.cooldown.ignore" config. To turn the feature off entirely, you can set "policy.cooldown.block" to false.'];
             }
 
             if (!array_any($packages, static function ($p): bool {
@@ -799,9 +799,9 @@ class Problem
         }
 
         if (\count($withheld) === 1) {
-            return ' Version '.$withheld[0].' matching the constraint was withheld by the cooldown configured in "policy.cooldown" (available in '.$info['availableIn'].'). To install it now, add the package to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.';
+            return ' Version '.$withheld[0].' matching the constraint is still in the cooldown period configured in "policy.cooldown" (available in '.$info['availableIn'].'). To install it now, add the package to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.';
         }
 
-        return ' Versions '.implode(', ', $withheld).' matching the constraint were withheld by the cooldown configured in "policy.cooldown" (the earliest becomes available in '.$info['availableIn'].'). To install one of them now, add the package to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.';
+        return ' Versions '.implode(', ', $withheld).' matching the constraint are still in the cooldown period configured in "policy.cooldown" (the earliest becomes available in '.$info['availableIn'].'). To install one of them now, add the package to the "policy.cooldown.ignore" config, or run the update with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.';
     }
 }

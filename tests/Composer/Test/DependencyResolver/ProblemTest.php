@@ -97,13 +97,13 @@ class ProblemTest extends TestCase
         ));
 
         self::assertStringContainsString('vendor/pkg[2.0.0]', $message);
-        self::assertStringContainsString('cleared the cooldown', $message);
+        self::assertStringContainsString('still in the cooldown period', $message);
         self::assertStringContainsString('"policy.cooldown"', $message);
         self::assertStringContainsString('available in 5 days', $message);
         self::assertStringContainsString('"policy.cooldown.ignore"', $message);
         self::assertStringContainsString('"policy.cooldown.block"', $message);
         // authoritative publication timestamp -> no fallback caveat
-        self::assertStringNotContainsString('package-supplied release date', $message);
+        self::assertStringNotContainsString('package-supplied time field', $message);
     }
 
     public function testGetMissingPackageReasonForCooldownRemovedPackageWithTimeFallback(): void
@@ -143,9 +143,9 @@ class ProblemTest extends TestCase
             new MultiConstraint([new Constraint('>=', '1.0.0.0'), new Constraint('<', '3.0.0.0')], true)
         ));
 
-        self::assertStringContainsString('cleared the cooldown', $message);
+        self::assertStringContainsString('still in the cooldown period', $message);
         // fell back to the author-controlled `time` field -> caveat is shown
-        self::assertStringContainsString('package-supplied release date', $message);
+        self::assertStringContainsString('package-supplied time field', $message);
     }
 
     public function testGetMissingPackageReasonPointsAtCooldownWithheldFixNextToAdvisories(): void
@@ -194,7 +194,7 @@ class ProblemTest extends TestCase
 
         self::assertStringContainsString('affected by security advisories', $message);
         self::assertStringContainsString('PKSA-1234-abcd-1234', $message);
-        self::assertStringContainsString('Version 1.0.1 matching the constraint was withheld by the cooldown configured in "policy.cooldown" (available in 5 days).', $message);
+        self::assertStringContainsString('Version 1.0.1 matching the constraint is still in the cooldown period configured in "policy.cooldown" (available in 5 days).', $message);
         self::assertStringContainsString('"policy.cooldown.ignore"', $message);
         self::assertStringContainsString('COMPOSER_POLICY_COOLDOWN_PERIOD=0', $message);
     }
