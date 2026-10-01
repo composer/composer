@@ -41,6 +41,27 @@ class RequireCommandTest extends TestCase
         $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']]);
     }
 
+    public function testRequireReportsStabilityWhenOnlyPrereleaseIsInCooldown(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Could not find a version of package required/pkg matching your minimum-stability (stable).');
+
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'required/pkg', 'version' => '1.0.0-beta1', 'time' => gmdate('Y-m-d H:i:s', time() - 3600)],
+                    ],
+                ],
+            ],
+            'config' => ['policy' => ['cooldown' => ['period' => '7 days']]],
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'require', '--dry-run' => true, '--no-audit' => true, 'packages' => ['required/pkg']]);
+    }
+
     public function testRequireThrowsOnUnquotedInlineAlias(): void
     {
         $this->expectException(InvalidArgumentException::class);
