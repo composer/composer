@@ -25,7 +25,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Composer\IO\BufferIO;
 use Composer\Json\JsonFile;
 use Composer\Package\Dumper\ArrayDumper;
-use Composer\Util\Filesystem;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\RepositoryInterface;
@@ -65,8 +64,7 @@ class InstallerTest extends TestCase
 
         chdir($this->prevCwd);
         if (isset($this->tempComposerHome) && is_dir($this->tempComposerHome)) {
-            $fs = new Filesystem;
-            $fs->removeDirectory($this->tempComposerHome);
+            self::removeTestDirectory($this->tempComposerHome);
         }
     }
 
