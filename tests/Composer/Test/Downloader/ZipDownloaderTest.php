@@ -183,6 +183,29 @@ class ZipDownloaderTest extends TestCase
         self::assertSame(1, $attempts);
     }
 
+    public function testTruncatedReadOnlyCachedFileIsOnlyLoadedOnce(): void
+    {
+        $validZip = (string) file_get_contents(__DIR__.'/../Util/Fixtures/Zip/multiple.zip');
+
+        $cache = $this->getMockBuilder('Composer\Cache')->disableOriginalConstructor()->getMock();
+        $cache->method('isReadOnly')->willReturn(true);
+        $cache->expects($this->once())
+            ->method('copyTo')
+            ->willReturnCallback(static function ($key, $target) use ($validZip): bool {
+                return false !== file_put_contents($target, substr($validZip, 0, 400));
+            });
+
+        $attempts = 0;
+        $downloader = $this->getDownloaderWithFakeDownloads(static function () use ($validZip, &$attempts): string {
+            return ++$attempts === 1 ? substr($validZip, 0, 400) : $validZip;
+        }, $cache);
+
+        $loop = new Loop($this->httpDownloader);
+        $loop->wait([$downloader->download($this->getZipPackage(), $this->testDir.'/pkg')]);
+
+        self::assertSame(2, $attempts);
+    }
+
     private function getZipPackage(): \Composer\Package\Package
     {
         $package = self::getPackage('test/pkg', '1.0.0');

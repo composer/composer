@@ -158,7 +158,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $accept = null;
         /** @var (callable(\Throwable): mixed)|null $reject */
         $reject = null;
-        $download = function () use ($output, $cacheKeyGenerator, $package, $fileName, &$urls, &$accept, &$reject) {
+        // cache entries which failed validation, as a read-only cache cannot remove them
+        $invalidCacheKeys = [];
+        $download = function () use ($output, $cacheKeyGenerator, $package, $fileName, &$urls, &$accept, &$reject, &$invalidCacheKeys) {
             $url = reset($urls);
             $index = key($urls);
 
@@ -180,7 +182,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
             // use from cache if it is present and has a valid checksum or we have no checksum to check against
             $fromCache = false;
-            if ($this->cache !== null && ($checksum === null || $checksum === '' || $checksum === $this->cache->sha1($cacheKey)) && $this->cache->copyTo($cacheKey, $fileName)) {
+            if ($this->cache !== null && !isset($invalidCacheKeys[$cacheKey]) && ($checksum === null || $checksum === '' || $checksum === $this->cache->sha1($cacheKey)) && $this->cache->copyTo($cacheKey, $fileName)) {
                 try {
                     $this->validateDownloadedFile($package, $fileName);
                     $fromCache = true;
@@ -188,6 +190,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                     $this->io->writeError('    <warning>Discarding invalid cached archive for '.$package->getName().': '.$e->getMessage().'</warning>');
                     $this->cache->remove($cacheKey);
                     $this->filesystem->unlink($fileName);
+                    $invalidCacheKeys[$cacheKey] = true;
                 }
             }
 
