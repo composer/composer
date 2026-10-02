@@ -452,7 +452,9 @@ versions are identified and removed within hours or days of being published.
 
 The cooldown policy applies when resolving dependencies during `composer update`/`require`. `composer require`,
 `init` and `create-project` also skip withheld versions when picking a version constraint or the
-project version, so that the constraint they write can be resolved.
+project version, so that the constraint they write can be resolved. `composer outdated` and
+`composer show --latest` report the newest version the policy allows installing, and mark a newer
+release that is still in the cooldown period.
 
 The cooldown period is measured from the publication time reported by the package repository
 (`published-time`, which Packagist.org provides), as package authors cannot influence it. Composer

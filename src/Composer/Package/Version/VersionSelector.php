@@ -54,6 +54,9 @@ class VersionSelector
     /** @var ?array{package: PackageInterface, releaseDate: \DateTimeInterface} */
     private $firstClearingWithheldCandidate = null;
 
+    /** @var list<array{package: PackageInterface, releaseDate: \DateTimeInterface}> */
+    private $withheldCandidates = [];
+
     /**
      * @param PlatformRepository   $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
      * @param CooldownPolicyConfig $cooldown     If passed in, versions still within the configured cooldown are skipped
@@ -123,6 +126,7 @@ class VersionSelector
         });
 
         $this->firstClearingWithheldCandidate = null;
+        $this->withheldCandidates = [];
         if ($this->cooldown !== null && $this->cooldown->hasCooldown() && $this->cooldown->block) {
             $candidates = $this->filterCooldownCandidates($this->cooldown, $candidates, $io, $showWarnings);
         }
@@ -214,6 +218,16 @@ class VersionSelector
     }
 
     /**
+     * Returns every candidate withheld by the cooldown in the last findBestCandidate() call, in candidate order
+     *
+     * @return list<array{package: PackageInterface, releaseDate: \DateTimeInterface}>
+     */
+    public function getWithheldCandidates(): array
+    {
+        return $this->withheldCandidates;
+    }
+
+    /**
      * Drops candidates still inside the cooldown so the selected version is one the solver will accept
      *
      * @param PackageInterface[] $candidates
@@ -249,6 +263,7 @@ class VersionSelector
             if ($this->firstClearingWithheldCandidate === null || $releaseDate < $this->firstClearingWithheldCandidate['releaseDate']) {
                 $this->firstClearingWithheldCandidate = ['package' => $pkg, 'releaseDate' => $releaseDate];
             }
+            $this->withheldCandidates[] = ['package' => $pkg, 'releaseDate' => $releaseDate];
 
             // ranked below a usable candidate (e.g. an LTS backport), so withholding it does not affect the pick
             if (isset($acceptedNames[$pkg->getName()])) {
