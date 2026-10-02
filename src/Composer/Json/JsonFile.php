@@ -45,6 +45,8 @@ class JsonFile
     public const LOCK_SCHEMA_PATH = __DIR__ . '/../../../res/composer-lock-schema.json';
 
     public const INDENT_DEFAULT = '    ';
+
+    /** @internal */
     public const CONFLICTED_CONTENT_HASH = 'VCS merge conflict detected. Please run `composer update --lock`.';
 
     /** @var string */
