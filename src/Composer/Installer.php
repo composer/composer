@@ -44,6 +44,7 @@ use Composer\Policy\PolicyConfig;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\BasePackage;
@@ -752,6 +753,12 @@ class Installer
      */
     protected function doInstall(InstalledRepositoryInterface $localRepo, bool $alreadySolved = false): int
     {
+        if (!$alreadySolved && ($this->locker->getLockData()['content-hash'] ?? null) === JsonFile::CONFLICTED_CONTENT_HASH) {
+            $this->io->writeError('<error>'.JsonFile::CONFLICTED_CONTENT_HASH.'</error>', true, IOInterface::QUIET);
+
+            return self::ERROR_LOCK_FILE_INVALID;
+        }
+
         if ($this->config->get('lock')) {
             $this->io->writeError('<info>Installing dependencies from lock file'.($this->devMode ? ' (including require-dev)' : '').'</info>');
         }

@@ -12,12 +12,27 @@
 
 namespace Composer\Test\Command;
 
+use Composer\Json\JsonFile;
 use Composer\Package\Link;
+use Composer\Package\Locker;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 
 class UpdateCommandTest extends TestCase
 {
+    public function testUpdateLockRepairsConflictedContentHash(): void
+    {
+        $dir = $this->initTempComposer(['name' => 'vendor/test', 'repositories' => []]);
+        copy(__DIR__.'/../Json/Fixtures/composer-lock-merge-conflict-simple.txt', $dir.'/composer.lock');
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'update', '--lock' => true, '--no-audit' => true]);
+
+        self::assertSame(0, $exitCode, $appTester->getDisplay(true));
+        $expectedHash = Locker::getContentHash((string) file_get_contents($dir.'/composer.json'));
+        self::assertSame($expectedHash, (new JsonFile($dir.'/composer.lock'))->read()['content-hash']);
+    }
+
     /**
      * @dataProvider provideUpdates
      * @param array<mixed>   $composerJson

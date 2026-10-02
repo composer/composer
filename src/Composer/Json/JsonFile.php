@@ -45,6 +45,7 @@ class JsonFile
     public const LOCK_SCHEMA_PATH = __DIR__ . '/../../../res/composer-lock-schema.json';
 
     public const INDENT_DEFAULT = '    ';
+    public const CONFLICTED_CONTENT_HASH = 'VCS merge conflict detected. Please run `composer update --lock`.';
 
     /** @var string */
     private $path;
@@ -347,7 +348,7 @@ class JsonFile
             if ($file !== null && str_ends_with($file, '.lock') && str_contains($json, '"content-hash"')) {
                 $replaced = Preg::replace(
                     '{\r?\n<<<<<<< [^\r\n]+\r?\n\s+"content-hash": *"[0-9a-f]+", *\r?\n(?:\|{7} [^\r\n]+\r?\n\s+"content-hash": *"[0-9a-f]+", *\r?\n)?=======\r?\n\s+"content-hash": *"[0-9a-f]+", *\r?\n>>>>>>> [^\r\n]+(\r?\n)}',
-                    '    "content-hash": "VCS merge conflict detected. Please run `composer update --lock`.",$1',
+                    '    "content-hash": "'.self::CONFLICTED_CONTENT_HASH.'",$1',
                     $json,
                     1,
                     $count
