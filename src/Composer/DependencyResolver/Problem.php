@@ -112,7 +112,67 @@ class Problem
             return $this->getSortableString($pool, $rule1) <=> $this->getSortableString($pool, $rule2);
         });
 
-        return self::formatDeduplicatedRules($reasons, '    ', $repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
+        return self::formatDeduplicatedRules($reasons, '    ', $repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool)
+            .self::formatPolicyExcludedConflictAlternatives($reasons, $pool, $isVerbose);
+    }
+
+    /**
+     * Explain when an advisory removed a version that would avoid a reported package conflict.
+     *
+     * @param Rule[] $reasons
+     */
+    private static function formatPolicyExcludedConflictAlternatives(array $reasons, Pool $pool, bool $isVerbose): string
+    {
+        $rootConstraints = [];
+        $conflictConstraints = [];
+        foreach ($reasons as $rule) {
+            if ($rule->getReason() === Rule::RULE_ROOT_REQUIRE) {
+                $data = $rule->getReasonData();
+                $rootConstraints[$data['packageName']] = $data['constraint'];
+            } elseif ($rule->getReason() === Rule::RULE_PACKAGE_CONFLICT) {
+                $link = $rule->getReasonData();
+                $conflictConstraints[$link->getTarget()][] = $link->getConstraint();
+            }
+        }
+
+        $messages = [];
+        foreach ($conflictConstraints as $name => $constraints) {
+            if (!isset($rootConstraints[$name])) {
+                continue;
+            }
+
+            $versions = [];
+            $reasonsForVersions = [];
+            foreach ($pool->getPolicyRemovedVersions($name, $rootConstraints[$name]) as $version => $reason) {
+                if ($reason->getType() !== PolicyRemovalReason::ADVISORIES) {
+                    continue;
+                }
+
+                $packageVersion = new Constraint('==', $version);
+                if (array_any($constraints, static function (ConstraintInterface $constraint) use ($packageVersion): bool {
+                    return $constraint->matches($packageVersion);
+                })) {
+                    continue;
+                }
+
+                $versions[$version] = $reason->getPrettyVersion();
+                $reasonsForVersions[] = $reason;
+            }
+
+            if ($reasonsForVersions === []) {
+                continue;
+            }
+
+            $plural = \count($versions) > 1;
+            $prettyVersions = $isVerbose ? array_values($versions) : self::condenseVersionList($versions, 1);
+            $reason = PolicyRemovalReason::combine($reasonsForVersions);
+            $messages[] = "\n    - ".$name.'['.implode(', ', $prettyVersions).'] '.($plural ? 'match' : 'matches')
+                .' the root requirement and '.($plural ? 'avoid' : 'avoids').' the reported conflict, but '
+                .($plural ? 'were' : 'was').' not loaded because '.($plural ? 'they ' : 'it ')
+                .self::formatPolicyRemovalSentence($reason, $plural);
+        }
+
+        return implode('', $messages);
     }
 
     private function getSortableString(Pool $pool, Rule $rule): string

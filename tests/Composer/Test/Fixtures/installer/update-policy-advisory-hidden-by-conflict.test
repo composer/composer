@@ -1,0 +1,56 @@
+--TEST--
+Explain security-blocked versions that would avoid a dependency conflict.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/conflicter": "1.0.0",
+        "acme/lib": "^1.0"
+    },
+    "config": {"policy": {"advisories": {"block": true}}},
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {"name": "acme/conflicter", "version": "1.0.0", "conflict": {"acme/lib": ">=1.0.1"}},
+                {"name": "acme/lib", "version": "1.0.0"},
+                {"name": "acme/lib", "version": "1.0.1"}
+            ],
+            "security-advisories": {
+                "acme/lib": [{
+                    "advisoryId": "PKSA-1234-abcd-1234",
+                    "packageName": "acme/lib",
+                    "remoteId": "test",
+                    "title": "Security Advisory",
+                    "link": null,
+                    "cve": null,
+                    "affectedVersions": "<1.0.1",
+                    "source": "Tests",
+                    "reportedAt": "2024-04-31 12:37:47",
+                    "composerRepository": "Package Repository",
+                    "severity": "high",
+                    "sources": [{"name": "Security Advisory", "remoteId": "test"}]
+                }]
+            }
+        }
+    ]
+}
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires acme/conflicter 1.0.0 -> satisfiable by acme/conflicter[1.0.0].
+    - Root composer.json requires acme/lib ^1.0 -> satisfiable by acme/lib[1.0.1].
+    - acme/conflicter 1.0.0 conflicts with acme/lib 1.0.1.
+    - acme/lib[1.0.0] matches the root requirement and avoids the reported conflict, but was not loaded because it is affected by security advisories ("PKSA-1234-abcd-1234"). Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To turn the feature off entirely, you can set "policy.advisories.block" to false.
+
+--EXPECT--
