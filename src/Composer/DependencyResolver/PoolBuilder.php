@@ -213,6 +213,7 @@ class PoolBuilder
      */
     public function buildPool(array $repositories, Request $request): Pool
     {
+        $start = microtime(true);
         $this->restrictedPackagesList = $request->getRestrictedPackages() !== null ? array_flip($request->getRestrictedPackages()) : null;
 
         if (\count($request->getUpdateAllowList()) > 0) {
@@ -356,7 +357,7 @@ class PoolBuilder
         $this->skippedLoad = [];
         $this->indexCounter = 0;
 
-        $this->io->debug('Built pool.');
+        $this->io->debug('Built pool in '.(microtime(true) - $start).'s');
 
         // filter vulnerable packages before optimizing the pool otherwise we may end up with inconsistent state where the optimizer took away versions
         // that were not vulnerable and now suddenly the vulnerable ones are removed and we are missing some versions to make it solvable
