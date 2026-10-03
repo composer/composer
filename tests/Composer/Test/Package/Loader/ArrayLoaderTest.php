@@ -112,6 +112,32 @@ class ArrayLoaderTest extends TestCase
         self::assertNull($package->getPublishedDate());
     }
 
+    public function testMalformedTimeIsIgnored(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'time' => 'not a date',
+        ]);
+
+        self::assertNull($package->getReleaseDate());
+    }
+
+    public function testDatesAreParsedInUtc(): void
+    {
+        $package = $this->loader->load([
+            'name' => 'a/b',
+            'version' => '1.0',
+            'time' => '2025-01-15 10:00:00',
+            'published-time' => '2026-05-19 20:20:25',
+        ]);
+
+        self::assertInstanceOf(\DateTime::class, $package->getReleaseDate());
+        self::assertSame('2025-01-15T10:00:00+00:00', $package->getReleaseDate()->format(\DateTimeInterface::ATOM));
+        self::assertInstanceOf(\DateTimeImmutable::class, $package->getPublishedDate());
+        self::assertSame('2026-05-19T20:20:25+00:00', $package->getPublishedDate()->format(\DateTimeInterface::ATOM));
+    }
+
     public function testTypeDefault(): void
     {
         $config = [
