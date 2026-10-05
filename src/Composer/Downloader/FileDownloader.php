@@ -67,15 +67,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @internal
      */
     public static $downloadMetadata = [];
-    /**
-     * Collects response headers when running on GH Actions
-     *
-     * @see https://github.com/composer/composer/issues/11148
-     * @var array<string, array<string>>
-     * @private
-     * @internal
-     */
-    public static $responseHeaders = [];
 
     /**
      * @var array<string, string> Map of package name to cache key
@@ -233,10 +224,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 $fileSize = $response->getHeader('Content-Length') ?? '?';
             }
             FileDownloader::$downloadMetadata[$package->getName()] = $fileSize;
-
-            if (Platform::getEnv('GITHUB_ACTIONS') !== false && Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING') === false) {
-                FileDownloader::$responseHeaders[$package->getName()] = $response->getHeaders();
-            }
 
             try {
                 $this->validateDownloadedFile($package, $fileName);
