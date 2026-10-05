@@ -2707,6 +2707,73 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddConfigSettingDoesNotOverwriteNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "platform": {
+            "php": "8.1"
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addConfigSetting('php', '8.2'));
+        self::assertEquals('{
+    "config": {
+        "platform": {
+            "php": "8.1"
+        },
+        "php": "8.2"
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddSubNodeOverwritesTopLevelKeyNotNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        },
+        "allow-contrib": true
+    }
+}');
+
+        self::assertTrue($manipulator->addSubNode('extra', 'allow-contrib', false));
+        self::assertEquals('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        },
+        "allow-contrib": false
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddPropertyDoesNotOverwriteNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addProperty('extra.allow-contrib', false));
+        self::assertEquals('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        },
+        "allow-contrib": false
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testAddConfigSettingCanOverwrite(): void
     {
         $manipulator = new JsonManipulator('{

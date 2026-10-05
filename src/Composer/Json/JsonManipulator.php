@@ -530,8 +530,8 @@ class JsonManipulator
             return false;
         }
 
-        // child exists
-        $childRegex = '{'.self::DEFINES.'(?P<start>"'.preg_quote($name).'"\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
+        // child exists, anchored to the top level of the node so that a nested key with the same name is not matched
+        $childRegex = '{'.self::DEFINES.'^(?P<start>\{ \s* (?: (?&string) \s* : (?&json) \s* , \s* )*? "'.preg_quote($name).'"\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
         if (Preg::isMatch($childRegex, $children, $matches)) {
             $children = Preg::replaceCallback($childRegex, function ($matches) use ($subName, $value): string {
                 if ($subName !== null && is_string($matches['content'])) {
