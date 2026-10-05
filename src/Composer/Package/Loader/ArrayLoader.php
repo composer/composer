@@ -29,6 +29,15 @@ use Composer\Pcre\Preg;
  */
 class ArrayLoader implements LoaderInterface
 {
+    /** config key => [Link::TYPE_*, setter], matching BasePackage::$supportedLinkTypes */
+    private const LINK_TYPES = [
+        'require' => [Link::TYPE_REQUIRE, 'setRequires'],
+        'conflict' => [Link::TYPE_CONFLICT, 'setConflicts'],
+        'provide' => [Link::TYPE_PROVIDE, 'setProvides'],
+        'replace' => [Link::TYPE_REPLACE, 'setReplaces'],
+        'require-dev' => [Link::TYPE_DEV_REQUIRE, 'setDevRequires'],
+    ];
+
     /** @var VersionParser */
     protected $versionParser;
     /** @var bool */
@@ -54,16 +63,15 @@ class ArrayLoader implements LoaderInterface
 
         $package = $this->createObject($config, $class);
 
-        foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
+        foreach (self::LINK_TYPES as $type => [$linkType, $method]) {
             if (!isset($config[$type]) || !is_array($config[$type])) {
                 continue;
             }
-            $method = 'set'.ucfirst($opts['method']);
             $package->{$method}(
                 $this->parseLinks(
                     $package->getName(),
                     $package->getPrettyVersion(),
-                    $opts['method'],
+                    $linkType,
                     $config[$type]
                 )
             );
@@ -242,28 +250,14 @@ class ArrayLoader implements LoaderInterface
 
         // repositories may send timestamps as JSON numbers, which must not crash the loader
         if (!empty($config['time']) && (is_int($config['time']) || is_string($config['time']))) {
-            $time = (string) $config['time'];
-            $time = ctype_digit($time) ? '@'.$time : $time;
-
-            try {
-                $date = new \DateTime($time, new \DateTimeZone('UTC'));
-                $package->setReleaseDate($date);
-            } catch (\Exception $e) {
-            }
+            $package->setReleaseDateString((string) $config['time']);
         }
 
         // Server-set publication timestamp, owned by the repository and not
         // overridable by the package author (unlike `time`). Preferred by the
         // cooldown policy when present
         if (isset($config['published-time']) && (is_int($config['published-time']) || (is_string($config['published-time']) && '' !== $config['published-time']))) {
-            $publishedTime = (string) $config['published-time'];
-            $publishedTime = ctype_digit($publishedTime) ? '@'.$publishedTime : $publishedTime;
-
-            try {
-                $date = new \DateTimeImmutable($publishedTime, new \DateTimeZone('UTC'));
-                $package->setPublishedDate($date);
-            } catch (\Exception $e) {
-            }
+            $package->setPublishedDateString((string) $config['published-time']);
         }
 
         if (!empty($config['notification-url'])) {
@@ -349,10 +343,8 @@ class ArrayLoader implements LoaderInterface
         $name = $package->getName();
         $prettyVersion = $package->getPrettyVersion();
 
-        foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
+        foreach (self::LINK_TYPES as $type => [$linkType, $method]) {
             if (isset($config[$type])) {
-                $method = 'set'.ucfirst($opts['method']);
-
                 $links = [];
                 foreach ($config[$type] as $prettyTarget => $constraint) {
                     $target = strtolower($prettyTarget);
@@ -363,10 +355,10 @@ class ArrayLoader implements LoaderInterface
                     }
 
                     if ($constraint === 'self.version') {
-                        $links[$target] = $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint);
+                        $links[$target] = $this->createLink($name, $prettyVersion, $linkType, $target, $constraint);
                     } else {
                         if (!isset($linkCache[$name][$type][$target][$constraint])) {
-                            $linkCache[$name][$type][$target][$constraint] = [$target, $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint)];
+                            $linkCache[$name][$type][$target][$constraint] = [$target, $this->createLink($name, $prettyVersion, $linkType, $target, $constraint)];
                         }
 
                         [$target, $link] = $linkCache[$name][$type][$target][$constraint];
