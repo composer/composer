@@ -474,9 +474,35 @@ EOT
                 $nameLength = $versionLength = $latestLength = $releaseDateLength = 0;
 
                 if ($showLatest && $showVersion) {
+                    assert($composer !== null);
+                    $packagesToCheck = [];
                     foreach ($packages[$type] as $package) {
-                        if (is_object($package) && !Preg::isMatch($ignoredPackagesRegex, $package->getPrettyName())) {
-                            $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter);
+                        if (is_object($package) && !Preg::isMatch($ignoredPackagesRegex, $package->getPrettyName())
+                            && (!$showMajorOnly || !str_starts_with($package->getVersion(), 'dev-'))
+                        ) {
+                            $packagesToCheck[$package->getName()] = $package;
+                        }
+                    }
+                    $versionParser = new VersionParser;
+                    $batches = array_chunk($packagesToCheck, 50, true);
+                    $constraintBatches = [];
+                    foreach ($batches as $batch) {
+                        $constraints = [];
+                        foreach ($batch as $package) {
+                            $targetVersion = $this->getLatestTargetVersion($package, $showMajorOnly, $showMinorOnly, $showPatchOnly);
+                            $constraints[$package->getName()] = $targetVersion !== null ? $versionParser->parseConstraints($targetVersion) : null;
+                        }
+                        $constraintBatches[] = $constraints;
+                    }
+                    foreach ($batches as $batchIndex => $batch) {
+                        $constraints = $constraintBatches[$batchIndex];
+                        if (isset($constraintBatches[$batchIndex + 1])) {
+                            $this->getRepositorySet($composer)->prefetchPackages($constraintBatches[$batchIndex + 1]);
+                        }
+                        foreach ($this->getRepositorySet($composer)->findPackagesForNames($constraints) as $name => $candidates) {
+                            $package = $batch[$name];
+                            $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter, $candidates);
+                            unset($candidates);
                             if ($latestPackage === null) {
                                 continue;
                             }
@@ -1497,9 +1523,15 @@ EOT
 
     /**
      * Given a package, this finds the latest package matching it
+     * @param BasePackage[]|null $candidates
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $majorOnly, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter): ?PackageInterface
+    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $majorOnly, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter, ?array $candidates = null): ?PackageInterface
     {
+        // dev-x branches are considered to be on the latest major version always
+        if ($majorOnly && str_starts_with($package->getVersion(), 'dev-')) {
+            return null;
+        }
+
         // find the latest version allowed in this repo set
         $name = $package->getName();
         $versionSelector = new VersionSelector($this->getRepositorySet($composer), $platformRepo);
@@ -1509,38 +1541,10 @@ EOT
             $stability = array_search($flags[$name], BasePackage::STABILITIES, true);
         }
 
+        /** @var key-of<BasePackage::STABILITIES> $bestStability */
         $bestStability = $stability;
         if ($composer->getPackage()->getPreferStable()) {
             $bestStability = $package->getStability();
-        }
-
-        $targetVersion = null;
-        if (0 === strpos($package->getVersion(), 'dev-')) {
-            $targetVersion = $package->getVersion();
-
-            // dev-x branches are considered to be on the latest major version always, do not look up for a new commit as that is deemed a minor upgrade (albeit risky)
-            if ($majorOnly) {
-                return null;
-            }
-        }
-
-        if ($targetVersion === null) {
-            if ($majorOnly && Preg::isMatch('{^(?P<zero_major>(?:0\.)+)?(?P<first_meaningful>\d+)\.}', $package->getVersion(), $match)) {
-                $targetVersion = '>='.$match['zero_major'].(((int) $match['first_meaningful']) + 1).',<9999999-dev';
-            }
-
-            if ($minorOnly) {
-                $targetVersion = '^'.$package->getVersion();
-            }
-
-            if ($patchOnly) {
-                $trimmedVersion = Preg::replace('{(\.0)+$}D', '', $package->getVersion());
-                $partsNeeded = substr($trimmedVersion, 0, 1) === '0' ? 4 : 3;
-                while (substr_count($trimmedVersion, '.') + 1 < $partsNeeded) {
-                    $trimmedVersion .= '.0';
-                }
-                $targetVersion = '~'.$trimmedVersion;
-            }
         }
 
         if ($this->getIO()->isVerbose()) {
@@ -1554,12 +1558,42 @@ EOT
                 return version_compare($candidate->getVersion(), $package->getVersion(), '<=');
             };
         }
-        $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability, $platformReqFilter, 0, $this->getIO(), $showWarnings);
+        if ($candidates === null) {
+            $targetVersion = $this->getLatestTargetVersion($package, $majorOnly, $minorOnly, $patchOnly);
+            $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability, $platformReqFilter, 0, $this->getIO(), $showWarnings);
+        } else {
+            $candidate = $versionSelector->selectBestCandidate($name, $candidates, $bestStability, $platformReqFilter, $this->getIO(), $showWarnings);
+        }
         while ($candidate instanceof AliasPackage) {
             $candidate = $candidate->getAliasOf();
         }
 
         return $candidate !== false ? $candidate : null;
+    }
+
+    private function getLatestTargetVersion(PackageInterface $package, bool $majorOnly, bool $minorOnly, bool $patchOnly): ?string
+    {
+        if (str_starts_with($package->getVersion(), 'dev-')) {
+            return $package->getVersion();
+        }
+
+        $targetVersion = null;
+        if ($majorOnly && Preg::isMatch('{^(?P<zero_major>(?:0\.)+)?(?P<first_meaningful>\d+)\.}', $package->getVersion(), $match)) {
+            $targetVersion = '>='.$match['zero_major'].(((int) $match['first_meaningful']) + 1).',<9999999-dev';
+        }
+        if ($minorOnly) {
+            $targetVersion = '^'.$package->getVersion();
+        }
+        if ($patchOnly) {
+            $trimmedVersion = Preg::replace('{(\.0)+$}D', '', $package->getVersion());
+            $partsNeeded = substr($trimmedVersion, 0, 1) === '0' ? 4 : 3;
+            while (substr_count($trimmedVersion, '.') + 1 < $partsNeeded) {
+                $trimmedVersion .= '.0';
+            }
+            $targetVersion = '~'.$trimmedVersion;
+        }
+
+        return $targetVersion;
     }
 
     private function getRepositorySet(Composer $composer): RepositorySet

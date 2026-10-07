@@ -55,13 +55,33 @@ class Loop
      */
     public function wait(array $promises, ?ProgressBar $progress = null): void
     {
+        $this->run($promises, $progress, true);
+    }
+
+    /**
+     * @internal
+     * @param array<PromiseInterface<mixed>> $promises
+     */
+    public function waitForPromises(array $promises): void
+    {
+        $this->run($promises, null, false);
+    }
+
+    /**
+     * @param array<PromiseInterface<mixed>> $promises
+     */
+    private function run(array $promises, ?ProgressBar $progress, bool $waitForAllJobs): void
+    {
         $uncaught = null;
+        $complete = false;
 
         \React\Promise\all($promises)->then(
-            static function (): void {
+            static function () use (&$complete): void {
+                $complete = true;
             },
-            static function (\Throwable $e) use (&$uncaught): void {
+            static function (\Throwable $e) use (&$uncaught, &$complete): void {
                 $uncaught = $e;
+                $complete = true;
             }
         );
 
@@ -81,6 +101,9 @@ class Loop
 
         $lastUpdate = 0;
         while (true) {
+            if (!$waitForAllJobs && $complete) {
+                break;
+            }
             $activeJobs = 0;
 
             $activeJobs += $this->httpDownloader->countActiveJobs();

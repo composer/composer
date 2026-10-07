@@ -29,11 +29,56 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositorySet;
+use Composer\Repository\ComposerRepository;
+use Composer\Semver\Constraint\Constraint;
+use Composer\Test\Mock\FactoryMock;
 use Composer\Test\TestCase;
+use Composer\Util\HttpDownloader;
+use Composer\Util\Http\Response;
 use Composer\Util\Platform;
 
 class PoolBuilderTest extends TestCase
 {
+    public function testPrivateTransitiveMetadataIsNotRequestedFromLowerRepositories(): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+        $config = FactoryMock::createConfig();
+        $http = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $http->method('get')->willReturnCallback(static function (string $url) {
+            self::assertNotSame('', $url);
+
+            return new Response(['url' => $url], 200, [], '{"metadata-url":"/p2/%package%.json"}');
+        });
+        $requests = [];
+        $http->method('add')->willReturnCallback(static function (string $url) use (&$requests) {
+            self::assertNotSame('', $url);
+            $requests[] = $url;
+            $bodies = [
+                'https://private.example/p2/private/root.json' => '{"packages":{"private/root":[{"name":"private/root","version":"1.0.0","require":{"private/child":"1.0.0"}}]}}',
+                'https://private.example/p2/private/child.json' => '{"packages":{"private/child":[{"name":"private/child","version":"1.0.0"}]}}',
+                'https://public.example/p2/public/root.json' => '{"packages":{"public/root":[{"name":"public/root","version":"1.0.0"}]}}',
+            ];
+
+            return \React\Promise\resolve(new Response(['url' => $url], 200, [], $bodies[$url] ?? '{"packages":{}}'));
+        });
+        $set = new RepositorySet;
+        foreach (['https://private.example', 'https://public.example'] as $url) {
+            $set->addRepository(new ComposerRepository(['url' => $url], new NullIO, $config, $http));
+        }
+        $request = new Request;
+        $request->requireName('private/root', new Constraint('==', '1.0.0.0'));
+        $request->requireName('public/root', new Constraint('==', '1.0.0.0'));
+        $pool = $set->createPool($request, new NullIO);
+        $names = array_map(static function ($package): string {
+            return $package->getName();
+        }, $pool->getPackages());
+        sort($names);
+        self::assertSame(['private/child', 'private/root', 'public/root'], $names);
+        self::assertNotContains('https://public.example/p2/private/child.json', $requests);
+    }
+
     /**
      * @dataProvider getIntegrationTests
      * @param string[] $expect

@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\Downloader\TransportException;
 use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\VcsDriverInterface;
+use Composer\Repository\Vcs\GitHubDriver;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
@@ -32,7 +33,7 @@ use Composer\Config;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInterface
+class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInterface, PrefetchableRepositoryInterface
 {
     /** @var string */
     protected $url;
@@ -64,6 +65,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     private $drivers;
     /** @var ?VcsDriverInterface */
     private $driver;
+    /** @var bool */
+    private $driverInitialized = false;
     /** @var ?VersionCacheInterface */
     private $versionCache;
     /** @var list<string> */
@@ -127,33 +130,72 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
     public function getDriver(): ?VcsDriverInterface
     {
-        if ($this->driver) {
-            return $this->driver;
+        if ($this->driver === null) {
+            $this->driver = $this->createDriver();
+        }
+        if ($this->driver !== null && !$this->driverInitialized) {
+            $this->driver->initialize();
+            $this->driverInitialized = true;
         }
 
+        return $this->driver;
+    }
+
+    public function prefetchPackages(array $packageNameMap, array $acceptableStabilities = \Composer\Package\BasePackage::STABILITIES, array $stabilityFlags = [], bool $initialize = false): ?array
+    {
+        if ($initialize) {
+            $this->getPackages();
+        }
+        if ($this->packages !== null) {
+            $names = [];
+            foreach ($this->packages as $package) {
+                if (array_key_exists($package->getName(), $packageNameMap)) {
+                    $names[$package->getName()] = true;
+                }
+            }
+
+            return array_keys($names);
+        }
+        if ($packageNameMap === []) {
+            return [];
+        }
+
+        if ($this->driver === null) {
+            $this->driver = $this->createDriver(true);
+        }
+        if ($this->driver instanceof GitHubDriver) {
+            $this->driver->prefetch();
+        }
+
+        return null;
+    }
+
+    private function createDriver(bool $prefetch = false): ?VcsDriverInterface
+    {
         if (isset($this->drivers[$this->type])) {
             $class = $this->drivers[$this->type];
-            $this->driver = new $class($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->processExecutor);
-            $this->driver->initialize();
+            if ($prefetch && !is_a($class, GitHubDriver::class, true)) {
+                return null;
+            }
 
-            return $this->driver;
+            return new $class($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->processExecutor);
         }
 
         foreach ($this->drivers as $driver) {
+            if ($prefetch && !is_a($driver, GitHubDriver::class, true)) {
+                // Defer selection rather than bypassing a higher-priority driver.
+                return null;
+            }
             if ($driver::supports($this->io, $this->config, $this->url)) {
-                $this->driver = new $driver($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->processExecutor);
-                $this->driver->initialize();
-
-                return $this->driver;
+                return new $driver($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->processExecutor);
             }
         }
 
-        foreach ($this->drivers as $driver) {
-            if ($driver::supports($this->io, $this->config, $this->url, true)) {
-                $this->driver = new $driver($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->processExecutor);
-                $this->driver->initialize();
-
-                return $this->driver;
+        if (!$prefetch) {
+            foreach ($this->drivers as $driver) {
+                if ($driver::supports($this->io, $this->config, $this->url, true)) {
+                    return new $driver($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->processExecutor);
+                }
             }
         }
 

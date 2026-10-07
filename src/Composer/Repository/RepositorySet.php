@@ -181,6 +181,82 @@ class RepositorySet
     }
 
     /**
+     * @internal
+     * @param array<string, ConstraintInterface|null> $packageNameMap
+     * @return \Generator<string, BasePackage[]>
+     */
+    public function findPackagesForNames(array $packageNameMap): \Generator
+    {
+        self::prefetchVcsRepositories($this->repositories, $packageNameMap);
+        $packages = [];
+        foreach ($this->repositories as $repository) {
+            if ($packageNameMap === []) {
+                break;
+            }
+
+            if ($repository instanceof PrefetchableRepositoryInterface) {
+                $repository->prefetchPackages($packageNameMap, $this->acceptableStabilities, $this->stabilityFlags, true);
+            }
+            foreach ($packageNameMap as $name => $constraint) {
+                $result = $repository->loadPackages([$name => $constraint], $this->acceptableStabilities, $this->stabilityFlags);
+                $packages[$name] = array_merge($packages[$name] ?? [], $result['packages']);
+                $found = in_array($name, $result['namesFound'], true);
+                unset($result);
+                if ($found) {
+                    unset($packageNameMap[$name]);
+                    yield $name => $packages[$name];
+                    unset($packages[$name]);
+                }
+            }
+        }
+
+        foreach ($packageNameMap as $name => $constraint) {
+            yield $name => $packages[$name] ?? [];
+            unset($packages[$name]);
+        }
+    }
+
+    /**
+     * @internal
+     * @param RepositoryInterface[] $repositories
+     * @param array<string, ConstraintInterface|null> $packageNameMap
+     */
+    public static function prefetchVcsRepositories(array $repositories, array $packageNameMap): void
+    {
+        if ($packageNameMap === []) {
+            return;
+        }
+
+        foreach ($repositories as $repository) {
+            if ($repository instanceof VcsRepository) {
+                $repository->prefetchPackages($packageNameMap);
+            } elseif ($repository instanceof FilterRepository) {
+                $repository->prefetchVcsPackages($packageNameMap);
+            }
+        }
+    }
+
+    /**
+     * @internal
+     * @param array<string, ConstraintInterface|null> $packageNameMap
+     */
+    public function prefetchPackages(array $packageNameMap): void
+    {
+        foreach ($this->repositories as $repository) {
+            if ($packageNameMap === [] || !$repository instanceof PrefetchableRepositoryInterface) {
+                break;
+            }
+            $names = $repository->prefetchPackages($packageNameMap, $this->acceptableStabilities, $this->stabilityFlags);
+            if ($names === null) {
+                break;
+            }
+            foreach ($names as $name) {
+                unset($packageNameMap[$name]);
+            }
+        }
+    }
+
+    /**
      * Find packages providing or matching a name and optionally meeting a constraint in all repositories
      *
      * Returned in the order of repositories, matching priority
@@ -190,6 +266,7 @@ class RepositorySet
      */
     public function findPackages(string $name, ?ConstraintInterface $constraint = null, int $flags = 0): array
     {
+        self::prefetchVcsRepositories($this->repositories, [$name => $constraint]);
         $ignoreStability = ($flags & self::ALLOW_UNACCEPTABLE_STABILITIES) !== 0;
         $loadFromAllRepos = ($flags & self::ALLOW_SHADOWED_REPOSITORIES) !== 0;
 

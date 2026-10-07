@@ -95,6 +95,18 @@ class VersionSelector
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
         $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint, $repoSetFlags);
 
+        return $this->selectBestCandidate($packageName, $candidates, $preferredStability, $platformRequirementFilter, $io, $showWarnings);
+    }
+
+    /**
+     * @internal
+     * @param BasePackage[] $candidates
+     * @param key-of<BasePackage::STABILITIES> $preferredStability
+     * @param callable(PackageInterface):bool|bool $showWarnings
+     * @return PackageInterface|false
+     */
+    public function selectBestCandidate(string $packageName, array $candidates, string $preferredStability, PlatformRequirementFilterInterface $platformRequirementFilter, ?IOInterface $io = null, $showWarnings = true)
+    {
         $minPriority = BasePackage::STABILITIES[$preferredStability];
         usort($candidates, static function (PackageInterface $a, PackageInterface $b) use ($minPriority) {
             $aPriority = $a->getStabilityPriority();

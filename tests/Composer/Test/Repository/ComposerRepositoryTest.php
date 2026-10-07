@@ -22,9 +22,254 @@ use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\Mock\FactoryMock;
 use Composer\Test\TestCase;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\BasePackage;
+use Composer\Util\HttpDownloader;
+use Composer\Util\Http\Response;
+use React\Promise\Deferred;
+use Composer\Cache;
+use Composer\IO\BufferIO;
+use Composer\Downloader\TransportException;
 
 class ComposerRepositoryTest extends TestCase
 {
+    /**
+     * @dataProvider provideMetadataCacheModes
+     * @param array<string, mixed> $cacheConfig
+     */
+    public function testCurrentBatchDoesNotWaitForPreparedNextBatch(array $cacheConfig): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+        $config = FactoryMock::createConfig();
+        $config->merge(['config' => $cacheConfig]);
+        $url = 'https://example.org';
+        /** @var array<string, Deferred<Response>> $pending */
+        $pending = [];
+        $http = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $http->method('get')->willReturn(new Response(['url' => $url.'/packages.json'], 200, [], '{"metadata-url":"/p2/%package%.json"}'));
+        $http->method('add')->willReturnCallback(static function (string $url) use (&$pending) {
+            self::assertArrayNotHasKey($url, $pending);
+            $pending[$url] = new Deferred;
+
+            return $pending[$url]->promise();
+        });
+        $http->method('countActiveJobs')->willReturnCallback(static function () use (&$pending, $url): int {
+            $current = $url.'/p2/vendor/current.json';
+            self::assertArrayHasKey($url.'/p2/vendor/next.json', $pending);
+            $deferred = $pending[$current];
+            unset($pending[$current]);
+            $deferred->resolve(new Response(['url' => $current], 200, [], '{"packages":{"vendor/current":[{"name":"vendor/current","version":"2.0.0"}]}}'));
+
+            return 1;
+        });
+        $repository = new ComposerRepository(['url' => $url], new NullIO, $config, $http);
+        $stable = ['stable' => BasePackage::STABILITY_STABLE];
+        $repository->loadPackages([], $stable, []);
+        $repository->prefetchPackages(['vendor/next' => null], $stable);
+        $current = $repository->loadPackages(['vendor/current' => null], $stable, []);
+        self::assertSame('2.0.0.0', $current['packages'][0]->getVersion());
+        $next = $url.'/p2/vendor/next.json';
+        $pending[$next]->resolve(new Response(['url' => $next], 200, [], '{"packages":{"vendor/next":[{"name":"vendor/next","version":"3.0.0"}]}}'));
+        $result = $repository->loadPackages(['vendor/next' => null], $stable, []);
+        self::assertSame('3.0.0.0', $result['packages'][0]->getVersion());
+    }
+
+    public static function provideMetadataCacheModes(): array
+    {
+        return [[[]], [['cache-dir' => '/dev/null']], [['cache-read-only' => true]]];
+    }
+
+    public function testPrefetchedNotModifiedMetadataReusesReadOnlyCache(): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+        $config = FactoryMock::createConfig();
+        $io = new NullIO;
+        $cache = new Cache($io, $config->get('cache-repo-dir').'/https---example.org', 'a-z0-9.$~_');
+        $json = '{"packages":{"vendor/package":[{"name":"vendor/package","version":"2.0.0"}]},"last-modified":"Wed, 01 Jan 2025 00:00:00 GMT"}';
+        $cache->write('provider-vendor~package.json', $json);
+        $config->merge(['config' => ['cache-read-only' => true]]);
+        $http = $this->getHttpDownloaderMock($io, $config);
+        $http->expects([
+            ['url' => 'https://example.org/packages.json', 'body' => '{"metadata-url":"/p2/%package%.json"}'],
+            ['url' => 'https://example.org/p2/vendor/package.json', 'options' => ['http' => ['header' => ['If-Modified-Since: Wed, 01 Jan 2025 00:00:00 GMT']], 'retry-auth-failure' => false], 'status' => 304, 'body' => ''],
+        ], true);
+        $repository = new ComposerRepository(['url' => 'https://example.org'], $io, $config, $http);
+        $stable = ['stable' => BasePackage::STABILITY_STABLE];
+        $repository->loadPackages([], $stable, []);
+        $repository->prefetchPackages(['vendor/package' => null], $stable);
+        $result = $repository->loadPackages(['vendor/package' => null], $stable, []);
+        self::assertSame('2.0.0.0', $result['packages'][0]->getVersion());
+        self::assertSame($json, $cache->read('provider-vendor~package.json'));
+    }
+
+    public function testFailedSpeculativeMetadataIsRetriedOnlyWhenNeeded(): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+        $config = FactoryMock::createConfig();
+        $io = new BufferIO;
+        $http = $this->getHttpDownloaderMock($io, $config);
+        $url = 'https://example.org';
+        $http->expects([
+            ['url' => $url.'/packages.json', 'body' => '{"metadata-url":"/p2/%package%.json"}'],
+            ['url' => $url.'/p2/vendor/package.json', 'options' => ['retry-auth-failure' => false], 'status' => 403],
+            ['url' => $url.'/p2/vendor/package.json', 'body' => '{"packages":{"vendor/package":[{"name":"vendor/package","version":"2.0.0"}]}}'],
+        ], true);
+        $repository = new ComposerRepository(['url' => $url], $io, $config, $http);
+        $stable = ['stable' => BasePackage::STABILITY_STABLE];
+        $repository->loadPackages([], $stable, []);
+        $repository->prefetchPackages(['vendor/package' => null], $stable);
+        self::assertSame('', $io->getOutput());
+        $result = $repository->loadPackages(['vendor/package' => null], $stable, []);
+        self::assertSame('2.0.0.0', $result['packages'][0]->getVersion());
+    }
+
+    public function testInFlightMetadataFailureUsesNormalRetryWhenConsumed(): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+        $config = FactoryMock::createConfig();
+        $url = 'https://example.org';
+        $pending = new Deferred;
+        $http = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $http->method('get')->willReturn(new Response(['url' => $url.'/packages.json'], 200, [], '{"metadata-url":"/p2/%package%.json"}'));
+        $attempts = 0;
+        $http->method('add')->willReturnCallback(static function (string $request, array $options) use ($pending, &$attempts, $url) {
+            $attempts++;
+            if ($attempts === 1) {
+                self::assertFalse($options['retry-auth-failure']);
+
+                return $pending->promise();
+            }
+            self::assertArrayNotHasKey('retry-auth-failure', $options);
+
+            return \React\Promise\resolve(new Response(['url' => $url], 200, [], '{"packages":{"vendor/package":[{"name":"vendor/package","version":"2.0.0"}]}}'));
+        });
+        $http->method('countActiveJobs')->willReturnCallback(static function () use ($pending): int {
+            $pending->reject(new TransportException('Unauthorized', 403));
+
+            return 0;
+        });
+        $repository = new ComposerRepository(['url' => $url], new NullIO, $config, $http);
+        $stable = ['stable' => BasePackage::STABILITY_STABLE];
+        $repository->loadPackages([], $stable, []);
+        $repository->prefetchPackages(['vendor/package' => null], $stable);
+        $result = $repository->loadPackages(['vendor/package' => null], $stable, []);
+        self::assertSame('2.0.0.0', $result['packages'][0]->getVersion());
+        self::assertSame(2, $attempts);
+    }
+
+    public function testMetadataLookaheadRetainsABoundedNumberOfResponses(): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+        $http = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $http->method('get')->willReturn(new Response(['url' => 'https://example.org/packages.json'], 200, [], '{"metadata-url":"/p2/%package%.json"}'));
+        $queued = 0;
+        $http->method('add')->willReturnCallback(static function () use (&$queued) {
+            $queued++;
+
+            return (new Deferred)->promise();
+        });
+        $repository = new ComposerRepository(['url' => 'https://example.org'], new NullIO, FactoryMock::createConfig(), $http);
+        $repository->loadPackages([], BasePackage::STABILITIES, []);
+        $names = [];
+        for ($i = 0; $i < 500; $i++) {
+            $names['vendor/package-'.$i] = null;
+        }
+        $repository->prefetchPackages($names);
+        self::assertGreaterThan(0, $queued);
+        self::assertLessThanOrEqual(200, $queued);
+    }
+
+    /**
+     * @dataProvider provideSpeculativeNetworkFailures
+     */
+    public function testSpeculativeNetworkFailureUsesNormalFallbackWithoutAnotherRequest(int $status, bool $cached, string $failureTiming): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+        $io = new BufferIO;
+        $config = FactoryMock::createConfig();
+        if ($cached) {
+            $cache = new Cache($io, $config->get('cache-repo-dir').'/https---example.org', 'a-z0-9.$~_');
+            $cache->write('provider-vendor~package.json', '{"packages":{"vendor/package":[{"name":"vendor/package","version":"2.0.0"}]},"last-modified":"Wed, 01 Jan 2025 00:00:00 GMT"}');
+            $config->merge(['config' => ['cache-read-only' => true]]);
+        }
+        $failure = new TransportException('Simulated network failure', $status);
+        $failure->setStatusCode($status);
+        $pending = new Deferred;
+        $http = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $http->method('get')->willReturn(new Response(['url' => 'https://example.org/packages.json'], 200, [], '{"metadata-url":"/p2/%package%.json"}'));
+        $http->expects(self::once())->method('add')->willReturnCallback(static function () use ($pending, $failure, $failureTiming) {
+            if ($failureTiming === 'synchronous') {
+                throw $failure;
+            }
+
+            return $failureTiming === 'in-flight' ? $pending->promise() : \React\Promise\reject($failure);
+        });
+        $http->method('countActiveJobs')->willReturnCallback(static function () use ($pending, $failure): int {
+            $pending->reject($failure);
+
+            return 0;
+        });
+        $repository = new ComposerRepository(['url' => 'https://example.org'], $io, $config, $http);
+        $stable = ['stable' => BasePackage::STABILITY_STABLE];
+        $repository->loadPackages([], $stable, []);
+        $repository->prefetchPackages(['vendor/package' => null], $stable);
+        self::assertSame('', $io->getOutput());
+        if (!$cached) {
+            $this->expectExceptionObject($failure);
+        }
+        $result = $repository->loadPackages(['vendor/package' => null], $stable, []);
+        if ($cached) {
+            self::assertSame('2.0.0.0', $result['packages'][0]->getVersion());
+            self::assertStringContainsString('loaded from the local cache', $io->getOutput());
+        }
+    }
+
+    public static function provideSpeculativeNetworkFailures(): array
+    {
+        return [
+            [500, true, 'rejected'], [500, true, 'in-flight'], [500, true, 'synchronous'],
+            [500, false, 'rejected'], [500, false, 'in-flight'], [500, false, 'synchronous'],
+            [0, true, 'rejected'], [0, true, 'in-flight'], [0, true, 'synchronous'],
+            [0, false, 'rejected'], [0, false, 'in-flight'], [0, false, 'synchronous'],
+        ];
+    }
+
+    public function testMalformedSpeculativeMetadataIsNotRetriedOrReplacedWithCache(): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+        $config = FactoryMock::createConfig();
+        $io = new BufferIO;
+        $cache = new Cache($io, $config->get('cache-repo-dir').'/https---example.org', 'a-z0-9.$~_');
+        $cache->write('provider-vendor~package.json', '{"packages":{"vendor/package":[{"name":"vendor/package","version":"2.0.0"}]},"last-modified":"Wed, 01 Jan 2025 00:00:00 GMT"}');
+        $config->merge(['config' => ['cache-read-only' => true]]);
+        $url = 'https://example.org';
+        $http = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $http->method('get')->willReturn(new Response(['url' => $url.'/packages.json'], 200, [], '{"metadata-url":"/p2/%package%.json"}'));
+        $http->expects(self::once())->method('add')->willReturn(\React\Promise\resolve(new Response(['url' => $url.'/p2/vendor/package.json'], 200, [], 'invalid JSON')));
+        $repository = new ComposerRepository(['url' => $url], $io, $config, $http);
+        $stable = ['stable' => BasePackage::STABILITY_STABLE];
+        $repository->loadPackages([], $stable, []);
+        $repository->prefetchPackages(['vendor/package' => null], $stable);
+        self::assertSame('', $io->getOutput());
+        $this->expectException(\Seld\JsonLint\ParsingException::class);
+        $this->expectExceptionMessage('does not contain valid JSON');
+
+        $repository->loadPackages(['vendor/package' => null], $stable, []);
+    }
+
     /**
      * @dataProvider loadDataProvider
      *

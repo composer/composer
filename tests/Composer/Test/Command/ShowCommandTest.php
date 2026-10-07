@@ -23,6 +23,38 @@ use InvalidArgumentException;
 class ShowCommandTest extends TestCase
 {
     /**
+     * @dataProvider provideCacheModes
+     * @param array<string, mixed> $config
+     */
+    public function testLatestVersionsWithDisabledOrReadOnlyCache(array $config): void
+    {
+        $this->initTempComposer([
+            'name' => 'root/pkg',
+            'config' => $config,
+            'repositories' => [
+                ['type' => 'package', 'package' => [
+                    ['name' => 'vendor/first', 'version' => '2.0.0'],
+                    ['name' => 'vendor/second', 'version' => '3.0.0'],
+                ]],
+                'packagist.org' => false,
+            ],
+            'require' => ['vendor/first' => '*', 'vendor/second' => '*'],
+        ]);
+        $this->createInstalledJson([self::getPackage('vendor/first', '1.0.0'), self::getPackage('vendor/second', '1.0.0')]);
+        $tester = $this->getApplicationTester();
+        $tester->run(['command' => 'outdated', '--format' => 'json']);
+        $result = json_decode($tester->getDisplay(), true);
+
+        self::assertSame(['vendor/first', 'vendor/second'], array_column($result['installed'], 'name'));
+        self::assertSame(['2.0.0', '3.0.0'], array_column($result['installed'], 'latest'));
+    }
+
+    public static function provideCacheModes(): array
+    {
+        return [[['cache-dir' => '/dev/null']], [['cache-read-only' => true]]];
+    }
+
+    /**
      * @dataProvider provideShow
      * @param array<mixed> $command
      * @param array<string, string> $requires

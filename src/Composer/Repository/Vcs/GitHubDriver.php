@@ -21,6 +21,8 @@ use Composer\Pcre\Preg;
 use Composer\Util\GitHub;
 use Composer\Util\Http\Response;
 use Composer\Util\Url;
+use Composer\Util\HttpDownloader;
+use Composer\Util\Platform;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -56,24 +58,18 @@ class GitHubDriver extends VcsDriver
      * @var ?GitDriver
      */
     protected $gitDriver = null;
+    /** @var bool */
+    private $prefetchStarted = false;
 
     /**
      * @inheritDoc
      */
     public function initialize(): void
     {
-        if (!Preg::isMatch('#^(?:(?:https?|git)://([^/]+)/|git@([^:]+):/?)([^/]+)/([^/]+?)(?:\.git|/)?$#', $this->url, $match)) {
+        if (!$this->parseUrl()) {
             throw new \InvalidArgumentException(sprintf('The GitHub repository URL %s is invalid.', Url::sanitize($this->url)));
         }
-
-        $this->owner = $match[3];
-        $this->repository = $match[4];
-        $this->originUrl = strtolower($match[1] ?? (string) $match[2]);
-        if ($this->originUrl === 'www.github.com') {
-            $this->originUrl = 'github.com';
-        }
-        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
-        $this->cache->setReadOnly($this->config->get('cache-read-only'));
+        $this->initializeCache();
 
         if (isset($this->repoConfig['allow-git-fallback']) && $this->repoConfig['allow-git-fallback'] === false) {
             $this->allowGitFallback = false;
@@ -86,6 +82,130 @@ class GitHubDriver extends VcsDriver
         }
 
         $this->fetchRootIdentifier();
+    }
+
+    /**
+     * @internal
+     */
+    public function prefetch(): void
+    {
+        $maxJobs = Platform::getEnv('COMPOSER_MAX_PARALLEL_HTTP');
+        if ($this->prefetchStarted || $this->gitDriver !== null || !HttpDownloader::isCurlEnabled()
+            || (bool) Platform::getEnv('COMPOSER_DISABLE_NETWORK')
+            || (is_numeric($maxJobs) && (int) $maxJobs <= 1)
+            || $this->config->get('use-github-api') === false || (bool) ($this->repoConfig['no-api'] ?? false)
+        ) {
+            return;
+        }
+        if ($this->repoData === null && !$this->parseUrl()) {
+            return;
+        }
+
+        $this->prefetchStarted = true;
+        $repoUrl = $this->getApiUrl().'/repos/'.$this->owner.'/'.$this->repository;
+        $repoData = $this->repoData;
+        $branches = null;
+        if ($this->repoData === null) {
+            $this->prefetchContents($repoUrl, function (Response $response) use (&$repoData, &$branches): void {
+                $repoData = $response->decodeJson();
+                $this->prefetchRootPackage($repoData, $branches);
+            });
+        }
+        $this->prefetchContents($repoUrl.'/tags?per_page=100');
+        $this->prefetchContents($repoUrl.'/git/refs/heads?per_page=100', function (Response $response) use (&$repoData, &$branches): void {
+            $branches = $response->decodeJson();
+            $this->prefetchRootPackage($repoData, $branches);
+        });
+    }
+
+    /**
+     * @phpstan-assert !null $this->cache
+     */
+    private function initializeCache(): void
+    {
+        if ($this->cache === null) {
+            $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
+            $this->cache->setReadOnly($this->config->get('cache-read-only'));
+        }
+    }
+
+    /**
+     * @param array<string, mixed>|null $repoData
+     * @param array<array{ref: string, object: array{sha: string}}>|null $branches
+     */
+    private function prefetchRootPackage(?array $repoData, ?array $branches): void
+    {
+        if ($repoData === null || $branches === null) {
+            return;
+        }
+
+        $branch = $repoData['default_branch'] ?? $repoData['master_branch'] ?? 'master';
+        foreach ($branches as $ref) {
+            if ($ref['ref'] !== 'refs/heads/'.$branch) {
+                continue;
+            }
+
+            $identifier = $ref['object']['sha'];
+            if (!Preg::isMatch('{^[a-f0-9]{40}$}iD', $identifier)) {
+                return;
+            }
+            $repoUrl = $this->getApiUrl().'/repos/'.$repoData['owner']['login'].'/'.$repoData['name'];
+            $this->initializeCache();
+            $contents = $this->cache->read($identifier);
+            if ($contents !== false) {
+                $composer = JsonFile::parseJson($contents);
+                if ($composer !== null && !isset($composer['funding'])) {
+                    $this->prefetchFunding($repoUrl, $repoData['owner']['login']);
+                }
+            } else {
+                $this->prefetchContents($repoUrl.'/contents/composer.json?ref='.$identifier, function (Response $response) use ($repoUrl, $repoData, $identifier): void {
+                    $file = $response->decodeJson();
+                    if ($file['encoding'] !== 'base64') {
+                        return;
+                    }
+                    $composer = JsonFile::parseJson((string) base64_decode($file['content'], true));
+                    if ($composer === null || $composer === []) {
+                        return;
+                    }
+                    if (!isset($composer['time']) || $composer['time'] === '') {
+                        $this->prefetchContents($repoUrl.'/commits/'.$identifier);
+                    }
+                    if (!isset($composer['funding'])) {
+                        $this->prefetchFunding($repoUrl, $repoData['owner']['login']);
+                    }
+                });
+            }
+
+            return;
+        }
+    }
+
+    private function prefetchFunding(string $repoUrl, string $owner): void
+    {
+        if ($this->originUrl !== 'github.com') {
+            return;
+        }
+
+        $this->httpDownloader->addShared($repoUrl.'/contents/.github/FUNDING.yml', ['retry-auth-failure' => false])->then(null, function (\Throwable $e) use ($owner): void {
+            $this->httpDownloader->addShared($this->getApiUrl().'/repos/'.$owner.'/.github/contents/FUNDING.yml', ['retry-auth-failure' => false])->then(null, static function (\Throwable $e): void {
+            });
+        });
+    }
+
+    private function parseUrl(): bool
+    {
+        if (!Preg::isMatch('#^(?:(?:https?|git)://([^/]+)/|git@([^:]+):/?)([^/]+)/([^/]+?)(?:\.git|/)?$#', $this->url, $match)) {
+            return false;
+        }
+
+        $this->owner = $match[3];
+        $this->repository = $match[4];
+        $this->originUrl = strtolower($match[1] ?? (string) $match[2]);
+        if ($this->originUrl === 'www.github.com') {
+            $this->originUrl = 'github.com';
+        }
+
+        return true;
     }
 
     public function getRepositoryUrl(): string
@@ -128,6 +248,12 @@ class GitHubDriver extends VcsDriver
         return 'https://' . $apiUrl;
     }
 
+    protected function getPrefetchKey(string $url): string
+    {
+        // Responses belong to this driver even when GitHub redirects a renamed repository.
+        return Preg::replace('{^'.preg_quote($this->getApiUrl(), '{').'/repos/[^/]+/[^/]+(?=/|$)}', '', $url);
+    }
+
     /**
      * @inheritDoc
      */
@@ -167,13 +293,17 @@ class GitHubDriver extends VcsDriver
         }
 
         if (!isset($this->infoCache[$identifier])) {
-            if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
+            $cacheIdentifier = $identifier;
+            if ($identifier === $this->rootIdentifier) {
+                $cacheIdentifier = $this->getBranches()[$identifier] ?? $identifier;
+            }
+            if ($this->shouldCache($cacheIdentifier) && $res = $this->cache->read($cacheIdentifier)) {
                 $composer = JsonFile::parseJson($res);
             } else {
-                $composer = $this->getBaseComposerInformation($identifier);
+                $composer = $this->getBaseComposerInformation($cacheIdentifier);
 
-                if ($this->shouldCache($identifier)) {
-                    $this->cache->write($identifier, JsonFile::encode($composer, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES));
+                if ($this->shouldCache($cacheIdentifier)) {
+                    $this->cache->write($cacheIdentifier, JsonFile::encode($composer, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES));
                 }
             }
 
@@ -218,7 +348,7 @@ class GitHubDriver extends VcsDriver
 
         foreach ([$this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/.github/FUNDING.yml', $this->getApiUrl() . '/repos/'.$this->owner.'/.github/contents/FUNDING.yml'] as $file) {
             try {
-                $response = $this->httpDownloader->get($file, [
+                $response = $this->httpDownloader->getShared($file, [
                     'retry-auth-failure' => false,
                 ])->decodeJson();
             } catch (TransportException $e) {

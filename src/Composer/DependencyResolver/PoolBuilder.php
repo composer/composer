@@ -25,6 +25,7 @@ use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PrePoolCreateEvent;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RepositorySet;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\Constraint;
@@ -439,6 +440,8 @@ class PoolBuilder
             $this->loadedPackages[$name] = $constraint;
         }
 
+        RepositorySet::prefetchVcsRepositories($repositories, $this->packagesToLoad);
+
         // Load packages in chunks of 50 to prevent memory usage build-up due to caches of all sorts
         $packageBatches = array_chunk($this->packagesToLoad, self::LOAD_BATCH_SIZE, true);
         $this->packagesToLoad = [];
@@ -455,6 +458,12 @@ class PoolBuilder
             }
 
             foreach ($packageBatches as $batchIndex => $packageBatch) {
+                if ($repository instanceof \Composer\Repository\PrefetchableRepositoryInterface) {
+                    $repository->prefetchPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags);
+                    if (isset($packageBatches[$batchIndex + 1])) {
+                        $repository->prefetchPackages($packageBatches[$batchIndex + 1], $this->acceptableStabilities, $this->stabilityFlags);
+                    }
+                }
                 $result = $repository->loadPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags, $this->loadedPerRepo[$repoIndex] ?? []);
 
                 foreach ($result['namesFound'] as $name) {

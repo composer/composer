@@ -16,6 +16,13 @@ use Composer\Repository\Vcs\GitHubDriver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
+use Composer\Util\HttpDownloader;
+use Composer\Util\Http\Response;
+use React\Promise\Deferred;
+use Composer\IO\NullIO;
+use Composer\Cache;
+use Composer\Json\JsonFile;
+use Composer\Downloader\TransportException;
 
 class GitHubDriverTest extends TestCase
 {
@@ -42,8 +49,14 @@ class GitHubDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    public function testPrivateRepository(): void
+    /**
+     * @dataProvider providePrefetch
+     */
+    public function testPrivateRepository(bool $prefetch): void
     {
+        if ($prefetch && !HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
         $repoUrl = 'http://github.com/composer/packagist';
         $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
         $repoSshUrl = 'git@github.com:composer/packagist.git';
@@ -56,12 +69,17 @@ class GitHubDriverTest extends TestCase
             ->will($this->returnValue(true));
 
         $httpDownloader = $this->getHttpDownloaderMock($io, $this->config);
+        $expectations = $prefetch ? [
+            ['url' => $repoApiUrl, 'status' => 404, 'options' => ['retry-auth-failure' => false]],
+            ['url' => $repoApiUrl.'/tags?per_page=100', 'status' => 404],
+            ['url' => $repoApiUrl.'/git/refs/heads?per_page=100', 'status' => 404],
+        ] : [];
         $httpDownloader->expects(
-            [
+            array_merge($expectations, [
                 ['url' => $repoApiUrl, 'status' => 404],
                 ['url' => 'https://api.github.com/', 'body' => '{}'],
                 ['url' => $repoApiUrl, 'body' => '{"master_branch": "test_master", "private": true, "owner": {"login": "composer"}, "name": "packagist"}'],
-            ],
+            ]),
             true
         );
 
@@ -87,6 +105,9 @@ class GitHubDriverTest extends TestCase
         ];
 
         $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $process);
+        if ($prefetch) {
+            $gitHubDriver->prefetch();
+        }
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', [$identifier => $sha]);
 
@@ -102,6 +123,166 @@ class GitHubDriverTest extends TestCase
         self::assertEquals('git', $source['type']);
         self::assertEquals($repoSshUrl, $source['url']);
         self::assertEquals('SOMESHA', $source['reference']);
+    }
+
+    public static function providePrefetch(): array
+    {
+        return [[false], [true]];
+    }
+
+    /**
+     * @dataProvider provideCanonicalRepositoryNames
+     */
+    public function testPrefetchedRefsAreReusedAndPaginationIsPreserved(string $owner, string $name): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+
+        $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
+        $nextPage = 'https://api.github.com/repos/'.$owner.'/'.$name.'/tags?per_page=100&page=2';
+        $http = $this->getHttpDownloaderMock();
+        $http->expects([
+            ['url' => $repoApiUrl, 'body' => JsonFile::encode(['default_branch' => 'main', 'owner' => ['login' => $owner], 'name' => $name])],
+            ['url' => $repoApiUrl.'/tags?per_page=100', 'body' => '[{"name":"v1.0.0","commit":{"sha":"one"}}]', 'headers' => ['Link: <'.$nextPage.'>; rel="next"']],
+            ['url' => $repoApiUrl.'/git/refs/heads?per_page=100', 'body' => '[{"ref":"refs/heads/main","object":{"sha":"main"}}]'],
+            ['url' => $nextPage, 'body' => '[{"name":"v2.0.0","commit":{"sha":"two"}}]'],
+        ], true);
+        $driver = new GitHubDriver(['url' => 'https://github.com/composer/packagist'], $this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->config, $http, $this->getProcessExecutorMock());
+        $driver->prefetch();
+        $driver->initialize();
+
+        self::assertSame('main', $driver->getRootIdentifier());
+        self::assertSame(['v1.0.0' => 'one', 'v2.0.0' => 'two'], $driver->getTags());
+        self::assertSame(['main' => 'main'], $driver->getBranches());
+    }
+
+    public static function provideCanonicalRepositoryNames(): array
+    {
+        return [['composer', 'packagist'], ['Composer', 'Packagist'], ['new-owner', 'renamed-package']];
+    }
+
+    public function testIndependentRequestsAreQueuedBeforeWaitingForResponses(): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+
+        $url = 'https://api.github.com/repos/composer/packagist';
+        $responses = [
+            $url => '{"default_branch":"main","owner":{"login":"composer"},"name":"packagist"}',
+            $url.'/tags?per_page=100' => '[{"name":"v1.0.0","commit":{"sha":"one"}}]',
+            $url.'/git/refs/heads?per_page=100' => '[{"ref":"refs/heads/main","object":{"sha":"main"}}]',
+        ];
+        /** @var array<string, Deferred<Response>> $pending */
+        $pending = [];
+        $http = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $http->expects(self::exactly(3))->method('add')->willReturnCallback(static function (string $url, array $options) use (&$pending) {
+            self::assertFalse($options['retry-auth-failure']);
+            $pending[$url] = new Deferred;
+
+            return $pending[$url]->promise();
+        });
+        $http->expects(self::never())->method('get');
+        $http->expects(self::once())->method('countActiveJobs')->willReturnCallback(static function () use (&$pending, $responses): int {
+            self::assertCount(3, $pending);
+            foreach ($responses as $url => $body) {
+                $pending[$url]->resolve(new Response(['url' => $url], 200, [], $body));
+            }
+
+            return 0;
+        });
+        $driver = new GitHubDriver(['url' => 'https://github.com/composer/packagist'], new NullIO, $this->config, $http, $this->getProcessExecutorMock());
+        $driver->prefetch();
+        $driver->initialize();
+
+        self::assertSame('main', $driver->getRootIdentifier());
+        self::assertSame(['v1.0.0' => 'one'], $driver->getTags());
+        self::assertSame(['main' => 'main'], $driver->getBranches());
+    }
+
+    public function testDefaultBranchUsesCommitCacheAndFollowsChangedHeads(): void
+    {
+        $url = 'https://api.github.com/repos/composer/packagist';
+        $first = str_repeat('a', 40);
+        $second = str_repeat('b', 40);
+        $cached = ['name' => 'composer/packagist', 'description' => 'cached commit', 'time' => '2026-01-01T00:00:00Z', 'funding' => []];
+        $updated = ['name' => 'composer/packagist', 'description' => 'new commit', 'time' => '2026-01-02T00:00:00Z', 'funding' => []];
+        $cache = new Cache(new NullIO, $this->config->get('cache-repo-dir').'/github.com/composer/packagist');
+        $cache->write($first, JsonFile::encode($cached));
+        $this->config->merge(['config' => ['cache-read-only' => true]]);
+        $http = $this->getHttpDownloaderMock();
+        $root = '{"default_branch":"main","owner":{"login":"composer"},"name":"packagist"}';
+        $http->expects([
+            ['url' => $url, 'body' => $root],
+            ['url' => $url.'/git/refs/heads?per_page=100', 'body' => JsonFile::encode([['ref' => 'refs/heads/main', 'object' => ['sha' => $first]]])],
+            ['url' => $url.'/tags?per_page=100', 'body' => '[]'],
+            ['url' => $url, 'body' => $root],
+            ['url' => $url.'/git/refs/heads?per_page=100', 'body' => JsonFile::encode([['ref' => 'refs/heads/main', 'object' => ['sha' => $second]]])],
+            ['url' => $url.'/contents/composer.json?ref='.$second, 'body' => JsonFile::encode(['encoding' => 'base64', 'content' => base64_encode(JsonFile::encode($updated))])],
+            ['url' => $url.'/tags?per_page=100', 'body' => '[]'],
+        ], true);
+        foreach (['cached commit', 'new commit'] as $description) {
+            $driver = new GitHubDriver(['url' => 'https://github.com/composer/packagist'], new NullIO, $this->config, $http, $this->getProcessExecutorMock());
+            $driver->initialize();
+            $package = $driver->getComposerInformation('main');
+            self::assertIsArray($package);
+            self::assertArrayHasKey('description', $package);
+            self::assertSame($description, $package['description']);
+            self::assertSame('https://github.com/composer/packagist/tree/main', $package['support']['source']);
+        }
+    }
+
+    public function testRootFilesAndFundingArePreparedAcrossRepositories(): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+        $url = 'https://api.github.com/repos/example/';
+        /** @var array<string, Deferred<Response>> $pending */
+        $pending = [];
+        $http = $this->getMockBuilder(HttpDownloader::class)->setConstructorArgs([new NullIO, $this->config])->onlyMethods(['add', 'get'])->getMock();
+        $http->method('add')->willReturnCallback(static function (string $url, array $options) use (&$pending) {
+            self::assertFalse($options['retry-auth-failure']);
+            self::assertArrayNotHasKey($url, $pending);
+            $pending[$url] = new Deferred;
+
+            return $pending[$url]->promise();
+        });
+        $http->expects(self::never())->method('get');
+        $drivers = [];
+        foreach (['first' => str_repeat('a', 40), 'second' => str_repeat('b', 40)] as $name => $sha) {
+            $driver = new GitHubDriver(['url' => 'https://github.com/example/'.$name], new NullIO, $this->config, $http, $this->getProcessExecutorMock());
+            $drivers[] = $driver;
+            $driver->prefetch();
+            $root = $url.$name;
+            $pending[$root]->resolve(new Response(['url' => $root], 200, [], JsonFile::encode(['default_branch' => 'main', 'owner' => ['login' => 'example'], 'name' => $name])));
+            $pending[$root.'/tags?per_page=100']->resolve(new Response(['url' => $root], 200, [], '[]'));
+            $pending[$root.'/git/refs/heads?per_page=100']->resolve(new Response(['url' => $root], 200, [], JsonFile::encode([['ref' => 'refs/heads/main', 'object' => ['sha' => $sha]]])));
+        }
+        self::assertArrayHasKey($url.'first/contents/composer.json?ref='.str_repeat('a', 40), $pending);
+        self::assertArrayHasKey($url.'second/contents/composer.json?ref='.str_repeat('b', 40), $pending);
+        foreach (['first' => str_repeat('a', 40), 'second' => str_repeat('b', 40)] as $name => $sha) {
+            $file = $url.$name.'/contents/composer.json?ref='.$sha;
+            $pending[$file]->resolve(new Response(['url' => $file], 200, [], JsonFile::encode(['encoding' => 'base64', 'content' => base64_encode('{"name":"example/'.$name.'"}')])));
+            self::assertArrayHasKey($url.$name.'/commits/'.$sha, $pending);
+            $funding = $url.$name.'/contents/.github/FUNDING.yml';
+            $pending[$funding]->reject(new TransportException('Not found', 404));
+        }
+        $funding = $url.'.github/contents/FUNDING.yml';
+        $pending[$funding]->resolve(new Response(['url' => $funding], 200, [], JsonFile::encode(['encoding' => 'base64', 'content' => base64_encode('github: example')])));
+        foreach (['first' => str_repeat('a', 40), 'second' => str_repeat('b', 40)] as $name => $sha) {
+            $commit = $url.$name.'/commits/'.$sha;
+            $pending[$commit]->resolve(new Response(['url' => $commit], 200, [], '{"commit":{"committer":{"date":"2026-01-01T00:00:00Z"}}}'));
+        }
+        foreach ($drivers as $driver) {
+            $driver->initialize();
+            $package = $driver->getComposerInformation('main');
+            self::assertIsArray($package);
+            self::assertArrayHasKey('time', $package);
+            self::assertSame('2026-01-01T00:00:00+00:00', $package['time']);
+            self::assertSame([['type' => 'github', 'url' => 'https://github.com/example']], $package['funding']);
+        }
     }
 
     public function testPublicRepository(): void

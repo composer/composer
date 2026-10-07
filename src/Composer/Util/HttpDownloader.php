@@ -58,6 +58,8 @@ class HttpDownloader
     private $disabled;
     /** @var bool */
     private $allowAsync = false;
+    /** @var array<string, PromiseInterface<Response>> */
+    private $sharedRequests = [];
 
     /**
      * @param IOInterface $io         The IO instance
@@ -137,6 +139,67 @@ class HttpDownloader
     }
 
     /**
+     * @internal
+     * @param mixed[] $options
+     * @return PromiseInterface<Response>
+     */
+    public function addShared(string $url, array $options = []): PromiseInterface
+    {
+        if ($url === '') {
+            throw new \InvalidArgumentException('$url must not be an empty string');
+        }
+        $this->enableAsync();
+        try {
+            $key = hash('sha256', serialize([$url, $options, $this->io->getAuthentication(Url::getOrigin($this->config, $url))]));
+        } catch (\Exception $e) {
+            // Options containing closures cannot be shared safely.
+            return $this->add($url, $options);
+        }
+        if (isset($this->sharedRequests[$key])) {
+            return $this->sharedRequests[$key];
+        }
+        try {
+            $promise = $this->add($url, $options);
+        } catch (TransportException $e) {
+            $promise = \React\Promise\reject($e);
+        }
+        $this->sharedRequests[$key] = $promise;
+        $promise->then(null, function (\Throwable $e) use ($key): void {
+            if (!$e instanceof TransportException || $e->getCode() !== 404) {
+                unset($this->sharedRequests[$key]);
+            }
+        });
+
+        return $promise;
+    }
+
+    /**
+     * @internal
+     * @param mixed[] $options
+     */
+    public function getShared(string $url, array $options = []): Response
+    {
+        $response = $exception = null;
+        $complete = false;
+        $this->addShared($url, $options)->then(static function (Response $result) use (&$response, &$complete): void {
+            $response = $result;
+            $complete = true;
+        }, static function (\Throwable $e) use (&$exception, &$complete): void {
+            $exception = $e;
+            $complete = true;
+        });
+        while (!$complete) {
+            $this->countActiveJobs();
+        }
+        if ($exception !== null) {
+            throw $exception;
+        }
+        assert($response instanceof Response);
+
+        return $response;
+    }
+
+    /**
      * Copy a file synchronously
      *
      * @param  string             $url     URL to download
@@ -200,6 +263,7 @@ class HttpDownloader
     public function setOptions(array $options)
     {
         $this->options = array_replace_recursive($this->options, $options);
+        $this->sharedRequests = [];
     }
 
     /**

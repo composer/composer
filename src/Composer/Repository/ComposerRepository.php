@@ -45,13 +45,17 @@ use Composer\Util\Http\Response;
 use Composer\Util\Http\ResponseWarnings;
 use Composer\MetadataMinifier\MetadataMinifier;
 use Composer\Util\Url;
+use Composer\Util\Platform;
 use React\Promise\PromiseInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
+class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface, PrefetchableRepositoryInterface
 {
+    private const MAX_PREFETCHED_METADATA = 200;
+    /** @var array<string, PromiseInterface<array<mixed>|bool|string>> */
+    private $prefetchedMetadata = [];
     /**
      * Package names per security-advisories API request
      *
@@ -846,7 +850,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
         }
 
-        return ['namesFound' => array_keys($namesFound), 'advisories' => array_filter($advisories, static function ($adv): bool { return \count($adv) > 0; })];
+        return ['namesFound' => array_keys($namesFound), 'advisories' => array_filter($advisories, static function ($adv): bool {
+            return \count($adv) > 0;
+        })];
     }
 
     public function hasFilter(): bool
@@ -1399,15 +1405,60 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 });
         }
 
-        $this->loop->wait($promises);
+        $this->loop->waitForPromises($promises);
 
         return ['namesFound' => $namesFound, 'packages' => $packages];
     }
 
     /**
-     * @phpstan-return PromiseInterface<array{mixed, string}>
+     * @inheritDoc
      */
-    private function startCachedAsyncDownload(string $fileName, ?string $packageName = null): PromiseInterface
+    public function prefetchPackages(array $packageNameMap, array $acceptableStabilities = BasePackage::STABILITIES, array $stabilityFlags = [], bool $initialize = false): ?array
+    {
+        if ($initialize) {
+            $this->loadRootServerFile();
+        }
+        $knownNames = $this->availablePackages !== null && $this->availablePackagePatterns === null ? array_keys(array_intersect_key($packageNameMap, $this->availablePackages)) : null;
+        // Only prepare repositories already reached by ordered package loading.
+        if ($this->rootData === null || $this->lazyProvidersUrl === null || $this->hasProviders || $this->hasPartialPackages
+            || !HttpDownloader::isCurlEnabled() || (bool) Platform::getEnv('COMPOSER_DISABLE_NETWORK')
+            || (is_numeric($maxJobs = Platform::getEnv('COMPOSER_MAX_PARALLEL_HTTP')) && (int) $maxJobs <= 1)
+        ) {
+            return $knownNames;
+        }
+
+        foreach ($packageNameMap as $name => $constraint) {
+            if (PlatformRepository::isPlatformPackage($name) || $name === '__root__'
+                || ($this->hasAvailablePackageList && !$this->lazyProvidersRepoContains($name))
+            ) {
+                continue;
+            }
+            $files = [$name];
+            if (StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, [$name], 'dev')) {
+                $files[] = $name.'~dev';
+            }
+            if (isset($acceptableStabilities['dev']) && count($acceptableStabilities) === 1 && count($stabilityFlags) === 0) {
+                $files = [$name.'~dev'];
+            }
+            foreach ($files as $file) {
+                if (isset($this->prefetchedMetadata[$file])) {
+                    continue;
+                }
+                if (count($this->prefetchedMetadata) >= self::MAX_PREFETCHED_METADATA) {
+                    return $knownNames;
+                }
+                $this->startCachedAsyncDownload($file, $name, true)->then(null, static function (\Throwable $e): void {
+                });
+            }
+        }
+
+        return $knownNames;
+    }
+
+    /**
+     * @phpstan-return ($prefetch is true ? PromiseInterface<array<mixed>|bool|string> : PromiseInterface<array{mixed, string}>)
+     */
+    private function startCachedAsyncDownload(string $fileName, ?string $packageName = null, bool $prefetch = false): PromiseInterface
     {
         if (null === $this->lazyProvidersUrl) {
             throw new \LogicException('startCachedAsyncDownload only supports v2 protocol composer repos with a metadata-url');
@@ -1419,27 +1470,48 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $url = str_replace('%package%', $name, $this->lazyProvidersUrl);
         $cacheKey = 'provider-'.strtr($name, '/', '~').'.json';
 
-        $lastModified = null;
-        if ($contents = $this->cache->read($cacheKey)) {
-            $contents = json_decode($contents, true);
-            $lastModified = $contents['last-modified'] ?? null;
+        $contents = $this->cache->read($cacheKey);
+
+        if (!$prefetch && isset($this->prefetchedMetadata[$fileName])) {
+            $promise = $this->prefetchedMetadata[$fileName];
+            unset($this->prefetchedMetadata[$fileName]);
+            $promise = $promise->then(null, function (\Throwable $e) use ($url, $cacheKey, $contents) {
+                if (!$e instanceof TransportException) {
+                    throw $e;
+                }
+                $lastModified = $contents !== false ? (json_decode($contents, true)['last-modified'] ?? null) : null;
+                if (in_array($e->getCode(), [401, 403], true)) {
+                    return $this->asyncFetchFile($url, $cacheKey, $lastModified);
+                }
+
+                return $this->handleMetadataDownloadFailure($e, $url, $lastModified);
+            });
+        } else {
+            $lastModified = $contents !== false ? (json_decode($contents, true)['last-modified'] ?? null) : null;
+            $promise = $this->asyncFetchFile($url, $cacheKey, $lastModified, $prefetch);
+            if ($prefetch) {
+                $this->prefetchedMetadata[$fileName] = $promise;
+
+                return $promise;
+            }
         }
 
-        return $this->asyncFetchFile($url, $cacheKey, $lastModified)
-            ->then(static function ($response) use ($url, $cacheKey, $contents, $packageName): array {
-                $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
+        return $promise->then(static function ($response) use ($url, $cacheKey, $contents, $packageName): array {
+            $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
 
-                if (true === $response) {
-                    $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
-                    $response = $contents;
-                }
+            if (true === $response) {
+                $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
+                $response = $contents !== false ? json_decode($contents, true) : false;
+            } elseif (is_string($response)) {
+                $response = json_decode($response, true);
+            }
 
-                if (!isset($response['packages'][$packageName]) && !isset($response['security-advisories']) && !isset($response['filter'])) {
-                    return [null, $packagesSource];
-                }
+            if (!isset($response['packages'][$packageName]) && !isset($response['security-advisories']) && !isset($response['filter'])) {
+                return [null, $packagesSource];
+            }
 
-                return [$response, $packagesSource];
-            });
+            return [$response, $packagesSource];
+        });
     }
 
     /**
@@ -1945,9 +2017,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @phpstan-return PromiseInterface<array<mixed>|true> true if the response was a 304 and the cache is fresh, otherwise it returns the decoded json
+     * @phpstan-return ($prefetch is true ? PromiseInterface<array<mixed>|bool|string> : PromiseInterface<array<mixed>|bool>) true if the response was a 304 and the cache is fresh, false if not found, otherwise decoded json or raw json for prefetching
      */
-    private function asyncFetchFile(string $filename, string $cacheKey, ?string $lastModifiedTime = null): PromiseInterface
+    private function asyncFetchFile(string $filename, string $cacheKey, ?string $lastModifiedTime = null, bool $prefetch = false): PromiseInterface
     {
         if ('' === $filename) {
             throw new \InvalidArgumentException('$filename should not be an empty string');
@@ -1965,6 +2037,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $promise;
         }
 
+        $metadataUrl = $filename;
         $httpDownloader = $this->httpDownloader;
         $options = $this->options;
         if ($this->eventDispatcher) {
@@ -1981,27 +2054,29 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
             $options['http']['header'][] = 'If-Modified-Since: '.$lastModifiedTime;
         }
+        if ($prefetch) {
+            $options['retry-auth-failure'] = false;
+        }
 
         $io = $this->io;
         $url = $this->url;
         $cache = $this->cache;
-        $degradedMode = &$this->degradedMode;
         $eventDispatcher = $this->eventDispatcher;
 
         /**
-         * @return array<mixed>|true true if the response was a 304 and the cache is fresh
+         * @return array<mixed>|true|string true if the response was a 304 and the cache is fresh
          */
-        $accept = function ($response) use ($io, $url, $filename, $cache, $cacheKey, $eventDispatcher) {
+        $accept = function ($response) use ($io, $url, $filename, $metadataUrl, $cache, $cacheKey, $eventDispatcher, $prefetch) {
             // package not found is acceptable for a v2 protocol repository
             if ($response->getStatusCode() === 404) {
-                $this->packagesNotFoundCache[$filename] = true;
+                $this->packagesNotFoundCache[$metadataUrl] = true;
 
                 return ['packages' => []];
             }
 
             $json = (string) $response->getBody();
             if ($json === '' && $response->getStatusCode() === 304) {
-                $this->freshMetadataUrls[$filename] = true;
+                $this->freshMetadataUrls[$metadataUrl] = true;
 
                 return true;
             }
@@ -2023,37 +2098,58 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (!$cache->isReadOnly()) {
                 $cache->write($cacheKey, $json);
             }
-            $this->freshMetadataUrls[$filename] = true;
+            $this->freshMetadataUrls[$metadataUrl] = true;
 
-            return $data;
+            return $prefetch ? $json : $data;
         };
 
-        $reject = function ($e) use ($filename, $accept, $io, $url, &$degradedMode, $lastModifiedTime) {
-            if ($e instanceof TransportException && $e->getStatusCode() === 404) {
-                $this->packagesNotFoundCache[$filename] = true;
-
-                return false;
+        $reject = function (\Throwable $e) use ($metadataUrl, $lastModifiedTime, $prefetch) {
+            if ($prefetch) {
+                throw $e;
             }
 
-            if (!$degradedMode) {
-                $io->writeError('<warning>'.Url::sanitize($url).' could not be fully loaded ('.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
-            }
-            $degradedMode = true;
-
-            // if the file is in the cache, we fake a 304 Not Modified to allow the process to continue
-            if ($lastModifiedTime) {
-                return $accept(new Response(['url' => $url], 304, [], ''));
-            }
-
-            // special error code returned when network is being artificially disabled
-            if ($e instanceof TransportException && $e->getStatusCode() === 499) {
-                return $accept(new Response(['url' => $url], 404, [], ''));
-            }
-
-            throw $e;
+            return $this->handleMetadataDownloadFailure($e, $metadataUrl, $lastModifiedTime);
         };
 
-        return $httpDownloader->add($filename, $options)->then($accept, $reject);
+        try {
+            $promise = $httpDownloader->add($filename, $options);
+        } catch (TransportException $e) {
+            if (!$prefetch) {
+                throw $e;
+            }
+            $promise = \React\Promise\reject($e);
+        }
+
+        return $promise->then($accept, $reject);
+    }
+
+    /**
+     * @return array<mixed>|bool
+     */
+    private function handleMetadataDownloadFailure(\Throwable $e, string $metadataUrl, ?string $lastModifiedTime)
+    {
+        if ($e instanceof TransportException && $e->getStatusCode() === 404) {
+            $this->packagesNotFoundCache[$metadataUrl] = true;
+
+            return false;
+        }
+        if (!$this->degradedMode) {
+            $this->io->writeError('<warning>'.Url::sanitize($this->url).' could not be fully loaded ('.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
+        }
+        $this->degradedMode = true;
+
+        if ($lastModifiedTime) {
+            $this->freshMetadataUrls[$metadataUrl] = true;
+
+            return true;
+        }
+        if ($e instanceof TransportException && $e->getStatusCode() === 499) {
+            $this->packagesNotFoundCache[$metadataUrl] = true;
+
+            return ['packages' => []];
+        }
+
+        throw $e;
     }
 
     /**

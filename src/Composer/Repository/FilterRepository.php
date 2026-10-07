@@ -12,7 +12,6 @@
 
 namespace Composer\Repository;
 
-use Composer\FilterList\FilterListProviderConfig;
 use Composer\Package\PackageInterface;
 use Composer\Package\BasePackage;
 use Composer\Pcre\Preg;
@@ -22,7 +21,7 @@ use Composer\Pcre\Preg;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface
+class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface, PrefetchableRepositoryInterface
 {
     /** @var ?string */
     private $only = null;
@@ -129,6 +128,37 @@ class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
         }
 
         return $result;
+    }
+
+    public function prefetchPackages(array $packageNameMap, array $acceptableStabilities = BasePackage::STABILITIES, array $stabilityFlags = [], bool $initialize = false): ?array
+    {
+        foreach ($packageNameMap as $name => $constraint) {
+            if (!$this->isAllowed($name)) {
+                unset($packageNameMap[$name]);
+            }
+        }
+        if ($packageNameMap !== []) {
+            $names = $this->repo instanceof PrefetchableRepositoryInterface ? $this->repo->prefetchPackages($packageNameMap, $acceptableStabilities, $stabilityFlags, $initialize) : null;
+
+            return $this->canonical ? ($names ?? array_keys($packageNameMap)) : [];
+        }
+
+        return [];
+    }
+
+    /**
+     * @internal
+     * @param array<string, \Composer\Semver\Constraint\ConstraintInterface|null> $packageNameMap
+     */
+    public function prefetchVcsPackages(array $packageNameMap): void
+    {
+        foreach ($packageNameMap as $name => $constraint) {
+            if (!$this->isAllowed($name)) {
+                unset($packageNameMap[$name]);
+            }
+        }
+
+        RepositorySet::prefetchVcsRepositories([$this->repo], $packageNameMap);
     }
 
     /**

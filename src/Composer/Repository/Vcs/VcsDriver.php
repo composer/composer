@@ -48,6 +48,8 @@ abstract class VcsDriver implements VcsDriverInterface
     protected $infoCache = [];
     /** @var ?Cache */
     protected $cache;
+    /** @var array<string, Response|null> */
+    private $prefetchedContents = [];
 
     /**
      * Constructor.
@@ -166,9 +168,59 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     protected function getContents(string $url): Response
     {
+        $key = $this->getPrefetchKey($url);
+        while (array_key_exists($key, $this->prefetchedContents) && $this->prefetchedContents[$key] === null) {
+            $this->httpDownloader->countActiveJobs();
+        }
+        if (isset($this->prefetchedContents[$key])) {
+            $response = $this->prefetchedContents[$key];
+            unset($this->prefetchedContents[$key]);
+
+            return $response;
+        }
+
         $options = $this->repoConfig['options'] ?? [];
 
         return $this->httpDownloader->get($url, $options);
+    }
+
+    /**
+     * @param callable(Response):void|null $onResponse
+     */
+    protected function prefetchContents(string $url, ?callable $onResponse = null): void
+    {
+        $key = $this->getPrefetchKey($url);
+        if (array_key_exists($key, $this->prefetchedContents)) {
+            return;
+        }
+
+        $options = $this->repoConfig['options'] ?? [];
+        // Background requests must not prompt for credentials for a repository that may never be used.
+        $options['retry-auth-failure'] = false;
+        $this->prefetchedContents[$key] = null;
+        $this->httpDownloader->enableAsync();
+        try {
+            $this->httpDownloader->add($url, $options)->then(function (Response $response) use ($key, $onResponse): void {
+                $this->prefetchedContents[$key] = $response;
+                if ($onResponse !== null) {
+                    try {
+                        $onResponse($response);
+                    } catch (\Throwable $e) {
+                        // Invalid speculative metadata is handled by the normal loading path if needed.
+                    }
+                }
+            }, function (\Throwable $e) use ($key): void {
+                unset($this->prefetchedContents[$key]);
+            });
+        } catch (TransportException $e) {
+            // Some transports fail before returning a promise. Retry through getContents when needed.
+            unset($this->prefetchedContents[$key]);
+        }
+    }
+
+    protected function getPrefetchKey(string $url): string
+    {
+        return $url;
     }
 
     /**

@@ -15,10 +15,56 @@ namespace Composer\Test\Util;
 use Composer\IO\BufferIO;
 use Composer\Util\Http\CurlDownloader;
 use Composer\Util\HttpDownloader;
+use Composer\Util\Http\Response;
+use Composer\Downloader\TransportException;
 use PHPUnit\Framework\TestCase;
 
 class HttpDownloaderTest extends TestCase
 {
+    public function testSharedResponsesAreScopedToCredentialsAndTransportOptions(): void
+    {
+        $io = new BufferIO;
+        $url = 'https://example.org/funding';
+        $http = $this->getMockBuilder(HttpDownloader::class)->setConstructorArgs([$io, $this->getConfigMock()])->onlyMethods(['add'])->getMock();
+        $http->expects(self::exactly(3))->method('add')->willReturnCallback(static function (string $url) {
+            self::assertNotSame('', $url);
+
+            return \React\Promise\resolve(new Response(['url' => $url], 200, [], '{}'));
+        });
+        $first = $http->getShared($url);
+        self::assertSame($first, $http->getShared($url));
+        $io->setAuthentication('example.org', 'new', 'credentials');
+        $second = $http->getShared($url);
+        self::assertNotSame($first, $second);
+        $http->setOptions(['http' => ['header' => ['X-Test: changed']]]);
+        self::assertNotSame($second, $http->getShared($url));
+    }
+
+    /**
+     * @dataProvider provideSharedFailureStatuses
+     */
+    public function testSharedRequestsReuseMissingFilesButRetryOtherFailures(int $status, int $requests): void
+    {
+        $url = 'https://example.org/funding';
+        $http = $this->getMockBuilder(HttpDownloader::class)->setConstructorArgs([new BufferIO, $this->getConfigMock()])->onlyMethods(['add'])->getMock();
+        $http->expects(self::exactly($requests))->method('add')->willReturnCallback(static function () use ($status) {
+            return \React\Promise\reject(new TransportException('HTTP failure', $status));
+        });
+        for ($i = 0; $i < 2; $i++) {
+            try {
+                $http->getShared($url);
+                self::fail('The HTTP error must remain visible to the caller.');
+            } catch (TransportException $e) {
+                self::assertSame($status, $e->getCode());
+            }
+        }
+    }
+
+    public static function provideSharedFailureStatuses(): array
+    {
+        return [[404, 1], [401, 2], [403, 2], [500, 2]];
+    }
+
     /**
      * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Config
      */
@@ -49,7 +95,7 @@ class HttpDownloaderTest extends TestCase
         $fs = new HttpDownloader($io, $this->getConfigMock());
         try {
             $fs->get('https://user:pass@github.com/composer/composer/404');
-        } catch (\Composer\Downloader\TransportException $e) {
+        } catch (TransportException $e) {
             self::assertNotEquals(200, $e->getCode());
         }
     }
@@ -63,7 +109,7 @@ class HttpDownloaderTest extends TestCase
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $downloader = new HttpDownloader($io, $this->getConfigMock());
 
-        $this->expectException(\Composer\Downloader\TransportException::class);
+        $this->expectException(TransportException::class);
         $this->expectExceptionMessage('Access to "https://example.org/blocked" is blocked.');
 
         $downloader->get('https://example.org/blocked', [
