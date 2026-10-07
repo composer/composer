@@ -881,8 +881,14 @@ See the [Config](06-config.md) chapter for valid configuration options.
   that this cannot be used in conjunction with the `--global` option.
 * **--absolute:** Returns absolute paths when fetching `*-dir` config values
   instead of relative.
-* **--json:** JSON decode the setting value, to be used with `extra.*` keys.
-* **--merge:** Merge the setting value with the current value, to be used with `extra.*` keys in combination with `--json`.
+* **--json:** JSON decode the setting value. Only supported for `extra.*`,
+  `policy.*.ignore`, `policy.advisories.ignore-id`, `policy.ignore-unreachable`,
+  `audit.ignore` and `audit.ignore-abandoned` keys, it is ignored for all other keys.
+* **--merge:** Merge the setting value with the current value instead of replacing
+  it. Only supported for `extra.*` keys in combination with `--json`, and for
+  `policy.*.ignore`, `policy.advisories.ignore-id`, `audit.ignore` and
+  `audit.ignore-abandoned` keys with or without `--json`. It is ignored for all
+  other keys.
 * **--append:** When adding a repository, append it (lowest priority) to the existing ones instead of prepending it (highest priority).
 * **--source:** Display where the config value is loaded from.
 
