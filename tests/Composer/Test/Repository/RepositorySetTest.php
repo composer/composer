@@ -19,6 +19,7 @@ use Composer\Repository\RepositorySet;
 use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
 use Composer\Config;
+use Composer\DependencyResolver\Request;
 use Composer\IO\NullIO;
 use Composer\Repository\VcsRepository;
 use Composer\Repository\Vcs\GitDriver;
@@ -124,25 +125,106 @@ class RepositorySetTest extends TestCase
         ];
     }
 
-    public function testUnusedFailingVcsRepositoryDoesNotBreakLookup(): void
+    /**
+     * @dataProvider provideLookups
+     */
+    public function testUnusedVcsRepositoriesMakeNoRequests(string $lookup, bool $filtered): void
     {
         if (!HttpDownloader::isCurlEnabled()) {
             self::markTestSkipped('Prefetching requires curl.');
         }
 
-        $http = $this->getHttpDownloaderMock();
-        $url = 'https://api.github.com/repos/example/unused';
-        $http->expects([
-            ['url' => $url, 'status' => 403, 'options' => ['retry-auth-failure' => false]],
-            ['url' => $url.'/tags?per_page=100', 'status' => 403],
-            ['url' => $url.'/git/refs/heads?per_page=100', 'status' => 403],
-        ], true);
+        $http = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $http->expects(self::never())->method('add');
+        $http->expects(self::never())->method('get');
         $package = self::getPackage('vendor/first', '1.0.0');
+        $first = new ArrayRepository([$package]);
+        $vcs = new VcsRepository(['type' => 'github', 'url' => 'https://github.com/example/unused'], new NullIO, new Config, $http);
+        if ($filtered) {
+            $first = new FilterRepository(new FilterRepository($first, []), ['only' => ['vendor/*']]);
+            $vcs = new FilterRepository($vcs, ['only' => ['vendor/*']]);
+        }
         $set = new RepositorySet;
-        $set->addRepository(new ArrayRepository([$package]));
-        $set->addRepository(new VcsRepository(['type' => 'github', 'url' => 'https://github.com/example/unused'], new NullIO, new Config, $http));
+        $set->addRepository($first);
+        $set->addRepository($vcs);
 
-        self::assertSame([$package], $set->findPackages('vendor/first'));
+        if ($lookup === 'single') {
+            self::assertSame([$package], $set->findPackages('vendor/first'));
+        } elseif ($lookup === 'batch') {
+            self::assertSame(['vendor/first' => [$package]], iterator_to_array($set->findPackagesForNames(['vendor/first' => null])));
+        } else {
+            $request = new Request;
+            $request->requireName('vendor/first', (new VersionParser)->parseConstraints('1.0.0'));
+            self::assertSame([$package], $set->createPool($request, new NullIO)->getPackages());
+        }
+    }
+
+    public static function provideLookups(): array
+    {
+        return [
+            ['single', false],
+            ['single', true],
+            ['batch', false],
+            ['batch', true],
+            ['pool', false],
+            ['pool', true],
+        ];
+    }
+
+    public function testVcsDiscoveryStartsTogetherWhenLookupReachesTheGroup(): void
+    {
+        if (!HttpDownloader::isCurlEnabled()) {
+            self::markTestSkipped('Prefetching requires curl.');
+        }
+
+        $config = FactoryMock::createConfig();
+        /** @var array<non-empty-string, Deferred<Response>> $pending */
+        $pending = [];
+        $http = $this->getMockBuilder(HttpDownloader::class)->disableOriginalConstructor()->getMock();
+        $http->method('add')->willReturnCallback(static function (string $url) use (&$pending) {
+            self::assertNotSame('', $url);
+            self::assertArrayNotHasKey($url, $pending);
+            $pending[$url] = new Deferred;
+
+            return $pending[$url]->promise();
+        });
+        $http->expects(self::never())->method('get');
+        $local = self::getPackage('vendor/local', '1.0.0');
+        $set = new RepositorySet('dev');
+        $set->addRepository(new ArrayRepository([$local]));
+        $responses = [];
+        foreach (['first' => 'a', 'second' => 'b'] as $name => $character) {
+            $url = 'https://api.github.com/repos/example/'.$name;
+            $sha = str_repeat($character, 40);
+            $responses[$url] = JsonFile::encode(['default_branch' => 'main', 'owner' => ['login' => 'example'], 'name' => $name]);
+            $responses[$url.'/tags?per_page=100'] = '[]';
+            $responses[$url.'/git/refs/heads?per_page=100'] = JsonFile::encode([['ref' => 'refs/heads/main', 'object' => ['sha' => $sha]]]);
+            $responses[$url.'/contents/composer.json?ref='.$sha] = JsonFile::encode(['encoding' => 'base64', 'content' => base64_encode(JsonFile::encode(['name' => 'example/'.$name, 'time' => '2026-01-01T00:00:00Z', 'funding' => []]))]);
+            $repository = new VcsRepository(['type' => 'github', 'url' => 'https://github.com/example/'.$name], new NullIO, $config, $http);
+            $set->addRepository(new FilterRepository($repository, ['only' => ['example/'.$name]]));
+        }
+        $ticks = 0;
+        $http->method('countActiveJobs')->willReturnCallback(static function () use (&$pending, &$ticks, $responses): int {
+            if ($ticks++ === 0) {
+                self::assertCount(6, $pending, 'Both repositories must start discovery before waiting for responses.');
+            }
+            foreach (array_keys($pending) as $url) {
+                $deferred = $pending[$url];
+                unset($pending[$url]);
+                $deferred->resolve(new Response(['url' => $url], 200, [], $responses[$url]));
+            }
+
+            return count($pending);
+        });
+        $references = [];
+        foreach ($set->findPackagesForNames(['vendor/local' => null, 'example/first' => null, 'example/second' => null]) as $name => $packages) {
+            if ($name === 'vendor/local') {
+                self::assertSame([], $pending, 'Later VCS repositories must wait until earlier repositories have been consulted.');
+            }
+            $references[$name] = $packages[0]->getSourceReference();
+        }
+
+        self::assertSame(['vendor/local' => null, 'example/first' => str_repeat('a', 40), 'example/second' => str_repeat('b', 40)], $references);
     }
 
     public function testFilteredOutVcsRepositoryMakesNoRequests(): void

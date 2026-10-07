@@ -441,8 +441,6 @@ class PoolBuilder
             $this->loadedPackages[$name] = $constraint;
         }
 
-        RepositorySet::prefetchVcsRepositories($repositories, $this->packagesToLoad);
-
         // Load packages in chunks of 50 to prevent memory usage build-up due to caches of all sorts
         $packageBatches = array_chunk($this->packagesToLoad, self::LOAD_BATCH_SIZE, true);
         $this->packagesToLoad = [];
@@ -458,6 +456,7 @@ class PoolBuilder
                 break;
             }
 
+            RepositorySet::prefetchVcsRepositories(array_slice($repositories, $repoIndex), array_merge(...$packageBatches));
             foreach ($packageBatches as $batchIndex => $packageBatch) {
                 if ($repository instanceof PrefetchableRepositoryInterface) {
                     $repository->prefetchPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags);

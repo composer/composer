@@ -185,6 +185,7 @@ abstract class VcsDriver implements VcsDriverInterface
     }
 
     /**
+     * @internal
      * @param callable(Response):void|null $onResponse
      */
     protected function prefetchContents(string $url, ?callable $onResponse = null): void
@@ -218,6 +219,9 @@ abstract class VcsDriver implements VcsDriverInterface
         }
     }
 
+    /**
+     * @internal
+     */
     protected function getPrefetchKey(string $url): string
     {
         return $url;

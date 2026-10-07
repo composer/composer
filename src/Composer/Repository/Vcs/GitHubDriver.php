@@ -249,6 +249,9 @@ class GitHubDriver extends VcsDriver
         return 'https://' . $apiUrl;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function getPrefetchKey(string $url): string
     {
         // Responses belong to this driver even when GitHub redirects a renamed repository.
