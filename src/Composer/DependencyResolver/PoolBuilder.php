@@ -24,6 +24,7 @@ use Composer\Pcre\Preg;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PrePoolCreateEvent;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\PrefetchableRepositoryInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\RootPackageRepository;
@@ -458,7 +459,7 @@ class PoolBuilder
             }
 
             foreach ($packageBatches as $batchIndex => $packageBatch) {
-                if ($repository instanceof \Composer\Repository\PrefetchableRepositoryInterface) {
+                if ($repository instanceof PrefetchableRepositoryInterface) {
                     $repository->prefetchPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags);
                     if (isset($packageBatches[$batchIndex + 1])) {
                         $repository->prefetchPackages($packageBatches[$batchIndex + 1], $this->acceptableStabilities, $this->stabilityFlags);

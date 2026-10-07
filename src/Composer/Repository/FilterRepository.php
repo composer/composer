@@ -15,6 +15,7 @@ namespace Composer\Repository;
 use Composer\Package\PackageInterface;
 use Composer\Package\BasePackage;
 use Composer\Pcre\Preg;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * Filters which packages are seen as canonical on this repo by loadPackages
@@ -130,6 +131,9 @@ class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
         return $result;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function prefetchPackages(array $packageNameMap, array $acceptableStabilities = BasePackage::STABILITIES, array $stabilityFlags = [], bool $initialize = false): ?array
     {
         foreach ($packageNameMap as $name => $constraint) {
@@ -137,18 +141,18 @@ class FilterRepository implements RepositoryInterface, AdvisoryProviderInterface
                 unset($packageNameMap[$name]);
             }
         }
-        if ($packageNameMap !== []) {
-            $names = $this->repo instanceof PrefetchableRepositoryInterface ? $this->repo->prefetchPackages($packageNameMap, $acceptableStabilities, $stabilityFlags, $initialize) : null;
-
-            return $this->canonical ? ($names ?? array_keys($packageNameMap)) : [];
+        if ($packageNameMap === []) {
+            return [];
         }
 
-        return [];
+        $names = $this->repo instanceof PrefetchableRepositoryInterface ? $this->repo->prefetchPackages($packageNameMap, $acceptableStabilities, $stabilityFlags, $initialize) : null;
+
+        return $this->canonical ? ($names ?? array_keys($packageNameMap)) : [];
     }
 
     /**
      * @internal
-     * @param array<string, \Composer\Semver\Constraint\ConstraintInterface|null> $packageNameMap
+     * @param array<string, ConstraintInterface|null> $packageNameMap
      */
     public function prefetchVcsPackages(array $packageNameMap): void
     {

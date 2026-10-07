@@ -16,6 +16,8 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\BasePackage;
 
 /**
+ * Repositories that allow fetching package metadata before loading packages
+ *
  * @internal
  */
 interface PrefetchableRepositoryInterface

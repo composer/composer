@@ -188,6 +188,7 @@ class GitHubDriver extends VcsDriver
 
         $this->httpDownloader->addShared($repoUrl.'/contents/.github/FUNDING.yml', ['retry-auth-failure' => false])->then(null, function (\Throwable $e) use ($owner): void {
             $this->httpDownloader->addShared($this->getApiUrl().'/repos/'.$owner.'/.github/contents/FUNDING.yml', ['retry-auth-failure' => false])->then(null, static function (\Throwable $e): void {
+                // Suppress errors here as they are handled when funding information is loaded.
             });
         });
     }

@@ -54,8 +54,7 @@ use React\Promise\PromiseInterface;
 class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface, AdvisoryProviderInterface, FilterListProviderInterface, PrefetchableRepositoryInterface
 {
     private const MAX_PREFETCHED_METADATA = 200;
-    /** @var array<string, PromiseInterface<array<mixed>|bool|string>> */
-    private $prefetchedMetadata = [];
+
     /**
      * Package names per security-advisories API request
      *
@@ -146,6 +145,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @phpstan-var array<string, true>
      */
     private $freshMetadataUrls = [];
+
+    /** @var array<string, PromiseInterface<array<mixed>|bool|string>> */
+    private $prefetchedMetadata = [];
 
     /**
      * @var array list of package names which returned a 404 and should not be re-fetched in case loadPackage is called several times
@@ -1448,6 +1450,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     return $knownNames;
                 }
                 $this->startCachedAsyncDownload($file, $name, true)->then(null, static function (\Throwable $e): void {
+                    // Suppress errors here as they are handled when the package is loaded.
                 });
             }
         }

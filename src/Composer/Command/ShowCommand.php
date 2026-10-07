@@ -64,6 +64,8 @@ class ShowCommand extends BaseCommand
 {
     use CompletionTrait;
 
+    private const LOAD_BATCH_SIZE = 50;
+
     /** @var VersionParser */
     protected $versionParser;
     /** @var string[] */
@@ -483,14 +485,13 @@ EOT
                             $packagesToCheck[$package->getName()] = $package;
                         }
                     }
-                    $versionParser = new VersionParser;
-                    $batches = array_chunk($packagesToCheck, 50, true);
+                    $batches = array_chunk($packagesToCheck, self::LOAD_BATCH_SIZE, true);
                     $constraintBatches = [];
                     foreach ($batches as $batch) {
                         $constraints = [];
                         foreach ($batch as $package) {
                             $targetVersion = $this->getLatestTargetVersion($package, $showMajorOnly, $showMinorOnly, $showPatchOnly);
-                            $constraints[$package->getName()] = $targetVersion !== null ? $versionParser->parseConstraints($targetVersion) : null;
+                            $constraints[$package->getName()] = $targetVersion !== null ? $this->versionParser->parseConstraints($targetVersion) : null;
                         }
                         $constraintBatches[] = $constraints;
                     }
@@ -1523,6 +1524,7 @@ EOT
 
     /**
      * Given a package, this finds the latest package matching it
+     *
      * @param BasePackage[]|null $candidates
      */
     private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $majorOnly, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter, ?array $candidates = null): ?PackageInterface

@@ -145,7 +145,7 @@ class HttpDownloader
      */
     public function addShared(string $url, array $options = []): PromiseInterface
     {
-        if ($url === '') {
+        if ('' === $url) {
             throw new \InvalidArgumentException('$url must not be an empty string');
         }
         $this->enableAsync();

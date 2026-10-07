@@ -16,6 +16,7 @@ use Composer\Downloader\TransportException;
 use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Repository\Vcs\GitHubDriver;
+use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
@@ -141,7 +142,10 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         return $this->driver;
     }
 
-    public function prefetchPackages(array $packageNameMap, array $acceptableStabilities = \Composer\Package\BasePackage::STABILITIES, array $stabilityFlags = [], bool $initialize = false): ?array
+    /**
+     * @inheritDoc
+     */
+    public function prefetchPackages(array $packageNameMap, array $acceptableStabilities = BasePackage::STABILITIES, array $stabilityFlags = [], bool $initialize = false): ?array
     {
         if ($initialize) {
             $this->getPackages();
