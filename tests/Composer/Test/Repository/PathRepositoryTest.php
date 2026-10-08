@@ -82,6 +82,27 @@ class PathRepositoryTest extends TestCase
         self::assertEquals(['test/path-published-time', 'test/path-unversioned', 'test/path-versioned'], $names);
     }
 
+    public function testLoadPackageFromFileSystemWithRecursiveWildcard(): void
+    {
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', '**']);
+        $repository = $this->createPathRepo(['url' => $repositoryUrl]);
+        $names = array_values(array_unique(array_map(static function ($package): string {
+            return $package->getName();
+        }, $repository->getPackages())));
+        sort($names);
+
+        self::assertSame(['test/path-deep', 'test/path-published-time', 'test/path-unversioned', 'test/path-versioned'], $names);
+
+        $deep = $this->createPathRepo(['url' => $repositoryUrl.'/deep']);
+        self::assertSame('test/path-deep', $deep->getPackages()[0]->getName());
+
+        $direct = $this->createPathRepo(['url' => $repositoryUrl.'/with-version']);
+        self::assertSame('test/path-versioned', $direct->getPackages()[0]->getName());
+
+        $multiple = $this->createPathRepo(['url' => $repositoryUrl.'/level/**/deep']);
+        self::assertSame('test/path-deep', $multiple->getPackages()[0]->getName());
+    }
+
     public function testLoadPackageWithExplicitVersions(): void
     {
         $options = [
