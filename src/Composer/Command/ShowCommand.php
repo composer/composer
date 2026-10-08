@@ -474,6 +474,21 @@ EOT
                 $nameLength = $versionLength = $latestLength = $releaseDateLength = 0;
 
                 if ($showLatest && $showVersion) {
+                    // fetch all metadata in parallel upfront, the per-package lookups below then hit the fresh cache
+                    $names = [];
+                    foreach ($packages[$type] as $package) {
+                        if (is_object($package) && !Preg::isMatch($ignoredPackagesRegex, $package->getPrettyName())) {
+                            $names[$package->getName()] = null;
+                        }
+                    }
+                    if ($names !== [] && $composer !== null) {
+                        $minStability = BasePackage::STABILITIES[$composer->getPackage()->getMinimumStability()];
+                        $stabilities = array_filter(BasePackage::STABILITIES, static function (int $value) use ($minStability): bool {
+                            return $value <= $minStability;
+                        });
+                        (new CompositeRepository($composer->getRepositoryManager()->getRepositories()))->loadPackages($names, $stabilities, $composer->getPackage()->getStabilityFlags());
+                    }
+
                     foreach ($packages[$type] as $package) {
                         if (is_object($package) && !Preg::isMatch($ignoredPackagesRegex, $package->getPrettyName())) {
                             $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter);
