@@ -2799,6 +2799,40 @@ class JsonManipulatorTest extends TestCase
         self::assertSame($extra, json_decode($manipulator->getContents(), true)['extra']);
     }
 
+    public function testAddSubNodeOverwritesKeyContainingSpace(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "scripts": {
+        "my script": "foo"
+    }
+}');
+
+        self::assertTrue($manipulator->addSubNode('scripts', 'my script', 'bar'));
+        self::assertEquals('{
+    "scripts": {
+        "my script": "bar"
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddSubNodeOverwritesKeyWithEscapedSlash(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "foo\\/bar": 1
+    }
+}');
+
+        self::assertTrue($manipulator->addSubNode('extra', 'foo/bar', 2));
+        self::assertEquals('{
+    "extra": {
+        "foo\\/bar": 2
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testAddConfigSettingCanOverwrite(): void
     {
         $manipulator = new JsonManipulator('{

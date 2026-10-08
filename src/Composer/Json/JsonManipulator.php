@@ -1055,7 +1055,8 @@ class JsonManipulator
      */
     private function matchChild(string $name, string $children): ?array
     {
-        $key = '"'.preg_quote($name).'"';
+        // spaces are escaped for the x modifier, slashes may have been written escaped
+        $key = str_replace([' ', '/'], ['\\ ', '\\\\?/'], preg_quote(JsonFile::encode($name)));
 
         // possessive loop over the other pairs, a lazy one backtracks exponentially when the key is missing
         $childRegex = '{'.self::DEFINES.'^(?P<start>\{ \s* (?: (?!'.$key.'\s*:) (?&string) \s* : (?&json) \s* , \s* )*+ '.$key.'\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
