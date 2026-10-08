@@ -636,32 +636,20 @@ class JsonManipulator
             return true;
         }
 
-        // try and find a match for the subkey
-        $keyRegex = str_replace('/', '\\\\?/', preg_quote($name));
-        if (Preg::isMatch('{"'.$keyRegex.'"\s*:}i', $children)) {
-            // find best match for the value of "name"
-            if (Preg::isMatchAll('{'.self::DEFINES.'"'.$keyRegex.'"\s*:\s*(?:(?&json))}x', $children, $matches)) {
-                $bestMatch = '';
-                foreach ($matches[0] as $match) {
-                    assert(is_string($match));
-                    if (strlen($bestMatch) < strlen($match)) {
-                        $bestMatch = $match;
-                    }
-                }
-                $childrenClean = Preg::replace('{,\s*'.preg_quote($bestMatch).'}i', '', $children, -1, $count);
-                if (1 !== $count) {
-                    $childrenClean = Preg::replace('{'.preg_quote($bestMatch).'\s*,?\s*}i', '', $childrenClean, -1, $count);
-                    if (1 !== $count) {
-                        return false;
-                    }
-                }
-            }
-        } else {
-            $childrenClean = $children;
+        $matches = $this->matchChild($name, $children);
+        if ($matches === null) {
+            return false;
         }
+        assert(is_string($matches[0]));
+        assert(is_string($matches['prefix']));
+        assert(is_string($matches['end']));
 
-        if (!isset($childrenClean)) {
-            throw new \InvalidArgumentException("JsonManipulator: \$childrenClean is not defined. Please report at https://github.com/composer/composer/issues/new.");
+        // drop the pair along with the comma before it, or after it if it is the first pair
+        $rest = substr($children, strlen($matches[0]) - strlen($matches['end']));
+        if (Preg::isMatch('{,\s*$}', $matches['prefix'])) {
+            $childrenClean = Preg::replace('{,\s*$}', '', $matches['prefix']) . $rest;
+        } else {
+            $childrenClean = $matches['prefix'] . Preg::replace('{^\s*,?\s*}', '', $rest);
         }
 
         // no child data left, $name was the only key in
@@ -1059,7 +1047,7 @@ class JsonManipulator
         $key = str_replace([' ', '/'], ['\\ ', '\\\\?/'], preg_quote(JsonFile::encode($name)));
 
         // possessive loop over the other pairs, a lazy one backtracks exponentially when the key is missing
-        $childRegex = '{'.self::DEFINES.'^(?P<start>\{ \s* (?: (?!'.$key.'\s*:) (?&string) \s* : (?&json) \s* , \s* )*+ '.$key.'\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
+        $childRegex = '{'.self::DEFINES.'^(?P<start>(?P<prefix>\{ \s* (?: (?!'.$key.'\s*:) (?&string) \s* : (?&json) \s* , \s* )*+) '.$key.'\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
 
         try {
             if (!Preg::isMatch($childRegex, $children, $matches)) {

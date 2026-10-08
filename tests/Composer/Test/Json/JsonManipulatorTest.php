@@ -2833,6 +2833,28 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testRemoveSubNodeRemovesTopLevelKeyNotNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": false
+        },
+        "allow-contrib": true
+    }
+}');
+
+        self::assertTrue($manipulator->removeSubNode('extra', 'allow-contrib'));
+        self::assertEquals('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": false
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testAddConfigSettingCanOverwrite(): void
     {
         $manipulator = new JsonManipulator('{
