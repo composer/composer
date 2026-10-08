@@ -594,6 +594,7 @@ EOT
                         $hasInstallableUpdate = $latestPackage !== null && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion();
                         $shownPackage = $withheld !== null && !$hasInstallableUpdate ? $withheld['package'] : $latestPackage;
                         if ($writeLatest && $shownPackage !== null) {
+                            $shortAvailableIn = $withheld !== null && $cooldown !== null ? $cooldown->formatTimeUntilAvailable($withheld['releaseDate'], new DateTimeImmutable(), true) : '';
                             $packageViewData['latest'] = $shownPackage->getFullPrettyVersion();
                             if ($format === 'text') {
                                 $packageViewData['latest'] = ltrim($packageViewData['latest'], 'v');
@@ -603,7 +604,7 @@ EOT
                                 $packageViewData['latest-status'] = 'cooldown';
                                 $packageViewData['cooldown-available-in'] = $withheld['availableIn'];
                                 if ($format === 'text') {
-                                    $packageViewData['latest'] .= ' ('.$withheld['availableIn'].' left)';
+                                    $packageViewData['latest'] .= ' ('.$shortAvailableIn.' left)';
                                 }
                             } else {
                                 $packageViewData['latest-status'] = $this->getUpdateStatus($shownPackage, $package);
@@ -611,7 +612,7 @@ EOT
                                     $packageViewData['cooldown-latest'] = $withheld['package']->getFullPrettyVersion();
                                     $packageViewData['cooldown-available-in'] = $withheld['availableIn'];
                                     if ($format === 'text') {
-                                        $packageViewData['latest'] .= ' ('.ltrim($packageViewData['cooldown-latest'], 'v').' in '.$withheld['availableIn'].')';
+                                        $packageViewData['latest'] .= ' ('.ltrim($packageViewData['cooldown-latest'], 'v').' in '.$shortAvailableIn.')';
                                     }
                                 }
                             }

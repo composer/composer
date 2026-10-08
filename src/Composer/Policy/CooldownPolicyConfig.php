@@ -166,8 +166,10 @@ class CooldownPolicyConfig extends ListPolicyConfig
 
     /**
      * Format the time until a package version will clear the cooldown.
+     *
+     * @param bool $short e.g. "3d 4h" instead of "3 days 4 hours", for tight table columns
      */
-    public function formatTimeUntilAvailable(DateTimeInterface $effectiveDate, DateTimeImmutable $now): string
+    public function formatTimeUntilAvailable(DateTimeInterface $effectiveDate, DateTimeImmutable $now, bool $short = false): string
     {
         $availableAt = (new DateTimeImmutable($effectiveDate->format(DateTimeInterface::ATOM)))
             ->modify("+{$this->period} seconds");
@@ -176,18 +178,21 @@ class CooldownPolicyConfig extends ListPolicyConfig
 
         $parts = [];
         if ($days > 0) {
-            $parts[] = $days . ' day' . ($days > 1 ? 's' : '');
+            $parts[] = $short ? $days . 'd' : $days . ' day' . ($days > 1 ? 's' : '');
         }
         if ($diff->h > 0) {
-            $parts[] = $diff->h . ' hour' . ($diff->h > 1 ? 's' : '');
+            $parts[] = $short ? $diff->h . 'h' : $diff->h . ' hour' . ($diff->h > 1 ? 's' : '');
         }
         if (count($parts) === 0 && $diff->i > 0) {
-            $parts[] = $diff->i . ' minute' . ($diff->i > 1 ? 's' : '');
+            $parts[] = $short ? $diff->i . 'm' : $diff->i . ' minute' . ($diff->i > 1 ? 's' : '');
         }
 
         $result = implode(' ', $parts);
+        if ($result !== '') {
+            return $result;
+        }
 
-        return $result !== '' ? $result : 'less than a minute';
+        return $short ? '<1m' : 'less than a minute';
     }
 
     public function withBlockingDisabled()

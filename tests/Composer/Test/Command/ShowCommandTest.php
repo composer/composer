@@ -1014,7 +1014,7 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         self::assertSame(1, $appTester->run(['command' => 'outdated', '--strict' => true]));
         $display = $appTester->getDisplay(true);
         self::assertStringContainsString('c newer release still in the cooldown period - not installable yet', $display);
-        self::assertMatchesRegularExpression('{^vendor/package 1\.0\.0 <highlight>! 1\.1\.0 \(2\.0\.0 in \d+ days?(?: \d+ hours?)?\)</highlight>}m', $display);
+        self::assertMatchesRegularExpression('{^vendor/package 1\.0\.0 <highlight>! 1\.1\.0 \(2\.0\.0 in \d+d(?: \d+h)?\)</highlight>}m', $display);
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'outdated', '--format' => 'json']);
@@ -1053,7 +1053,7 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         // listed with the time left, but not counted as outdated since it cannot be installed yet
         $appTester = $this->getApplicationTester();
         self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true]));
-        self::assertMatchesRegularExpression('{^vendor/package 1\.1\.0 c 2\.0\.0 \(\d+ days?(?: \d+ hours?)? left\)}m', $appTester->getDisplay(true));
+        self::assertMatchesRegularExpression('{^vendor/package 1\.1\.0 c 2\.0\.0 \(\d+d(?: \d+h)? left\)}m', $appTester->getDisplay(true));
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'outdated', '--format' => 'json']);
@@ -1083,7 +1083,7 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         $appTester = $this->getApplicationTester();
         self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true]));
         // the backport clears first but is older than what is installed, so the newer release is the one shown
-        self::assertMatchesRegularExpression('{^vendor/package 2\.0\.0 c 2\.0\.1 \(\d+ days?(?: \d+ hours?)? left\)}m', $appTester->getDisplay(true));
+        self::assertMatchesRegularExpression('{^vendor/package 2\.0\.0 c 2\.0\.1 \(\d+d(?: \d+h)? left\)}m', $appTester->getDisplay(true));
     }
 
     public function testOutdatedTreatsAnInstalledVersionStillInTheCooldownPeriodAsUpToDate(): void
