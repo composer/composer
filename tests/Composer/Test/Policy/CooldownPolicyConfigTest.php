@@ -187,6 +187,20 @@ class CooldownPolicyConfigTest extends TestCase
         self::assertFalse($noAge->shouldBlock(ListPolicyConfig::BLOCK_SCOPE_UPDATE));
     }
 
+    public function testFormatTimeUntilAvailable(): void
+    {
+        $cooldown = new CooldownPolicyConfig(true, ListPolicyConfig::AUDIT_IGNORE, [], 604800);
+        $now = new \DateTimeImmutable('2026-01-10T00:00:00+00:00');
+
+        self::assertSame('3 days 4 hours', $cooldown->formatTimeUntilAvailable(new \DateTimeImmutable('2026-01-06T04:00:00+00:00'), $now));
+        self::assertSame('3d 4h', $cooldown->formatTimeUntilAvailable(new \DateTimeImmutable('2026-01-06T04:00:00+00:00'), $now, true));
+        self::assertSame('1 day', $cooldown->formatTimeUntilAvailable(new \DateTimeImmutable('2026-01-04T00:00:00+00:00'), $now));
+        self::assertSame('1d', $cooldown->formatTimeUntilAvailable(new \DateTimeImmutable('2026-01-04T00:00:00+00:00'), $now, true));
+        self::assertSame('5m', $cooldown->formatTimeUntilAvailable(new \DateTimeImmutable('2026-01-03T00:05:00+00:00'), $now, true));
+        self::assertSame('<1m', $cooldown->formatTimeUntilAvailable(new \DateTimeImmutable('2026-01-03T00:00:30+00:00'), $now, true));
+        self::assertSame('less than a minute', $cooldown->formatTimeUntilAvailable(new \DateTimeImmutable('2026-01-03T00:00:30+00:00'), $now));
+    }
+
     public function testEnvOverridesAge(): void
     {
         Platform::putEnv('COMPOSER_POLICY_COOLDOWN_PERIOD', '2 days');

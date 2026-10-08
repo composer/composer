@@ -41,6 +41,7 @@ class OutdatedCommand extends BaseCommand
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates.'),
                 new InputOption('patch-only', 'p', InputOption::VALUE_NONE, 'Show only packages that have patch SemVer-compatible updates.'),
                 new InputOption('sort-by-age', 'A', InputOption::VALUE_NONE, 'Displays the installed version\'s age, and sorts packages oldest first.'),
+                new InputOption('cooldown-period', null, InputOption::VALUE_REQUIRED, 'Overrides the configured policy.cooldown.period while looking up latest versions, even when the policy is disabled or not blocking, 0 disables it for this run.'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
                 new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Can contain wildcards (*). Use it if you don\'t want to be informed about new versions of some packages.', null, $this->suggestInstalledPackage(false)),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
@@ -58,6 +59,7 @@ The color coding (or signage if you have ANSI colors disabled) for dependency ve
   compatibility breaks according to semver, so upgrade when you can but it
   may involve work.
 - <highlight>red</highlight> (!): Dependency has a new version that is semver-compatible and you should upgrade it.
+- uncolored (c): Dependency has a newer version that is still in the cooldown period and cannot be installed yet.
 
 Read more at https://getcomposer.org/doc/03-cli.md#outdated
 EOT
@@ -112,6 +114,9 @@ EOT
         }
         if ($input->getOption('sort-by-age')) {
             $args['--sort-by-age'] = true;
+        }
+        if (null !== $input->getOption('cooldown-period')) {
+            $args['--cooldown-period'] = $input->getOption('cooldown-period');
         }
         $args['--ignore-platform-req'] = $input->getOption('ignore-platform-req');
         if ($input->getOption('ignore-platform-reqs')) {

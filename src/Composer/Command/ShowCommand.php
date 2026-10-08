@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Cache;
 use Composer\Composer;
+use Composer\Config;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
@@ -25,6 +26,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
+use Composer\Policy\CooldownPolicyConfig;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -43,6 +45,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Semver;
 use Composer\Spdx\SpdxLicenses;
 use Composer\Util\PackageInfo;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
@@ -98,6 +101,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --latest or --outdated option.'),
                 new InputOption('patch-only', null, InputOption::VALUE_NONE, 'Show only packages that have patch SemVer-compatible updates. Use with the --latest or --outdated option.'),
                 new InputOption('sort-by-age', 'A', InputOption::VALUE_NONE, 'Displays the installed version\'s age, and sorts packages oldest first. Use with the --latest or --outdated option.'),
+                new InputOption('cooldown-period', null, InputOption::VALUE_REQUIRED, 'Overrides the configured policy.cooldown.period while looking up latest versions, even when the policy is disabled or not blocking, 0 disables it for this run. Use with the --latest or --outdated option'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
@@ -289,6 +293,11 @@ EOT
             $input->setOption('latest', false);
         }
 
+        $cooldown = null;
+        if ($input->getOption('latest') && $composer !== null) {
+            $cooldown = $this->getCooldownPolicyConfig($composer->getConfig(), $input);
+        }
+
         $packageFilter = $input->getArgument('package');
 
         // show single package or single version
@@ -340,8 +349,11 @@ EOT
             }
 
             $latestPackage = null;
+            $withheld = null;
             if ($input->getOption('latest')) {
-                $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $input->getOption('major-only'), $input->getOption('minor-only'), $input->getOption('patch-only'), $platformReqFilter);
+                $found = $this->findLatestPackage($package, $composer, $platformRepo, $input->getOption('major-only'), $input->getOption('minor-only'), $input->getOption('patch-only'), $platformReqFilter, $cooldown);
+                $latestPackage = $found['latest'];
+                $withheld = $found['withheld'];
             }
             if (
                 $input->getOption('outdated')
@@ -365,9 +377,9 @@ EOT
             }
 
             if ('json' === $format) {
-                $this->printPackageInfoAsJson($package, $versions, $installedRepo, $latestPackage ?: null);
+                $this->printPackageInfoAsJson($package, $versions, $installedRepo, $latestPackage ?: null, $withheld);
             } else {
-                $this->printPackageInfo($package, $versions, $installedRepo, $latestPackage ?: null);
+                $this->printPackageInfo($package, $versions, $installedRepo, $latestPackage ?: null, $withheld);
             }
 
             return $exitCode;
@@ -461,6 +473,8 @@ EOT
         $indent = $showAllTypes ? '  ' : '';
         /** @var PackageInterface[] $latestPackages */
         $latestPackages = [];
+        /** @var array<string, array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}> newer releases still in the cooldown period than the newest installable version */
+        $withheldPackages = [];
         $exitCode = 0;
         $viewData = [];
         $viewMetaData = [];
@@ -497,12 +511,14 @@ EOT
                 $nameLength = $versionLength = $latestLength = $releaseDateLength = 0;
 
                 foreach ($latestLookups[$type] ?? [] as $package) {
-                    $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter);
-                    if ($latestPackage === null) {
-                        continue;
+                    unset($withheldPackages[$package->getPrettyName()]);
+                    $found = $this->findLatestPackage($package, $composer, $platformRepo, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter, $cooldown);
+                    if ($found['latest'] !== null) {
+                        $latestPackages[$package->getPrettyName()] = $found['latest'];
                     }
-
-                    $latestPackages[$package->getPrettyName()] = $latestPackage;
+                    if ($found['withheld'] !== null) {
+                        $withheldPackages[$package->getPrettyName()] = $found['withheld'];
+                    }
                 }
 
                 $writePath = !$input->getOption('name-only') && $input->getOption('path');
@@ -537,11 +553,13 @@ EOT
                         // When using --major-only, and no bigger version than current major is found then it is considered up to date
                         $packageIsUpToDate = $packageIsUpToDate || ($latestPackage === null && $showMajorOnly);
                         $packageIsIgnored = Preg::isMatch($ignoredPackagesRegex, $package->getPrettyName());
-                        if ($input->getOption('outdated') && ($packageIsUpToDate || $packageIsIgnored)) {
+                        $withheld = $withheldPackages[$package->getPrettyName()] ?? null;
+                        if ($input->getOption('outdated') && ($packageIsIgnored || ($packageIsUpToDate && $withheld === null))) {
                             continue;
                         }
 
-                        if ($input->getOption('outdated') || $input->getOption('strict')) {
+                        // a release still in the cooldown period cannot be installed yet, so it does not make the package outdated
+                        if (($input->getOption('outdated') || $input->getOption('strict')) && !$packageIsUpToDate) {
                             $hasOutdatedPackages = true;
                         }
 
@@ -572,19 +590,33 @@ EOT
                                 $packageViewData['release-date'] = '';
                             }
                         }
-                        if ($writeLatest && $latestPackage) {
-                            $packageViewData['latest'] = $latestPackage->getFullPrettyVersion();
+                        // the installable update takes the slot, else the release waiting for the cooldown period to end
+                        $hasInstallableUpdate = $latestPackage !== null && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion();
+                        $shownPackage = $withheld !== null && !$hasInstallableUpdate ? $withheld['package'] : $latestPackage;
+                        if ($writeLatest && $shownPackage !== null) {
+                            $shortAvailableIn = $withheld !== null && $cooldown !== null ? $cooldown->formatTimeUntilAvailable($withheld['releaseDate'], new DateTimeImmutable(), true) : '';
+                            $packageViewData['latest'] = $shownPackage->getFullPrettyVersion();
                             if ($format === 'text') {
                                 $packageViewData['latest'] = ltrim($packageViewData['latest'], 'v');
                             }
-                            $packageViewData['latest-status'] = $this->getUpdateStatus($latestPackage, $package);
-                            $latestLength = max($latestLength, strlen($packageViewData['latest']));
-
-                            if ($latestPackage->getReleaseDate() !== null) {
-                                $packageViewData['latest-release-date'] = $latestPackage->getReleaseDate()->format(DateTimeInterface::ATOM);
+                            $packageViewData['latest-release-date'] = $shownPackage->getReleaseDate() !== null ? $shownPackage->getReleaseDate()->format(DateTimeInterface::ATOM) : '';
+                            if ($withheld !== null && !$hasInstallableUpdate) {
+                                $packageViewData['latest-status'] = 'cooldown';
+                                $packageViewData['cooldown-available-in'] = $withheld['availableIn'];
+                                if ($format === 'text') {
+                                    $packageViewData['latest'] .= ' ('.$shortAvailableIn.' left)';
+                                }
                             } else {
-                                $packageViewData['latest-release-date'] = '';
+                                $packageViewData['latest-status'] = $this->getUpdateStatus($shownPackage, $package);
+                                if ($withheld !== null) {
+                                    $packageViewData['cooldown-latest'] = $withheld['package']->getFullPrettyVersion();
+                                    $packageViewData['cooldown-available-in'] = $withheld['availableIn'];
+                                    if ($format === 'text') {
+                                        $packageViewData['latest'] .= ' ('.ltrim($packageViewData['cooldown-latest'], 'v').' in '.$shortAvailableIn.')';
+                                    }
+                                }
                             }
+                            $latestLength = max($latestLength, strlen($packageViewData['latest']));
                         } elseif ($writeLatest) {
                             $packageViewData['latest'] = '[none matched]';
                             $packageViewData['latest-status'] = 'up-to-date';
@@ -647,6 +679,9 @@ EOT
                     $io->writeError('Legend:');
                     $io->writeError('! patch or minor release available - update recommended');
                     $io->writeError('~ major release available - update possible');
+                    if ($cooldown !== null) {
+                        $io->writeError('c newer release still in the cooldown period - not installable yet');
+                    }
                     if (!$input->getOption('outdated')) {
                         $io->writeError('= up to date version');
                     }
@@ -654,6 +689,9 @@ EOT
                     $io->writeError('<info>Color legend:</info>');
                     $io->writeError('- <highlight>patch or minor</highlight> release available - update recommended');
                     $io->writeError('- <comment>major</comment> release available - update possible');
+                    if ($cooldown !== null) {
+                        $io->writeError('- release still in the cooldown period - not installable yet (shown without color)');
+                    }
                     if (!$input->getOption('outdated')) {
                         $io->writeError('- <info>up to date</info> version');
                     }
@@ -753,9 +791,10 @@ EOT
                 $updateStatus = $package['latest-status'];
                 $style = $this->updateStatusToVersionStyle($updateStatus);
                 if (!$io->isDecorated()) {
-                    $latestVersion = str_replace(['up-to-date', 'semver-safe-update', 'update-possible'], ['=', '!', '~'], $updateStatus) . ' ' . $latestVersion;
+                    $latestVersion = str_replace(['up-to-date', 'semver-safe-update', 'update-possible', 'cooldown'], ['=', '!', '~', 'c'], $updateStatus) . ' ' . $latestVersion;
                 }
-                $io->write(' <' . $style . '>' . str_pad($latestVersion, ($padLatest ? $latestLength : 0), ' ') . '</' . $style . '>', false);
+                $latestVersion = str_pad($latestVersion, ($padLatest ? $latestLength : 0), ' ');
+                $io->write(' ' . ($style !== '' ? '<' . $style . '>' . $latestVersion . '</' . $style . '>' : $latestVersion), false);
                 if ($writeReleaseDate && isset($package['release-age'])) {
                     $io->write(' '.str_pad($package['release-age'], ($padReleaseDate ? $releaseDateLength : 0), ' '), false);
                 }
@@ -884,12 +923,13 @@ EOT
      * Prints package info.
      *
      * @param array<string, string>    $versions
+     * @param array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}|null $withheld newer release still in the cooldown period
      */
-    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null): void
+    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null): void
     {
         $io = $this->getIO();
 
-        $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null);
+        $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null, $withheld);
         $this->printLinks($package, Link::TYPE_REQUIRE);
         $this->printLinks($package, Link::TYPE_DEV_REQUIRE, 'requires (dev)');
 
@@ -909,8 +949,9 @@ EOT
      * Prints package metadata.
      *
      * @param array<string, string>    $versions
+     * @param array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}|null $withheld newer release still in the cooldown period
      */
-    protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null): void
+    protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null): void
     {
         $isInstalledPackage = !PlatformRepository::isPlatformPackage($package->getName()) && $installedRepo->hasPackage($package);
 
@@ -922,10 +963,17 @@ EOT
         if ($isInstalledPackage && $package->getReleaseDate() !== null) {
             $io->write('<info>released</info> : ' . $package->getReleaseDate()->format('Y-m-d') . ', ' . $this->getRelativeTime($package->getReleaseDate()));
         }
-        if ($latestPackage) {
+        $hasInstallableUpdate = $latestPackage !== null && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion();
+        if ($withheld !== null && !$hasInstallableUpdate) {
+            $io->write('<info>latest</info>   : ' . $withheld['package']->getPrettyVersion() . ' (still in the cooldown period, ' . $withheld['availableIn'] . ' left)');
+            $latestPackage = $latestPackage ?? $package;
+        } elseif ($latestPackage !== null) {
             $style = $this->getVersionStyle($latestPackage, $package);
             $releasedTime = $latestPackage->getReleaseDate() === null ? '' : ' released ' . $latestPackage->getReleaseDate()->format('Y-m-d') . ', ' . $this->getRelativeTime($latestPackage->getReleaseDate());
             $io->write('<info>latest</info>   : <'.$style.'>' . $latestPackage->getPrettyVersion() . '</'.$style.'>' . $releasedTime);
+            if ($withheld !== null) {
+                $io->write('<info>cooldown</info> : ' . $withheld['package']->getPrettyVersion() . ' (still in the cooldown period, ' . $withheld['availableIn'] . ' left)');
+            }
         } else {
             $latestPackage = $package;
         }
@@ -1056,8 +1104,9 @@ EOT
      * Prints package info in JSON format.
      *
      * @param array<string, string>    $versions
+     * @param array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}|null $withheld newer release still in the cooldown period
      */
-    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null): void
+    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, ?PackageInterface $latestPackage = null, ?array $withheld = null): void
     {
         $json = [
             'name' => $package->getPrettyName(),
@@ -1071,8 +1120,18 @@ EOT
         $json = $this->appendVersions($json, $versions);
         $json = $this->appendLicenses($json, $package);
 
-        if ($latestPackage) {
+        $hasInstallableUpdate = $latestPackage !== null && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion();
+        if ($withheld !== null && !$hasInstallableUpdate) {
+            $json['latest'] = $withheld['package']->getPrettyVersion();
+            $json['latest-status'] = 'cooldown';
+            $json['cooldown-available-in'] = $withheld['availableIn'];
+            $latestPackage = $latestPackage ?? $package;
+        } elseif ($latestPackage !== null) {
             $json['latest'] = $latestPackage->getPrettyVersion();
+            if ($withheld !== null) {
+                $json['cooldown-latest'] = $withheld['package']->getPrettyVersion();
+                $json['cooldown-available-in'] = $withheld['availableIn'];
+            }
         } else {
             $latestPackage = $package;
         }
@@ -1482,7 +1541,8 @@ EOT
         // 'up-to-date' is printed green
         // 'semver-safe-update' is printed red
         // 'update-possible' is printed yellow
-        return str_replace(['up-to-date', 'semver-safe-update', 'update-possible'], ['info', 'highlight', 'comment'], $updateStatus);
+        // 'cooldown' is printed without color, as it is neither fine nor actionable yet
+        return str_replace(['up-to-date', 'semver-safe-update', 'update-possible', 'cooldown'], ['info', 'highlight', 'comment', ''], $updateStatus);
     }
 
     private function getUpdateStatus(PackageInterface $latestPackage, PackageInterface $package): string
@@ -1515,13 +1575,16 @@ EOT
     }
 
     /**
-     * Given a package, this finds the latest package matching it
+     * Given a package, this finds the latest package matching it, and the release still in the cooldown
+     * period that becomes installable first when a cooldown policy applies
+     *
+     * @return array{latest: ?PackageInterface, withheld: ?array{package: PackageInterface, releaseDate: DateTimeInterface, availableIn: string}}
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $majorOnly, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter): ?PackageInterface
+    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $majorOnly, bool $minorOnly, bool $patchOnly, PlatformRequirementFilterInterface $platformReqFilter, ?CooldownPolicyConfig $cooldown = null): array
     {
         // find the latest version allowed in this repo set
         $name = $package->getName();
-        $versionSelector = new VersionSelector($this->getRepositorySet($composer), $platformRepo);
+        $versionSelector = new VersionSelector($this->getRepositorySet($composer), $platformRepo, $cooldown);
         $stability = $composer->getPackage()->getMinimumStability();
         $flags = $composer->getPackage()->getStabilityFlags();
         if (isset($flags[$name])) {
@@ -1539,7 +1602,7 @@ EOT
 
             // dev-x branches are considered to be on the latest major version always, do not look up for a new commit as that is deemed a minor upgrade (albeit risky)
             if ($majorOnly) {
-                return null;
+                return ['latest' => null, 'withheld' => null];
             }
         }
 
@@ -1578,7 +1641,68 @@ EOT
             $candidate = $candidate->getAliasOf();
         }
 
-        return $candidate !== false ? $candidate : null;
+        $latest = $candidate !== false ? $candidate : null;
+        $withheld = null;
+        if ($cooldown !== null && !str_starts_with($package->getVersion(), 'dev-')) {
+            // a waiting release is only worth mentioning if it is newer than what can be installed already
+            $baseline = $latest !== null && version_compare($latest->getVersion(), $package->getVersion(), '>') ? $latest : $package;
+            $installedIsWithheld = false;
+            foreach ($versionSelector->getWithheldCandidates() as $withheldCandidate) {
+                $withheldPackage = $withheldCandidate['package'];
+                while ($withheldPackage instanceof AliasPackage) {
+                    $withheldPackage = $withheldPackage->getAliasOf();
+                }
+                if ($withheldPackage->getVersion() === $package->getVersion()) {
+                    $installedIsWithheld = true;
+                }
+                // the first release to clear the cooldown period among those newer than the baseline,
+                // a withheld backport to an older branch is no update
+                if (!version_compare($withheldPackage->getVersion(), $baseline->getVersion(), '>')) {
+                    continue;
+                }
+                if ($withheld === null || $withheldCandidate['releaseDate'] < $withheld['releaseDate']) {
+                    $withheld = ['package' => $withheldPackage, 'releaseDate' => $withheldCandidate['releaseDate']];
+                }
+            }
+
+            // the installed version is itself still in the cooldown period, e.g. the period was configured after
+            // installing it, so the older releases the selector fell back to are no update either
+            if ($installedIsWithheld && ($latest === null || version_compare($latest->getVersion(), $package->getVersion(), '<'))) {
+                $latest = $package;
+            }
+
+            if ($withheld !== null) {
+                $withheld['availableIn'] = $cooldown->formatTimeUntilAvailable($withheld['releaseDate'], new DateTimeImmutable());
+            }
+        }
+
+        return [
+            'latest' => $latest,
+            'withheld' => $withheld,
+        ];
+    }
+
+    /**
+     * The cooldown policy to apply while looking up latest versions, so that the result matches what
+     * update would install, or null when no cooldown period applies
+     */
+    private function getCooldownPolicyConfig(Config $config, InputInterface $input): ?CooldownPolicyConfig
+    {
+        $override = $input->getOption('cooldown-period');
+        if ($override !== null) {
+            try {
+                $period = CooldownPolicyConfig::parseDuration($override);
+            } catch (\RuntimeException $e) {
+                throw new \InvalidArgumentException('Invalid --cooldown-period value "'.$override.'", use an integer number of seconds or a duration like "7 days".', 0, $e);
+            }
+            // an explicit period simulates an enabled, blocking policy whatever the configuration says
+            $configured = $this->createPolicyConfig($config, $input)->cooldown;
+            $cooldown = new CooldownPolicyConfig(true, $configured->audit, $configured->ignore, $period);
+
+            return $cooldown->hasCooldown() ? $cooldown : null;
+        }
+
+        return $this->getBlockingCooldownPolicy($config, $input);
     }
 
     private function getRepositorySet(Composer $composer): RepositorySet
