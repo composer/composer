@@ -613,9 +613,9 @@ The color coding is as such:
   count as outdated for `--strict`.
 
 When a cooldown period is configured, the latest version shown is the newest one the cooldown policy
-allows installing, so the output matches what `composer update` would do. A release still in the
-cooldown period is only shown once you are on the newest installable version, and when several are
-waiting, the one that becomes installable first.
+allows installing, so the output matches what `composer update` would do. A newer release still in
+the cooldown period is shown next to it with the time left, or in its place once you are on the newest
+installable version. When several are waiting, the one that becomes installable first is shown.
 
 ### Options
 

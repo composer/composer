@@ -1006,7 +1006,7 @@ vendor/apackage
 vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine here, but see CAUTION above
     }
 
-    public function testOutdatedShowsTheInstallableUpdateBeforeAReleaseStillInTheCooldownPeriod(): void
+    public function testOutdatedShowsTheInstallableUpdateAlongsideAReleaseStillInTheCooldownPeriod(): void
     {
         $this->initProjectWithCooldownPeriod('1.0.0');
 
@@ -1014,9 +1014,36 @@ vendor/longpackagename', trim($appTester->getDisplay(true))); // trim() is fine 
         self::assertSame(1, $appTester->run(['command' => 'outdated', '--strict' => true]));
         $display = $appTester->getDisplay(true);
         self::assertStringContainsString('c newer release still in the cooldown period - not installable yet', $display);
+        self::assertMatchesRegularExpression('{^vendor/package 1\.0\.0 <highlight>! 1\.1\.0 \(2\.0\.0 in \d+ days?(?: \d+ hours?)?\)</highlight>}m', $display);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated', '--format' => 'json']);
+        $json = json_decode($appTester->getDisplay(true), true);
+        self::assertSame('1.1.0', $json['installed'][0]['latest']);
+        self::assertSame('semver-safe-update', $json['installed'][0]['latest-status']);
+        self::assertSame('2.0.0', $json['installed'][0]['cooldown-latest']);
+        self::assertArrayHasKey('cooldown-available-in', $json['installed'][0]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'show', 'package' => 'vendor/package', '--latest' => true]);
+        $display = $appTester->getDisplay(true);
+        self::assertMatchesRegularExpression('{^latest   : <highlight>1\.1\.0</highlight>$}m', $display);
+        self::assertMatchesRegularExpression('{^cooldown : 2\.0\.0 \(still in the cooldown period, \d+ days?(?: \d+ hours?)? left\)$}m', $display);
+    }
+
+    public function testOutdatedIgnoresWithheldReleasesOlderThanTheInstallableUpdate(): void
+    {
+        $this->initProjectWithCooldownPeriod('1.0.0', [
+            '1.0.0' => '2020-01-01T00:00:00+00:00',
+            '1.0.1' => '2999-01-01T00:00:00+00:00',
+            '1.1.0' => '2020-02-01T00:00:00+00:00',
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'outdated']);
+        $display = $appTester->getDisplay(true);
         self::assertStringContainsString('vendor/package 1.0.0 <highlight>! 1.1.0</highlight>', $display);
-        // the release still in the cooldown period only shows up once nothing newer is installable
-        self::assertStringNotContainsString('2.0.0', $display);
+        self::assertStringNotContainsString('1.0.1', $display);
     }
 
     public function testOutdatedShowsAReleaseStillInTheCooldownPeriodOnceOnTheNewestInstallableVersion(): void
