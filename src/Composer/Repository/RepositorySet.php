@@ -230,6 +230,27 @@ class RepositorySet
     }
 
     /**
+     * Loads packages from all repositories in one batch per repository, to warm up caches before many findPackages() calls
+     *
+     * @param string[] $names
+     */
+    public function preloadPackages(array $names): void
+    {
+        $nameMap = array_fill_keys($names, null);
+        foreach ($this->repositories as $repository) {
+            if ($nameMap === []) {
+                break;
+            }
+
+            $result = $repository->loadPackages($nameMap, $this->acceptableStabilities, $this->stabilityFlags);
+            foreach ($result['namesFound'] as $name) {
+                // like findPackages, do not query lower priority repositories for names already found
+                unset($nameMap[$name]);
+            }
+        }
+    }
+
+    /**
      * @param string[] $packageNames
      * @return ($allowPartialAdvisories is true ? array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, unreachableRepos: array<string>} : array{advisories: array<string, array<SecurityAdvisory>>, unreachableRepos: array<string>})
      */
