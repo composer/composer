@@ -2707,6 +2707,154 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddConfigSettingDoesNotOverwriteNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "config": {
+        "platform": {
+            "php": "8.1"
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addConfigSetting('php', '8.2'));
+        self::assertEquals('{
+    "config": {
+        "platform": {
+            "php": "8.1"
+        },
+        "php": "8.2"
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddSubNodeOverwritesTopLevelKeyNotNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        },
+        "allow-contrib": true
+    }
+}');
+
+        self::assertTrue($manipulator->addSubNode('extra', 'allow-contrib', false));
+        self::assertEquals('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        },
+        "allow-contrib": false
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddPropertyDoesNotOverwriteNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        }
+    }
+}');
+
+        self::assertTrue($manipulator->addProperty('extra.allow-contrib', false));
+        self::assertEquals('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        },
+        "allow-contrib": false
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddSubNodeAppendsToLargeNode(): void
+    {
+        $scripts = [];
+        for ($i = 0; $i < 30; $i++) {
+            $scripts['script'.$i] = 'echo '.$i;
+        }
+        $manipulator = new JsonManipulator(JsonFile::encode(['scripts' => $scripts]));
+
+        self::assertTrue($manipulator->addSubNode('scripts', 'new', 'echo new'));
+        self::assertSame($scripts + ['new' => 'echo new'], json_decode($manipulator->getContents(), true)['scripts']);
+    }
+
+    public function testAddSubNodeUpdatesLastKeyOfLargeNode(): void
+    {
+        $extra = [];
+        for ($i = 0; $i < 3000; $i++) {
+            $extra['key'.$i] = ['foo' => 'bar'];
+        }
+        $manipulator = new JsonManipulator(JsonFile::encode(['extra' => $extra]));
+
+        self::assertTrue($manipulator->addSubNode('extra', 'key2999', 'baz'));
+        $extra['key2999'] = 'baz';
+        self::assertSame($extra, json_decode($manipulator->getContents(), true)['extra']);
+    }
+
+    public function testAddSubNodeOverwritesKeyContainingSpace(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "scripts": {
+        "my script": "foo"
+    }
+}');
+
+        self::assertTrue($manipulator->addSubNode('scripts', 'my script', 'bar'));
+        self::assertEquals('{
+    "scripts": {
+        "my script": "bar"
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddSubNodeOverwritesKeyWithEscapedSlash(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "foo\\/bar": 1
+    }
+}');
+
+        self::assertTrue($manipulator->addSubNode('extra', 'foo/bar', 2));
+        self::assertEquals('{
+    "extra": {
+        "foo\\/bar": 2
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testRemoveSubNodeRemovesTopLevelKeyNotNestedKeyWithSameName(): void
+    {
+        $manipulator = new JsonManipulator('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": false
+        },
+        "allow-contrib": true
+    }
+}');
+
+        self::assertTrue($manipulator->removeSubNode('extra', 'allow-contrib'));
+        self::assertEquals('{
+    "extra": {
+        "symfony": {
+            "allow-contrib": false
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
     public function testAddConfigSettingCanOverwrite(): void
     {
         $manipulator = new JsonManipulator('{
