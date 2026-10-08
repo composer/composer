@@ -2774,6 +2774,31 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testAddSubNodeAppendsToLargeNode(): void
+    {
+        $scripts = [];
+        for ($i = 0; $i < 30; $i++) {
+            $scripts['script'.$i] = 'echo '.$i;
+        }
+        $manipulator = new JsonManipulator(JsonFile::encode(['scripts' => $scripts]));
+
+        self::assertTrue($manipulator->addSubNode('scripts', 'new', 'echo new'));
+        self::assertSame($scripts + ['new' => 'echo new'], json_decode($manipulator->getContents(), true)['scripts']);
+    }
+
+    public function testAddSubNodeUpdatesLastKeyOfLargeNode(): void
+    {
+        $extra = [];
+        for ($i = 0; $i < 3000; $i++) {
+            $extra['key'.$i] = ['foo' => 'bar'];
+        }
+        $manipulator = new JsonManipulator(JsonFile::encode(['extra' => $extra]));
+
+        self::assertTrue($manipulator->addSubNode('extra', 'key2999', 'baz'));
+        $extra['key2999'] = 'baz';
+        self::assertSame($extra, json_decode($manipulator->getContents(), true)['extra']);
+    }
+
     public function testAddConfigSettingCanOverwrite(): void
     {
         $manipulator = new JsonManipulator('{
