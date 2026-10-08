@@ -531,20 +531,26 @@ class JsonManipulator
         }
 
         // child exists
-        $childRegex = $this->childRegex($name);
-        if (Preg::isMatch($childRegex, $children, $matches)) {
-            $children = Preg::replaceCallback($childRegex, function ($matches) use ($subName, $value): string {
-                if ($subName !== null && is_string($matches['content'])) {
-                    $curVal = json_decode($matches['content'], true);
-                    if (!is_array($curVal)) {
-                        $curVal = [];
-                    }
-                    $curVal[$subName] = $value;
-                    $value = $curVal;
-                }
+        if (is_array($decoded[$mainNode]) && array_key_exists($name, $decoded[$mainNode])) {
+            $matches = $this->matchChild($name, $children);
+            if ($matches === null) {
+                return false;
+            }
+            assert(is_string($matches[0]));
+            assert(is_string($matches['start']));
+            assert(is_string($matches['content']));
+            assert(is_string($matches['end']));
 
-                return $matches['start'] . $this->format($value, 1) . $matches['end'];
-            }, $children);
+            if ($subName !== null) {
+                $curVal = json_decode($matches['content'], true);
+                if (!is_array($curVal)) {
+                    $curVal = [];
+                }
+                $curVal[$subName] = $value;
+                $value = $curVal;
+            }
+
+            $children = $matches['start'] . $this->format($value, 1) . $matches['end'] . substr($children, strlen($matches[0]));
         } elseif (Preg::isMatch('#^\{(?P<leadingspace>\s*?)(?P<content>\S+.*?)?(?P<trailingspace>\s*)\}$#s', $children, $match)) {
             $whitespace = $match['trailingspace'];
             if (null !== $match['content']) {
@@ -1044,13 +1050,28 @@ class JsonManipulator
 
     /**
      * Matches the top-level pair for $name in an object, skipping nested keys with the same name
+     *
+     * @return array<int|string, string|null>|null null if the pair could not be matched
      */
-    private function childRegex(string $name): string
+    private function matchChild(string $name, string $children): ?array
     {
         $key = '"'.preg_quote($name).'"';
 
         // possessive loop over the other pairs, a lazy one backtracks exponentially when the key is missing
-        return '{'.self::DEFINES.'^(?P<start>\{ \s* (?: (?!'.$key.'\s*:) (?&string) \s* : (?&json) \s* , \s* )*+ '.$key.'\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
+        $childRegex = '{'.self::DEFINES.'^(?P<start>\{ \s* (?: (?!'.$key.'\s*:) (?&string) \s* : (?&json) \s* , \s* )*+ '.$key.'\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
+
+        try {
+            if (!Preg::isMatch($childRegex, $children, $matches)) {
+                return null;
+            }
+        } catch (\RuntimeException $e) {
+            if (in_array($e->getCode(), [PREG_BACKTRACK_LIMIT_ERROR, PREG_JIT_STACKLIMIT_ERROR], true)) {
+                return null;
+            }
+            throw $e;
+        }
+
+        return $matches;
     }
 
     /**
