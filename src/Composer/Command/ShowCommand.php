@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Cache;
 use Composer\Composer;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
@@ -467,23 +468,41 @@ EOT
         $writeVersion = false;
         $writeDescription = false;
 
+        $latestLookups = [];
+        if ($showLatest) {
+            foreach (['platform', 'locked', 'installed'] as $type) {
+                foreach ($packages[$type] ?? [] as $package) {
+                    if (is_object($package) && !Preg::isMatch($ignoredPackagesRegex, $package->getPrettyName())) {
+                        $latestLookups[$type][] = $package;
+                    }
+                }
+            }
+
+            // load all metadata in parallel upfront so the per-package lookups hit the fresh cache, which needs the cache to be usable
+            if ($latestLookups !== [] && $composer !== null && Cache::isUsable($composer->getConfig()->get('cache-repo-dir'))) {
+                $names = [];
+                foreach ($latestLookups as $lookups) {
+                    foreach ($lookups as $package) {
+                        $names[$package->getName()] = true;
+                    }
+                }
+                $this->getRepositorySet($composer)->preloadPackages(array_keys($names));
+            }
+        }
+
         foreach (['platform' => true, 'locked' => true, 'available' => false, 'installed' => true] as $type => $showVersion) {
             if (isset($packages[$type])) {
                 ksort($packages[$type]);
 
                 $nameLength = $versionLength = $latestLength = $releaseDateLength = 0;
 
-                if ($showLatest && $showVersion) {
-                    foreach ($packages[$type] as $package) {
-                        if (is_object($package) && !Preg::isMatch($ignoredPackagesRegex, $package->getPrettyName())) {
-                            $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter);
-                            if ($latestPackage === null) {
-                                continue;
-                            }
-
-                            $latestPackages[$package->getPrettyName()] = $latestPackage;
-                        }
+                foreach ($latestLookups[$type] ?? [] as $package) {
+                    $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMajorOnly, $showMinorOnly, $showPatchOnly, $platformReqFilter);
+                    if ($latestPackage === null) {
+                        continue;
                     }
+
+                    $latestPackages[$package->getPrettyName()] = $latestPackage;
                 }
 
                 $writePath = !$input->getOption('name-only') && $input->getOption('path');
