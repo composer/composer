@@ -17,18 +17,142 @@ use Composer\Console\Application;
 use Composer\Command\ScriptAliasCommand;
 use Composer\Test\TestCase;
 use Composer\Util\Platform;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Command\HelpCommand;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
 
 class ApplicationTest extends TestCase
 {
+    /** @var string|false */
+    private $originalTerminalStatus;
+
+    /** @dataProvider provideTerminalStatusSettings */
+    public function testProgramStatusIsEmittedByCliToTerminal(string $setting, bool $rich, bool $progress): void
+    {
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', $setting);
+        $command = [PHP_BINARY, dirname(__DIR__, 4).'/bin/composer', '--ansi', '--no-plugins', 'about'];
+        $process = $this->createTerminalProcess($command);
+        self::assertSame(0, $process->run(), $process->getErrorOutput());
+        $written = $process->getOutput();
+        self::assertSame($rich, strpos($written, "\033]7501;state=working:app=composer\033\\") !== false);
+        self::assertSame($rich, strpos($written, "\033]7501;state=done:app=composer\033\\") !== false);
+        self::assertSame($progress, strpos($written, "\033]9;4;3\033\\") !== false);
+        self::assertSame($progress, strpos($written, "\033]9;4;0\033\\") !== false);
+        self::assertStringContainsString('Composer - Dependency Manager for PHP', $process->getOutput());
+    }
+
+    public function testMissingComposerFileReportsErrorBeforeExiting(): void
+    {
+        $directory = self::getUniqueTmpDirectory();
+        try {
+            Platform::putEnv('COMPOSER_TERMINAL_STATUS', '7501,9;4');
+            $command = [PHP_BINARY, dirname(__DIR__, 4).'/bin/composer', '--ansi', '--no-plugins', '--working-dir', $directory, 'install'];
+            $process = $this->createTerminalProcess($command);
+            $process->run();
+            $written = $process->getOutput();
+            self::assertStringContainsString('Composer could not find a composer.json file', $written);
+            self::assertStringContainsString("\033]7501;state=working:app=composer\033\\", $written);
+            self::assertStringEndsWith("\033]9;4;2\033\\\033]7501;state=error:app=composer\033\\", $written);
+        } finally {
+            self::removeTestDirectory($directory);
+        }
+    }
+
+    /** @param non-empty-list<string> $command */
+    private function createTerminalProcess(array $command): Process
+    {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('Requires a Unix pseudo-terminal');
+        }
+        $this->skipIfNotExecutable('script');
+
+        // script gives Composer a terminal even though PHPUnit captures its output.
+        $scriptCommand = PHP_OS === 'Darwin'
+            ? array_merge(['script', '-q', '/dev/null'], $command)
+            : ['script', '-q', '-e', '-c', implode(' ', array_map([ProcessExecutor::class, 'escape'], $command)), '/dev/null'];
+
+        return new Process($scriptCommand);
+    }
+
+    public static function provideTerminalStatusSettings(): array
+    {
+        return [
+            ['7501', true, false],
+            ['9;4', false, true],
+            ['7501,9;4', true, true],
+            ['off', false, false],
+        ];
+    }
+
+    public function testProgramStatusIsNotEmittedByCliToRedirectedOutput(): void
+    {
+        $process = new Process([PHP_BINARY, dirname(__DIR__, 4).'/bin/composer', '--ansi', '--no-plugins', 'about']);
+
+        self::assertSame(0, $process->run(), $process->getErrorOutput());
+        self::assertStringNotContainsString("\033]7501;", $process->getOutput().$process->getErrorOutput());
+        self::assertStringContainsString('Composer - Dependency Manager for PHP', $process->getOutput());
+    }
+
+    /**
+     * @dataProvider programStatusExitCodeProvider
+     */
+    public function testProgramStatusReportsCommandOutcome(int $exitCode, string $state): void
+    {
+        $application = new Application();
+        $command = new class('status-test') extends SymfonyCommand {
+            /** @var int */
+            public $exitCode = 0;
+
+            protected function execute(InputInterface $input, OutputInterface $output): int
+            {
+                return $this->exitCode;
+            }
+        };
+        $command->exitCode = $exitCode;
+        // Compatibility layer for symfony/console <7.4
+        // @phpstan-ignore method.notFound, function.alreadyNarrowedType, method.deprecated
+        method_exists($application, 'addCommand') ? $application->addCommand($command) : $application->add($command);
+        $output = new BufferedOutput(BufferedOutput::VERBOSITY_NORMAL, true);
+        self::assertSame($exitCode, $application->doRun(new ArrayInput(['command' => 'status-test', '--no-plugins' => true]), $output));
+        $written = $output->fetch();
+        self::assertStringStartsWith("\033]7501;state=working:app=composer\033\\", $written);
+        self::assertStringEndsWith("\033]7501;state=".$state.":app=composer\033\\", $written);
+    }
+
+    public static function programStatusExitCodeProvider(): array
+    {
+        return [[0, 'done'], [1, 'error'], [130, 'idle'], [143, 'idle']];
+    }
+
+    public function testProgramStatusReportsEarlyException(): void
+    {
+        $application = new Application();
+        $output = new BufferedOutput(BufferedOutput::VERBOSITY_NORMAL, true);
+        try {
+            $application->doRun(new ArrayInput(['--working-dir' => __FILE__]), $output);
+            self::fail('Expected invalid working directory');
+        } catch (\RuntimeException $e) {
+            self::assertStringContainsString('Invalid working directory', $e->getMessage());
+        }
+        self::assertStringEndsWith("\033]7501;state=error:app=composer\033\\", $output->fetch());
+        restore_error_handler();
+    }
+
     protected function tearDown(): void
     {
         parent::tearDown();
 
         Platform::clearEnv('COMPOSER_DISABLE_XDEBUG_WARN');
+        if ($this->originalTerminalStatus === false) {
+            Platform::clearEnv('COMPOSER_TERMINAL_STATUS');
+        } else {
+            Platform::putEnv('COMPOSER_TERMINAL_STATUS', $this->originalTerminalStatus);
+        }
     }
 
     protected function setUp(): void
@@ -36,6 +160,8 @@ class ApplicationTest extends TestCase
         parent::setUp();
 
         Platform::putEnv('COMPOSER_DISABLE_XDEBUG_WARN', '1');
+        $this->originalTerminalStatus = Platform::getEnv('COMPOSER_TERMINAL_STATUS');
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', '7501');
     }
 
     /**
@@ -95,7 +221,7 @@ class ApplicationTest extends TestCase
         $application = new Application;
         // Compatibility layer for symfony/console <7.4
         // @phpstan-ignore method.notFound, function.alreadyNarrowedType, method.deprecated
-        method_exists($application, 'addCommand') ? $application->addCommand(new \Composer\Command\AboutCommand) : $application->add(new \Composer\Command\AboutCommand);
+        method_exists($application, 'addCommand') ? $application->addCommand(new AboutCommand) : $application->add(new AboutCommand);
         self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
         self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about']), new BufferedOutput()));
     }

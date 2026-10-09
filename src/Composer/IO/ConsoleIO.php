@@ -12,6 +12,11 @@
 
 namespace Composer\IO;
 
+use Composer\Console\OscHelper;
+use Composer\Console\Osc7501ProgramStatusEncoder;
+use Composer\Console\ProgramStatus;
+use Composer\Console\AbstractOscProgramStatusEncoder;
+use Composer\Console\TerminalStatusPolicy;
 use Composer\Pcre\Preg;
 use Composer\Question\StrictConfirmationQuestion;
 use Symfony\Component\Console\Helper\HelperSet;
@@ -44,6 +49,10 @@ class ConsoleIO extends BaseIO
 
     /** @var string|false */
     private $sendTimestamps = false;
+    /** @var ProgramStatus|null */
+    private $programStatus;
+    /** @var list<AbstractOscProgramStatusEncoder> */
+    private $programStatusEncoders;
     /** @var float */
     private $startTime;
     /** @var array<IOInterface::*, OutputInterface::VERBOSITY_*> */
@@ -61,6 +70,10 @@ class ConsoleIO extends BaseIO
         $this->input = $input;
         $this->output = $output;
         $this->helperSet = $helperSet;
+        if (!$helperSet->has('osc')) {
+            $helperSet->set(new OscHelper());
+        }
+        $this->programStatusEncoders = TerminalStatusPolicy::fromEnvironment()->getEncoders();
         $this->verbosityMap = [
             self::QUIET => OutputInterface::VERBOSITY_QUIET,
             self::NORMAL => OutputInterface::VERBOSITY_NORMAL,
@@ -124,6 +137,30 @@ class ConsoleIO extends BaseIO
     public function isDebug()
     {
         return $this->output->isDebug();
+    }
+
+    /**
+     * Sends a terminal command to stderr without changing normal message output.
+     */
+    public function writeOsc(string $command, string $payload): void
+    {
+        /** @var OscHelper $helper */
+        $helper = $this->helperSet->get('osc');
+        $helper->write($this->getErrorOutput(), $command, $payload);
+    }
+
+    public function writeProgramStatus(ProgramStatus $status): void
+    {
+        $this->programStatus = $status;
+        foreach ($this->programStatusEncoders as $encoder) {
+            $this->writeOsc($encoder->getCommand(), $encoder->encode($status));
+        }
+    }
+
+    public function writeProgress(?int $progress): void
+    {
+        $status = $this->programStatus ?? ProgramStatus::working();
+        $this->writeProgramStatus($status->withProgress($progress));
     }
 
     /**
@@ -287,11 +324,11 @@ class ConsoleIO extends BaseIO
      */
     public function ask($question, $default = null)
     {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
-        $helper = $this->helperSet->get('question');
         $question = new Question(self::sanitize($question), is_string($default) ? self::sanitize($default) : $default);
 
-        return $helper->ask($this->input, $this->getErrorOutput(), $question);
+        return $this->askQuestion($question, [
+            Osc7501ProgramStatusEncoder::PROTOCOL => ['kind' => Osc7501ProgramStatusEncoder::KIND_QUESTION],
+        ]);
     }
 
     /**
@@ -299,11 +336,11 @@ class ConsoleIO extends BaseIO
      */
     public function askConfirmation($question, $default = true)
     {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
-        $helper = $this->helperSet->get('question');
         $question = new StrictConfirmationQuestion(self::sanitize($question), is_string($default) ? self::sanitize($default) : $default);
 
-        return $helper->ask($this->input, $this->getErrorOutput(), $question);
+        return $this->askQuestion($question, [
+            Osc7501ProgramStatusEncoder::PROTOCOL => ['kind' => Osc7501ProgramStatusEncoder::KIND_PERMISSION],
+        ]);
     }
 
     /**
@@ -311,13 +348,13 @@ class ConsoleIO extends BaseIO
      */
     public function askAndValidate($question, $validator, $attempts = null, $default = null)
     {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
-        $helper = $this->helperSet->get('question');
         $question = new Question(self::sanitize($question), is_string($default) ? self::sanitize($default) : $default);
         $question->setValidator($validator);
         $question->setMaxAttempts($attempts);
 
-        return $helper->ask($this->input, $this->getErrorOutput(), $question);
+        return $this->askQuestion($question, [
+            Osc7501ProgramStatusEncoder::PROTOCOL => ['kind' => Osc7501ProgramStatusEncoder::KIND_QUESTION],
+        ]);
     }
 
     /**
@@ -325,12 +362,12 @@ class ConsoleIO extends BaseIO
      */
     public function askAndHideAnswer($question)
     {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
-        $helper = $this->helperSet->get('question');
         $question = new Question(self::sanitize($question));
         $question->setHidden(true);
 
-        return $helper->ask($this->input, $this->getErrorOutput(), $question);
+        return $this->askQuestion($question, [
+            Osc7501ProgramStatusEncoder::PROTOCOL => ['kind' => Osc7501ProgramStatusEncoder::KIND_AUTH],
+        ]);
     }
 
     /**
@@ -338,14 +375,14 @@ class ConsoleIO extends BaseIO
      */
     public function select($question, $choices, $default, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false)
     {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
-        $helper = $this->helperSet->get('question');
         $question = new ChoiceQuestion(self::sanitize($question), self::sanitize($choices), is_string($default) ? self::sanitize($default) : $default);
         $question->setMaxAttempts($attempts ?: null); // IOInterface requires false, and Question requires null or int
         $question->setErrorMessage($errorMessage);
         $question->setMultiselect($multiselect);
 
-        $result = $helper->ask($this->input, $this->getErrorOutput(), $question);
+        $result = $this->askQuestion($question, [
+            Osc7501ProgramStatusEncoder::PROTOCOL => ['kind' => Osc7501ProgramStatusEncoder::KIND_QUESTION],
+        ]);
 
         $isAssoc = (bool) \count(array_filter(array_keys($choices), 'is_string'));
         if ($isAssoc) {
@@ -364,6 +401,33 @@ class ConsoleIO extends BaseIO
         }
 
         return $results;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $protocolOptions
+     * @return mixed
+     */
+    private function askQuestion(Question $question, array $protocolOptions = [])
+    {
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->helperSet->get('question');
+        if (!$this->isInteractive()) {
+            return $helper->ask($this->input, $this->getErrorOutput(), $question);
+        }
+
+        $previousStatus = $this->programStatus ?? ProgramStatus::working();
+        $status = ProgramStatus::blocked($question->getQuestion());
+        foreach ($protocolOptions as $protocol => $options) {
+            foreach ($options as $name => $value) {
+                $status = $status->withProtocolOption($protocol, $name, $value);
+            }
+        }
+        $this->writeProgramStatus($status);
+        try {
+            return $helper->ask($this->input, $this->getErrorOutput(), $question);
+        } finally {
+            $this->writeProgramStatus($previousStatus);
+        }
     }
 
     public function getTable(): Table
