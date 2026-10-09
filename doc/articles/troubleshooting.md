@@ -9,7 +9,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
 ## General
 
 1. When facing any kind of problems using Composer, be sure to **work with the
-   latest version**. See [self-update](../03-cli.md#self-update) for details.
+   latest version**. See [self-update](../03-cli.md#self-update-selfupdate) for details.
 
 2. Before asking anyone, run [`composer diagnose`](../03-cli.md#diagnose) to check
    for common problems. If it all checks out, proceed to the next steps.

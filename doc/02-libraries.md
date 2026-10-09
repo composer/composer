@@ -121,7 +121,7 @@ For more details on how package repositories work and what other types are
 available, see [Repositories](05-repositories.md).
 
 That's all. You can now install the dependencies by running Composer's
-[`install`](03-cli.md#install) command!
+[`install`](03-cli.md#install-i) command!
 
 **Recap:** Any git/svn/hg/fossil repository containing a `composer.json` can be
 added to your project by specifying the package repository and declaring the
