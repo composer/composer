@@ -1541,6 +1541,43 @@ If set to `1`, it is the equivalent of passing the `--with-dependencies` option 
 If set to `1`, it is the equivalent of passing the `--with-all-dependencies` option to
 `update`, `require` or `remove`.
 
+### COMPOSER_TERMINAL_STATUS
+
+Controls terminal status reports. Defaults to `auto`.
+
+- `auto` sends OSC 7501 status reports and also sends OSC 9 progress reports
+  when the environment identifies Windows Terminal (`WT_SESSION`), ConEmu
+  (`ConEmuANSI=ON`), Ghostty 1.2.0 or newer, or iTerm2 3.6.6 or newer.
+  Ghostty and iTerm2 are identified by `TERM_PROGRAM` and `TERM_PROGRAM_VERSION`.
+  Unknown terminals receive only OSC 7501. Through SSH, tmux, or screen, automatic
+  selection also sends only OSC 7501 because the outer terminal's identity does
+  not establish support along the connection.
+- `off` disables status reports.
+- `7501` selects only OSC 7501.
+- `9;4` selects only OSC 9 progress reports.
+- `7501,9;4` selects both protocols, including in environments where automatic
+  selection cannot recognize support.
+
+Protocol selection is resolved once for each console IO instance. All modes
+respect quiet output, disabled ANSI decoration, and redirected stderr.
+Forcing ANSI with `--ansi` does not enable reports on redirected streams.
+
+OSC 7501 is sent without querying the terminal. Supporting terminals can show
+Composer's state, messages, and reasons for waiting. Terminals that do not
+recognize this protocol are expected to ignore it. OSC 9 progress reports carry
+progress, paused, and error states. Completion or cancellation clears their
+progress indicator. Ghostty hides the indicator after 15 seconds without an
+update. Commands using a progress bar should aim to report progress less than
+15 seconds apart to keep it visible. Older terminals may interpret OSC 9 as a desktop
+notification, so explicitly selecting `9;4` requires a compatible terminal.
+
+For example, in a POSIX shell:
+
+```sh
+COMPOSER_TERMINAL_STATUS=off composer install
+COMPOSER_TERMINAL_STATUS='7501,9;4' composer update
+```
+
 ### SHELL_VERBOSITY
 
 Since Composer uses [symfony/console](https://github.com/symfony/console),

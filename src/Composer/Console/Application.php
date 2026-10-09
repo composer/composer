@@ -31,6 +31,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Seld\JsonLint\ParsingException;
+use Seld\Signal\SignalHandler;
 use Composer\Command;
 use Composer\Composer;
 use Composer\Factory;
@@ -143,6 +144,44 @@ class Application extends BaseApplication
 
     public function doRun(InputInterface $input, OutputInterface $output): int
     {
+        $io = $this->io = new ConsoleIO($input, $output, new HelperSet([
+            new QuestionHelper(),
+        ]));
+        $reportStatus = $this->getCommandNameBeforeBinding($input) !== '_complete';
+        if ($reportStatus) {
+            $io->writeProgramStatus(ProgramStatus::working());
+        }
+
+        $signalHandler = $reportStatus ? SignalHandler::create(
+            [SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP],
+            static function (string $signal, SignalHandler $handler) use ($io): void {
+                $io->writeProgramStatus(ProgramStatus::idle());
+                $handler->exitWithLastSignal();
+            }
+        ) : null;
+
+        try {
+            $result = $this->doRunComposer($input, $output, $io);
+            if ($reportStatus) {
+                $io->writeProgramStatus(ProgramStatus::fromExitCode($result));
+            }
+
+            return $result;
+        } catch (\Throwable $e) {
+            if ($reportStatus) {
+                $io->writeProgramStatus(ProgramStatus::error());
+            }
+
+            throw $e;
+        } finally {
+            if ($signalHandler !== null) {
+                $signalHandler->unregister();
+            }
+        }
+    }
+
+    private function doRunComposer(InputInterface $input, OutputInterface $output, ConsoleIO $io): int
+    {
         $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
         $this->disableScriptsByDefault = $input->hasParameterOption('--no-scripts');
 
@@ -153,10 +192,6 @@ class Application extends BaseApplication
         if (Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING') !== '1' && (Platform::getEnv('COMPOSER_NO_INTERACTION') || $stdin === false || !Platform::isTty($stdin))) {
             $input->setInteractive(false);
         }
-
-        $io = $this->io = new ConsoleIO($input, $output, new HelperSet([
-            new QuestionHelper(),
-        ]));
 
         // Register error handler again to pass it the IO instance
         ErrorHandler::register($io);
@@ -451,7 +486,7 @@ class Application extends BaseApplication
         try {
             if ($input->hasParameterOption('--profile')) {
                 $startTime = microtime(true);
-                $this->io->enableDebugging($startTime);
+                $io->enableDebugging($startTime);
             }
 
             $result = parent::doRun($input, $output);
@@ -631,6 +666,9 @@ class Application extends BaseApplication
                 if ($required) {
                     $this->io->writeError($e->getMessage());
                     if ($this->areExceptionsCaught()) {
+                        if ($this->io instanceof ConsoleIO && !Platform::isInputCompletionProcess()) {
+                            $this->io->writeProgramStatus(ProgramStatus::error());
+                        }
                         exit(1);
                     }
                     throw $e;

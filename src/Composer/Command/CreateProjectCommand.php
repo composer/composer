@@ -20,6 +20,8 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface
 use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
 use Composer\Installer\SuggestedPackagesReporter;
+use Composer\Console\ProgramStatus;
+use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -468,6 +470,10 @@ EOT
                 $this->getIO()->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
                 $fs = new Filesystem();
                 $fs->removeDirectory($realDir);
+                $io = $this->getIO();
+                if ($io instanceof ConsoleIO) {
+                    $io->writeProgramStatus(ProgramStatus::idle());
+                }
                 $handler->exitWithLastSignal();
             });
         }

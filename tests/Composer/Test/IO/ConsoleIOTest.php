@@ -12,13 +12,201 @@
 
 namespace Composer\Test\IO;
 
+use Composer\Console\ProgramStatus;
+use Composer\Console\OscHelper;
+use Composer\Console\Osc7501ProgramStatusEncoder;
+use Composer\Util\Platform;
 use Composer\IO\ConsoleIO;
 use Composer\Pcre\Preg;
 use Composer\Test\TestCase;
+use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\StreamOutput;
 
 class ConsoleIOTest extends TestCase
 {
+    /** @var string|false */
+    private $originalTerminalStatus;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->originalTerminalStatus = Platform::getEnv('COMPOSER_TERMINAL_STATUS');
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', '7501');
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->originalTerminalStatus === false) {
+            Platform::clearEnv('COMPOSER_TERMINAL_STATUS');
+        } else {
+            Platform::putEnv('COMPOSER_TERMINAL_STATUS', $this->originalTerminalStatus);
+        }
+        parent::tearDown();
+    }
+
+    /** @dataProvider terminalStatusProvider */
+    public function testSelectedStatusProtocols(string $setting, string $expected): void
+    {
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', $setting);
+        $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+        $io = new ConsoleIO(new ArrayInput([]), $output, new HelperSet());
+        // Selection stays fixed for the lifetime of this IO instance.
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', 'off');
+        $io->writeProgramStatus(ProgramStatus::working()->withProgress(42));
+
+        self::assertSame($expected, $output->fetch());
+    }
+
+    public static function terminalStatusProvider(): array
+    {
+        $rich = "\033]7501;state=working:app=composer:progress=42\033\\";
+        $progress = "\033]9;4;1;42\033\\";
+
+        return [
+            ['off', ''],
+            ['7501', $rich],
+            ['9;4', $progress],
+            ['7501,9;4', $progress.$rich],
+        ];
+    }
+
+    /** @dataProvider suppressedStatusProvider */
+    public function testExplicitProtocolsRespectOutputSettings(int $verbosity, bool $decorated): void
+    {
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', '7501,9;4');
+        $output = new BufferedOutput($verbosity, $decorated);
+        $io = new ConsoleIO(new ArrayInput([]), $output, new HelperSet());
+        $io->writeProgramStatus(ProgramStatus::working());
+
+        self::assertSame('', $output->fetch());
+    }
+
+    public static function suppressedStatusProvider(): array
+    {
+        return [[OutputInterface::VERBOSITY_QUIET, true], [OutputInterface::VERBOSITY_NORMAL, false]];
+    }
+
+    public function testExplicitProtocolsRespectRedirectedStderr(): void
+    {
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', '7501,9;4');
+        $stream = fopen('php://memory', 'w+');
+        self::assertIsResource($stream);
+        try {
+            $stderr = new StreamOutput($stream, OutputInterface::VERBOSITY_NORMAL, true);
+            $output = $this->getMockBuilder('Symfony\Component\Console\Output\ConsoleOutputInterface')->getMock();
+            $output->method('getErrorOutput')->willReturn($stderr);
+            $output->expects($this->never())->method('write');
+            $io = new ConsoleIO(new ArrayInput([]), $output, new HelperSet());
+            $io->writeProgramStatus(ProgramStatus::working());
+            rewind($stream);
+            self::assertSame('', stream_get_contents($stream));
+        } finally {
+            fclose($stream);
+        }
+    }
+
+    public function testOscHelperIsRegisteredAndReusedAcrossOutputs(): void
+    {
+        $helperSet = new HelperSet();
+        $firstOutput = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+        $firstIO = new ConsoleIO(new ArrayInput([]), $firstOutput, $helperSet);
+        $helper = $helperSet->get('osc');
+        self::assertInstanceOf(OscHelper::class, $helper);
+        self::assertSame($helperSet, $helper->getHelperSet());
+
+        $secondOutput = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+        $secondIO = new ConsoleIO(new ArrayInput([]), $secondOutput, $helperSet);
+        self::assertSame($helper, $helperSet->get('osc'));
+        $firstIO->writeOsc('2', 'First');
+        $secondIO->writeOsc('2', 'Second');
+        $firstIO->writeOsc('2', 'First again');
+
+        self::assertSame("\033]2;First\033\\\033]2;First again\033\\", $firstOutput->fetch());
+        self::assertSame("\033]2;Second\033\\", $secondOutput->fetch());
+    }
+
+    public function testOscUsesStderrWithoutProfilingPrefixes(): void
+    {
+        $stderr = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+        $output = $this->getMockBuilder('Symfony\Component\Console\Output\ConsoleOutputInterface')->getMock();
+        $output->method('getErrorOutput')->willReturn($stderr);
+        $output->expects($this->never())->method('write');
+        $io = new ConsoleIO(new ArrayInput([]), $output, new HelperSet());
+        $io->enableDebugging(microtime(true));
+        $io->enableTimestamps();
+        $io->writeOsc('7501', 'state=working');
+
+        self::assertSame("\033]7501;state=working\033\\", $stderr->fetch());
+    }
+
+    /**
+     * @dataProvider statusQuestionProvider
+     */
+    public function testQuestionReportsBlockedAndRestoresProgress(string $method, string $kind): void
+    {
+        $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+        $helper = $this->getMockBuilder(QuestionHelper::class)->getMock();
+        $helper->method('getName')->willReturn('question');
+        $helper->expects($this->once())->method('ask')->willReturnCallback(static function () use ($output, $kind) {
+            self::assertSame("\033]7501;state=blocked:app=composer:kind=".$kind.':msg='.base64_encode('Continue?')."\033\\", $output->fetch());
+
+            return true;
+        });
+        $io = new ConsoleIO(new ArrayInput([]), $output, new HelperSet([$helper]));
+        $status = ProgramStatus::working('Installing')->withProgress(42);
+        $io->writeProgramStatus($status);
+        $output->fetch();
+        if ($method === 'askConfirmation') {
+            $io->askConfirmation('<info>Continue?</info>');
+        } elseif ($method === 'askAndHideAnswer') {
+            $io->askAndHideAnswer('<info>Continue?</info>');
+        } else {
+            $io->ask('<info>Continue?</info>');
+        }
+
+        self::assertSame("\033]7501;".(new Osc7501ProgramStatusEncoder())->encode($status)."\033\\", $output->fetch());
+    }
+
+    public static function statusQuestionProvider(): array
+    {
+        return [
+            ['ask', Osc7501ProgramStatusEncoder::KIND_QUESTION],
+            ['askConfirmation', Osc7501ProgramStatusEncoder::KIND_PERMISSION],
+            ['askAndHideAnswer', Osc7501ProgramStatusEncoder::KIND_AUTH],
+        ];
+    }
+
+    public function testNonInteractiveQuestionDoesNotReportBlocked(): void
+    {
+        $input = new ArrayInput([]);
+        $input->setInteractive(false);
+        $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+        $io = new ConsoleIO($input, $output, new HelperSet([new QuestionHelper()]));
+
+        self::assertSame('default', $io->ask('Question?', 'default'));
+        self::assertSame('', $output->fetch());
+    }
+
+    public function testFailedQuestionRestoresWorkingStatus(): void
+    {
+        $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+        $helper = $this->getMockBuilder(QuestionHelper::class)->getMock();
+        $helper->method('getName')->willReturn('question');
+        $helper->method('ask')->willThrowException(new \RuntimeException('No input'));
+        $io = new ConsoleIO(new ArrayInput([]), $output, new HelperSet([$helper]));
+        try {
+            $io->ask('Question?');
+            self::fail('Expected question failure');
+        } catch (\RuntimeException $e) {
+            self::assertSame('No input', $e->getMessage());
+        }
+        self::assertStringEndsWith("\033]7501;state=working:app=composer\033\\", $output->fetch());
+    }
+
     public function testIsInteractive(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
