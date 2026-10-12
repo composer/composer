@@ -55,6 +55,7 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Package;
+use Composer\Pcre\Preg;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\CompositeRepository;
@@ -1005,8 +1006,9 @@ class Installer
         $preferredVersions = null;
         if ($forUpdate && $this->minimalUpdate && $lockedRepo !== null) {
             $preferredVersions = [];
+            $updateAllowListRegex = $this->updateAllowList !== null ? BasePackage::packageNamesToRegexp($this->updateAllowList) : null;
             foreach ($lockedRepo->getPackages() as $pkg) {
-                if ($pkg instanceof AliasPackage || ($this->updateAllowList !== null && in_array($pkg->getName(), $this->updateAllowList, true))) {
+                if ($pkg instanceof AliasPackage || ($updateAllowListRegex !== null && Preg::isMatch($updateAllowListRegex, $pkg->getName()))) {
                     continue;
                 }
                 $preferredVersions[$pkg->getName()] = $pkg->getVersion();

@@ -1,0 +1,50 @@
+--TEST--
+Partial update with wildcard using --minimal-changes
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "allowed/pkg", "version": "1.1.0" },
+                { "name": "allowed/pkg", "version": "1.0.0" },
+                { "name": "allowed/pkg2", "version": "1.1.0" },
+                { "name": "allowed/pkg2", "version": "1.0.0" },
+                { "name": "unrelated/pkg", "version": "1.1.0" },
+                { "name": "unrelated/pkg", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "allowed/pkg": "1.*",
+        "allowed/pkg2": "1.*",
+        "unrelated/pkg": "1.*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "allowed/pkg", "version": "1.0.0" },
+    { "name": "allowed/pkg2", "version": "1.0.0" },
+    { "name": "unrelated/pkg", "version": "1.0.0" }
+]
+--LOCK--
+{
+    "packages": [
+        { "name": "allowed/pkg", "version": "1.0.0" },
+        { "name": "allowed/pkg2", "version": "1.0.0" },
+        { "name": "unrelated/pkg", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {}
+}
+--RUN--
+update allowed/* --minimal-changes
+--EXPECT--
+Upgrading allowed/pkg (1.0.0 => 1.1.0)
+Upgrading allowed/pkg2 (1.0.0 => 1.1.0)
