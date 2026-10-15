@@ -141,6 +141,6 @@ EOT
             }));
         }
 
-        return $installedRepo->getPackages();
+        return $packages;
     }
 }
