@@ -39,6 +39,7 @@ class AuditCommand extends BaseCommand
                 new InputOption('abandoned', null, InputOption::VALUE_REQUIRED, 'Behavior on abandoned packages. Must be "ignore", "report", or "fail".', null, ListPolicyConfig::AUDITS),
                 new InputOption('ignore-severity', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Ignore advisories of a certain severity level.', [], ['low', 'medium', 'high', 'critical']),
                 new InputOption('ignore-unreachable', null, InputOption::VALUE_NONE, 'Ignore repositories that are unreachable or return a non-200 status code.'),
+                new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Audit packages that are directly required by the root package.'),
             ])
             ->setHelp(
                 <<<EOT
@@ -126,9 +127,18 @@ EOT
 
         $rootPkg = $composer->getPackage();
         $installedRepo = new InstalledRepository([$composer->getRepositoryManager()->getLocalRepository()]);
+        $packages = $installedRepo->getPackages();
+        $requires = array_merge($rootPkg->getRequires(), $rootPkg->getDevRequires());
 
         if ($input->getOption('no-dev')) {
-            return RepositoryUtils::filterRequiredPackages($installedRepo->getPackages(), $rootPkg);
+            $packages = RepositoryUtils::filterRequiredPackages($packages, $rootPkg);
+            $requires = $rootPkg->getRequires();
+        }
+
+        if ($input->getOption('direct')) {
+            $packages = array_values(array_filter($packages, static function (PackageInterface $package) use ($requires): bool {
+                return isset($requires[$package->getName()]);
+            }));
         }
 
         return $installedRepo->getPackages();
