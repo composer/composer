@@ -753,7 +753,7 @@ packages depending on the packages that cause the conflict.
 ## validate
 
 You should always run the `validate` command before you commit your
-`composer.json` file (and `composer.lock` [if applicable](01-basic-usage.md#commit-your-composerlock-file-to-version-control)), and before you tag a release.
+`composer.json` and `composer.lock`, and before you tag a release.
 
 It will check if your
 `composer.json` is valid. If a `composer.lock` exists, it will also check if it is up to date with the `composer.json`.
