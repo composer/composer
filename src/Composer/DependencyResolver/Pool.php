@@ -42,6 +42,8 @@ class Pool implements \Countable
     protected $removedVersionsByPackage = [];
     /** @var array<string, array<string, PolicyRemovalReason>> Map of package name => normalized version => why a policy removed it */
     private $policyRemovedVersions = [];
+    /** @var array<string, array{merged: string[], byPackage: array<string, string[]>}> */
+    protected $requiredFeatures = [];
 
     /**
      * @param BasePackage[] $packages
@@ -49,8 +51,9 @@ class Pool implements \Countable
      * @param array<string, array<string, string>> $removedVersions
      * @param array<int, array<string, string>> $removedVersionsByPackage
      * @param array<string, array<string, PolicyRemovalReason>> $policyRemovedVersions
+     * @param array<string, array{merged: string[], byPackage: array<string, string[]>}> $requiredFeatures
      */
-    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $policyRemovedVersions = [])
+    public function __construct(array $packages = [], array $unacceptableFixedOrLockedPackages = [], array $removedVersions = [], array $removedVersionsByPackage = [], array $policyRemovedVersions = [], array $requiredFeatures = [])
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
@@ -58,6 +61,7 @@ class Pool implements \Countable
         $this->removedVersions = $removedVersions;
         $this->removedVersionsByPackage = $removedVersionsByPackage;
         $this->policyRemovedVersions = $policyRemovedVersions;
+        $this->requiredFeatures = $requiredFeatures;
     }
 
     /**
@@ -330,5 +334,13 @@ class Pool implements \Countable
         }
 
         return $str;
+    }
+
+    /**
+     * @return array<string, array{merged: string[], byPackage: array<string, string[]>}>
+     */
+    public function getRequiredFeatures(): array
+    {
+        return $this->requiredFeatures;
     }
 }

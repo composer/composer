@@ -17,6 +17,8 @@ use Composer\Package\Version\VersionParser;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * @phpstan-import-type FeatureConfig from PackageInterface
  */
 class AliasPackage extends BasePackage
 {
@@ -70,6 +72,31 @@ class AliasPackage extends BasePackage
             $links = $aliasOf->{'get' . ucfirst($type)}();
             $this->{$type} = $this->replaceSelfVersionDependencies($links, $type);
         }
+
+        $this->featureRequires = $aliasOf->getFeatureRequires();
+        $this->features = $this->replaceSelfVersionFeatureRequires($aliasOf->getFeatures());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setFeatures(array $features): void
+    {
+        $this->features = $this->replaceSelfVersionFeatureRequires($features);
+    }
+
+    /**
+     * @param  array<string, FeatureConfig> $features
+     * @return array<string, FeatureConfig>
+     */
+    private function replaceSelfVersionFeatureRequires(array $features): array
+    {
+        foreach ($features as $name => $feature) {
+            $feature['require'] = $this->replaceSelfVersionDependencies($feature['require'] ?? [], Link::TYPE_REQUIRE);
+            $features[$name] = $feature;
+        }
+
+        return $features;
     }
 
     /**

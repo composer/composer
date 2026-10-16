@@ -96,6 +96,36 @@ class RootAliasPackageTest extends TestCase
         self::assertNotEmpty($alias->getReplaces());
     }
 
+    public function testUpdateFeatures(): void
+    {
+        $features = ['logging' => ['description' => 'Adds logging', 'require' => []]];
+
+        $root = $this->getMockRootPackage();
+        $root->expects($this->once())
+            ->method('setFeatures')
+            ->with($this->equalTo($features));
+
+        $alias = new RootAliasPackage($root, '1.0', '1.0.0.0');
+        self::assertEmpty($alias->getFeatures());
+        $alias->setFeatures($features);
+        self::assertNotEmpty($alias->getFeatures());
+    }
+
+    public function testUpdateFeatureRequires(): void
+    {
+        $featureRequires = ['b/b' => ['logging']];
+
+        $root = $this->getMockRootPackage();
+        $root->expects($this->once())
+            ->method('setFeatureRequires')
+            ->with($this->equalTo($featureRequires));
+
+        $alias = new RootAliasPackage($root, '1.0', '1.0.0.0');
+        self::assertEmpty($alias->getFeatureRequires());
+        $alias->setFeatureRequires($featureRequires);
+        self::assertSame($featureRequires, $alias->getFeatureRequires());
+    }
+
     /**
      * @return RootPackage&MockObject
      */

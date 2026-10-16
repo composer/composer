@@ -19,6 +19,8 @@ use Composer\Repository\PlatformRepository;
  * Base class for packages providing name storage and default match implementation
  *
  * @author Nils Adermann <naderman@naderman.de>
+ *
+ * @phpstan-import-type FeatureConfig from PackageInterface
  */
 abstract class BasePackage implements PackageInterface
 {
@@ -68,6 +70,10 @@ abstract class BasePackage implements PackageInterface
     protected $prettyName;
     /** @var ?RepositoryInterface */
     protected $repository = null;
+    /** @var array<string, string[]> */
+    protected $featureRequires = [];
+    /** @var array<string, FeatureConfig> */
+    protected $features = [];
 
     /**
      * All descendants' constructors should call this parent constructor
@@ -117,6 +123,42 @@ abstract class BasePackage implements PackageInterface
         }
 
         return array_keys($names);
+    }
+
+    /**
+     * Returns the features this package requires from other packages
+     *
+     * @return array<string, string[]> Map of package name => list of feature names
+     */
+    public function getFeatureRequires(): array
+    {
+        return $this->featureRequires;
+    }
+
+    /**
+     * @param array<string, string[]> $featureRequires Map of package name => list of feature names
+     */
+    public function setFeatureRequires(array $featureRequires): void
+    {
+        $this->featureRequires = $featureRequires;
+    }
+
+    /**
+     * Returns the features this package offers
+     *
+     * @return array<string, FeatureConfig>
+     */
+    public function getFeatures(): array
+    {
+        return $this->features;
+    }
+
+    /**
+     * @param array<string, FeatureConfig> $features
+     */
+    public function setFeatures(array $features): void
+    {
+        $this->features = $features;
     }
 
     /**

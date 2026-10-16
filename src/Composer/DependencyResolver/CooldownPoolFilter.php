@@ -122,7 +122,8 @@ class CooldownPoolFilter
             $pool->getUnacceptableFixedOrLockedPackages(),
             $pool->getAllRemovedVersions(),
             $pool->getAllRemovedVersionsByPackage(),
-            $policyRemovedVersions
+            $policyRemovedVersions,
+            $pool->getRequiredFeatures()
         );
     }
 

@@ -97,6 +97,23 @@ possible for safety.
 A few other methods are available for more complex usages, please refer to the
 source/docblocks of [the class itself](https://github.com/composer/composer/blob/main/src/Composer/InstalledVersions.php).
 
+### Knowing whether a feature is enabled
+
+```php
+\Composer\InstalledVersions::hasFeature('vendor/package', 'logging'); // returns bool
+```
+
+This returns true if `vendor/package` was installed with its `logging`
+[feature](articles/features.md) enabled, i.e. if something in the dependency tree
+listed it in `require-features`.
+
+Passing the name of the root package reports the features that were selected for
+this installation via `--self-feature`:
+
+```php
+\Composer\InstalledVersions::hasFeature('acme/website', 'twig'); // returns bool
+```
+
 ### Knowing the path in which a package is installed
 
 The `getInstallPath` method to retrieve a package's absolute install path.
