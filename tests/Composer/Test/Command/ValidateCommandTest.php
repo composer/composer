@@ -20,11 +20,13 @@ class ValidateCommandTest extends TestCase
     /**
      * @dataProvider provideValidateTests
      * @param array<mixed> $composerJson
+     * @param array<mixed> $lockData
      * @param array<mixed> $command
      */
-    public function testValidate(array $composerJson, array $command, string $expected): void
+    public function testValidate(array $composerJson, array $lockData, array $command, string $expected): void
     {
         $this->initTempComposer($composerJson);
+        $this->createComposerLock($lockData);
         // let version guessing run so the root version warning is covered
         Platform::clearEnv('COMPOSER_ROOT_VERSION');
 
@@ -42,6 +44,21 @@ class ValidateCommandTest extends TestCase
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'validate']);
         $expected = './composer.json not found.';
+
+        self::assertSame($expected, trim($appTester->getDisplay(true)));
+    }
+
+    public function testValidateOnMissingLock(): void
+    {
+        $this->initTempComposer(self::MINIMAL_VALID_CONFIGURATION);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'validate']);
+        $expected = <<<OUTPUT
+./composer.json is valid but your composer.lock has some errors
+# Lock file errors
+- There is no lock file present. This can result in malicious packages being installed immediately after release. Please make sure you always use a lock file.
+OUTPUT;
 
         self::assertSame($expected, trim($appTester->getDisplay(true)));
     }
@@ -116,6 +133,7 @@ OUTPUT;
 
         yield 'validation passing' => [
             self::MINIMAL_VALID_CONFIGURATION,
+            [self::getPackage('root/req')],
             [],
             <<<OUTPUT
 <warning>Composer could not detect the root package (test/suite) version, defaulting to '1.0.0'. See https://getcomposer.org/root-version</warning>
@@ -131,6 +149,7 @@ OUTPUT
 
         yield 'passing but with warnings' => [
             $publishDataStripped,
+            [self::getPackage('root/req')],
             [],
             <<<OUTPUT
 ./composer.json is valid for simple usage with Composer but has
@@ -146,6 +165,7 @@ OUTPUT
 
         yield 'passing without publish-check' => [
             $publishDataStripped,
+            [self::getPackage('root/req')],
             [ '--no-check-publish' => true],
             <<<OUTPUT
 ./composer.json is valid, but with a few warnings

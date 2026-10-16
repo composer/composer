@@ -93,6 +93,9 @@ EOT
         // config.lock = false ~= implicit --no-check-lock; --check-lock overrides
         $checkLock = ($checkLock && $composer->getConfig()->get('lock')) || $input->getOption('check-lock');
         $locker = $composer->getLocker();
+        if (!$locker->isLocked()) {
+            $lockErrors[] = '- There is no lock file present. This can result in malicious packages being installed immediately after release. Please make sure you always use a lock file.';
+        }
         if ($locker->isLocked() && !$locker->isFresh()) {
             $lockErrors[] = '- The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update` or `composer update <package name>`.';
         }
