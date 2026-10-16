@@ -187,6 +187,22 @@ EOT
             }
         }
 
+        if ($input->isInteractive() && $input->getOption('type') === 'library') {
+            $attributesFile = realpath('.gitattributes');
+
+            if (false === $attributesFile) {
+                $attributesFile = realpath('.') . '/.gitattributes';
+            }
+
+            if (!$this->hasExportIgnoreForLockfile($attributesFile)) {
+                $question = 'Would you like the <info>composer.lock</info> file added with export-ignore to your gitattributes? [<comment>yes</comment>]';
+
+                if ($io->askConfirmation($question)) {
+                    $this->addExportIgnoreForLockfile($attributesFile);
+                }
+            }
+        }
+
         $question = 'Would you like to install dependencies now [<comment>yes</comment>]? ';
         if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question)) {
             $this->updateDependencies($output);
@@ -557,6 +573,46 @@ EOT
         }
 
         Filesystem::safeFilePutContents($ignoreFile, $contents . $vendor. "\n");
+    }
+
+    private function hasExportIgnoreForLockfile(string $gitAttributesFile, string $lockfile = 'composer.lock'): bool
+    {
+        if (!file_exists($gitAttributesFile)) {
+            return false;
+        }
+
+        $pattern = sprintf('{^/?%s\s.*(?<!\S)export-ignore(?!\S)$}', preg_quote($lockfile));
+
+        $lines = file($gitAttributesFile, FILE_IGNORE_NEW_LINES);
+        foreach ($lines as $line) {
+            if (Preg::isMatch($pattern, $line)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function addExportIgnoreForLockfile(string $gitAttributesFile, string $lockfile = 'composer.lock'): void
+    {
+        $contents = "";
+        if (file_exists($gitAttributesFile)) {
+            $contents = file_get_contents($gitAttributesFile);
+
+            $pattern = sprintf('{^(/?%s+.+)$}m', preg_quote($lockfile));
+            if (Preg::isMatch($pattern, $contents)) {
+                $contents = Preg::replace($pattern, '$1 export-ignore', $contents);
+                Filesystem::safeFilePutContents($gitAttributesFile, $contents);
+
+                return;
+            }
+
+            if (strpos($contents, "\n") !== 0) {
+                $contents .= "\n";
+            }
+        }
+
+        Filesystem::safeFilePutContents($gitAttributesFile, $contents . $lockfile . " export-ignore\n");
     }
 
     protected function isValidEmail(string $email): bool
