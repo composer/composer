@@ -195,8 +195,9 @@ class PoolOptimizer
             $dependencyHash = $this->calculateDependencyHash($package);
 
             $replaceHashParts = [];
+            $packageVersion = $package->getVersion();
             foreach ($package->getReplaces() as $link) {
-                if (CompilingMatcher::match($link->getConstraint(), Constraint::OP_EQ, $package->getVersion())) {
+                if (CompilingMatcher::match($link->getConstraint(), Constraint::OP_EQ, $packageVersion)) {
                     // Use the same hash part as the regular require hash because that's what the replacement does
                     $replaceHashParts[] = 'require:' . (string) $link->getConstraint();
                 }
@@ -210,7 +211,7 @@ class PoolOptimizer
                 $invariantHashParts = $replaceHashParts;
                 if (isset($this->conflictConstraintsPerPackage[$packageName])) {
                     foreach ($this->conflictConstraintsPerPackage[$packageName] as $conflictConstraint) {
-                        if (CompilingMatcher::match($conflictConstraint, Constraint::OP_EQ, $package->getVersion())) {
+                        if (CompilingMatcher::match($conflictConstraint, Constraint::OP_EQ, $packageVersion)) {
                             $invariantHashParts[] = 'conflict:' . (string) $conflictConstraint;
                         }
                     }
@@ -219,7 +220,7 @@ class PoolOptimizer
                 $invariantHash = implode('', $invariantHashParts);
                 $addedToInvariantGroup = false;
                 foreach ($this->requireConstraintsPerPackage[$packageName] as $requireConstraint) {
-                    if (CompilingMatcher::match($requireConstraint, Constraint::OP_EQ, $package->getVersion())) {
+                    if (CompilingMatcher::match($requireConstraint, Constraint::OP_EQ, $packageVersion)) {
                         $groupHash = 'require:' . (string) $requireConstraint . $invariantHash;
                     } else {
                         // Every non-matching constraint yields the same hash, only add the package to it once
