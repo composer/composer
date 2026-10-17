@@ -21,7 +21,10 @@ use function ini_get;
 use function preg_replace;
 use const PHP_EOL;
 
-// see https://github.com/composer/xdebug-handler/issues/174
+/**
+ * @internal
+ * @see https://github.com/composer/xdebug-handler/issues/174
+ */
 final class ProcessRestarter extends XdebugHandler
 {
 
