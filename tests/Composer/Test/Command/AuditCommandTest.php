@@ -146,6 +146,27 @@ class AuditCommandTest extends TestCase
         self::assertSame(Auditor::STATUS_OK, $exitCode);
     }
 
+    public function testAuditReportsPackageAbandonedAfterItWasLocked(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'vendor/abandoned', 'version' => '1.0.0', 'abandoned' => 'vendor/replacement'],
+                    ],
+                ],
+            ],
+        ]);
+        $this->createComposerLockWithPackages([['name' => 'vendor/abandoned', 'version' => '1.0.0']]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'audit', '--format' => 'plain']);
+
+        self::assertStringContainsString('vendor/abandoned is abandoned. Use vendor/replacement instead.', $appTester->getDisplay(true));
+        self::assertSame(Auditor::STATUS_FAILED, $exitCode);
+    }
+
     /**
      * @param list<array{name: string, version: string}> $packages
      */

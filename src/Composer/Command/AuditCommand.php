@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\Downloader\TransportException;
 use Composer\FilterList\FilterListProvider\FilterListProviderSet;
 use Composer\Policy\ListPolicyConfig;
 use Composer\Policy\PolicyConfig;
@@ -20,10 +21,14 @@ use Composer\Repository\RepositorySet;
 use Composer\Repository\RepositoryUtils;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepository;
 use Composer\Advisory\Auditor;
 use Composer\Console\Input\InputOption;
+use Composer\Semver\Constraint\Constraint;
 
 class AuditCommand extends BaseCommand
 {
@@ -96,6 +101,10 @@ EOT
             $policyConfig = $policyConfig->withIgnoreUnreachable('audit');
         }
 
+        if ($policyConfig->abandoned->audit !== ListPolicyConfig::AUDIT_IGNORE) {
+            $this->refreshAbandonedState($composer, $packages, $policyConfig->ignoreUnreachable->audit);
+        }
+
         $filterListProviderSet = $policyConfig->enabled ? FilterListProviderSet::create($policyConfig, $composer->getRepositoryManager()->getRepositories(), $composer->getLoop()->getHttpDownloader()) : null;
 
         return min(255, $auditor->audit(
@@ -132,5 +141,55 @@ EOT
         }
 
         return $installedRepo->getPackages();
+    }
+
+    /**
+     * The lock file and installed.json keep the abandoned state a package had when it was last updated,
+     * so it is refreshed from the repositories in case the package was abandoned or unabandoned since
+     *
+     * @param PackageInterface[] $packages
+     */
+    private function refreshAbandonedState(Composer $composer, array $packages, bool $ignoreUnreachable): void
+    {
+        $packagesByName = [];
+        $packageNameMap = [];
+        $stabilityFlags = [];
+        foreach ($packages as $package) {
+            if (!$package instanceof CompletePackageInterface || $package instanceof AliasPackage) {
+                continue;
+            }
+
+            $packagesByName[$package->getName()] = $package;
+            $packageNameMap[$package->getName()] = new Constraint('==', $package->getVersion());
+            // per package stability so stable versions do not need to load the ~dev metadata
+            $stabilityFlags[$package->getName()] = BasePackage::STABILITIES[$package->getStability()];
+        }
+
+        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
+            if ($packageNameMap === []) {
+                break;
+            }
+
+            try {
+                $result = $repository->loadPackages($packageNameMap, [], $stabilityFlags);
+            } catch (TransportException $e) {
+                if (!$ignoreUnreachable) {
+                    throw $e;
+                }
+
+                continue;
+            }
+
+            foreach ($result['packages'] as $repoPackage) {
+                if ($repoPackage instanceof CompletePackageInterface && !$repoPackage instanceof AliasPackage) {
+                    $packagesByName[$repoPackage->getName()]->setAbandoned($repoPackage->isAbandoned() ? ($repoPackage->getReplacementPackage() ?? true) : false);
+                }
+            }
+
+            foreach ($result['namesFound'] as $name) {
+                // like RepositorySet::findPackages, do not query lower priority repositories for names already found
+                unset($packageNameMap[$name]);
+            }
+        }
     }
 }
