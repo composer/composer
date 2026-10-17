@@ -16,6 +16,7 @@ use Composer\Installer;
 use Composer\IO\NullIO;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
+use Composer\Util\ProcessRestarter;
 use Composer\Util\Silencer;
 use LogicException;
 use RuntimeException;
@@ -42,7 +43,6 @@ use Composer\Util\ErrorHandler;
 use Composer\Util\HttpDownloader;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Exception\NoSslException;
-use Composer\XdebugHandler\XdebugHandler;
 use Symfony\Component\Console\SingleCommandApplication;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 
@@ -344,7 +344,7 @@ class Application extends BaseApplication
                 $io->writeError('<warning>Composer supports PHP 7.2.5 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.'. Upgrading is strongly recommended but you can use Composer 2.2.x LTS as a fallback.</warning>');
             }
 
-            if (XdebugHandler::isXdebugActive() && !Platform::getEnv('COMPOSER_DISABLE_XDEBUG_WARN')) {
+            if (ProcessRestarter::isXdebugActive() && !Platform::getEnv('COMPOSER_DISABLE_XDEBUG_WARN')) {
                 $io->writeError('<warning>Composer is operating slower than normal because you have Xdebug enabled. See https://getcomposer.org/xdebug</warning>');
             }
 

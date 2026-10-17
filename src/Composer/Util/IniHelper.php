@@ -12,8 +12,6 @@
 
 namespace Composer\Util;
 
-use Composer\XdebugHandler\XdebugHandler;
-
 /**
  * Provides ini file location functions that work with and without a restart.
  * When the process has restarted it uses a tmp ini and stores the original
@@ -33,7 +31,7 @@ class IniHelper
      */
     public static function getAll(): array
     {
-        return XdebugHandler::getAllIniFiles();
+        return ProcessRestarter::getAllIniFiles();
     }
 
     /**
