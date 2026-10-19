@@ -566,8 +566,11 @@ EOT
         $contents = "";
         if (file_exists($ignoreFile)) {
             $contents = file_get_contents($ignoreFile);
+            if (false === $contents) {
+                throw new \RuntimeException('Could not read '.$ignoreFile);
+            }
 
-            if (strpos($contents, "\n") !== 0) {
+            if ($contents !== '' && substr($contents, -1) !== "\n") {
                 $contents .= "\n";
             }
         }
@@ -606,7 +609,7 @@ EOT
                 throw new \RuntimeException('Could not read '.$gitAttributesFile);
             }
 
-            if (strpos($contents, "\n") !== 0) {
+            if ($contents !== '' && substr($contents, -1) !== "\n") {
                 $contents .= "\n";
             }
         }
