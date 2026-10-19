@@ -599,14 +599,6 @@ EOT
         if (file_exists($gitAttributesFile)) {
             $contents = file_get_contents($gitAttributesFile);
 
-            $pattern = sprintf('{^(/?%s+.+)$}m', preg_quote($lockfile));
-            if (Preg::isMatch($pattern, $contents)) {
-                $contents = Preg::replace($pattern, '$1 export-ignore', $contents);
-                Filesystem::safeFilePutContents($gitAttributesFile, $contents);
-
-                return;
-            }
-
             if (strpos($contents, "\n") !== 0) {
                 $contents .= "\n";
             }
