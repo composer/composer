@@ -75,6 +75,12 @@ class VersionBumperTest extends TestCase
         yield 'upgrade 4 bits tilde/3' => ['~2.2.3.1', '2.2.4.5', '~2.2.4.5'];
         yield 'upgrade bigger-or-eq to latest' => ['>=3.0', '3.4.5', '>=3.4.5'];
         yield 'upgrade bigger-or-eq to latest with v' => ['>=v3.0', '3.4.5', '>=3.4.5'];
+        yield 'upgrade bigger-or-eq with a multi-digit major' => ['>=10.0', '10.5.2', '>=10.5.2'];
+        yield 'upgrade bigger-or-eq with a multi-digit major in an or-constraint' => ['^9.0 || >=10', '12.1.3', '^9.0 || >=12.1.3'];
+        yield 'upgrade bigger-or-eq with a calendar version' => ['>=2025.1', '2025.3.0', '>=2025.3'];
+        yield 'leave a bigger-or-eq above the installed version untouched' => ['^8.5 || >=10', '8.5.30', '^8.5.30 || >=10'];
+        yield 'leave a single-digit bigger-or-eq above the installed version untouched' => ['^1.0 || >=3', '1.5.0', '^1.5 || >=3'];
+        yield 'upgrade bigger-or-eq on a dev version if aliased' => ['>=3.2', 'dev-main', '>=3.3', '3.3.x-dev'];
         yield 'leave bigger-than untouched' => ['>2.2.3', '2.2.6', '>2.2.3'];
         yield 'skip pre-stable releases' => ['^0.3 || ^0.4', '0.4.3', '^0.3 || ^0.4.3'];
         yield 'upgrade full wildcard to bigger-or-eq' => ['*', '1.2.3', '>=1.2.3'];
