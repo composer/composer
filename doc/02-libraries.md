@@ -70,8 +70,9 @@ can help prevent supply chain attacks from propagating, as newly published
 (possibly malicious) dependency versions are not pulled into your CI or
 development environment until you explicitly update.
 
-However, this lock file will not have any effect on other projects that depend
-on it. It only has an effect on the main project.
+This protection only covers working on the library itself. The lock file has no
+effect on projects that depend on your library, they install whatever versions
+your constraints allow.
 
 ## Publishing to a VCS
 
