@@ -81,6 +81,13 @@ class VersionBumperTest extends TestCase
         yield 'leave a bigger-or-eq above the installed version untouched' => ['^8.5 || >=10', '8.5.30', '^8.5.30 || >=10'];
         yield 'leave a single-digit bigger-or-eq above the installed version untouched' => ['^1.0 || >=3', '1.5.0', '^1.5 || >=3'];
         yield 'upgrade bigger-or-eq on a dev version if aliased' => ['>=3.2', 'dev-main', '>=3.3', '3.3.x-dev'];
+        yield 'leave a bigger-or-eq below the installed version in another range untouched' => ['>=10.0 <11.0 || >=12.0', '12.1.0', '>=10.0 <11.0 || >=12.1'];
+        yield 'leave a single-digit bigger-or-eq below the installed version in another range untouched' => ['>=2.0 <3.0 || >=5.0', '5.1.0', '>=2.0 <3.0 || >=5.1'];
+        yield 'upgrade bigger-or-eq with a multi-digit major and an upper bound' => ['>=10.0 <11', '10.5.2', '>=10.5.2 <11'];
+        yield 'upgrade bigger-or-eq with a multi-digit major and a comma upper bound' => ['>=10.0,<11', '10.5.2', '>=10.5.2,<11'];
+        yield 'upgrade bigger-or-eq with a multi-digit major and a stability flag' => ['>=10.0@dev', '10.5.2', '>=10.5.2@dev'];
+        yield 'upgrade caret and leave a bigger-or-eq above the installed version untouched' => ['^10.0 || >=11', '10.5.0', '^10.5 || >=11'];
+        yield 'upgrade bigger-or-eq in a single-pipe or-constraint' => ['>=10.0 <11|>=12', '12.1.0', '>=10.0 <11|>=12.1'];
         yield 'leave bigger-than untouched' => ['>2.2.3', '2.2.6', '>2.2.3'];
         yield 'skip pre-stable releases' => ['^0.3 || ^0.4', '0.4.3', '^0.3 || ^0.4.3'];
         yield 'upgrade full wildcard to bigger-or-eq' => ['*', '1.2.3', '>=1.2.3'];

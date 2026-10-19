@@ -16,7 +16,6 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Pcre\Preg;
-use Composer\Semver\Comparator;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Intervals;
@@ -98,9 +97,16 @@ class VersionBumper
             $modified = $prettyConstraint;
             foreach (array_reverse($matches['constraint']) as $match) {
                 assert(is_string($match[0]));
-                // a lower bound above the installed version belongs to another range of the constraint, lowering it would loosen the constraint
-                if (str_starts_with($match[0], '>=') && Comparator::greaterThan($parser->normalize(substr($match[0], 2)), $version)) {
-                    continue;
+                // only bump a lower bound whose own AND part contains the installed version, as other ranges of the constraint would be corrupted
+                if (str_starts_with($match[0], '>=')) {
+                    $partStart = strrpos(substr($prettyConstraint, 0, $match[1]), '|');
+                    $partStart = $partStart === false ? 0 : $partStart + 1;
+                    $partEnd = strpos($prettyConstraint, '|', $match[1]);
+                    $partEnd = $partEnd === false ? Platform::strlen($prettyConstraint) : $partEnd;
+                    $part = trim(substr($prettyConstraint, $partStart, $partEnd - $partStart));
+                    if (!$parser->parseConstraints($part)->matches(new Constraint('==', $version))) {
+                        continue;
+                    }
                 }
                 $suffix = '';
                 if (substr_count($match[0], '.') === 2 && substr_count($versionWithoutSuffix, '.') === 1) {
