@@ -125,11 +125,15 @@ class Problem
     private static function formatPolicyExcludedConflictAlternatives(array $reasons, RepositorySet $repositorySet, Pool $pool, bool $isVerbose): string
     {
         $rootConstraints = [];
+        $requireConstraints = [];
         $conflictConstraints = [];
         foreach ($reasons as $rule) {
             if ($rule->getReason() === Rule::RULE_ROOT_REQUIRE) {
                 $data = $rule->getReasonData();
                 $rootConstraints[$data['packageName']] = $data['constraint'];
+            } elseif ($rule->getReason() === Rule::RULE_PACKAGE_REQUIRES) {
+                $link = $rule->getReasonData();
+                $requireConstraints[$link->getTarget()][] = $link->getConstraint();
             } elseif ($rule->getReason() === Rule::RULE_PACKAGE_CONFLICT) {
                 $link = $rule->getReasonData();
                 $conflictConstraints[$link->getTarget()][] = $link->getConstraint();
@@ -138,21 +142,22 @@ class Problem
 
         $messages = [];
         foreach ($conflictConstraints as $name => $constraints) {
-            if (!isset($rootConstraints[$name])) {
+            if (!isset($rootConstraints[$name]) && !isset($requireConstraints[$name])) {
                 continue;
             }
 
             $removals = [];
-            foreach ($pool->getPolicyRemovedVersions($name, $rootConstraints[$name]) as $version => $reason) {
+            foreach ($pool->getPolicyRemovedVersions($name, $rootConstraints[$name] ?? null) as $version => $reason) {
                 // removals recorded under a replaced name carry the replacer's version
                 if ($reason->getPackageName() !== $name) {
                     continue;
                 }
 
                 $packageVersion = new Constraint('==', $version);
-                if (array_any($constraints, static function (ConstraintInterface $constraint) use ($packageVersion): bool {
+                $matches = static function (ConstraintInterface $constraint) use ($packageVersion): bool {
                     return $constraint->matches($packageVersion);
-                })) {
+                };
+                if (array_any($constraints, $matches) || (isset($requireConstraints[$name]) && !array_any($requireConstraints[$name], $matches))) {
                     continue;
                 }
 
