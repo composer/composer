@@ -584,7 +584,7 @@ EOT
             return false;
         }
 
-        $pattern = sprintf('{^/?%s\s.*(?<!\S)export-ignore(?!\S)$}', preg_quote($lockfile));
+        $pattern = sprintf('{^/?%s\s.*(?<!\S)export-ignore(?!\S)\s*$}', preg_quote($lockfile));
 
         $lines = file($gitAttributesFile, FILE_IGNORE_NEW_LINES);
         if (false === $lines) {
