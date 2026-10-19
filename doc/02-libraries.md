@@ -77,8 +77,10 @@ your constraints allow. You can therefore exclude it from dist archives using
 
 As your users will not get the locked versions, keep the lock file up to date
 and also run CI jobs with `composer update` (and `composer update --prefer-lowest`)
-to catch breakage from new releases or too low lower bounds. Consider configuring a
-[cooldown](06-config.md#cooldown) and not exposing secrets to these jobs.
+to catch breakage from new releases or too low lower bounds. As these jobs install
+unlocked versions, consider configuring a [cooldown](06-config.md#cooldown), do not
+give them access to secrets or write permissions (e.g. to your repository), and do
+not run `composer update` in any build or release steps.
 
 ## Publishing to a VCS
 
