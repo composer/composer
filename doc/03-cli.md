@@ -1557,6 +1557,8 @@ Controls terminal status reports. Defaults to `auto`.
 - `9;4` selects only OSC 9 progress reports.
 - `7501,9;4` selects both protocols, including in environments where automatic
   selection cannot recognize support.
+- Any other value, such as `0` or `false`, disables status reports. Unknown
+  entries in a comma-separated list are ignored.
 
 Protocol selection is resolved once for each console IO instance. All modes
 respect quiet output, disabled ANSI decoration, and redirected stderr.

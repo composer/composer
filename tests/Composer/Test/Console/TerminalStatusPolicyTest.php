@@ -67,15 +67,28 @@ class TerminalStatusPolicyTest extends TestCase
         ];
     }
 
-    /** @dataProvider provideInvalidSettings */
-    public function testRejectsInvalidSetting(string $setting): void
+    /**
+     * @dataProvider provideInvalidSettings
+     * @param list<string> $expected
+     */
+    public function testIgnoresInvalidSetting(string $setting, array $expected): void
     {
-        $this->expectException(\InvalidArgumentException::class);
-        new TerminalStatusPolicy(['COMPOSER_TERMINAL_STATUS' => $setting]);
+        $policy = new TerminalStatusPolicy(['COMPOSER_TERMINAL_STATUS' => $setting]);
+        self::assertSame($expected, array_map(static function (AbstractOscProgramStatusEncoder $encoder): string {
+            return $encoder->getCommand();
+        }, $policy->getEncoders()));
     }
 
     public static function provideInvalidSettings(): array
     {
-        return [['unknown'], ['auto,7501'], ['off,9;4'], ['7501,'], ['7501,unknown']];
+        return [
+            ['unknown', []],
+            ['0', []],
+            ['false', []],
+            ['auto,7501', ['7501']],
+            ['off,9;4', ['9;4']],
+            ['7501,', ['7501']],
+            ['7501,unknown', ['7501']],
+        ];
     }
 }

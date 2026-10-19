@@ -72,12 +72,8 @@ final class TerminalStatusPolicy
             return [];
         }
 
-        $protocols = array_map('trim', explode(',', $setting));
-        foreach ($protocols as $protocol) {
-            if (!in_array($protocol, ['7501', '9;4'], true)) {
-                throw new \InvalidArgumentException('COMPOSER_TERMINAL_STATUS must be auto, off, 7501, 9;4, or a comma-separated list of protocols.');
-            }
-        }
+        // Unknown values are ignored rather than failing, so e.g. "0" or "false" disable reporting.
+        $protocols = array_intersect(array_map('trim', explode(',', $setting)), ['7501', '9;4']);
 
         return array_values(array_unique($protocols));
     }
