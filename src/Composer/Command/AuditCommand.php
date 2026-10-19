@@ -157,8 +157,9 @@ EOT
             $requires = array_merge($requires, $rootPkg->getDevRequires());
         }
 
+        // getNames() includes replaced/provided names so e.g. symfony/symfony counts when symfony/console is required
         return array_values(array_filter($packages, static function (PackageInterface $package) use ($requires): bool {
-            return isset($requires[$package->getName()]);
+            return count(array_intersect_key($requires, array_flip($package->getNames()))) > 0;
         }));
     }
 }
