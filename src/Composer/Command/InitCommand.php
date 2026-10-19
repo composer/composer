@@ -584,6 +584,10 @@ EOT
         $pattern = sprintf('{^/?%s\s.*(?<!\S)export-ignore(?!\S)$}', preg_quote($lockfile));
 
         $lines = file($gitAttributesFile, FILE_IGNORE_NEW_LINES);
+        if (false === $lines) {
+            return false;
+        }
+
         foreach ($lines as $line) {
             if (Preg::isMatch($pattern, $line)) {
                 return true;
@@ -598,6 +602,9 @@ EOT
         $contents = "";
         if (file_exists($gitAttributesFile)) {
             $contents = file_get_contents($gitAttributesFile);
+            if (false === $contents) {
+                throw new \RuntimeException('Could not read '.$gitAttributesFile);
+            }
 
             if (strpos($contents, "\n") !== 0) {
                 $contents .= "\n";
