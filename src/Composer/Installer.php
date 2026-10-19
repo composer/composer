@@ -1004,7 +1004,7 @@ class Installer
 
         $preferredVersions = null;
         $lockedRepo = $request !== null ? $request->getLockedRepository() : null;
-        if ($forUpdate && $this->minimalUpdate && $lockedRepo !== null) {
+        if ($forUpdate && $this->minimalUpdate && $request !== null && $lockedRepo !== null) {
             $preferredVersions = [];
             foreach ($lockedRepo->getPackages() as $pkg) {
                 if ($pkg instanceof AliasPackage || $request->isInUpdateAllowList($pkg->getName())) {
