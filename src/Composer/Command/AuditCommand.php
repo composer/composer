@@ -39,13 +39,15 @@ class AuditCommand extends BaseCommand
                 new InputOption('abandoned', null, InputOption::VALUE_REQUIRED, 'Behavior on abandoned packages. Must be "ignore", "report", or "fail".', null, ListPolicyConfig::AUDITS),
                 new InputOption('ignore-severity', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Ignore advisories of a certain severity level.', [], ['low', 'medium', 'high', 'critical']),
                 new InputOption('ignore-unreachable', null, InputOption::VALUE_NONE, 'Ignore repositories that are unreachable or return a non-200 status code.'),
-                new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Audit packages that are directly required by the root package.'),
+                new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Only audit packages directly required by the root package, skipping transitive dependencies.'),
             ])
             ->setHelp(
                 <<<EOT
 The <info>audit</info> command checks for security vulnerability advisories for installed packages.
 
 If you do not want to include dev dependencies in the audit you can omit them with --no-dev
+
+If you only want to audit packages your root package requires directly, use --direct (-D)
 
 If you want to ignore repositories that are unreachable or return a non-200 status code, use --ignore-unreachable
 
