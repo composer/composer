@@ -195,7 +195,7 @@ EOT
             }
 
             if (!$this->hasExportIgnoreForLockfile($attributesFile)) {
-                $question = 'Would you like the <info>composer.lock</info> file added with export-ignore to your gitattributes? [<comment>yes</comment>]';
+                $question = 'Would you like <info>composer.lock</info> marked as export-ignore in your <info>.gitattributes</info> [<comment>yes</comment>]? ';
 
                 if ($io->askConfirmation($question)) {
                     $this->addExportIgnoreForLockfile($attributesFile);
