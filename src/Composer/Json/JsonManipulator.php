@@ -119,7 +119,7 @@ class JsonManipulator
     /**
      * Sorts packages by importance (platform packages first, then PHP dependencies) and alphabetically.
      *
-     * @link https://getcomposer.org/doc/02-libraries.md#platform-packages
+     * @link https://getcomposer.org/doc/01-basic-usage.md#platform-packages
      *
      * @param array<string> $packages
      */
