@@ -69,6 +69,12 @@ class CurlDownloader
      * @var array<string, array{statusCode: int, announced: bool, until: float}>
      */
     private $retryAfterOrigins = [];
+    /**
+     * When tick() last waited on the transfers, they are not driven again until the next tick(), which a prompt can hold up
+     *
+     * @var float|null
+     */
+    private $lastSelectAt = null;
     /** @var IOInterface */
     private $io;
     /** @var Config */
@@ -397,12 +403,14 @@ class CurlDownloader
             return;
         }
 
+        $blockedFor = null !== $this->lastSelectAt ? microtime(true) - $this->lastSelectAt : 0.0;
         $active = true;
         $this->checkCurlResult(curl_multi_exec($this->multiHandle, $active));
         if (-1 === curl_multi_select($this->multiHandle, $this->getSelectTimeout())) {
             // sleep in case select returns -1 as it can happen on old php versions or some platforms where curl does not manage to do the select
             usleep(150);
         }
+        $this->lastSelectAt = microtime(true);
 
         while ($progress = curl_multi_info_read($this->multiHandle)) {
             $curlHandle = $progress['handle'];
@@ -436,6 +444,18 @@ class CurlDownloader
                         $error = curl_strerror($errno);
                     }
                     $progress['error_code'] = $errno;
+
+                    // a request which spent most of its time blocked between two ticks, e.g. by a prompt for credentials, did not time out
+                    // on its own, so it is retried without counting towards maxRetries, see https://github.com/composer/composer/issues/12402
+                    if (
+                        $errno === 28 /* CURLE_OPERATION_TIMEDOUT */
+                        && $blockedFor > $progress['total_time'] / 2
+                        && (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')
+                    ) {
+                        $this->io->writeError('Retrying ' . Url::sanitize($job['url']) . ' due to curl error 28 while the download loop was blocked', true, IOInterface::DEBUG);
+                        $this->restartJob($job, $job['url']);
+                        continue;
+                    }
 
                     if (
                         (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')

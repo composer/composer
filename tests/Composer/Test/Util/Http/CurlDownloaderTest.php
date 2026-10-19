@@ -200,6 +200,38 @@ class CurlDownloaderTest extends TestCase
         self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a cancelled request must not be sent again');
     }
 
+    public function testTimeoutWhileTheLoopWasBlockedDoesNotUseUpARetry(): void
+    {
+        // the kernel accepts the connection but nothing ever answers, so the request can only time out
+        $server = stream_socket_server('tcp://127.0.0.1:0');
+        self::assertIsResource($server);
+        $address = stream_socket_get_name($server, false);
+        self::assertIsString($address);
+
+        $downloader = $this->createDownloader();
+        $failure = null;
+        // a request which has no retries left, e.g. after timing out during earlier prompts
+        self::callPrivate($downloader, 'initDownload', static function (): void {
+        }, static function (\Exception $e) use (&$failure): void {
+            $failure = $e->getMessage();
+        }, $address, 'http://'.$address.'/packages.json', ['http' => ['timeout' => 1]], null, ['retries' => 3]);
+
+        $downloader->tick();
+        // a prompt for credentials keeps tick() from being called for longer than the request may take
+        usleep(1500000);
+        $downloader->tick();
+
+        self::assertNull($failure);
+        $jobs = $this->readProperty($downloader, 'jobs');
+        self::assertIsArray($jobs);
+        self::assertCount(1, $jobs, 'the request must have been sent again');
+
+        foreach (array_keys($jobs) as $id) {
+            $downloader->abortRequest((int) $id);
+        }
+        fclose($server);
+    }
+
     public function testRetryWaitsForTheLatestRetryAfterOfItsOrigin(): void
     {
         $io = new BufferIO();
