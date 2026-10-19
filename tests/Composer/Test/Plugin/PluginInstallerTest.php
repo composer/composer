@@ -475,6 +475,7 @@ class PluginInstallerTest extends TestCase
     {
         return [
             ['\stdClass'],
+            ['\DateTime'],
             ['NonExistentClassLikeMiddleClass'],
         ];
     }
