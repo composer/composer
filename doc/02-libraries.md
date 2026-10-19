@@ -75,6 +75,11 @@ effect on projects that depend on your library, they install whatever versions
 your constraints allow. You can therefore exclude it from dist archives using
 `export-ignore`, see [Light-weight distribution packages](#light-weight-distribution-packages).
 
+As your users will not get the locked versions, keep the lock file up to date
+and also run CI jobs with `composer update` (and `composer update --prefer-lowest`)
+to catch breakage from new releases or too low lower bounds. Consider configuring a
+[cooldown](06-config.md#cooldown) and not exposing secrets to these jobs.
+
 ## Publishing to a VCS
 
 Once you have a VCS repository (version control system, e.g. git) containing a
