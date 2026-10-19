@@ -65,9 +65,10 @@ version constraints, read the [versions](articles/versions.md) article.
 ## Lock file
 
 For your library it is **recommended to commit the `composer.lock` file**. This
-can help your team to always test against the same dependency versions. But
-it also can stop supply chain attacks propagating by not immediately using
-malicious versions of a dependency in your (CI) environment after publication.
+helps your team to always test against the same dependency versions, and it
+can help prevent supply chain attacks from propagating, as newly published
+(possibly malicious) dependency versions are not pulled into your CI or
+development environment until you explicitly update.
 
 However, this lock file will not have any effect on other projects that depend
 on it. It only has an effect on the main project.
