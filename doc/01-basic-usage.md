@@ -90,7 +90,7 @@ versions, how versions relate to each other, and on version constraints.
 ## Installing dependencies
 
 To initially install the defined dependencies for your project, you should run the
-[`update`](03-cli.md#update-u) command.
+[`update`](03-cli.md#update-u-upgrade) command.
 
 ```shell
 php composer.phar update
@@ -163,7 +163,7 @@ applications in a secure and predictable manner.
 
 As mentioned above, the `composer.lock` file prevents you from automatically getting
 the latest versions of your dependencies. To update to the latest versions, use the
-[`update`](03-cli.md#update-u) command. This will fetch the latest matching
+[`update`](03-cli.md#update-u-upgrade) command. This will fetch the latest matching
 versions (according to your `composer.json` file) and update the lock file
 with the new versions.
 
@@ -218,7 +218,7 @@ includes PHP itself, PHP extensions and some system libraries.
   PHP. The following are available: `curl`, `iconv`, `icu`, `libxml`,
   `openssl`, `pcre`, `uuid`, `xsl`.
 
-You can use [`show --platform`](03-cli.md#show) to get a list of your locally
+You can use [`show --platform`](03-cli.md#show-info) to get a list of your locally
 available platform packages.
 
 ## Autoloading
