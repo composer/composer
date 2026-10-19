@@ -13,7 +13,9 @@
 namespace Composer\Test\Command;
 
 use Composer\Advisory\Auditor;
+use Composer\Package\Link;
 use Composer\Policy\ListPolicyConfig;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 use UnexpectedValueException;
 
@@ -146,12 +148,60 @@ class AuditCommandTest extends TestCase
         self::assertSame(Auditor::STATUS_OK, $exitCode);
     }
 
+    public function testAuditDirectSkipsTransitiveDependencies(): void
+    {
+        $packages = [
+            ['name' => 'safe/pkg', 'version' => '1.0.0'],
+            ['name' => 'malicious/pkg', 'version' => '1.0.0'],
+        ];
+        $this->initTempComposerWithFilterLists($packages, ['require' => ['safe/pkg' => '1.0.0']]);
+        $this->createComposerLockWithPackages($packages);
+
+        foreach ([[], ['--locked' => true]] as $options) {
+            $appTester = $this->getApplicationTester();
+            $exitCode = $appTester->run(['command' => 'audit', '--direct' => true] + $options);
+
+            self::assertSame(Auditor::STATUS_OK, $exitCode);
+            self::assertStringNotContainsString('malicious/pkg', $appTester->getDisplay(true));
+        }
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(Auditor::STATUS_FAILED, $appTester->run(['command' => 'audit', '--locked' => true]));
+    }
+
+    public function testAuditDirectIncludesReplacingPackage(): void
+    {
+        $this->initTempComposerWithFilterLists([['name' => 'malicious/pkg', 'version' => '1.0.0']], ['require' => ['replaced/pkg' => '*']]);
+        $package = self::getPackage('malicious/pkg', '1.0.0');
+        $package->setReplaces(['replaced/pkg' => new Link('malicious/pkg', 'replaced/pkg', new MatchAllConstraint(), Link::TYPE_REPLACE, '*')]);
+        $this->createInstalledJson([$package]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'audit', '--direct' => true]);
+
+        self::assertSame(Auditor::STATUS_FAILED, $exitCode);
+        self::assertStringContainsString('malicious/pkg', $appTester->getDisplay(true));
+    }
+
+    public function testAuditDirectWithNoDirectPackagesInstalled(): void
+    {
+        $this->initTempComposer(['require' => ['php' => '*']]);
+        $this->createInstalledJson([self::getPackage()]);
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'audit', '--direct' => true]);
+
+        $appTester->assertCommandIsSuccessful();
+        self::assertEquals('No direct dependencies - skipping audit.', trim($appTester->getDisplay(true)));
+    }
+
     /**
      * @param list<array{name: string, version: string}> $packages
+     * @param array<string, mixed> $extraConfig
      */
-    private function initTempComposerWithFilterLists(array $packages): void
+    private function initTempComposerWithFilterLists(array $packages, array $extraConfig = []): void
     {
-        $this->initTempComposer([
+        $this->initTempComposer($extraConfig + [
             'repositories' => [
                 'packages' => [
                     'type' => 'package',
