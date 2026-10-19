@@ -16,6 +16,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Pcre\Preg;
+use Composer\Semver\Comparator;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Intervals;
@@ -88,7 +89,7 @@ class VersionBumper
                 \^v?'.$major.'(?:\.\d+)* # e.g. ^2.anything
                 | ~v?'.$major.'(?:\.\d+){1,3} # e.g. ~2.2 or ~2.2.2 or ~2.2.2.2
                 | v?'.$major.'(?:\.[*x])+ # e.g. 2.* or 2.*.* or 2.x.x.x etc
-                | >=v?\d(?:\.\d+)* # e.g. >=2 or >=1.2 etc
+                | >=v?\d+(?:\.\d+)* # e.g. >=2 or >=1.2 etc
                 | \* # full wildcard
             )
             (?=,|$|\ |\||@) # trailing separator
@@ -97,6 +98,10 @@ class VersionBumper
             $modified = $prettyConstraint;
             foreach (array_reverse($matches['constraint']) as $match) {
                 assert(is_string($match[0]));
+                // a lower bound above the installed version belongs to another range of the constraint, lowering it would loosen the constraint
+                if (str_starts_with($match[0], '>=') && Comparator::greaterThan($parser->normalize(substr($match[0], 2)), $version)) {
+                    continue;
+                }
                 $suffix = '';
                 if (substr_count($match[0], '.') === 2 && substr_count($versionWithoutSuffix, '.') === 1) {
                     $suffix = '.0';
