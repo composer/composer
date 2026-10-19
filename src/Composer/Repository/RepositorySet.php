@@ -22,6 +22,7 @@ use Composer\DependencyResolver\CooldownPoolFilter;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Advisory\SecurityAdvisory;
 use Composer\Advisory\PartialSecurityAdvisory;
+use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\BasePackage;
@@ -248,6 +249,76 @@ class RepositorySet
                 unset($nameMap[$name]);
             }
         }
+    }
+
+    /**
+     * Replaces packages, e.g. from the lock file or installed.json, by their current metadata from the composer repositories
+     *
+     * Only composer repositories are queried, as loading e.g. VCS repositories means scanning all their tags and branches.
+     * Packages not found with the same origin, or only in unreachable repositories, are kept as they are.
+     *
+     * @param PackageInterface[] $packages
+     * @return PackageInterface[]
+     */
+    public function loadCurrentPackages(array $packages): array
+    {
+        $indexesByName = [];
+        $nameMap = [];
+        $stabilityFlags = [];
+        foreach ($packages as $index => $package) {
+            if ($package instanceof AliasPackage || PlatformRepository::isPlatformPackage($package->getName())) {
+                continue;
+            }
+            $indexesByName[$package->getName()] = $index;
+            $nameMap[$package->getName()] = new Constraint('=', $package->getVersion());
+            // avoids loading the ~dev metadata for stable packages
+            $stabilityFlags[$package->getName()] = BasePackage::STABILITIES[$package->getStability()];
+        }
+
+        $currentPackages = $packages;
+        foreach ($this->repositories as $repository) {
+            if ($nameMap === []) {
+                break;
+            }
+            if (!($repository instanceof FilterRepository ? $repository->getRepository() : $repository) instanceof ComposerRepository) {
+                continue;
+            }
+
+            try {
+                $result = $repository->loadPackages($nameMap, ['stable' => BasePackage::STABILITY_STABLE], $stabilityFlags);
+            } catch (TransportException $e) {
+                continue;
+            }
+
+            foreach ($result['packages'] as $repoPackage) {
+                $index = $indexesByName[$repoPackage->getName()];
+                if (
+                    $repoPackage instanceof AliasPackage
+                    || $repoPackage->getVersion() !== $packages[$index]->getVersion()
+                    // a same-named package from elsewhere, e.g. a fork in a vcs repo, is not the same package
+                    || !self::hasSameOrigin($packages[$index], $repoPackage)
+                ) {
+                    continue;
+                }
+                $currentPackages[$index] = $repoPackage;
+            }
+
+            foreach ($result['namesFound'] as $name) {
+                // like findPackages, do not query lower priority repositories for names already found
+                unset($nameMap[$name]);
+            }
+        }
+
+        return $currentPackages;
+    }
+
+    private static function hasSameOrigin(PackageInterface $a, PackageInterface $b): bool
+    {
+        if ($a->getSourceUrl() !== null && $a->getSourceUrl() === $b->getSourceUrl()) {
+            return true;
+        }
+
+        return $a->getDistUrl() !== null && $a->getDistUrl() === $b->getDistUrl();
     }
 
     /**
