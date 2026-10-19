@@ -144,6 +144,11 @@ class Problem
 
             $removals = [];
             foreach ($pool->getPolicyRemovedVersions($name, $rootConstraints[$name]) as $version => $reason) {
+                // removals recorded under a replaced name carry the replacer's version
+                if ($reason->getPackageName() !== $name) {
+                    continue;
+                }
+
                 $packageVersion = new Constraint('==', $version);
                 if (array_any($constraints, static function (ConstraintInterface $constraint) use ($packageVersion): bool {
                     return $constraint->matches($packageVersion);
