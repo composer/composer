@@ -362,4 +362,30 @@ class ComposerRepositoryTest extends TestCase
 
         $this->assertEquals(array('foo/bar'), $repository->getPackageNames());
     }
+
+    public function testFindPackageWithPartialPackagesWithoutUid()
+    {
+        $httpDownloader = new HttpDownloaderMock(array(
+            'http://example.org/packages.json' => JsonFile::encode(array(
+                'metadata-url' => '/p2/%package%.json',
+                'packages' => array('fbi-gov/x-files' => array(
+                    'dev-main' => array('name' => 'fbi-gov/x-files', 'version' => 'dev-main'),
+                    '1.0.0' => array('name' => 'fbi-gov/x-files', 'version' => '1.0.0'),
+                    '1.1.0' => array('name' => 'fbi-gov/x-files', 'version' => '1.1.0'),
+                )),
+            )),
+        ));
+
+        $repository = new ComposerRepository(
+            array('url' => 'http://example.org/packages.json'),
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $package = $repository->findPackage('fbi-gov/x-files', '1.0.0');
+        $this->assertNotNull($package);
+        $this->assertSame('1.0.0.0', $package->getVersion());
+        $this->assertCount(3, $repository->findPackages('fbi-gov/x-files'));
+    }
 }
