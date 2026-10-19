@@ -72,7 +72,8 @@ development environment until you explicitly update.
 
 This protection only covers working on the library itself. The lock file has no
 effect on projects that depend on your library, they install whatever versions
-your constraints allow.
+your constraints allow. You can therefore exclude it from dist archives using
+`export-ignore`, see [Light-weight distribution packages](#light-weight-distribution-packages).
 
 ## Publishing to a VCS
 
