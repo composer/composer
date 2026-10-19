@@ -118,7 +118,7 @@ class Problem
     }
 
     /**
-     * Explain when a policy removed versions that would avoid a reported package conflict
+     * Explain when a policy removed versions that the reported conflicts do not exclude
      *
      * @param Rule[] $reasons
      */
@@ -173,8 +173,9 @@ class Problem
                 return $reason->getPrettyVersion();
             }, $removals);
             $prettyVersions = $isVerbose ? array_values($versions) : self::condenseVersionList($versions, 1);
+            // only the conflicts in the problem are checked, those of the removed versions themselves are unknown
             $messages[] = "\n    - ".$name.'['.implode(', ', $prettyVersions).'] '.($plural ? 'match' : 'matches')
-                .' the root requirement and '.($plural ? 'avoid' : 'avoids').' the reported conflict, but '
+                .' the requirements and '.($plural ? 'are' : 'is').' not excluded by the conflicts above, but '
                 .($plural ? 'were' : 'was').' not loaded, '.self::formatPolicyRemovalReasons($removals, $plural, $repositorySet);
         }
 

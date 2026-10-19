@@ -55,7 +55,7 @@ Your requirements could not be resolved to an installable set of packages.
     - Root composer.json requires acme/conflicter 1.0.0 -> satisfiable by acme/conflicter[1.0.0].
     - acme/app 1.0.0 requires acme/lib ^1.0 -> satisfiable by acme/lib[1.1.0].
     - acme/conflicter 1.0.0 conflicts with acme/lib 1.1.0.
-    - acme/lib[1.0.0, ..., 1.0.1] match the root requirement and avoid the reported conflict, but were not loaded, because:
+    - acme/lib[1.0.0, ..., 1.0.1] match the requirements and are not excluded by the conflicts above, but were not loaded, because:
       - 1.0.0: affected by security advisories ("PKSA-1234-abcd-1234")
       - 1.0.1: still in the cooldown period configured in "policy.cooldown" (available in %s)
       Go to https://packagist.org/security-advisories/ to find advisory details. To ignore the advisories, add their IDs to the "policy.advisories.ignore-id" config or add the package to "policy.advisories.ignore". To exempt the package from the cooldown policy, add it to the "policy.cooldown.ignore" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set "policy.advisories.block" or "policy.cooldown.block" to false.
