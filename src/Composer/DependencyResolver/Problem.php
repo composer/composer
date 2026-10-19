@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
@@ -112,7 +113,73 @@ class Problem
             return $this->getSortableString($pool, $rule1) <=> $this->getSortableString($pool, $rule2);
         });
 
-        return self::formatDeduplicatedRules($reasons, '    ', $repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
+        return self::formatDeduplicatedRules($reasons, '    ', $repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool)
+            .self::formatPolicyExcludedConflictAlternatives($reasons, $repositorySet, $pool, $isVerbose);
+    }
+
+    /**
+     * Explain when a policy removed versions that the reported conflicts do not exclude
+     *
+     * @param Rule[] $reasons
+     */
+    private static function formatPolicyExcludedConflictAlternatives(array $reasons, RepositorySet $repositorySet, Pool $pool, bool $isVerbose): string
+    {
+        $rootConstraints = [];
+        $requireConstraints = [];
+        $conflictConstraints = [];
+        foreach ($reasons as $rule) {
+            if ($rule->getReason() === Rule::RULE_ROOT_REQUIRE) {
+                $data = $rule->getReasonData();
+                $rootConstraints[$data['packageName']] = $data['constraint'];
+            } elseif ($rule->getReason() === Rule::RULE_PACKAGE_REQUIRES) {
+                $link = $rule->getReasonData();
+                $requireConstraints[$link->getTarget()][] = $link->getConstraint();
+            } elseif ($rule->getReason() === Rule::RULE_PACKAGE_CONFLICT) {
+                $link = $rule->getReasonData();
+                $conflictConstraints[$link->getTarget()][] = $link->getConstraint();
+            }
+        }
+
+        $messages = [];
+        foreach ($conflictConstraints as $name => $constraints) {
+            if (!isset($rootConstraints[$name]) && !isset($requireConstraints[$name])) {
+                continue;
+            }
+
+            $removals = [];
+            foreach ($pool->getPolicyRemovedVersions($name, $rootConstraints[$name] ?? null) as $version => $reason) {
+                // removals recorded under a replaced name carry the replacer's version
+                if ($reason->getPackageName() !== $name) {
+                    continue;
+                }
+
+                $packageVersion = new Constraint('==', $version);
+                $matches = static function (ConstraintInterface $constraint) use ($packageVersion): bool {
+                    return $constraint->matches($packageVersion);
+                };
+                if (array_any($constraints, $matches) || (isset($requireConstraints[$name]) && !array_any($requireConstraints[$name], $matches))) {
+                    continue;
+                }
+
+                $removals[$version] = $reason;
+            }
+
+            if ($removals === []) {
+                continue;
+            }
+
+            $plural = \count($removals) > 1;
+            $versions = array_map(static function (PolicyRemovalReason $reason): string {
+                return $reason->getPrettyVersion();
+            }, $removals);
+            $prettyVersions = $isVerbose ? array_values($versions) : self::condenseVersionList($versions, 1);
+            // only the conflicts in the problem are checked, those of the removed versions themselves are unknown
+            $messages[] = "\n    - ".$name.'['.implode(', ', $prettyVersions).'] '.($plural ? 'match' : 'matches')
+                .' the requirements and '.($plural ? 'are' : 'is').' not excluded by the conflicts above, but '
+                .($plural ? 'were' : 'was').' not loaded, '.self::formatPolicyRemovalReasons($removals, $plural, $repositorySet);
+        }
+
+        return implode('', $messages);
     }
 
     private function getSortableString(Pool $pool, Rule $rule): string
@@ -378,27 +445,9 @@ class Problem
                 }
             }
 
-            // When several policies removed different versions, one sentence would attribute every reason to
-            // every version, so list the versions with their own reason instead
             $policyRemovals = $pool->getPolicyRemovedVersions($packageName, $constraint);
-            $policies = array_unique(array_map(static function (PolicyRemovalReason $reason): string {
-                return $reason->getType();
-            }, $policyRemovals));
-            if (\count($policies) > 1) {
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because:'.self::formatPolicyRemovalReasons($policyRemovals)];
-            }
-
             if (\count($policyRemovals) > 0) {
-                $reason = PolicyRemovalReason::combine($policyRemovals);
-                if ($reason->getType() === PolicyRemovalReason::ADVISORIES) {
-                    // the pool may only hold partial advisories, load the complete ones to link to their details
-                    $advisories = $repositorySet->getMatchingSecurityAdvisories($packages, false, true);
-                    if (\count($advisories['advisories'][$packageName] ?? []) > 0) {
-                        $reason = PolicyRemovalReason::advisories($packageName, $reason->getPrettyVersion(), $advisories['advisories'][$packageName]);
-                    }
-                }
-
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, because they '.self::formatPolicyRemovalSentence($reason, true)];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, '.self::formatPolicyRemovalReasons($policyRemovals, true, $repositorySet)];
             }
 
             if (!array_any($packages, static function ($p): bool {
@@ -727,12 +776,24 @@ class Problem
     }
 
     /**
-     * Lists the removed versions grouped by their reason, then the remedies once
+     * Explains why policies removed the versions, as "because ..." followed by the remedies
      *
-     * @param array<string, PolicyRemovalReason> $removals normalized version => reason, in version order
+     * When several policies removed different versions, one sentence would attribute every reason to
+     * every version, so the versions are then listed grouped by their own reason
+     *
+     * @param non-empty-array<string, PolicyRemovalReason> $removals normalized version => reason, in version order
      */
-    private static function formatPolicyRemovalReasons(array $removals): string
+    private static function formatPolicyRemovalReasons(array $removals, bool $plural, RepositorySet $repositorySet): string
     {
+        $removals = self::loadCompleteAdvisories($removals, $repositorySet);
+
+        $policies = array_unique(array_map(static function (PolicyRemovalReason $reason): string {
+            return $reason->getType();
+        }, $removals));
+        if (\count($policies) === 1) {
+            return 'because '.($plural ? 'they ' : 'it ').self::formatPolicyRemovalSentence(PolicyRemovalReason::combine($removals), $plural);
+        }
+
         $versionsByReason = [];
         $remedies = [];
         $offSwitches = [];
@@ -751,6 +812,46 @@ class Problem
 
         $remedies['To turn a policy off entirely, you can set ' . implode(' or ', array_keys($offSwitches)) . ' to false.'] = true;
 
-        return "\n      - " . implode("\n      - ", $lines) . "\n      " . implode(' ', array_keys($remedies));
+        return "because:\n      - " . implode("\n      - ", $lines) . "\n      " . implode(' ', array_keys($remedies));
+    }
+
+    /**
+     * The pool may only hold partial advisories, load the complete ones to link to their details
+     *
+     * @param non-empty-array<string, PolicyRemovalReason> $removals normalized version => reason
+     * @return non-empty-array<string, PolicyRemovalReason>
+     */
+    private static function loadCompleteAdvisories(array $removals, RepositorySet $repositorySet): array
+    {
+        $versionsByName = [];
+        foreach ($removals as $version => $reason) {
+            if ($reason->getType() === PolicyRemovalReason::ADVISORIES) {
+                $versionsByName[$reason->getPackageName()][] = new Constraint('==', (string) $version);
+            }
+        }
+
+        $completeAdvisories = [];
+        foreach ($versionsByName as $name => $constraints) {
+            $packages = $repositorySet->findPackages($name, MultiConstraint::create($constraints, false));
+            foreach ($repositorySet->getMatchingSecurityAdvisories($packages, false, true)['advisories'] as $advisories) {
+                foreach ($advisories as $advisory) {
+                    $completeAdvisories[$advisory->advisoryId] = $advisory;
+                }
+            }
+        }
+
+        if ($completeAdvisories === []) {
+            return $removals;
+        }
+
+        foreach ($removals as $version => $reason) {
+            if ($reason->getType() === PolicyRemovalReason::ADVISORIES) {
+                $removals[$version] = PolicyRemovalReason::advisories($reason->getPackageName(), $reason->getPrettyVersion(), array_map(static function (PartialSecurityAdvisory $advisory) use ($completeAdvisories): PartialSecurityAdvisory {
+                    return $completeAdvisories[$advisory->advisoryId] ?? $advisory;
+                }, $reason->getAdvisories()));
+            }
+        }
+
+        return $removals;
     }
 }

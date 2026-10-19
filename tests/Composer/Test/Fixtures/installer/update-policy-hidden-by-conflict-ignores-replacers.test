@@ -1,0 +1,58 @@
+--TEST--
+Versions of a replacer removed by a policy are not presented as versions of the replaced package that would avoid a conflict.
+--COMPOSER--
+{
+    "name": "acme/project",
+    "version": "1.0.0",
+    "require": {
+        "acme/conflicter": "1.0.0",
+        "acme/lib": "^2.0",
+        "acme/tool": "1.0.0"
+    },
+    "config": {"policy": {"advisories": {"block": true}}},
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {"name": "acme/conflicter", "version": "1.0.0", "conflict": {"acme/lib": ">=2.5"}},
+                {"name": "acme/lib", "version": "2.5.0"},
+                {"name": "acme/tool", "version": "1.0.0", "require": {"other/pkg": "*"}},
+                {"name": "other/pkg", "version": "2.3.0", "replace": {"acme/lib": "*"}},
+                {"name": "other/pkg", "version": "3.0.0"}
+            ],
+            "security-advisories": {
+                "other/pkg": [{
+                    "advisoryId": "PKSA-1234-abcd-1234",
+                    "packageName": "other/pkg",
+                    "remoteId": "test",
+                    "title": "Security Advisory",
+                    "link": null,
+                    "cve": null,
+                    "affectedVersions": "<3.0",
+                    "source": "Tests",
+                    "reportedAt": "2024-04-30 12:37:47",
+                    "composerRepository": "Package Repository",
+                    "severity": "high",
+                    "sources": [{"name": "Security Advisory", "remoteId": "test"}]
+                }]
+            }
+        }
+    ]
+}
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires acme/conflicter 1.0.0 -> satisfiable by acme/conflicter[1.0.0].
+    - Root composer.json requires acme/lib ^2.0 -> satisfiable by acme/lib[2.5.0].
+    - acme/conflicter 1.0.0 conflicts with acme/lib 2.5.0.
+
+--EXPECT--

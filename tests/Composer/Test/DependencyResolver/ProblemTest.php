@@ -20,7 +20,9 @@ use Composer\DependencyResolver\Problem;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Rule;
 use Composer\FilterList\FilterListEntry;
+use Composer\Package\Link;
 use Composer\Repository\ArrayRepository;
+use Composer\Repository\PackageRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
@@ -241,5 +243,38 @@ class ProblemTest extends TestCase
         self::assertStringContainsString("found vendor/pkg[1.0.0, 1.0.1] but these were not loaded, because:\n      - 1.0.0: flagged as malware", $message);
         self::assertStringContainsString('reason: looks suspicious', $message);
         self::assertStringContainsString("\n      - 1.0.1: still in the cooldown period configured in \"policy.cooldown\" (available in 5 days, based on the package-supplied time field as the repository provides no published-time)\n      To ignore filters for this package, add the package to the \"policy.malware.ignore\" config. To exempt the package from the cooldown policy, add it to the \"policy.cooldown.ignore\" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass. To turn a policy off entirely, you can set \"policy.malware.block\" or \"policy.cooldown.block\" to false.", $message);
+    }
+
+    public function testConflictAlternativeLinksCompleteAdvisories(): void
+    {
+        $conflicter = self::getPackage('acme/conflicter', '1.0.0');
+        $lib = self::getPackage('acme/lib', '1.0.1');
+        $pool = new Pool([$conflicter, $lib], [], [], [], [
+            'acme/lib' => ['1.0.0.0' => PolicyRemovalReason::advisories('acme/lib', '1.0.0', [new PartialSecurityAdvisory('acme/lib', 'test-advisory-1', new Constraint('<', '1.0.1.0'))])],
+        ]);
+
+        $repositorySet = new RepositorySet();
+        $repositorySet->addRepository(new PackageRepository([
+            'package' => [['name' => 'acme/lib', 'version' => '1.0.0']],
+            'security-advisories' => ['acme/lib' => [[
+                'advisoryId' => 'test-advisory-1',
+                'packageName' => 'acme/lib',
+                'title' => 'Security Advisory',
+                'link' => 'https://example.org/advisories/1',
+                'affectedVersions' => '<1.0.1',
+                'reportedAt' => '2024-04-30 12:37:47',
+                'sources' => [['name' => 'Security Advisory', 'remoteId' => 'test']],
+            ]]],
+        ]));
+
+        $problem = new Problem();
+        $problem->addRule(new GenericRule([$conflicter->getId()], Rule::RULE_ROOT_REQUIRE, ['packageName' => 'acme/conflicter', 'constraint' => new Constraint('==', '1.0.0.0')]));
+        $problem->addRule(new GenericRule([$lib->getId()], Rule::RULE_ROOT_REQUIRE, ['packageName' => 'acme/lib', 'constraint' => new Constraint('>=', '1.0.0.0')]));
+        $problem->addRule(new GenericRule([-$conflicter->getId(), -$lib->getId()], Rule::RULE_PACKAGE_CONFLICT, new Link('acme/conflicter', 'acme/lib', new Constraint('>=', '1.0.1.0'), Link::TYPE_CONFLICT)));
+
+        $message = $problem->getPrettyString($repositorySet, new Request(), $pool, false);
+
+        // the pool only knew the advisory ID, the complete advisory provides the link
+        self::assertStringContainsString('affected by security advisories ("<href=https://example.org/advisories/1>test-advisory-1</>")', $message);
     }
 }
