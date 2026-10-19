@@ -37,7 +37,7 @@ As you can see, [`require`](04-schema.md#require) takes an object that maps
 `1.0.*`).
 
 Composer uses this information to search for the right set of files in package
-"repositories" that you register using the [`repositories`](04-schema.md#repositories)
+"repositories" that you register using the [`repositories`](04-schema.md#repositories-root-only)
 key, or in [Packagist.org](https://packagist.org), the default package repository.
 In the above example, since no other repository has been registered in the
 `composer.json` file, it is assumed that the `monolog/monolog` package is registered
@@ -69,7 +69,7 @@ versions, how versions relate to each other, and on version constraints.
 > **How does Composer download the right files?** When you specify a dependency in
 > `composer.json`, Composer first takes the name of the package that you have requested
 > and searches for it in any repositories that you have registered using the
-> [`repositories`](04-schema.md#repositories) key. If you have not registered
+> [`repositories`](04-schema.md#repositories-root-only) key. If you have not registered
 > any extra repositories, or it does not find a package with that name in the
 > repositories you have specified, it falls back to Packagist.org (more [below](#packagist)).
 >
@@ -90,7 +90,7 @@ versions, how versions relate to each other, and on version constraints.
 ## Installing dependencies
 
 To initially install the defined dependencies for your project, you should run the
-[`update`](03-cli.md#update-u-upgrade) command.
+[`update`](03-cli.md#update--u--upgrade) command.
 
 ```shell
 php composer.phar update
@@ -103,7 +103,7 @@ This will make Composer do two things:
   those specific versions. You should commit the `composer.lock` file to your project repo
   so that all people working on the project are locked to the same versions of dependencies
   (more below). This is the main role of the `update` command.
-- It then implicitly runs the [`install`](03-cli.md#install-i) command. This will download
+- It then implicitly runs the [`install`](03-cli.md#install--i) command. This will download
   the dependencies' files into the `vendor` directory in your project. (The `vendor`
   directory is the conventional location for all third-party code in a project). In our
   example from above, you would end up with the Monolog source files in
@@ -163,7 +163,7 @@ applications in a secure and predictable manner.
 
 As mentioned above, the `composer.lock` file prevents you from automatically getting
 the latest versions of your dependencies. To update to the latest versions, use the
-[`update`](03-cli.md#update-u-upgrade) command. This will fetch the latest matching
+[`update`](03-cli.md#update--u--upgrade) command. This will fetch the latest matching
 versions (according to your `composer.json` file) and update the lock file
 with the new versions.
 
@@ -218,7 +218,7 @@ includes PHP itself, PHP extensions and some system libraries.
   PHP. The following are available: `curl`, `iconv`, `icu`, `libxml`,
   `openssl`, `pcre`, `uuid`, `xsl`.
 
-You can use [`show --platform`](03-cli.md#show-info) to get a list of your locally
+You can use [`show --platform`](03-cli.md#show--info) to get a list of your locally
 available platform packages.
 
 ## Autoloading
@@ -261,7 +261,7 @@ php composer.phar dump-autoload
 ```
 
 This command will re-generate the `vendor/autoload.php` file.
-See the [`dump-autoload`](03-cli.md#dump-autoload-dumpautoload) section for
+See the [`dump-autoload`](03-cli.md#dump-autoload--dumpautoload) section for
 more information.
 
 Including that file will also return the autoloader instance, so you can store

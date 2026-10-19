@@ -36,7 +36,7 @@ By default in Composer 2.x all repositories are canonical. Composer 1.x treated
 all repositories as non-canonical.
 
 Another default is that the packagist.org repository is always added implicitly
-as the last repository, unless you [disable it](../05-repositories.md#disabling-packagist-org).
+as the last repository, unless you [disable it](../05-repositories.md#disabling-packagistorg).
 
 ## Making repositories non-canonical
 

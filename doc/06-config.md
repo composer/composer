@@ -175,7 +175,7 @@ Set to `false` to disable all dependency policy enforcement:
 ```
 
 > **Migrating from `config.audit`?** See
-> [How `config.audit` interacts with `config.policy`](#how-config-audit-interacts-with-config-policy)
+> [How `config.audit` interacts with `config.policy`](#how-configaudit-interacts-with-configpolicy)
 > for how the legacy keys are still honored as a fallback while you migrate.
 
 ### advisories
@@ -367,7 +367,7 @@ Defaults to `fail`. How `composer audit` treats abandoned packages.
 }
 ```
 
-Can be overridden via the [`COMPOSER_AUDIT_ABANDONED`](03-cli.md#composer-audit-abandoned)
+Can be overridden via the [`COMPOSER_AUDIT_ABANDONED`](03-cli.md#composer_audit_abandoned)
 environment variable or the [`--abandoned`](03-cli.md#audit) CLI option.
 
 #### ignore
@@ -883,7 +883,7 @@ option.
 }
 ```
 
-Since Composer 2.7, the option can be overridden via the [`COMPOSER_AUDIT_ABANDONED`](03-cli.md#composer-audit-abandoned) environment variable.
+Since Composer 2.7, the option can be overridden via the [`COMPOSER_AUDIT_ABANDONED`](03-cli.md#composer_audit_abandoned) environment variable.
 
 Since Composer 2.8, the option can be overridden via the
 [`--abandoned`](03-cli.md#audit) command line option, which overrides both the
@@ -1232,7 +1232,7 @@ Defaults to `C:\Users\<user>\AppData\Roaming\Composer` on Windows,
 `$XDG_DATA_HOME/composer` on unix systems that follow the XDG Base Directory
 Specifications, and `$COMPOSER_HOME` on other unix systems. Right now it is only
 used for storing past composer.phar files to be able to roll back to older
-versions. See also [COMPOSER_HOME](03-cli.md#composer-home).
+versions. See also [COMPOSER_HOME](03-cli.md#composer_home).
 
 Because `self-update --rollback` restores a previously stored `composer.phar` from
 this directory, it must be writable only by the user that owns the Composer
@@ -1246,7 +1246,7 @@ Defaults to `C:\Users\<user>\AppData\Local\Composer` on Windows,
 `/Users/<user>/Library/Caches/composer` on macOS, `$XDG_CACHE_HOME/composer`
 on unix systems that follow the XDG Base Directory Specifications, and
 `$COMPOSER_HOME/cache` on other unix systems. Stores all the caches used by
-Composer. See also [COMPOSER_HOME](03-cli.md#composer-home), and
+Composer. See also [COMPOSER_HOME](03-cli.md#composer_home), and
 [Caching Composer dependencies](articles/caching.md) for caching it in CI.
 
 ## cache-files-dir

@@ -119,7 +119,7 @@ section or directly in the repository definition.
 
 The final option to supply Composer with credentials is to use the `COMPOSER_AUTH` environment variable.
 These variables can be either passed as command line variables or set in actual environment variables.
-Read more about the usage of this environment variable [here](../03-cli.md#composer-auth).
+Read more about the usage of this environment variable [here](../03-cli.md#composer_auth).
 
 # Authentication methods
 
