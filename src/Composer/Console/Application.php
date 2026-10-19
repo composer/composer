@@ -147,7 +147,7 @@ class Application extends BaseApplication
         $io = $this->io = new ConsoleIO($input, $output, new HelperSet([
             new QuestionHelper(),
         ]));
-        $reportStatus = $this->getCommandNameBeforeBinding($input) !== '_complete';
+        $reportStatus = $this->getCommandNameBeforeBinding($input) !== '_complete' && $io->isProgramStatusEnabled();
         if ($reportStatus) {
             $io->writeProgramStatus(ProgramStatus::working());
         }

@@ -42,7 +42,7 @@ final class OscHelper extends Helper
         $output->write("\033]".$command.';'.$payload."\033\\", false, OutputInterface::OUTPUT_RAW);
     }
 
-    private function supportsOutput(OutputInterface $output): bool
+    public function supportsOutput(OutputInterface $output): bool
     {
         if (!$output->isDecorated() || $output->getVerbosity() <= OutputInterface::VERBOSITY_QUIET) {
             return false;

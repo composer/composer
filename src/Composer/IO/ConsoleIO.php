@@ -152,6 +152,17 @@ class ConsoleIO extends BaseIO
     }
 
     /**
+     * @internal
+     */
+    public function isProgramStatusEnabled(): bool
+    {
+        /** @var OscHelper $helper */
+        $helper = $this->helperSet->get('osc');
+
+        return $this->programStatusEncoders !== [] && $helper->supportsOutput($this->getErrorOutput());
+    }
+
+    /**
      * @experimental This API may change in a future minor release
      */
     public function writeProgramStatus(ProgramStatus $status): void

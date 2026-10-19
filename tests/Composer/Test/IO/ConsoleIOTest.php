@@ -74,6 +74,19 @@ class ConsoleIOTest extends TestCase
         ];
     }
 
+    public function testProgramStatusEnabled(): void
+    {
+        $io = new ConsoleIO(new ArrayInput([]), new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true), new HelperSet());
+        self::assertTrue($io->isProgramStatusEnabled());
+
+        $io = new ConsoleIO(new ArrayInput([]), new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, false), new HelperSet());
+        self::assertFalse($io->isProgramStatusEnabled());
+
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', 'off');
+        $io = new ConsoleIO(new ArrayInput([]), new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true), new HelperSet());
+        self::assertFalse($io->isProgramStatusEnabled());
+    }
+
     /** @dataProvider suppressedStatusProvider */
     public function testExplicitProtocolsRespectOutputSettings(int $verbosity, bool $decorated): void
     {
