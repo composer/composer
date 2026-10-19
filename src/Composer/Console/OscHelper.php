@@ -19,6 +19,8 @@ use Symfony\Component\Console\Output\StreamOutput;
 
 /**
  * Writes Operating System Commands without formatting or adding a newline.
+ *
+ * @internal
  */
 final class OscHelper extends Helper
 {

@@ -17,6 +17,8 @@ use Composer\Util\Platform;
 
 /**
  * Selects terminal status protocols without reading terminal input.
+ *
+ * @internal
  */
 final class TerminalStatusPolicy
 {

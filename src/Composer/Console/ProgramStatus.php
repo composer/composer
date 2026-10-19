@@ -14,6 +14,8 @@ namespace Composer\Console;
 
 /**
  * The current program state, independent of its terminal representation.
+ *
+ * @experimental This API may change in a future minor release
  */
 final class ProgramStatus
 {

@@ -16,6 +16,8 @@ namespace Composer\Console;
  * Encodes ConEmu-compatible OSC 9 progress reports.
  *
  * @see https://conemu.github.io/en/AnsiEscapeCodes.html#ConEmu_specific_OSC
+ *
+ * @internal
  */
 final class Osc9ProgressEncoder extends AbstractOscProgramStatusEncoder
 {

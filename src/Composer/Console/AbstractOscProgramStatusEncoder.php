@@ -16,6 +16,9 @@ use Composer\IO\ConsoleIO;
 use Composer\Pcre\Preg;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 
+/**
+ * @internal
+ */
 abstract class AbstractOscProgramStatusEncoder
 {
     abstract public function getCommand(): string;

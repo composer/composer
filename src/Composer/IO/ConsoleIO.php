@@ -141,6 +141,8 @@ class ConsoleIO extends BaseIO
 
     /**
      * Sends a terminal command to stderr without changing normal message output.
+     *
+     * @experimental This API may change in a future minor release
      */
     public function writeOsc(string $command, string $payload): void
     {
@@ -149,6 +151,9 @@ class ConsoleIO extends BaseIO
         $helper->write($this->getErrorOutput(), $command, $payload);
     }
 
+    /**
+     * @experimental This API may change in a future minor release
+     */
     public function writeProgramStatus(ProgramStatus $status): void
     {
         $this->programStatus = $status;
@@ -157,6 +162,9 @@ class ConsoleIO extends BaseIO
         }
     }
 
+    /**
+     * @experimental This API may change in a future minor release
+     */
     public function writeProgress(?int $progress): void
     {
         $status = $this->programStatus ?? ProgramStatus::working();

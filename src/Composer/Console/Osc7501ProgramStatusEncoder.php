@@ -16,6 +16,8 @@ namespace Composer\Console;
  * Encodes a root record for the OSC 7501 Program Status Protocol.
  *
  * @see https://www.superlogical.com/rex/docs/build/program-status
+ *
+ * @internal
  */
 final class Osc7501ProgramStatusEncoder extends AbstractOscProgramStatusEncoder
 {
