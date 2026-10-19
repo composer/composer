@@ -73,6 +73,16 @@ EOT
             return Auditor::STATUS_OK;
         }
 
+        // filtered after the empty check so an empty result is not mistaken for a missing install
+        if ($input->getOption('direct')) {
+            $packages = $this->filterDirectPackages($composer, $input, $packages);
+            if (count($packages) === 0) {
+                $this->getIO()->writeError('No direct dependencies - skipping audit.');
+
+                return Auditor::STATUS_OK;
+            }
+        }
+
         $auditor = new Auditor();
         $repoSet = new RepositorySet();
         foreach ($composer->getRepositoryManager()->getRepositories() as $repo) {
@@ -127,20 +137,28 @@ EOT
 
         $rootPkg = $composer->getPackage();
         $installedRepo = new InstalledRepository([$composer->getRepositoryManager()->getLocalRepository()]);
-        $packages = $installedRepo->getPackages();
-        $requires = array_merge($rootPkg->getRequires(), $rootPkg->getDevRequires());
 
         if ($input->getOption('no-dev')) {
-            $packages = RepositoryUtils::filterRequiredPackages($packages, $rootPkg);
-            $requires = $rootPkg->getRequires();
+            return RepositoryUtils::filterRequiredPackages($installedRepo->getPackages(), $rootPkg);
         }
 
-        if ($input->getOption('direct')) {
-            $packages = array_values(array_filter($packages, static function (PackageInterface $package) use ($requires): bool {
-                return isset($requires[$package->getName()]);
-            }));
+        return $installedRepo->getPackages();
+    }
+
+    /**
+     * @param PackageInterface[] $packages
+     * @return list<PackageInterface>
+     */
+    private function filterDirectPackages(Composer $composer, InputInterface $input, array $packages): array
+    {
+        $rootPkg = $composer->getPackage();
+        $requires = $rootPkg->getRequires();
+        if (!$input->getOption('no-dev')) {
+            $requires = array_merge($requires, $rootPkg->getDevRequires());
         }
 
-        return $packages;
+        return array_values(array_filter($packages, static function (PackageInterface $package) use ($requires): bool {
+            return isset($requires[$package->getName()]);
+        }));
     }
 }
