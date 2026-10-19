@@ -225,7 +225,7 @@ class PoolBuilder
             }
 
             foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
-                if (!$this->isUpdateAllowed($lockedPackage)) {
+                if (!$request->isInUpdateAllowList($lockedPackage->getName())) {
                     // remember which packages we skipped loading remote content for in this partial update
                     $this->skippedLoad[$lockedPackage->getName()][] = $lockedPackage;
                     foreach ($lockedPackage->getReplaces() as $link) {
@@ -632,21 +632,6 @@ class PoolBuilder
         }
 
         return $matches;
-    }
-
-    /**
-     * Checks whether the update allow list allows this package in the lock file to be updated
-     */
-    private function isUpdateAllowed(BasePackage $package): bool
-    {
-        foreach ($this->updateAllowList as $pattern) {
-            $patternRegexp = BasePackage::packageNameToRegexp($pattern);
-            if (Preg::isMatch($patternRegexp, $package->getName())) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private function warnAboutNonMatchingUpdateAllowList(Request $request): void

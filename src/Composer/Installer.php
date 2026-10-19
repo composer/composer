@@ -516,7 +516,6 @@ class Installer
         $this->io->writeError('<info>Loading composer repositories with package information</info>');
 
         // creating repository set
-        $policy = $this->createPolicy(true, $lockedRepository);
         $repositorySet = $this->createRepositorySet(true, $platformRepo, $aliases);
         $repositories = $this->repositoryManager->getRepositories();
         foreach ($repositories as $repository) {
@@ -534,6 +533,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
+        $policy = $this->createPolicy(true, $request);
         $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy), $this->ignoredTypes, $this->allowedTypes, $this->createSecurityAuditPoolFilter(), $this->createFilterListPoolFilter(ListPolicyConfig::BLOCK_SCOPE_UPDATE), $this->createCooldownPoolFilter());
 
         $this->io->writeError('<info>Updating dependencies</info>');
@@ -985,7 +985,7 @@ class Installer
         return $repositorySet;
     }
 
-    private function createPolicy(bool $forUpdate, ?LockArrayRepository $lockedRepo = null): DefaultPolicy
+    private function createPolicy(bool $forUpdate, ?Request $request = null): DefaultPolicy
     {
         $preferStable = null;
         $preferLowest = null;
@@ -1003,10 +1003,11 @@ class Installer
         }
 
         $preferredVersions = null;
-        if ($forUpdate && $this->minimalUpdate && $lockedRepo !== null) {
+        $lockedRepo = $request !== null ? $request->getLockedRepository() : null;
+        if ($forUpdate && $this->minimalUpdate && $request !== null && $lockedRepo !== null) {
             $preferredVersions = [];
             foreach ($lockedRepo->getPackages() as $pkg) {
-                if ($pkg instanceof AliasPackage || ($this->updateAllowList !== null && in_array($pkg->getName(), $this->updateAllowList, true))) {
+                if ($pkg instanceof AliasPackage || $request->isInUpdateAllowList($pkg->getName())) {
                     continue;
                 }
                 $preferredVersions[$pkg->getName()] = $pkg->getVersion();

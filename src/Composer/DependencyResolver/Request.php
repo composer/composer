@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
+use Composer\Pcre\Preg;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MatchAllConstraint;
@@ -52,6 +53,8 @@ class Request
     protected $fixedLockedPackages = [];
     /** @var array<string> */
     protected $updateAllowList = [];
+    /** @var non-empty-string|null */
+    private $updateAllowListRegex = null;
     /** @var false|self::UPDATE_* */
     protected $updateAllowTransitiveDependencies = false;
     /** @var non-empty-list<string>|null */
@@ -126,7 +129,16 @@ class Request
     public function setUpdateAllowList(array $updateAllowList, $updateAllowTransitiveDependencies): void
     {
         $this->updateAllowList = $updateAllowList;
+        $this->updateAllowListRegex = \count($updateAllowList) > 0 ? BasePackage::packageNamesToRegexp($updateAllowList) : null;
         $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;
+    }
+
+    /**
+     * Whether the package name matches one of the update allow list patterns (not including transitive dependencies)
+     */
+    public function isInUpdateAllowList(string $packageName): bool
+    {
+        return $this->updateAllowListRegex !== null && Preg::isMatch($this->updateAllowListRegex, $packageName);
     }
 
     /**
