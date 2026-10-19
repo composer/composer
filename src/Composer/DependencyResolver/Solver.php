@@ -694,12 +694,11 @@ class Solver
                 }
 
                 $rule = $this->rules->ruleById[$i];
-                $literals = $rule->getLiterals();
-
                 if ($rule->isDisabled()) {
                     continue;
                 }
 
+                $literals = $rule->getLiterals();
                 $decisionQueue = [];
 
                 // make sure that
