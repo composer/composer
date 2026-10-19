@@ -578,7 +578,7 @@ EOT
         Filesystem::safeFilePutContents($ignoreFile, $contents . $vendor. "\n");
     }
 
-    private function hasExportIgnoreForLockfile(string $gitAttributesFile, string $lockfile = 'composer.lock'): bool
+    protected function hasExportIgnoreForLockfile(string $gitAttributesFile, string $lockfile = 'composer.lock'): bool
     {
         if (!file_exists($gitAttributesFile)) {
             return false;
@@ -600,7 +600,7 @@ EOT
         return false;
     }
 
-    private function addExportIgnoreForLockfile(string $gitAttributesFile, string $lockfile = 'composer.lock'): void
+    protected function addExportIgnoreForLockfile(string $gitAttributesFile, string $lockfile = 'composer.lock'): void
     {
         $contents = "";
         if (file_exists($gitAttributesFile)) {
