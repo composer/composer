@@ -200,6 +200,29 @@ class CurlDownloaderTest extends TestCase
         self::assertSame([], $this->readProperty($downloader, 'jobs'), 'a cancelled request must not be sent again');
     }
 
+    public function testUnauthorizedRequestWhichWasOnlyRetriedForNetworkErrorsGetsCredentialsFromAnotherRequest(): void
+    {
+        // e.g. it timed out while another request to the same origin prompted for credentials
+        $job = $this->createJob(1);
+        $job['attributes']['retryAuthFailure'] = true;
+
+        self::assertSame(
+            ['retry' => true, 'storeAuth' => false],
+            self::callPrivate($this->createDownloader($this->createAuthenticatedIO()), 'isAuthenticatedRetryNeeded', $job, $this->createResponse(401, []))
+        );
+    }
+
+    public function testUnauthorizedRequestWhichWasAlreadyRetriedWithCredentialsFails(): void
+    {
+        $job = $this->createJob();
+        $job['attributes']['retryAuthFailure'] = true;
+        $job['attributes']['authRetries'] = 1;
+
+        self::expectException('Composer\Downloader\TransportException');
+        self::expectExceptionMessage('Invalid credentials (HTTP 401)');
+        self::callPrivate($this->createDownloader($this->createAuthenticatedIO()), 'isAuthenticatedRetryNeeded', $job, $this->createResponse(401, []));
+    }
+
     public function testRetryWaitsForTheLatestRetryAfterOfItsOrigin(): void
     {
         $io = new BufferIO();
@@ -351,7 +374,7 @@ class CurlDownloaderTest extends TestCase
         return [
             'url' => 'https://'.$origin.'/packages.json',
             'origin' => $origin,
-            'attributes' => ['retryAuthFailure' => false, 'redirects' => 0, 'retries' => $retries, 'storeAuth' => false, 'ipResolve' => null],
+            'attributes' => ['retryAuthFailure' => false, 'redirects' => 0, 'retries' => $retries, 'authRetries' => 0, 'storeAuth' => false, 'ipResolve' => null],
             'options' => [],
             'filename' => null,
             'curlHandle' => curl_init(),
@@ -376,6 +399,15 @@ class CurlDownloaderTest extends TestCase
             }));
 
         return new CurlDownloader($io ?? $this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $config);
+    }
+
+    private function createAuthenticatedIO(): IOInterface
+    {
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io->method('isInteractive')->willReturn(true);
+        $io->method('hasAuthentication')->willReturn(true);
+
+        return $io;
     }
 
     /**

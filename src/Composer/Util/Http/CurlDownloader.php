@@ -27,7 +27,7 @@ use React\Promise\Promise;
  * @internal
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
- * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, storeAuth: 'prompt'|bool, ipResolve: 4|6|null}
+ * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, authRetries: int<0, max>, storeAuth: 'prompt'|bool, ipResolve: 4|6|null}
  * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable, primaryIp: string}
  * @phpstan-type RetryAttributes array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries: int<1, max>, ipResolve?: 4|6}
  * @phpstan-type DelayedJob array{job: Job, url: non-empty-string, attributes: RetryAttributes, at: float}
@@ -175,7 +175,7 @@ class CurlDownloader
     /**
      * @param mixed[]  $options
      *
-     * @param array{retryAuthFailure?: bool, redirects?: int<0, max>, retries?: int<0, max>, storeAuth?: 'prompt'|bool, ipResolve?: 4|6|null} $attributes
+     * @param array{retryAuthFailure?: bool, redirects?: int<0, max>, retries?: int<0, max>, authRetries?: int<0, max>, storeAuth?: 'prompt'|bool, ipResolve?: 4|6|null} $attributes
      * @param non-empty-string $url
      *
      * @return int internal job id
@@ -186,6 +186,7 @@ class CurlDownloader
             'retryAuthFailure' => true,
             'redirects' => 0,
             'retries' => 0,
+            'authRetries' => 0,
             'storeAuth' => false,
             'ipResolve' => null,
         ], $attributes);
@@ -506,7 +507,7 @@ class CurlDownloader
 
                 $result = $this->isAuthenticatedRetryNeeded($job, $response);
                 if ($result['retry']) {
-                    $this->restartJob($job, $job['url'], ['storeAuth' => $result['storeAuth'], 'retries' => $job['attributes']['retries'] + 1]);
+                    $this->restartJob($job, $job['url'], ['storeAuth' => $result['storeAuth'], 'retries' => $job['attributes']['retries'] + 1, 'authRetries' => $job['attributes']['authRetries'] + 1]);
                     continue;
                 }
 
@@ -641,7 +642,7 @@ class CurlDownloader
     private function isAuthenticatedRetryNeeded(array $job, Response $response): array
     {
         if (in_array($response->getStatusCode(), [401, 403]) && $job['attributes']['retryAuthFailure']) {
-            $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $response->getHeaders(), $job['attributes']['retries'], $response->getBody());
+            $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $response->getHeaders(), $job['attributes']['authRetries'], $response->getBody());
 
             if ($result['retry']) {
                 return $result;
@@ -673,7 +674,7 @@ class CurlDownloader
 
         if ($needsAuthRetry) {
             if ($job['attributes']['retryAuthFailure']) {
-                $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], 401, null, [], $job['attributes']['retries']);
+                $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], 401, null, [], $job['attributes']['authRetries']);
                 if ($result['retry']) {
                     return $result;
                 }
@@ -812,7 +813,7 @@ class CurlDownloader
      * @param  Job    $job
      * @param non-empty-string $url
      *
-     * @param  array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries?: int<1, max>, ipResolve?: 4|6} $attributes
+     * @param  array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries?: int<1, max>, authRetries?: int<1, max>, ipResolve?: 4|6} $attributes
      */
     private function restartJob(array $job, string $url, array $attributes = []): void
     {

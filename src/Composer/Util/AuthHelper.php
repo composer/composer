@@ -76,7 +76,7 @@ class AuthHelper
      * @param  int         $statusCode HTTP status code that triggered this call
      * @param  string|null $reason     a message/description explaining why this was called
      * @param  string[]    $headers
-     * @param  int         $retryCount the amount of retries already done on this URL
+     * @param  int         $retryCount the amount of authentication retries already done on this URL, network retries do not count
      * @return array       containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
      *                                retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
      * @phpstan-return array{retry: bool, storeAuth: 'prompt'|bool}
