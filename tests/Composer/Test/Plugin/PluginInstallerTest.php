@@ -487,4 +487,21 @@ class PluginInstallerTest extends TestCase
     {
         $this->testQueryingWithInvalidCapabilityClassNameThrows($wrongImplementationClassTypes, 'RuntimeException');
     }
+
+    public function testWrongCapabilityIsRejectedBeforeConstruction(): void
+    {
+        $capabilityApi = 'Composer\Plugin\Capability\CommandProvider';
+        $capabilityImplementation = 'Composer\Test\Plugin\Mock\WrongCapability';
+
+        $plugin = $this->getMockBuilder('Composer\Test\Plugin\Mock\CapablePluginInterface')
+                       ->getMock();
+        $plugin->expects($this->once())
+               ->method('getCapabilities')
+               ->willReturn([$capabilityApi => $capabilityImplementation]);
+
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('Class '.$capabilityImplementation.' must implement both Composer\Plugin\Capability\Capability and '.$capabilityApi.'.');
+
+        $this->pm->getPluginCapability($plugin, $capabilityApi);
+    }
 }
