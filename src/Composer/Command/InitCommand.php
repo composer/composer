@@ -187,7 +187,7 @@ EOT
             }
         }
 
-        if ($input->isInteractive() && $input->getOption('type') === 'library') {
+        if ($input->isInteractive() && is_dir('.git') && $input->getOption('type') === 'library') {
             $attributesFile = realpath('.gitattributes');
 
             if (false === $attributesFile) {
