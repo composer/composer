@@ -646,17 +646,15 @@ class PluginManager
                 throw new \RuntimeException("Cannot instantiate Capability, as class $capabilityClass from plugin ".get_class($plugin)." does not exist.");
             }
 
-            $ctorArgs['plugin'] = $plugin;
-            $capabilityObj = new $capabilityClass($ctorArgs);
-
-            // FIXME these could use is_a and do the check *before* instantiating once drop support for php<5.3.9
-            if (!$capabilityObj instanceof Capability || !$capabilityObj instanceof $capabilityClassName) {
+            if (!is_a($capabilityClass, Capability::class, true) || !is_a($capabilityClass, $capabilityClassName, true)) {
                 throw new \RuntimeException(
                     'Class ' . $capabilityClass . ' must implement both Composer\Plugin\Capability\Capability and '. $capabilityClassName . '.'
                 );
             }
 
-            return $capabilityObj;
+            $ctorArgs['plugin'] = $plugin;
+
+            return new $capabilityClass($ctorArgs);
         }
 
         return null;
