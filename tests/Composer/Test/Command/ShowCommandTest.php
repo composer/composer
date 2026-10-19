@@ -299,6 +299,65 @@ Transitive dependencies not required in composer.json:
 vendor/package 1.1.0 <highlight>! 1.2.0</highlight>", trim($appTester->getDisplay(true)));
     }
 
+    public function testOutdatedStrictIgnoresPackagesWithoutAnInstallableVersion(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'vendor/needs-ext', 'version' => '1.0.0', 'require' => ['ext-missing' => '*']],
+                    ],
+                ],
+            ],
+            'require' => ['vendor/needs-ext' => '^1.0', 'vendor/removed' => '^1.0'],
+        ]);
+
+        $this->createInstalledJson([
+            self::getPackage('vendor/needs-ext', '1.0.0'),
+            self::getPackage('vendor/removed', '1.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(0, $appTester->run(['command' => 'outdated', '--strict' => true]));
+        self::assertStringNotContainsString('[none matched]', $appTester->getDisplay(true));
+    }
+
+    public function testOutdatedStrictFailsForAnOutdatedPackageNextToOneWithoutAnInstallableVersion(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => [
+                    'type' => 'package',
+                    'package' => [
+                        ['name' => 'vendor/needs-ext', 'version' => '1.0.0', 'require' => ['ext-missing' => '*']],
+                        ['name' => 'vendor/outdated', 'version' => '1.0.0'],
+                        ['name' => 'vendor/outdated', 'version' => '1.1.0'],
+                    ],
+                ],
+            ],
+            'require' => ['vendor/needs-ext' => '^1.0', 'vendor/outdated' => '^1.0'],
+        ]);
+
+        $this->createInstalledJson([
+            self::getPackage('vendor/needs-ext', '1.0.0'),
+            self::getPackage('vendor/outdated', '1.0.0'),
+        ]);
+
+        $appTester = $this->getApplicationTester();
+        self::assertSame(1, $appTester->run(['command' => 'outdated', '--strict' => true]));
+        self::assertSame("<warning>Cannot use vendor/needs-ext's latest version 1.0.0 as it requires ext-missing * which is missing from your platform.
+Legend:
+! patch or minor release available - update recommended
+~ major release available - update possible
+
+Direct dependencies required in composer.json:
+vendor/outdated 1.0.0 <highlight>! 1.1.0</highlight>
+
+Transitive dependencies not required in composer.json:
+Everything up to date", trim($appTester->getDisplay(true)));
+    }
+
     public function testShowDirectWithNameDoesNotShowTransientDependencies(): void
     {
         self::expectException(InvalidArgumentException::class);
