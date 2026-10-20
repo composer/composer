@@ -440,10 +440,6 @@ parameters:
 			count: 2
 			path: ../src/Composer/Command/InitCommand.php
 
-		-
-			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
 
 		-
 			message: "#^Parameter \\#1 \\$options of method Composer\\\\Command\\\\InitCommand\\:\\:hasDependencies\\(\\) expects array\\<string, array\\<string\\>\\|string\\>, array\\<string, array\\<int\\|string, mixed\\>\\|stdClass\\|string\\> given\\.$#"

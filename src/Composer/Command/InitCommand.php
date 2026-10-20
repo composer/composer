@@ -187,6 +187,22 @@ EOT
             }
         }
 
+        if ($input->isInteractive() && is_dir('.git') && in_array($input->getOption('type'), [null, 'library'], true)) {
+            $attributesFile = realpath('.gitattributes');
+
+            if (false === $attributesFile) {
+                $attributesFile = realpath('.') . '/.gitattributes';
+            }
+
+            if (!$this->hasExportIgnoreForLockfile($attributesFile)) {
+                $question = 'Would you like <info>composer.lock</info> marked as export-ignore in your <info>.gitattributes</info> [<comment>yes</comment>]? ';
+
+                if ($io->askConfirmation($question)) {
+                    $this->addExportIgnoreForLockfile($attributesFile);
+                }
+            }
+        }
+
         $question = 'Would you like to install dependencies now [<comment>yes</comment>]? ';
         if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question)) {
             $this->updateDependencies($output);
@@ -550,13 +566,55 @@ EOT
         $contents = "";
         if (file_exists($ignoreFile)) {
             $contents = file_get_contents($ignoreFile);
+            if (false === $contents) {
+                throw new \RuntimeException('Could not read '.$ignoreFile);
+            }
 
-            if (strpos($contents, "\n") !== 0) {
+            if ($contents !== '' && substr($contents, -1) !== "\n") {
                 $contents .= "\n";
             }
         }
 
         Filesystem::safeFilePutContents($ignoreFile, $contents . $vendor. "\n");
+    }
+
+    protected function hasExportIgnoreForLockfile(string $gitAttributesFile, string $lockfile = 'composer.lock'): bool
+    {
+        if (!file_exists($gitAttributesFile)) {
+            return false;
+        }
+
+        $pattern = sprintf('{^/?%s\s.*(?<!\S)export-ignore(?!\S)\s*$}', preg_quote($lockfile));
+
+        $lines = file($gitAttributesFile, FILE_IGNORE_NEW_LINES);
+        if (false === $lines) {
+            return false;
+        }
+
+        foreach ($lines as $line) {
+            if (Preg::isMatch($pattern, $line)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function addExportIgnoreForLockfile(string $gitAttributesFile, string $lockfile = 'composer.lock'): void
+    {
+        $contents = "";
+        if (file_exists($gitAttributesFile)) {
+            $contents = file_get_contents($gitAttributesFile);
+            if (false === $contents) {
+                throw new \RuntimeException('Could not read '.$gitAttributesFile);
+            }
+
+            if ($contents !== '' && substr($contents, -1) !== "\n") {
+                $contents .= "\n";
+            }
+        }
+
+        Filesystem::safeFilePutContents($gitAttributesFile, $contents . $lockfile . " export-ignore\n");
     }
 
     protected function isValidEmail(string $email): bool
