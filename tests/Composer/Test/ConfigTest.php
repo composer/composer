@@ -278,6 +278,8 @@ class ConfigTest extends TestCase
             'file://example.org/mygit.git',
             'git:Department/Repo.git',
             'ssh://[user@]host.xz[:port]/path/to/repo.git/',
+            'http::https://example.org/repo.git',
+            'https://example.org/re po.git',
         ];
 
         return array_combine($urls, array_map(static function ($e): array {
@@ -300,6 +302,14 @@ class ConfigTest extends TestCase
             'svn://192.168.0.1/trunk',
             'svn://1.2.3.4/trunk',
             'git://5.6.7.8/git.git',
+            'HTTP://example.org/foo.git',
+            'git://example.org/re po.git',
+            'git://example.org/répo.git',
+            'git://exämple.org/repo.git',
+            'http::http://example.org/repo.git',
+            'https::http://example.org/repo.git',
+            'git::git://example.org/repo.git',
+            'http::http::http://example.org/repo.git',
         ];
 
         return array_combine($urls, array_map(static function ($e): array {

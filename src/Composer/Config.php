@@ -693,14 +693,21 @@ class Config
      */
     public function prohibitUrlByConfig(string $url, ?IOInterface $io = null, array $repoOptions = []): void
     {
-        // Return right away if the URL is malformed or custom (see issue #5173), but only for non-HTTP(S) URLs
-        if (false === filter_var($url, FILTER_VALIDATE_URL) && !Preg::isMatch('{^https?://}i', $url)) {
+        // git's <transport>::<address> syntax connects to the address, so check that
+        $checkedUrl = $url;
+        while (Preg::isMatchStrictGroups('{^[a-z][a-z0-9+.-]*::(.+)$}i', $checkedUrl, $match)) {
+            $checkedUrl = $match[1];
+        }
+
+        // Return right away for custom URLs without a scheme like local paths (see issue #5173), but do not rely
+        // on filter_var for this as it rejects many malformed URLs which tools would still happily connect to
+        if (!Preg::isMatchStrictGroups('{^([a-z][a-z0-9+.-]*)://}i', $checkedUrl, $match)) {
             return;
         }
 
-        // Extract scheme and throw exception on known insecure protocols
-        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
-        $hostname = parse_url($url, PHP_URL_HOST);
+        // Throw exception on known insecure protocols
+        $scheme = strtolower($match[1]);
+        $hostname = parse_url($checkedUrl, PHP_URL_HOST);
         if (in_array($scheme, ['http', 'git', 'ftp', 'svn'])) {
             if ($this->get('secure-http')) {
                 if ($scheme === 'svn') {
