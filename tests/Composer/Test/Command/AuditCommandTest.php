@@ -146,6 +146,33 @@ class AuditCommandTest extends TestCase
         self::assertSame(Auditor::STATUS_OK, $exitCode);
     }
 
+    public function testAuditReportsPackageAbandonedAfterItWasLocked(): void
+    {
+        $dir = $this->initTempComposer();
+        file_put_contents('composer.json', json_encode(['repositories' => [
+            ['type' => 'composer', 'url' => 'file://'.strtr($dir, '\\', '/').'/repo'],
+            ['packagist.org' => false],
+        ]]));
+        $source = ['type' => 'git', 'url' => 'https://example.org/vendor/abandoned.git', 'reference' => 'abc'];
+        mkdir('repo');
+        file_put_contents('repo/packages.json', json_encode(['packages' => ['vendor/abandoned' => [
+            '1.0.0' => ['name' => 'vendor/abandoned', 'version' => '1.0.0', 'source' => $source, 'abandoned' => 'vendor/replacement'],
+        ]]]));
+
+        $package = self::getPackage('vendor/abandoned', '1.0.0');
+        $package->setSourceType($source['type']);
+        $package->setSourceUrl($source['url']);
+        $package->setSourceReference($source['reference']);
+        $this->createComposerLock([$package]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'audit', '--locked' => true, '--format' => 'plain', '--abandoned' => 'fail']);
+
+        self::assertStringContainsString('vendor/abandoned is abandoned. Use vendor/replacement instead.', $appTester->getDisplay(true));
+        self::assertSame(Auditor::STATUS_FAILED, $exitCode);
+        self::assertStringNotContainsString('"abandoned"', (string) file_get_contents('composer.lock'));
+    }
+
     /**
      * @param list<array{name: string, version: string}> $packages
      */

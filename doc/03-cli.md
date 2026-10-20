@@ -1197,6 +1197,11 @@ such as security advisories. It checks for and lists security vulnerability advi
 repositories if specified in the `repositories` section of `composer.json`. The command also detects
 abandoned packages and packages flagged as malware, or packages matched by other dependency policies.
 
+As the abandoned state stored in `composer.lock` and `installed.json` is only updated when a package
+gets updated, the audited packages are loaded again from the Composer repositories (e.g. Packagist.org)
+to check it. Packages that are not found with the same source in a reachable Composer repository keep
+their stored state.
+
 The audit command determines if there are vulnerable, abandoned, malware packages, or packages matched by other dependency
 policies and returns the following exit codes based on the findings:
 

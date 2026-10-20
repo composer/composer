@@ -96,6 +96,11 @@ EOT
             $policyConfig = $policyConfig->withIgnoreUnreachable('audit');
         }
 
+        // the abandoned state in the lock file and installed.json is only updated when a package gets updated
+        if ($policyConfig->abandoned->audit !== ListPolicyConfig::AUDIT_IGNORE) {
+            $packages = $repoSet->loadCurrentPackages($packages);
+        }
+
         $filterListProviderSet = $policyConfig->enabled ? FilterListProviderSet::create($policyConfig, $composer->getRepositoryManager()->getRepositories(), $composer->getLoop()->getHttpDownloader()) : null;
 
         return min(255, $auditor->audit(
