@@ -150,7 +150,7 @@ class ApplicationTest extends TestCase
         $written = $output->fetch();
         self::assertSame(2, substr_count($written, "\033]7501;"));
         self::assertStringContainsString('Composer - Dependency Manager for PHP', $written);
-        self::assertStringEndsWith("Parent still running\n\033]7501;state=done:app=composer\033\\", $written);
+        self::assertStringEndsWith("Parent still running".PHP_EOL."\033]7501;state=done:app=composer\033\\", $written);
     }
 
     /** @dataProvider provideRestoredTerminalStatusSettings */
