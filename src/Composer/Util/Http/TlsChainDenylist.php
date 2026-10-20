@@ -13,7 +13,7 @@
 namespace Composer\Util\Http;
 
 use Composer\CaBundle\CaBundle;
-use Composer\Downloader\TransportException;
+use Composer\Exception\SecurityException;
 use Composer\Util\Url;
 
 /**
@@ -53,9 +53,11 @@ final class TlsChainDenylist
     }
 
     /**
+     * Not a TransportException so that callers falling back on transport errors do not swallow it
+     *
      * @param bool $requestSent whether the request (and any credentials in it) already went out before the chain could be checked
      */
-    public static function createException(string $url, string $certName, bool $requestSent): TransportException
+    public static function createException(string $url, string $certName, bool $requestSent): SecurityException
     {
         $message = 'The TLS certificate chain presented for "'.Url::sanitize($url).'" contains the distrusted certificate "'.$certName.'", this may be a man-in-the-middle attack.';
         if ($requestSent) {
@@ -64,6 +66,6 @@ final class TlsChainDenylist
             $message .= ' The request was aborted before it was sent.';
         }
 
-        return new TransportException($message);
+        return new SecurityException($message);
     }
 }
