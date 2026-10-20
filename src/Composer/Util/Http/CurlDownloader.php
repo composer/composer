@@ -84,13 +84,15 @@ class CurlDownloader
     );
 
     /** @var array<string, true> */
-    private static $timeInfo = array(
+    private static $ignoredProgressInfo = array(
         'total_time' => true,
         'namelookup_time' => true,
         'connect_time' => true,
         'pretransfer_time' => true,
         'starttransfer_time' => true,
         'redirect_time' => true,
+        // large once CURLOPT_CERTINFO is set, and the chain is checked separately
+        'certinfo' => true,
     );
 
     /**
@@ -274,7 +276,7 @@ class CurlDownloader
             }
         }
 
-        $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
+        $progress = array_diff_key(curl_getinfo($curlHandle), self::$ignoredProgressInfo);
 
         $this->jobs[(int) $curlHandle] = array(
             'url' => $url,
@@ -493,7 +495,7 @@ class CurlDownloader
                 continue;
             }
             $curlHandle = $this->jobs[$i]['curlHandle'];
-            $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
+            $progress = array_diff_key(curl_getinfo($curlHandle), self::$ignoredProgressInfo);
 
             if ($this->jobs[$i]['progress'] !== $progress) {
                 $this->jobs[$i]['progress'] = $progress;
