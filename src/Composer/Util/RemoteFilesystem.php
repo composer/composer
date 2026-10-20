@@ -20,6 +20,7 @@ use Composer\CaBundle\CaBundle;
 use Composer\Pcre\Preg;
 use Composer\Util\Http\Response;
 use Composer\Util\Http\ProxyManager;
+use Composer\Util\Http\TlsChainDenylist;
 
 /**
  * @internal
@@ -63,6 +64,8 @@ class RemoteFilesystem
     private $authHelper;
     /** @var bool */
     private $degradedMode = false;
+    /** @var array<string, string> hosts which presented a distrusted TLS chain, keyed by host:port */
+    private $distrustedHosts = array();
     /** @var int */
     private $redirects;
     /** @var int */
@@ -274,6 +277,14 @@ class RemoteFilesystem
             unset($options['max_file_size']);
         }
 
+        $hostKey = TlsChainDenylist::getHostKey($fileUrl);
+        if (null !== $hostKey && isset($this->distrustedHosts[$hostKey])) {
+            throw TlsChainDenylist::createException($fileUrl, $this->distrustedHosts[$hostKey], false);
+        }
+        if (null !== $hostKey) {
+            $options['ssl']['capture_peer_cert_chain'] = true;
+        }
+
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         $proxy = $this->proxyManager->getProxyForRequest($fileUrl);
@@ -304,6 +315,17 @@ class RemoteFilesystem
         $http_response_header = array();
         try {
             $result = $this->getRemoteContents($originUrl, $fileUrl, $ctx, $http_response_header, $maxFileSize);
+
+            // streams offer no hook between the TLS handshake and sending the request, so this can only be checked afterwards
+            $ctxOptions = null !== $hostKey ? stream_context_get_options($ctx) : array();
+            if (isset($ctxOptions['ssl']['peer_certificate_chain']) && is_array($ctxOptions['ssl']['peer_certificate_chain']) && null !== ($distrusted = CaBundle::findDistrustedCertificate($ctxOptions['ssl']['peer_certificate_chain']))) {
+                $result = false;
+                $this->distrustedHosts[$hostKey] = $distrusted;
+                $e = TlsChainDenylist::createException($fileUrl, $distrusted, true);
+                // callers may swallow transport errors, but possibly leaked credentials must be reported
+                $this->io->writeError('<error>'.$e->getMessage().'</error>');
+                throw $e;
+            }
 
             if (!empty($http_response_header[0])) {
                 $statusCode = self::findStatusCode($http_response_header);
