@@ -28,7 +28,7 @@ use React\Promise\Promise;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
  * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, authRetries: int<0, max>, storeAuth: 'prompt'|bool, ipResolve: 4|6|null}
- * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable, primaryIp: string}
+ * @phpstan-type Job array{url: non-empty-string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: \CurlHandle, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable, primaryIp: string, hostKey: string|null}
  * @phpstan-type RetryAttributes array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries: int<1, max>, ipResolve?: 4|6}
  * @phpstan-type DelayedJob array{job: Job, url: non-empty-string, attributes: RetryAttributes, at: float}
  */
@@ -69,6 +69,12 @@ class CurlDownloader
      * @var array<string, array{statusCode: int, announced: bool, until: float}>
      */
     private $retryAfterOrigins = [];
+    /**
+     * Hosts which presented a distrusted TLS chain, keyed by host:port, see checkCertificateChain()
+     *
+     * @var array<string, string>
+     */
+    private $distrustedHosts = [];
     /** @var IOInterface */
     private $io;
     /** @var Config */
@@ -212,6 +218,11 @@ class CurlDownloader
             throw new TransportException('Access to "'.Url::sanitize($url).'" is blocked.');
         }
 
+        $hostKey = TlsChainDenylist::getHostKey($url);
+        if (null !== $hostKey && isset($this->distrustedHosts[$hostKey])) {
+            throw TlsChainDenylist::createException($url, $this->distrustedHosts[$hostKey], false);
+        }
+
         $curlHandle = curl_init();
         $headerHandle = fopen('php://temp/maxmemory:32768', 'w+b');
         if (false === $headerHandle) {
@@ -247,6 +258,16 @@ class CurlDownloader
         curl_setopt($curlHandle, CURLOPT_FILE, $bodyHandle);
         curl_setopt($curlHandle, CURLOPT_ENCODING, ""); // let cURL set the Accept-Encoding header to what it supports
         curl_setopt($curlHandle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+
+        if (null !== $hostKey) {
+            curl_setopt($curlHandle, CURLOPT_CERTINFO, true);
+            if (\defined('CURLOPT_PREREQFUNCTION')) {
+                // runs after the TLS handshake but before the request and its credentials are sent
+                curl_setopt($curlHandle, CURLOPT_PREREQFUNCTION, function ($handle) use ($hostKey): int {
+                    return null === $this->checkCertificateChain($hostKey, curl_getinfo($handle, CURLINFO_CERTINFO)) ? CURL_PREREQFUNC_OK : CURL_PREREQFUNC_ABORT;
+                });
+            }
+        }
 
         if ($attributes['ipResolve'] === 4) {
             curl_setopt($curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
@@ -321,6 +342,7 @@ class CurlDownloader
             'resolve' => $resolve,
             'reject' => $reject,
             'primaryIp' => '',
+            'hostKey' => $hostKey,
         ];
 
         $usingProxy = $proxy->getStatus(' using proxy (%s)');
@@ -430,6 +452,16 @@ class CurlDownloader
             $statusCode = null;
             $response = null;
             try {
+                if (null !== $job['hostKey'] && null !== ($distrusted = $this->checkCertificateChain($job['hostKey'], $progress['certinfo'] ?? []))) {
+                    $requestSent = !\defined('CURLOPT_PREREQFUNCTION');
+                    $e = TlsChainDenylist::createException($job['url'], $distrusted, $requestSent);
+                    if ($requestSent) {
+                        // callers may swallow transport errors, but possibly leaked credentials must be reported
+                        $this->io->writeError('<error>'.$e->getMessage().'</error>');
+                    }
+                    throw $e;
+                }
+
                 // TODO progress
                 if (CURLE_OK !== $errno || $error || $result !== CURLE_OK) {
                     $errno = $errno ?: $result;
@@ -595,6 +627,21 @@ class CurlDownloader
                 // TODO progress
             }
         }
+    }
+
+    /**
+     * @param array<array{Cert?: string}> $certInfo
+     *
+     * @return string|null name of the distrusted certificate if the host presented one
+     */
+    private function checkCertificateChain(string $hostKey, array $certInfo): ?string
+    {
+        // certinfo is only filled for the request which opened the connection, reused ones rely on the earlier verdict
+        if (count($certInfo) > 0 && null !== ($distrusted = TlsChainDenylist::findDistrustedCertificateInCurlInfo($certInfo))) {
+            $this->distrustedHosts[$hostKey] = $distrusted;
+        }
+
+        return $this->distrustedHosts[$hostKey] ?? null;
     }
 
     /**

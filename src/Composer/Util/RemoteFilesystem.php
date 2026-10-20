@@ -13,12 +13,14 @@
 namespace Composer\Util;
 
 use Closure;
+use Composer\CaBundle\CaBundle;
 use Composer\Config;
 use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\Pcre\Preg;
 use Composer\Util\Http\Response;
+use Composer\Util\Http\TlsChainDenylist;
 use Composer\Util\Http\ProxyManager;
 use Composer\Util\Http\ResponseWarnings;
 
@@ -66,6 +68,8 @@ class RemoteFilesystem
     private $redirects;
     /** @var int */
     private $maxRedirects = 20;
+    /** @var array<string, string> hosts which presented a distrusted TLS chain, keyed by host:port */
+    private $distrustedHosts = [];
 
     /**
      * Constructor.
@@ -276,6 +280,14 @@ class RemoteFilesystem
             unset($options['max_file_size']);
         }
 
+        $hostKey = TlsChainDenylist::getHostKey($fileUrl);
+        if (null !== $hostKey && isset($this->distrustedHosts[$hostKey])) {
+            throw TlsChainDenylist::createException($fileUrl, $this->distrustedHosts[$hostKey], false);
+        }
+        if (null !== $hostKey) {
+            $options['ssl']['capture_peer_cert_chain'] = true;
+        }
+
         $ctx = StreamContextFactory::getContext($fileUrl, $options, ['notification' => Closure::fromCallable([$this, 'callbackGet'])]);
 
         $proxy = ProxyManager::getInstance()->getProxyForRequest($fileUrl);
@@ -306,6 +318,17 @@ class RemoteFilesystem
         $http_response_header = [];
         try {
             $result = $this->getRemoteContents($originUrl, $fileUrl, $ctx, $http_response_header, $maxFileSize);
+
+            // streams offer no hook between the TLS handshake and sending the request, so this can only be checked afterwards
+            $peerChain = null !== $hostKey ? stream_context_get_options($ctx)['ssl']['peer_certificate_chain'] ?? null : null;
+            if (is_array($peerChain) && null !== ($distrusted = CaBundle::findDistrustedCertificate($peerChain))) {
+                $result = false;
+                $this->distrustedHosts[$hostKey] = $distrusted;
+                $e = TlsChainDenylist::createException($fileUrl, $distrusted, true);
+                // callers may swallow transport errors, but possibly leaked credentials must be reported
+                $this->io->writeError('<error>'.$e->getMessage().'</error>');
+                throw $e;
+            }
 
             if (!empty($http_response_header[0])) {
                 $statusCode = self::findStatusCode($http_response_header);
