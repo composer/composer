@@ -105,6 +105,8 @@ jobs:
       - name: "Update dependencies from composer.json using composer binary provided by system"
         if: "contains(matrix.dependencies, 'highest') || contains(matrix.dependencies, 'lowest')"
         run: 'composer update $COMPOSER_UPDATE_FLAGS $COMPOSER_FLAGS'
+        env:
+          COMPOSER_POLICY_COOLDOWN_PERIOD: "0" # do not withhold fresh releases when updating deps
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'locked'"

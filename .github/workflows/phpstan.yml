@@ -62,6 +62,8 @@ jobs:
       - name: "Install highest dependencies"
         if: "matrix.experimental == true"
         run: 'composer config platform --unset && composer update $COMPOSER_FLAGS'
+        env:
+          COMPOSER_POLICY_COOLDOWN_PERIOD: "0" # do not withhold fresh releases when updating deps
 
       - name: "Install locked dependencies"
         if: "matrix.experimental == false"

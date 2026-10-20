@@ -41,6 +41,8 @@ jobs:
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
         with:
           dependency-versions: highest
+        env:
+          COMPOSER_POLICY_COOLDOWN_PERIOD: "0" # do not withhold fresh releases when updating deps
 
       - name: "Lint PHP files"
         run: |
