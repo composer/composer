@@ -52,8 +52,9 @@ class Loop
 
     /**
      * @param array<PromiseInterface<mixed>> $promises
+     * @param (callable(int): void)|null $onProgress
      */
-    public function wait(array $promises, ?ProgressBar $progress = null): void
+    public function wait(array $promises, ?ProgressBar $progress = null, ?callable $onProgress = null): void
     {
         $uncaught = null;
 
@@ -70,6 +71,22 @@ class Loop
         $waitIndex = $this->waitIndex++;
         $this->currentPromises[$waitIndex] = $promises;
 
+        try {
+            $this->runJobs($progress, $onProgress);
+        } finally {
+            unset($this->currentPromises[$waitIndex]);
+        }
+
+        if (null !== $uncaught) {
+            throw $uncaught;
+        }
+    }
+
+    /**
+     * @param (callable(int): void)|null $onProgress
+     */
+    private function runJobs(?ProgressBar $progress, ?callable $onProgress): void
+    {
         if ($progress) {
             $totalJobs = 0;
             $totalJobs += $this->httpDownloader->countActiveJobs();
@@ -91,6 +108,9 @@ class Loop
             if ($progress && microtime(true) - $lastUpdate > 0.1) {
                 $lastUpdate = microtime(true);
                 $progress->setProgress($progress->getMaxSteps() - $activeJobs);
+                if ($onProgress !== null && $progress->getMaxSteps() > 0) {
+                    $onProgress((int) floor(100 * $progress->getProgress() / $progress->getMaxSteps()));
+                }
             }
 
             if (!$activeJobs) {
@@ -101,11 +121,9 @@ class Loop
         // as we skip progress updates if they are too quick, make sure we do one last one here at 100%
         if ($progress) {
             $progress->finish();
-        }
-
-        unset($this->currentPromises[$waitIndex]);
-        if (null !== $uncaught) {
-            throw $uncaught;
+            if ($onProgress !== null) {
+                $onProgress(100);
+            }
         }
     }
 

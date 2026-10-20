@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use Composer\Console\ProgramStatus;
+use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Seld\Signal\SignalHandler;
@@ -175,6 +177,9 @@ class ProcessExecutor
         } catch (ProcessSignaledException $e) {
             if ($signalHandler->isTriggered()) {
                 // exiting as we were signaled and the child process exited too due to the signal
+                if ($this->io instanceof ConsoleIO) {
+                    $this->io->writeProgramStatus(ProgramStatus::idle());
+                }
                 $signalHandler->exitWithLastSignal();
             }
         } finally {

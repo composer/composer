@@ -39,6 +39,8 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Console\ProgramStatus;
+use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Advisory\Auditor;
 use Composer\Util\Silencer;
@@ -160,6 +162,10 @@ EOT
         $signalHandler = SignalHandler::create([SignalHandler::SIGINT, SignalHandler::SIGTERM, SignalHandler::SIGHUP], function (string $signal, SignalHandler $handler) {
             $this->getIO()->writeError('Received '.$signal.', aborting', true, IOInterface::DEBUG);
             $this->revertComposerFile();
+            $io = $this->getIO();
+            if ($io instanceof ConsoleIO) {
+                $io->writeProgramStatus(ProgramStatus::idle());
+            }
             $handler->exitWithLastSignal();
         });
 
