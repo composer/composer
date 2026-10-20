@@ -68,6 +68,35 @@ class ApplicationTest extends TestCase
         return [[['--version']], [['show', '--self']], [['config', 'cache-dir']]];
     }
 
+    public function testCompletionProcessDoesNotReportStatus(): void
+    {
+        $originalArgv = $_SERVER['argv'];
+        $_SERVER['argv'] = ['composer', '_complete'];
+        try {
+            Platform::putEnv('COMPOSER_TERMINAL_STATUS', '7501,9;4');
+            $application = new Application();
+            $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+            self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about', '--no-plugins' => true]), $output));
+            self::assertStringNotContainsString("\033]", $output->fetch());
+            self::assertSame('7501,9;4', Platform::getEnv('COMPOSER_TERMINAL_STATUS'));
+        } finally {
+            $_SERVER['argv'] = $originalArgv;
+        }
+    }
+
+    public function testCliCompletionDoesNotReportStatusToTerminal(): void
+    {
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', '7501,9;4');
+        $process = $this->createTerminalProcess([
+            PHP_BINARY, dirname(__DIR__, 4).'/bin/composer', '_complete', '--ansi', '--no-plugins',
+            '--shell=bash', '--input=composer', '--input=abo', '--current=1',
+        ]);
+
+        self::assertSame(0, $process->run(), $process->getErrorOutput());
+        self::assertStringContainsString('about', $process->getOutput());
+        self::assertStringNotContainsString("\033]", $process->getOutput());
+    }
+
     /** @dataProvider provideTerminalStatusSettings */
     public function testNestedComposerProcessesDoNotOverwriteParentStatus(string $setting, bool $rich, bool $progress): void
     {

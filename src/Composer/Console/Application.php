@@ -147,7 +147,7 @@ class Application extends BaseApplication
         $io = $this->io = new ConsoleIO($input, $output, new HelperSet([
             new QuestionHelper(),
         ]));
-        $reportStatus = $this->getCommandNameBeforeBinding($input) !== '_complete' && $io->isProgramStatusEnabled();
+        $reportStatus = !Platform::isInputCompletionProcess() && $io->isProgramStatusEnabled();
         $originalTerminalStatus = Platform::getEnv('COMPOSER_TERMINAL_STATUS');
         if ($reportStatus) {
             $io->startProgramStatus();
