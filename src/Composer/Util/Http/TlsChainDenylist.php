@@ -59,7 +59,7 @@ final class TlsChainDenylist
         }
         $port = parse_url($url, PHP_URL_PORT);
 
-        return strtolower($host).':'.($port ? $port : 443);
+        return strtolower($host).':'.(is_int($port) ? $port : 443);
     }
 
     /**
