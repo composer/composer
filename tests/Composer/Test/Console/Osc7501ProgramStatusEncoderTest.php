@@ -46,25 +46,29 @@ class Osc7501ProgramStatusEncoderTest extends TestCase
 
     /**
      * @dataProvider provideInvalidKinds
-     * @param bool|int|float|string|array<mixed> $kind
+     * @param mixed $kind
      */
-    public function testRejectsInvalidKindsWhenEncoding($kind): void
+    public function testIgnoresInvalidKindsWhenEncoding($kind): void
     {
         $status = ProgramStatus::blocked()->withProtocolOption('osc7501', 'kind', $kind);
-        $this->expectException(\InvalidArgumentException::class);
-        (new Osc7501ProgramStatusEncoder())->encode($status);
+        self::assertSame('state=blocked:app=composer', (new Osc7501ProgramStatusEncoder())->encode($status));
     }
 
     public static function provideInvalidKinds(): array
     {
-        return [['foobar'], ['permission:msg=injected'], [false], [42], [1.5], [''], [[]], [['permission']]];
+        return [['foobar'], ['permission:msg=injected'], [false], [42], [1.5], [''], [[]], [['permission']], [new \stdClass()]];
     }
 
-    public function testRejectsKindForNonBlockedStateWhenEncoding(): void
+    /** @dataProvider provideNonBlockedStatuses */
+    public function testIgnoresKindForNonBlockedStateWhenEncoding(ProgramStatus $status): void
     {
-        $status = ProgramStatus::working()->withProtocolOption('osc7501', 'kind', 'auth');
-        $this->expectException(\InvalidArgumentException::class);
-        (new Osc7501ProgramStatusEncoder())->encode($status);
+        $status = $status->withProtocolOption('osc7501', 'kind', 'auth');
+        self::assertSame('state='.$status->getState().':app=composer', (new Osc7501ProgramStatusEncoder())->encode($status));
+    }
+
+    public static function provideNonBlockedStatuses(): array
+    {
+        return [[ProgramStatus::idle()], [ProgramStatus::working()], [ProgramStatus::done()], [ProgramStatus::error()], [ProgramStatus::clear()]];
     }
 
     public function testIgnoresOtherProtocolOptionsAndAbsentKind(): void

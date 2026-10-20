@@ -98,7 +98,7 @@ final class ProgramStatus
     public function withProgress(?int $progress): self
     {
         if ($progress !== null && ($progress < 0 || $progress > 100 || !in_array($this->state, [self::STATE_WORKING, self::STATE_BLOCKED], true))) {
-            throw new \InvalidArgumentException('Progress must be between 0 and 100 for a working or blocked program.');
+            $progress = null;
         }
 
         $status = clone $this;

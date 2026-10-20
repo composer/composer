@@ -57,7 +57,7 @@ final class Osc7501ProgramStatusEncoder extends AbstractOscProgramStatusEncoder
             return null;
         }
         if ($status->getState() !== ProgramStatus::STATE_BLOCKED || !is_string($kind) || !in_array($kind, self::VALID_KINDS, true)) {
-            throw new \InvalidArgumentException('An OSC 7501 kind must be permission, question, or auth on a blocked program.');
+            return null;
         }
 
         return $kind;

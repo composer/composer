@@ -123,9 +123,27 @@ class ProgramStatusTest extends TestCase
         }
     }
 
-    public function testRejectsInvalidProgress(): void
+    /** @dataProvider provideIgnoredProgress */
+    public function testIgnoresInvalidOrInapplicableProgress(ProgramStatus $original, int $progress): void
     {
-        $this->expectException(\InvalidArgumentException::class);
-        ProgramStatus::working()->withProgress(101);
+        $status = $original->withProgress($progress);
+
+        self::assertNotSame($original, $status);
+        self::assertSame($original->getState(), $status->getState());
+        self::assertNull($status->getProgress());
+    }
+
+    public static function provideIgnoredProgress(): array
+    {
+        return [
+            'idle' => [ProgramStatus::idle(), 42],
+            'done' => [ProgramStatus::done(), 42],
+            'error' => [ProgramStatus::error(), 42],
+            'clear' => [ProgramStatus::clear(), 42],
+            'negative working progress' => [ProgramStatus::working(), -1],
+            'excess working progress' => [ProgramStatus::working(), 101],
+            'negative blocked progress' => [ProgramStatus::blocked(), -1],
+            'excess blocked progress' => [ProgramStatus::blocked(), 101],
+        ];
     }
 }
