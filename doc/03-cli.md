@@ -1210,6 +1210,8 @@ php composer.phar audit
 ### Options
 
 * **--no-dev:** Disables auditing of require-dev packages.
+* **--direct (-D):** Only audit packages directly required by the root package,
+  skipping transitive dependencies.
 * **--format (-f):** Audit output format. Must be "table" (default), "plain", "json", or "summary".
 * **--locked:** Audit packages from the lock file, regardless of what is currently in vendor dir.
 * **--abandoned:** Behavior on abandoned packages. Must be "ignore", "report",

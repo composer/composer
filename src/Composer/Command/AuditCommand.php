@@ -39,12 +39,15 @@ class AuditCommand extends BaseCommand
                 new InputOption('abandoned', null, InputOption::VALUE_REQUIRED, 'Behavior on abandoned packages. Must be "ignore", "report", or "fail".', null, ListPolicyConfig::AUDITS),
                 new InputOption('ignore-severity', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Ignore advisories of a certain severity level.', [], ['low', 'medium', 'high', 'critical']),
                 new InputOption('ignore-unreachable', null, InputOption::VALUE_NONE, 'Ignore repositories that are unreachable or return a non-200 status code.'),
+                new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Only audit packages directly required by the root package, skipping transitive dependencies.'),
             ])
             ->setHelp(
                 <<<EOT
 The <info>audit</info> command checks for security vulnerability advisories for installed packages.
 
 If you do not want to include dev dependencies in the audit you can omit them with --no-dev
+
+If you only want to audit packages your root package requires directly, use --direct (-D)
 
 If you want to ignore repositories that are unreachable or return a non-200 status code, use --ignore-unreachable
 
@@ -70,6 +73,16 @@ EOT
             $this->getIO()->writeError('No packages - skipping audit.');
 
             return Auditor::STATUS_OK;
+        }
+
+        // filtered after the empty check so an empty result is not mistaken for a missing install
+        if ($input->getOption('direct')) {
+            $packages = $this->filterDirectPackages($composer, $input, $packages);
+            if (count($packages) === 0) {
+                $this->getIO()->writeError('No direct dependencies - skipping audit.');
+
+                return Auditor::STATUS_OK;
+            }
         }
 
         $auditor = new Auditor();
@@ -132,5 +145,23 @@ EOT
         }
 
         return $installedRepo->getPackages();
+    }
+
+    /**
+     * @param PackageInterface[] $packages
+     * @return list<PackageInterface>
+     */
+    private function filterDirectPackages(Composer $composer, InputInterface $input, array $packages): array
+    {
+        $rootPkg = $composer->getPackage();
+        $requires = $rootPkg->getRequires();
+        if (!$input->getOption('no-dev')) {
+            $requires = array_merge($requires, $rootPkg->getDevRequires());
+        }
+
+        // getNames() includes replaced/provided names so e.g. symfony/symfony counts when symfony/console is required
+        return array_values(array_filter($packages, static function (PackageInterface $package) use ($requires): bool {
+            return count(array_intersect_key($requires, array_flip($package->getNames()))) > 0;
+        }));
     }
 }
