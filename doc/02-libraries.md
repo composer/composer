@@ -64,13 +64,23 @@ version constraints, read the [versions](articles/versions.md) article.
 
 ## Lock file
 
-For your library you may commit the `composer.lock` file if you want to. This
-can help your team to always test against the same dependency versions.
-However, this lock file will not have any effect on other projects that depend
-on it. It only has an effect on the main project.
+For your library it is **recommended to commit the `composer.lock` file**. This
+helps your team to always test against the same dependency versions, and it
+can help prevent supply chain attacks from propagating, as newly published
+(possibly malicious) dependency versions are not pulled into your CI or
+development environment until you explicitly update.
 
-If you do not want to commit the lock file, and you are using git, add it to
-the `.gitignore`.
+This protection only covers working on the library itself. The lock file has no
+effect on projects that depend on your library, they install whatever versions
+your constraints allow. You can therefore exclude it from dist archives using
+`export-ignore`, see [Light-weight distribution packages](#light-weight-distribution-packages).
+
+As your users will not get the locked versions, keep the lock file up to date
+and also run CI jobs with `composer update` (and `composer update --prefer-lowest`)
+to catch breakage from new releases or too low lower bounds. As these jobs install
+unlocked versions, consider configuring a [cooldown](06-config.md#cooldown), do not
+give them access to secrets or write permissions (e.g. to your repository), and do
+not run `composer update` in any build or release steps.
 
 ## Publishing to a VCS
 
@@ -168,6 +178,7 @@ distribution packages.
 /demo export-ignore
 phpunit.xml.dist export-ignore
 /.github/ export-ignore
+/composer.lock export-ignore
 ```
 
 Test it by inspecting the zip file generated manually:

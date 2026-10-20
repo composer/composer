@@ -126,8 +126,8 @@ reinstalling the project you can feel confident that the dependencies installed 
 still working, even if the dependencies have released many new versions since then.
 (See note below about using the `update` command.)
 
-> **Note:** For libraries it is not necessary to commit the lock
-> file, see also: [Libraries - Lock file](02-libraries.md#lock-file).
+> **Note:** Libraries should commit the lock file as well, see also:
+> [Libraries - Lock file](02-libraries.md#lock-file).
 
 ### Installing from `composer.lock`
 
