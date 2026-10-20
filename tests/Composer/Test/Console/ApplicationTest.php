@@ -46,6 +46,84 @@ class ApplicationTest extends TestCase
         self::assertStringContainsString('Composer - Dependency Manager for PHP', $process->getOutput());
     }
 
+    /** @dataProvider provideTerminalStatusSettings */
+    public function testNestedComposerProcessesDoNotOverwriteParentStatus(string $setting, bool $rich, bool $progress): void
+    {
+        $directory = $this->initTempComposer([
+            'scripts' => [
+                'outer' => ['@composer --ansi --no-plugins run-script inner', '@php tool.php', '@php -r "echo \'Parent still running\';"'],
+                'inner' => [
+                    '@php -r "echo \'Nested status setting:\'.getenv(\'COMPOSER_TERMINAL_STATUS\');"',
+                    '@composer --ansi --no-plugins about',
+                ],
+            ],
+        ]);
+        $composer = dirname(__DIR__, 4).'/bin/composer';
+        $childCommand = ProcessExecutor::escape(PHP_BINARY).' '.ProcessExecutor::escape($composer).' --ansi --no-plugins about';
+        file_put_contents($directory.'/tool.php', '<?php echo "Tool status setting:".getenv("COMPOSER_TERMINAL_STATUS"); passthru('.var_export($childCommand, true).', $exitCode); exit($exitCode);');
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', $setting);
+
+        $process = $this->createTerminalProcess([PHP_BINARY, $composer, '--ansi', '--no-plugins', 'run-script', 'outer']);
+        self::assertSame(0, $process->run(), $process->getErrorOutput());
+        $written = $process->getOutput();
+        self::assertSame(2, substr_count($written, 'Composer - Dependency Manager for PHP'));
+        self::assertStringContainsString('Nested status setting:off', $written);
+        self::assertStringContainsString('Tool status setting:off', $written);
+        self::assertStringContainsString('Parent still running', $written);
+        self::assertSame($rich ? 2 : 0, substr_count($written, "\033]7501;"));
+        self::assertSame($progress ? 2 : 0, substr_count($written, "\033]9;4;"));
+        if ($rich) {
+            self::assertStringEndsWith("\033]7501;state=done:app=composer\033\\", $written);
+        }
+    }
+
+    public function testNestedApplicationsDoNotOverwriteParentStatus(): void
+    {
+        $application = new Application();
+        $command = new class('nested-status-test') extends SymfonyCommand {
+            protected function execute(InputInterface $input, OutputInterface $output): int
+            {
+                $child = new Application();
+                $result = $child->doRun(new ArrayInput(['command' => 'about', '--no-plugins' => true]), $output);
+                $output->writeln('Parent still running');
+
+                return $result;
+            }
+        };
+        // Compatibility layer for symfony/console <7.4
+        // @phpstan-ignore method.notFound, function.alreadyNarrowedType, method.deprecated
+        method_exists($application, 'addCommand') ? $application->addCommand($command) : $application->add($command);
+        $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+
+        self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'nested-status-test', '--no-plugins' => true]), $output));
+        $written = $output->fetch();
+        self::assertSame(2, substr_count($written, "\033]7501;"));
+        self::assertStringContainsString('Composer - Dependency Manager for PHP', $written);
+        self::assertStringEndsWith("Parent still running\n\033]7501;state=done:app=composer\033\\", $written);
+    }
+
+    /** @dataProvider provideRestoredTerminalStatusSettings */
+    public function testTerminalStatusEnvironmentIsRestored(?string $setting): void
+    {
+        if ($setting === null) {
+            Platform::clearEnv('COMPOSER_TERMINAL_STATUS');
+        } else {
+            Platform::putEnv('COMPOSER_TERMINAL_STATUS', $setting);
+        }
+        $application = new Application();
+        foreach ([1, 2] as $run) {
+            $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+            self::assertSame(0, $application->doRun(new ArrayInput(['command' => 'about', '--no-plugins' => true]), $output));
+            self::assertSame($setting ?? false, Platform::getEnv('COMPOSER_TERMINAL_STATUS'));
+            self::assertSame($setting === 'off' ? 0 : 2, substr_count($output->fetch(), "\033]7501;"));
+        }
+    }
+
+    public static function provideRestoredTerminalStatusSettings(): array
+    {
+        return [[null], ['auto'], ['7501,9;4'], ['off'], ['']];
+    }
+
     public function testMissingComposerFileReportsErrorBeforeExiting(): void
     {
         $directory = self::getUniqueTmpDirectory();
@@ -140,6 +218,7 @@ class ApplicationTest extends TestCase
             self::assertStringContainsString('Invalid working directory', $e->getMessage());
         }
         self::assertStringEndsWith("\033]7501;state=error:app=composer\033\\", $output->fetch());
+        self::assertSame('7501', Platform::getEnv('COMPOSER_TERMINAL_STATUS'));
         restore_error_handler();
     }
 

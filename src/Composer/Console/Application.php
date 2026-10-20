@@ -148,6 +148,7 @@ class Application extends BaseApplication
             new QuestionHelper(),
         ]));
         $reportStatus = $this->getCommandNameBeforeBinding($input) !== '_complete' && $io->isProgramStatusEnabled();
+        $originalTerminalStatus = Platform::getEnv('COMPOSER_TERMINAL_STATUS');
         if ($reportStatus) {
             $io->writeProgramStatus(ProgramStatus::working());
         }
@@ -161,6 +162,10 @@ class Application extends BaseApplication
         ) : null;
 
         try {
+            if ($reportStatus) {
+                // This IO keeps its encoders while nested Composer processes inherit disabled reporting.
+                Platform::putEnv('COMPOSER_TERMINAL_STATUS', 'off');
+            }
             $result = $this->doRunComposer($input, $output, $io);
             if ($reportStatus) {
                 $io->writeProgramStatus(ProgramStatus::fromExitCode($result));
@@ -174,6 +179,13 @@ class Application extends BaseApplication
 
             throw $e;
         } finally {
+            if ($reportStatus) {
+                if ($originalTerminalStatus === false) {
+                    Platform::clearEnv('COMPOSER_TERMINAL_STATUS');
+                } else {
+                    Platform::putEnv('COMPOSER_TERMINAL_STATUS', $originalTerminalStatus);
+                }
+            }
             if ($signalHandler !== null) {
                 $signalHandler->unregister();
             }
