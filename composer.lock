@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7a6428e0d2adbbc09048fb85d7d6ca3e",
+    "content-hash": "9945a41cc99992d38816054562fd0345",
     "packages": [
         {
             "name": "composer/ca-bundle",
-            "version": "1.4.13",
+            "version": "1.4.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "e13bb11baa3e4f426fde348a002cb3f87c624450"
+                "reference": "b51ae45d50330c67de665b252275c4021fe2d7ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/e13bb11baa3e4f426fde348a002cb3f87c624450",
-                "reference": "e13bb11baa3e4f426fde348a002cb3f87c624450",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/b51ae45d50330c67de665b252275c4021fe2d7ef",
+                "reference": "b51ae45d50330c67de665b252275c4021fe2d7ef",
                 "shasum": ""
             },
             "require": {
@@ -64,7 +64,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/ca-bundle/issues",
-                "source": "https://github.com/composer/ca-bundle/tree/1.4.13"
+                "source": "https://github.com/composer/ca-bundle/tree/1.4.16"
             },
             "funding": [
                 {
@@ -76,7 +76,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-19T11:33:36+00:00"
+            "time": "2026-10-20T20:14:07+00:00"
         },
         {
             "name": "composer/metadata-minifier",
