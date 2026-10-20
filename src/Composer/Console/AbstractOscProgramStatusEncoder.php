@@ -25,6 +25,11 @@ abstract class AbstractOscProgramStatusEncoder
 
     abstract public function encode(ProgramStatus $status): string;
 
+    public function encodeStart(): ?string
+    {
+        return $this->encode(ProgramStatus::working());
+    }
+
     protected function sanitizeMessage(string $message, ?int $maxBytes = null): string
     {
         $message = Preg::replace('{[\x00-\x1f\x7f-\x9f]}u', '', ConsoleIO::sanitize($message, false));

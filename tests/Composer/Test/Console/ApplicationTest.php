@@ -41,9 +41,31 @@ class ApplicationTest extends TestCase
         $written = $process->getOutput();
         self::assertSame($rich, strpos($written, "\033]7501;state=working:app=composer\033\\") !== false);
         self::assertSame($rich, strpos($written, "\033]7501;state=done:app=composer\033\\") !== false);
-        self::assertSame($progress, strpos($written, "\033]9;4;3\033\\") !== false);
+        self::assertStringNotContainsString("\033]9;4;3\033\\", $written);
         self::assertSame($progress, strpos($written, "\033]9;4;0\033\\") !== false);
         self::assertStringContainsString('Composer - Dependency Manager for PHP', $process->getOutput());
+    }
+
+    /**
+     * @dataProvider provideQueryCommands
+     * @param non-empty-list<string> $arguments
+     */
+    public function testQueryCommandsDoNotStartProgressIndicator(array $arguments): void
+    {
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', '7501,9;4');
+        $command = array_merge([PHP_BINARY, dirname(__DIR__, 4).'/bin/composer', '--ansi', '--no-plugins'], $arguments);
+        $process = $this->createTerminalProcess($command);
+
+        self::assertSame(0, $process->run(), $process->getErrorOutput());
+        $written = $process->getOutput();
+        self::assertStringNotContainsString("\033]9;4;3\033\\", $written);
+        self::assertSame(1, substr_count($written, "\033]9;4;"));
+        self::assertStringEndsWith("\033]9;4;0\033\\\033]7501;state=done:app=composer\033\\", $written);
+    }
+
+    public static function provideQueryCommands(): array
+    {
+        return [[['--version']], [['show', '--self']], [['config', 'cache-dir']]];
     }
 
     /** @dataProvider provideTerminalStatusSettings */
@@ -71,7 +93,7 @@ class ApplicationTest extends TestCase
         self::assertStringContainsString('Tool status setting:off', $written);
         self::assertStringContainsString('Parent still running', $written);
         self::assertSame($rich ? 2 : 0, substr_count($written, "\033]7501;"));
-        self::assertSame($progress ? 2 : 0, substr_count($written, "\033]9;4;"));
+        self::assertSame($progress ? 1 : 0, substr_count($written, "\033]9;4;"));
         if ($rich) {
             self::assertStringEndsWith("\033]7501;state=done:app=composer\033\\", $written);
         }

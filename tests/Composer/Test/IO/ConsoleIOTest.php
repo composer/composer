@@ -74,6 +74,57 @@ class ConsoleIOTest extends TestCase
         ];
     }
 
+    /** @dataProvider provideInitialStatusOutput */
+    public function testCommandStartDoesNotActivateProgress(string $setting, string $expected): void
+    {
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', $setting);
+        $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+        $io = new ConsoleIO(new ArrayInput([]), $output, new HelperSet());
+        $io->startProgramStatus();
+
+        self::assertSame($expected, $output->fetch());
+    }
+
+    public static function provideInitialStatusOutput(): array
+    {
+        $working = "\033]7501;state=working:app=composer\033\\";
+
+        return [['off', ''], ['7501', $working], ['9;4', ''], ['7501,9;4', $working]];
+    }
+
+    public function testProgressActivatesIndicatorAfterCommandStart(): void
+    {
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', '7501,9;4');
+        $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+        $io = new ConsoleIO(new ArrayInput([]), $output, new HelperSet());
+        $io->startProgramStatus();
+        $output->fetch();
+
+        $io->writeProgress(42);
+        self::assertSame("\033]9;4;1;42\033\\\033]7501;state=working:app=composer:progress=42\033\\", $output->fetch());
+        $io->writeProgress(null);
+        self::assertSame("\033]9;4;3\033\\\033]7501;state=working:app=composer\033\\", $output->fetch());
+    }
+
+    public function testPromptActivatesAndResumesIndicatorAfterCommandStart(): void
+    {
+        Platform::putEnv('COMPOSER_TERMINAL_STATUS', '7501,9;4');
+        $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
+        $helper = $this->getMockBuilder(QuestionHelper::class)->getMock();
+        $helper->method('getName')->willReturn('question');
+        $helper->expects($this->once())->method('ask')->willReturn(true);
+        $io = new ConsoleIO(new ArrayInput([]), $output, new HelperSet([$helper]));
+        $io->startProgramStatus();
+        $output->fetch();
+
+        self::assertTrue($io->askConfirmation('Continue?'));
+        self::assertSame(
+            "\033]9;4;4\033\\\033]7501;state=blocked:app=composer:kind=permission:msg=".base64_encode('Continue?')."\033\\".
+            "\033]9;4;3\033\\\033]7501;state=working:app=composer\033\\",
+            $output->fetch()
+        );
+    }
+
     public function testProgramStatusEnabled(): void
     {
         $io = new ConsoleIO(new ArrayInput([]), new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true), new HelperSet());

@@ -163,6 +163,20 @@ class ConsoleIO extends BaseIO
     }
 
     /**
+     * @internal
+     */
+    public function startProgramStatus(): void
+    {
+        $this->programStatus = ProgramStatus::working();
+        foreach ($this->programStatusEncoders as $encoder) {
+            $payload = $encoder->encodeStart();
+            if ($payload !== null) {
+                $this->writeOsc($encoder->getCommand(), $payload);
+            }
+        }
+    }
+
+    /**
      * @experimental This API may change in a future minor release
      */
     public function writeProgramStatus(ProgramStatus $status): void

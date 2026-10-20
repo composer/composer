@@ -150,7 +150,7 @@ class Application extends BaseApplication
         $reportStatus = $this->getCommandNameBeforeBinding($input) !== '_complete' && $io->isProgramStatusEnabled();
         $originalTerminalStatus = Platform::getEnv('COMPOSER_TERMINAL_STATUS');
         if ($reportStatus) {
-            $io->writeProgramStatus(ProgramStatus::working());
+            $io->startProgramStatus();
         }
 
         $signalHandler = $reportStatus ? SignalHandler::create(

@@ -26,6 +26,12 @@ final class Osc9ProgressEncoder extends AbstractOscProgramStatusEncoder
         return '9;4';
     }
 
+    public function encodeStart(): ?string
+    {
+        // Progress and prompts activate the indicator instead of every command starting a spinner.
+        return null;
+    }
+
     public function encode(ProgramStatus $status): string
     {
         $progress = $status->getProgress();

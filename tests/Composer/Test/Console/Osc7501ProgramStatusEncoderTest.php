@@ -18,6 +18,11 @@ use Composer\Test\TestCase;
 
 class Osc7501ProgramStatusEncoderTest extends TestCase
 {
+    public function testCommandStartReportsWorking(): void
+    {
+        self::assertSame('state=working:app=composer', (new Osc7501ProgramStatusEncoder())->encodeStart());
+    }
+
     public function testEncodesRootRecordWithProgress(): void
     {
         $encoder = new Osc7501ProgramStatusEncoder();

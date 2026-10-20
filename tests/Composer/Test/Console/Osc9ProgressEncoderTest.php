@@ -18,6 +18,11 @@ use Composer\Test\TestCase;
 
 class Osc9ProgressEncoderTest extends TestCase
 {
+    public function testCommandStartDoesNotActivateProgress(): void
+    {
+        self::assertNull((new Osc9ProgressEncoder())->encodeStart());
+    }
+
     /** @dataProvider provideStatuses */
     public function testEncodesProgress(ProgramStatus $status, string $expected): void
     {
