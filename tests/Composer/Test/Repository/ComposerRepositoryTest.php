@@ -14,6 +14,7 @@ namespace Composer\Test\Repository;
 
 use Composer\FilterList\FilterListEntry;
 use Composer\IO\NullIO;
+use Composer\Package\Package;
 use Composer\Json\JsonFile;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryInterface;
@@ -1166,6 +1167,49 @@ class ComposerRepositoryTest extends TestCase
                     'remoteId' => 'test',
                 ],
             ],
+        ];
+    }
+
+    /**
+     * @dataProvider provideTransportOptionsDistUrls
+     * @param non-empty-string $repositoryUrl
+     */
+    public function testTransportOptionsOnlyApplyToDistUrlsUnderTheRepositoryUrl(string $repositoryUrl, string $distUrl, bool $expected): void
+    {
+        $options = ['http' => ['header' => ['Authorization: Bearer secret']]];
+        $repository = new ComposerRepository(
+            ['url' => $repositoryUrl, 'options' => $options],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock()
+        );
+
+        $package = new Package('foo/bar', '1.0.0.0', '1.0.0');
+        $package->setDistType('zip');
+        $package->setDistUrl($distUrl);
+
+        $method = new \ReflectionMethod($repository, 'configurePackageTransportOptions');
+        if (\PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
+        $method->invoke($repository, $package);
+
+        self::assertSame($expected ? $options : [], $package->getTransportOptions());
+    }
+
+    public static function provideTransportOptionsDistUrls(): array
+    {
+        return [
+            ['https://example.org/packages.json', 'https://example.org/dists/foo.zip', true],
+            ['https://example.org/packages.json', 'https://example.org?file=foo.zip', true],
+            ['https://example.org/packages.json', 'https://example.org', true],
+            ['https://example.org/repo/packages.json', 'https://example.org/repo/dists/foo.zip', true],
+            ['https://example.org/packages.json', 'https://example.org.evil.com/foo.zip', false],
+            ['https://example.org/packages.json', 'https://example.organization/foo.zip', false],
+            ['https://example.org/packages.json', 'https://example.org@evil.com/foo.zip', false],
+            ['https://example.org/packages.json', 'https://example.org:secret@evil.com/foo.zip', false],
+            ['https://example.org/repo/packages.json', 'https://example.org/repository/foo.zip', false],
+            ['https://example.org/packages.json', 'https://evil.com/foo.zip', false],
         ];
     }
 
