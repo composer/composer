@@ -173,6 +173,18 @@ class ConfigTest extends TestCase
         self::assertEquals(['foo' => 'bar', 'bar' => 'baz'], $config->get('github-oauth'));
     }
 
+    public function testMergeCustomHeaders(): void
+    {
+        $config = new Config(false);
+        $config->merge(['config' => ['custom-headers' => ['foo.example.org' => ['API-TOKEN: foo']]]]);
+        $config->merge(['config' => ['custom-headers' => ['bar.example.org' => ['API-TOKEN: bar']]]]);
+
+        self::assertEquals([
+            'foo.example.org' => ['API-TOKEN: foo'],
+            'bar.example.org' => ['API-TOKEN: bar'],
+        ], $config->get('custom-headers'));
+    }
+
     public function testVarReplacement(): void
     {
         $config = new Config(false);
