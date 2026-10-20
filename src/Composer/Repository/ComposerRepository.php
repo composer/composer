@@ -677,7 +677,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected function configurePackageTransportOptions(PackageInterface $package)
     {
         foreach ($package->getDistUrls() as $url) {
-            if (strpos($url, $this->baseUrl) === 0) {
+            // require a boundary after the base URL so e.g. https://example.org.example.net does not match https://example.org
+            if (Preg::isMatch('{^'.preg_quote($this->baseUrl).'(?:[/?#]|$)}', $url)) {
                 $package->setTransportOptions($this->options);
 
                 return;
