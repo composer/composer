@@ -13,7 +13,7 @@
 namespace Composer\Util\Http;
 
 use Composer\CaBundle\CaBundle;
-use Composer\Downloader\TransportException;
+use Composer\Exception\SecurityException;
 use Composer\Util\Url;
 
 /**
@@ -63,11 +63,13 @@ final class TlsChainDenylist
     }
 
     /**
+     * Not a TransportException so that callers falling back on transport errors do not swallow it
+     *
      * @param string $url
      * @param string $certName
      * @param bool   $requestSent whether the request (and any credentials in it) already went out before the chain could be checked
      *
-     * @return TransportException
+     * @return SecurityException
      */
     public static function createException($url, $certName, $requestSent)
     {
@@ -78,6 +80,6 @@ final class TlsChainDenylist
             $message .= ' The request was aborted before it was sent.';
         }
 
-        return new TransportException($message);
+        return new SecurityException($message);
     }
 }

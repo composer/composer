@@ -33,6 +33,7 @@ use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Downloader\TransportException;
+use Composer\Exception\SecurityException;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
@@ -1381,7 +1382,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     throw $e;
                 }
 
-                if ($e instanceof RepositorySecurityException) {
+                if ($e instanceof RepositorySecurityException || $e instanceof SecurityException) {
                     throw $e;
                 }
 
@@ -1455,7 +1456,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             return $data;
         } catch (\Exception $e) {
-            if ($e instanceof \LogicException) {
+            if ($e instanceof \LogicException || $e instanceof SecurityException) {
                 throw $e;
             }
 
