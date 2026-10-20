@@ -115,13 +115,15 @@ class CurlDownloader
     ];
 
     /** @var array<string, true> */
-    private static $timeInfo = [
+    private static $ignoredProgressInfo = [
         'total_time' => true,
         'namelookup_time' => true,
         'connect_time' => true,
         'pretransfer_time' => true,
         'starttransfer_time' => true,
         'redirect_time' => true,
+        // large once CURLOPT_CERTINFO is set, and the chain is checked separately
+        'certinfo' => true,
     ];
 
     /**
@@ -327,7 +329,7 @@ class CurlDownloader
 
         curl_setopt_array($curlHandle, $proxy->getCurlOptions($options['ssl'] ?? []));
 
-        $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
+        $progress = array_diff_key(curl_getinfo($curlHandle), self::$ignoredProgressInfo);
 
         $this->jobs[(int) $curlHandle] = [
             'url' => $url,
@@ -595,7 +597,7 @@ class CurlDownloader
 
         foreach ($this->jobs as $i => $curlHandle) {
             $curlHandle = $this->jobs[$i]['curlHandle'];
-            $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
+            $progress = array_diff_key(curl_getinfo($curlHandle), self::$ignoredProgressInfo);
 
             if ($this->jobs[$i]['progress'] !== $progress) {
                 $this->jobs[$i]['progress'] = $progress;
