@@ -266,7 +266,7 @@ class CurlDownloader
             if (\defined('CURLOPT_PREREQFUNCTION')) {
                 // runs after the TLS handshake but before the request and its credentials are sent
                 curl_setopt($curlHandle, CURLOPT_PREREQFUNCTION, function ($handle) use ($hostKey): int {
-                    return null === $this->checkCertificateChain($hostKey, curl_getinfo($handle, CURLINFO_CERTINFO)) ? CURL_PREREQFUNC_OK : CURL_PREREQFUNC_ABORT;
+                    return null === $this->checkCertificateChain($hostKey, curl_getinfo($handle, CURLINFO_CERTINFO)) ? 0 : 1; // CURL_PREREQFUNC_OK : CURL_PREREQFUNC_ABORT, literals as the constants only exist on PHP 8.4+
                 });
             }
         }
