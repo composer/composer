@@ -112,6 +112,10 @@ class Locker
         if (isset($content['config']['platform'])) {
             $relevantContent['config']['platform'] = $content['config']['platform'];
         }
+        // policy changes which versions an update may pick, so changing it should flag the lock as outdated
+        if (isset($content['config']['policy'])) {
+            $relevantContent['config']['policy'] = $content['config']['policy'];
+        }
 
         ksort($relevantContent);
 
