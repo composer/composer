@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Downloader\TransportException;
+use Composer\Exception\SecurityException;
 use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
@@ -206,7 +207,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $this->packageName = !empty($data['name']) ? $data['name'] : null;
             }
         } catch (\Exception $e) {
-            if ($e instanceof TransportException && $this->shouldRethrowTransportException($e)) {
+            if ($e instanceof SecurityException || ($e instanceof TransportException && $this->shouldRethrowTransportException($e))) {
                 throw $e;
             }
 
@@ -299,6 +300,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
                 $this->addPackage($this->loader->load($this->preProcess($driver, $data, $identifier)));
             } catch (\Exception $e) {
+                if ($e instanceof SecurityException) {
+                    throw $e;
+                }
                 if ($e instanceof TransportException) {
                     $this->versionTransportExceptions['tags'][$tag] = $e;
                     if ($e->getCode() === 404) {
@@ -404,6 +408,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 }
                 continue;
             } catch (\Exception $e) {
+                if ($e instanceof SecurityException) {
+                    throw $e;
+                }
                 if (!$isVeryVerbose) {
                     $this->io->writeError('');
                 }
