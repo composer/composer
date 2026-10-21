@@ -246,7 +246,7 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--vulnerable-only:** Only update locked packages affected by known security advisories,
   skipping advisories ignored by your [audit](06-config.md#audit) config. This implies `--with-all-dependencies` and
   `--minimal-changes`, and the affected versions are excluded so the update fails if no fixed
-  version can be installed. This requires a `composer.lock` file and cannot be combined with
+  version can be installed. If no package is vulnerable, this behaves like `update --lock`. This requires a `composer.lock` file and cannot be combined with
   package arguments, `--interactive`, `--root-reqs`, or `--lock`. `--no-dev` excludes development dependencies.
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.

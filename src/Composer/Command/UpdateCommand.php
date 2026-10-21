@@ -164,11 +164,9 @@ EOT
 
             if (count($packages) === 0) {
                 $io->writeError('<info>No packages with known security vulnerabilities found in composer.lock.</info>');
-
-                return self::SUCCESS;
+            } else {
+                $io->writeError('<info>Updating vulnerable packages: '.implode(', ', $packages).'</info>');
             }
-
-            $io->writeError('<info>Updating vulnerable packages: '.implode(', ', $packages).'</info>');
         }
 
         $reqs = $this->formatRequirements($input->getOption('with'));
@@ -277,7 +275,8 @@ EOT
         $filteredPackages = array_filter($packages, static function ($package): bool {
             return !in_array($package, ['lock', 'nothing', 'mirrors'], true);
         });
-        $updateMirrors = $input->getOption('lock') || count($filteredPackages) !== count($packages);
+        // an empty allow list would update everything, so with nothing vulnerable only the lock file metadata is refreshed
+        $updateMirrors = $input->getOption('lock') || count($filteredPackages) !== count($packages) || ($input->getOption('vulnerable-only') && count($filteredPackages) === 0);
         $packages = $filteredPackages;
 
         if ($updateMirrors && !empty($packages)) {

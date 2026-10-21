@@ -736,9 +736,12 @@ OUTPUT
         $appTester = $this->getApplicationTester();
         $exitCode = $appTester->run(['command' => 'update', '--vulnerable-only' => true, '--dry-run' => true, '--no-audit' => true]);
 
+        $display = $appTester->getDisplay(true);
         self::assertSame(0, $exitCode);
-        self::assertStringContainsString('No packages with known security vulnerabilities found in composer.lock.', $appTester->getDisplay(true));
-        self::assertStringNotContainsString('Updating dependencies', $appTester->getDisplay(true));
+        self::assertStringContainsString('No packages with known security vulnerabilities found in composer.lock.', $display);
+        self::assertStringContainsString('Nothing to modify in lock file', $display);
+        self::assertStringContainsString('Installing dependencies from lock file', $display);
+        self::assertStringContainsString('Installing safe/pkg (1.0.0)', $display);
     }
 
     public function testVulnerableOnlyRespectsNoDev(): void
