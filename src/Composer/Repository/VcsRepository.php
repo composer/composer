@@ -72,6 +72,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     private $emptyReferences = [];
     /** @var array<'tags'|'branches', array<string, TransportException>> */
     private $versionTransportExceptions = [];
+    /** @var ?non-empty-string */
+    private $onlyBranchesRegex = null;
 
     /**
      * @param array{url: string, type?: string}&array<string, mixed> $repoConfig
@@ -104,6 +106,14 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $this->versionCache = $versionCache;
         $this->httpDownloader = $httpDownloader;
         $this->processExecutor = $process ?? new ProcessExecutor($io);
+
+        if (isset($repoConfig['only-branches'])) {
+            if (!is_array($repoConfig['only-branches']) || count(array_filter($repoConfig['only-branches'], 'is_string')) !== count($repoConfig['only-branches'])) {
+                throw new \InvalidArgumentException('"only-branches" key for repository '.Url::sanitize($this->url).' should be an array of strings');
+            }
+            // branch names are case-sensitive, unlike package names
+            $this->onlyBranchesRegex = BasePackage::packageNamesToRegexp($repoConfig['only-branches'], '{^(?:%s)$}D');
+        }
     }
 
     public function getRepoName()
@@ -472,16 +482,13 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
      */
     private function filterBranches(array $branches, string $rootIdentifier): array
     {
-        if (!isset($this->repoConfig['only-branches']) || !is_array($this->repoConfig['only-branches'])) {
+        if (null === $this->onlyBranchesRegex) {
             return $branches;
         }
 
-        // branch names are case-sensitive, unlike package names
-        $regex = BasePackage::packageNamesToRegexp($this->repoConfig['only-branches'], '{^(?:%s)$}D');
-
         foreach ($branches as $branch => $identifier) {
             $branch = (string) $branch;
-            if ($branch !== $rootIdentifier && !Preg::isMatch($regex, $branch)) {
+            if ($branch !== $rootIdentifier && !Preg::isMatch($this->onlyBranchesRegex, $branch)) {
                 if ($this->isVeryVerbose) {
                     $this->io->writeError('<warning>Skipped branch '.$branch.', not matching the only-branches filter</warning>');
                 }

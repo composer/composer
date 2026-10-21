@@ -219,4 +219,25 @@ class VcsRepositoryTest extends TestCase
 
         self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
     }
+
+    /**
+     * @dataProvider provideInvalidOnlyBranches
+     * @param mixed $onlyBranches
+     */
+    public function testInvalidOnlyBranchesThrows($onlyBranches): void
+    {
+        self::expectException('InvalidArgumentException');
+        self::expectExceptionMessage('"only-branches" key for repository '.self::$gitRepo.' should be an array of strings');
+
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs', 'only-branches' => $onlyBranches], new NullIO, new Config(), $httpDownloader);
+    }
+
+    public static function provideInvalidOnlyBranches(): array
+    {
+        return [
+            'string' => ['7.4'],
+            'non-string item' => [['7.4', ['8.*']]],
+        ];
+    }
 }
