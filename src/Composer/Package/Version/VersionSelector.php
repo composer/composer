@@ -216,6 +216,7 @@ class VersionSelector
      * Returns the candidate withheld by the cooldown in the last findBestCandidate() call that becomes available first
      *
      * @return ?array{package: PackageInterface, releaseDate: \DateTimeInterface}
+     * @internal
      */
     public function getFirstClearingWithheldCandidate(): ?array
     {
@@ -226,6 +227,7 @@ class VersionSelector
      * Returns every candidate withheld by the cooldown in the last findBestCandidate() call, in candidate order
      *
      * @return list<array{package: PackageInterface, releaseDate: \DateTimeInterface}>
+     * @internal
      */
     public function getWithheldCandidates(): array
     {
@@ -236,6 +238,7 @@ class VersionSelector
      * Returns every candidate skipped for its platform requirements in the last findBestCandidate() call, in candidate order
      *
      * @return list<PackageInterface>
+     * @internal
      */
     public function getPlatformRejectedCandidates(): array
     {
