@@ -170,7 +170,7 @@ class ComposerSchemaTest extends TestCase
         self::assertTrue($this->check($json), 'stable');
     }
 
-    public function assertAmbiguousRepositoryNotPossible(): void
+    public function testAmbiguousRepositoryNotPossible(): void
     {
         $json = '{
     "repositories": {
@@ -181,7 +181,7 @@ class ComposerSchemaTest extends TestCase
         }
     }
 }';
-        self::assertFalse($this->check($json));
+        self::assertNotTrue($this->check($json), 'a named repository under the object form is ambiguous');
 
         $json = '{
     "repositories": {
