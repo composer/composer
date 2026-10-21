@@ -6511,6 +6511,11 @@ parameters:
 			path: ../src/Composer/Util/Hg.php
 
 		-
+			message: "#^Anonymous function uses \\$this assigned to variable \\$self\\. Use \\$this directly in the function body\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -6561,7 +6566,7 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, array\\<array\\<string, array\\|\\(callable\\)\\|resource\\|string\\|false\\>\\> given\\.$#"
+			message: "#^Only booleans are allowed in a negated boolean, array\\<array\\<string, array\\|\\(callable\\)\\|resource\\|string\\|false\\|null\\>\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 

@@ -58,6 +58,8 @@ jobs:
 
       - name: "Install highest dependencies from composer.json using composer binary provided by system"
         run: 'composer config platform --unset && composer update $COMPOSER_FLAGS'
+        env:
+          COMPOSER_POLICY_COOLDOWN_PERIOD: "0" # do not withhold fresh releases when updating deps
 
       - name: "Install PHPStan"
         # Locked to phpunit 7.5 here as newer ones have void return types which break inheritance
