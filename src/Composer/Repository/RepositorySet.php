@@ -252,6 +252,7 @@ class RepositorySet
 
     /**
      * @param string[] $packageNames
+     * @param bool $allowPartialAdvisories If true, loading full advisories is skipped when partial ones are available. If false, full advisories are loaded where the repository can provide them, but partial ones may still be returned
      * @return array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, unreachableRepos: array<string>}
      */
     public function getSecurityAdvisories(array $packageNames, bool $allowPartialAdvisories, bool $ignoreUnreachable = false): array
@@ -269,6 +270,7 @@ class RepositorySet
 
     /**
      * @param PackageInterface[] $packages
+     * @param bool $allowPartialAdvisories If true, loading full advisories is skipped when partial ones are available. If false, full advisories are loaded where the repository can provide them, but partial ones may still be returned
      * @return array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, unreachableRepos: array<string>}
      */
     public function getMatchingSecurityAdvisories(array $packages, bool $allowPartialAdvisories = false, bool $ignoreUnreachable = false): array

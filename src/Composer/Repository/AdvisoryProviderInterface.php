@@ -28,7 +28,7 @@ interface AdvisoryProviderInterface
 
     /**
      * @param array<string, ConstraintInterface> $packageConstraintMap Map of package name to constraint (can be MatchAllConstraint to fetch all advisories)
-     * @param bool $allowPartialAdvisories If false, full advisories are loaded where the repository can provide them, partial ones are returned otherwise
+     * @param bool $allowPartialAdvisories If true, loading full advisories is skipped when partial ones are available. If false, full advisories are loaded where the repository can provide them, but partial ones may still be returned
      * @return array{namesFound: string[], advisories: array<string, list<PartialSecurityAdvisory|SecurityAdvisory>>}
      */
     public function getSecurityAdvisories(array $packageConstraintMap, bool $allowPartialAdvisories = false): array;
