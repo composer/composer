@@ -651,7 +651,13 @@ names that may contain `*` wildcards. The default branch is always loaded.
 }
 ```
 
-Tags are not affected by this option.
+Patterns are matched case-sensitively against the branch names as they appear
+in the repository (e.g. `7.4`, not `7.4.x-dev`). Tags are not affected by this
+option.
+
+> **Note:** For Mercurial and Perforce repositories the default branch is not
+> detected, so make sure it is included in `only-branches` (e.g. `default` for
+> Mercurial, `master` for Perforce) or it will be skipped.
 
 #### Bitbucket Driver Configuration
 
