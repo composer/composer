@@ -97,9 +97,11 @@ class VersionSelectorTest extends TestCase
             ."<warning>Cannot use foo/bar 2.0.0 as it requires php >=5.6 which is not satisfied by your platform.".PHP_EOL,
             $io->getOutput()
         );
+        self::assertSame([$package3, $package2], $versionSelector->getPlatformRejectedCandidates());
 
         $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
         self::assertSame((string) $package3, (string) $best, 'Latest version should be returned when ignoring platform reqs (2.1.0)');
+        self::assertSame([], $versionSelector->getPlatformRejectedCandidates());
     }
 
     public function testLatestVersionIsReturnedThatMatchesExtRequirements(): void
