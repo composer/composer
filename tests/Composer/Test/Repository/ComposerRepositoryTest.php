@@ -388,6 +388,40 @@ class ComposerRepositoryTest extends TestCase
         self::assertEquals(['foo/bar'], $repository->getPackageNames());
     }
 
+    public function testFindPackageWithPartialPackagesWithoutUid(): void
+    {
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                [
+                    'url' => 'http://example.org/packages.json',
+                    'body' => JsonFile::encode([
+                        'metadata-url' => '/p2/%package%.json',
+                        'packages' => ['fbi-gov/x-files' => [
+                            'dev-main' => ['name' => 'fbi-gov/x-files', 'version' => 'dev-main', 'extra' => ['branch-alias' => ['dev-main' => '1.x-dev']]],
+                            '1.0.0' => ['name' => 'fbi-gov/x-files', 'version' => '1.0.0'],
+                            '1.1.0' => ['name' => 'fbi-gov/x-files', 'version' => '1.1.0'],
+                        ]],
+                    ]),
+                ],
+            ],
+            true
+        );
+
+        $repository = new ComposerRepository(
+            ['url' => 'http://example.org/packages.json'],
+            new NullIO(),
+            FactoryMock::createConfig(),
+            $httpDownloader
+        );
+
+        $package = $repository->findPackage('fbi-gov/x-files', '1.0.0');
+        self::assertNotNull($package);
+        self::assertSame('1.0.0.0', $package->getVersion());
+        // 3 versions + the dev-main alias
+        self::assertCount(4, $repository->findPackages('fbi-gov/x-files'));
+    }
+
     public function testGetSecurityAdvisoriesAssertRepositoryHttpOptionsAreUsed(): void
     {
         $httpDownloader = $this->getHttpDownloaderMock();
