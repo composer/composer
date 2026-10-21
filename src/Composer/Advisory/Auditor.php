@@ -80,21 +80,11 @@ class Auditor
      */
     public function audit(IOInterface $io, RepositorySet $repoSet, PolicyConfig $policyConfig, array $packages, string $format, bool $warningOnly = true, ?FilterListProviderSet $filterListProviderSet = null): int
     {
-        $ignoreList = $policyConfig->advisories->getIgnoreListForOperation('audit');
-        $ignoredSeverities = $policyConfig->advisories->getIgnoreSeverityForOperation('audit');
-
-        $result = $repoSet->getMatchingSecurityAdvisories($packages, $format === self::FORMAT_SUMMARY, $policyConfig->ignoreUnreachable->audit);
-        $allAdvisories = $result['advisories'];
-        $unreachableRepos = $result['unreachableRepos'];
-
-        // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
-        // and ignores are set then we need to query again the full data to make sure it can be filtered
-        if ($format === self::FORMAT_SUMMARY && $this->needsCompleteAdvisoryLoad($allAdvisories, $ignoreList)) {
-            $result = $repoSet->getMatchingSecurityAdvisories($packages, false, $policyConfig->ignoreUnreachable->audit);
-            $allAdvisories = $result['advisories'];
-            $unreachableRepos = array_merge($unreachableRepos, $result['unreachableRepos']);
-        }
-        ['advisories' => $advisories, 'ignoredAdvisories' => $ignoredAdvisories] = $this->processAdvisories($allAdvisories, $ignoreList, $ignoredSeverities);
+        [
+            'advisories' => $advisories,
+            'ignoredAdvisories' => $ignoredAdvisories,
+            'unreachableRepos' => $unreachableRepos,
+        ] = $this->findAdvisories($repoSet, $policyConfig, $packages, $format === self::FORMAT_SUMMARY, $policyConfig->ignoreUnreachable->audit);
 
         $abandonedCount = 0;
         $affectedPackagesCount = count($advisories);
@@ -257,6 +247,32 @@ class Auditor
                 $io->write('    The cooldown policy relied on the package-supplied time field because the repository provides no published-time.');
             }
         }
+    }
+
+    /**
+     * Finds the advisories affecting the given packages, split by whether the audit ignore rules apply to them
+     *
+     * @param PackageInterface[] $packages
+     * @return array{advisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, ignoredAdvisories: array<string, array<PartialSecurityAdvisory|SecurityAdvisory>>, unreachableRepos: array<string>}
+     */
+    public function findAdvisories(RepositorySet $repoSet, PolicyConfig $policyConfig, array $packages, bool $allowPartialAdvisories, bool $ignoreUnreachable): array
+    {
+        $ignoreList = $policyConfig->advisories->getIgnoreListForOperation('audit');
+        $ignoredSeverities = $policyConfig->advisories->getIgnoreSeverityForOperation('audit');
+
+        $result = $repoSet->getMatchingSecurityAdvisories($packages, $allowPartialAdvisories, $ignoreUnreachable);
+        $allAdvisories = $result['advisories'];
+        $unreachableRepos = $result['unreachableRepos'];
+
+        // we need the CVE & remote IDs set to filter ignores correctly so if we have any matches using the optimized codepath above
+        // and ignores are set then we need to query again the full data to make sure it can be filtered
+        if ($allowPartialAdvisories && $this->needsCompleteAdvisoryLoad($allAdvisories, $ignoreList)) {
+            $result = $repoSet->getMatchingSecurityAdvisories($packages, false, $ignoreUnreachable);
+            $allAdvisories = $result['advisories'];
+            $unreachableRepos = array_merge($unreachableRepos, $result['unreachableRepos']);
+        }
+
+        return $this->processAdvisories($allAdvisories, $ignoreList, $ignoredSeverities) + ['unreachableRepos' => $unreachableRepos];
     }
 
     /**

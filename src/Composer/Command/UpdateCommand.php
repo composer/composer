@@ -153,13 +153,7 @@ EOT
                 throw new \UnexpectedValueException('A valid composer.lock file is required to run this command with --vulnerable-only.');
             }
 
-            $repositorySet = new RepositorySet();
-            foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
-                $repositorySet->addRepository($repository);
-            }
-
-            $lockedPackages = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'))->getPackages();
-            $packages = array_keys($repositorySet->getMatchingSecurityAdvisories($lockedPackages, true)['advisories']);
+            $packages = $this->getVulnerablePackageNames($composer, $input);
 
             if (count($packages) === 0) {
                 $io->writeError('<info>No packages with known security vulnerabilities found in composer.lock.</info>');
@@ -372,6 +366,22 @@ EOT
         }
 
         return $result;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getVulnerablePackageNames(Composer $composer, InputInterface $input): array
+    {
+        $repositorySet = new RepositorySet();
+        foreach ($composer->getRepositoryManager()->getRepositories() as $repository) {
+            $repositorySet->addRepository($repository);
+        }
+
+        $lockedPackages = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'))->getPackages();
+        $advisories = (new Auditor())->findAdvisories($repositorySet, $this->createPolicyConfig($composer->getConfig(), $input), $lockedPackages, false, false)['advisories'];
+
+        return array_keys($advisories);
     }
 
     /**

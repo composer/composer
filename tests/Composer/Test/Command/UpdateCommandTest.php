@@ -582,38 +582,12 @@ OUTPUT
     {
         $this->initTempComposer([
             'repositories' => [
-                'packages' => [
-                    'type' => 'package',
-                    'package' => [
-                        ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
-                        ['name' => 'vulnerable/pkg', 'version' => '1.1.0'],
-                        ['name' => 'safe/pkg', 'version' => '1.0.0'],
-                        ['name' => 'safe/pkg', 'version' => '1.1.0'],
-                    ],
-                    'security-advisories' => [
-                        'vulnerable/pkg' => [
-                            [
-                                'advisoryId' => 'PKSA-test-001',
-                                'packageName' => 'vulnerable/pkg',
-                                'remoteId' => 'CVE-2024-1234',
-                                'title' => 'Test Security Vulnerability',
-                                'link' => 'https://example.com/advisory',
-                                'cve' => 'CVE-2024-1234',
-                                'affectedVersions' => '<1.1.0',
-                                'source' => 'test',
-                                'reportedAt' => '2024-01-01 00:00:00',
-                                'composerRepository' => 'Package Repository',
-                                'severity' => 'high',
-                                'sources' => [
-                                    [
-                                        'name' => 'test',
-                                        'remoteId' => 'CVE-2024-1234',
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '1.1.0'],
+                    ['name' => 'safe/pkg', 'version' => '1.0.0'],
+                    ['name' => 'safe/pkg', 'version' => '1.1.0'],
+                ], ['vulnerable/pkg' => '<1.1.0']),
             ],
             'require' => [
                 'vulnerable/pkg' => '^1.0',
@@ -632,6 +606,32 @@ OUTPUT
         self::assertStringContainsString('Updating vulnerable packages: vulnerable/pkg', $display);
         self::assertStringContainsString('Upgrading vulnerable/pkg (1.0.0 => 1.1.0)', $display);
         self::assertStringNotContainsString('Upgrading safe/pkg', $display);
+    }
+
+    public function testVulnerableOnlySkipsIgnoredAdvisories(): void
+    {
+        $this->initTempComposer([
+            'repositories' => [
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'vulnerable/pkg', 'version' => '1.0.0'],
+                    ['name' => 'vulnerable/pkg', 'version' => '1.1.0'],
+                ], ['vulnerable/pkg' => '<1.1.0']),
+            ],
+            'require' => [
+                'vulnerable/pkg' => '^1.0',
+            ],
+            'config' => [
+                'audit' => ['ignore' => ['PKSA-test-vulnerable/pkg']],
+            ],
+        ]);
+        $this->createComposerLock([self::getPackage('vulnerable/pkg', '1.0.0')]);
+
+        $appTester = $this->getApplicationTester();
+        $exitCode = $appTester->run(['command' => 'update', '--vulnerable-only' => true, '--dry-run' => true, '--no-audit' => true, '--no-install' => true]);
+
+        self::assertSame(0, $exitCode);
+        self::assertStringContainsString('No packages with known security vulnerabilities found in composer.lock.', $appTester->getDisplay(true));
+        self::assertStringNotContainsString('Upgrading vulnerable/pkg', $appTester->getDisplay(true));
     }
 
     public function testVulnerableOnlyDoesNothingWithoutAffectedLockedPackages(): void
@@ -664,36 +664,10 @@ OUTPUT
     {
         $this->initTempComposer([
             'repositories' => [
-                'packages' => [
-                    'type' => 'package',
-                    'package' => [
-                        ['name' => 'dev/pkg', 'version' => '1.0.0'],
-                        ['name' => 'dev/pkg', 'version' => '1.1.0'],
-                    ],
-                    'security-advisories' => [
-                        'dev/pkg' => [
-                            [
-                                'advisoryId' => 'PKSA-test-001',
-                                'packageName' => 'dev/pkg',
-                                'remoteId' => 'CVE-2024-1234',
-                                'title' => 'Test Security Vulnerability',
-                                'link' => 'https://example.com/advisory',
-                                'cve' => 'CVE-2024-1234',
-                                'affectedVersions' => '<1.1.0',
-                                'source' => 'test',
-                                'reportedAt' => '2024-01-01 00:00:00',
-                                'composerRepository' => 'Package Repository',
-                                'severity' => 'high',
-                                'sources' => [
-                                    [
-                                        'name' => 'test',
-                                        'remoteId' => 'CVE-2024-1234',
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
+                'packages' => self::getVulnerableRepository([
+                    ['name' => 'dev/pkg', 'version' => '1.0.0'],
+                    ['name' => 'dev/pkg', 'version' => '1.1.0'],
+                ], ['dev/pkg' => '<1.1.0']),
             ],
             'require-dev' => [
                 'dev/pkg' => '^1.0',
@@ -730,6 +704,34 @@ OUTPUT
 
         $appTester = $this->getApplicationTester();
         $appTester->run(['command' => 'update', '--vulnerable-only' => true, 'packages' => ['vendor/package']]);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $packages
+     * @param array<string, string> $affectedVersions package name => affected versions constraint
+     * @return array<string, mixed>
+     */
+    private static function getVulnerableRepository(array $packages, array $affectedVersions): array
+    {
+        $advisories = [];
+        foreach ($affectedVersions as $name => $constraint) {
+            $advisories[$name][] = [
+                'advisoryId' => 'PKSA-test-'.$name,
+                'packageName' => $name,
+                'remoteId' => 'CVE-2024-1234',
+                'title' => 'Test Security Vulnerability',
+                'link' => 'https://example.com/advisory',
+                'cve' => 'CVE-2024-1234',
+                'affectedVersions' => $constraint,
+                'source' => 'test',
+                'reportedAt' => '2024-01-01 00:00:00',
+                'composerRepository' => 'Package Repository',
+                'severity' => 'high',
+                'sources' => [['name' => 'test', 'remoteId' => 'CVE-2024-1234']],
+            ];
+        }
+
+        return ['type' => 'package', 'package' => $packages, 'security-advisories' => $advisories];
     }
 
     public function testNoBlockingAllowsMalwareFlaggedPackages(): void
