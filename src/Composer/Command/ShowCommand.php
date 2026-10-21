@@ -551,8 +551,7 @@ EOT
                         // Determine if Composer is checking outdated dependencies and if current package should trigger non-default exit code
                         $packageIsUpToDate = $latestPackage && $latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && (!$latestPackage instanceof CompletePackageInterface || !$latestPackage->isAbandoned());
                         // When using --major-only, and no bigger version than current major is found then it is considered up to date
-                        // Same when no installable version can be found at all, as there is nothing to update to
-                        $packageIsUpToDate = $packageIsUpToDate || ($latestPackage === null && ($showMajorOnly || $showLatest));
+                        $packageIsUpToDate = $packageIsUpToDate || ($latestPackage === null && $showMajorOnly);
                         $packageIsIgnored = Preg::isMatch($ignoredPackagesRegex, $package->getPrettyName());
                         $withheld = $withheldPackages[$package->getPrettyName()] ?? null;
                         if ($input->getOption('outdated') && ($packageIsIgnored || ($packageIsUpToDate && $withheld === null))) {
@@ -1643,6 +1642,10 @@ EOT
         }
 
         $latest = $candidate !== false ? $candidate : null;
+        // versions exist but none is installable on this platform, so there is nothing to update to
+        if ($latest === null && count($versionSelector->getPlatformRejectedCandidates()) > 0) {
+            $latest = $package;
+        }
         $withheld = null;
         if ($cooldown !== null && !str_starts_with($package->getVersion(), 'dev-')) {
             // a waiting release is only worth mentioning if it is newer than what can be installed already
