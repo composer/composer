@@ -13,7 +13,6 @@
 namespace Composer\Repository;
 
 use Composer\Advisory\PartialSecurityAdvisory;
-use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\FilterListEntry;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
@@ -91,12 +90,8 @@ class PackageRepository extends ArrayRepository implements AdvisoryProviderInter
         $advisories = [];
         foreach ($this->securityAdvisories as $packageName => $packageAdvisories) {
             if (isset($packageConstraintMap[$packageName])) {
-                $advisories[$packageName] = array_values(array_filter(array_map(function (array $data) use ($packageName, $allowPartialAdvisories, $packageConstraintMap, $parser) {
+                $advisories[$packageName] = array_values(array_filter(array_map(static function (array $data) use ($packageName, $packageConstraintMap, $parser) {
                     $advisory = PartialSecurityAdvisory::create($packageName, $data, $parser);
-                    if (!$allowPartialAdvisories && !$advisory instanceof SecurityAdvisory) {
-                        throw new \RuntimeException('Advisory for '.$packageName.' could not be loaded as a full advisory from '.$this->getRepoName() . PHP_EOL . var_export($data, true));
-                    }
-
                     if (!$advisory->affectedVersions->matches($packageConstraintMap[$packageName])) {
                         return null;
                     }

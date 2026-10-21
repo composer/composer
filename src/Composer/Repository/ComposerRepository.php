@@ -13,7 +13,6 @@
 namespace Composer\Repository;
 
 use Composer\Advisory\PartialSecurityAdvisory;
-use Composer\Advisory\SecurityAdvisory;
 use Composer\FilterList\ComposerRepositoryFilterInformation;
 use Composer\FilterList\FilterListApiClient;
 use Composer\FilterList\FilterListEntryBuilder;
@@ -742,13 +741,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         /**
          * @param array<mixed> $data
          * @param string $name
-         * @return ($allowPartialAdvisories is false ? SecurityAdvisory|null : PartialSecurityAdvisory|SecurityAdvisory|null)
          */
-        $create = function (array $data, string $name) use ($parser, $allowPartialAdvisories, &$packageConstraintMap): ?PartialSecurityAdvisory {
+        $create = static function (array $data, string $name) use ($parser, &$packageConstraintMap): ?PartialSecurityAdvisory {
             $advisory = PartialSecurityAdvisory::create($name, $data, $parser);
-            if (!$allowPartialAdvisories && !$advisory instanceof SecurityAdvisory) {
-                throw new \RuntimeException('Advisory for '.$name.' could not be loaded as a full advisory from '.$this->getRepoName() . PHP_EOL . var_export($data, true));
-            }
             if (!$advisory->affectedVersions->matches($packageConstraintMap[$name])) {
                 return null;
             }

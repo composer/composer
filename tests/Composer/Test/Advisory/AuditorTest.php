@@ -1046,6 +1046,26 @@ vendor/other matched dependency policy "test-list". Reason: internal.',
         self::assertStringContainsString('Found 1 abandoned package:', $io->getOutput());
     }
 
+    public function testAuditOutputsPartialAdvisories(): void
+    {
+        $repoSet = new RepositorySet();
+        $repoSet->addRepository(new PackageRepository([
+            'package' => [],
+            'security-advisories' => [
+                'acme/lib' => [['advisoryId' => 'ACME-2026-001', 'affectedVersions' => '<1.0.1']],
+            ],
+        ]));
+
+        $auditor = new Auditor();
+        $result = $auditor->audit($io = new BufferIO(), $repoSet, $this->createPolicyConfig(), [new Package('acme/lib', '1.0.0.0', '1.0.0')], Auditor::FORMAT_PLAIN, false);
+
+        self::assertSame(Auditor::STATUS_FAILED, $result);
+        self::assertSame('Found 1 security vulnerability advisory affecting 1 package:
+Package: acme/lib
+Advisory ID: ACME-2026-001
+Affected versions: <1.0.1', trim($io->getOutput()));
+    }
+
     /**
      * @param Auditor::ABANDONED_* $abandoned
      * @param ListPolicyConfig::AUDIT_*|null $filteredAudit

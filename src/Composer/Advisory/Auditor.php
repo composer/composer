@@ -383,7 +383,7 @@ class Auditor
     }
 
     /**
-     * @param array<string, array<SecurityAdvisory>> $advisories
+     * @param array<string, array<PartialSecurityAdvisory>> $advisories
      * @param self::FORMAT_* $format The format that will be used to output audit results.
      */
     private function outputAdvisories(IOInterface $io, array $advisories, string $format): void
@@ -409,40 +409,17 @@ class Auditor
     }
 
     /**
-     * @param array<string, array<SecurityAdvisory>> $advisories
+     * @param array<string, array<PartialSecurityAdvisory>> $advisories
      */
     private function outputAdvisoriesTable(ConsoleIO $io, array $advisories): void
     {
         foreach ($advisories as $packageAdvisories) {
             foreach ($packageAdvisories as $advisory) {
-                $headers = [
-                    'Package',
-                    'Severity',
-                    'Advisory ID',
-                    'CVE',
-                    'Title',
-                    'URL',
-                    'Affected versions',
-                    'Reported at',
-                ];
-                $row = [
-                    $advisory->packageName,
-                    $this->getSeverity($advisory),
-                    $this->getAdvisoryId($advisory),
-                    $this->getCVE($advisory),
-                    $advisory->title,
-                    $this->getURL($advisory),
-                    $advisory->affectedVersions->getPrettyString(),
-                    $advisory->reportedAt->format(DATE_ATOM),
-                ];
-                if ($advisory instanceof IgnoredSecurityAdvisory) {
-                    $headers[] = 'Ignore reason';
-                    $row[] = $advisory->ignoreReason ?? 'None specified';
-                }
+                $fields = $this->getAdvisoryFields($advisory);
                 $io->getTable()
                     ->setHorizontal()
-                    ->setHeaders($headers)
-                    ->addRow(ConsoleIO::sanitize($row))
+                    ->setHeaders(array_keys($fields))
+                    ->addRow(ConsoleIO::sanitize(array_values($fields)))
                     ->setColumnWidth(1, 80)
                     ->setColumnMaxWidth(1, 80)
                     ->render();
@@ -451,7 +428,7 @@ class Auditor
     }
 
     /**
-     * @param array<string, array<SecurityAdvisory>> $advisories
+     * @param array<string, array<PartialSecurityAdvisory>> $advisories
      */
     private function outputAdvisoriesPlain(IOInterface $io, array $advisories): void
     {
@@ -462,21 +439,45 @@ class Auditor
                 if (!$firstAdvisory) {
                     $error[] = '--------';
                 }
-                $error[] = "Package: ".$advisory->packageName;
-                $error[] = "Severity: ".$this->getSeverity($advisory);
-                $error[] = "Advisory ID: ".$this->getAdvisoryId($advisory);
-                $error[] = "CVE: ".$this->getCVE($advisory);
-                $error[] = "Title: ".OutputFormatter::escape($advisory->title);
-                $error[] = "URL: ".$this->getURL($advisory);
-                $error[] = "Affected versions: ".OutputFormatter::escape($advisory->affectedVersions->getPrettyString());
-                $error[] = "Reported at: ".$advisory->reportedAt->format(DATE_ATOM);
-                if ($advisory instanceof IgnoredSecurityAdvisory) {
-                    $error[] = "Ignore reason: ".($advisory->ignoreReason ?? 'None specified');
+                foreach ($this->getAdvisoryFields($advisory) as $label => $value) {
+                    $error[] = $label.': '.(in_array($label, ['Title', 'Affected versions'], true) ? OutputFormatter::escape($value) : $value);
                 }
                 $firstAdvisory = false;
             }
         }
         $io->write($error);
+    }
+
+    /**
+     * A partial advisory only has the fields its repository provided, so the others are left out
+     *
+     * @return array<string, string>
+     */
+    private function getAdvisoryFields(PartialSecurityAdvisory $advisory): array
+    {
+        if (!$advisory instanceof SecurityAdvisory) {
+            return [
+                'Package' => $advisory->packageName,
+                'Advisory ID' => $this->getAdvisoryId($advisory),
+                'Affected versions' => $advisory->affectedVersions->getPrettyString(),
+            ];
+        }
+
+        $fields = [
+            'Package' => $advisory->packageName,
+            'Severity' => $this->getSeverity($advisory),
+            'Advisory ID' => $this->getAdvisoryId($advisory),
+            'CVE' => $this->getCVE($advisory),
+            'Title' => $advisory->title,
+            'URL' => $this->getURL($advisory),
+            'Affected versions' => $advisory->affectedVersions->getPrettyString(),
+            'Reported at' => $advisory->reportedAt->format(DATE_ATOM),
+        ];
+        if ($advisory instanceof IgnoredSecurityAdvisory) {
+            $fields['Ignore reason'] = $advisory->ignoreReason ?? 'None specified';
+        }
+
+        return $fields;
     }
 
     /**
@@ -535,7 +536,7 @@ class Auditor
         return $advisory->severity;
     }
 
-    private function getAdvisoryId(SecurityAdvisory $advisory): string
+    private function getAdvisoryId(PartialSecurityAdvisory $advisory): string
     {
         if (str_starts_with($advisory->advisoryId, 'PKSA-')) {
             return '<href=https://packagist.org/security-advisories/'.$advisory->advisoryId.'>'.$advisory->advisoryId.'</>';

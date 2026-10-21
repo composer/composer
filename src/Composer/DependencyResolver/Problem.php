@@ -833,14 +833,7 @@ class Problem
         $completeAdvisories = [];
         foreach ($versionsByName as $name => $constraints) {
             $packages = $repositorySet->findPackages($name, MultiConstraint::create($constraints, false));
-            try {
-                $matching = $repositorySet->getMatchingSecurityAdvisories($packages, false, true);
-            } catch (\RuntimeException $e) {
-                // a repository may only ship partial advisories in its metadata, without an api-url
-                // to load them in full: the partial ones the pool already holds are explained as-is
-                continue;
-            }
-            foreach ($matching['advisories'] as $advisories) {
+            foreach ($repositorySet->getMatchingSecurityAdvisories($packages, false, true)['advisories'] as $advisories) {
                 foreach ($advisories as $advisory) {
                     $completeAdvisories[$advisory->advisoryId] = $advisory;
                 }
