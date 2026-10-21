@@ -369,7 +369,7 @@ class ComposerRepositoryTest extends TestCase
             'http://example.org/packages.json' => JsonFile::encode(array(
                 'metadata-url' => '/p2/%package%.json',
                 'packages' => array('fbi-gov/x-files' => array(
-                    'dev-main' => array('name' => 'fbi-gov/x-files', 'version' => 'dev-main'),
+                    'dev-main' => array('name' => 'fbi-gov/x-files', 'version' => 'dev-main', 'extra' => array('branch-alias' => array('dev-main' => '1.x-dev'))),
                     '1.0.0' => array('name' => 'fbi-gov/x-files', 'version' => '1.0.0'),
                     '1.1.0' => array('name' => 'fbi-gov/x-files', 'version' => '1.1.0'),
                 )),
@@ -386,6 +386,7 @@ class ComposerRepositoryTest extends TestCase
         $package = $repository->findPackage('fbi-gov/x-files', '1.0.0');
         $this->assertNotNull($package);
         $this->assertSame('1.0.0.0', $package->getVersion());
-        $this->assertCount(3, $repository->findPackages('fbi-gov/x-files'));
+        // 3 versions + the dev-main alias
+        $this->assertCount(4, $repository->findPackages('fbi-gov/x-files'));
     }
 }
