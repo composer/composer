@@ -797,7 +797,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     continue;
                 }
 
-                if (!isset($versionsToLoad[$version['uid']])) {
+                $uid = isset($version['uid']) ? $version['uid'] : null;
+                if (null === $uid || !isset($versionsToLoad[$uid])) {
                     if (!isset($version['version_normalized'])) {
                         $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                     } elseif ($version['version_normalized'] === VersionParser::DEFAULT_BRANCH_ALIAS) {
@@ -811,7 +812,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     }
 
                     if ($this->isVersionAcceptable(null, $normalizedName, $version, $acceptableStabilities, $stabilityFlags)) {
-                        $versionsToLoad[$version['uid']] = $version;
+                        // inline packages have no uid and need no dedup
+                        if (null === $uid) {
+                            $versionsToLoad[] = $version;
+                        } else {
+                            $versionsToLoad[$uid] = $version;
+                        }
                     }
                 }
             }
