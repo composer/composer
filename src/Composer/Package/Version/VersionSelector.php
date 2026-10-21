@@ -57,6 +57,9 @@ class VersionSelector
     /** @var list<array{package: PackageInterface, releaseDate: \DateTimeInterface}> */
     private $withheldCandidates = [];
 
+    /** @var list<PackageInterface> */
+    private $platformRejectedCandidates = [];
+
     /**
      * @param PlatformRepository   $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
      * @param CooldownPolicyConfig $cooldown     If passed in, versions still within the configured cooldown are skipped
@@ -127,6 +130,7 @@ class VersionSelector
 
         $this->firstClearingWithheldCandidate = null;
         $this->withheldCandidates = [];
+        $this->platformRejectedCandidates = [];
         if ($this->cooldown !== null && $this->cooldown->hasCooldown() && $this->cooldown->block) {
             $candidates = $this->filterCooldownCandidates($this->cooldown, $candidates, $io, $showWarnings);
         }
@@ -185,6 +189,7 @@ class VersionSelector
                 }
 
                 if ($skip) {
+                    $this->platformRejectedCandidates[] = $pkg;
                     continue;
                 }
 
@@ -211,6 +216,7 @@ class VersionSelector
      * Returns the candidate withheld by the cooldown in the last findBestCandidate() call that becomes available first
      *
      * @return ?array{package: PackageInterface, releaseDate: \DateTimeInterface}
+     * @internal
      */
     public function getFirstClearingWithheldCandidate(): ?array
     {
@@ -221,10 +227,22 @@ class VersionSelector
      * Returns every candidate withheld by the cooldown in the last findBestCandidate() call, in candidate order
      *
      * @return list<array{package: PackageInterface, releaseDate: \DateTimeInterface}>
+     * @internal
      */
     public function getWithheldCandidates(): array
     {
         return $this->withheldCandidates;
+    }
+
+    /**
+     * Returns every candidate skipped for its platform requirements in the last findBestCandidate() call, in candidate order
+     *
+     * @return list<PackageInterface>
+     * @internal
+     */
+    public function getPlatformRejectedCandidates(): array
+    {
+        return $this->platformRejectedCandidates;
     }
 
     /**

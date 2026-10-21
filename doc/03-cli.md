@@ -629,6 +629,10 @@ allows installing, so the output matches what `composer update` would do. A newe
 the cooldown period is shown next to it with the time left, or in its place once you are on the newest
 installable version. When several are waiting, the one that becomes installable first is shown.
 
+A dependency whose versions all have platform requirements your platform cannot satisfy is considered
+up to date, as there is nothing it can be updated to. A dependency that is not found in any repository
+is shown as `[none matched]` and counts as outdated for `--strict`.
+
 ### Options
 
 * **--all (-a):** Show all packages, not just outdated (alias for `composer show --latest`).

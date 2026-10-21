@@ -1642,6 +1642,10 @@ EOT
         }
 
         $latest = $candidate !== false ? $candidate : null;
+        // versions exist but none is installable on this platform, so there is nothing to update to
+        if ($latest === null && count($versionSelector->getPlatformRejectedCandidates()) > 0) {
+            $latest = $package;
+        }
         $withheld = null;
         if ($cooldown !== null && !str_starts_with($package->getVersion(), 'dev-')) {
             // a waiting release is only worth mentioning if it is newer than what can be installed already
