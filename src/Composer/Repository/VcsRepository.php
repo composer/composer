@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Downloader\TransportException;
 use Composer\Exception\SecurityException;
+use Composer\Package\BasePackage;
 use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
@@ -475,10 +476,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             return $branches;
         }
 
-        $patterns = array_map(static function ($pattern): string {
-            return str_replace('\\*', '.*', preg_quote((string) $pattern, '{'));
-        }, $this->repoConfig['only-branches']);
-        $regex = '{^(?:'.implode('|', $patterns).')$}';
+        // branch names are case-sensitive, unlike package names
+        $regex = BasePackage::packageNamesToRegexp($this->repoConfig['only-branches'], '{^(?:%s)$}D');
 
         foreach ($branches as $branch => $identifier) {
             $branch = (string) $branch;
