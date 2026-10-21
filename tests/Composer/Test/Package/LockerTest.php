@@ -223,6 +223,18 @@ class LockerTest extends TestCase
         self::assertFalse($locker->isFresh());
     }
 
+    public function testContentHashIncludesPolicyConfig(): void
+    {
+        $base = ['name' => 'test', 'config' => ['platform' => ['php' => '8.1.0']]];
+        $withPolicy = $base;
+        $withPolicy['config']['policy'] = ['cooldown' => ['period' => '7days']];
+        $withOtherConfig = $base;
+        $withOtherConfig['config']['sort-packages'] = true;
+
+        self::assertNotSame(Locker::getContentHash(JsonFile::encode($base)), Locker::getContentHash(JsonFile::encode($withPolicy)));
+        self::assertSame(Locker::getContentHash(JsonFile::encode($base)), Locker::getContentHash(JsonFile::encode($withOtherConfig)));
+    }
+
     /**
      * @return \PHPUnit\Framework\MockObject\MockObject&JsonFile
      */
