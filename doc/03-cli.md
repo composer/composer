@@ -1235,6 +1235,13 @@ policies and returns the following exit codes based on the findings:
 php composer.phar audit
 ```
 
+To update the packages affected by security advisories, run `audit fix`. It is an alias for
+[`update --vulnerable-only`](#update-u-upgrade) and only passes on the `--no-dev` option.
+
+```shell
+php composer.phar audit fix
+```
+
 ### Options
 
 * **--no-dev:** Disables auditing of require-dev packages.
