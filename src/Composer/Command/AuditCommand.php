@@ -38,7 +38,7 @@ class AuditCommand extends BaseCommand
                 new InputOption('locked', null, InputOption::VALUE_NONE, 'Audit based on the lock file instead of the installed packages.'),
                 new InputOption('abandoned', null, InputOption::VALUE_REQUIRED, 'Behavior on abandoned packages. Must be "ignore", "report", or "fail".', null, ListPolicyConfig::AUDITS),
                 new InputOption('ignore-severity', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Ignore advisories of a certain severity level.', [], ['low', 'medium', 'high', 'critical']),
-                new InputOption('ignore-unreachable', null, InputOption::VALUE_NONE, 'Ignore repositories that are unreachable or return a non-200 status code.'),
+                new InputOption('ignore-unreachable', null, InputOption::VALUE_NONE, 'Ignore repositories and dependency policy sources that are unreachable or return a non-200 status code.'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Only audit packages directly required by the root package, skipping transitive dependencies.'),
             ])
             ->setHelp(
@@ -49,7 +49,7 @@ If you do not want to include dev dependencies in the audit you can omit them wi
 
 If you only want to audit packages your root package requires directly, use --direct (-D)
 
-If you want to ignore repositories that are unreachable or return a non-200 status code, use --ignore-unreachable
+If you want to ignore repositories and dependency policy sources that are unreachable or return a non-200 status code, use --ignore-unreachable
 
 Read more at https://getcomposer.org/doc/03-cli.md#audit
 EOT

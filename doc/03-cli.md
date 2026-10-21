@@ -318,6 +318,9 @@ If you do not want to install the new dependencies immediately you can call it w
 * **--minimal-changes (-m):** During an update with `-w`/`-W`, only perform absolutely necessary
   changes to transitive dependencies. Can also be set via the COMPOSER_MINIMAL_CHANGES=1 env var.
 * **--sort-packages:** Keep packages sorted in `composer.json`.
+* **--fixed:** When no version constraint is given, write the exact version
+  that was picked to `composer.json` instead of the recommended constraint.
+  Only allowed when the root package's type is `project`, or together with `--dev`.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
   get a faster autoloader. This is recommended especially for production, but
   can take a bit of time to run, so it is currently not done by default.
@@ -396,8 +399,8 @@ are local to the library and do not affect consumers of the package.
 
 ## reinstall
 
-The `reinstall` command looks up installed packages by name,
-uninstalls them and reinstalls them. This lets you do a clean install
+The `reinstall` command looks up installed packages by name (or by type
+with `--type`), uninstalls them and reinstalls them. This lets you do a clean install
 of a package if you messed with its files, or if you wish to change
 the installation type using --prefer-install.
 
@@ -412,8 +415,17 @@ wildcard to select several packages at once:
 php composer.phar reinstall "acme/*"
 ```
 
+To reinstall every installed package of a given type, use `--type` instead:
+
+```shell
+php composer.phar reinstall --type=composer-plugin
+```
+
 ### Options
 
+* **--type:** Reinstall all installed packages of the given type, e.g.
+  `--type=library`. The type must match exactly, wildcards are not supported.
+  Can be passed more than once. It can't be combined with package names.
 * **--prefer-install:** There are two ways of downloading a package: `source`
   and `dist`. Composer uses `dist` by default. If you pass
   `--prefer-install=source` (or `--prefer-source`) Composer will install from
@@ -715,6 +727,8 @@ psr/log 1.1.4 Common interface for logging libraries
 
 * **--recursive (-r):** Recursively resolves up to the root package.
 * **--tree (-t):** Prints the results as a nested tree, implies -r.
+* **--locked:** Read dependency information from `composer.lock` instead of
+  the installed packages.
 
 ## prohibits / why-not
 
@@ -749,6 +763,8 @@ packages depending on the packages that cause the conflict.
 
 * **--recursive (-r):** Recursively resolves up to the root package.
 * **--tree (-t):** Prints the results as a nested tree, implies -r.
+* **--locked:** Read dependency information from `composer.lock` instead of
+  the installed packages.
 
 ## validate
 
@@ -1188,6 +1204,9 @@ php composer.phar archive vendor/package 2.0.21 --format=zip
   or zip (default: "tar").
 * **--dir:** Write the archive to this directory (default: ".")
 * **--file:** Write the archive with the given file name.
+* **--ignore-filters:** Don't apply the usual exclude rules, so files marked
+  `export-ignore` in `.gitattributes` or listed in
+  [archive.exclude](04-schema.md#archive) are archived too.
 
 ## audit
 
@@ -1219,6 +1238,8 @@ php composer.phar audit
   flag will override the config value and the environment variable.
 * **--ignore-severity:** Ignore advisories of a certain severity level. Can be passed one or more
   time to ignore multiple severities.
+* **--ignore-unreachable:** Ignore repositories and dependency policy sources that are
+  unreachable or return a non-200 status code. See also [config.policy.ignore-unreachable](06-config.md#ignore-unreachable).
 
 ## help
 

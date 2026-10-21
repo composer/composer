@@ -1003,7 +1003,7 @@ All formats can be mixed together in the same configuration.
 
 Defaults to `false`. Should unreachable repositories be ignored during a `composer audit`. This can be helpful if you are running the command
 in an environment from which not all repositories can be accessed. This setting does not apply to version blocking or audit reports generated
-in other places than the `compoder audit` command.
+in other places than the `composer audit` command.
 
 ```json
 {
