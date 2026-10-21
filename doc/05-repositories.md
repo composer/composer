@@ -632,6 +632,33 @@ Please note:
 * **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update Composer cache and install the package from dist.
 * VCS driver `git-bitbucket` is deprecated in favor of `bitbucket`
 
+#### Restricting the loaded branches
+
+Repositories with a large number of branches can be slow to load, as the
+`composer.json` of every branch has to be read. You can restrict which
+branches are loaded with the `only-branches` key, which takes a list of branch
+names that may contain `*` wildcards. The default branch is always loaded.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/symfony/symfony",
+            "only-branches": ["7.4", "8.*"]
+        }
+    ]
+}
+```
+
+Patterns are matched case-sensitively against the branch names as they appear
+in the repository (e.g. `7.4`, not `7.4.x-dev`). Tags are not affected by this
+option.
+
+> **Note:** For Mercurial and Perforce repositories the default branch is not
+> detected, so make sure it is included in `only-branches` (e.g. `default` for
+> Mercurial, `master` for Perforce) or it will be skipped.
+
 #### Bitbucket Driver Configuration
 
 > **Note that the repository endpoint for Bitbucket needs to be https rather than git.**

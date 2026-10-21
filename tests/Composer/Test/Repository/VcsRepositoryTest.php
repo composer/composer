@@ -17,6 +17,7 @@ use Composer\Util\Platform;
 use Symfony\Component\Process\ExecutableFinder;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\VcsRepository;
+use Composer\Repository\Vcs\SvnDriver;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\NullIO;
@@ -185,5 +186,99 @@ class VcsRepositoryTest extends TestCase
         }
 
         self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
+    }
+
+    public function testLoadVersionsWithOnlyBranchesFilter(): void
+    {
+        $expected = [
+            '0.6.0' => true,
+            '1.0.0' => true,
+            '1.1.x-dev' => true,
+            'dev-feature/a-1.0-B' => true,
+            'dev-master' => true,
+            '9999999-dev' => true, // alias of dev-master
+        ];
+
+        $config = new Config();
+        $config->merge([
+            'config' => [
+                'home' => self::$composerHome,
+            ],
+        ]);
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $repo = new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs', 'only-branches' => ['1.1.x', 'feature/*']], new NullIO, $config, $httpDownloader);
+        $packages = $repo->getPackages();
+        $dumper = new ArrayDumper();
+
+        foreach ($packages as $package) {
+            if (isset($expected[$package->getPrettyVersion()])) {
+                unset($expected[$package->getPrettyVersion()]);
+            } else {
+                $this->fail('Unexpected version '.$package->getPrettyVersion().' in '.json_encode($dumper->dump($package)));
+            }
+        }
+
+        self::assertEmpty($expected, 'Missing versions: '.implode(', ', array_keys($expected)));
+    }
+
+    public function testOnlyBranchesFilterKeepsSvnTrunk(): void
+    {
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $repo = new VcsRepository(
+            ['url' => 'svn://example.org/repo', 'type' => 'svn', 'only-branches' => ['1.*']],
+            new NullIO,
+            new Config(),
+            $httpDownloader,
+            null,
+            null,
+            ['svn' => FakeSvnDriver::class]
+        );
+
+        $versions = array_map(static function ($package): string {
+            return $package->getPrettyVersion();
+        }, $repo->getPackages());
+        sort($versions);
+
+        self::assertSame(['1.0.x-dev', 'dev-trunk'], $versions);
+    }
+
+    /**
+     * @dataProvider provideInvalidOnlyBranches
+     * @param mixed $onlyBranches
+     */
+    public function testInvalidOnlyBranchesThrows($onlyBranches): void
+    {
+        self::expectException('InvalidArgumentException');
+        self::expectExceptionMessage('"only-branches" key for repository '.self::$gitRepo.' should be an array of strings');
+
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        new VcsRepository(['url' => self::$gitRepo, 'type' => 'vcs', 'only-branches' => $onlyBranches], new NullIO, new Config(), $httpDownloader);
+    }
+
+    public static function provideInvalidOnlyBranches(): array
+    {
+        return [
+            'string' => ['7.4'],
+            'non-string item' => [['7.4', ['8.*']]],
+        ];
+    }
+}
+
+/**
+ * Mimics the branch layout of SvnDriver without running svn
+ */
+class FakeSvnDriver extends SvnDriver
+{
+    public function initialize(): void
+    {
+        $this->baseUrl = $this->url;
+        $this->rootIdentifier = '/trunk/@3';
+        $this->branches = ['trunk' => '/trunk/@3', '1.0' => '/branches/1.0/@2', '2.0' => '/branches/2.0/@1'];
+        $this->tags = [];
+    }
+
+    public function getComposerInformation(string $identifier): ?array
+    {
+        return ['name' => 'foo/bar'];
     }
 }
