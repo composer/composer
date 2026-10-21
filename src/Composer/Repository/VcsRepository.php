@@ -488,7 +488,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         foreach ($branches as $branch => $identifier) {
             $branch = (string) $branch;
-            if ($branch !== $rootIdentifier && !Preg::isMatch($this->onlyBranchesRegex, $branch)) {
+            // svn's root identifier is the trunk identifier (e.g. /trunk/@123) and not a branch name
+            if ($branch === $rootIdentifier || $identifier === $rootIdentifier) {
+                continue;
+            }
+            if (!Preg::isMatch($this->onlyBranchesRegex, $branch)) {
                 if ($this->isVeryVerbose) {
                     $this->io->writeError('<warning>Skipped branch '.$branch.', not matching the only-branches filter</warning>');
                 }
