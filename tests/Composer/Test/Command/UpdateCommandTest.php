@@ -791,6 +791,26 @@ OUTPUT
     }
 
     /**
+     * @dataProvider provideVulnerableOnlyIncompatibleOptions
+     */
+    public function testVulnerableOnlyRejectsIncompatibleOptions(string $option): void
+    {
+        $this->initTempComposer();
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('--vulnerable-only cannot be combined with --interactive, --root-reqs or --lock.');
+
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'update', '--vulnerable-only' => true, $option => true]);
+    }
+
+    public static function provideVulnerableOnlyIncompatibleOptions(): \Generator
+    {
+        yield ['--interactive'];
+        yield ['--root-reqs'];
+        yield ['--lock'];
+    }
+
+    /**
      * @param list<array<string, mixed>> $packages
      * @param array<string, string> $affectedVersions package name => affected versions constraint
      * @return array<string, mixed>
