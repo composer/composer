@@ -68,6 +68,7 @@ class UpdateCommand extends BaseCommand
                 new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", "json", or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
                 new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'DEPRECATED: use --no-blocking instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
                 new InputOption('no-blocking', null, InputOption::VALUE_NONE, 'Disables all policy blocking during this command, including the cooldown period (can also be set via the COMPOSER_NO_BLOCKING=1 env var).'),
+                new InputOption('no-cooldown', null, InputOption::VALUE_NONE, 'Disables the cooldown policy blocking during this command, other policies still apply.'),
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),

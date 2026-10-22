@@ -526,6 +526,11 @@ optional version constraint, and package names support wildcards (e.g. `vendor/*
 }
 ```
 
+#### Bypassing the cooldown
+
+To bypass the cooldown for a single run, pass `--no-cooldown` to `update`, `require`, `remove`
+or `create-project`. Other policies still apply, unlike with `--no-blocking`.
+
 #### Environment variables
 
 `COMPOSER_POLICY_COOLDOWN_PERIOD` overrides the configured `period` (the `ignore` rules from

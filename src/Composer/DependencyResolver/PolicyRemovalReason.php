@@ -30,7 +30,7 @@ class PolicyRemovalReason
     public const FILTER_LIST = 'filter-list';
     public const COOLDOWN = 'cooldown';
 
-    public const COOLDOWN_REMEDY = 'To exempt the package from the cooldown policy, add it to the "policy.cooldown.ignore" config, or run the command with COMPOSER_POLICY_COOLDOWN_PERIOD=0 for a one-off bypass.';
+    public const COOLDOWN_REMEDY = 'To exempt the package from the cooldown policy, add it to the "policy.cooldown.ignore" config, or run the command with --no-cooldown for a one-off bypass.';
 
     /** @var self::* */
     private $type;

@@ -391,6 +391,22 @@ class PolicyConfig
     }
 
     /**
+     * Create a copy with only the cooldown blocking disabled (for --no-cooldown).
+     */
+    public function withCooldownBlockingDisabled(): self
+    {
+        return new self(
+            $this->enabled,
+            $this->advisories,
+            $this->malware,
+            $this->abandoned,
+            $this->cooldown->withBlockingDisabled(),
+            $this->customLists,
+            $this->ignoreUnreachable
+        );
+    }
+
+    /**
      * Flip the listed scopes (audit, install, update) to true, leaving the
      * remaining scopes at their current value. At least one scope is required —
      * the caller must declare the scope they intend to widen.

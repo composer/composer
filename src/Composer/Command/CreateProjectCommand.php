@@ -97,6 +97,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('audit-format', null, InputOption::VALUE_REQUIRED, 'Audit output format. Must be "table", "plain", "json" or "summary".', Auditor::FORMAT_SUMMARY, Auditor::FORMATS),
                 new InputOption('no-security-blocking', null, InputOption::VALUE_NONE, 'DEPRECATED: use --no-blocking instead. Allows installing packages with security advisories, that are abandoned or that are still in the cooldown period (can also be set via the COMPOSER_NO_SECURITY_BLOCKING=1 env var).'),
                 new InputOption('no-blocking', null, InputOption::VALUE_NONE, 'Disables all policy blocking during this command, including the cooldown period (can also be set via the COMPOSER_NO_BLOCKING=1 env var).'),
+                new InputOption('no-cooldown', null, InputOption::VALUE_NONE, 'Disables the cooldown policy blocking during this command, other policies still apply.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('ask', null, InputOption::VALUE_NONE, 'Whether to ask for project directory.'),
