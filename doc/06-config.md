@@ -1294,9 +1294,9 @@ and disables the files cache unless [cache-files-ttl](#cache-files-ttl) is set.
 
 Defaults to the value of [cache-ttl](#cache-ttl), so `15552000` (6 months)
 unless that is changed. Composer caches all dist (zip, tar, ...) packages that
-it downloads. Those are purged after six months of being unused by default.
-This option allows you to tweak this duration (in seconds) or disable it
-completely by setting it to 0.
+it downloads. Those are purged after being unused for that long. This option
+allows you to tweak this duration (in seconds) or disable it completely by
+setting it to 0.
 
 ## cache-files-maxsize
 
