@@ -25,7 +25,7 @@ use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\PolicyRemovalReason;
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
 use Composer\Pcre\Preg;
@@ -458,7 +458,7 @@ EOT
                 throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
             }
             if ($cooldown !== null && false !== (new VersionSelector($repositorySet, $platformRepo))->findBestCandidate($name, $packageVersion, $stability, $platformRequirementFilter)) {
-                throw new \InvalidArgumentException($errorMessage .' that is past the cooldown period configured in "policy.cooldown". '.PolicyRemovalReason::COOLDOWN_REMEDY);
+                throw new \InvalidArgumentException($errorMessage .' that is past the cooldown period configured in "policy.cooldown". '.RejectionReason::COOLDOWN_REMEDY);
             }
 
             throw new \InvalidArgumentException($errorMessage .'.');

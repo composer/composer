@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
@@ -186,7 +187,7 @@ class Solver
     {
         foreach ($request->getLockedPackages() as $package) {
             $reason = $this->pool->getPolicyRemovalReason($package->getName(), $package->getVersion());
-            if ($reason === null || $reason->getType() !== PolicyRemovalReason::FILTER_LIST) {
+            if ($reason === null || $reason->getType() !== RejectionReason::FILTER_LIST) {
                 continue;
             }
 

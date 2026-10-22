@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Advisory\Auditor;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
@@ -95,13 +96,13 @@ class SecurityAdvisoryPoolFilter
         $policyRemovedVersions = $pool->getAllPolicyRemovedVersions();
         foreach ($pool->getPackages() as $package) {
             if ($abandoned->block && count($this->auditor->filterAbandonedPackages([$package], $ignoreAbandonedForBlocking)) !== 0) {
-                Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::abandoned($package->getName(), $package->getPrettyVersion()));
+                Pool::recordPolicyRemoval($policyRemovedVersions, $package, RejectionReason::abandoned($package->getName(), $package->getPrettyVersion()));
                 continue;
             }
 
             $matchingAdvisories = $this->getMatchingAdvisories($package, $advisoryMap);
             if (count($matchingAdvisories) > 0) {
-                Pool::recordPolicyRemoval($policyRemovedVersions, $package, PolicyRemovalReason::advisories($package->getName(), $package->getPrettyVersion(), $matchingAdvisories));
+                Pool::recordPolicyRemoval($policyRemovedVersions, $package, RejectionReason::advisories($package->getName(), $package->getPrettyVersion(), $matchingAdvisories));
 
                 continue;
             }

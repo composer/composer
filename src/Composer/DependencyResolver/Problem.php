@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
@@ -169,7 +170,7 @@ class Problem
             }
 
             $plural = \count($removals) > 1;
-            $versions = array_map(static function (PolicyRemovalReason $reason): string {
+            $versions = array_map(static function (RejectionReason $reason): string {
                 return $reason->getPrettyVersion();
             }, $removals);
             $prettyVersions = $isVerbose ? array_values($versions) : self::condenseVersionList($versions, 1);
@@ -768,7 +769,7 @@ class Problem
     /**
      * @return string the reason as the end of a sentence starting with "because they"/"because it", followed by the remedies
      */
-    private static function formatPolicyRemovalSentence(PolicyRemovalReason $reason, bool $plural): string
+    private static function formatPolicyRemovalSentence(RejectionReason $reason, bool $plural): string
     {
         $remedy = $reason->getRemedy();
 
@@ -781,17 +782,17 @@ class Problem
      * When several policies removed different versions, one sentence would attribute every reason to
      * every version, so the versions are then listed grouped by their own reason
      *
-     * @param non-empty-array<string, PolicyRemovalReason> $removals normalized version => reason, in version order
+     * @param non-empty-array<string, RejectionReason> $removals normalized version => reason, in version order
      */
     private static function formatPolicyRemovalReasons(array $removals, bool $plural, RepositorySet $repositorySet): string
     {
         $removals = self::loadCompleteAdvisories($removals, $repositorySet);
 
-        $policies = array_unique(array_map(static function (PolicyRemovalReason $reason): string {
+        $policies = array_unique(array_map(static function (RejectionReason $reason): string {
             return $reason->getType();
         }, $removals));
         if (\count($policies) === 1) {
-            return 'because '.($plural ? 'they ' : 'it ').self::formatPolicyRemovalSentence(PolicyRemovalReason::combine($removals), $plural);
+            return 'because '.($plural ? 'they ' : 'it ').self::formatPolicyRemovalSentence(RejectionReason::combine($removals), $plural);
         }
 
         $versionsByReason = [];
@@ -818,14 +819,14 @@ class Problem
     /**
      * The pool may only hold partial advisories, load the complete ones to link to their details
      *
-     * @param non-empty-array<string, PolicyRemovalReason> $removals normalized version => reason
-     * @return non-empty-array<string, PolicyRemovalReason>
+     * @param non-empty-array<string, RejectionReason> $removals normalized version => reason
+     * @return non-empty-array<string, RejectionReason>
      */
     private static function loadCompleteAdvisories(array $removals, RepositorySet $repositorySet): array
     {
         $versionsByName = [];
         foreach ($removals as $version => $reason) {
-            if ($reason->getType() === PolicyRemovalReason::ADVISORIES) {
+            if ($reason->getType() === RejectionReason::ADVISORIES) {
                 $versionsByName[$reason->getPackageName()][] = new Constraint('==', (string) $version);
             }
         }
@@ -845,8 +846,8 @@ class Problem
         }
 
         foreach ($removals as $version => $reason) {
-            if ($reason->getType() === PolicyRemovalReason::ADVISORIES) {
-                $removals[$version] = PolicyRemovalReason::advisories($reason->getPackageName(), $reason->getPrettyVersion(), array_map(static function (PartialSecurityAdvisory $advisory) use ($completeAdvisories): PartialSecurityAdvisory {
+            if ($reason->getType() === RejectionReason::ADVISORIES) {
+                $removals[$version] = RejectionReason::advisories($reason->getPackageName(), $reason->getPrettyVersion(), array_map(static function (PartialSecurityAdvisory $advisory) use ($completeAdvisories): PartialSecurityAdvisory {
                     return $completeAdvisories[$advisory->advisoryId] ?? $advisory;
                 }, $reason->getAdvisories()));
             }

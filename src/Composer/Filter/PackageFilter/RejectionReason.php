@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\DependencyResolver;
+namespace Composer\Filter\PackageFilter;
 
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Advisory\SecurityAdvisory;
@@ -18,12 +18,12 @@ use Composer\FilterList\FilterListEntry;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 
 /**
- * Why a dependency policy removed a package version from the pool, and how to render that to the user
+ * Why a package version was rejected, and how to render that to the user
  *
  * @internal
  * @final
  */
-class PolicyRemovalReason
+class RejectionReason
 {
     public const ABANDONED = 'abandoned';
     public const ADVISORIES = 'advisories';
