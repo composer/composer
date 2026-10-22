@@ -215,7 +215,7 @@ class Git
             // @phpstan-ignore composerPcre.maybeUnsafeStrictGroups
             } elseif (
                 Preg::isMatchStrictGroups('{^(https?)://(bitbucket\.org)/(.*?)(?:\.git)?$}i', $url, $match)
-                || Preg::isMatchStrictGroups('{^(git)@(bitbucket\.org):(.+?\.git)$}i', $url, $match)
+                || Preg::isMatchStrictGroups('{^(git)@(?:ssh\.)?(bitbucket\.org)[:/](.+?\.git)$}i', $url, $match)
             ) { //bitbucket either through oauth or app password, with fallback to ssh.
                 $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process, $this->httpDownloader);
 
@@ -273,7 +273,7 @@ class Git
                     $credentials = [rawurlencode($auth['username']), rawurlencode($auth['password'])];
                 }
                 //Falling back to ssh
-                $sshUrl = 'git@bitbucket.org:' . $repo_with_git_part;
+                $sshUrl = 'git@ssh.bitbucket.org:' . $repo_with_git_part;
                 $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
                 if (0 === $runCommands($sshUrl)) {
                     return;
