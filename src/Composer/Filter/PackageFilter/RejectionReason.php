@@ -332,7 +332,7 @@ class RejectionReason
             case self::CONSTRAINT:
                 return 'not match the constraint';
             case self::REPOSITORY_PRIORITY:
-                return 'from a repository with a lower priority than '.$this->canonicalRepositoryName.', which is canonical for this package';
+                return 'hidden by '.$this->canonicalRepositoryName.', a repository with a higher priority';
         }
 
         // @phpstan-ignore deadCode.unreachable

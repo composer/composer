@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PackageFilter\PackageFilterResult;
 use Composer\Filter\PackageFilter\RejectionReason;
 use Composer\Advisory\PartialSecurityAdvisory;
 use Composer\Package\CompletePackageInterface;
@@ -450,7 +451,7 @@ class Problem
 
             $policyRemovals = $pool->getPolicyRemovedVersions($packageName, $constraint);
             if (\count($policyRemovals) > 0) {
-                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, '.self::formatPolicyRemovalReasons($policyRemovals, true, $repositorySet)];
+                return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, '.self::formatPolicyRemovalReasons($policyRemovals, true, $repositorySet).self::formatOtherRejections($result, $isVerbose)];
             }
 
             if (!array_any($packages, static function ($p): bool {
@@ -459,7 +460,7 @@ class Problem
                 return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.'];
             }
 
-            return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'];
+            return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.'.self::formatOtherRejections($result, $isVerbose)];
         }
 
         // packages that only a higher priority repository hides
@@ -727,6 +728,31 @@ class Problem
         }
 
         return ["- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose, $pool, $constraint).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose, $pool, $constraint).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages from the higher priority repository do not match your '.$reason.' and are therefore not installable. That repository is canonical so the lower priority repo\'s packages are not installable. See https://getcomposer.org/repoprio for details and assistance.'];
+    }
+
+    /**
+     * Mentions the versions matching the constraint that were skipped for another reason, so one message explains all of them
+     */
+    private static function formatOtherRejections(PackageFilterResult $result, bool $isVerbose): string
+    {
+        $acceptedVersions = [];
+        foreach ($result->getAccepted() as $package) {
+            $acceptedVersions[$package->getName()][$package->getVersion()] = true;
+        }
+
+        $found = [];
+        foreach ([RejectionReason::STABILITY, RejectionReason::REPOSITORY_PRIORITY] as $type) {
+            // a copy of an accepted version in a lower priority repository is no alternative
+            $packages = array_values(array_filter($result->getRejectedOnlyBy($type), static function (BasePackage $package) use ($acceptedVersions): bool {
+                return !isset($acceptedVersions[$package->getName()][$package->getVersion()]);
+            }));
+            $reason = \count($packages) > 0 ? $result->getReason($packages[0], $type) : null;
+            if ($reason !== null) {
+                $found[] = self::getPackageList($packages, $isVerbose).' which '.$reason->getVerb(\count($packages) > 1).' '.$reason->getDescription();
+            }
+        }
+
+        return \count($found) > 0 ? ' Also found '.implode(', and ', $found).'.' : '';
     }
 
     /**
